@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-          ManipulationDelta="MyCanvas_ManipulationDelta" ManipulationMode="All" PointerWheelChanged="MyGrid_PointerWheelChanged" SizeChanged="MyGrid_SizeChanged" >
+          ManipulationDelta="MyCanvas_ManipulationDelta" ManipulationMode="All" PointerWheelChanged="MyGrid_PointerWheelChanged" SizeChanged="MyGrid_SizeChanged" ManipulationInertiaStarting="MyGrid_ManipulationInertiaStarting" >
 
         <Canvas x:Name="MyCanvas" HorizontalAlignment="Left" Width="20000" Margin="0,0,-18080,-18920" Height="20000" VerticalAlignment="Top" >
             <Canvas.Background>
@@ -46,7 +46,7 @@
             <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="19477" Stroke="Black" Canvas.Top="19392" Width="100"/>
         </Canvas>
         <Canvas x:Name="OverlayCanvas">
-            <Ellipse Fill="#FFF4F4F5" Height="70" Canvas.Left="1772" Stroke="Black" Width="101" Canvas.Top="46"/>
+            <Ellipse Fill="#FFF4F4F5" Height="70" Canvas.Left="1772" Stroke="Black" Width="101" Canvas.Top="46" Tapped="Ellipse_Tapped"/>
         </Canvas>
     </Grid>
 </Page>

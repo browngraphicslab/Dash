@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Input.Inking;
@@ -16,6 +17,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
+
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -29,7 +32,7 @@ namespace PanZoomCanvas
         private float canvasScale = 1;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
-
+        
         public Transform CanvasTransform
         {
             get { return MyCanvas.RenderTransform; }
@@ -144,15 +147,11 @@ namespace PanZoomCanvas
 
         private void MyGrid_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-        //    /* 
-            //e.Pointer
             PointerPoint point = e.GetCurrentPoint(MyCanvas);
             double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
                 Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
             scale = Math.Max(Math.Min(scale, 1.7f), 0.4f);
             canvasScale *= (float)scale;
-            //float scale = point.Properties.MouseWheelDelta * 0.05f / 120.0f;
-            //canvasScale *= 1 + scale;
             Debug.Assert(MyCanvas.RenderTransform != null);
             Point screenPos = MyCanvas.RenderTransform.TransformPoint(point.Position);
             ScaleTransform scaleTransform = new ScaleTransform
@@ -237,24 +236,24 @@ namespace PanZoomCanvas
         {
             TranslateTransform translate = new TranslateTransform();
 
+            //Calculate bottomRight corner of screen in canvas space before and after resize 
             Debug.Assert(MyCanvas.RenderTransform != null);
             Debug.Assert(MyCanvas.RenderTransform.Inverse != null);
             Point oldBottomRight =
                 MyCanvas.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
             Point bottomRight =
                 MyCanvas.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
+
             bool outOfBounds = false;
             if (bottomRight.X > MyCanvas.ActualWidth - 1)
             {
                 translate.X = -(oldBottomRight.X - bottomRight.X);
                 outOfBounds = true;
-                Debug.WriteLine("oob right");
             }
             if (bottomRight.Y > MyCanvas.ActualHeight - 1)
             {
                 translate.Y = -(oldBottomRight.Y - bottomRight.Y);
                 outOfBounds = true;
-                Debug.WriteLine("oob bottom");
             }
             if (outOfBounds)
             {
@@ -262,6 +261,34 @@ namespace PanZoomCanvas
                 composite.Children.Add(translate);
                 composite.Children.Add(CanvasTransform);
                 CanvasTransform = new MatrixTransform {Matrix = composite.Value};
+            }
+        }
+
+        private void MyGrid_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
+        {
+            e.TranslationBehavior.DesiredDeceleration = 0.01;
+        }
+
+        private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            //for (int i = 0; i < 10000; ++i)
+            //{
+            //    Ellipse el = new Ellipse
+            //    {
+            //        Width = 40,
+            //        Height = 80,
+            //        Fill = new SolidColorBrush(Colors.Green)
+            //    }; 
+            //    Canvas.SetLeft(el, 500);
+            //    Canvas.SetTop(el, 500);
+            //    MyCanvas.Children.Add(el);
+            //}
+
+            var ellipses = MyCanvas.Children.Where(el => el as Ellipse != null);
+            foreach (var ell in ellipses)
+            {
+                        ell.Visibility = Visibility.Collapsed;
+                ;
             }
         }
     }
