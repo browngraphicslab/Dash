@@ -57,7 +57,6 @@ namespace PanZoomCanvas
                 X = delta.Translation.X,
                 Y = delta.Translation.Y
             };
-
             ScaleTransform scale = new ScaleTransform
             {
                 CenterX = e.Position.X,
@@ -65,7 +64,6 @@ namespace PanZoomCanvas
                 ScaleX = delta.Scale,
                 ScaleY = delta.Scale
             };
-
             //Clamp the zoom
             canvasScale *= delta.Scale;
             if (canvasScale > MaxScale)
@@ -84,8 +82,8 @@ namespace PanZoomCanvas
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
             composite.Children.Add(CanvasTransform);
-            composite.Children.Add(translate);
             composite.Children.Add(scale);
+            composite.Children.Add(translate);
 
             //Get top left and bottom right screen space points in canvas space
             GeneralTransform inverse = composite.Inverse;
@@ -103,30 +101,35 @@ namespace PanZoomCanvas
             Debug.WriteLine("Pre topLeft " + preTopLeft);
             Debug.WriteLine("Pre bottomRight " + preBottomRight);
             //Check if the panning or zooming puts the view out of bounds of the canvas
-            //Nullify scale or translate components accordingly 
+            //Nullify scale or translate components accordingly
             bool outOfBounds = false;
+            TranslateTransform fixTranslate = new TranslateTransform();
             if (topLeft.X < 0)
             {
-                translate.X = preTopLeft.X;
+                translate.X = 0;
+                fixTranslate.X = preTopLeft.X;
                 scale.CenterX = 0;
                 outOfBounds = true;
             }
             else if (bottomRight.X > MyCanvas.ActualWidth - 1)
             {
-                translate.X = (preBottomRight.X - (MyCanvas.ActualWidth));
-                scale.CenterX = MyCanvas.ActualWidth - 1;
+                translate.X = 0;
+                fixTranslate.X = -(MyCanvas.ActualWidth - preBottomRight.X - 1);
+                scale.CenterX = MyGrid.ActualWidth;
                 outOfBounds = true;
             }
             if (topLeft.Y < 0)
             {
-                translate.Y = preTopLeft.Y;
+                translate.Y = 0;
+                fixTranslate.Y = preTopLeft.Y;
                 scale.CenterY = 0;
                 outOfBounds = true;
             }
             else if (bottomRight.Y > MyCanvas.ActualHeight - 1)
             {
-                translate.Y = (preBottomRight.Y - (MyCanvas.ActualHeight));
-                scale.CenterY = MyCanvas.ActualHeight - 1;
+                translate.Y = 0;
+                fixTranslate.Y = -(MyCanvas.ActualHeight - preBottomRight.Y - 1);
+                scale.CenterY = MyGrid.ActualHeight;
                 outOfBounds = true;
             }
 
@@ -134,9 +137,10 @@ namespace PanZoomCanvas
             if (outOfBounds)
             {
                 composite = new TransformGroup();
+                composite.Children.Add(fixTranslate);
+                composite.Children.Add(CanvasTransform);
                 composite.Children.Add(scale);
                 composite.Children.Add(translate);
-                composite.Children.Add(CanvasTransform);
             }
 
             //Debug.WriteLine("scale " + scale.ScaleX);
@@ -247,7 +251,7 @@ namespace PanZoomCanvas
             else if (bottomRight.X >= MyCanvas.ActualWidth)
             {
                 translate.X = preBottomRight.X - MyCanvas.ActualWidth;
-                scaleTransform.CenterX = MyCanvas.ActualWidth;
+                scaleTransform.CenterX = MyGrid.ActualWidth;
                 outOfBounds = true;
             }
             if (topLeft.Y < 0)
@@ -258,7 +262,7 @@ namespace PanZoomCanvas
             else if (bottomRight.Y >= MyCanvas.ActualHeight)
             {
                 translate.Y = preBottomRight.Y - MyCanvas.ActualHeight;
-                scaleTransform.CenterY = MyCanvas.ActualHeight;
+                scaleTransform.CenterY = MyGrid.ActualHeight;
                 outOfBounds = true;
             }
 
@@ -266,9 +270,9 @@ namespace PanZoomCanvas
             if (outOfBounds)
             {
                 composite = new TransformGroup();
-                composite.Children.Add(scaleTransform);
                 composite.Children.Add(translate);
                 composite.Children.Add(CanvasTransform);
+                composite.Children.Add(scaleTransform);
             }
             CanvasTransform = new MatrixTransform {Matrix = composite.Value};
         }
