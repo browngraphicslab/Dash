@@ -22,7 +22,7 @@ using Windows.UI.Xaml.Shapes;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
-namespace PanZoomCanvas
+namespace Dash
 {
     /// <summary>
     /// Zoomable pannable canvas. Has an overlay canvas unaffected by pan / zoom. 

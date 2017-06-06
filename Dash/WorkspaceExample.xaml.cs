@@ -13,23 +13,25 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
+// The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace PanZoomCanvas
+namespace Dash
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class LoginPage : Page
+    public sealed partial class WorkspaceExample : UserControl
     {
-        public LoginPage()
+        public WorkspaceExample()
         {
             this.InitializeComponent();
         }
 
-        private void button_Tapped(object sender, TappedRoutedEventArgs e)
+        private void XMainGrid_PointerEntered(object sender, PointerRoutedEventArgs e)
         {
-            this.Frame.Navigate(typeof(MyDashboardsPage));
+            XHighlight.Visibility = Visibility.Visible;
+        }
+
+        private void XMainGrid_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            XHighlight.Visibility = Visibility.Collapsed;
         }
     }
 }

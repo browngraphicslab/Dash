@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media;
 
-namespace PanZoomCanvas
+namespace Dash
 {
     public class Camera
     {
