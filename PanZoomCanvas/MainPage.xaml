@@ -8,9 +8,18 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
-          ManipulationDelta="MyCanvas_ManipulationDelta" ManipulationMode="All" >
+          ManipulationDelta="MyCanvas_ManipulationDelta" ManipulationMode="All" PointerWheelChanged="MyGrid_PointerWheelChanged" >
 
-        <Canvas x:Name="MyCanvas" HorizontalAlignment="Left" Width="20000" Background="#FF27B2AB" Margin="0,0,-18080,-18920" Height="20000" VerticalAlignment="Top" >
+        <Canvas x:Name="MyCanvas" HorizontalAlignment="Left" Width="20000" Margin="0,0,-18080,-18920" Height="20000" VerticalAlignment="Top" >
+            <Canvas.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <LinearGradientBrush.RelativeTransform>
+                        <CompositeTransform CenterY="0.5" CenterX="0.5" Rotation="45"/>
+                    </LinearGradientBrush.RelativeTransform>
+                    <GradientStop Color="Red" Offset="0"/>
+                    <GradientStop Color="#FF27B2AB" Offset="1"/>
+                </LinearGradientBrush>
+            </Canvas.Background>
             <TextBox x:Name="textBox" HorizontalAlignment="Left" Margin="10000,10000,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top"/>
             <TextBox x:Name="textBox_Copy" HorizontalAlignment="Left" Margin="61,503,0,0" TextWrapping="Wrap" Text="TextBox2" VerticalAlignment="Top"/>
             <InkCanvas x:Name="MyInkCanvas" HorizontalAlignment="Left" Height="20000" VerticalAlignment="Top" Width="20000" />
