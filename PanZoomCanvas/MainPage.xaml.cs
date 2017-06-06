@@ -60,6 +60,8 @@ namespace PanZoomCanvas
                 X = delta.Translation.X,
                 Y = delta.Translation.Y
             };
+
+
             ScaleTransform scale = new ScaleTransform
             {
                 CenterX = e.Position.X,
@@ -84,15 +86,15 @@ namespace PanZoomCanvas
 
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
-            composite.Children.Add(CanvasTransform);
             composite.Children.Add(scale);
+            composite.Children.Add(CanvasTransform);
             composite.Children.Add(translate);
 
             //Get top left and bottom right screen space points in canvas space
             GeneralTransform inverse = composite.Inverse;
+            Debug.Assert(inverse != null);
             Debug.Assert(MyCanvas.RenderTransform != null);
             GeneralTransform renderInverse = MyCanvas.RenderTransform.Inverse;
-            Debug.Assert(inverse != null);
             Debug.Assert(renderInverse != null);
             Point topLeft = inverse.TransformPoint(new Point(0, 0));
             Point bottomRight = inverse.TransformPoint(new Point(MyGrid.ActualWidth, MyGrid.ActualHeight));
@@ -114,7 +116,7 @@ namespace PanZoomCanvas
             {
                 translate.X = 0;
                 fixTranslate.X = -(MyCanvas.ActualWidth - preBottomRight.X - 1);
-                scale.CenterX = MyGrid.ActualWidth;
+                scale.CenterX = MyCanvas.ActualWidth;
                 outOfBounds = true;
             }
             if (topLeft.Y < 0)
@@ -128,7 +130,7 @@ namespace PanZoomCanvas
             {
                 translate.Y = 0;
                 fixTranslate.Y = -(MyCanvas.ActualHeight - preBottomRight.Y - 1);
-                scale.CenterY = MyGrid.ActualHeight;
+                scale.CenterY = MyCanvas.ActualHeight;
                 outOfBounds = true;
             }
 
@@ -137,8 +139,8 @@ namespace PanZoomCanvas
             {
                 composite = new TransformGroup();
                 composite.Children.Add(fixTranslate);
-                composite.Children.Add(CanvasTransform);
                 composite.Children.Add(scale);
+                composite.Children.Add(CanvasTransform);
                 composite.Children.Add(translate);
             }
 
@@ -225,9 +227,9 @@ namespace PanZoomCanvas
             if (outOfBounds)
             {
                 composite = new TransformGroup();
+                composite.Children.Add(scaleTransform);
                 composite.Children.Add(translate);
                 composite.Children.Add(CanvasTransform);
-                composite.Children.Add(scaleTransform);
             }
             CanvasTransform = new MatrixTransform {Matrix = composite.Value};
         }

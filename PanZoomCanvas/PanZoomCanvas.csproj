@@ -103,6 +103,9 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MyDashboardsPage.xaml.cs" />
+    <Compile Include="OverlayCanvas.xaml.cs">
+      <DependentUpon>OverlayCanvas.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkspaceExample.xaml.cs" />
   </ItemGroup>
@@ -140,6 +143,10 @@
     <Page Include="MyDashboardsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="OverlayCanvas.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WorkspaceExample.xaml">
       <Generator>MSBuild:Compile</Generator>
