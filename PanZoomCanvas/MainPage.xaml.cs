@@ -28,7 +28,7 @@ namespace PanZoomCanvas
     {
         private float canvasScale = 1;
         public const float MaxScale = 10;
-        public const float MinScale = 0.1f;
+        public const float MinScale = 0.5f;
 
         public Transform CanvasTransform
         {
@@ -96,10 +96,6 @@ namespace PanZoomCanvas
             Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
             Point preBottomRight = renderInverse.TransformPoint(new Point(MyGrid.ActualWidth, MyGrid.ActualHeight));
 
-            //Debug.WriteLine("topLeft " + topLeft);
-            //Debug.WriteLine("bottomRight " + bottomRight);
-            Debug.WriteLine("Pre topLeft " + preTopLeft);
-            Debug.WriteLine("Pre bottomRight " + preBottomRight);
             //Check if the panning or zooming puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly
             bool outOfBounds = false;
@@ -143,8 +139,6 @@ namespace PanZoomCanvas
                 composite.Children.Add(translate);
             }
 
-            //Debug.WriteLine("scale " + scale.ScaleX);
-            //Debug.WriteLine("scale center " + scale.CenterX + " Y " + scale.CenterY);
             CanvasTransform = new MatrixTransform {Matrix = composite.Value};
         }
 
@@ -161,7 +155,6 @@ namespace PanZoomCanvas
             //canvasScale *= 1 + scale;
             Debug.Assert(MyCanvas.RenderTransform != null);
             Point screenPos = MyCanvas.RenderTransform.TransformPoint(point.Position);
-            //Debug.WriteLine("screenPos = " + screenPos);
             ScaleTransform scaleTransform = new ScaleTransform
             {
                 CenterX = screenPos.X,
@@ -182,44 +175,7 @@ namespace PanZoomCanvas
                 scaleTransform.ScaleX = 1;
                 scaleTransform.ScaleY = 1;
             }
-            Debug.WriteLine("PointPos " + point.Position);
-        //    */ 
-            /*
-            var delta = e.GetCurrentPoint(MyCanvas).Properties.MouseWheelDelta;
-            var POINT = MyCanvas.TransformToVisual(Window.Current.Content);
-            Point mousePos = e.GetCurrentPoint(MyCanvas).Position; 
-            Point screenCoord = POINT.TransformPoint(mousePos);
-
-            ScaleTransform scaleTransform = new ScaleTransform
-            {
-                CenterX = screenCoord.X,
-                CenterY = screenCoord.Y
-            };
-            float scaleFactor = 0; 
-            if (delta > 0)
-            {
-                scaleFactor = 1.2f;
-            }
-            if (delta < 0)
-            {
-                scaleFactor = 0.83333f;
-            }
-            canvasScale *= scaleFactor; 
-            if (canvasScale > MaxScale)
-            {
-                canvasScale = MaxScale;
-                scaleFactor = 1; 
-            }
-            if (canvasScale < MinScale)
-            {
-                canvasScale = MinScale;
-                scaleFactor = 1; 
-            }
-
-            scaleTransform.ScaleX = scaleFactor;
-            scaleTransform.ScaleY = scaleFactor; 
-            
-                */
+        
 
             TransformGroup composite = new TransformGroup();
             composite.Children.Add(CanvasTransform);
@@ -275,6 +231,38 @@ namespace PanZoomCanvas
                 composite.Children.Add(scaleTransform);
             }
             CanvasTransform = new MatrixTransform {Matrix = composite.Value};
+        }
+
+        private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            TranslateTransform translate = new TranslateTransform();
+
+            Debug.Assert(MyCanvas.RenderTransform != null);
+            Debug.Assert(MyCanvas.RenderTransform.Inverse != null);
+            Point oldBottomRight =
+                MyCanvas.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
+            Point bottomRight =
+                MyCanvas.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
+            bool outOfBounds = false;
+            if (bottomRight.X > MyCanvas.ActualWidth - 1)
+            {
+                translate.X = -(oldBottomRight.X - bottomRight.X);
+                outOfBounds = true;
+                Debug.WriteLine("oob right");
+            }
+            if (bottomRight.Y > MyCanvas.ActualHeight - 1)
+            {
+                translate.Y = -(oldBottomRight.Y - bottomRight.Y);
+                outOfBounds = true;
+                Debug.WriteLine("oob bottom");
+            }
+            if (outOfBounds)
+            {
+                TransformGroup composite = new TransformGroup();
+                composite.Children.Add(translate);
+                composite.Children.Add(CanvasTransform);
+                CanvasTransform = new MatrixTransform {Matrix = composite.Value};
+            }
         }
     }
 }
