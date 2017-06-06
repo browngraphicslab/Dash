@@ -261,11 +261,17 @@ namespace PanZoomCanvas
             CanvasTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
+        /**
+         * Make translation inertia slow down faster 
+         */
         private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
         {
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
 
+        /**
+         * Make sure the canvas is still in bounds after resize
+         */
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             TranslateTransform translate = new TranslateTransform();
@@ -278,6 +284,7 @@ namespace PanZoomCanvas
             Point bottomRight =
                 XCanvas.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
 
+            //Check if new bottom right is out of bounds
             bool outOfBounds = false;
             if (bottomRight.X > XCanvas.ActualWidth - 1)
             {
@@ -289,6 +296,7 @@ namespace PanZoomCanvas
                 translate.Y = -(oldBottomRight.Y - bottomRight.Y);
                 outOfBounds = true;
             }
+            //If it is out of bounds, translate so that is is in bounds
             if (outOfBounds)
             {
                 TransformGroup composite = new TransformGroup();
