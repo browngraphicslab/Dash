@@ -22,15 +22,19 @@ namespace PanZoomCanvas
 {
     public sealed partial class FreeformView : UserControl
     {
-        private float canvasScale = 1;
+        private float _canvasScale = 1;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
+
+        public Canvas Canvas => XCanvas;
+
         public Transform CanvasTransform
         {
             get { return XCanvas.RenderTransform; }
             set { XCanvas.RenderTransform = value; }
         }
 
+        //Get the parent of XCanvas 
         private FrameworkElement _parentElement = null;
         private FrameworkElement ParentElement
         {
@@ -52,26 +56,28 @@ namespace PanZoomCanvas
             this.InitializeComponent();
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Mouse;
-            Canvas.SetZIndex(XInkCanvas, 5000);    //Make sure ink canvas stays on top
 
             // set screen in middle of canvas 
             CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
 
             Debug.Assert(Instance == null);
-            Instance = this; 
+            Instance = this;
         }
 
+        /**
+         * Pans and zooms upon touch manipulation 
+         */
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             ManipulationDelta delta = e.Delta;
 
             //Create initial translate and scale transforms
+            //Translate is in screen space, scale is in canvas space
             TranslateTransform translate = new TranslateTransform
             {
                 X = delta.Translation.X,
                 Y = delta.Translation.Y
             };
-
 
             ScaleTransform scale = new ScaleTransform
             {
@@ -80,17 +86,18 @@ namespace PanZoomCanvas
                 ScaleX = delta.Scale,
                 ScaleY = delta.Scale
             };
+            
             //Clamp the zoom
-            canvasScale *= delta.Scale;
-            if (canvasScale > MaxScale)
+            _canvasScale *= delta.Scale;
+            if (_canvasScale > MaxScale)
             {
-                canvasScale = MaxScale;
+                _canvasScale = MaxScale;
                 scale.ScaleX = 1;
                 scale.ScaleY = 1;
             }
-            if (canvasScale < MinScale)
+            if (_canvasScale < MinScale)
             {
-                canvasScale = MinScale;
+                _canvasScale = MinScale;
                 scale.ScaleX = 1;
                 scale.ScaleY = 1;
             }
@@ -108,7 +115,6 @@ namespace PanZoomCanvas
             GeneralTransform renderInverse = XCanvas.RenderTransform.Inverse;
             Debug.Assert(renderInverse != null);
             Point topLeft = inverse.TransformPoint(new Point(0, 0));
-            var MyGrid = VisualTreeHelper.GetParent(XCanvas) as FrameworkElement;
             Point bottomRight = inverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
             Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
             Point preBottomRight = renderInverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
@@ -116,6 +122,7 @@ namespace PanZoomCanvas
             //Check if the panning or zooming puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly
             bool outOfBounds = false;
+            //Create a canvas space translation to correct the translation if necessary
             TranslateTransform fixTranslate = new TranslateTransform();
             if (topLeft.X < 0)
             {
@@ -159,37 +166,44 @@ namespace PanZoomCanvas
             CanvasTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
+        /**
+         * Zooms upon mousewheel manipulation 
+         */
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            //Get mousepoint in canvas space 
             PointerPoint point = e.GetCurrentPoint(XCanvas);
             double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
                 Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
             scale = Math.Max(Math.Min(scale, 1.7f), 0.4f);
-            canvasScale *= (float)scale;
+            _canvasScale *= (float)scale;
             Debug.Assert(XCanvas.RenderTransform != null);
-            Point screenPos = XCanvas.RenderTransform.TransformPoint(point.Position);
+            Point canvasPos = XCanvas.RenderTransform.TransformPoint(point.Position);
+
+            //Create initial ScaleTransform 
             ScaleTransform scaleTransform = new ScaleTransform
             {
-                CenterX = screenPos.X,
-                CenterY = screenPos.Y,
+                CenterX = canvasPos.X,
+                CenterY = canvasPos.Y,
                 ScaleX = scale,
                 ScaleY = scale
             };
 
-            if (canvasScale > MaxScale)
+            //Clamp scale
+            if (_canvasScale > MaxScale)
             {
-                canvasScale = MaxScale;
+                _canvasScale = MaxScale;
                 scaleTransform.ScaleX = 1;
                 scaleTransform.ScaleY = 1;
             }
-            if (canvasScale < MinScale)
+            if (_canvasScale < MinScale)
             {
-                canvasScale = MinScale;
+                _canvasScale = MinScale;
                 scaleTransform.ScaleX = 1;
                 scaleTransform.ScaleY = 1;
             }
 
-
+            //Create initial composite transform
             TransformGroup composite = new TransformGroup();
             composite.Children.Add(CanvasTransform);
             composite.Children.Add(scaleTransform);
@@ -203,13 +217,14 @@ namespace PanZoomCanvas
             Point bottomRight = inverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
             Point preBottomRight = renderInverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
 
+            //Create a canvas space translation to correct the translation if necessary
             TranslateTransform translate = new TranslateTransform
             {
                 X = 0,
                 Y = 0
             };
 
-            //Check if the panning or zooming puts the view out of bounds of the canvas
+            //Check if the zooming puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly 
             bool outOfBounds = false;
             if (topLeft.X < 0)

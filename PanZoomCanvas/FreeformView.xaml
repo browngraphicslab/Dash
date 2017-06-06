@@ -21,7 +21,7 @@
         </Canvas.Background>
         <TextBox x:Name="textBox" HorizontalAlignment="Left" Margin="10000,10000,0,0" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top"/>
         <TextBox x:Name="textBox_Copy" HorizontalAlignment="Left" Margin="61,503,0,0" TextWrapping="Wrap" Text="TextBox2" VerticalAlignment="Top"/>
-        <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="20000" VerticalAlignment="Top" Width="20000" />
+        <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="20000" VerticalAlignment="Top" Width="20000" Canvas.ZIndex="5000" />
         <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="992" Stroke="Black" Canvas.Top="874" Width="100"/>
         <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="1824" Stroke="Black" Canvas.Top="1610" Width="100"/>
         <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="2933" Stroke="Black" Canvas.Top="2495" Width="100"/>

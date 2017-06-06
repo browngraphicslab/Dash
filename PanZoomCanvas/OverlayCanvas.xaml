@@ -10,6 +10,7 @@
     d:DesignWidth="400">
 
     <Canvas x:Name="xCanvas">
-        <Ellipse Fill="#FFF4F4F5" Height="70" Canvas.Left="1772" Stroke="Black" Width="101" Canvas.Top="46" Tapped="Ellipse_Tapped"/>
+        <Ellipse Fill="#FFF4F4F5" Height="70" Stroke="Black" Width="101" Tapped="Ellipse_Tapped" Canvas.Left="284" Canvas.Top="10"/>
+        <Ellipse Fill="#FFF4F4F5" Height="100" Canvas.Left="285" Stroke="Black" Canvas.Top="127" Width="100" Tapped="Ellipse_Tapped_1"/>
     </Canvas>
 </UserControl>

@@ -32,29 +32,36 @@ namespace PanZoomCanvas
         public MainPage()
         {
             this.InitializeComponent();
+
+            OverlayCanvas.OnEllipseTapped += Ellipse_Tapped;
+            OverlayCanvas.OnEllipseTapped2 += OnEllipseTapped2;
+        }
+
+        private void OnEllipseTapped2(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            var ellipses = FreeformView.Canvas.Children.Where(el => el as Ellipse != null);
+            foreach (var ell in ellipses)
+            {
+                ell.Visibility = ell.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            //for (int i = 0; i < 10000; ++i)
-            //{
-            //    Ellipse el = new Ellipse
-            //    {
-            //        Width = 40,
-            //        Height = 80,
-            //        Fill = new SolidColorBrush(Colors.Green)
-            //    }; 
-            //    Canvas.SetLeft(el, 500);
-            //    Canvas.SetTop(el, 500);
-            //    MyCanvas.Children.Add(el);
-            //}
+            for (int i = 0; i < 10; ++i)
+            {
+                Ellipse el = new Ellipse
+                {
+                    Width = 40,
+                    Height = 80,
+                    Fill = new SolidColorBrush(Colors.Green)
+                };
+                Canvas.SetLeft(el, 500 + i * 40);
+                Canvas.SetTop(el, 500);
+                FreeformView.Canvas.Children.Add(el);
+            }
 
-            //var ellipses = MyCanvas.Children.Where(el => el as Ellipse != null);
-            //foreach (var ell in ellipses)
-            //{
-            //            ell.Visibility = Visibility.Collapsed;
-            //    ;
-            //}
+            
         }
     }
 }

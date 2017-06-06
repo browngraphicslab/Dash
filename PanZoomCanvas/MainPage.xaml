@@ -8,8 +8,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-        <local:FreeformView></local:FreeformView>
-        <local:OverlayCanvas></local:OverlayCanvas>
+        <local:FreeformView x:Name="FreeformView"></local:FreeformView>
+        <local:OverlayCanvas x:Name="OverlayCanvas"></local:OverlayCanvas>
     </Grid>
 </Page>
