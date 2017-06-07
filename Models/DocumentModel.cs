@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage.Pickers;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 
@@ -41,6 +42,25 @@ namespace Dash
             foreach (var val in fields)
                 if (!Fields.ContainsKey(val.Key))
                     Fields.Add(val.Key, fields[val.Key]);
+        }
+
+
+        public static DocumentModel UmpireDocumentModel()
+        {
+            Dictionary<string, object> fields = new Dictionary<string, object>();
+            fields["name"] = "Mr.U";
+            fields["experience"] = "100 years"; 
+            return new DocumentModel(fields, "Umpires");
+        }
+
+        public static DocumentModel Food2ForkRecipeDocumentModel()
+        {
+            Dictionary<string, object> fields = new Dictionary<string, object>();
+            fields["publisher"] = "Penguin"; 
+            fields["source_url"] = "httpthisisaurl.com";
+            fields["title"] = "good food";
+            fields["f2f_url"] = "thisisaf2furl.com";
+            return new DocumentModel(fields, "recipes");
         }
     }
 }

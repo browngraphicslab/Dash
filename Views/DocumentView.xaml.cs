@@ -1,31 +1,16 @@
-﻿using Dash.Models;
-using Dash.Util;
-using Dash.ViewModels;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Windows.UI.Xaml.Shapes;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class DocumentView : UserControl
     {
@@ -86,29 +71,29 @@ namespace Dash.Views
 
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            var viewEditor = new ViewEditor();
-            FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
-            viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
+         //   var viewEditor = new ViewEditor();
+         //   FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
+         //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
         }
         
         protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e)
         {
-            if ((Window.Current.Content as Frame).Content is FreeFormView)
-            {
-                var gt = TransformToVisual(Window.Current.Content);
-                // Use that to convert the generated Point into the page's coords
-                Point pagePoint = gt.TransformPoint(e.Position);
+            //if ((Window.Current.Content as Frame).Content is FreeFormView)
+            //{
+            //    var gt = TransformToVisual(Window.Current.Content);
+            //    // Use that to convert the generated Point into the page's coords
+            //    Point pagePoint = gt.TransformPoint(e.Position);
 
-                foreach (var cgv in ((((Window.Current.Content as Frame).Content as FreeFormView).Content as Canvas).Children.Where((c) => c is CollectionGridView).Select((x) => (CollectionGridView)x)))
-                    if (VisualTreeHelper.FindElementsInHostCoordinates(pagePoint, cgv).Count() > 0)
-                    {
-                        var cgvModel = (cgv as CollectionGridView).DataContext as CollectionGridViewModel;
-                        if (!cgvModel.Documents.Contains(DataContext as DocumentViewModel))
-                        {
-                            cgvModel.AddDocument((DataContext as DocumentViewModel).DocumentModel);
-                        }
-                    }
-            }
+            //    foreach (var cgv in ((((Window.Current.Content as Frame).Content as FreeFormView).Content as Canvas).Children.Where((c) => c is CollectionGridView).Select((x) => (CollectionGridView)x)))
+            //        if (VisualTreeHelper.FindElementsInHostCoordinates(pagePoint, cgv).Count() > 0)
+            //        {
+            //            var cgvModel = (cgv as CollectionGridView).DataContext as CollectionGridViewModel;
+            //            if (!cgvModel.Documents.Contains(DataContext as DocumentViewModel))
+            //            {
+            //                cgvModel.AddDocument((DataContext as DocumentViewModel).DocumentModel);
+            //            }
+            //        }
+            //}
             base.OnManipulationCompleted(e);
         }
     }
