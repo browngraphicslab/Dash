@@ -25,10 +25,7 @@ namespace Dash
 
         public TappedEventHandler OnEllipseTapped;
         public TappedEventHandler OnEllipseTapped2;
-
-        //public Canvas Canvas => XCanvas;
-
-
+        
         public OverlayCanvas()
         {
             this.InitializeComponent();

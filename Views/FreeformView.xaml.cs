@@ -26,13 +26,13 @@ namespace Dash
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
 
-        public Canvas Canvas => XCanvas;
-
         public Transform CanvasTransform
         {
             get { return XCanvas.RenderTransform; }
             set { XCanvas.RenderTransform = value; }
         }
+
+        public Canvas Canvas => XCanvas;
 
         //Get the parent of XCanvas 
         private FrameworkElement _parentElement = null;
@@ -49,11 +49,16 @@ namespace Dash
             }
         }
 
-        public static FreeformView Instance = null;
+        public static FreeformView Instance;
+
+        private FreeformViewModel _vm;
 
         public FreeformView()
         {
             this.InitializeComponent();
+
+            _vm = new FreeformViewModel();
+            _vm.OnElementAdded += VmOnOnElementAdded;
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
 
@@ -62,6 +67,13 @@ namespace Dash
 
             Debug.Assert(Instance == null);
             Instance = this;
+        }
+
+        private void VmOnOnElementAdded(UIElement element, float left, float top)
+        {
+            XCanvas.Children.Add(element);
+            Canvas.SetLeft(element, left);
+            Canvas.SetTop(element, top);
         }
 
         /**
