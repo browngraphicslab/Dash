@@ -7,8 +7,8 @@
     <ProjectGuid>{7355FA95-4259-465B-8C8D-26DEED418788}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PanZoomCanvas</RootNamespace>
-    <AssemblyName>PanZoomCanvas</AssemblyName>
+    <RootNamespace>Dash</RootNamespace>
+    <AssemblyName>Dash</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
@@ -116,7 +116,6 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
-    <None Include="PanZoomCanvas_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Workspace_image.PNG" />
