@@ -1,4 +1,4 @@
-﻿using Dash.ViewModels;
+﻿using Dash;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,9 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
-using Dash.Models;
 
-namespace Dash.ViewModels
+namespace Dash
 {
     public interface DocumentLayoutModelSourceBase
     {

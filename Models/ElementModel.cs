@@ -6,10 +6,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using Dash.ViewModels;
+using Dash;
 using Windows.UI.Text;
 
-namespace Dash.Models
+namespace Dash
 {
     public class ElementModel: INotifyPropertyChanged
     {
