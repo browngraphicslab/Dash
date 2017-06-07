@@ -63,7 +63,7 @@ namespace Dash
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
 
             // set screen in middle of canvas 
-            CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
+            //CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
 
             Debug.Assert(Instance == null);
             Instance = this;
@@ -81,6 +81,11 @@ namespace Dash
          */
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            if (e.Handled)
+            {
+                return;
+            }
+            e.Handled = true;
             ManipulationDelta delta = e.Delta;
 
             //Create initial translate and scale transforms

@@ -17,13 +17,17 @@ namespace Dash
     {
         Dictionary<string, TextBlock> textElementViews = new Dictionary<string, TextBlock>();
 
+        private float _documentScale = 1.0f;
+        public const float MinScale = 0.5f;
+        public const float MaxScale = 2.0f;
+
         public DocumentView()
         {
             this.InitializeComponent();
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            this.Margin = new Thickness(10200, 10200, 0, 0);
+            this.RenderTransform = new TranslateTransform {X = 200, Y = 200};
             this.Width = 200;
             this.Height = 400;
         }
@@ -104,15 +108,87 @@ namespace Dash
 
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            if (e.Handled)
+            {
+                return;
+            }
+            e.Handled = true;
+            
+           
+
             TransformGroup group = new TransformGroup();
-            group.Children.Add(new TranslateTransform
+
+            ScaleTransform scale = new ScaleTransform
+            {
+                CenterX = e.Position.X,
+                CenterY = e.Position.Y,
+                ScaleX = e.Delta.Scale,
+                ScaleY = e.Delta.Scale
+            };
+
+            TranslateTransform translate = new TranslateTransform
             {
                 X = e.Delta.Translation.X / FreeformView.Instance.CanvasScale,
                 Y = e.Delta.Translation.Y / FreeformView.Instance.CanvasScale
-            });
-            group.Children.Add(XGrid.RenderTransform);
-            XGrid.RenderTransform = new MatrixTransform { Matrix = group.Value};
-            e.Handled = true;
+            }; 
+
+            _documentScale *= e.Delta.Scale;
+            if (_documentScale > MaxScale)
+            {
+                _documentScale = MaxScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+            else if (_documentScale < MinScale)
+            {
+                _documentScale = MinScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+
+            group.Children.Add(scale);
+            group.Children.Add(this.RenderTransform);
+            group.Children.Add(translate);
+
+            Point p1 = group.TransformPoint(new Point(0, 0));
+            Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            Debug.Assert(this.RenderTransform != null);
+            Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
+            Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            bool outOfBounds = false;
+            if (p1.X < 0)
+            {
+                outOfBounds = true;
+                translate.X = -oldP1.X;
+                scale.CenterX = 0;
+            } else if (p2.X > FreeformView.Instance.Canvas.ActualWidth)
+            {
+                outOfBounds = true;
+                translate.X = FreeformView.Instance.Canvas.ActualWidth - oldP2.X;
+                scale.CenterX = XGrid.ActualWidth;
+            }
+            if (p1.Y < 0)
+            {
+                outOfBounds = true;
+                translate.Y = -oldP1.Y;
+                scale.CenterY = 0;
+            }
+            else if (p2.Y > FreeformView.Instance.Canvas.ActualHeight)
+            {
+                outOfBounds = true;
+                translate.Y = FreeformView.Instance.Canvas.ActualHeight - oldP2.Y;
+                scale.CenterY = XGrid.ActualHeight;
+            }
+
+            if (outOfBounds)
+            {
+                group = new TransformGroup();
+                group.Children.Add(scale);
+                group.Children.Add(this.RenderTransform);
+                group.Children.Add(translate);
+            }
+
+            this.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
     }
 }

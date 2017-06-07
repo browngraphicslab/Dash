@@ -98,6 +98,7 @@
     <Compile Include="Camera.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\ElementModel.cs" />
+    <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
