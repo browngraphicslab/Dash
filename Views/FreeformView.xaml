@@ -20,7 +20,7 @@
             </LinearGradientBrush>
         </Canvas.Background>
         <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="20000" VerticalAlignment="Top" Width="20000" />
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Canvas.Left="10113" Canvas.Top="10059" ManipulationMode="None"/>
+        <TextBox x:Name="textBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Canvas.Left="10113" Canvas.Top="10059"/>
         <TextBox x:Name="textBox_Copy" HorizontalAlignment="Left" Margin="61,503,0,0" TextWrapping="Wrap" Text="TextBox2" VerticalAlignment="Top"/>
         <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="992" Stroke="Black" Canvas.Top="874" Width="100"/>
         <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="1824" Stroke="Black" Canvas.Top="1610" Width="100"/>

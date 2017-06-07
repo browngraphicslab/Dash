@@ -23,7 +23,7 @@ namespace Dash
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            this.Margin = new Thickness(20, 20, 0, 0);
+            this.Margin = new Thickness(10200, 10200, 0, 0);
             this.Width = 200;
             this.Height = 400;
         }
@@ -102,9 +102,17 @@ namespace Dash
             base.OnManipulationCompleted(e);
         }
 
-        private void xCanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Debug.WriteLine("delta"); 
+            TransformGroup group = new TransformGroup();
+            group.Children.Add(new TranslateTransform
+            {
+                X = e.Delta.Translation.X / FreeformView.Instance.CanvasScale,
+                Y = e.Delta.Translation.Y / FreeformView.Instance.CanvasScale
+            });
+            group.Children.Add(XGrid.RenderTransform);
+            XGrid.RenderTransform = new MatrixTransform { Matrix = group.Value};
+            e.Handled = true;
         }
     }
 }
