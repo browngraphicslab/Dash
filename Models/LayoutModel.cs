@@ -1,4 +1,4 @@
-﻿using Dash.ViewModels;
+﻿using Dash;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 
-namespace Dash.Models
+namespace Dash
 {
     /// <summary>
     /// A mapping of keys to ElementModels. Has a Type field for which the layout is valid.

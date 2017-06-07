@@ -4,9 +4,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dash.Models;
 
-namespace Dash.ViewModels
+namespace Dash
 {
     public class LayoutViewModel
     {
