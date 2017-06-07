@@ -34,10 +34,10 @@ namespace Dash
             this.InitializeComponent();
 
             OverlayCanvas.OnEllipseTapped += Ellipse_Tapped;
-            OverlayCanvas.OnEllipseTapped2 += OnEllipseTapped2;
+            OverlayCanvas.OnEllipseTapped2 += EllipseTapped2;
         }
 
-        private void OnEllipseTapped2(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        private void EllipseTapped2(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
           
         }
@@ -56,14 +56,20 @@ namespace Dash
             view1.DataContext = model1;
             view2.DataContext = model2;
 
-            view1.Margin = new Thickness(20, 20, 0, 0);
-            view1.Width = 200;
-            view1.Height = 400;
-            view2.Margin = new Thickness(400, 20, 0, 0);
-            view2.Width = 200;
-            view2.Height = 400;
+            //view1.Margin = new Thickness(20, 20, 0, 0);
+            //view1.Width = 200;
+            //view1.Height = 400;
+            //view2.Margin = new Thickness(400, 20, 0, 0);
+            //view2.Width = 200;
+            //view2.Height = 400;
+
+
+            //MyGrid.Children.Add(view1);
+            //MyGrid.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view1);
-            FreeformView.Canvas.Children.Add(view2);
+            //FreeformView.Canvas.Children.Add(view2);
+
+            
         }
     }
 }

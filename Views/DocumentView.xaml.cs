@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -21,6 +22,10 @@ namespace Dash
             this.InitializeComponent();
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
+
+            this.Margin = new Thickness(20, 20, 0, 0);
+            this.Width = 200;
+            this.Height = 400;
         }
         
 
@@ -95,6 +100,11 @@ namespace Dash
             //        }
             //}
             base.OnManipulationCompleted(e);
+        }
+
+        private void xCanvas_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Debug.WriteLine("delta"); 
         }
     }
 }

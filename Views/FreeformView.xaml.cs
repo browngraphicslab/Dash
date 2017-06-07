@@ -55,7 +55,7 @@ namespace Dash
         {
             this.InitializeComponent();
 
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Mouse;
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
 
             // set screen in middle of canvas 
             CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
@@ -305,5 +305,16 @@ namespace Dash
                 XCanvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             }
         }
+
+        private void Rectangle_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Debug.WriteLine("dfjdkflj");
+        }
+
+        private void textBox_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Debug.WriteLine("dfjdkflj");
+        }
+
     }
 }

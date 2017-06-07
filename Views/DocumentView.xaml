@@ -7,14 +7,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="330"
-    d:DesignWidth="255">
+    d:DesignWidth="255" ManipulationMode="All">
 
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" Background="PapayaWhip" RightTapped="Grid_RightTapped">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2" Background="PapayaWhip" RightTapped="Grid_RightTapped" >
         <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch" 
-            Background="AliceBlue">
+            Background="AliceBlue" ManipulationDelta="xCanvas_ManipulationDelta" ManipulationMode="All">
         </Canvas>
     </Grid>
 </UserControl>
