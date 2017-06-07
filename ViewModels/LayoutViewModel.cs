@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dash.Models;
-using Dash.Util;
-using Flurl.Util;
 
 namespace Dash.ViewModels
 {

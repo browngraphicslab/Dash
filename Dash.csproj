@@ -96,20 +96,27 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Camera.cs" />
-    <Compile Include="FreeformView.xaml.cs">
+    <Compile Include="Models\DocumentModel.cs" />
+    <Compile Include="Models\ElementModel.cs" />
+    <Compile Include="Models\LayoutModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ViewModels\DocumentViewModel.cs" />
+    <Compile Include="ViewModels\LayoutViewModel.cs" />
+    <Compile Include="Views\FreeformView.xaml.cs">
       <DependentUpon>FreeformView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="LoginPage.xaml.cs">
+    <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainPage.xaml.cs">
+    <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MyDashboardsPage.xaml.cs" />
-    <Compile Include="OverlayCanvas.xaml.cs">
+    <Compile Include="Views\MyDashboardsPage.xaml.cs">
+      <DependentUpon>MyDashboardsPage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorkspaceExample.xaml.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -134,25 +141,25 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="FreeformView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="LoginPage.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainPage.xaml">
+    <Page Include="Views\FreeformView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MyDashboardsPage.xaml">
+    <Page Include="Views\LoginPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="OverlayCanvas.xaml">
-      <SubType>Designer</SubType>
+    <Page Include="Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\MyDashboardsPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OverlayCanvas.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="WorkspaceExample.xaml">
       <Generator>MSBuild:Compile</Generator>
