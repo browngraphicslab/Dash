@@ -73,8 +73,7 @@ namespace Dash
                 {
                     continue;
                 }
-                FieldViewModel vm = layout.Fields[field.Key].CreateViewModel(field.Value);
-                uiElements.Add(vm.GetView());
+                uiElements.Add(field.Value.MakeView(layout.Fields[field.Key]));
             }
             return uiElements;
         }

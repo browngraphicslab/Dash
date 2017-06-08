@@ -9,15 +9,11 @@ namespace Dash
 {
     public abstract class FieldViewModel
     {
-        public FieldModel Field { get; set; }
         public TemplateModel Template { get; set; }
 
-        public FieldViewModel(FieldModel fieldModel, TemplateModel templateModel)
+        public FieldViewModel(TemplateModel templateModel)
         {
-            Field = fieldModel;
             Template = templateModel;
         }
-
-        public abstract UIElement GetView();
     }
 }

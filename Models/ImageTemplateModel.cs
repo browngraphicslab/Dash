@@ -8,9 +8,5 @@ namespace Dash.Models
 {
     public class ImageTemplateModel : TemplateModel
     {
-        public override FieldViewModel CreateViewModel(FieldModel field)
-        {
-            return new ImageViewModel(field, this);
-        }
     }
 }

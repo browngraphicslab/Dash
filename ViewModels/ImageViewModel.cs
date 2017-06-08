@@ -9,13 +9,10 @@ namespace Dash
 {
     class ImageViewModel : FieldViewModel
     {
-        public ImageViewModel(FieldModel fieldModel, TemplateModel templateModel) : base(fieldModel, templateModel)
+        private ImageFieldModel _field;
+        public ImageViewModel(ImageFieldModel fieldModel, TemplateModel templateModel) : base(templateModel)
         {
-        }
-
-        public override UIElement GetView()
-        {
-            throw new NotImplementedException();
+            _field = fieldModel;
         }
     }
 }

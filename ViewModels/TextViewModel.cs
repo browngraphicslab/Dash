@@ -10,15 +10,11 @@ namespace Dash
 {
     class TextViewModel : FieldViewModel
     {
-        public TextViewModel(FieldModel fieldModel, TemplateModel templateModel) : base(fieldModel, templateModel)
-        {
-        }
+        private TextFieldModel _field;
 
-        public override UIElement GetView()
+        public TextViewModel(TextFieldModel fieldModel, TemplateModel templateModel) : base(templateModel)
         {
-            TextBlock tb = new TextBlock();
-            tb.Text = (Field as TextFieldModel).Data;
-            return tb;
+            _field = fieldModel;
         }
     }
 }

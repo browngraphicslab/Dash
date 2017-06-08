@@ -23,10 +23,5 @@ namespace Dash
             FontWeight = weight;
             TextWrapping = wrap;
         }
-
-        public override FieldViewModel CreateViewModel(FieldModel field)
-        {
-            return new TextViewModel(field, this);
-        }
     }
 }

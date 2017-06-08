@@ -55,7 +55,5 @@ namespace Dash
             Height = height;
             Visibility = visibility;
         }
-
-        public abstract FieldViewModel CreateViewModel(FieldModel field);
     }
 }

@@ -67,9 +67,9 @@ namespace Dash
             //MyGrid.Children.Add(view1);
             //MyGrid.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view1);
-            //FreeformView.Canvas.Children.Add(view2);
+            FreeformView.Canvas.Children.Add(view2);
 
-            
+
         }
     }
 }
