@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -15,7 +16,9 @@ namespace Dash
 
         public override UIElement GetView()
         {
-            throw new NotImplementedException();
+            TextBlock tb = new TextBlock();
+            tb.Text = (Field as TextFieldModel).Data;
+            return tb;
         }
     }
 }
