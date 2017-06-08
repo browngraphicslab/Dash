@@ -17,7 +17,7 @@ namespace Dash
 
         public TextWrapping TextWrapping { get; set; }
          
-        public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap, Visibility visibility)
+        public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible)
             : base(left, top, 0, 0, visibility)
         {
             FontWeight = weight;
