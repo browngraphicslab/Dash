@@ -17,14 +17,18 @@ namespace Dash
     public class DocumentModel
     {
         /// <summary>
-        /// A dictionary of keys to ElementModels.
+        /// A dictionary of keys to objects.
         /// </summary>
-        public Dictionary<string, object> Fields = new Dictionary<string, Object>();
+        public Dictionary<string, object> Fields = new Dictionary<string, object>();
 
         /// <summary>
         /// The type of this document.
         /// </summary>
-        public string DocumentType { get; set; }
+        public string DocumentType
+        {
+            get { return Fields["Type"] as string; }
+            set { Fields["Type"] = value; }
+        }
 
         /// <summary>
         /// Initializes a document with given data and type.
@@ -37,10 +41,9 @@ namespace Dash
             {
                 throw new ArgumentNullException();
             }
+
             DocumentType = type;
-            foreach (var val in fields)
-                if (!Fields.ContainsKey(val.Key))
-                    Fields.Add(val.Key, fields[val.Key]);
+            Fields = new Dictionary<string, object>(fields);
         }
     }
 }

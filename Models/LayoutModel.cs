@@ -31,17 +31,21 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param> Should contain the keys for which this layout is defined.
         /// <param name="type"></param> The string type for which this layout is valid.
-        public LayoutModel(IDictionary<string, object> fields, string type)
+        public LayoutModel(ICollection<string> keys, string type)
         {
             if (type == null)
             {
                 throw new ArgumentNullException();
             }
+
             Fields.Add("Type", new ElementModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
+
             DocumentType = type;
-            foreach (var val in fields)
-                if (!Fields.ContainsKey(val.Key))
-                    Fields.Add(val.Key, new ElementModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
+
+            foreach (var key in keys)
+            {
+                Fields.Add(key, new ElementModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
+            }
         }
 
         /// <summary>
@@ -51,7 +55,7 @@ namespace Dash
         /// <returns></returns>
         static public LayoutModel Food2ForkRecipeModel(DocumentModel doc)
         {
-            var dom = new LayoutModel(doc.Fields, "recipes");
+            var dom = new LayoutModel(doc.Fields.Keys, "recipes");
             dom.Fields["publisher"].Left = 10;
             dom.Fields["publisher"].Top = 10;
             dom.Fields["publisher"].TextWrapping = TextWrapping.Wrap;
@@ -81,7 +85,7 @@ namespace Dash
         /// <returns></returns>
         static public LayoutModel UmpireModel(DocumentModel doc)
         {
-            var dom = new LayoutModel(doc.Fields, "Umpires");
+            var dom = new LayoutModel(doc.Fields.Keys, "Umpires");
             dom.Fields["name"].Left = 10;
             dom.Fields["name"].Top = 10;
             dom.Fields["name"].TextWrapping = TextWrapping.Wrap;
