@@ -22,17 +22,17 @@ namespace Dash
 {
     public sealed partial class FreeformView : UserControl
     {
-        private float _canvasScale = 1;
+        public float CanvasScale { get; set; } = 1;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
-
-        public Canvas Canvas => XCanvas;
 
         public Transform CanvasTransform
         {
             get { return XCanvas.RenderTransform; }
             set { XCanvas.RenderTransform = value; }
         }
+
+        public Canvas Canvas => XCanvas;
 
         //Get the parent of XCanvas 
         private FrameworkElement _parentElement = null;
@@ -49,19 +49,31 @@ namespace Dash
             }
         }
 
-        public static FreeformView Instance = null;
+        public static FreeformView Instance;
+
+        private FreeformViewModel _vm;
 
         public FreeformView()
         {
             this.InitializeComponent();
 
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen | CoreInputDeviceTypes.Mouse;
+            _vm = new FreeformViewModel();
+            _vm.OnElementAdded += VmOnOnElementAdded;
+
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
 
             // set screen in middle of canvas 
-            CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
+            //CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
 
             Debug.Assert(Instance == null);
             Instance = this;
+        }
+
+        private void VmOnOnElementAdded(UIElement element, float left, float top)
+        {
+            XCanvas.Children.Add(element);
+            Canvas.SetLeft(element, left);
+            Canvas.SetTop(element, top);
         }
 
         /**
@@ -88,16 +100,16 @@ namespace Dash
             };
             
             //Clamp the zoom
-            _canvasScale *= delta.Scale;
-            if (_canvasScale > MaxScale)
+            CanvasScale *= delta.Scale;
+            if (CanvasScale > MaxScale)
             {
-                _canvasScale = MaxScale;
+                CanvasScale = MaxScale;
                 scale.ScaleX = 1;
                 scale.ScaleY = 1;
             }
-            if (_canvasScale < MinScale)
+            if (CanvasScale < MinScale)
             {
-                _canvasScale = MinScale;
+                CanvasScale = MinScale;
                 scale.ScaleX = 1;
                 scale.ScaleY = 1;
             }
@@ -176,7 +188,7 @@ namespace Dash
             double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
                 Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
             scale = Math.Max(Math.Min(scale, 1.7f), 0.4f);
-            _canvasScale *= (float)scale;
+            CanvasScale *= (float)scale;
             Debug.Assert(XCanvas.RenderTransform != null);
             Point canvasPos = XCanvas.RenderTransform.TransformPoint(point.Position);
 
@@ -190,15 +202,15 @@ namespace Dash
             };
 
             //Clamp scale
-            if (_canvasScale > MaxScale)
+            if (CanvasScale > MaxScale)
             {
-                _canvasScale = MaxScale;
+                CanvasScale = MaxScale;
                 scaleTransform.ScaleX = 1;
                 scaleTransform.ScaleY = 1;
             }
-            if (_canvasScale < MinScale)
+            if (CanvasScale < MinScale)
             {
-                _canvasScale = MinScale;
+                CanvasScale = MinScale;
                 scaleTransform.ScaleX = 1;
                 scaleTransform.ScaleY = 1;
             }
@@ -305,5 +317,6 @@ namespace Dash
                 XCanvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             }
         }
+
     }
 }

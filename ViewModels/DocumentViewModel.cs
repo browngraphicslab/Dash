@@ -62,5 +62,21 @@ namespace Dash
         }
         public DocumentModel DocumentModel { get; set; }
         public DocumentLayoutModelSource DocumentViewModelSource { get; set; }
+
+        public List<UIElement> GetUIElements()
+        {
+            List<UIElement> uiElements = new List<UIElement>(DocumentModel.Fields.Count);
+            LayoutModel layout = DocumentViewModelSource.DocumentLayoutModel(DocumentModel);
+            foreach (var field in DocumentModel.Fields)
+            {
+                if (!layout.Fields.ContainsKey(field.Key))
+                {
+                    continue;
+                }
+                FieldViewModel vm = layout.Fields[field.Key].CreateViewModel(field.Value);
+                uiElements.Add(vm.GetView());
+            }
+            return uiElements;
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to ElementModels.
         /// </summary>
-        public Dictionary<string, ElementModel> Fields = new Dictionary<string, ElementModel>();
+        public Dictionary<string, TemplateModel> Fields = new Dictionary<string, TemplateModel>();
 
         /// <summary>
         /// The type for which this layout is valid.
@@ -31,21 +32,16 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param> Should contain the keys for which this layout is defined.
         /// <param name="type"></param> The string type for which this layout is valid.
-        public LayoutModel(ICollection<string> keys, string type)
+        public LayoutModel(IDictionary<string, TemplateModel> fields, string type)
         {
             if (type == null)
             {
                 throw new ArgumentNullException();
             }
 
-            Fields.Add("Type", new ElementModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
-
+            Fields = new Dictionary<string, TemplateModel>(fields);
+            Fields.Add("Type", new TextTemplateModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
             DocumentType = type;
-
-            foreach (var key in keys)
-            {
-                Fields.Add(key, new ElementModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
-            }
         }
 
         /// <summary>
@@ -55,27 +51,14 @@ namespace Dash
         /// <returns></returns>
         static public LayoutModel Food2ForkRecipeModel(DocumentModel doc)
         {
-            var dom = new LayoutModel(doc.Fields.Keys, "recipes");
-            dom.Fields["publisher"].Left = 10;
-            dom.Fields["publisher"].Top = 10;
-            dom.Fields["publisher"].TextWrapping = TextWrapping.Wrap;
-            dom.Fields["publisher"].Visibility = Visibility.Visible;
+            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
+            fields["publisher"] = new TextTemplateModel(10, 10, FontWeights.Normal, TextWrapping.Wrap, Visibility.Visible);
+            fields["source_url"] = new TextTemplateModel(10, 250, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
+            fields["title"] = new TextTemplateModel(30, 115, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible);
+            fields["f2f_url"] = new TextTemplateModel(10, 275, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
 
-            dom.Fields["source_url"].Left = 10;
-            dom.Fields["source_url"].Top = 250;
-            dom.Fields["source_url"].Visibility = Visibility.Visible;
-
-            dom.Fields["title"].Left = 30;
-            dom.Fields["title"].Top = 115;
-            dom.Fields["title"].FontWeight = FontWeights.Bold;
-            dom.Fields["title"].TextWrapping = TextWrapping.Wrap;
-            dom.Fields["title"].Visibility = Visibility.Visible;
-
-            dom.Fields["f2f_url"].Left = 10;
-            dom.Fields["f2f_url"].Top = 275;
-            dom.Fields["f2f_url"].Visibility = Visibility.Visible;
-
-            return dom;
+            Debug.Assert(doc.DocumentType.Equals("recipes"));
+            return new LayoutModel(fields, doc.DocumentType);
         }
 
         /// <summary>
@@ -85,18 +68,14 @@ namespace Dash
         /// <returns></returns>
         static public LayoutModel UmpireModel(DocumentModel doc)
         {
-            var dom = new LayoutModel(doc.Fields.Keys, "Umpires");
-            dom.Fields["name"].Left = 10;
-            dom.Fields["name"].Top = 10;
-            dom.Fields["name"].TextWrapping = TextWrapping.Wrap;
-            dom.Fields["name"].FontWeight = FontWeights.Bold;
-            dom.Fields["name"].Visibility = Visibility.Visible;
+            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
 
-            dom.Fields["experience"].Left = 10;
-            dom.Fields["experience"].Top = 250;
-            dom.Fields["experience"].Visibility = Visibility.Visible;
+            fields["name"] = new TextTemplateModel(10, 10, FontWeights.Bold, TextWrapping.Wrap);
+            fields["experience"] = new TextTemplateModel(10, 250, FontWeights.Normal);
 
-            return dom;
+            Debug.Assert(doc.DocumentType.Equals("Umpires"));
+
+            return new LayoutModel(fields, doc.DocumentType);
         }
     }
 }

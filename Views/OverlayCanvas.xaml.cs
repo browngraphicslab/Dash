@@ -25,7 +25,7 @@ namespace Dash
 
         public TappedEventHandler OnEllipseTapped;
         public TappedEventHandler OnEllipseTapped2;
-
+        
         public OverlayCanvas()
         {
             this.InitializeComponent();
@@ -42,6 +42,8 @@ namespace Dash
         private void Ellipse_Tapped_1(object sender, TappedRoutedEventArgs e)
         {
             OnEllipseTapped2.Invoke(sender, e);
+            Debug.WriteLine("Ellipse tapped");
         }
+
     }
 }

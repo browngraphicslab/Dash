@@ -1,47 +1,50 @@
-﻿using Dash.Models;
-using Dash.Util;
-using Dash.ViewModels;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using Windows.UI.Xaml.Shapes;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class DocumentView : UserControl
     {
         Dictionary<string, TextBlock> textElementViews = new Dictionary<string, TextBlock>();
+
+        private float _documentScale = 1.0f;
+        public const float MinScale = 0.5f;
+        public const float MaxScale = 2.0f;
 
         public DocumentView()
         {
             this.InitializeComponent();
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
+
+            this.RenderTransform = new TranslateTransform {X = 200, Y = 200};
+            this.Width = 200;
+            this.Height = 400;
         }
         
 
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            ReLayout();
+            var dvm = DataContext as DocumentViewModel;
+            if (dvm != null)
+            {
+                xCanvas.Children.Clear();
+                List<UIElement> elements = dvm.GetUIElements();
+                foreach (var element in elements)
+                {
+                    xCanvas.Children.Add(element);
+                }
+            }
         }
 
         private void elementModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -51,65 +54,151 @@ namespace Dash.Views
 
         public void ReLayout()
         {
-            var dvm = DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                var lm = dvm.DocumentViewModelSource.DocumentLayoutModel(dvm.DocumentModel);
-                foreach (var item in dvm.DocumentModel.Fields)
-                {
-                    var elementKey   = item.Key;
-                    var elementModel = lm.Fields[elementKey];
-                    var content      = item.Value;
+            //var dvm = DataContext as DocumentViewModel;
+            //if (dvm != null)
+            //{
+            //    var lm = dvm.DocumentViewModelSource.DocumentLayoutModel(dvm.DocumentModel);
+            //    foreach (var item in dvm.DocumentModel.Fields)
+            //    {
+            //        var elementKey   = item.Key;
+            //        var elementModel = lm.Fields[elementKey];
+            //        var content      = item.Value;
 
-                    if (!textElementViews.ContainsKey(elementKey))
-                    {
-                        xCanvas.Children.Add(new TextBlock());
-                        textElementViews.Add(elementKey, xCanvas.Children.Last() as TextBlock);
-                    }
-                    var tb = textElementViews[elementKey];
-                    tb.FontSize = 16;
-                    tb.Width = 200;
-                    tb.TextWrapping = elementModel.TextWrapping;
-                    tb.FontWeight = elementModel.FontWeight;
-                    tb.Text = content == null ? "" : content.ToString();
-                    tb.Name = "x" + elementKey;
-                    tb.HorizontalAlignment = HorizontalAlignment.Center;
-                    tb.VerticalAlignment = VerticalAlignment.Center;
-                    Canvas.SetLeft(tb, elementModel.Left);
-                    Canvas.SetTop(tb,  elementModel.Top);
-                    tb.Visibility = elementModel.Visibility;
-                    elementModel.PropertyChanged -= elementModel_PropertyChanged;
-                    elementModel.PropertyChanged += elementModel_PropertyChanged;
-                }
-            }
+            //        if (!textElementViews.ContainsKey(elementKey))
+            //        {
+            //            xCanvas.Children.Add(new TextBlock());
+            //            textElementViews.Add(elementKey, xCanvas.Children.Last() as TextBlock);
+            //        }
+            //        var tb = textElementViews[elementKey];
+            //        tb.FontSize = 16;
+            //        tb.Width = 200;
+            //        tb.TextWrapping = elementModel.TextWrapping;
+            //        tb.FontWeight = elementModel.FontWeight;
+            //        tb.Text = content == null ? "" : content.ToString();
+            //        tb.Name = "x" + elementKey;
+            //        tb.HorizontalAlignment = HorizontalAlignment.Center;
+            //        tb.VerticalAlignment = VerticalAlignment.Center;
+            //        Canvas.SetLeft(tb, elementModel.Left);
+            //        Canvas.SetTop(tb,  elementModel.Top);
+            //        tb.Visibility = elementModel.Visibility;
+            //        elementModel.PropertyChanged -= elementModel_PropertyChanged;
+            //        elementModel.PropertyChanged += elementModel_PropertyChanged;
+            //    }
+            //}
         }
 
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            var viewEditor = new ViewEditor();
-            FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
-            viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
+         //   var viewEditor = new ViewEditor();
+         //   FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
+         //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
         }
         
         protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e)
         {
-            if ((Window.Current.Content as Frame).Content is FreeFormView)
-            {
-                var gt = TransformToVisual(Window.Current.Content);
-                // Use that to convert the generated Point into the page's coords
-                Point pagePoint = gt.TransformPoint(e.Position);
+            //if ((Window.Current.Content as Frame).Content is FreeFormView)
+            //{
+            //    var gt = TransformToVisual(Window.Current.Content);
+            //    // Use that to convert the generated Point into the page's coords
+            //    Point pagePoint = gt.TransformPoint(e.Position);
 
-                foreach (var cgv in ((((Window.Current.Content as Frame).Content as FreeFormView).Content as Canvas).Children.Where((c) => c is CollectionGridView).Select((x) => (CollectionGridView)x)))
-                    if (VisualTreeHelper.FindElementsInHostCoordinates(pagePoint, cgv).Count() > 0)
-                    {
-                        var cgvModel = (cgv as CollectionGridView).DataContext as CollectionGridViewModel;
-                        if (!cgvModel.Documents.Contains(DataContext as DocumentViewModel))
-                        {
-                            cgvModel.AddDocument((DataContext as DocumentViewModel).DocumentModel);
-                        }
-                    }
-            }
+            //    foreach (var cgv in ((((Window.Current.Content as Frame).Content as FreeFormView).Content as Canvas).Children.Where((c) => c is CollectionGridView).Select((x) => (CollectionGridView)x)))
+            //        if (VisualTreeHelper.FindElementsInHostCoordinates(pagePoint, cgv).Count() > 0)
+            //        {
+            //            var cgvModel = (cgv as CollectionGridView).DataContext as CollectionGridViewModel;
+            //            if (!cgvModel.Documents.Contains(DataContext as DocumentViewModel))
+            //            {
+            //                cgvModel.AddDocument((DataContext as DocumentViewModel).DocumentModel);
+            //            }
+            //        }
+            //}
             base.OnManipulationCompleted(e);
+        }
+
+        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true;
+           
+            //Create initial composite transform 
+            TransformGroup group = new TransformGroup();
+
+            ScaleTransform scale = new ScaleTransform
+            {
+                CenterX = e.Position.X,
+                CenterY = e.Position.Y,
+                ScaleX = e.Delta.Scale,
+                ScaleY = e.Delta.Scale
+            };
+
+            TranslateTransform translate = new TranslateTransform
+            {
+                X = e.Delta.Translation.X / FreeformView.Instance.CanvasScale,
+                Y = e.Delta.Translation.Y / FreeformView.Instance.CanvasScale
+            }; 
+
+            //Clamp the scale factor 
+            _documentScale *= e.Delta.Scale;
+            if (_documentScale > MaxScale)
+            {
+                _documentScale = MaxScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+            else if (_documentScale < MinScale)
+            {
+                _documentScale = MinScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+
+            group.Children.Add(scale);
+            group.Children.Add(this.RenderTransform);
+            group.Children.Add(translate);
+
+            //Get top left and bottom right points of documents in canvas space
+            Point p1 = group.TransformPoint(new Point(0, 0));
+            Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            Debug.Assert(this.RenderTransform != null);
+            Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
+            Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+
+            //Check if translating or scaling the document puts the view out of bounds of the canvas
+            //Nullify scale or translate components accordingly
+            bool outOfBounds = false;
+            if (p1.X < 0)
+            {
+                outOfBounds = true;
+                translate.X = -oldP1.X;
+                scale.CenterX = 0;
+            } else if (p2.X > FreeformView.Instance.Canvas.ActualWidth)
+            {
+                outOfBounds = true;
+                translate.X = FreeformView.Instance.Canvas.ActualWidth - oldP2.X;
+                scale.CenterX = XGrid.ActualWidth;
+            }
+            if (p1.Y < 0)
+            {
+                outOfBounds = true;
+                translate.Y = -oldP1.Y;
+                scale.CenterY = 0;
+            }
+            else if (p2.Y > FreeformView.Instance.Canvas.ActualHeight)
+            {
+                outOfBounds = true;
+                translate.Y = FreeformView.Instance.Canvas.ActualHeight - oldP2.Y;
+                scale.CenterY = XGrid.ActualHeight;
+            }
+
+            //If the view was out of bounds recalculate the composite matrix
+            if (outOfBounds)
+            {
+                group = new TransformGroup();
+                group.Children.Add(scale);
+                group.Children.Add(this.RenderTransform);
+                group.Children.Add(translate);
+            }
+
+            this.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
     }
 }
