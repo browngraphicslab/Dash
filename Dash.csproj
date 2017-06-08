@@ -115,6 +115,9 @@
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DraggableView.xaml.cs">
+      <DependentUpon>DraggableView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FreeformView.xaml.cs">
       <DependentUpon>FreeformView.xaml</DependentUpon>
     </Compile>
@@ -129,6 +132,9 @@
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\WindowView.xaml.cs">
+      <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="WorkspaceExample.xaml.cs" />
   </ItemGroup>
@@ -160,6 +166,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\DraggableView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FreeformView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -179,6 +189,10 @@
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\WindowView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="WorkspaceExample.xaml">
       <Generator>MSBuild:Compile</Generator>
