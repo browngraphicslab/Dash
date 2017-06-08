@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Dash.Models;
 
 namespace Dash
 {
@@ -75,6 +76,15 @@ namespace Dash
 
             Debug.Assert(doc.DocumentType.Equals("Umpires"));
 
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        static public LayoutModel OneImageModel(DocumentModel doc)
+        {
+            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
+            fields["content"] = new ImageTemplateModel(5, 20, 100, 100);
+
+            Debug.Assert(doc.DocumentType.Equals("oneimage"));
             return new LayoutModel(fields, doc.DocumentType);
         }
     }

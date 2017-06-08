@@ -46,15 +46,19 @@ namespace Dash
         {
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
+            DocumentModel image = DocumentModel.OneImage();
 
             DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model2 = new DocumentViewModel(recipe, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            DocumentViewModel model3 = new DocumentViewModel(image, DocumentLayoutModelSource.DefaultLayoutModelSource);
 
             DocumentView view1 = new DocumentView();
             DocumentView view2 = new DocumentView();
+            DocumentView view3 = new DocumentView();
 
             view1.DataContext = model1;
             view2.DataContext = model2;
+            view3.DataContext = model3;
 
             //view1.Margin = new Thickness(20, 20, 0, 0);
             //view1.Width = 200;
@@ -66,8 +70,9 @@ namespace Dash
 
             //MyGrid.Children.Add(view1);
             //MyGrid.Children.Add(view2);
-            FreeformView.Canvas.Children.Add(view1);
-            FreeformView.Canvas.Children.Add(view2);
+            //FreeformView.Canvas.Children.Add(view1);
+            //FreeformView.Canvas.Children.Add(view2);
+            FreeformView.Canvas.Children.Add(view3);
 
 
         }

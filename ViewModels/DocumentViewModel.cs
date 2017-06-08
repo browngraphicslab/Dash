@@ -34,6 +34,10 @@ namespace Dash
                     setLayoutModel(doc.DocumentType, LayoutModel.Food2ForkRecipeModel(doc));
                 else if (doc.DocumentType == "Umpires")
                     setLayoutModel(doc.DocumentType, LayoutModel.UmpireModel(doc));
+                else if (doc.DocumentType == "oneimage")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.OneImageModel(doc));
+                }
             }
             if (LayoutTemplates.ContainsKey(doc.DocumentType))
                 return LayoutTemplates[doc.DocumentType];

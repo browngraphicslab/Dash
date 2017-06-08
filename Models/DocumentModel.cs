@@ -66,5 +66,12 @@ namespace Dash
             fields["f2f_url"] = new TextFieldModel("thisisaf2furl.com");
             return new DocumentModel(fields, "recipes");
         }
+
+        public static DocumentModel OneImage()
+        {
+            Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();
+            fields["content"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+            return new DocumentModel(fields, "oneimage");
+        }
     }
 }
