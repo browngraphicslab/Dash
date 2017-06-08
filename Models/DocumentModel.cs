@@ -13,14 +13,14 @@ using Windows.UI.Xaml;
 namespace Dash
 {
     /// <summary>
-    /// A mapping of keys to objects.
+    /// A mapping of keys to FieldModels.
     /// </summary>
     public class DocumentModel
     {
         /// <summary>
-        /// A dictionary of keys to objects.
+        /// A dictionary of keys to FieldModels.
         /// </summary>
-        public Dictionary<string, FieldModel> Fields = new Dictionary<string, FieldModel>();
+        public Dictionary<string, FieldModel> Fields;
 
         /// <summary>
         /// The type of this document.
@@ -45,7 +45,6 @@ namespace Dash
 
             Fields = new Dictionary<string, FieldModel>(fields);
             Fields["Type"] = new TextFieldModel(type);
-            //DocumentType = type;
         }
 
 

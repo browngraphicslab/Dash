@@ -10,15 +10,21 @@ using Dash.Models;
 
 namespace Dash
 {
+    /// <summary>
+    /// Field model for holding image data
+    /// </summary>
     class ImageFieldModel : FieldModel
     {
         public BitmapImage Data { get; set; }
-
+        
         public ImageFieldModel(Uri image)
         {
             Data = new BitmapImage(image);
         }
 
+        /// <summary>
+        /// Creates Image using layout information from template and Data 
+        /// </summary>
         public override UIElement MakeView(TemplateModel template)
         {
             ImageTemplateModel imageTemplate = template as ImageTemplateModel;

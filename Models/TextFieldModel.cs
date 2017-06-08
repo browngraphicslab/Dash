@@ -9,12 +9,12 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
+    /// <summary>
+    /// Field model for holding text data
+    /// </summary>
     class TextFieldModel : FieldModel
     {
-        public TextFieldModel()
-        {
-            
-        }
+        public TextFieldModel() { }
 
         public TextFieldModel(string data)
         {
@@ -23,6 +23,9 @@ namespace Dash
 
         public string Data { get; set; }
 
+        /// <summary>
+        /// Creates TextBlock using layout information from template and Data 
+        /// </summary>
         public override UIElement MakeView(TemplateModel template)
         {
             TextTemplateModel textTemplate = template as TextTemplateModel;

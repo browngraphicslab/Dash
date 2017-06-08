@@ -34,7 +34,9 @@ namespace Dash
 
         public Canvas Canvas => XCanvas;
 
-        //Get the parent of XCanvas 
+        /// <summary>
+        /// Get the parent of XCanvas 
+        /// </summary>
         private FrameworkElement _parentElement = null;
         private FrameworkElement ParentElement
         {
@@ -76,9 +78,9 @@ namespace Dash
             Canvas.SetTop(element, top);
         }
 
-        /**
-         * Pans and zooms upon touch manipulation 
-         */
+        /// <summary>
+        /// Pans and zooms upon touch manipulation 
+        /// </summary>
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             ManipulationDelta delta = e.Delta;
@@ -178,9 +180,9 @@ namespace Dash
             CanvasTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
-        /**
-         * Zooms upon mousewheel manipulation 
-         */
+        /// <summary>
+        /// Zooms upon mousewheel interaction 
+        /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             //Get mousepoint in canvas space 
@@ -273,17 +275,17 @@ namespace Dash
             CanvasTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
-        /**
-         * Make translation inertia slow down faster 
-         */
+        /// <summary>
+        /// Make translation inertia slow down faster
+        /// </summary>
         private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
         {
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
 
-        /**
-         * Make sure the canvas is still in bounds after resize
-         */
+        /// <summary>
+        /// Make sure the canvas is still in bounds after resize
+        /// </summary>
         private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             TranslateTransform translate = new TranslateTransform();
