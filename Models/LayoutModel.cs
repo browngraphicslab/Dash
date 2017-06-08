@@ -87,5 +87,16 @@ namespace Dash
             Debug.Assert(doc.DocumentType.Equals("oneimage"));
             return new LayoutModel(fields, doc.DocumentType);
         }
+
+        static public LayoutModel TwoImagesAndTextModel(DocumentModel doc)
+        {
+            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
+            fields["content2"] = new ImageTemplateModel(5, 20, 100, 100);
+            fields["content"] = new ImageTemplateModel(5, 140, 100, 100);
+            fields["text"] = new TextTemplateModel(5, 260, FontWeights.Normal);
+
+            Debug.Assert(doc.DocumentType.Equals("twoimages"));
+            return new LayoutModel(fields, doc.DocumentType);
+        }
     }
 }

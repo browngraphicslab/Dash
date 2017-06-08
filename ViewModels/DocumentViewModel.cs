@@ -38,6 +38,10 @@ namespace Dash
                 {
                     setLayoutModel(doc.DocumentType, LayoutModel.OneImageModel(doc));
                 }
+                else if (doc.DocumentType == "twoimages")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.TwoImagesAndTextModel(doc));
+                }
             }
             if (LayoutTemplates.ContainsKey(doc.DocumentType))
                 return LayoutTemplates[doc.DocumentType];

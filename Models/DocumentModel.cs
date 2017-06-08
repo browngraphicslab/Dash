@@ -73,5 +73,14 @@ namespace Dash
             fields["content"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
             return new DocumentModel(fields, "oneimage");
         }
+
+        public static DocumentModel TwoImagesAndText()
+        {
+            Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();
+            fields["content"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+            fields["content2"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
+            fields["text"] = new TextFieldModel("These are 2 cats");
+            return new DocumentModel(fields, "twoimages");
+        }
     }
 }

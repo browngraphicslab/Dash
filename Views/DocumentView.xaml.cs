@@ -137,18 +137,22 @@ namespace Dash
             }; 
 
             //Clamp the scale factor 
-            _documentScale *= e.Delta.Scale;
-            if (_documentScale > MaxScale)
+            float newScale = _documentScale * e.Delta.Scale;
+            if (newScale > MaxScale)
             {
+                scale.ScaleX = MaxScale / _documentScale;
+                scale.ScaleY = MaxScale / _documentScale;
                 _documentScale = MaxScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
             }
-            else if (_documentScale < MinScale)
+            else if (newScale < MinScale)
             {
+                scale.ScaleX = MinScale / _documentScale;
+                scale.ScaleY = MinScale / _documentScale;
                 _documentScale = MinScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
+            }
+            else
+            {
+                _documentScale = newScale;
             }
 
             group.Children.Add(scale);
