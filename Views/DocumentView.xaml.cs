@@ -108,14 +108,9 @@ namespace Dash
 
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.Handled)
-            {
-                return;
-            }
             e.Handled = true;
-            
            
-
+            //Create initial composite transform 
             TransformGroup group = new TransformGroup();
 
             ScaleTransform scale = new ScaleTransform
@@ -132,6 +127,7 @@ namespace Dash
                 Y = e.Delta.Translation.Y / FreeformView.Instance.CanvasScale
             }; 
 
+            //Clamp the scale factor 
             _documentScale *= e.Delta.Scale;
             if (_documentScale > MaxScale)
             {
@@ -150,11 +146,15 @@ namespace Dash
             group.Children.Add(this.RenderTransform);
             group.Children.Add(translate);
 
+            //Get top left and bottom right points of documents in canvas space
             Point p1 = group.TransformPoint(new Point(0, 0));
             Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
             Debug.Assert(this.RenderTransform != null);
             Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
             Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+
+            //Check if translating or scaling the document puts the view out of bounds of the canvas
+            //Nullify scale or translate components accordingly
             bool outOfBounds = false;
             if (p1.X < 0)
             {
@@ -180,6 +180,7 @@ namespace Dash
                 scale.CenterY = XGrid.ActualHeight;
             }
 
+            //If the view was out of bounds recalculate the composite matrix
             if (outOfBounds)
             {
                 group = new TransformGroup();

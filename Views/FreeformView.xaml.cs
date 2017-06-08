@@ -81,11 +81,6 @@ namespace Dash
          */
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (e.Handled)
-            {
-                return;
-            }
-            e.Handled = true;
             ManipulationDelta delta = e.Delta;
 
             //Create initial translate and scale transforms
