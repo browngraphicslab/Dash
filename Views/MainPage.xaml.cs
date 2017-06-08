@@ -39,10 +39,12 @@ namespace Dash
 
         private void EllipseTapped2(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            WindowView window = new WindowView();
+            OperationWindow window = new OperationWindow(1000, 800);
             FreeformView.Canvas.Children.Add(window);
-            Canvas.SetLeft(window, (MyGrid.ActualWidth - window.Width) /2);
-            Canvas.SetTop(window, (MyGrid.ActualHeight - window.Height) / 2);
+            Point center = new Point(MyGrid.ActualWidth / 2, MyGrid.ActualHeight / 2);
+            center = FreeformView.Canvas.RenderTransform.Inverse.TransformPoint(center);
+            Canvas.SetLeft(window, center.X - (window.Width / 2));
+            Canvas.SetTop(window, center.Y - window.Height / 2);
         }
 
         private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)

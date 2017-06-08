@@ -22,10 +22,5 @@ namespace Dash
         {
             Close();
         }
-
-        private void Rectangle_ManipulationDelta(object sender, Windows.UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
-        {
-            
-        }
     }
 }

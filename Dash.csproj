@@ -127,6 +127,9 @@
     <Compile Include="Views\MyDashboardsPage.xaml.cs">
       <DependentUpon>MyDashboardsPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\OperationWindow.xaml.cs">
+      <DependentUpon>OperationWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
@@ -178,6 +181,10 @@
     <Page Include="Views\MyDashboardsPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OperationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
