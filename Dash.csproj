@@ -111,6 +111,7 @@
     <Compile Include="ViewModels\FreeformViewModel.cs" />
     <Compile Include="ViewModels\ImageViewModel.cs" />
     <Compile Include="ViewModels\LayoutViewModel.cs" />
+    <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>

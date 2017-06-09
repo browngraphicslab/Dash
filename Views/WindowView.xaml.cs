@@ -1,5 +1,8 @@
-﻿using Windows.UI.Xaml;
+﻿using System.Collections.Generic;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Automation;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -8,9 +11,12 @@ namespace Dash
 {
     public sealed partial class WindowView : UserControl
     {
+        public Grid Grid { get; }
+
         public WindowView()
         {
             this.InitializeComponent();
+            Grid = XGrid;
         }
 
         public void Close()
@@ -22,5 +28,6 @@ namespace Dash
         {
             Close();
         }
+
     }
 }

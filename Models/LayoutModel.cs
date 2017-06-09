@@ -79,7 +79,7 @@ namespace Dash
             return new LayoutModel(fields, doc.DocumentType);
         }
 
-        static public LayoutModel OneImageModel(DocumentModel doc)
+        public static LayoutModel OneImageModel(DocumentModel doc)
         {
             Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
             fields["content"] = new ImageTemplateModel(5, 20, 100, 100);
@@ -88,7 +88,7 @@ namespace Dash
             return new LayoutModel(fields, doc.DocumentType);
         }
 
-        static public LayoutModel TwoImagesAndTextModel(DocumentModel doc)
+        public static LayoutModel TwoImagesAndTextModel(DocumentModel doc)
         {
             Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
             fields["content2"] = new ImageTemplateModel(5, 20, 100, 100);
