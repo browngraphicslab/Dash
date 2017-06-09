@@ -7,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Automation;
@@ -62,7 +63,7 @@ namespace Dash
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             }
             //Create columns 
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             //Make Key, Value headers 
@@ -105,8 +106,13 @@ namespace Dash
                     element.VerticalAlignment = VerticalAlignment.Center;
                     element.HorizontalAlignment = HorizontalAlignment.Center;
                 }
+                //Grid g1 = new Grid();
+                element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
                 Grid.SetRow(element, j);
+                //g1.BorderBrush = new SolidColorBrush(Colors.Transparent);
+                //g1.BorderThickness = new Thickness(0, 5, 25, 5);
+                //g1.Children.Add(element);
                 grid.Children.Add(element);
 
                 //Add Key Values (field names) 
@@ -119,16 +125,11 @@ namespace Dash
                 };
                 Grid.SetColumn(tb, 0);
                 Grid.SetRow(tb, j);
+                tb.Padding = new Thickness(12, 5, 12, 5);
                 grid.Children.Add(tb);
 
                 j++;
             }
-        }
-
-        private void WindowTemplate_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            Debug.WriteLine("This Width " + (Grid.Parent as FrameworkElement).ActualWidth);
-            Debug.WriteLine("Grid Width " + Grid.ActualWidth);
         }
     }
 }
