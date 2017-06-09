@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.StaticClasses;
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -116,14 +117,7 @@ namespace Dash
         /// <param name="e"></param>
         private void ResizerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            MatrixTransform r = this.TransformToVisual(Window.Current.Content) as MatrixTransform;
-            //GeneralTransform r = this.TransformToVisual(Window.Current.Content).Inverse;
-            Debug.Assert(r != null);
-            Matrix m = r.Matrix;
-            //Rect rect = new Rect(new Point(0, 0), new Point(1, 1));
-            //Rect newRect = r.TransformBounds(rect);
-            //Point p = new Point(rect.Width * e.Delta.Translation.X, rect.Height * e.Delta.Translation.Y);
-            Point p = new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(e.Delta.Translation);
+            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
             var newWidth = this.ActualWidth + p.X; 
             var newHeight = this.ActualHeight + p.Y; 
 

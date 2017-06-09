@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Dash.StaticClasses;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -140,10 +141,11 @@ namespace Dash
                 ScaleY = e.Delta.Scale
             };
 
+            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
             TranslateTransform translate = new TranslateTransform
             {
-                X = e.Delta.Translation.X / FreeformView.Instance.CanvasScale,
-                Y = e.Delta.Translation.Y / FreeformView.Instance.CanvasScale
+                X = p.X,
+                Y = p.Y
             };
 
             //Clamp the scale factor 
