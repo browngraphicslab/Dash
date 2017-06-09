@@ -36,6 +36,7 @@ namespace Dash
                 _documentViewModel = value;
                 InitializeGrid(XDocumentGridLeft);
                 InitializeGrid(XDocumentGridRight);
+
             }
         }
 
@@ -124,5 +125,10 @@ namespace Dash
             }
         }
 
+        private void WindowTemplate_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Debug.WriteLine("This Width " + (Grid.Parent as FrameworkElement).ActualWidth);
+            Debug.WriteLine("Grid Width " + Grid.ActualWidth);
+        }
     }
 }

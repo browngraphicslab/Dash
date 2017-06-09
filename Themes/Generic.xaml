@@ -7,32 +7,29 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:WindowTemplate">
-                    <Border x:Name="PART_Container"
-                        Background="{TemplateBinding Background}"
-                        BorderBrush="{TemplateBinding BorderBrush}"
-                        BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="White">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="45"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            
-                            <!--window chrome-->
-                            <Rectangle x:Name="PART_Header" Fill="Green"
-                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                            <Rectangle x:Name="PART_CloseButton" Fill="LightGray" Width="45" Height="45"
-                                       VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0" />
-                            
-                            <!--window content-->
-                            <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}"
-                                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="1" />
+                    <Grid x:Name="PART_Container"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="45"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                            <!--resizer-->
-                            <Rectangle x:Name="PART_Resizer" Width="45" Height="45" Fill="DarkGray"
-                                       VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1"/>
-                        </Grid>
-                        
-                    </Border>
+                        <!--window chrome-->
+                        <Rectangle x:Name="PART_Header" Fill="Green"
+                                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                        <Rectangle x:Name="PART_CloseButton" Fill="LightGray" Width="45" Height="45"
+                                   VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0" />
+
+                        <!--window content-->
+                        <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}"
+                                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="1"/>
+
+                        <!--resizer-->
+                        <Rectangle x:Name="PART_Resizer" Width="45" Height="45" Fill="DarkGray"
+                                   VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1"/>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

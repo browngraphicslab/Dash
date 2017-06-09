@@ -31,7 +31,7 @@ namespace Dash
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
+            //this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
             this.Width = 200;
             this.Height = 400;
         }
@@ -141,12 +141,14 @@ namespace Dash
                 ScaleY = e.Delta.Scale
             };
 
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            TranslateTransform translate = new TranslateTransform
-            {
-                X = p.X,
-                Y = p.Y
-            };
+            //Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
+            //TranslateTransform translate = new TranslateTransform
+            //{
+            //    X = p.X,
+            //    Y = p.Y
+            //};
+            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this);
+
 
             //Clamp the scale factor 
             float newScale = _documentScale * e.Delta.Scale;
@@ -229,6 +231,13 @@ namespace Dash
             }
             Point center = RenderTransform.TransformPoint(e.GetPosition(this));
             FreeformViewModel.Instance.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+
+            ////Get top left and bottom right points of documents in canvas space
+            //Point p1 = this.RenderTransform.TransformPoint(new Point(0, 0));
+            //Point p2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            //Debug.Assert(this.RenderTransform != null);
+            //Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
+            //Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
         }
     }
 }

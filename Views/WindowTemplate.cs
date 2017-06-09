@@ -101,20 +101,22 @@ namespace Dash
             // apply header events
             var header = GetTemplateChild(HeaderName) as UIElement;
             Debug.Assert(header != null);
-            header.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            header.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY | ManipulationModes.TranslateInertia;
             header.ManipulationDelta += HeaderOnManipulationDelta;
         }
 
         private void HeaderOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             TransformGroup group = new TransformGroup();
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            TranslateTransform translate = new TranslateTransform
-            {
-                X = p.X,
-                Y = p.Y
-            };
+            
+            //Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
+            //TranslateTransform translate = new TranslateTransform
+            //{
+            //    X = p.X,
+            //    Y = p.Y
+            //};
 
+            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this); 
             group.Children.Add(this.RenderTransform);
             group.Children.Add(translate);
             this.RenderTransform = new MatrixTransform { Matrix = group.Value };

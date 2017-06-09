@@ -37,5 +37,19 @@ namespace Dash.StaticClasses
             Debug.Assert(r != null);
             return r.TransformPoint(p);
         }
+
+        /// <summary>
+        /// Create TranslateTransform to translate "totranslate" by "delta" amount relative to canvas space  
+        /// </summary>
+        /// <returns></returns>
+        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate)
+        {
+            Point p = DeltaTransformFromVisual(delta, toTranslate);
+            return new TranslateTransform
+            {
+                X = p.X,
+                Y = p.Y
+            };
+        }
     }
 }
