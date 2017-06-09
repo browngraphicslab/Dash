@@ -514,14 +514,54 @@
             </summary>
             <param name="documentPath">The physical path to XML document.</param>
         </member>
+        <member name="T:DashServer.Controllers.DocumentTypeController">
+            <summary>
+            Used to add and remove 
+            </summary>
+        </member>
+        <member name="M:DashServer.Controllers.DocumentTypeController.Post(System.String)">
+            <summary>
+            Creates and returns a new Key with a unique id but the same name
+            </summary>
+            <param name="name">The name of the key which will be created</param>
+            <returns>The new key with the given name and a unique id</returns>
+        </member>
+        <member name="M:DashServer.Controllers.DocumentTypeController.Put(DashShared.DocumentType)">
+            <summary>
+            Updates and returns a Key with a new name
+            </summary>
+            <param name="name">The name of the key which will be created</param>
+            <returns>The new key with the given name and a unique id</returns>
+        </member>
+        <member name="M:DashServer.Controllers.DocumentTypeController.Get(System.String)">
+            <summary>
+            Returns a key with the same Id
+            </summary>
+            <param name="id">The id of the key to be searched for</param>
+            <returns>The key with the unique id that was passed in</returns>
+        </member>
+        <member name="M:DashServer.Controllers.DocumentTypeController.Delete(System.String)">
+            <summary>
+            Deletes the key with the passed in id from the database
+            </summary>
+            <param name="id">The id of the key which is to be deleted</param>
+            <returns>The key which was deleted</returns>
+        </member>
         <member name="T:DashServer.Controllers.KeyController">
             <summary>
             Used to add and remove 
             </summary>
         </member>
-        <member name="M:DashServer.Controllers.KeyController.AddByName(System.String)">
+        <member name="M:DashServer.Controllers.KeyController.Post(System.String)">
             <summary>
-            Creates and returns a new key with a unique id but the same name
+            Creates and returns a new Key with a unique id but the same name
+            </summary>
+            <param name="name">The name of the key which will be created</param>
+            <returns>The new key with the given name and a unique id</returns>
+        </member>
+        <member name="M:DashServer.Controllers.KeyController.Put(DashShared.Key)">
+            <summary>
+            Updates and returns a Key with a new name
             </summary>
             <param name="name">The name of the key which will be created</param>
             <returns>The new key with the given name and a unique id</returns>

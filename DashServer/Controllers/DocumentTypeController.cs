@@ -10,12 +10,12 @@ namespace DashServer.Controllers
     /// <summary>
     /// Used to add and remove 
     /// </summary>
-    public class KeyController : ApiController
+    public class DocumentTypeController : ApiController
     {
 
         private IDocumentRepository _documentRepository;
 
-        public KeyController(IDocumentRepository documentRepository)
+        public DocumentTypeController(IDocumentRepository documentRepository)
         {
             _documentRepository = documentRepository;
         }
@@ -25,14 +25,14 @@ namespace DashServer.Controllers
         /// </summary>
         /// <param name="name">The name of the key which will be created</param>
         /// <returns>The new key with the given name and a unique id</returns>
-        public async Task<IHttpActionResult> Post([FromBody]string name)
+        public async Task<IHttpActionResult> Post([FromBody]string type)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var newKey = new Key(name);
+            var newKey = new Key(type);
 
             try
             {
@@ -49,7 +49,7 @@ namespace DashServer.Controllers
         /// </summary>
         /// <param name="name">The name of the key which will be created</param>
         /// <returns>The new key with the given name and a unique id</returns>
-        public async Task<IHttpActionResult> Put([FromBody]Key key)
+        public async Task<IHttpActionResult> Put([FromBody]DocumentType type)
         {
             if (!ModelState.IsValid)
             {
@@ -58,7 +58,7 @@ namespace DashServer.Controllers
 
             try
             {
-                return Ok(await _documentRepository.UpdateItemAsync(key));
+                return Ok(await _documentRepository.UpdateItemAsync(type));
             }
             catch (DocumentClientException e)
             {

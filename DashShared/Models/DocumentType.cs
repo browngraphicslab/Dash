@@ -12,7 +12,7 @@ namespace DashShared
         /// <summary>
         /// The actual name of the type which is displayed but can change
         /// </summary>
-        public string Name { get; set; }
+        public string Type { get; set; }
 
     }
 }
