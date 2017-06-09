@@ -6,14 +6,22 @@ using Microsoft.Azure.Documents;
 
 namespace DashServer
 {
+    /// <summary>
+    /// The base class for our document repository, defines an interface so that we can
+    /// implement our document respository through dependency injection
+    /// </summary>
     public interface IDocumentRepository
     {
 
         Task<IEnumerable<T>> GetItemsAsync<T>(Expression<Func<T, bool>> predicate);
 
-        Task AddItemsAsync<T>(IEnumerable<T> items);
+        Task<IEnumerable<T>> AddItemsAsync<T>(IEnumerable<T> items);
 
-        Task<Document> AddItemAsync<T>(T item);
+        Task<T> AddItemAsync<T>(T item);
+
+        Task<IEnumerable<T>> UpdateItemsAsync<T>(IEnumerable<T> items);
+
+        Task<T> UpdateItemAsync<T>(T item);
 
         Task<Document> DeleteItemAsync(string id);
     }

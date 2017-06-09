@@ -131,14 +131,21 @@ namespace DashServer
         /// </summary>
         /// <param name="items">The list of items to be added to the database</param>
         /// <typeparam name="T">The class type of each item in the list</typeparam>
-        /// <returns>Void</returns>
-        public async Task AddItemsAsync<T>(IEnumerable<T> items)
+        /// <returns>The added items</returns>
+        public async Task<IEnumerable<T>> AddItemsAsync<T>(IEnumerable<T> items)
         {
+            var results = new List<T>();
+
             try
             {
                 // transfer over all the new models
                 foreach (var item in items)
-                    await _client.CreateDocumentAsync(GetCollectionLink, item);
+                {
+                    T result = (dynamic) await _client.CreateDocumentAsync(GetCollectionLink, item);
+                    results.Add(result);
+                }
+
+                return results;
             }
             catch (DocumentClientException e)
             {
@@ -152,12 +159,61 @@ namespace DashServer
         /// </summary>
         /// <typeparam name="T">The class type of the item that is going to be added</typeparam>
         /// <param name="item">The item which will be added to the database</param>
-        /// <returns>Void</returns>
-        public async Task<Document> AddItemAsync<T>(T item)
+        /// <returns>The added item</returns>
+        public async Task<T> AddItemAsync<T>(T item)
         {
             try
             {
-                return await _client.CreateDocumentAsync(GetCollectionLink, item);
+                T result = (dynamic)await _client.CreateDocumentAsync(GetCollectionLink, item);
+                return result;
+            }
+            catch (DocumentClientException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Updates a number of items in the database
+        /// </summary>
+        /// <typeparam name="T">The class type of the items that are going to be updated</typeparam>
+        /// <param name="items">The items that are going to be updated</param>
+        /// <returns>The updated items</returns>
+        public async Task<IEnumerable<T>> UpdateItemsAsync<T>(IEnumerable<T> items)
+        {
+            var results = new List<T>();
+
+            try
+            {
+                // transfer over all the new models
+                foreach (var item in items)
+                {
+                    T result = (dynamic)await _client.ReplaceDocumentAsync(GetCollectionLink, item);
+                    results.Add(result);
+                }
+
+                return results;
+            }
+            catch (DocumentClientException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Updates a single item in the database
+        /// </summary>
+        /// <typeparam name="T">The class type of the item that is going to be updated</typeparam>
+        /// <param name="item">The item that is going to be updated</param>
+        /// <returns>The updated item</returns>
+        public async Task<T> UpdateItemAsync<T>(T item)
+        {
+            try
+            {
+                T result = (dynamic)await _client.ReplaceDocumentAsync(GetCollectionLink, item);
+                return result;
             }
             catch (DocumentClientException e)
             {
@@ -170,11 +226,13 @@ namespace DashServer
         ///     Deletes the item from the database with the passed in id
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
+        /// <returns>The document which was deleted from the database</returns>
         public async Task<Document> DeleteItemAsync(string id)
         {
             return await _client.DeleteDocumentAsync(GetDocumentLink(id));
         }
+
+
     }
 }
 
