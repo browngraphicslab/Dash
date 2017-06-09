@@ -600,7 +600,7 @@
             </summary>
             <param name="items">The list of items to be added to the database</param>
             <typeparam name="T">The class type of each item in the list</typeparam>
-            <returns>Void</returns>
+            <returns>The added items</returns>
         </member>
         <member name="M:DashServer.CosmosDb.AddItemAsync``1(``0)">
             <summary>
@@ -608,14 +608,36 @@
             </summary>
             <typeparam name="T">The class type of the item that is going to be added</typeparam>
             <param name="item">The item which will be added to the database</param>
-            <returns>Void</returns>
+            <returns>The added item</returns>
+        </member>
+        <member name="M:DashServer.CosmosDb.UpdateItemsAsync``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Updates a number of items in the database
+            </summary>
+            <typeparam name="T">The class type of the items that are going to be updated</typeparam>
+            <param name="items">The items that are going to be updated</param>
+            <returns>The updated items</returns>
+        </member>
+        <member name="M:DashServer.CosmosDb.UpdateItemAsync``1(``0)">
+            <summary>
+            Updates a single item in the database
+            </summary>
+            <typeparam name="T">The class type of the item that is going to be updated</typeparam>
+            <param name="item">The item that is going to be updated</param>
+            <returns>The updated item</returns>
         </member>
         <member name="M:DashServer.CosmosDb.DeleteItemAsync(System.String)">
             <summary>
                 Deletes the item from the database with the passed in id
             </summary>
             <param name="id"></param>
-            <returns></returns>
+            <returns>The document which was deleted from the database</returns>
+        </member>
+        <member name="T:DashServer.IDocumentRepository">
+            <summary>
+            The base class for our document repository, defines an interface so that we can
+            implement our document respository through dependency injection
+            </summary>
         </member>
     </members>
 </doc>
