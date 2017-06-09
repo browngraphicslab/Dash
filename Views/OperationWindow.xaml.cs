@@ -21,6 +21,9 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
+    /// <summary>
+    /// Window that allows users to create their own Key,Value pairs 
+    /// </summary>
     public sealed partial class OperationWindow : WindowTemplate
     {
         private DocumentViewModel _documentViewModel; 
@@ -31,7 +34,8 @@ namespace Dash
             set
             {
                 _documentViewModel = value;
-                InitializeLeftGrid();
+                InitializeGrid(XDocumentGridLeft);
+                InitializeGrid(XDocumentGridRight);
             }
         }
 
@@ -42,20 +46,23 @@ namespace Dash
             Height = height;
         }
 
-        public void InitializeLeftGrid()
+        /// <summary>
+        ///  Makes the left grid representing Key,Value pairs of document tapped 
+        /// </summary>
+        public void InitializeGrid(Grid grid)
         {
-            XDocumentGrid.Children.Clear();
+            grid.Children.Clear();
             DocumentModel doc = DocumentViewModel.DocumentModel;
             LayoutModel layout = DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(doc);
 
             //Create rows
             for (int i = 0; i < doc.Fields.Count + 1; ++i)
             {
-                XDocumentGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             }
             //Create columns 
-            XDocumentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100, GridUnitType.Pixel) });
-            XDocumentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(100, GridUnitType.Pixel) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             //Make Key, Value headers 
             TextBlock v = new TextBlock
@@ -67,7 +74,7 @@ namespace Dash
             };
             Grid.SetColumn(v, 1);
             Grid.SetRow(v, 0);
-            XDocumentGrid.Children.Add(v);
+            grid.Children.Add(v);
 
             TextBlock k = new TextBlock
             {
@@ -78,7 +85,7 @@ namespace Dash
             };
             Grid.SetColumn(k, 0);
             Grid.SetRow(k, 0);
-            XDocumentGrid.Children.Add(k);
+            grid.Children.Add(k);
 
             //Fill in Grid 
             int j = 1;
@@ -99,7 +106,7 @@ namespace Dash
                 }
                 Grid.SetColumn(element, 1);
                 Grid.SetRow(element, j);
-                XDocumentGrid.Children.Add(element);
+                grid.Children.Add(element);
 
                 //Add Key Values (field names) 
                 TextBlock tb = new TextBlock
@@ -111,7 +118,7 @@ namespace Dash
                 };
                 Grid.SetColumn(tb, 0);
                 Grid.SetRow(tb, j);
-                XDocumentGrid.Children.Add(tb);
+                grid.Children.Add(tb);
 
                 j++;
             }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Dynamic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.Store;
@@ -97,26 +98,67 @@ namespace Dash
             Debug.Assert(closeButton != null);
             closeButton.Tapped += CloseButton_Tapped;
 
+            // apply header events
+            var header = GetTemplateChild(HeaderName) as UIElement;
+            Debug.Assert(header != null);
+            header.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            header.ManipulationDelta += HeaderOnManipulationDelta;
+        }
+
+        private void HeaderOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            TransformGroup group = new TransformGroup();
+            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
+            TranslateTransform translate = new TranslateTransform
+            {
+                X = p.X,
+                Y = p.Y
+            };
+
+            group.Children.Add(this.RenderTransform);
+            group.Children.Add(translate);
+            this.RenderTransform = new MatrixTransform { Matrix = group.Value };
+
+            e.Handled = true; 
         }
 
         /// <summary>
-        /// Called whenever the close button is tapped
+        /// Called whenever the close button is tapped; closes window 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            //TODO fix this!
-            VisualTreeHelper.DisconnectChildrenRecursive(this);
+            var panel = this.Parent as Panel;
+            if (panel != null)
+            {
+                panel.Children.Remove(this);
+                return;
+            }
+
+            var contentPresenter = this.Parent as ContentPresenter;
+            if (contentPresenter != null)
+            {
+                if (contentPresenter.Content == this)
+                    contentPresenter.Content = null;
+                return;
+            }
+
+            var contentControl = this.Parent as ContentControl;
+            if (contentControl != null)
+            {
+                if (contentControl.Content == this)
+                    contentControl.Content = null;
+                return;
+            }
+            var itemsControl = this.Parent as ItemsControl;
+            itemsControl?.Items?.Remove(this);
         }
 
         /// <summary>
         /// Called whenever the resizer is manipulated
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void ResizerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            // Transform e.Delta.Translation to relative size of FreeformView; scaling takes into account zoom factor  
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
             var newWidth = this.ActualWidth + p.X; 
             var newHeight = this.ActualHeight + p.Y; 

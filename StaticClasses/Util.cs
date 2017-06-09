@@ -12,6 +12,12 @@ namespace Dash.StaticClasses
 {
     public static class Util
     {
+        /// <summary>
+        /// Transforms point p to relative point in Window.Current.Content 
+        /// </summary>
+        /// <param name="p"></param>
+        /// <param name="to"></param>
+        /// <returns></returns>
         public static Point DeltaTransformFromVisual(Point p, UIElement to)
         {
             //GeneralTransform r = this.TransformToVisual(Window.Current.Content).Inverse;
