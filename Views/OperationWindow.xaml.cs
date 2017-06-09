@@ -21,10 +21,10 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class OperationWindow : UserControl
+    public sealed partial class OperationWindow : WindowTemplate
     {
-        private DocumentViewModel _documentViewModel;
-
+        private DocumentViewModel _documentViewModel; 
+        
         public DocumentViewModel DocumentViewModel
         {
             get { return _documentViewModel; }
@@ -81,8 +81,8 @@ namespace Dash
             XDocumentGrid.Children.Add(k);
 
             //Fill in Grid 
-            int j = 1; 
-            foreach(KeyValuePair<string, FieldModel> pair in doc.Fields)
+            int j = 1;
+            foreach (KeyValuePair<string, FieldModel> pair in doc.Fields)
             {
                 //Add Value as FrameworkElement (field values)  
                 TemplateModel template = null;
@@ -113,9 +113,9 @@ namespace Dash
                 Grid.SetRow(tb, j);
                 XDocumentGrid.Children.Add(tb);
 
-                j++; 
+                j++;
             }
         }
-        
+
     }
 }

@@ -3,14 +3,35 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash">
 
-    <Style TargetType="local2:WindowTemplate" xmlns:local2="using:Dash.Views">
+    <Style TargetType="local:WindowTemplate">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="local2:WindowTemplate">
-                    <Border
+                <ControlTemplate TargetType="local:WindowTemplate">
+                    <Border x:Name="PART_Container"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="White">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="45"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            
+                            <!--window chrome-->
+                            <Rectangle x:Name="PART_Header" Fill="Green"
+                                       VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
+                            <Rectangle x:Name="PART_CloseButton" Fill="LightGray" Width="45" Height="45"
+                                       VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0" />
+                            
+                            <!--window content-->
+                            <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}"
+                                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="1" />
+
+                            <!--resizer-->
+                            <Rectangle x:Name="PART_Resizer" Width="45" Height="45" Fill="DarkGray"
+                                       VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1"/>
+                        </Grid>
+                        
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
