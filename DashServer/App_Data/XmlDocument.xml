@@ -540,29 +540,6 @@
             <param name="id">The id of the key which is to be deleted</param>
             <returns>The key which was deleted</returns>
         </member>
-        <member name="T:DashServer.Controllers.ProductsController">
-            <summary>
-                Description
-            </summary>
-        </member>
-        <member name="M:DashServer.Controllers.ProductsController.Get">
-            <summary>
-                An example method description
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:DashServer.Controllers.ProductsController.Get(System.Int32)">
-            <summary>
-                An example method description
-            </summary>
-            <param name="id">An example parameter description</param>
-            <returns>An example return value description</returns>
-        </member>
-        <member name="M:DashServer.Controllers.ProductsController.Post(DashServer.Product)">
-            <summary>
-            </summary>
-            <param name="value"></param>
-        </member>
         <member name="T:DashServer.CosmosDb">
             <summary>
                 Serves as the connector for the cosmosDb database

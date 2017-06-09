@@ -1,7 +1,4 @@
-﻿using DashServer.Models;
-using Microsoft.AspNet.Identity.EntityFramework;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
 using Owin;
 
 [assembly: OwinStartup(typeof(DashServer.Startup))]

@@ -405,8 +405,6 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KeyController.cs" />
-    <Compile Include="Controllers\ProductsController.cs" />
-    <Compile Include="Controllers\ValuesController.cs" />
     <Compile Include="Database\CosmosDb.cs" />
     <Compile Include="Database\IDocumentRepository.cs" />
     <Compile Include="Global.asax.cs">
@@ -487,9 +485,9 @@
     <Content Include="Scripts\jquery-1.10.2.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="DashIntermediate\DashIntermediate.csproj">
-      <Project>{16239998-D951-4B9C-BEFE-7E72F7513356}</Project>
-      <Name>DashIntermediate</Name>
+    <ProjectReference Include="..\DashShared\DashShared.csproj">
+      <Project>{77D49C46-DF69-46A2-B39D-E7F930DB422C}</Project>
+      <Name>DashShared</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
