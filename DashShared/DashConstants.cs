@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace DashShared
 {
-    public class DashConstants
+    public static class DashConstants
     {   
         
         /// <summary>
@@ -17,24 +17,35 @@ namespace DashShared
         /// <summary>
         /// The endpoint for the local cosmosDb emulator. If you do not have a document DB emulator you must install it from microsoft
         /// </summary>
-        public static readonly string LocalEndpointUrl = "https://localhost:8081";
+        private const string DbLocalEndpointUrl = "https://localhost:8081";
 
         /// <summary>
         /// The endpoint for the server cosmosDb database found on azure portal
         /// </summary>
-        public static readonly string ServerEndpointUrl = "CREATE THIS";
+        private const string DbProductionEndpointUrl = "CREATE THIS";
+
+        /// <summary>
+        /// The endpoitn for the database used at runtime
+        /// </summary>
+        public const string DbEndpointUrl = DEVELOP_LOCALLY ? DbLocalEndpointUrl : DbProductionEndpointUrl;
 
         /// <summary>
         /// The access key for the local cosmosDb emulator. This is default and is always the same
         /// </summary>
-        public static readonly string LocalPrimaryKey =
+        private const string DbLocalPrimaryKey =
             "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
         /// <summary>
         /// The access key for the server cosmosDb database, this is secret and is found on the azure portal
         /// </summary>
-        public static readonly string ServerPrimaryKey =
+        private const string DbProductionPrimaryKey =
             "CREATE THIS";
+
+        /// <summary>
+        /// The access key used to connect to the database used at runtime
+        /// </summary>
+        public const string DbPrimaryKey = DEVELOP_LOCALLY ? DbLocalPrimaryKey : DbProductionPrimaryKey;
+
 
         /// <summary>
         /// The name of our cosmosDb database
@@ -53,12 +64,17 @@ namespace DashShared
         /// <summary>
         /// The base url for the local version of the server, should end with a /
         /// </summary>
-        public const string LocalServerBaseUrl = "http://localhost:2693/";
+        private const string ServerLocalBaseUrl = "http://localhost:2693/";
 
         /// <summary>
         /// The base url for the production version of the server, should end with a /
         /// </summary>
-        public const string ProductionServerBaseUrl = "TODOMAKETHIS";
+        private const string ServerProductionBaseUrl = "TODOMAKETHIS";
+
+        /// <summary>
+        /// The base url used to connect to the server at runtime
+        /// </summary>
+        public const string ServerBaseUrl = DEVELOP_LOCALLY ? ServerLocalBaseUrl : ServerProductionBaseUrl;
 
 
         #endregion

@@ -23,19 +23,14 @@ namespace DashServer
         ///     endpoints found on azure portal under cosmosDb -> keys
         ///     endpointURL is the URI field,
         /// </summary>
-        private readonly string EndpointUrl = DashConstants.DEVELOP_LOCALLY
-            ? DashConstants.LocalEndpointUrl
-            : DashConstants.ServerEndpointUrl;
+        private const string EndpointUrl = DashConstants.DbEndpointUrl;
 
         /// <summary>
         ///     The key authorizing the cosmosDb to trust us
         ///     primarykey found on azure portal under cosmosDb -> keys
         ///     primarykey is the primary key field
         /// </summary>
-        private readonly string PrimaryKey = DashConstants.DEVELOP_LOCALLY
-            ? DashConstants.LocalPrimaryKey
-            : // this local key is always the same
-            DashConstants.ServerPrimaryKey; // this secret key can be refreshed on the azure portal and might change
+        private readonly string PrimaryKey = DashConstants.DbPrimaryKey;
 
         /// <summary>
         ///     Clientside representation of cosmosDb service used to communicate with the database

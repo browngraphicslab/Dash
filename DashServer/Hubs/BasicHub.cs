@@ -5,41 +5,12 @@ using System.Threading.Tasks;
 using System.Web;
 using DashShared;
 using Microsoft.AspNet.SignalR;
+using DashShared;
 
 namespace DashServer.Hubs
 {
-    public class BasicHub : Hub<IClientInterface>
+    public class BasicHub : Hub<IClientContractBasicHub>, IServerContractBasicHub
     {
-        public async Task Send(string message)
-        {
-            // await the client calls or they are sent possibly simultaneously
-            // awaiting just means the message has been completely sent, has not
-            // knowledge of process on client side
-
-            // send message to all clients
-            await Clients.All.NewMessage(message);
-
-            // send message to the calling client
-            await Clients.Caller.NewMessage(message);
-
-            // send message to clients except the caller
-            await Clients.Others.NewMessage(message);
-        }
-
-        /// <summary>
-        /// Shows how you can report progress on a task
-        /// </summary>
-        /// <param name="progress"></param>
-        /// <returns></returns>
-        public async Task<string> DoLongRunningThing(IProgress<int> progress)
-        {
-            for (int i = 0; i <= 100; i += 5)
-            {
-                await Task.Delay(200);
-                progress.Report(i);
-            }
-            return "Job complete!";
-        }
 
         public override Task OnConnected()
         {
@@ -67,6 +38,35 @@ namespace DashServer.Hubs
             // For example: in a chat application, mark the user as offline, 
             // delete the association between the current connection id and user name.
             return base.OnDisconnected(stopCalled);
+        }
+
+        public void DoSomething()
+        {
+            // await the client calls or they are sent possibly simultaneously
+            // awaiting just means the message has been completely sent, has not
+            // knowledge of process on client side
+
+            // send message to all clients
+            Clients.All.SomeInformationWithParam(5);
+
+            // send message to the calling client
+            Clients.Caller.SomeInformation();
+
+            // send message to clients except the caller
+            Clients.Others.SomeInformation();
+        }
+
+        public void DoSomethingWithParam(int id)
+        {
+        }
+
+        public async Task DoSomethingAsync()
+        {
+        }
+
+        public int DoSomethingWithParamAndResult(int id)
+        {
+            return id + 1;
         }
     }
 
