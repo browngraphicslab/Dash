@@ -106,7 +106,14 @@
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\TextTemplateModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerClient\SignalrClient.cs" />
+    <Compile Include="ServerClient\Controllers\AccountController.cs" />
+    <Compile Include="ServerClient\Controllers\AuthorizationController.cs" />
+    <Compile Include="ServerClient\Models\AccountBindingModels.cs" />
+    <Compile Include="ServerClient\Models\AccountViewModels.cs" />
+    <Compile Include="ServerClient\Exceptions\ApiException.cs" />
+    <Compile Include="ServerClient\Models\AuthorizationTokenModel.cs" />
+    <Compile Include="ServerClient\Controllers\ServerController.cs" />
+    <Compile Include="ServerClient\Controllers\SignalrClient.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
