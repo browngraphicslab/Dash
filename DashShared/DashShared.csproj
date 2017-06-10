@@ -35,6 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ClientHubInterfaces\IClientInterface.cs" />
     <Compile Include="DashConstants.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\Entity.cs" />

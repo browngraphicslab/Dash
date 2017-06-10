@@ -679,5 +679,12 @@
             implement our document respository through dependency injection
             </summary>
         </member>
+        <member name="M:DashServer.Hubs.BasicHub.DoLongRunningThing(System.IProgress{System.Int32})">
+            <summary>
+            Shows how you can report progress on a task
+            </summary>
+            <param name="progress"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

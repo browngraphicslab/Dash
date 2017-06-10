@@ -63,6 +63,7 @@ namespace DashShared
 
         #endregion
 
+        public const string SignalrBaseUrl = "signalr";
 
     }
 }
