@@ -4,6 +4,12 @@
         <name>DashServer</name>
     </assembly>
     <members>
+        <member name="M:DashServer.FilterConfig.RegisterGlobalFilters(System.Web.Mvc.GlobalFilterCollection)">
+            <summary>
+            Used to add global filters which will be checked before any action
+            </summary>
+            <param name="filters"></param>
+        </member>
         <member name="T:DashServer.App_Start.NinjectWebCommon">
             <summary>
             This is used to provide dependency injection for the controllers using the pattern specified here, 

@@ -64,7 +64,7 @@ namespace DashShared
         /// <summary>
         /// The base url for the local version of the server, should end with a /
         /// </summary>
-        private const string ServerLocalBaseUrl = "http://localhost:2693/";
+        private const string ServerLocalBaseUrl = "https://localhost:44371/"; // "http://localhost:2693/";
 
         /// <summary>
         /// The base url for the production version of the server, should end with a /
