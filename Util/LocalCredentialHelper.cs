@@ -9,7 +9,7 @@ using DashShared;
 namespace Dash
 {
     /// <summary>
-    /// Helper class used to access locally stored credentials
+    /// Helper class used to access locally stored credentials. Based on https://docs.microsoft.com/en-us/windows/uwp/security/credential-locker
     /// </summary>
     public static class LocalCredentialHelper
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dash
+namespace DashShared
 {
     /// <summary>
     /// The result class is a wrapper for communicating with the server

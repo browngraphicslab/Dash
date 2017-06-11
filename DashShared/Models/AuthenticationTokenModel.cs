@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dash
+namespace DashShared
 {
     /// <summary>
     /// The authorization token returned from the server used to make requests

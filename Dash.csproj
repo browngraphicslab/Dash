@@ -108,10 +108,8 @@
     <Compile Include="ServerClient\Controllers\AccountController.cs" />
     <Compile Include="ServerClient\Controllers\AuthenticationController.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
-    <Compile Include="ServerClient\Models\AuthenticationTokenModel.cs" />
     <Compile Include="ServerClient\Controllers\ServerController.cs" />
     <Compile Include="ServerClient\Controllers\SignalrClient.cs" />
-    <Compile Include="ServerClient\Models\Result.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
@@ -215,7 +213,9 @@
       <Name>DashShared</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="ServerClient\Models\" />
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
