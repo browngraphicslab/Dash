@@ -9,7 +9,7 @@ namespace Dash
     /// <summary>
     /// The authorization token returned from the server used to make requests
     /// </summary>
-    public class AuthorizationTokenModel
+    public class AuthenticationTokenModel
     {
         /// <summary>
         /// The actual access token is the secret key which grants us access to the server

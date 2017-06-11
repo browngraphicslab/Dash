@@ -6,15 +6,22 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    public static class AccountController
+    public class AccountController
     {
+
+        private readonly ServerController _connection;
+
+        public AccountController(ServerController connection)
+        {
+            _connection = connection;
+        }
 
         /// <summary>
         /// Registers a new user with the passed in email and password
         /// </summary>
         /// <param name="email"></param>
         /// <param name="pass"></param>
-        public static void Register(string email, string pass)
+        public void Register(string email, string pass)
         {
             var user = new RegisterModel()
             {
@@ -23,13 +30,13 @@ namespace Dash
                 ConfirmPassword = pass
             };
 
-            var result = ServerController.Post("api/Account/Register", user);
+            var result = _connection.Post("api/Account/Register", user);
 
         }
 
-        public static async Task<UserInfoModel> GetUserInfo()
+        public async Task<UserInfoModel> GetUserInfo()
         {
-            return await ServerController.GetItem<UserInfoModel>("api/Account/UserInfo");
+            return await _connection.GetItem<UserInfoModel>("api/Account/UserInfo");
         }
     }
 

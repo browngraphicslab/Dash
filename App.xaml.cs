@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -22,6 +23,15 @@ namespace Dash
     /// </summary>
     sealed partial class App : Application
     {
+        /// <summary>
+        /// The container which we can use to get services which are registered in the <code>RegisterServices()</code> method
+        /// You can use this container and access it anywhere using
+        /// <para>
+        /// <code>(Application.Current as App).Container.GetService&lt;DesiredService&gt;();</code>
+        /// </para>
+        /// </summary>
+        public IServiceProvider Container;
+
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
@@ -45,6 +55,10 @@ namespace Dash
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
+
+            // register dependency injection container
+            Container = RegisterServices();
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -77,6 +91,20 @@ namespace Dash
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+        }
+
+        /// <summary>
+        /// Registers the services for dependency injection
+        /// </summary>
+        /// <returns></returns>
+        private IServiceProvider RegisterServices()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<ServerController, ServerController>();
+            serviceCollection.AddTransient<AccountController, AccountController>();
+            serviceCollection.AddTransient<AuthenticationController, AuthenticationController>();
+
+            return serviceCollection.BuildServiceProvider();
         }
 
         /// <summary>
