@@ -15,6 +15,7 @@ using Microsoft.Owin.Security.OAuth;
 using DashServer.Models;
 using DashServer.Providers;
 using DashServer.Results;
+using DashShared;
 
 namespace DashServer.Controllers
 {

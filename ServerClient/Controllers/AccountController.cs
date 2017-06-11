@@ -3,13 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash
 {
     public class AccountController
     {
-
+        /// <summary>
+        /// The connection to the server, provided by dependency injection
+        /// </summary>
         private readonly ServerController _connection;
+
+        /// <summary>
+        /// The connection to the authorization service, provided by dependency injection
+        /// </summary>
         private readonly AuthenticationController _authenticationController;
 
         public AccountController(ServerController connection, AuthenticationController authenticationController)
@@ -27,71 +34,39 @@ namespace Dash
         /// <exception cref="ApiException">Throws an ApiExcpetion</exception>
         public void Register(string username, string pass, string confirmPass)
         {
-            var user = new RegisterModel()
+            // create the user
+            var user = new RegisterBindingModel
             {
                 Email = username,
                 Password = pass,
                 ConfirmPassword = confirmPass
             };
 
+            // post it to the endpoint for registration, this endpoint will throw error or return Succesful
             _connection.Post("api/Account/Register", user);
         }
 
+        /// <summary>
+        /// Tries to register the user which will cause the user to be logged in if the registration is succesful
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="pass"></param>
+        /// <param name="confirmPass"></param>
+        /// <returns></returns>
         public async Task<Result> TryRegister(string user, string pass, string confirmPass)
         {
             try
             {
+                // try to register
                 Register(user, pass, confirmPass);
+                // if we registered without error then we try to login with the same credentials
                 return await _authenticationController.TryLogin(user, pass);
             }
             catch (ApiException e)
             {
+                // return the error message
                 return new Result(false, string.Join("\n", e.Errors));
             }
         }
-
-        public async Task<UserInfoModel> GetUserInfo()
-        {
-            return await _connection.GetItem<UserInfoModel>("api/Account/UserInfo");
-        }
-    }
-
-    /// <summary>
-    /// The model used to register a new user to the system
-    /// </summary>
-    public class RegisterModel
-    {
-        /// <summary>
-        /// the email of the new user
-        /// </summary>
-        public string Email;
-
-        /// <summary>
-        /// The password of the new user
-        /// </summary>
-        public string Password;
-
-        /// <summary>
-        /// The confirmed password of the new user
-        /// </summary>
-        public string ConfirmPassword;
-    }
-
-    public class UserInfoModel
-    {
-        /// <summary>
-        /// the email of the new user
-        /// </summary>
-        public string Email;
-
-        /// <summary>
-        /// Whether or not the user has registered
-        /// </summary>
-        public bool HasRegistered;
-
-        /// <summary>
-        /// The provider of the login for the user
-        /// </summary>
-        public string LoginProvider;
     }
 }

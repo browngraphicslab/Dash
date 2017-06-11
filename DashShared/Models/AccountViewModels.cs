@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Dash
+namespace DashShared
 {
     // Models returned by AccountController actions.
 

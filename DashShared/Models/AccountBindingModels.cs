@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using DashShared;
 
-namespace DashServer.Models
+namespace DashShared
 {
     // Models used as parameters to AccountController actions.
 

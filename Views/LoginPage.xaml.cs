@@ -40,7 +40,10 @@ namespace Dash
 
         private async void LoginButtonTapped(object sender, TappedRoutedEventArgs e)
         {
-            var result = await _vm.TryLogin(xLoginUserBox.Text, XLoginPasswordBox.Password);
+            // determine whether we want to remember the login
+            var rememberLogin = xRememberMeCheckbox.IsChecked ?? false;
+
+            var result = await _vm.TryLogin(xLoginUserBox.Text, XLoginPasswordBox.Password, rememberLogin);
 
             if (result.IsSuccess)
             {
@@ -56,7 +59,10 @@ namespace Dash
 
         private async void RegisterButtonTapped(object sender, TappedRoutedEventArgs e)
         {
-            var result = await _vm.TryRegister(xLoginUserBox.Text, XLoginPasswordBox.Password, xRegisterConfirmPasswordBox.Password);
+            // determine whether we want to remember the login
+            var rememberLogin = xRememberMeCheckbox.IsChecked ?? false;
+
+            var result = await _vm.TryRegister(xLoginUserBox.Text, XLoginPasswordBox.Password, xRegisterConfirmPasswordBox.Password, rememberLogin);
 
             if (result.IsSuccess)
             {

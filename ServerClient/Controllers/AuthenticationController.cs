@@ -53,6 +53,13 @@ namespace Dash
             return await result.Content.ReadAsAsync<AuthenticationTokenModel>();
         }
 
+        /// <summary>
+        /// Try to login to the server, if successful returns a succesful result, otherwise
+        /// returns failure with an error message
+        /// </summary>
+        /// <param name="username"></param>
+        /// <param name="pass"></param>
+        /// <returns></returns>
         public async Task<Result> TryLogin(string username, string pass)
         {
             try

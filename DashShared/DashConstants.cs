@@ -76,14 +76,44 @@ namespace DashShared
         /// </summary>
         public const string ServerBaseUrl = DEVELOP_LOCALLY ? ServerLocalBaseUrl : ServerProductionBaseUrl;
 
+        /// <summary>
+        /// The endpoint on the server where tokens can be retrieved
+        /// <para>
+        /// To get the full path use <code>DashConstants.ServerBaseUrl + DashConstants.TokenEndpoint</code>
+        /// </para>
+        /// </summary>
         public const string TokenEndpoint = "Token";
 
+        /// <summary>
+        /// The minimum required length of a password for our users
+        /// </summary>
         public const int PasswordMinimumLength = 1;
-        
+
 
         #endregion
 
+        #region Signalr
+
+        /// <summary>
+        /// The endpoint on the server where signalr code is accessed
+        /// <para>
+        /// To get the full path use <code>DashConstants.ServerBaseUrl + DashConstants.SignalrBaseUrl</code>
+        /// </para>
+        /// </summary>
         public const string SignalrBaseUrl = "signalr";
+
+        #endregion
+
+        #region LocalCredentials
+
+        /// <summary>
+        /// The resource name used to store credentials in the local credential store
+        /// </summary>
+        public const string ResourceName = "DashApp";
+
+        #endregion
+
+
 
     }
 }

@@ -25,18 +25,33 @@ namespace Dash
             _accountController = accountController;
         }
 
-        public async Task<Result> TryLogin(string user, string password)
+        /// <summary>
+        /// Try to log the user in
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="password"></param>
+        /// <param name="rememberLogin"></param>
+        /// <returns></returns>
+        public async Task<Result> TryLogin(string user, string password, bool rememberLogin)
         {
+            //TODO hookup the rememberLogin to the LocalCredentialHelper
             var result = await _authenticationController.TryLogin(user, password);
-
 
             return result;
         }
 
-        public async Task<Result> TryRegister(string user, string password, string confirmPassword)
+        /// <summary>
+        /// Try to register the user, which will in turn cause the user to be logged in
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="password"></param>
+        /// <param name="confirmPassword"></param>
+        /// <param name="rememberLogin"></param>
+        /// <returns></returns>
+        public async Task<Result> TryRegister(string user, string password, string confirmPassword, bool rememberLogin)
         {
+            //TODO hookup the rememberLogin to the LocalCredentialHelper
             var result = await _accountController.TryRegister(user, password, confirmPassword);
-
 
             return result;
         }

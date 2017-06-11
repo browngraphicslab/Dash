@@ -38,6 +38,8 @@
     <Compile Include="ClientHubInterfaces\IClientContractBasicHub.cs" />
     <Compile Include="ClientHubInterfaces\IServerContractBasicHub.cs" />
     <Compile Include="DashConstants.cs" />
+    <Compile Include="Models\AccountBindingModels.cs" />
+    <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\Entity.cs" />
     <Compile Include="Models\Key.cs" />
