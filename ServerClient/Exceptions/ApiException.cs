@@ -19,6 +19,20 @@ namespace Dash
         private readonly HttpResponseMessage _response;
 
         /// <summary>
+        /// The StatusCode of the response
+        /// </summary>
+        private HttpStatusCode StatusCode => _response.StatusCode;
+
+        private HttpMethod Method => _response.RequestMessage.Method;
+
+        private Uri RequestUri => _response.RequestMessage.RequestUri;
+
+        /// <summary>
+        /// The List of Errors, essentially wraps a dictionary provided by the Exception class
+        /// </summary>
+        public List<string> Errors => Data.Values.Cast<string>().ToList();
+
+        /// <summary>
         /// Constructor to create a new instance of this wrapper class
         /// </summary>
         /// <param name="response"></param>
@@ -61,20 +75,6 @@ namespace Dash
                 }
             }
         }
-
-        /// <summary>
-        /// The StatusCode of the response
-        /// </summary>
-        private HttpStatusCode StatusCode => _response.StatusCode;
-
-        private HttpMethod Method => _response.RequestMessage.Method;
-
-        private Uri RequestUri => _response.RequestMessage.RequestUri;
-
-        /// <summary>
-        /// The List of Errors, essentially wraps a dictionary provided by the Exception class
-        /// </summary>
-        private IEnumerable<string> Errors => Data.Values.Cast<string>().ToList();
 
         public string ApiExceptionMessage()
         {

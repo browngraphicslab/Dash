@@ -22,7 +22,7 @@ namespace Dash
         /// The connection to the server, we'll try to reuse this but may run into issues where defaults need to change,
         /// some people recommend having one connection per request type i.e. accounts | documents | admin | etc.
         /// </summary>
-        public readonly HttpClient Connection;
+        private readonly HttpClient Connection;
 
         /// <summary>
         /// Initialize the connection to the server
@@ -48,24 +48,26 @@ namespace Dash
         /// </summary>
         /// <param name="path">The path the post request is performed on, this path is appended to the base url</param>
         /// <param name="bodyObject">The object which is serialized in json as the body of the post request</param>
-        /// <returns>An HttpResponseMessage upon success or throws an HttpRequestException upon error</returns>
-        public HttpResponseMessage Post(string path, object bodyObject)
+        /// <param name="PostAsJson">Most post requests will default to json, but tokens do not so we have this option</param>
+        /// <returns>An HttpResponseMessage upon success</returns>
+        /// <exception cref="ApiException">Throws an api excpetion if the request was not successful</exception>
+        public HttpResponseMessage Post(string path, object bodyObject, bool PostAsJson=true)
         {
             try
             {
                 // make the post request and get the result
-                var response = Connection.PostAsJsonAsync(DashConstants.ServerBaseUrl + path, bodyObject).Result;
+                var response = PostAsJson ? Connection.PostAsJsonAsync(DashConstants.ServerBaseUrl + path, bodyObject).Result :
+                                            Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent).Result;
 
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {
+                    //TODO we should extract this logging from this class
+                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
                     // create api exception wrapper which lets us print a useful message to debug output
                     var ex = new ApiException(response);
                     Debug.WriteLine(ex.ApiExceptionMessage());
-
-                    // then throw the HttpRequestException
-                    response.EnsureSuccessStatusCode();
-                    //TODO we should think about how post requests should work, maybe we want post requests to happen in individual controllers
+                    throw ex;
                 }
 
                 // otherwise return the result

@@ -24,13 +24,9 @@ namespace Dash
     sealed partial class App : Application
     {
         /// <summary>
-        /// The container which we can use to get services which are registered in the <code>RegisterServices()</code> method
-        /// You can use this container and access it anywhere using
-        /// <para>
-        /// <code>(Application.Current as App).Container.GetService&lt;DesiredService&gt;();</code>
-        /// </para>
+        /// The instance of the app this can be used to access the services for dependency injection
         /// </summary>
-        public IServiceProvider Container;
+        public static App Instance;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -38,6 +34,7 @@ namespace Dash
         /// </summary>
         public App()
         {
+            Instance = this;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
@@ -86,25 +83,12 @@ namespace Dash
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
-                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                    //TODO Navigate to a prelogged in page if we can!
+                    rootFrame.Navigate(typeof(LoginPage), e.Arguments);
                 }
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
-        }
-
-        /// <summary>
-        /// Registers the services for dependency injection
-        /// </summary>
-        /// <returns></returns>
-        private IServiceProvider RegisterServices()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<ServerController, ServerController>();
-            serviceCollection.AddTransient<AccountController, AccountController>();
-            serviceCollection.AddTransient<AuthenticationController, AuthenticationController>();
-
-            return serviceCollection.BuildServiceProvider();
         }
 
         /// <summary>

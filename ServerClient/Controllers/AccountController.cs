@@ -10,28 +10,44 @@ namespace Dash
     {
 
         private readonly ServerController _connection;
+        private readonly AuthenticationController _authenticationController;
 
-        public AccountController(ServerController connection)
+        public AccountController(ServerController connection, AuthenticationController authenticationController)
         {
             _connection = connection;
+            _authenticationController = authenticationController;
         }
 
         /// <summary>
         /// Registers a new user with the passed in email and password
         /// </summary>
-        /// <param name="email"></param>
-        /// <param name="pass"></param>
-        public void Register(string email, string pass)
+        /// <param name="username">The username of the user who is registering</param>
+        /// <param name="pass">The password of the user who is registering</param>
+        /// <param name="confirmPass">The confirmation password of the user who is registering</param>
+        /// <exception cref="ApiException">Throws an ApiExcpetion</exception>
+        public void Register(string username, string pass, string confirmPass)
         {
             var user = new RegisterModel()
             {
-                Email = email,
+                Email = username,
                 Password = pass,
-                ConfirmPassword = pass
+                ConfirmPassword = confirmPass
             };
 
-            var result = _connection.Post("api/Account/Register", user);
+            _connection.Post("api/Account/Register", user);
+        }
 
+        public async Task<Result> TryRegister(string user, string pass, string confirmPass)
+        {
+            try
+            {
+                Register(user, pass, confirmPass);
+                return await _authenticationController.TryLogin(user, pass);
+            }
+            catch (ApiException e)
+            {
+                return new Result(false, string.Join("\n", e.Errors));
+            }
         }
 
         public async Task<UserInfoModel> GetUserInfo()

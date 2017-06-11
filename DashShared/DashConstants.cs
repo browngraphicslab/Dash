@@ -76,6 +76,10 @@ namespace DashShared
         /// </summary>
         public const string ServerBaseUrl = DEVELOP_LOCALLY ? ServerLocalBaseUrl : ServerProductionBaseUrl;
 
+        public const string TokenEndpoint = "Token";
+
+        public const int PasswordMinimumLength = 1;
+        
 
         #endregion
 

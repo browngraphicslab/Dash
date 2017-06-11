@@ -44,23 +44,6 @@ namespace Dash
         {
             OnEllipseTapped2.Invoke(sender, e);
             Debug.WriteLine("Ellipse tapped");
-
-
-            var ac = (Application.Current as App)?.Container.GetRequiredService<AccountController>();
-            ac?.Register("baddabee@gmail.com", "Somefck1np@ss!");
-            var authC = (Application.Current as App)?.Container.GetRequiredService<AuthenticationController>();
-            var requestToken = authC?.RequestToken("baddabee@gmail.com", "Somefck1np@ss!");
-            if (requestToken != null)
-            {
-                var token = await requestToken;
-                var sc = (Application.Current as App)?.Container.GetRequiredService<ServerController>();
-                sc?.SetAuthorizationToken(token);
-            }
-            var userInfo = ac?.GetUserInfo();
-            if (userInfo != null)
-            {
-                var ui = await userInfo;
-            }
         }
 
     }
