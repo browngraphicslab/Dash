@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DashShared
 {
-    public class DocumentType : Entity
+    public class DocumentType : EntityBase
     {
 
         /// <summary>
