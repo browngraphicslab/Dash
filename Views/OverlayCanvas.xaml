@@ -10,12 +10,8 @@
     d:DesignWidth="400">
 
     <Canvas x:Name="XCanvas">
-        <Ellipse Fill="#FFF4F4F5" Height="70" Stroke="Black" Width="101" Tapped="Ellipse_Tapped" Canvas.Left="284" Canvas.Top="10"/>
-        <Ellipse Fill="#FFF4F4F5" Height="100" Canvas.Left="285" Stroke="Black" Canvas.Top="127" Width="100" Tapped="Ellipse_Tapped_1"/>
-        <!--<local:WindowTemplate>
-            <local:WindowTemplate.InnerContent>
-                <Button>Hope this Works</Button>
-            </local:WindowTemplate.InnerContent>
-        </local:WindowTemplate>-->
+        <Button Background="Pink" Height="46" Canvas.Left="28" Canvas.Top="24" Width="212" Tapped="AddDocumentsTapped">Add Documents</Button>
+        <Button Background="Pink" Height="100" Canvas.Left="31" Canvas.Top="91" Width="208" Tapped="AddCollectionTapped">Add Collection</Button>
+
     </Canvas>
 </UserControl>

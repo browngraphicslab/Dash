@@ -24,8 +24,8 @@ namespace Dash
     {
         public static OverlayCanvas Instance = null;
 
-        public TappedEventHandler OnEllipseTapped;
-        public TappedEventHandler OnEllipseTapped2;
+        public TappedEventHandler OnAddDocumentsTapped;
+        public TappedEventHandler OnAddCollectionTapped;
         
         public OverlayCanvas()
         {
@@ -35,15 +35,14 @@ namespace Dash
             Instance = this;
         }
 
-        private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)
+        private void AddDocumentsTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnEllipseTapped.Invoke(sender, e);
+            OnAddDocumentsTapped.Invoke(sender, e);
         }
 
-        private async void Ellipse_Tapped_1(object sender, TappedRoutedEventArgs e)
+        private void AddCollectionTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnEllipseTapped2.Invoke(sender, e);
-            Debug.WriteLine("Ellipse tapped");
+            OnAddCollectionTapped.Invoke(sender, e);
         }
 
     }
