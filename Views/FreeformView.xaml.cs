@@ -51,24 +51,26 @@ namespace Dash
             }
         }
 
-        public static FreeformView Instance;
+        public static FreeformView MainFreeformView { get; private set; }
 
-        private FreeformViewModel _vm;
+        public FreeformViewModel ViewModel { get; private set; }
 
         public FreeformView()
         {
             this.InitializeComponent();
 
-            _vm = new FreeformViewModel();
-            _vm.OnElementAdded += VmOnOnElementAdded;
+            ViewModel = new FreeformViewModel();
+            ViewModel.OnElementAdded += VmOnOnElementAdded;
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
 
             // set screen in middle of canvas 
             //CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
 
-            Debug.Assert(Instance == null);
-            Instance = this;
+            if (MainFreeformView == null)
+            {
+                MainFreeformView = this;
+            }
         }
 
         private void VmOnOnElementAdded(UIElement element, float left, float top)

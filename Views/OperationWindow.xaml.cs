@@ -37,7 +37,6 @@ namespace Dash
                 _documentViewModel = value;
                 InitializeGrid(XDocumentGridLeft);
                 InitializeGrid(XDocumentGridRight);
-
             }
         }
 

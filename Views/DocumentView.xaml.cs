@@ -31,7 +31,8 @@ namespace Dash
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            //this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
+            // TODO remove this later 
+            this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
             this.Width = 200;
             this.Height = 400;
         }
@@ -101,7 +102,7 @@ namespace Dash
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             //   var viewEditor = new ViewEditor();
-            //   FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
+            //   FreeFormViewModel.MainFreeformView.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
             //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
         }
 
@@ -189,10 +190,11 @@ namespace Dash
                 translate.X = -oldP1.X;
                 scale.CenterX = 0;
             }
-            else if (p2.X > FreeformView.Instance.Canvas.ActualWidth)
+            
+            else if (p2.X > FreeformView.MainFreeformView.Canvas.ActualWidth)
             {
                 outOfBounds = true;
-                translate.X = FreeformView.Instance.Canvas.ActualWidth - oldP2.X;
+                translate.X = FreeformView.MainFreeformView.Canvas.ActualWidth - oldP2.X;
                 scale.CenterX = XGrid.ActualWidth;
             }
             if (p1.Y < 0)
@@ -201,10 +203,10 @@ namespace Dash
                 translate.Y = -oldP1.Y;
                 scale.CenterY = 0;
             }
-            else if (p2.Y > FreeformView.Instance.Canvas.ActualHeight)
+            else if (p2.Y > FreeformView.MainFreeformView.Canvas.ActualHeight)
             {
                 outOfBounds = true;
-                translate.Y = FreeformView.Instance.Canvas.ActualHeight - oldP2.Y;
+                translate.Y = FreeformView.MainFreeformView.Canvas.ActualHeight - oldP2.Y;
                 scale.CenterY = XGrid.ActualHeight;
             }
 
@@ -220,6 +222,11 @@ namespace Dash
             this.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
+        /// <summary>
+        /// Brings up OperationWindow when DocumentView is double tapped 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             OperationWindow window = new OperationWindow(1000, 800);
@@ -230,7 +237,8 @@ namespace Dash
                 window.DocumentViewModel = dvm;
             }
             Point center = RenderTransform.TransformPoint(e.GetPosition(this));
-            FreeformViewModel.Instance.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+
+            FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
 
             ////Get top left and bottom right points of documents in canvas space
             //Point p1 = this.RenderTransform.TransformPoint(new Point(0, 0));
