@@ -36,6 +36,7 @@ namespace Dash
             // we get the datacontext through dependency injection, if it is null then it throws an error
             _vm = App.Instance.Container.GetRequiredService<LoginViewModel>();
             DataContext = _vm;
+            xFadeOutRegisterConfirmPasswordBox.Begin();
         }
 
         private async void LoginButtonTapped(object sender, TappedRoutedEventArgs e)
@@ -74,7 +75,7 @@ namespace Dash
             }
         }
 
-        private void SwitchViewOnTapped(object sender, TappedRoutedEventArgs e)
+        private async void SwitchViewOnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (_isLoginView)
             {
@@ -83,19 +84,42 @@ namespace Dash
                 xRegisterButton.Visibility = Visibility.Visible;
                 xRegisterConfirmPasswordBox.Visibility = Visibility.Visible;
                 xErrorText.Text = string.Empty;
+                xRegisterButton.IsEnabled = false;
                 xAnimateInRegisterConfirmPasswordBox.Begin();
             }
             else
             {
                 xSwitchRegisterLoginText.Text = "Register";
+                xFadeOutRegisterConfirmPasswordBox.Begin();
+                await Task.Delay(100);
+                xAnimateOutRegisterConfirmPasswordBox.Begin();
                 xLoginButton.Visibility = Visibility.Visible;
                 xRegisterButton.Visibility = Visibility.Collapsed;
                 xRegisterConfirmPasswordBox.Visibility = Visibility.Collapsed;
                 xErrorText.Text = string.Empty;
-                xAnimateOutRegisterConfirmPasswordBox.Begin();
             }
 
             _isLoginView = !_isLoginView;
+        }
+
+        /// <summary>
+        /// Enable Register button only when all three fields (username, password, confirm password) are filled in
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            xRegisterButton.IsEnabled = XLoginPasswordBox.Password == xRegisterConfirmPasswordBox.Password && XLoginPasswordBox.Password != string.Empty && xLoginUserBox.Text != string.Empty? true: false;
+        }
+
+        /// <summary>
+        /// Enable Register button only when all three fields (username, password, confirm password) are filled in
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xLoginUserBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            xRegisterButton.IsEnabled = XLoginPasswordBox.Password == xRegisterConfirmPasswordBox.Password && XLoginPasswordBox.Password != string.Empty && xLoginUserBox.Text != string.Empty ? true : false;
         }
     }
 }

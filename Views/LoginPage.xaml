@@ -31,26 +31,26 @@
         <Grid x:Name="FirstGrid" Grid.Column="1" Grid.Row="2" Margin="0,0,0,0" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
             <StackPanel Orientation="Vertical">
                 <StackPanel.Resources>
+                    <Storyboard x:Name="xFadeOutRegisterConfirmPasswordBox">
+                        <FadeOutThemeAnimation Storyboard.TargetName="xRegisterConfirmPasswordBox" Duration="0:0:1"/>
+                    </Storyboard>
                     <Storyboard x:Name="xAnimateInRegisterConfirmPasswordBox">
-                        <RepositionThemeAnimation x:Name="AnimateIn" TargetName="temp" FromVerticalOffset="-45" SpeedRatio="0.2"/>
-                        <!--<DoubleAnimation Storyboard.TargetName="xRememberMeCheckbox" Storyboard.TargetProperty="Margin" From="5" To="45" EnableDependentAnimation="True" BeginTime="0:0:0" Duration="0:0:0.5"/>-->
-                        <FadeInThemeAnimation Storyboard.TargetName="xRegisterConfirmPasswordBox" BeginTime="0:0:1" Duration="0:0:1"/>
+                        <FadeInThemeAnimation Storyboard.TargetName="xRegisterConfirmPasswordBox" BeginTime="0:0:0.3" Duration="0:0:1"/>
+                        <RepositionThemeAnimation x:Name="AnimateIn" TargetName="xBottomContainer" FromVerticalOffset="-45" SpeedRatio="0.2"/>
                     </Storyboard>
                     <Storyboard x:Name="xAnimateOutRegisterConfirmPasswordBox">
-                        <FadeOutThemeAnimation Storyboard.TargetName="xRegisterConfirmPasswordBox" BeginTime="0:0:0" Duration="0:0:1"/>
-                        <RepositionThemeAnimation x:Name="AnimateIn" TargetName="temp" FromVerticalOffset="45" SpeedRatio="0.2"/>
-                        <!--<DoubleAnimation Storyboard.TargetName="xRememberMeCheckbox" Storyboard.TargetProperty="Margin" From="45" To="5" EnableDependentAnimation="True" BeginTime="0:0:0.8" Duration="0:0:0.5"/>-->
+                        <RepositionThemeAnimation x:Name="AnimateOut" TargetName="xBottomContainer" FromVerticalOffset="40" SpeedRatio="0.2"/>
                     </Storyboard>
                 </StackPanel.Resources>
-                <TextBox x:Name="xLoginUserBox" PlaceholderText="Username" Height="40" Margin="5" TextWrapping="Wrap" Text="" Width =" 250" BorderThickness="1" d:LayoutOverrides="VerticalAlignment, LeftPosition, RightPosition" Background="#D8FFFFFF"/>
-                <PasswordBox x:Name="XLoginPasswordBox" PlaceholderText="Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1"/>
-                <PasswordBox x:Name="xRegisterConfirmPasswordBox" Visibility="Collapsed" PlaceholderText="Confirm Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1"/>
-                <StackPanel x:Name="temp">
+                <TextBox x:Name="xLoginUserBox" PlaceholderText="Username" Height="40" Margin="5" TextWrapping="Wrap" Text="" Width =" 250" BorderThickness="1" d:LayoutOverrides="VerticalAlignment, LeftPosition, RightPosition" Background="#D8FFFFFF" TextChanged="xLoginUserBox_TextChanged"/>
+                <PasswordBox x:Name="XLoginPasswordBox" PlaceholderText="Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1" PasswordChanged="xPasswordBox_PasswordChanged"/>
+                <PasswordBox x:Name="xRegisterConfirmPasswordBox" Visibility="Collapsed" PlaceholderText="Confirm Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1"  PasswordChanged="xPasswordBox_PasswordChanged"/>
+                <StackPanel x:Name="xBottomContainer">
                     <CheckBox x:Name="xRememberMeCheckbox" HorizontalAlignment="Center" Width="250" Margin="0,5,0,0" IsThreeState="False" Foreground="#E547ABF6" IsChecked="True">
-                    <TextBlock Foreground="#E547ABF6">Remember Me</TextBlock>
-                </CheckBox>
-                <Button x:Name="xLoginButton" Content="LOGIN" HorizontalAlignment="Center" Margin="0,20,0,10" Tapped="LoginButtonTapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
-                <Button x:Name="xRegisterButton" Visibility="Collapsed" Content="REGISTER" HorizontalAlignment="Center" Margin="10" Tapped="RegisterButtonTapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                        <TextBlock Foreground="#E547ABF6">Remember Me</TextBlock>
+                    </CheckBox>
+                    <Button x:Name="xLoginButton" Content="LOGIN" HorizontalAlignment="Center" Margin="0,20,0,10" Tapped="LoginButtonTapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                    <Button x:Name="xRegisterButton" Visibility="Collapsed" Content="REGISTER" HorizontalAlignment="Center" Margin="10" Tapped="RegisterButtonTapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
                     <TextBlock x:Name="xSwitchRegisterLoginText" Text="Register" HorizontalAlignment="Center" Foreground="#E547ABF6" Margin="0,0,0,10" Tapped="SwitchViewOnTapped"></TextBlock>
                 </StackPanel>
                 <TextBlock x:Name="xErrorText" Foreground="Red" HorizontalAlignment="Center" TextWrapping="WrapWholeWords"></TextBlock>
