@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -6,13 +7,16 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Dash.StaticClasses;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
+    //[ContentProperty("InnerContent")]
     public sealed partial class DocumentView : UserControl
     {
         Dictionary<string, TextBlock> textElementViews = new Dictionary<string, TextBlock>();
@@ -27,11 +31,18 @@ namespace Dash
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            this.RenderTransform = new TranslateTransform {X = 200, Y = 200};
+            //this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
             this.Width = 200;
             this.Height = 400;
         }
-        
+
+        //public static readonly DependencyProperty InnerContentProperty = DependencyProperty.Register("InnerContent", typeof(object), typeof(DocumentView), new PropertyMetadata(null));
+
+        //public object InnerContent
+        //{
+        //    get { return (object) GetValue(InnerContentProperty); }
+        //    set { SetValue(InnerContentProperty, value);}
+        //}
 
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -89,11 +100,11 @@ namespace Dash
 
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-         //   var viewEditor = new ViewEditor();
-         //   FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
-         //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
+            //   var viewEditor = new ViewEditor();
+            //   FreeFormViewModel.Instance.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
+            //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
         }
-        
+
         protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e)
         {
             //if ((Window.Current.Content as Frame).Content is FreeFormView)
@@ -118,7 +129,7 @@ namespace Dash
         private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
-           
+
             //Create initial composite transform 
             TransformGroup group = new TransformGroup();
 
@@ -130,11 +141,14 @@ namespace Dash
                 ScaleY = e.Delta.Scale
             };
 
-            TranslateTransform translate = new TranslateTransform
-            {
-                X = e.Delta.Translation.X / FreeformView.Instance.CanvasScale,
-                Y = e.Delta.Translation.Y / FreeformView.Instance.CanvasScale
-            }; 
+            //Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
+            //TranslateTransform translate = new TranslateTransform
+            //{
+            //    X = p.X,
+            //    Y = p.Y
+            //};
+            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this);
+
 
             //Clamp the scale factor 
             float newScale = _documentScale * e.Delta.Scale;
@@ -174,7 +188,8 @@ namespace Dash
                 outOfBounds = true;
                 translate.X = -oldP1.X;
                 scale.CenterX = 0;
-            } else if (p2.X > FreeformView.Instance.Canvas.ActualWidth)
+            }
+            else if (p2.X > FreeformView.Instance.Canvas.ActualWidth)
             {
                 outOfBounds = true;
                 translate.X = FreeformView.Instance.Canvas.ActualWidth - oldP2.X;
@@ -203,6 +218,26 @@ namespace Dash
             }
 
             this.RenderTransform = new MatrixTransform { Matrix = group.Value };
+        }
+
+        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            OperationWindow window = new OperationWindow(1000, 800);
+
+            var dvm = DataContext as DocumentViewModel;
+            if (dvm != null)
+            {
+                window.DocumentViewModel = dvm;
+            }
+            Point center = RenderTransform.TransformPoint(e.GetPosition(this));
+            FreeformViewModel.Instance.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+
+            ////Get top left and bottom right points of documents in canvas space
+            //Point p1 = this.RenderTransform.TransformPoint(new Point(0, 0));
+            //Point p2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            //Debug.Assert(this.RenderTransform != null);
+            //Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
+            //Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
         }
     }
 }

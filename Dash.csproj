@@ -118,12 +118,14 @@
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
+    <Compile Include="StaticClasses\Util.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\FreeformViewModel.cs" />
     <Compile Include="ViewModels\ImageViewModel.cs" />
     <Compile Include="ViewModels\LayoutViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
+    <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\DocumentView.xaml.cs">
@@ -147,6 +149,7 @@
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
@@ -174,6 +177,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
