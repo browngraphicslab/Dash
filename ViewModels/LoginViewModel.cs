@@ -35,10 +35,12 @@ namespace Dash
         /// <returns></returns>
         public async Task<Result> TryLogin(string user, string password, bool rememberLogin)
         {
-            //TODO hookup the rememberLogin to the LocalCredentialHelper
-            var result = await _authenticationController.TryLogin(user, password);
+            //TODO comment out the below lines
+            ////TODO hookup the rememberLogin to the LocalCredentialHelper
+            //var result = await _authenticationController.TryLogin(user, password);
 
-            return result;
+            //return result;
+            return new Result(true);
         }
 
         /// <summary>
@@ -51,10 +53,12 @@ namespace Dash
         /// <returns></returns>
         public async Task<Result> TryRegister(string user, string password, string confirmPassword, bool rememberLogin)
         {
-            //TODO hookup the rememberLogin to the LocalCredentialHelper
-            var result = await _accountController.TryRegister(user, password, confirmPassword);
+            //TODO comment out the below lines
+            ////TODO hookup the rememberLogin to the LocalCredentialHelper
+            //var result = await _accountController.TryRegister(user, password, confirmPassword);
 
-            return result;
+            //return result;
+            return new Result(true);
         }
     }
 }
