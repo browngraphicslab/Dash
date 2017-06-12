@@ -99,7 +99,7 @@ namespace Dash
             XCanvas.DataContext = this;
 
             ViewModel = new FreeformViewModel();
-            ViewModel.OnElementAdded += VmOnOnElementAdded;
+            ViewModel.ElementAdded += VmElementAdded;
 
             XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
 
@@ -112,7 +112,7 @@ namespace Dash
             }
         }
 
-        private void VmOnOnElementAdded(UIElement element, float left, float top)
+        private void VmElementAdded(UIElement element, float left, float top)
         {
             XCanvas.Children.Add(element);
             Canvas.SetLeft(element, left);

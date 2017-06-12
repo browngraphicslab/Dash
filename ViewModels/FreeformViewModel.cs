@@ -16,7 +16,7 @@ namespace Dash
 
         public delegate void ElementAddedEvent(UIElement element, float left, float top);
 
-        public event ElementAddedEvent OnElementAdded;
+        public event ElementAddedEvent ElementAdded;
 
         public FreeformViewModel()
         {
@@ -28,7 +28,7 @@ namespace Dash
 
         public void AddElement(UIElement element, float left, float top)
         {
-            OnElementAdded?.Invoke(element, left, top);
+            ElementAdded?.Invoke(element, left, top);
         }
 
     }

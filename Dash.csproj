@@ -102,9 +102,13 @@
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\ImageTemplateModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
+    <Compile Include="Models\NumberFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
+    <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\TextTemplateModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticClasses\Util.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
