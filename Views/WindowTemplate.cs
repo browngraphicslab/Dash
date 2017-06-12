@@ -43,13 +43,17 @@ namespace Dash
         public WindowTemplate()
         {
             this.DefaultStyleKey = typeof(WindowTemplate);
-
-            this.MinWidth = 50;
-            this.MinHeight = 50;
-            this.MaxWidth = 3000;
-            this.MaxHeight = 3000;
         }
 
+        public double HeaderHeight
+        {
+            get
+            {
+                FrameworkElement header = GetTemplateChild(HeaderName) as FrameworkElement;
+                Debug.Assert(header != null);
+                return header.ActualHeight;
+            }
+        }
 
         /// <summary>
         /// The inner content of the window can be anything!
@@ -166,8 +170,10 @@ namespace Dash
             var newHeight = this.ActualHeight + p.Y; 
 
             // clamp width and height to max and min
-            this.Width = Math.Max(this.MinWidth, Math.Min(this.MaxWidth, newWidth));
-            this.Height = Math.Max(Math.Min(this.MaxHeight, newHeight), this.MinHeight);
+            //this.Width = Math.Max(this.MinWidth, Math.Min(this.MaxWidth, newWidth));
+            //this.Height = Math.Max(Math.Min(this.MaxHeight, newHeight), this.MinHeight);
+            this.Width = newWidth;
+            this.Height = newHeight;
             e.Handled = true;
 
         }

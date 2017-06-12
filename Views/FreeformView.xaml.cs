@@ -245,6 +245,7 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            e.Handled = true;
             //Get mousepoint in canvas space 
             PointerPoint point = e.GetCurrentPoint(XCanvas);
             double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
@@ -301,7 +302,15 @@ namespace Dash
             //Check if the zooming puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly 
             bool outOfBounds = false;
-            if (topLeft.X < 0)
+            if (topLeft.X < 0 && bottomRight.X > XCanvas.ActualWidth)
+            {
+                translate.X = 0;
+                double scaleAmount = (bottomRight.X - topLeft.X) / CanvasWidth;
+                scaleTransform.ScaleY = scaleAmount;
+                scaleTransform.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.X < 0)
             {
                 scaleTransform.CenterX = 0;
                 outOfBounds = true;
@@ -312,7 +321,15 @@ namespace Dash
                 scaleTransform.CenterX = ParentElement.ActualWidth;
                 outOfBounds = true;
             }
-            if (topLeft.Y < 0)
+            if (topLeft.Y < 0 && bottomRight.Y > XCanvas.ActualHeight)
+            {
+                translate.Y = 0;
+                double scaleAmount = (bottomRight.Y - topLeft.Y) / CanvasHeight;
+                scaleTransform.ScaleY = scaleAmount;
+                scaleTransform.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if(topLeft.Y < 0)
             {
                 scaleTransform.CenterY = 0;
                 outOfBounds = true;

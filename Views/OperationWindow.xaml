@@ -11,15 +11,16 @@
     d:DesignWidth="800">
 
     <local:WindowTemplate.InnerContent>
-        <Grid x:Name="Grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <Grid x:Name="Grid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center"  Grid.Column="0"></Grid>
+            <Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0"></Grid>
             <!--<Canvas Width="Auto" Background="Red"  HorizontalAlignment="Stretch" Grid.Column="1"></Canvas>-->
-            <local:FreeformView Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1"></local:FreeformView>
+            <local:FreeformView Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged"></local:FreeformView>
             <Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid> 
         </Grid>
     </local:WindowTemplate.InnerContent>
