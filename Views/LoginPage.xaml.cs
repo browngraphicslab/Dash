@@ -47,7 +47,7 @@ namespace Dash
 
             if (result.IsSuccess)
             {
-                this.Frame.Navigate(typeof(MyDashboardsPage));
+                this.Frame.Navigate(typeof(HomePage));
             }
             else
             {
@@ -66,7 +66,7 @@ namespace Dash
 
             if (result.IsSuccess)
             {
-                this.Frame.Navigate(typeof(MyDashboardsPage));
+                this.Frame.Navigate(typeof(HomePage));
             }
             else
             {

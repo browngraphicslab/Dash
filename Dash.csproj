@@ -138,8 +138,8 @@
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MyDashboardsPage.xaml.cs">
-      <DependentUpon>MyDashboardsPage.xaml</DependentUpon>
+    <Compile Include="Views\HomePage.xaml.cs">
+      <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OperationWindow.xaml.cs">
       <DependentUpon>OperationWindow.xaml</DependentUpon>
@@ -190,7 +190,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\MyDashboardsPage.xaml">
+    <Page Include="Views\HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

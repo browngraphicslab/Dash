@@ -20,9 +20,9 @@ namespace Dash
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MyDashboardsPage : Page
+    public sealed partial class HomePage : Page
     {
-        public MyDashboardsPage()
+        public HomePage()
         {
             this.InitializeComponent();
         }
