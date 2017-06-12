@@ -12,8 +12,8 @@ namespace Dash.Models.OperatorModels
         public override Dictionary<string, FieldModel> Execute()
         {
             Dictionary<string, FieldModel> result = new Dictionary<string, FieldModel>(1);
-            double a = 0;//DocumentManager.GetFieldInDocument(InputReferences["a"]);
-            double b = 0; //DocumentManager.GetFieldInDocument(InputReferences["b"]);
+            double a = 0;//DocumentController.GetFieldInDocument(InputReferences["a"]);
+            double b = 0; //DocumentController.GetFieldInDocument(InputReferences["b"]);
             result["sum"] = new NumberFieldModel(a + b);
             return result;
         }

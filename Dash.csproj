@@ -96,6 +96,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Camera.cs" />
+    <Compile Include="DocumentController.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />

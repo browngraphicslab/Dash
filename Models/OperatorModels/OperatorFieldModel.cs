@@ -19,11 +19,11 @@ namespace Dash
             // remove the output reference of previous input reference document FieldModel 
             //if (InputReferences.ContainsKey(fieldName))
             //{
-            //    FieldModel fm = DocumentManager.GetFieldFromDocument(InputReferences[fieldName]);
+            //    FieldModel fm = DocumentController.GetFieldFromDocument(InputReferences[fieldName]);
             //    fm.RemoveOutputReference(this);
             //}
             InputReferences[fieldName] = reference;
-            //DocumentModel doc = DocumentManager.GetDocumentWithID(reference.DocId);
+            //DocumentModel doc = DocumentController.GetDocumentWithID(reference.DocId);
             //doc.Fields[reference.FieldKey].Updated += Updated;
         }
 
