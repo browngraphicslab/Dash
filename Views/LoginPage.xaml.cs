@@ -83,6 +83,7 @@ namespace Dash
                 xRegisterButton.Visibility = Visibility.Visible;
                 xRegisterConfirmPasswordBox.Visibility = Visibility.Visible;
                 xErrorText.Text = string.Empty;
+                xAnimateInRegisterConfirmPasswordBox.Begin();
             }
             else
             {
@@ -91,6 +92,7 @@ namespace Dash
                 xRegisterButton.Visibility = Visibility.Collapsed;
                 xRegisterConfirmPasswordBox.Visibility = Visibility.Collapsed;
                 xErrorText.Text = string.Empty;
+                xAnimateOutRegisterConfirmPasswordBox.Begin();
             }
 
             _isLoginView = !_isLoginView;
