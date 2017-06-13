@@ -23,6 +23,11 @@ namespace Dash
             OutputReferences.Add(reference);
         }
 
+        public void RemoveOutputReference(ReferenceFieldModel reference)
+        {
+            OutputReferences.Remove(reference); 
+        }
+
         /// <summary>
         /// Abstract method to return views using layout information from templates 
         /// </summary>
