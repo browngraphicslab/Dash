@@ -16,13 +16,19 @@ namespace DashShared
         [Required]
         public string Name { get; set; }
 
-        public Key(string name)
-        {
-            Name = name;
-        }
-
         public Key()
         {
+        }
+
+        public Key(string guid)
+        {
+            Id = guid;
+        }
+
+        public Key(string guid, string name)
+        {
+            Id = guid;
+            Name = name;
         }
     }
 }

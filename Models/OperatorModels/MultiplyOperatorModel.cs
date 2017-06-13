@@ -13,21 +13,21 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
-    public class AddOperatorModel : OperatorFieldModel
+    public class MultiplyOperatorModel : OperatorFieldModel
     {
         //Input keys
-        public static readonly Key AKey = new Key("15964FFF-9592-47A7-8DED-FC09B4144E63", "Input A");
-        public static readonly Key BKey = new Key("D1792115-40EA-479A-8F96-6E7207031A60", "Input B");
+        public static readonly Key AKey = new Key("5E849AB0-C402-42D7-B0DD-0FE801D95092", "Input A");
+        public static readonly Key BKey = new Key("D1E0F1AD-009B-4357-A045-E7661D05DC7D", "Input B");
 
         //Output keys
-        public static readonly Key SumKey = new Key("E1AFCF61-5AAF-4CDD-9C06-17EBFB4EF82A", "Sum");
+        public static readonly Key ProductKey = new Key("DED1EE8E-D0CF-4BB6-B8BA-D3393FBB8C0C", "Product");
 
         public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
         {
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
 
-            NumberFieldModel numberA = docController.GetFieldInDocument(inputReferences[AKey]) as NumberFieldModel; 
+            NumberFieldModel numberA = docController.GetFieldInDocument(inputReferences[AKey]) as NumberFieldModel;
             Debug.Assert(numberA != null, "Input is not a number");
 
             NumberFieldModel numberB = docController.GetFieldInDocument(inputReferences[BKey]) as NumberFieldModel;
@@ -35,7 +35,7 @@ namespace Dash
 
             double a = numberA.Data;
             double b = numberB.Data;
-            result[SumKey] = new NumberFieldModel(a + b);
+            result[ProductKey] = new NumberFieldModel(a * b);
             return result;
         }
 
@@ -43,11 +43,10 @@ namespace Dash
         {
             Rectangle rect = new Rectangle
             {
-                Fill = new SolidColorBrush(Colors.GreenYellow)
+                Fill = new SolidColorBrush(Colors.DeepPink)
             };
-            
-            return rect; 
-        }
 
+            return rect;
+        }
     }
 }

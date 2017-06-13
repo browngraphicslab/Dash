@@ -35,6 +35,11 @@ namespace Dash
         //    set { (Fields["Type"] as TextFieldModel).Data = value; }
         //}
 
+
+        public delegate void FieldUpdatedEvent(ReferenceFieldModel fieldReference);
+
+        public event FieldUpdatedEvent DocumentFieldUpdated;
+
         /// <summary>
         /// Initializes a document with given data and type.
         /// </summary>
@@ -53,6 +58,11 @@ namespace Dash
 
         public DocumentModel()
         {
+        }
+
+        protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            DocumentFieldUpdated?.Invoke(fieldReference);
         }
 
         // Hard coded document models 
