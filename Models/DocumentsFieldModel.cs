@@ -25,8 +25,8 @@ namespace Dash
                 docViews.Add(docView);
             }
 
-            var observableDocs = new ObservableCollection<DocumentView>(_docs);
-            var collectionModel = new CollectionModel();
+            var observableDocs = new ObservableCollection<DocumentView>(docViews);
+            var collectionModel = new CollectionModel(observableDocs);
         }
     }
 }

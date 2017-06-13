@@ -17,22 +17,22 @@ namespace Dash.Models
         public ObservableCollection<DocumentView> DocumentViews;
         public Dictionary<DocumentView, DocumentModel> DocumentViewDict;
 
-        public CollectionModel(ObservableCollection<DocumentModel> documents)
+        public CollectionModel(ObservableCollection<DocumentView> docViews)
         {
-            DocumentViews = new ObservableCollection<DocumentView>();
+            DocumentViews = docViews;
             DocumentViewModels = new ObservableCollection<DocumentViewModel>();
-            Documents = documents;
+            Documents = new ObservableCollection<DocumentModel>();
             DocumentViewDict = new Dictionary<DocumentView, DocumentModel>();
 
-            foreach (var doc in documents)
+            foreach (var docView in docViews)
             {
-                DocumentViewModel model = new DocumentViewModel(doc, DocumentLayoutModelSource.DefaultLayoutModelSource);
-                DocumentView view = new DocumentView {DataContext = model};
-                view.ManipulationMode = ManipulationModes.System;
-                view.IsHitTestVisible = false;
-                DocumentViews.Add(view);
+                DocumentModel doc = (docView.DataContext as DocumentViewModel)?.DocumentModel;
+                DocumentViewModel model = docView.DataContext as DocumentViewModel;
+                docView.ManipulationMode = ManipulationModes.System;
+                docView.IsHitTestVisible = false;
+                Documents.Add(doc);
                 DocumentViewModels.Add(model);
-                DocumentViewDict[view] = doc;
+                DocumentViewDict[docView] = doc;
 
             }
         }
