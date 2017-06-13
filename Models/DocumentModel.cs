@@ -45,6 +45,7 @@ namespace Dash
             {
                 throw new ArgumentNullException();
             }
+            DocumentType = type;
 
             Fields = new Dictionary<Key, FieldModel>(fields);
         }
@@ -58,8 +59,8 @@ namespace Dash
         public static DocumentModel UmpireDocumentModel()
         {
             // get access to controllers, 
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -71,15 +72,16 @@ namespace Dash
             fields[experienceKey] = new TextFieldModel("100 years");
 
             // create the type //TODO this is not going to work in the real world
-            var typeKey = typeController.CreateTypeAsync("umpire");
-            return new DocumentModel(fields, typeKey);
+            var dm = docController.CreateDocumentAsync("Umpires");
+            dm.Fields = fields;
+            return dm;
         }
 
         public static DocumentModel Food2ForkRecipeDocumentModel()
         {
             // get access to controllers, 
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -91,17 +93,20 @@ namespace Dash
             fields[sourceKey] = new TextFieldModel("httpthisisaurl.com");
             var titleKey = keyController.CreateKeyAsync("title");
             fields[titleKey] = new TextFieldModel("good food");
+            var f2fKey = keyController.CreateKeyAsync("f2f_url");
+            fields[f2fKey] = new TextFieldModel("f2furl.com");
 
             // create the type //TODO this is not going to work in the real world
-            var typeKey = typeController.CreateTypeAsync("recipes");
-            return new DocumentModel(fields, typeKey);
+            var dm = docController.CreateDocumentAsync("recipes");
+            dm.Fields = fields;
+            return dm;
         }
 
         public static DocumentModel OneImage()
         {
             // get access to controllers, 
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -109,16 +114,16 @@ namespace Dash
             var contentKey = keyController.CreateKeyAsync("content");
             fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
 
-            var type = typeController.CreateTypeAsync("oneimage");
-
-            return new DocumentModel(fields, type);
+            var dm = docController.CreateDocumentAsync("oneimage");
+            dm.Fields = fields;
+            return dm;
         }
 
         public static DocumentModel TwoImagesAndText()
         {
             // get access to controllers, 
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -130,9 +135,9 @@ namespace Dash
             var textKey = keyController.CreateKeyAsync("text");
             fields[textKey] = new TextFieldModel("These are 2 cats");
 
-            var type = typeController.CreateTypeAsync("twoimages");
-
-            return new DocumentModel(fields, type);
+            var dm = docController.CreateDocumentAsync("twoimages");
+            dm.Fields = fields;
+            return dm;
         }
 
         

@@ -20,9 +20,9 @@ namespace Dash
             _keys = new Dictionary<string, Key>();
         }
 
-        public Key GetKeyAsync(string KeyId)
+        public Key GetKeyAsync(string keyId)
         {
-            return _keys[KeyId];
+            return _keys.ContainsKey(keyId) ? _keys[keyId] : null;
         }
 
         public void DeleteKeyAsync(Key model)

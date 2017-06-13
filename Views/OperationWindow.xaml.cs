@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -90,7 +91,7 @@ namespace Dash
 
             //Fill in Grid 
             int j = 1;
-            foreach (KeyValuePair<string, FieldModel> pair in doc.Fields)
+            foreach (KeyValuePair<Key, FieldModel> pair in doc.Fields)
             {
                 //Add Value as FrameworkElement (field values)  
                 TemplateModel template = null;
@@ -117,7 +118,7 @@ namespace Dash
                 //Add Key Values (field names) 
                 TextBlock tb = new TextBlock
                 {
-                    Text = pair.Key,
+                    Text = pair.Key.Name,
                     TextWrapping = TextWrapping.Wrap,
                     VerticalAlignment = VerticalAlignment.Center,
                     HorizontalAlignment = HorizontalAlignment.Center

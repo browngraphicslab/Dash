@@ -8,18 +8,19 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using DashShared;
 
 namespace Dash
 {
     public interface DocumentLayoutModelSourceBase
     {
         LayoutModel DocumentLayoutModel(DocumentModel docModel);
-        void SetDocumentLayoutModel(string type, LayoutModel layoutModel);
+        void SetDocumentLayoutModel(DocumentType type, LayoutModel layoutModel);
     }
 
     public class DocumentLayoutModelSource : DocumentLayoutModelSourceBase
     {
-        void setLayoutModel(string typename, LayoutModel template)
+        void setLayoutModel(DocumentType typename, LayoutModel template)
         {
             if (!LayoutTemplates.ContainsKey(typename))
                 LayoutTemplates.Remove(typename);
@@ -30,15 +31,15 @@ namespace Dash
             if (!LayoutTemplates.ContainsKey(doc.DocumentType))
             {
                 // bcz: hack to have a default layout for known types: recipes, Umpires
-                if (doc.DocumentType == "recipes")
+                if (doc.DocumentType.Type == "recipes")
                     setLayoutModel(doc.DocumentType, LayoutModel.Food2ForkRecipeModel(doc));
-                else if (doc.DocumentType == "Umpires")
+                else if (doc.DocumentType.Type == "Umpires")
                     setLayoutModel(doc.DocumentType, LayoutModel.UmpireModel(doc));
-                else if (doc.DocumentType == "oneimage")
+                else if (doc.DocumentType.Type == "oneimage")
                 {
                     setLayoutModel(doc.DocumentType, LayoutModel.OneImageModel(doc));
                 }
-                else if (doc.DocumentType == "twoimages")
+                else if (doc.DocumentType.Type == "twoimages")
                 {
                     setLayoutModel(doc.DocumentType, LayoutModel.TwoImagesAndTextModel(doc));
                 }
@@ -48,7 +49,7 @@ namespace Dash
             return null;
         }
 
-        public void SetDocumentLayoutModel(string type, LayoutModel layoutModel)
+        public void SetDocumentLayoutModel(DocumentType type, LayoutModel layoutModel)
         {
             if (LayoutTemplates.ContainsKey(type))
                 LayoutTemplates.Remove(type);
@@ -56,8 +57,8 @@ namespace Dash
             setLayoutModel(type, layoutModel);
         }
 
-        public Dictionary<string, LayoutModel> LayoutTemplates = new Dictionary<string, LayoutModel>();
-        static public DocumentLayoutModelSource DefaultLayoutModelSource = new DocumentLayoutModelSource();
+        public Dictionary<DocumentType, LayoutModel> LayoutTemplates = new Dictionary<DocumentType, LayoutModel>();
+        public static DocumentLayoutModelSource DefaultLayoutModelSource = new DocumentLayoutModelSource();
     }
 
     public class DocumentViewModel

@@ -112,6 +112,8 @@
     <Compile Include="ServerClient\Controllers\AccountController.cs" />
     <Compile Include="ServerClient\Controllers\AuthenticationController.cs" />
     <Compile Include="ServerClient\Controllers\DocumentController.cs" />
+    <Compile Include="ServerClient\Controllers\KeyController.cs" />
+    <Compile Include="ServerClient\Controllers\TypeController.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Controllers\ServerController.cs" />
     <Compile Include="ServerClient\Controllers\SignalrClient.cs" />
@@ -218,6 +220,12 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DashShared\DashShared.csproj">
+      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
+      <Name>DashShared</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
