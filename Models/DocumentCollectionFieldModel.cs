@@ -5,18 +5,18 @@ using Dash.Models;
 
 namespace Dash
 {
-    public class DocumentsFieldModel : FieldModel
+    public class DocumentCollectionFieldModel : FieldModel
     {
         private List<DocumentModel> _docs;
 
-        public DocumentsFieldModel(List<DocumentModel> docs)
+        public DocumentCollectionFieldModel(List<DocumentModel> docs)
         {
             _docs = docs;
         }
 
         public override UIElement MakeView(TemplateModel template)
         {
-            var docViews = new List<DocumentView>();
+            var docViews = new ObservableCollection<DocumentView>();
             foreach (var docModel in _docs)
             {
                 DocumentViewModel docVM = new DocumentViewModel(docModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
@@ -25,8 +25,11 @@ namespace Dash
                 docViews.Add(docView);
             }
 
-            var observableDocs = new ObservableCollection<DocumentView>(docViews);
-            var collectionModel = new CollectionModel(observableDocs);
+            var collectionModel = new CollectionModel(docViews);
+            var collectionViewModel = new CollectionViewModel(collectionModel);
+            var view = collectionViewModel.View;
+
+            return view;
         }
     }
 }

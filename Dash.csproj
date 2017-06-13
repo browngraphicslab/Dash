@@ -96,8 +96,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
-    <Compile Include="Models\DocumentsFieldModel.cs" />
+    <Compile Include="Models\DocumentCollectionFieldModel.cs" />
     <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
@@ -129,6 +130,7 @@
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\Util.cs" />
+    <Compile Include="ViewModels\CollectionViewModel.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\FreeformViewModel.cs" />
@@ -138,6 +140,9 @@
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\CollectionView.xaml.cs">
+      <DependentUpon>CollectionView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
@@ -188,6 +193,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

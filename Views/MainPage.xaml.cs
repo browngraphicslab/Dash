@@ -41,14 +41,14 @@ namespace Dash
         {
         }
 
-        private void AddDocuments(object sender, TappedRoutedEventArgs e)
+        private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             DocumentModel image = DocumentModel.OneImage();
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
 
-            DocumentModel collection = DocumentModel.CollectionExample();
+            DocumentModel collection = await DocumentModel.CollectionExample();
 
 
             DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);

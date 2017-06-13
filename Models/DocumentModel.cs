@@ -1,4 +1,4 @@
-﻿using Dash;
+﻿ using Dash;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -142,9 +142,10 @@ namespace Dash
         }
 
 
-        public static DocumentModel CollectionExample()
+        public static async Task<DocumentModel> CollectionExample()
         {
             var apiSource = new ExampleApiSource();
+            await apiSource.Initialize();
 
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
@@ -153,7 +154,11 @@ namespace Dash
             var fields = new Dictionary<Key, FieldModel>();
 
             var documentsKey = keyController.CreateKeyAsync("documents");
-            fields[documentsKey] = new DocumentsFieldModel(new ExampleApiSource().GetDocumentsAsync());
+            fields[documentsKey] = new DocumentCollectionFieldModel(new ExampleApiSource().GetDocumentsAsync());
+
+            var dm = docController.CreateDocumentAsync("collection_example");
+            dm.Fields = fields;
+            return dm;
         }
     }
 }

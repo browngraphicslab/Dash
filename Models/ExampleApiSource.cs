@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Storage;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -33,7 +35,17 @@ namespace Dash
 
         public ExampleApiSource()
         {
-            var docSource = System.IO.File.ReadAllText("ms-appx://Dash/Assets/MOCK_DATA.json");
+
+        }
+
+        public async Task Initialize()
+        {
+            StorageFolder folder =
+                await StorageFolder.GetFolderFromPathAsync(
+                    @"C:\Users\luke murray\Documents\Visual Studio 2015\Projects\Dash\Assets");
+            var file = await folder.GetFileAsync("MOCK_DATA.json");
+            var docSource = await FileIO.ReadTextAsync(file);
+
             _documents = JsonConvert.DeserializeObject<List<ExampleObject>>(docSource);
 
 
@@ -50,6 +62,7 @@ namespace Dash
 
             var typeController = App.Instance.Container.GetRequiredService<TypeController>();
             DocumentType = typeController.CreateTypeAsync("example_api_object");
+
         }
 
         public List<DocumentModel> GetDocumentsAsync()

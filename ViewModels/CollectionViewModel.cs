@@ -47,24 +47,12 @@ namespace Dash
         private Visibility _listViewVisibility;
 
         public Visibility GridViewVisibility
-        {
-            get { return _gridViewVisibility; }
-            set
-            {
-                _gridViewVisibility = value; 
-                RaisePropertyChanged("GridViewVisibility");
-            }
-        }
+        { get { return _gridViewVisibility; } set { SetProperty(ref _gridViewVisibility, value); } }
+
 
         public Visibility ListViewVisibility
-        {
-            get { return _listViewVisibility; }
-            set
-            {
-                _listViewVisibility = value; 
-                RaisePropertyChanged("ListViewVisibility");
-            }
-        }
+        { get { return _listViewVisibility; } set { SetProperty(ref _listViewVisibility, value); } }
+
 
         #endregion
 
@@ -76,53 +64,23 @@ namespace Dash
         /// The size of each cell in the GridView.
         /// </summary>
         public double CellSize
-        {
-            get { return _cellSize; }
-            set
-            {
-                _cellSize = value;
-                RaisePropertyChanged("CellSize");
-            }
-        }
+        { get { return _cellSize; } set { SetProperty(ref _cellSize, value); } }
+
 
         public double OuterGridWidth
-        {
-            get { return _outerGridWidth; }
-            set
-            {
-                _outerGridWidth = value;
-                RaisePropertyChanged("OuterGridWidth");
-            }
-        }
+        { get { return _outerGridWidth; } set { SetProperty(ref _outerGridWidth, value); } }
+
 
         public double OuterGridHeight
-        {
-            get { return _outerGridHeight; }
-            set
-            {
-                _outerGridHeight = value;
-                RaisePropertyChanged("OuterGridHeight");
-            }
-        }
+        { get { return _outerGridHeight; } set { SetProperty(ref _outerGridHeight, value); } }
+
 
         public double ContainerGridWidth
-        {
-            get { return _containerGridWidth; }
-            set
-            {
-                _containerGridWidth = value;
-                RaisePropertyChanged("ContainerGridWidth");
-            }
-        }
+        { get { return _containerGridWidth; } set { SetProperty(ref _containerGridWidth, value); } }
+
         public double ContainerGridHeight
-        {
-            get { return _containerGridHeight; }
-            set
-            {
-                _containerGridHeight = value;
-                RaisePropertyChanged("ContainerGridHeight");
-            }
-        }
+        { get { return _containerGridHeight; } set { SetProperty(ref _containerGridHeight, value); } }
+
 
         #endregion
 
@@ -130,118 +88,55 @@ namespace Dash
 
         public bool ProportionalScaling;
         private bool _manipulation;
-        private ListViewSelectionMode _selectionMode;
+        private ListViewSelectionMode _itemSelectionMode;
         private Thickness _selectButtonMargin;
         private Visibility _controlsVisibility;
 
         public Visibility ControlsVisibility
-        {
-            get { return _controlsVisibility; }
-            set
-            {
-                _controlsVisibility = value;
-                RaisePropertyChanged("ControlsVisibility");
-            }
-        }
+        { get { return _controlsVisibility; } set { SetProperty(ref _controlsVisibility, value); } }
+
         public ListViewSelectionMode ItemSelectionMode
-        {
-            get { return _selectionMode; }
-            set
-            {
-                _selectionMode = value;
-                RaisePropertyChanged("ItemSelectionMode");
-            }
-        }
+        { get { return _itemSelectionMode; } set { SetProperty(ref _itemSelectionMode, value); } }
+
 
         public Thickness SelectButtonMargin
         {
             get { return _selectButtonMargin; }
-            set
-            {
-                _selectButtonMargin = value;
-                RaisePropertyChanged("SelectButtonMargin");
-            }
+            set { SetProperty(ref _selectButtonMargin, value); }
         }
 
         public Thickness DraggerMargin
-        {
-            get { return _draggerMargin; }
-            set
-            {
-                _draggerMargin = value;
-                RaisePropertyChanged("DraggerMargin");
-            }
-        }
+        { get { return _draggerMargin; } set { SetProperty(ref _draggerMargin, value); } }
+
+
 
         public Thickness ProportionalDraggerMargin
-        {
-            get { return _proportionalDraggerMargin; }
-            set
-            {
-                _proportionalDraggerMargin = value;
-                RaisePropertyChanged("ProportionalDraggerMargin");
-            }
-        }
+        { get { return _proportionalDraggerMargin; } set { SetProperty(ref _proportionalDraggerMargin, value); } }
+
 
         public Thickness CloseButtonMargin
-        {
-            get { return _closeButtonMargin; }
-            set
-            {
-                _closeButtonMargin = value; 
-                RaisePropertyChanged("CloseButtonMargin");
-            }
-        }
+        { get { return _closeButtonMargin; } set { SetProperty(ref _closeButtonMargin, value); } }
+
 
         public SolidColorBrush ProportionalDraggerStroke
-        {
-            get { return _proportionalDraggerStroke; }
-            set
-            {
-                _proportionalDraggerStroke = value; 
-                RaisePropertyChanged("ProportionalDraggerStroke");
-            }
-        }
+        { get { return _proportionalDraggerStroke; } set { SetProperty(ref _proportionalDraggerStroke, value); } }
+
 
         public SolidColorBrush ProportionalDraggerFill
-        {
-            get { return _proportionalDraggerFill; }
-            set
-            {
-                _proportionalDraggerFill = value; 
-                RaisePropertyChanged("ProportionalDraggerFill");
-            }
-        }
+        { get { return _proportionalDraggerFill; } set { SetProperty(ref _proportionalDraggerFill, value); } }
+
 
         public SolidColorBrush DraggerStroke
-        {
-            get { return _draggerStroke; }
-            set
-            {
-                _draggerStroke = value; 
-                RaisePropertyChanged("DraggerStroke");
-            }
-        }
+        { get { return _draggerStroke; } set { SetProperty(ref _draggerStroke, value); } }
+
 
         public SolidColorBrush DraggerFill
-        {
-            get { return _draggerFill; }
-            set
-            {
-                _draggerFill = value; 
-                RaisePropertyChanged("DraggerFill");
-            }
-        }
+        { get { return _draggerFill; } set { SetProperty(ref _draggerFill, value); } }
+
 
         public Thickness BottomBarMargin
-        {
-            get { return _bottomBarMargin; }
-            set
-            {
-                _bottomBarMargin = value; 
-                RaisePropertyChanged("BottomBarMargin");
-            }
-        }
+        { get { return _bottomBarMargin; } set { SetProperty(ref _bottomBarMargin, value); } }
+
 
         #endregion
 
