@@ -41,6 +41,12 @@ namespace Dash
             return model?.Fields[field];
         }
 
+        public FieldModel GetFieldInDocument(ReferenceFieldModel referenceFieldModel)
+        {
+            DocumentModel model = _documents[referenceFieldModel.DocId];
+            return model?.Fields[referenceFieldModel.FieldKey];
+        }
+
         public DocumentModel GetDocumentAsync(string docId)
         {
             return _documents[docId];

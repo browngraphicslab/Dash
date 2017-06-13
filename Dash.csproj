@@ -102,7 +102,11 @@
     <Compile Include="Models\ImageTemplateModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
+    <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />

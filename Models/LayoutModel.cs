@@ -109,9 +109,11 @@ namespace Dash
             return new LayoutModel(fields, doc.DocumentType);
         }
 
+
         public static LayoutModel TwoImagesAndTextModel(DocumentModel doc)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+
 
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             var keys = doc.Fields.Keys;

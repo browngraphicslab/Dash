@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
+using DashShared;
 
 namespace Dash
 {
@@ -12,12 +13,12 @@ namespace Dash
         /// <summary>
         /// ID of document that this FieldModel references
         /// </summary>
-        public int DocId { get; set; } = -1;
+        public string DocId { get; set; }
 
         /// <summary>
         /// Key of field within document that is referenced
         /// </summary>
-        public string FieldKey { get; set; }
+        public Key FieldKey { get; set; }
 
         /// <summary>
         /// Cached type of field
