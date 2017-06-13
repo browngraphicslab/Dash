@@ -1,4 +1,4 @@
-﻿using Dash;
+﻿ using Dash;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,6 +11,7 @@ using Windows.UI.Text;
 using Windows.UI.Xaml;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Dash
 {
@@ -140,7 +141,24 @@ namespace Dash
             return dm;
         }
 
-        
-        
+
+        public static async Task<DocumentModel> CollectionExample()
+        {
+            var apiSource = App.Instance.Container.GetRequiredService<ExampleApiSource>();
+            await apiSource.Initialize();
+
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            var documentsKey = keyController.CreateKeyAsync("documents");
+            fields[documentsKey] = new DocumentCollectionFieldModel(apiSource.GetDocumentsAsync());
+
+            var dm = docController.CreateDocumentAsync("collection_example");
+            dm.Fields = fields;
+            return dm;
+        }
     }
 }
