@@ -45,6 +45,16 @@ namespace Dash
                 } else if (doc.DocumentType.Type == "operator")
                 {
                     setLayoutModel(doc.DocumentType, LayoutModel.OperatorLayoutModel(doc));
+                } else if (doc.DocumentType.Type == "example_api_object")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.ExampleApiObject(doc));
+                } else if (doc.DocumentType.Type == "collection_example")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.ExampleCollectionModel(doc));
+                }
+                else if (doc.DocumentType.Type == "price_per_square_foot")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.PricePerSquareFootApiObject(doc));
                 }
             }
             if (LayoutTemplates.ContainsKey(doc.DocumentType))

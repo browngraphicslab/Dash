@@ -61,9 +61,11 @@ namespace Dash
             var keys = doc.Fields.Keys;
             //TODO REALLY BAD CODE
             var publisherKey = keys.Where(key => key.Name.Equals("publisher")).ElementAt(0);
-            fields[publisherKey] = new TextTemplateModel(10, 10, FontWeights.Normal, TextWrapping.Wrap, Visibility.Visible);
+            fields[publisherKey] = new TextTemplateModel(10, 10, FontWeights.Normal, TextWrapping.Wrap,
+                Visibility.Visible);
             var sourceUrlKey = keys.Where(key => key.Name.Equals("source_url")).ElementAt(0);
-            fields[sourceUrlKey] = new TextTemplateModel(10, 250, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
+            fields[sourceUrlKey] = new TextTemplateModel(10, 250, FontWeights.Normal, TextWrapping.NoWrap,
+                Visibility.Visible);
             var titleKey = keys.Where(key => key.Name.Equals("title")).ElementAt(0);
             fields[titleKey] = new TextTemplateModel(30, 115, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible);
             var f2fKey = keys.Where(key => key.Name.Equals("f2f_url")).ElementAt(0);
@@ -124,7 +126,7 @@ namespace Dash
             fields[content2Key] = new ImageTemplateModel(5, 20, 100, 100);
             var textKey = keys.Where(key => key.Name.Equals("text")).ElementAt(0);
             fields[textKey] = new TextTemplateModel(5, 260, FontWeights.Normal);
-            
+
             Debug.Assert(doc.DocumentType.Type.Equals("twoimages"));
             return new LayoutModel(fields, doc.DocumentType);
         }
@@ -136,6 +138,42 @@ namespace Dash
             fields[OperatorDocumentModel.OperatorKey] = new TextTemplateModel(0, 0, FontWeights.Normal);
 
             Debug.Assert(doc.DocumentType.Type.Equals("operator"));
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel ExampleApiObject(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            var Keys = doc.Fields.Keys;
+            fields[Keys.First(k => k.Name == "id")] = new TextTemplateModel(0, 20, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "first_name")] = new TextTemplateModel(0, 60, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "last_name")] = new TextTemplateModel(0, 100, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "email")] = new TextTemplateModel(0, 140, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "gender")] = new TextTemplateModel(0, 180, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "ip_address")] = new TextTemplateModel(0, 220, FontWeights.Normal);
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel PricePerSquareFootApiObject(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            var Keys = doc.Fields.Keys;
+            fields[Keys.First(k => k.Name == "price")] = new TextTemplateModel(0,0, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "sqft")] = new TextTemplateModel(0, 100, FontWeights.Normal);
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel ExampleCollectionModel(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            var Keys = doc.Fields.Keys;
+            fields[Keys.First(k => k.Name == "documents")] = new DocumentCollectionTemplateModel(0, 0, 400, 400);
+
             return new LayoutModel(fields, doc.DocumentType);
         }
     }

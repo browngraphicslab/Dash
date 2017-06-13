@@ -95,7 +95,11 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\CollectionModel.cs" />
+    <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
+    <Compile Include="Models\DocumentCollectionFieldModel.cs" />
+    <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />
@@ -107,6 +111,7 @@
     <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
+    <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
@@ -130,6 +135,7 @@
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\Util.cs" />
+    <Compile Include="ViewModels\CollectionViewModel.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\FreeformViewModel.cs" />
@@ -139,6 +145,9 @@
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\CollectionView.xaml.cs">
+      <DependentUpon>CollectionView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
@@ -171,8 +180,10 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\a.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
+    <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -189,6 +200,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
