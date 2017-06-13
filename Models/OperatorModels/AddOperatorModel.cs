@@ -43,7 +43,9 @@ namespace Dash
         {
             Rectangle rect = new Rectangle
             {
-                Fill = new SolidColorBrush(Colors.GreenYellow)
+                Fill = new SolidColorBrush(Colors.GreenYellow),
+                Width = 100,
+                Height = 100
             };
             
             return rect; 

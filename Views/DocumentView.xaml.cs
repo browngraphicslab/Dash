@@ -50,7 +50,7 @@ namespace Dash
             if (dvm != null)
             {
                 xCanvas.Children.Clear();
-                List<UIElement> elements = dvm.GetUIElements();
+                List<UIElement> elements = dvm.GetUiElements();
                 foreach (var element in elements)
                 {
                     xCanvas.Children.Add(element);

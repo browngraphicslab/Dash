@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,17 +29,54 @@ namespace Dash
     /// </summary>
     public sealed partial class OperationWindow : WindowTemplate
     {
-        private DocumentViewModel _documentViewModel; 
-        
+        private DocumentViewModel _documentViewModel;
+
+        private DocumentModel _output;
+
         public DocumentViewModel DocumentViewModel
         {
             get { return _documentViewModel; }
             set
             {
                 _documentViewModel = value;
-                InitializeGrid(XDocumentGridLeft);
-                InitializeGrid(XDocumentGridRight);
+                var layout =
+                    DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(DocumentViewModel.DocumentModel);
+                InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout);
+
+                Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(_documentViewModel.DocumentModel.Fields);
+                DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
+                _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
+                _output.Fields = fields;
+                InitializeGrid(XDocumentGridRight, _output, layout);
+
+                XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                Button createButton = new Button
+                {
+                    Content = "Create"
+                };
+                Grid.SetRow(createButton, XDocumentGridRight.RowDefinitions.Count - 1);
+                XDocumentGridRight.Children.Add(createButton);
+
+                createButton.Tapped += B_Tapped;
+
+                TypeController typeController = App.Instance.Container.GetRequiredService<TypeController>();
+
+                //DivideOperatorModel divide = new DivideOperatorModel();
+                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
+                DocumentView view = new DocumentView();
+                DocumentViewModel vm = new DocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                view.DataContext = vm;
+                XFreeformView.Canvas.Children.Add(view);
             }
+        }
+
+        private void B_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            DocumentView view = new DocumentView();
+            DocumentViewModel viewModel = new DocumentViewModel(_output, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            view.DataContext = viewModel;
+            FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
 
         public OperationWindow(int width, int height)
@@ -51,11 +89,9 @@ namespace Dash
         /// <summary>
         ///  Makes the left grid representing Key,Value pairs of document tapped 
         /// </summary>
-        public void InitializeGrid(Grid grid)
+        public void InitializeGrid(Grid grid, DocumentModel doc, LayoutModel layout)
         {
             grid.Children.Clear();
-            DocumentModel doc = DocumentViewModel.DocumentModel;
-            LayoutModel layout = DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(doc);
 
             //Create rows
             for (int i = 0; i < doc.Fields.Count + 1; ++i)

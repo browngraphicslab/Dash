@@ -11,7 +11,7 @@ namespace Dash
     public class OperatorDocumentModel : DocumentModel
     {
         public static Key OperatorKey = new Key("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A");
-
+        public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
 
         /// <summary>
         /// Dictionary that maps Field input name to the ReferenceFieldModel that it is set to
@@ -22,14 +22,16 @@ namespace Dash
 
         public OperatorDocumentModel(OperatorFieldModel operatorField)
         {
+            Fields = new Dictionary<Key, FieldModel>();
             Fields[OperatorKey] = operatorField;
             OperatorField = operatorField;
+            DocumentType = OperatorType;
         }
 
         public void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
         {
-            // remove the output reference of previous input reference document FieldModel 
             DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            
             //TODO Remove existing output references and add new output reference
             //if (InputReferences.ContainsKey(fieldKey))
             //{

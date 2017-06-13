@@ -24,6 +24,9 @@ namespace Dash
         //Output keys
         public static readonly Key QuotientKey = new Key("DA705E3D-4773-4C7D-B770-536BA321D0FA", "Quotient");
 
+        public DivideOperatorModel()
+        {
+        }
         public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
         {
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
@@ -45,7 +48,9 @@ namespace Dash
         {
             Rectangle rect = new Rectangle
             {
-                Fill = new SolidColorBrush(Colors.Teal)
+                Fill = new SolidColorBrush(Colors.Teal),
+                Width = 100,
+                Height = 100
             };
 
             return rect;

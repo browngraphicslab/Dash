@@ -19,7 +19,7 @@
             </Grid.ColumnDefinitions>
             <Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0"></Grid>
             <!--<Canvas Width="Auto" Background="Red"  HorizontalAlignment="Stretch" Grid.Column="1"></Canvas>-->
-            <local:FreeformView Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
+            <local:FreeformView x:Name ="XFreeformView" Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged"></local:FreeformView>
             <Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid> 
         </Grid>

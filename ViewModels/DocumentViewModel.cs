@@ -42,11 +42,14 @@ namespace Dash
                 else if (doc.DocumentType.Type == "twoimages")
                 {
                     setLayoutModel(doc.DocumentType, LayoutModel.TwoImagesAndTextModel(doc));
+                } else if (doc.DocumentType.Type == "operator")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.OperatorLayoutModel(doc));
                 }
             }
             if (LayoutTemplates.ContainsKey(doc.DocumentType))
                 return LayoutTemplates[doc.DocumentType];
-            return null;
+            return new LayoutModel(new Dictionary<Key, TemplateModel>(), null);
         }
 
         public void SetDocumentLayoutModel(DocumentType type, LayoutModel layoutModel)
@@ -72,7 +75,7 @@ namespace Dash
         public DocumentModel DocumentModel { get; set; }
         public DocumentLayoutModelSource DocumentViewModelSource { get; set; }
 
-        public List<UIElement> GetUIElements()
+        public List<UIElement> GetUiElements()
         {
             List<UIElement> uiElements = new List<UIElement>(DocumentModel.Fields.Count);
             LayoutModel layout = DocumentViewModelSource.DocumentLayoutModel(DocumentModel);

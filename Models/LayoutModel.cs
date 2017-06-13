@@ -39,7 +39,7 @@ namespace Dash
         {
             if (type == null)
             {
-                throw new ArgumentNullException();
+                //throw new ArgumentNullException();
             }
 
             Fields = new Dictionary<Key, TemplateModel>(fields);
@@ -126,6 +126,16 @@ namespace Dash
             fields[textKey] = new TextTemplateModel(5, 260, FontWeights.Normal);
             
             Debug.Assert(doc.DocumentType.Type.Equals("twoimages"));
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel OperatorLayoutModel(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            fields[OperatorDocumentModel.OperatorKey] = new TextTemplateModel(0, 0, FontWeights.Normal);
+
+            Debug.Assert(doc.DocumentType.Type.Equals("operator"));
             return new LayoutModel(fields, doc.DocumentType);
         }
     }

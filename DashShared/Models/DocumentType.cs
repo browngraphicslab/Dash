@@ -14,5 +14,19 @@ namespace DashShared
         /// </summary>
         public string Type { get; set; }
 
+        public DocumentType()
+        {
+        }
+
+        public DocumentType(string guid)
+        {
+            Id = guid;
+        }
+
+        public DocumentType(string guid, string type)
+        {
+            Id = guid;
+            Type = type;
+        }
     }
 }
