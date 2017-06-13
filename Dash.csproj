@@ -89,6 +89,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="Assets\MOCK_DATA.json" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +97,8 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Models\DocumentModel.cs" />
+    <Compile Include="Models\DocumentsFieldModel.cs" />
+    <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />

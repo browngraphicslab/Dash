@@ -1,28 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Windows.UI.Xaml;
 
-namespace Dash.Models
+namespace Dash
 {
-    class DocumentsFieldModel : FieldModel
+    public class DocumentsFieldModel : FieldModel
     {
-        public ICollection<DocumentModel> Data { get; set; }
+        private List<DocumentModel> _docs;
 
-        DocumentsFieldModel()
+        public DocumentsFieldModel(List<DocumentModel> docs)
         {
-        }
-
-        DocumentsFieldModel(ICollection<DocumentModel> documents)
-        {
-            Data = new List<DocumentModel>(documents);
+            _docs = docs;
         }
 
         public override UIElement MakeView(TemplateModel template)
         {
-            throw new NotImplementedException();
+            foreach (var docModel in _docs)
+            {
+                DocumentViewModel docVM = new DocumentViewModel(docModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                DocumentView docView = new DocumentView();
+                docView.DataContext = docVM;
+            }
         }
     }
 }

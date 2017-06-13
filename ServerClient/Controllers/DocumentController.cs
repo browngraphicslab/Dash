@@ -72,5 +72,21 @@ namespace Dash
 
             return newDoc;
         }
+
+        public DocumentModel CreateDocumentAsync(DocumentType type)
+        {
+            var id = $"{_numDocs++}";
+
+            var newDoc = new DocumentModel
+            {
+                DocumentType = type,
+                Fields = new Dictionary<Key, FieldModel>(),
+                Id = id
+            };
+
+            _documents[id] = newDoc;
+
+            return newDoc;
+        }
     }
 }

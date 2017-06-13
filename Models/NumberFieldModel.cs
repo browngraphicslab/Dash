@@ -10,7 +10,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    class NumberFieldModel : FieldModel
+    public class NumberFieldModel : FieldModel
     {
         public NumberFieldModel() { }
 

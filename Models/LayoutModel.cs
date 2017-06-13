@@ -126,5 +126,20 @@ namespace Dash
             Debug.Assert(doc.DocumentType.Type.Equals("twoimages"));
             return new LayoutModel(fields, doc.DocumentType);
         }
+
+        public static LayoutModel ExampleApiObject(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            var Keys = doc.Fields.Keys;
+            fields[Keys.First(k => k.Name == "id")] = new TextTemplateModel(0, 20, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "first_name")] = new TextTemplateModel(0, 60, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "last_name")] = new TextTemplateModel(0, 100, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "email")] = new TextTemplateModel(0, 140, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "gender")] = new TextTemplateModel(0, 180, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "ip_address")] = new TextTemplateModel(0, 220, FontWeights.Normal);
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
     }
 }

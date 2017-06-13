@@ -48,20 +48,28 @@ namespace Dash
             DocumentModel image = DocumentModel.OneImage();
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
 
+            DocumentModel collection = DocumentModel.CollectionExample();
+
+
             DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model2 = new DocumentViewModel(recipe, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model3 = new DocumentViewModel(image, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model4 = new DocumentViewModel(image2, DocumentLayoutModelSource.DefaultLayoutModelSource);
 
+            DocumentViewModel model5 = new DocumentViewModel(collection, DocumentLayoutModelSource.DefaultLayoutModelSource);
+
+
             DocumentView view1 = new DocumentView();
             DocumentView view2 = new DocumentView();
             DocumentView view3 = new DocumentView();
             DocumentView view4 = new DocumentView();
+            DocumentView view5 = new DocumentView();
 
             view1.DataContext = model1;
             view2.DataContext = model2;
             view3.DataContext = model3;
             view4.DataContext = model4;
+            view5.DataContext = model5;
 
             //view1.Margin = new Thickness(20, 20, 0, 0);
             //view1.Width = 200;

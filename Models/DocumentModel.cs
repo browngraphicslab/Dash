@@ -11,6 +11,7 @@ using Windows.UI.Text;
 using Windows.UI.Xaml;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace Dash
 {
@@ -140,7 +141,19 @@ namespace Dash
             return dm;
         }
 
-        
-        
+
+        public static DocumentModel CollectionExample()
+        {
+            var apiSource = new ExampleApiSource();
+
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            var documentsKey = keyController.CreateKeyAsync("documents");
+            fields[documentsKey] = new DocumentsFieldModel(new ExampleApiSource().GetDocumentsAsync());
+        }
     }
 }
