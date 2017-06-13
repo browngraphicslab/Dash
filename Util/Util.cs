@@ -8,7 +8,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 
-namespace Dash.StaticClasses
+namespace Dash
 {
     public static class Util
     {

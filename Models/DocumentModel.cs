@@ -9,77 +9,130 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
     /// <summary>
     /// A mapping of keys to FieldModels.
     /// </summary>
-    public class DocumentModel
+    public class DocumentModel : AuthorizableEntityBase
     {
+
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        public Dictionary<string, FieldModel> Fields;
+        public Dictionary<Key, FieldModel> Fields;
 
         /// <summary>
         /// The type of this document.
         /// </summary>
-        public string DocumentType
-        {
-            get { return (Fields["Type"] as TextFieldModel).Data; }
-            set { (Fields["Type"] as TextFieldModel).Data = value; }
-        }
+        public DocumentType DocumentType { get; set; }
+        //{
+        //    get { return (Fields["Type"] as TextFieldModel).Data; }
+        //    set { (Fields["Type"] as TextFieldModel).Data = value; }
+        //}
 
         /// <summary>
         /// Initializes a document with given data and type.
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<string, FieldModel> fields, string type)
+        public DocumentModel(IDictionary<Key, FieldModel> fields, DocumentType type)
         {
             if (type == null)
             {
                 throw new ArgumentNullException();
             }
 
-            Fields = new Dictionary<string, FieldModel>(fields);
-            Fields["Type"] = new TextFieldModel(type);
+            Fields = new Dictionary<Key, FieldModel>(fields);
         }
 
+        public DocumentModel()
+        {
+        }
+
+        // Hard coded document models 
 
         public static DocumentModel UmpireDocumentModel()
         {
-            Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();
-            fields["name"] = new TextFieldModel("Mr.U");
-            fields["experience"] = new TextFieldModel("100 years"); 
-            return new DocumentModel(fields, "Umpires");
+            // get access to controllers, 
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            // create each of the keys //TODO this is not going to work in the real world
+            var nameKey = keyController.CreateKeyAsync("name");
+            fields[nameKey] = new TextFieldModel("Mr.U");
+            var experienceKey = keyController.CreateKeyAsync("experience");
+            fields[experienceKey] = new TextFieldModel("100 years");
+
+            // create the type //TODO this is not going to work in the real world
+            var typeKey = typeController.CreateTypeAsync("umpire");
+            return new DocumentModel(fields, typeKey);
         }
 
         public static DocumentModel Food2ForkRecipeDocumentModel()
         {
-            Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();
-            fields["publisher"] = new TextFieldModel("Penguin"); 
-            fields["source_url"] = new TextFieldModel("httpthisisaurl.com");
-            fields["title"] = new TextFieldModel("good food");
-            fields["f2f_url"] = new TextFieldModel("thisisaf2furl.com");
-            return new DocumentModel(fields, "recipes");
+            // get access to controllers, 
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            // create each of the keys //TODO this is not going to work in the real world
+            var publisherKey = keyController.CreateKeyAsync("publisher");
+            fields[publisherKey] = new TextFieldModel("Penguin");
+            var sourceKey = keyController.CreateKeyAsync("source_url");
+            fields[sourceKey] = new TextFieldModel("httpthisisaurl.com");
+            var titleKey = keyController.CreateKeyAsync("title");
+            fields[titleKey] = new TextFieldModel("good food");
+
+            // create the type //TODO this is not going to work in the real world
+            var typeKey = typeController.CreateTypeAsync("recipes");
+            return new DocumentModel(fields, typeKey);
         }
 
         public static DocumentModel OneImage()
         {
-            Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();
-            fields["content"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-            return new DocumentModel(fields, "oneimage");
+            // get access to controllers, 
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            var contentKey = keyController.CreateKeyAsync("content");
+            fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+
+            var type = typeController.CreateTypeAsync("oneimage");
+
+            return new DocumentModel(fields, type);
         }
 
         public static DocumentModel TwoImagesAndText()
         {
-            Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();
-            fields["content"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-            fields["content2"] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-            fields["text"] = new TextFieldModel("These are 2 cats");
-            return new DocumentModel(fields, "twoimages");
+            // get access to controllers, 
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            var contentKey = keyController.CreateKeyAsync("content");
+            fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+            var content2Key = keyController.CreateKeyAsync("content2");
+            fields[content2Key] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
+            var textKey = keyController.CreateKeyAsync("text");
+            fields[textKey] = new TextFieldModel("These are 2 cats");
+
+            var type = typeController.CreateTypeAsync("twoimages");
+
+            return new DocumentModel(fields, type);
         }
 
         

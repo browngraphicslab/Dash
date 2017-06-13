@@ -11,7 +11,6 @@ namespace DashShared
 
         public WorkspaceModel(string name)
         {
-            Name = name;
         }
 
         public IEnumerable<CollectionModel> Collections { get; set; }

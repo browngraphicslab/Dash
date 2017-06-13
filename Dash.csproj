@@ -101,12 +101,17 @@
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\ImageTemplateModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
+    <Compile Include="Models\NumberFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
+    <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\TextTemplateModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerClient\Controllers\AccountController.cs" />
     <Compile Include="ServerClient\Controllers\AuthenticationController.cs" />
+    <Compile Include="ServerClient\Controllers\DocumentController.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Controllers\ServerController.cs" />
     <Compile Include="ServerClient\Controllers\SignalrClient.cs" />
@@ -118,7 +123,7 @@
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
-    <Compile Include="StaticClasses\Util.cs" />
+    <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\FreeformViewModel.cs" />
@@ -213,15 +218,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="DashShared\DashShared.csproj">
-      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
-      <Name>DashShared</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="ServerClient\Models\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

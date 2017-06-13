@@ -19,19 +19,12 @@ namespace DashShared
         public string Id { get; set; }
 
         /// <summary>
-        /// The name of the entity, this is useful for search and provides a front end that
-        /// can be displayed to the user
-        /// </summary>
-        [Required]
-        public string Name { get; set; }
-
-        /// <summary>
         /// Pretty print the key for debugging purposes
         /// </summary>
         /// <returns>The well formatted string</returns>
         public override string ToString()
         {
-            return base.ToString() + $"Id:{Id} Name:{Name}";
+            return $"Id:{Id}" + base.ToString();
         }
     }
 }

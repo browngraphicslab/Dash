@@ -37,7 +37,6 @@ namespace Dash
                 _documentViewModel = value;
                 InitializeGrid(XDocumentGridLeft);
                 InitializeGrid(XDocumentGridRight);
-
             }
         }
 
@@ -130,6 +129,16 @@ namespace Dash
 
                 j++;
             }
+        }
+
+        private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            FreeformView freeform = sender as FreeformView;
+            Debug.Assert(freeform != null);
+            this.MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
+            this.MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
+            this.MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
+            this.MinHeight = HeaderHeight * 2;
         }
     }
 }
