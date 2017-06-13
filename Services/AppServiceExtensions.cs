@@ -35,6 +35,7 @@ namespace Dash
             serviceCollection.AddSingleton<TypeController, TypeController>(); //TODO change to transient
             serviceCollection.AddSingleton<KeyController, KeyController>(); //TODO change to transient
             serviceCollection.AddSingleton<ExampleApiSource, ExampleApiSource>(); //TODO remove this its an example
+            serviceCollection.AddSingleton<PricePerSquareFootApi, PricePerSquareFootApi>(); //TODO remove this its an example
 
 
             // view model services, these are here because they rely on access to server controllers in their constructors

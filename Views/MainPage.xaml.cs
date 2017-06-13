@@ -47,16 +47,16 @@ namespace Dash
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             DocumentModel image = DocumentModel.OneImage();
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
-
             DocumentModel collection = await DocumentModel.CollectionExample();
+            DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
 
             DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model2 = new DocumentViewModel(recipe, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model3 = new DocumentViewModel(image, DocumentLayoutModelSource.DefaultLayoutModelSource);
             DocumentViewModel model4 = new DocumentViewModel(image2, DocumentLayoutModelSource.DefaultLayoutModelSource);
-
             DocumentViewModel model5 = new DocumentViewModel(collection, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt, DocumentLayoutModelSource.DefaultLayoutModelSource);
 
 
             DocumentView view1 = new DocumentView();
@@ -64,12 +64,14 @@ namespace Dash
             DocumentView view3 = new DocumentView();
             DocumentView view4 = new DocumentView();
             DocumentView view5 = new DocumentView();
+            DocumentView view6 = new DocumentView();
 
             view1.DataContext = model1;
             view2.DataContext = model2;
             view3.DataContext = model3;
             view4.DataContext = model4;
             view5.DataContext = model5;
+            view6.DataContext = model6;
 
             //view1.Margin = new Thickness(20, 20, 0, 0);
             //view1.Width = 200;
@@ -85,7 +87,8 @@ namespace Dash
             //FreeformView.Canvas.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view3);
             FreeformView.Canvas.Children.Add(view4);
-            FreeformView.Canvas.Children.Add(view5);
+            //FreeformView.Canvas.Children.Add(view5);
+            FreeformView.Canvas.Children.Add(view6);
 
 
 

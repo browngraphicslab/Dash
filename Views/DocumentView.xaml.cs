@@ -226,6 +226,7 @@ namespace Dash
         /// <param name="e"></param>
         private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            e.Handled = true;
             OperationWindow window = new OperationWindow(1000, 800);
 
             var dvm = DataContext as DocumentViewModel;

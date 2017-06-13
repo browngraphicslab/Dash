@@ -146,6 +146,17 @@ namespace Dash
             return new LayoutModel(fields, doc.DocumentType);
         }
 
+        public static LayoutModel PricePerSquareFootApiObject(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            var Keys = doc.Fields.Keys;
+            fields[Keys.First(k => k.Name == "price")] = new TextTemplateModel(0,0, FontWeights.Normal);
+            fields[Keys.First(k => k.Name == "sqft")] = new TextTemplateModel(0, 100, FontWeights.Normal);
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
         public static LayoutModel ExampleCollectionModel(DocumentModel doc)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();

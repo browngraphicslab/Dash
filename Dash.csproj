@@ -111,6 +111,7 @@
     <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
+    <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
@@ -182,6 +183,7 @@
     <Content Include="Assets\a.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
+    <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />

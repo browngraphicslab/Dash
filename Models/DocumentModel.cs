@@ -170,5 +170,29 @@ namespace Dash
             dm.Fields = fields;
             return dm;
         }
+
+
+
+        public static async Task<DocumentModel> PricePerSquareFootExample()
+        {
+            var apiSource = App.Instance.Container.GetRequiredService<PricePerSquareFootApi>();
+            await apiSource.Initialize();
+
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            var documentsKey = keyController.CreateKeyAsync("documents");
+            //fields[documentsKey] = new DocumentCollectionFieldModel(apiSource.GetDocumentsAsync());
+
+
+
+            //var dm = docController.CreateDocumentAsync("collection_example");
+            //dm.Fields = fields;
+
+            return apiSource.GetDocumentsAsync().First();
+        }
     }
 }
