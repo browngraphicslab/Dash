@@ -85,6 +85,8 @@ namespace Dash
             //FreeformView.Canvas.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view3);
             FreeformView.Canvas.Children.Add(view4);
+            FreeformView.Canvas.Children.Add(view5);
+
 
 
         }

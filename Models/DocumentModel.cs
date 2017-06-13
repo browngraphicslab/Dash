@@ -144,7 +144,7 @@ namespace Dash
 
         public static async Task<DocumentModel> CollectionExample()
         {
-            var apiSource = new ExampleApiSource();
+            var apiSource = App.Instance.Container.GetRequiredService<ExampleApiSource>();
             await apiSource.Initialize();
 
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
@@ -154,7 +154,7 @@ namespace Dash
             var fields = new Dictionary<Key, FieldModel>();
 
             var documentsKey = keyController.CreateKeyAsync("documents");
-            fields[documentsKey] = new DocumentCollectionFieldModel(new ExampleApiSource().GetDocumentsAsync());
+            fields[documentsKey] = new DocumentCollectionFieldModel(apiSource.GetDocumentsAsync());
 
             var dm = docController.CreateDocumentAsync("collection_example");
             dm.Fields = fields;

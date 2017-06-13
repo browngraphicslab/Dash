@@ -45,6 +45,9 @@ namespace Dash
                 } else if (doc.DocumentType.Type == "example_api_object")
                 {
                     setLayoutModel(doc.DocumentType, LayoutModel.ExampleApiObject(doc));
+                } else if (doc.DocumentType.Type == "collection_example")
+                {
+                    setLayoutModel(doc.DocumentType, LayoutModel.ExampleCollectionModel(doc));
                 }
             }
             if (LayoutTemplates.ContainsKey(doc.DocumentType))

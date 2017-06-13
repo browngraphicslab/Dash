@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Dash.Models;
 
 namespace Dash
@@ -16,6 +18,9 @@ namespace Dash
 
         public override UIElement MakeView(TemplateModel template)
         {
+            var collectionTemplate = template as DocumentCollectionTemplateModel;
+            Debug.Assert(collectionTemplate != null);
+
             var docViews = new ObservableCollection<DocumentView>();
             foreach (var docModel in _docs)
             {
@@ -28,6 +33,9 @@ namespace Dash
             var collectionModel = new CollectionModel(docViews);
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = collectionViewModel.View;
+
+            Canvas.SetTop(view, collectionTemplate.Top);
+            Canvas.SetLeft(view, collectionTemplate.Left);
 
             return view;
         }

@@ -30,8 +30,6 @@ namespace Dash
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            // TODO remove this later 
-            this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
             this.Width = 200;
             this.Height = 400;
         }

@@ -40,10 +40,12 @@ namespace Dash
 
         public async Task Initialize()
         {
-            StorageFolder folder =
-                await StorageFolder.GetFolderFromPathAsync(
-                    @"C:\Users\luke murray\Documents\Visual Studio 2015\Projects\Dash\Assets");
-            var file = await folder.GetFileAsync("MOCK_DATA.json");
+            //StorageFolder folder =
+            //    await StorageFolder.GetFolderFromPathAsync(
+            //        @"C:\Users\luke murray\Documents\Visual Studio 2015\Projects\Dash\Assets");
+            //var file = await folder.GetFileAsync("MOCK_DATA.json");
+
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/a.txt"));
             var docSource = await FileIO.ReadTextAsync(file);
 
             _documents = JsonConvert.DeserializeObject<List<ExampleObject>>(docSource);
