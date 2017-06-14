@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -18,8 +19,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.ViewModels;
+using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -42,7 +45,7 @@ namespace Dash
                 _documentViewModel = value;
                 var layout =
                     DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(DocumentViewModel.DocumentModel);
-                InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout);
+                InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
 
                 Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(_documentViewModel.DocumentModel.Fields);
                 DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
@@ -52,6 +55,7 @@ namespace Dash
                 //DivideOperatorModel divide = new DivideOperatorModel();
                 OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
                 opModel.Id = docController.GetDocumentId();
+                opModel.OperatorField = new DivideOperatorModel();
                 docController.UpdateDocumentAsync(opModel);
                 DocumentView view = new DocumentView();
                 view.Width = 200;
@@ -61,14 +65,14 @@ namespace Dash
                 XFreeformView.Canvas.Children.Add(view);
 
 
-                opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel { DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.PriceKey });
+                //opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.PriceKey));
                 NumberFieldModel nfm = new NumberFieldModel(0);
-                nfm.InputReference =
-                    new ReferenceFieldModel {DocId = opModel.Id, FieldKey = DivideOperatorModel.QuotientKey};
+                //nfm.InputReference =
+                    //new ReferenceFieldModel(opModel.Id, DivideOperatorModel.QuotientKey);
                 _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
-                opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel { DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.SqftKey });
+                //opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.SqftKey));
 
-                InitializeGrid(XDocumentGridRight, _output, layout);
+                InitializeGrid(XDocumentGridRight, _output, layout, false);
 
 
                 XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -102,7 +106,7 @@ namespace Dash
         /// <summary>
         ///  Makes the left grid representing Key,Value pairs of document tapped 
         /// </summary>
-        public void InitializeGrid(Grid grid, DocumentModel doc, LayoutModel layout)
+        public void InitializeGrid(Grid grid, DocumentModel doc, LayoutModel layout, bool isOutput)
         {
             grid.Children.Clear();
 
@@ -155,6 +159,36 @@ namespace Dash
                     element.VerticalAlignment = VerticalAlignment.Center;
                     element.HorizontalAlignment = HorizontalAlignment.Center;
                 }
+                element.AllowDrop = true;
+                element.DragEnter += (sender, args) =>
+                {
+                    args.AcceptedOperation = DataPackageOperation.Copy;
+                };
+
+                element.Drop += async (sender, args) =>
+                {
+                    if (args.DataView.Contains(StandardDataFormats.Text))
+                    {
+                        var text = await args.DataView.GetTextAsync();
+                        var key = JsonConvert.DeserializeObject<OperatorView.IOReference>(text);
+                        if (key.IsOutput == isOutput)
+                        {
+                            return;
+                        }
+                        if (key.IsOutput)
+                        {
+                            pair.Value.InputReference = key.ReferenceFieldModel;
+                            //Debug.WriteLine(pair.Value.InputReference.FieldKey.Name);
+                        }
+                        else
+                        {
+                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                            var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                            opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
+                        }
+                    }
+                };
+
                 //Grid g1 = new Grid();
                 element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
@@ -189,6 +223,16 @@ namespace Dash
             this.MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
             this.MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
             this.MinHeight = HeaderHeight * 2;
+        }
+
+        private void WindowTemplate_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("Pointer Pressed");
+        }
+
+        private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("Pointer Released");
         }
     }
 }

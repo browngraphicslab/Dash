@@ -17,7 +17,7 @@ namespace Dash
 {
     public abstract class OperatorFieldModel : FieldModel
     {
-
+        public string DocumentID { get; set; } //TODO probably remove this along with code in setter in OperatorDocumentModel
         public virtual List<Key> Inputs { get; } = new List<Key>();
         public virtual List<Key> Outputs{ get; } = new List<Key>();
 

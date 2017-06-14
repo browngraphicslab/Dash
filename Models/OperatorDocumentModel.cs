@@ -10,7 +10,7 @@ namespace Dash
 {
     public class OperatorDocumentModel : DocumentModel
     {
-        public static Key OperatorKey = new Key("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A");
+        public static Key OperatorKey = new Key("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
         public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
 
         /// <summary>
@@ -21,7 +21,11 @@ namespace Dash
         public OperatorFieldModel OperatorField
         {
             get { return Fields[OperatorKey] as OperatorFieldModel; }
-            set { Fields[OperatorKey] = value; }
+            set
+            {
+                value.DocumentID = Id;
+                Fields[OperatorKey] = value;
+            }
         }
 
         public OperatorDocumentModel(OperatorFieldModel operatorField)
@@ -70,7 +74,7 @@ namespace Dash
             foreach (var fieldModel in results)
             {
                 Fields[fieldModel.Key] = fieldModel.Value;
-                OnDocumentFieldUpdated(new ReferenceFieldModel {DocId = Id, FieldKey = fieldModel.Key});
+                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, fieldModel.Key));
             }
         }
 

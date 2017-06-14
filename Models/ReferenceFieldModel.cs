@@ -24,6 +24,12 @@ namespace Dash
         /// Cached type of field
         /// </summary>
         public string Type { get; set; }
+
+        public ReferenceFieldModel(string docId, Key fieldKey)
+        {
+            DocId = docId;
+            FieldKey = fieldKey;
+        }
         
         public override UIElement MakeView(TemplateModel template)
         {

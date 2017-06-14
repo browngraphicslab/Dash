@@ -23,6 +23,10 @@ namespace Dash
             get { return _inputReference; }
             set
             {
+                if (value == null)//TODO Remove this when JSON serialization is removed
+                {
+                    return;
+                }
                 _inputReference = value;
                 DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
                 cont.GetDocumentAsync(value.DocId).DocumentFieldUpdated += FieldModel_DocumentFieldUpdated;

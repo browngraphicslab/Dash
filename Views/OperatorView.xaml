@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged">
+    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" >
 
     <Grid>
         <Grid.ColumnDefinitions>
@@ -15,7 +15,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <ListView x:Name="InputListView" Grid.Column="0">
+        <ListView x:Name="InputListView" Grid.Column="0" DragItemsStarting="InputListView_DragItemsStarting">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -29,7 +29,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2">
+        <ListView x:Name="OutputListView" Grid.Column="2" DragItemsStarting="OutputListView_DragItemsStarting">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -38,7 +38,7 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="0"></TextBlock>
-                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1"></Ellipse>
+                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" ></Ellipse>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
