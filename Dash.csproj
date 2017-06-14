@@ -143,7 +143,6 @@
     <Compile Include="ViewModels\LayoutViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
-    <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\CollectionView.xaml.cs">
@@ -166,6 +165,9 @@
     </Compile>
     <Compile Include="Views\OperationWindow.xaml.cs">
       <DependentUpon>OperationWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OperatorView.xaml.cs">
+      <DependentUpon>OperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
@@ -229,6 +231,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\OperationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -56,18 +56,20 @@ namespace Dash
                 DocumentView view = new DocumentView();
                 view.Width = 200;
                 view.Height = 200;
-                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                DocumentViewModel vm = new DocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
                 opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel {DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.PriceKey});
-                opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel { DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.SqftKey });
+                opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel {DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.SqftKey });
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 nfm.InputReference =
                     new ReferenceFieldModel {DocId = opModel.Id, FieldKey = DivideOperatorModel.QuotientKey};
                 _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
 
                 InitializeGrid(XDocumentGridRight, _output, layout);
+
+
                 XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
                 XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 Button createButton = new Button

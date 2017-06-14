@@ -1,9 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,7 +23,9 @@ namespace Dash
 
         public override UIElement MakeView(TemplateModel template)
         {
-            throw new NotImplementedException();
+            OperatorView view = new OperatorView();
+            view.DataContext = this;
+            return view;
         }
 
         public abstract Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences);

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
@@ -37,18 +38,6 @@ namespace Dash
             double b = numberB.Data;
             result[DifferenceKey] = new NumberFieldModel(a - b);
             return result;
-        }
-
-        public override UIElement MakeView(TemplateModel template)
-        {
-            Rectangle rect = new Rectangle
-            {
-                Fill = new SolidColorBrush(Colors.OrangeRed),
-                Width = 100,
-                Height = 100
-            };
-
-            return rect;
         }
     }
 }

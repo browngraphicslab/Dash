@@ -27,6 +27,17 @@ namespace Dash
             DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
             NumberFieldModel fm = cont.GetFieldInDocument(fieldReference) as NumberFieldModel;
             Data = fm.Data;
+
+            //    DocumentModel doc = cont.GetDocumentAsync(fieldReference.DocId);
+            //    if (doc != null)
+            //    {
+            //        if (doc.Fields.ContainsKey(fieldReference.FieldKey))
+            //        {
+            //            var fm = doc.Fields[fieldReference.FieldKey] as NumberFieldModel;
+            //            Data = fm.Data;
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>
