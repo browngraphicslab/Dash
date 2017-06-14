@@ -19,9 +19,15 @@ namespace Dash.Views.HomePage
 {
     public sealed partial class DashboardsUserControl : UserControl
     {
+        public event RoutedEventHandler ButtonClick;
+
         public DashboardsUserControl()
         {
             this.InitializeComponent();
+        }
+        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.ButtonClick?.Invoke(this, e);
         }
     }
 }
