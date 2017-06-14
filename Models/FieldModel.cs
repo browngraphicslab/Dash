@@ -12,7 +12,7 @@ namespace Dash
     /// <summary>
     /// Base data class for documents; holds data and displays it as UIElement 
     /// </summary>
-    public abstract class FieldModel
+    public abstract class FieldModel : ViewModelBase //TODO Should ViewModelBase be named something else or should FieldModel have a ViewModel
     {
         public Key Key { get; set; }
 

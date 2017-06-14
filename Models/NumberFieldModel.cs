@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
@@ -20,7 +21,12 @@ namespace Dash
             Data = data;
         }
 
-        public double Data { get; set; }
+        private double _data;
+        public double Data
+        {
+            get { return _data; }
+            set { SetProperty(ref _data, value); }
+        }
 
         protected override void UpdateValue(ReferenceFieldModel fieldReference)
         {
@@ -51,10 +57,13 @@ namespace Dash
             TextTemplateModel textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
             //    TextViewModel vm = new TextViewModel(this, template);
-            TextBlock tb = new TextBlock
+            TextBlock tb = new TextBlock();
+            Binding binding = new Binding
             {
-                Text = Data.ToString(CultureInfo.InvariantCulture)
+                Source = this,
+                Path = new PropertyPath("Data")
             };
+            tb.SetBinding(TextBlock.TextProperty, binding);
             if (textTemplate != null)//TODO remove this check
             {
                 Canvas.SetTop(tb, textTemplate.Top);
