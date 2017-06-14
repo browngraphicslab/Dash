@@ -18,6 +18,7 @@ namespace Dash
         // the keys to the documents in this api
         public static readonly Key PriceKey = new Key("20D406EA-C7BE-4BAC-BEC2-E740ABB48876", "price");
         public static readonly Key SqftKey = new Key("1F5E81A6-4D63-4F1F-B17F-EEF01508A4EC", "sqft");
+        public static readonly Key TestKey = new Key("882978C8-5D04-4A67-9A7F-C61633A2FF02", "test");
 
         // the type of this document
         public DocumentType DocumentType;
@@ -27,6 +28,7 @@ namespace Dash
         {
             public int price { get; set; }
             public double sqft { get; set; }
+            public double test { get; set; }
         }
 
         public PricePerSquareFootApi()
@@ -59,6 +61,7 @@ namespace Dash
                 var fields = new Dictionary<Key, FieldModel>();
                 fields[PriceKey] = new NumberFieldModel(doc.price);
                 fields[SqftKey] = new NumberFieldModel(doc.sqft);
+                fields[TestKey] = new NumberFieldModel(doc.test);
 
                 var newDoc = docController.CreateDocumentAsync(DocumentType);
                 newDoc.Fields = fields;

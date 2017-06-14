@@ -161,8 +161,9 @@ namespace Dash
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
 
             var Keys = doc.Fields.Keys;
-            fields[Keys.First(k => k.Name == "price")] = new TextTemplateModel(0,0, FontWeights.Normal);
-            fields[Keys.First(k => k.Name == "sqft")] = new TextTemplateModel(0, 100, FontWeights.Normal);
+            fields[PricePerSquareFootApi.PriceKey] = new TextTemplateModel(0,0, FontWeights.Normal);
+            fields[PricePerSquareFootApi.SqftKey] = new TextTemplateModel(0, 100, FontWeights.Normal);
+            fields[PricePerSquareFootApi.TestKey] = new TextTemplateModel(0, 200, FontWeights.Normal);
 
             return new LayoutModel(fields, doc.DocumentType);
         }
