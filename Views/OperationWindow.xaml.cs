@@ -60,12 +60,13 @@ namespace Dash
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
-                opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel {DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.PriceKey});
-                opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel {DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.SqftKey });
+
+                opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel { DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.PriceKey });
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 nfm.InputReference =
                     new ReferenceFieldModel {DocId = opModel.Id, FieldKey = DivideOperatorModel.QuotientKey};
                 _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
+                opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel { DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.SqftKey });
 
                 InitializeGrid(XDocumentGridRight, _output, layout);
 

@@ -70,6 +70,7 @@ namespace Dash
             foreach (var fieldModel in results)
             {
                 Fields[fieldModel.Key] = fieldModel.Value;
+                OnDocumentFieldUpdated(new ReferenceFieldModel {DocId = Id, FieldKey = fieldModel.Key});
             }
         }
 

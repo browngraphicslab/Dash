@@ -44,7 +44,11 @@ namespace Dash
         public FieldModel GetFieldInDocument(ReferenceFieldModel referenceFieldModel)
         {
             DocumentModel model = _documents[referenceFieldModel.DocId];
-            return model?.Fields[referenceFieldModel.FieldKey];
+            if (model != null && model.Fields.ContainsKey(referenceFieldModel.FieldKey))
+            {
+                return model.Fields[referenceFieldModel.FieldKey];
+            }
+            return null;
         }
 
         public DocumentModel GetDocumentAsync(string docId)

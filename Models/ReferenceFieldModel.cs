@@ -29,5 +29,21 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
+
+        public override bool Equals(object obj)
+        {
+            ReferenceFieldModel refFieldModel = obj as ReferenceFieldModel;
+            if (refFieldModel == null)
+            {
+                return false;
+            }
+
+            return refFieldModel.DocId.Equals(DocId) && refFieldModel.FieldKey.Equals(FieldKey);
+        }
+
+        public override int GetHashCode()
+        {
+            return DocId.GetHashCode() ^ FieldKey.GetHashCode();
+        }
     }
 }

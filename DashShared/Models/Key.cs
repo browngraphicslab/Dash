@@ -30,5 +30,20 @@ namespace DashShared
             Id = guid;
             Name = name;
         }
+
+        public override bool Equals(object obj)
+        {
+            Key k = obj as Key;
+            if (k == null)
+            {
+                return false;
+            }
+            return k.Id.Equals(Id);
+        }
+
+        public override int GetHashCode()
+        {
+            return Id.GetHashCode();
+        }
     }
 }

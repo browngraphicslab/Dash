@@ -26,7 +26,10 @@ namespace Dash
         {
             DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
             NumberFieldModel fm = cont.GetFieldInDocument(fieldReference) as NumberFieldModel;
-            Data = fm.Data;
+            if (fm != null)
+            {
+                Data = fm.Data;
+            }
 
             //    DocumentModel doc = cont.GetDocumentAsync(fieldReference.DocId);
             //    if (doc != null)
@@ -52,7 +55,7 @@ namespace Dash
             {
                 Text = Data.ToString(CultureInfo.InvariantCulture)
             };
-            if (textTemplate != null)//TODO remove this
+            if (textTemplate != null)//TODO remove this check
             {
                 Canvas.SetTop(tb, textTemplate.Top);
                 Canvas.SetLeft(tb, textTemplate.Left);
