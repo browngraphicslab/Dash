@@ -16,6 +16,6 @@
             VerticalAlignment="Stretch" 
             Background="AliceBlue" ManipulationMode="All">
         </Canvas>
-        
+
     </Grid>
 </UserControl>

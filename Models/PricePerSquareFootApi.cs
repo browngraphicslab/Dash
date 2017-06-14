@@ -16,7 +16,8 @@ namespace Dash
         private List<ExampleObject> _documents;
 
         // the keys to the documents in this api
-        public List<Key> Keys;
+        public static readonly Key PriceKey = new Key("20D406EA-C7BE-4BAC-BEC2-E740ABB48876", "price");
+        public static readonly Key SqftKey = new Key("1F5E81A6-4D63-4F1F-B17F-EEF01508A4EC", "sqft");
 
         // the type of this document
         public DocumentType DocumentType;
@@ -42,13 +43,6 @@ namespace Dash
             _documents = JsonConvert.DeserializeObject<List<ExampleObject>>(docSource);
 
 
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            Keys = new List<Key>
-            {
-                keyController.CreateKeyAsync("price"),
-                keyController.CreateKeyAsync("sqft")
-            };
-
             var typeController = App.Instance.Container.GetRequiredService<TypeController>();
             DocumentType = typeController.CreateTypeAsync("price_per_square_foot");
 
@@ -63,8 +57,8 @@ namespace Dash
             foreach (var doc in _documents)
             {
                 var fields = new Dictionary<Key, FieldModel>();
-                fields[Keys.First(k => k.Name == "price")] = new NumberFieldModel(doc.price);
-                fields[Keys.First(k => k.Name == "sqft")] = new NumberFieldModel(doc.sqft);
+                fields[PriceKey] = new NumberFieldModel(doc.price);
+                fields[SqftKey] = new NumberFieldModel(doc.sqft);
 
                 var newDoc = docController.CreateDocumentAsync(DocumentType);
                 newDoc.Fields = fields;

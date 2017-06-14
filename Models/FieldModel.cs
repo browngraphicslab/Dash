@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -15,7 +16,32 @@ namespace Dash
     {
         public Key Key { get; set; }
 
-        public ReferenceFieldModel InputReference { get; set; } 
+        private ReferenceFieldModel _inputReference;
+
+        public ReferenceFieldModel InputReference
+        {
+            get { return _inputReference; }
+            set
+            {
+                _inputReference = value;
+                DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
+                cont.GetDocumentAsync(value.DocId).DocumentFieldUpdated += FieldModel_DocumentFieldUpdated;
+                UpdateValue(value);
+            }
+        }
+
+        private void FieldModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            if (fieldReference.Equals(InputReference))
+            {
+                UpdateValue(fieldReference);
+            }
+        }
+
+        protected virtual void UpdateValue(ReferenceFieldModel fieldReference)
+        {
+        }
+
         protected List<ReferenceFieldModel> OutputReferences { get; set; } = new List<ReferenceFieldModel>();
 
         public void AddOutputReference(ReferenceFieldModel reference)

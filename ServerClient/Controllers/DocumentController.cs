@@ -63,6 +63,12 @@ namespace Dash
             return model;
         }
 
+        //TODO Remove this
+        public string GetDocumentId()
+        {
+            return $"{_numDocs++}";
+        }
+
         public DocumentModel CreateDocumentAsync(string type)
         {
             var id = $"{_numDocs++}";

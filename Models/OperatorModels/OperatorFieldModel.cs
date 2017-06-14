@@ -11,6 +11,10 @@ namespace Dash
 {
     public abstract class OperatorFieldModel : FieldModel
     {
+
+        public virtual List<Key> Inputs { get; } = new List<Key>();
+        public virtual List<Key> Outputs{ get; } = new List<Key>();
+
         public override UIElement MakeView(TemplateModel template)
         {
             throw new NotImplementedException();

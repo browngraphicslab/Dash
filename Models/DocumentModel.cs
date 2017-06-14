@@ -172,7 +172,6 @@ namespace Dash
         }
 
 
-
         public static async Task<DocumentModel> PricePerSquareFootExample()
         {
             var apiSource = App.Instance.Container.GetRequiredService<PricePerSquareFootApi>();

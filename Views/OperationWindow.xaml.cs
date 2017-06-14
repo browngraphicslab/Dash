@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.ViewModels;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,8 +48,26 @@ namespace Dash
                 DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
                 _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.Fields = fields;
-                InitializeGrid(XDocumentGridRight, _output, layout);
 
+                //DivideOperatorModel divide = new DivideOperatorModel();
+                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
+                opModel.Id = docController.GetDocumentId();
+                docController.UpdateDocumentAsync(opModel);
+                DocumentView view = new DocumentView();
+                view.Width = 200;
+                view.Height = 200;
+                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                view.DataContext = vm;
+                XFreeformView.Canvas.Children.Add(view);
+
+                opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel {DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.PriceKey});
+                opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel { DocId = _documentViewModel.DocumentModel.Id, FieldKey = PricePerSquareFootApi.SqftKey });
+                NumberFieldModel nfm = new NumberFieldModel(0);
+                nfm.InputReference =
+                    new ReferenceFieldModel {DocId = opModel.Id, FieldKey = DivideOperatorModel.QuotientKey};
+                _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
+
+                InitializeGrid(XDocumentGridRight, _output, layout);
                 XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
                 XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
                 Button createButton = new Button
@@ -59,15 +78,6 @@ namespace Dash
                 XDocumentGridRight.Children.Add(createButton);
 
                 createButton.Tapped += B_Tapped;
-
-                TypeController typeController = App.Instance.Container.GetRequiredService<TypeController>();
-
-                //DivideOperatorModel divide = new DivideOperatorModel();
-                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
-                DocumentView view = new DocumentView();
-                DocumentViewModel vm = new DocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
-                view.DataContext = vm;
-                XFreeformView.Canvas.Children.Add(view);
             }
         }
 

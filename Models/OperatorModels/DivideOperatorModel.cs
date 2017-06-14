@@ -18,11 +18,14 @@ namespace Dash
     public class DivideOperatorModel : OperatorFieldModel
     {
         //Input keys
-        public static readonly Key AKey = new Key("AAC1631C-9DC3-48FC-984A-EE0D80C9A397", "Input A");
-        public static readonly Key BKey = new Key("A757D709-8D83-44C9-B047-D5DB6420F51F", "Input B");
+        public static readonly Key AKey = new Key("AAC1631C-9DC3-48FC-984A-EE0D80C9A397", "A");
+        public static readonly Key BKey = new Key("A757D709-8D83-44C9-B047-D5DB6420F51F", "B");
 
         //Output keys
         public static readonly Key QuotientKey = new Key("DA705E3D-4773-4C7D-B770-536BA321D0FA", "Quotient");
+
+        public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
+        public override List<Key> Outputs { get; } = new List<Key> {QuotientKey};
 
         public DivideOperatorModel()
         {

@@ -85,7 +85,7 @@ namespace Dash
         public DocumentModel DocumentModel { get; set; }
         public DocumentLayoutModelSource DocumentViewModelSource { get; set; }
 
-        public List<UIElement> GetUiElements()
+        public virtual List<UIElement> GetUiElements()
         {
             List<UIElement> uiElements = new List<UIElement>(DocumentModel.Fields.Count);
             LayoutModel layout = DocumentViewModelSource.DocumentLayoutModel(DocumentModel);

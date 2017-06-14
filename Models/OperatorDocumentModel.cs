@@ -18,7 +18,11 @@ namespace Dash
         /// </summary>
         protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
 
-        protected OperatorFieldModel OperatorField { get; set; }
+        public OperatorFieldModel OperatorField
+        {
+            get { return Fields[OperatorKey] as OperatorFieldModel; }
+            set { Fields[OperatorKey] = value; }
+        }
 
         public OperatorDocumentModel(OperatorFieldModel operatorField)
         {
@@ -31,7 +35,7 @@ namespace Dash
         public void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
         {
             DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            
+
             //TODO Remove existing output references and add new output reference
             //if (InputReferences.ContainsKey(fieldKey))
             //{
@@ -40,6 +44,7 @@ namespace Dash
             //}
             InputReferences[fieldKey] = reference;
             docController.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
+            Execute();
         }
 
         private void OperatorDocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -48,11 +53,26 @@ namespace Dash
             {
                 return;
             }
-            var results = OperatorField.Execute(InputReferences);
+            Execute();
+        }
+
+        private void Execute()
+        {
+            Dictionary<Key, FieldModel> results;
+            try
+            {
+                results = OperatorField.Execute(InputReferences);
+            }
+            catch (KeyNotFoundException e)
+            {
+                return;
+            }
             foreach (var fieldModel in results)
             {
                 Fields[fieldModel.Key] = fieldModel.Value;
             }
         }
+
+
     }
 }
