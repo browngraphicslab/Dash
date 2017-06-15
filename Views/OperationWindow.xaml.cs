@@ -19,7 +19,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Dash.ViewModels;
-using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -47,7 +46,7 @@ namespace Dash
                     DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(DocumentViewModel.DocumentModel);
                 InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
 
-                Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(_documentViewModel.DocumentModel.Fields);
+                Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(_documentViewModel.DocumentModel.Fields);//TODO this doesn't copy the FieldModels
                 DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
                 _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.Fields = fields;
@@ -63,7 +62,6 @@ namespace Dash
                 DocumentViewModel vm = new DocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
-
 
                 //opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.PriceKey));
                 NumberFieldModel nfm = new NumberFieldModel(0);

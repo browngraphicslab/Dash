@@ -77,7 +77,5 @@ namespace Dash
                 OnDocumentFieldUpdated(new ReferenceFieldModel(Id, fieldModel.Key));
             }
         }
-
-
     }
 }
