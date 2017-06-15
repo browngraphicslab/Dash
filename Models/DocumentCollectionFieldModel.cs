@@ -24,7 +24,7 @@ namespace Dash
             var docViews = new ObservableCollection<DocumentView>();
             foreach (var docModel in _docs)
             {
-                DocumentViewModel docVM = new DocumentViewModel(docModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                DocumentViewModel docVM = new DocumentViewModel(docModel);
                 DocumentView docView = new DocumentView();
                 docView.DataContext = docVM;
                 docViews.Add(docView);

@@ -51,12 +51,12 @@ namespace Dash
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
 
-            DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model2 = new DocumentViewModel(recipe, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model3 = new DocumentViewModel(image, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model4 = new DocumentViewModel(image2, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model5 = new DocumentViewModel(collection, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            DocumentViewModel model1 = new DocumentViewModel(umpire);
+            DocumentViewModel model2 = new DocumentViewModel(recipe);
+            DocumentViewModel model3 = new DocumentViewModel(image);
+            DocumentViewModel model4 = new DocumentViewModel(image2);
+            DocumentViewModel model5 = new DocumentViewModel(collection);
+            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
 
 
             DocumentView view1 = new DocumentView();

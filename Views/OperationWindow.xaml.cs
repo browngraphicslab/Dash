@@ -42,8 +42,7 @@ namespace Dash
             set
             {
                 _documentViewModel = value;
-                var layout =
-                    DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(DocumentViewModel.DocumentModel);
+                var layout = DocumentViewModel.GetLayoutModel();
                 InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
 
                 Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(_documentViewModel.DocumentModel.Fields);//TODO this doesn't copy the FieldModels
@@ -59,7 +58,7 @@ namespace Dash
                 DocumentView view = new DocumentView();
                 view.Width = 200;
                 view.Height = 200;
-                DocumentViewModel vm = new DocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                DocumentViewModel vm = new DocumentViewModel(opModel);
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
@@ -89,7 +88,7 @@ namespace Dash
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
             DocumentView view = new DocumentView();
-            DocumentViewModel viewModel = new DocumentViewModel(_output, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            DocumentViewModel viewModel = new DocumentViewModel(_output);
             view.DataContext = viewModel;
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
