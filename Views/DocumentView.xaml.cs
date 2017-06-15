@@ -233,6 +233,8 @@ namespace Dash
             if (dvm != null)
             {
                 window.DocumentViewModel = dvm;
+                //LayoutModel model = dvm.DocumentViewModelSource.DocumentLayoutModel(dvm.DocumentModel);
+                //LayoutModel model = new LayoutModel(dvm.DocumentModel.DocumentType);
             }
             Point center = RenderTransform.TransformPoint(e.GetPosition(this));
 

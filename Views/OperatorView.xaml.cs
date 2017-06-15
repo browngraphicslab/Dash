@@ -32,7 +32,7 @@ namespace Dash
             public ReferenceFieldModel ReferenceFieldModel { get; set; }
             public bool IsOutput { get; set; }
 
-            public Point CursorPosition { get; set; }
+            //public Point CursorPosition { get; set; }
 
             public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput/*, Point p*/)
             {
@@ -69,6 +69,9 @@ namespace Dash
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
+        /// <summary>
+        ///  Can return the position of the click in screen space 
+        /// </summary>
         private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -80,7 +83,6 @@ namespace Dash
                 OnIODragStarted(ioRef);
                 Debug.WriteLine("Input Drag started " + Util.PointTransformFromVisual(e.GetCurrentPoint(this).Position, this));
             }
-
             Debug.WriteLine("Pointer exited");
         }
 
@@ -95,7 +97,6 @@ namespace Dash
                 OnIODragStarted(ioRef);
                 Debug.WriteLine("Output Drag started" + this.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(this).Position));
             }
-
             Debug.WriteLine("Pointer exited");
         }
 

@@ -180,7 +180,6 @@ namespace Dash
                         if (key.IsOutput)
                         {
                             pair.Value.InputReference = key.ReferenceFieldModel;
-                            //Debug.WriteLine(pair.Value.InputReference.FieldKey.Name);
                         }
                         else
                         {
@@ -227,14 +226,6 @@ namespace Dash
             this.MinHeight = HeaderHeight * 2;
         }
 
-        private void WindowTemplate_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("Pointer Pressed");
-        }
 
-        private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("Pointer Released");
-        }
     }
 }
