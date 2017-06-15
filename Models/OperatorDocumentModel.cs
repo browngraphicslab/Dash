@@ -20,11 +20,11 @@ namespace Dash
 
         public OperatorFieldModel OperatorField
         {
-            get { return Fields[OperatorKey] as OperatorFieldModel; }
+            get { return Field(OperatorKey) as OperatorFieldModel; }
             set
             {
                 value.DocumentID = Id;
-                Fields[OperatorKey] = value;
+                SetField(OperatorKey, value);
             }
         }
 
@@ -73,7 +73,7 @@ namespace Dash
             }
             foreach (var fieldModel in results)
             {
-                Fields[fieldModel.Key] = fieldModel.Value;
+                SetField(fieldModel.Key, fieldModel.Value);
                 OnDocumentFieldUpdated(new ReferenceFieldModel(Id, fieldModel.Key));
             }
         }
