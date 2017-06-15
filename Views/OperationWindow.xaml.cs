@@ -37,7 +37,11 @@ namespace Dash
 
         private DocumentModel _output;
 
-        private Line connectionLine;
+        private Line _connectionLine;
+
+        private List<Ellipse> _leftEllipses = new List<Ellipse>();
+
+        private List<Ellipse> _rightEllipses = new List<Ellipse>();
 
         public DocumentViewModel DocumentViewModel
         {
@@ -91,21 +95,24 @@ namespace Dash
                 XDocumentGridRight.Children.Add(createButton);
 
                 createButton.Tapped += B_Tapped;
+
+                _rightEllipses.Add(new Ellipse { Width = 10, Height = 10, Fill = new SolidColorBrush() });
+
             }
         }
 
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
             Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
-            connectionLine = new Line();
+            _connectionLine = new Line();
             Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
-            connectionLine.X1 = pos.X;
-            connectionLine.Y1 = pos.Y;
-            connectionLine.X2 = 0;
-            connectionLine.Y2 = 0;
-            connectionLine.Stroke = new SolidColorBrush(Colors.Black);
-            connectionLine.StrokeThickness = 5;
-            XFreeformView.Canvas.Children.Add(connectionLine);
+            _connectionLine.X1 = pos.X;
+            _connectionLine.Y1 = pos.Y;
+            _connectionLine.X2 = 0;
+            _connectionLine.Y2 = 0;
+            _connectionLine.Stroke = new SolidColorBrush(Colors.Black);
+            _connectionLine.StrokeThickness = 5;
+            XFreeformView.Canvas.Children.Add(_connectionLine);
         }
 
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
@@ -208,13 +215,9 @@ namespace Dash
                     }
                 };
 
-                //Grid g1 = new Grid();
                 element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
                 Grid.SetRow(element, j);
-                //g1.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                //g1.BorderThickness = new Thickness(0, 5, 25, 5);
-                //g1.Children.Add(element);
                 grid.Children.Add(element);
 
                 //Add Key Values (field names) 
@@ -230,8 +233,20 @@ namespace Dash
                 tb.Padding = new Thickness(12, 5, 12, 5);
                 grid.Children.Add(tb);
 
+                Ellipse el = new Ellipse
+                {
+                    Width = 10, Height = 10,
+                    Fill = new SolidColorBrush(Colors.Black)
+                }; 
+                el.HorizontalAlignment = HorizontalAlignment.Left;
+                el.VerticalAlignment = VerticalAlignment.Top;
+                if (isOutput) _rightEllipses.Add(el);
+                else _leftEllipses.Add(el);
+                XCanvas.Children.Add(el);
+
                 j++;
             }
+            //if (!isOutput) _rightEllipses.Add(new Ellipse {Width = 10, Height = 10, Fill = new SolidColorBrush()}); 
         }
 
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -246,19 +261,49 @@ namespace Dash
 
         private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (connectionLine != null)
+            if (_connectionLine != null)
             {
                 Point pos = e.GetCurrentPoint(XFreeformView).Position;
-                connectionLine.X2 = pos.X;
-                connectionLine.Y2 = pos.Y;
+                _connectionLine.X2 = pos.X;
+                _connectionLine.Y2 = pos.Y;
             }
         }
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (connectionLine != null)
+            if (_connectionLine != null)
             {
-                connectionLine = null;
+                _connectionLine = null;
+            }
+        }
+
+        private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            // Ellipses on the left grid 
+            double height = 0; 
+            for (int i = 0; i < XDocumentGridLeft.RowDefinitions.Count; i++)
+            {
+                RowDefinition r = XDocumentGridLeft.RowDefinitions[i];
+                _leftEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth-5, height + r.ActualHeight / 2, 0, 0); 
+                
+                height += r.ActualHeight; 
+            }
+
+            // Ellipses on the right grid  
+            height = 0;
+            if (_rightEllipses.Count < XDocumentGridRight.RowDefinitions.Count - 2)
+            {
+                for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 1 - _rightEllipses.Count; i++)
+                {
+                    _rightEllipses.Add(new Ellipse { Width=10,Height=10, Fill = new SolidColorBrush(Colors.Black)});
+                }
+            }
+            for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 2; i++)
+            {
+                RowDefinition r = XDocumentGridRight.RowDefinitions[i];
+                _rightEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth + XFreeformView.ActualWidth-5, height + r.ActualHeight / 2, 0, 0);
+
+                height += r.ActualHeight;
             }
         }
     }
