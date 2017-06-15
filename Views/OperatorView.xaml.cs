@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -36,14 +37,14 @@ namespace Dash
 
             public Point PointerPosition { get; set; }
 
-            public uint PointerID { get; set; }
+            public Pointer Pointer{ get; set; }
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, uint pointerID)
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Pointer pointer)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
                 PointerPosition = p;
-                PointerID = pointerID;
+                Pointer = pointer;
             }
         }
 
@@ -63,14 +64,14 @@ namespace Dash
         private void InputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point(), 0)));
+            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point(), null)));
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
         private void OutputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point(), 0)));
+            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point(), null)));
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
@@ -86,7 +87,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer.PointerId);
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer);
                 OnIODragStarted(ioRef);
                 //Debug.WriteLine(
                     //$"Input Drag started {this.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(this).Position)}");
@@ -103,7 +104,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer.PointerId);
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer);
                 OnIODragStarted(ioRef);
                 //Debug.WriteLine(
                     //$"Output Drag started {el.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(el).Position)}, {el.TransformToVisual(Window.Current.Content).TransformPoint(new Point(el.Width / 2, el.Height / 2))}");

@@ -103,12 +103,12 @@ namespace Dash
 
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
-            Debug.WriteLine($"Operation Window Drag started: {ioReference.PointerID}");
-            if (_currentPointers.Contains(ioReference.PointerID))
+            Debug.WriteLine($"Operation Window Drag started: {ioReference.Pointer.PointerId}");
+            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.PointerID);
+            _currentPointers.Add(ioReference.Pointer.PointerId);
             _connectionLine = new Line();
             Point pos = Util.PointTransformFromVisual(ioReference.PointerPosition, XFreeformView);
             _connectionLine.X1 = pos.X;
