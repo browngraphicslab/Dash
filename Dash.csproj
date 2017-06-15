@@ -145,6 +145,7 @@
     <Compile Include="ViewModels\LayoutViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
+    <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\CollectionView.xaml.cs">

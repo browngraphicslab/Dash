@@ -29,8 +29,8 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2" DragItemsStarting="OutputListView_DragItemsStarting">
-            <ListView.ItemTemplate>
+        <ItemsControl x:Name="OutputListView" Grid.Column="2">
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -41,7 +41,7 @@
                         <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </UserControl>
