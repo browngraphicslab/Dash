@@ -18,6 +18,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,6 +36,8 @@ namespace Dash
         private DocumentViewModel _documentViewModel;
 
         private DocumentModel _output;
+
+        private Line connectionLine;
 
         public DocumentViewModel DocumentViewModel
         {
@@ -63,7 +66,8 @@ namespace Dash
                 DocumentView view = new DocumentView();
                 view.Width = 200;
                 view.Height = 200;
-                DocumentViewModel vm = new DocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                vm.IODragStarted += Vm_IODragStarted;
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
@@ -88,6 +92,20 @@ namespace Dash
 
                 createButton.Tapped += B_Tapped;
             }
+        }
+
+        private void Vm_IODragStarted(OperatorView.IOReference ioReference)
+        {
+            Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+            connectionLine = new Line();
+            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+            connectionLine.X1 = pos.X;
+            connectionLine.Y1 = pos.Y;
+            connectionLine.X2 = 0;
+            connectionLine.Y2 = 0;
+            connectionLine.Stroke = new SolidColorBrush(Colors.Black);
+            connectionLine.StrokeThickness = 5;
+            XFreeformView.Canvas.Children.Add(connectionLine);
         }
 
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
@@ -226,6 +244,22 @@ namespace Dash
             this.MinHeight = HeaderHeight * 2;
         }
 
+        private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (connectionLine != null)
+            {
+                Point pos = e.GetCurrentPoint(XFreeformView).Position;
+                connectionLine.X2 = pos.X;
+                connectionLine.Y2 = pos.Y;
+            }
+        }
 
+        private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (connectionLine != null)
+            {
+                connectionLine = null;
+            }
+        }
     }
 }
