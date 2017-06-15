@@ -42,7 +42,7 @@ namespace Dash
             var layoutModelRef = GetLayoutModelRefForDoc(DocumentModel);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var refField = docController.GetDocumentAsync(layoutModelRef.DocId).Fields[layoutModelRef.FieldKey] as LayoutModelFieldModel;
+            var refField = docController.GetDocumentAsync(layoutModelRef.DocId).Field(layoutModelRef.FieldKey) as LayoutModelFieldModel;
 
             return refField.Data;
         }
@@ -55,7 +55,7 @@ namespace Dash
         }
 
         static DocumentModel DefaultLayoutModelSource = null;
-        static public Key GetFieldKeyByName(string name)
+        static Key GetFieldKeyByName(string name)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
             var key = keyController.GetKeyAsync(name);
@@ -63,22 +63,22 @@ namespace Dash
                 key = keyController.CreateKeyAsync(name);
             return key;
         }
-        public static ReferenceFieldModel GetLayoutModelRefForDoc(DocumentModel doc)
+        static ReferenceFieldModel GetLayoutModelRefForDoc(DocumentModel doc)
         {
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var layoutKey = GetFieldKeyByName("Layout");
 
             // look for a specific layout stored on the document itself
-            if (doc.Fields.ContainsKey(layoutKey) && doc.Fields[layoutKey] is LayoutModelFieldModel)
+            if (doc.Field(layoutKey) is LayoutModelFieldModel)
             {
                 return new ReferenceFieldModel(doc.Id, layoutKey);
             }
 
             // then look for a directory document where we can lookup a layoutModel
             DocumentModel layoutModelSource = null;
-            if (doc.Fields.ContainsKey(layoutKey) && doc.Fields[layoutKey] is DocumentModelFieldModel)
+            if (doc.Field(layoutKey) is DocumentModelFieldModel)
             {
-                layoutModelSource = (doc.Fields[layoutKey] as DocumentModelFieldModel).Data;
+                layoutModelSource = (doc.Field(layoutKey) as DocumentModelFieldModel).Data;
             }
              // finally, use the default directory document for looking up a layout model given a document type
             else

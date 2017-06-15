@@ -1,4 +1,4 @@
-﻿ using Dash;
+﻿using Dash;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Dash.Models;
 
 namespace Dash
 {
@@ -58,6 +59,71 @@ namespace Dash
 
         public DocumentModel()
         {
+        }
+        static Key GetFieldKeyByName(string name)
+        {
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var key = keyController.GetKeyAsync(name);
+            if (key == null)
+                key = keyController.CreateKeyAsync(name);
+            return key;
+        }
+
+        /// <summary>
+        /// Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
+        /// </summary>
+        /// <returns></returns>
+        public DocumentModel MakeDelegate()
+        {
+            var dm = new DocumentModel(new Dictionary<Key,FieldModel>(), DocumentType);
+            dm.Fields.Add(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
+            return dm;
+        }
+
+        /// <summary>
+        /// returns the fieldModel for the specified key by looking first in the delegate, and then sequentially in all prototypes
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public FieldModel Field(Key key)
+        {
+            if (Fields.ContainsKey(key))
+                return Fields[key];
+            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+            {
+                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
+                if (parent != null)
+                    return parent.Data.Field(key);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// sets the fieldModel for a specified key by first trying to find the field in the document, then in each prototype.
+        /// if the field does not exist anywhere, it is created in this document, otherwise the found field is modified.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="force"></param>
+        /// <returns></returns>
+        public bool SetField(Key key, FieldModel value, bool force = true)
+        {
+            if (Fields.ContainsKey(key)) {
+                Fields[key] = value;
+                return true;
+            }
+            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+            {
+                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
+                if (parent != null && parent.Data.SetField(key, value, false))
+                    return true;
+            }
+            if (force)
+            {
+                Fields[key] = value;
+                return true;
+            }
+            return false;
         }
 
         protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
