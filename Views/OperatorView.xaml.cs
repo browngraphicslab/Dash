@@ -32,10 +32,13 @@ namespace Dash
             public ReferenceFieldModel ReferenceFieldModel { get; set; }
             public bool IsOutput { get; set; }
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput)
+            public Point CursorPosition { get; set; }
+
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput/*, Point p*/)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
+                //CursorPosition = p; 
             }
         }
 
@@ -75,6 +78,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false);
                 OnIODragStarted(ioRef);
+                Debug.WriteLine("Input Drag started " + Util.PointTransformFromVisual(e.GetCurrentPoint(this).Position, this));
             }
 
             Debug.WriteLine("Pointer exited");
@@ -89,6 +93,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true);
                 OnIODragStarted(ioRef);
+                Debug.WriteLine("Output Drag started" + this.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(this).Position));
             }
 
             Debug.WriteLine("Pointer exited");

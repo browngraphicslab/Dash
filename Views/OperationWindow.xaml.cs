@@ -46,7 +46,11 @@ namespace Dash
                     DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(DocumentViewModel.DocumentModel);
                 InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
 
-                Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(_documentViewModel.DocumentModel.Fields);//TODO this doesn't copy the FieldModels
+                Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
+                foreach (var documentModelField in _documentViewModel.DocumentModel.Fields)
+                {
+                    fields.Add(documentModelField.Key, documentModelField.Value.Copy());
+                }
                 DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
                 _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.Fields = fields;
