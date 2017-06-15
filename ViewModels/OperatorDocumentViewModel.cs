@@ -11,14 +11,14 @@ namespace Dash.ViewModels
 {
     public class OperatorDocumentViewModel : DocumentViewModel
     {
-        public OperatorDocumentViewModel(OperatorDocumentModel document, DocumentLayoutModelSource layoutModelSource) : base(document, layoutModelSource)
+        public OperatorDocumentViewModel(OperatorDocumentModel document) : base(document)
         {
         }
 
         public override List<UIElement> GetUiElements()
         {
             List<UIElement> elements = new List<UIElement>();
-            LayoutModel model = DocumentViewModelSource.DocumentLayoutModel(DocumentModel);
+            LayoutModel model = GetLayoutModel();
             OperatorView view = DocumentModel.Fields[OperatorDocumentModel.OperatorKey].MakeView(model.Fields[OperatorDocumentModel.OperatorKey]) as OperatorView;
             Debug.Assert(view != null);
             view.IODragStarted += View_IODragStarted;
