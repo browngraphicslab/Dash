@@ -1,0 +1,86 @@
+﻿<Page
+    x:Class="Dash.Views.CollectionScreen"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:dash="using:Dash"
+    xmlns:system="using:System"
+    mc:Ignorable="d">
+    <!--<Page.Resources>
+        <dash:BindingLinearConverter x:Key="BindingLinearConverter"/>
+    </Page.Resources>-->
+    <Grid>
+        <Grid.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="#FFF09F61" Offset="0"/>
+                <GradientStop Color="#FF39519F"/>
+                <GradientStop Color="#FF15181C" Offset="1"/>
+            </LinearGradientBrush>
+        </Grid.Background>
+        <StackPanel Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="10">
+                <StackPanel.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Margin" Value="10,0,0,0"></Setter>
+                    </Style>
+                </StackPanel.Resources>
+                <Button Content="NEW" Width="100" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <SearchBox Margin="10,0,0,0" Width="630"></SearchBox>
+                <Button Content="MY WORKSPACES" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button Content="OTHER WORKSPACES" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button Content="ALL WORKSPACES" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="20,0,20,0">
+                <StackPanel x:Name="xMainContentPanel" Orientation="Vertical" Width="1000" Height="600" Margin="0,0,10,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Background="#E547ABF6">
+                        <StackPanel.Resources>
+                            <Style TargetType="Button">
+                                <Setter Property="Margin" Value="10,0,0,0"></Setter>
+                            </Style>
+                        </StackPanel.Resources>
+                        <Button x:Name="xTitleButton" Content="TITLE" HorizontalContentAlignment="Left" Width="200" Background="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                        <Button x:Name="xAccessButton" Content="ACCESS" HorizontalContentAlignment="Left" Width="100" Background="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                        <Button x:Name="xDateButton" Content="DATE" HorizontalContentAlignment="Left" Width="150" Background="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                    </StackPanel>
+                    <!--<ListView x:Name="xCollectionList" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Height="{Binding ElementName=xMainContentPanel, Path=Height, Converter={StaticResource BindingLinearConverter}, ConverterParameter=-30}" Margin="0,10,0,0" Background="#D8FFFFFF">-->
+                    <ListView x:Name="xCollectionList" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Height="570" Margin="0,10,0,0" Background="#D8FFFFFF">
+                        <StackPanel Orientation="Horizontal">
+                            <StackPanel.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="10,0,0,0"></Setter>
+                                </Style>
+                            </StackPanel.Resources>
+                            <TextBlock x:Name="xTitleText" Text="lfjalj" Width="{Binding ElementName=xTitleButton,Path=Width}" Height="40"></TextBlock>
+                            <TextBlock x:Name="xAccessTypeText" Text="Access" Width="{Binding ElementName=xAccessButton,Path=Width}"></TextBlock>
+                            <TextBlock x:Name="xDateText" Text="Date" Width="{Binding ElementName=xDateButton,Path=Width}"></TextBlock>
+                        </StackPanel>
+                    </ListView>
+                </StackPanel>
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="240" Height="{Binding ElementName=xMainContentPanel, Path=Height}"  Background="#D8FFFFFF">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <TextBlock Text="Bind Collection Name Here" Padding="10" HorizontalAlignment="Center"/>
+                    </Grid>
+                    <Grid Grid.Row="1">
+                        <ListView x:Name="xCollectionProperties" Visibility="Visible">
+                            <TextBlock Text="Creator:"></TextBlock>
+                            <TextBlock Text="Date Created:"></TextBlock>
+                            <TextBlock Text="Last Edited By:"></TextBlock>
+                            <TextBlock Text="Tags:"></TextBlock>
+                        </ListView>
+                        <TextBlock Visibility="Collapsed" Text="Select collection" TextWrapping="WrapWholeWords" TextAlignment="Center" Height="20" VerticalAlignment="Center" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                    </Grid>
+                </Grid>
+            </StackPanel>
+            <Button Content="ENTER" HorizontalAlignment="Center" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF" Margin="0,10,0,0" Width="150"/>
+        </StackPanel>
+    </Grid>
+</Page>
+
+
+

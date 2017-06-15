@@ -30,7 +30,7 @@
                     </Button>
                     <StackPanel x:Name="xMyDashboardsSubMenu">
                         <StackPanel.Resources></StackPanel.Resources>
-                        <Button x:Name="xAllDashboardsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="5">
+                        <Button x:Name="xAllDashboardsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="5" Tapped="xAllDashboardsButton_Tapped">
                             <StackPanel x:Name="xAllDashboardsStackPanel" Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="55,0,0,0">
                                 <SymbolIcon Symbol="ViewAll" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
                                 <TextBlock x:Name="xAllDashboardsTextBlock" Text="All Dashboards" VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -74,12 +74,15 @@
                 </StackPanel>
             </SplitView.Pane>
             <SplitView.Content>
+
                 <Grid Height="{Binding ElementName=xMainSplitView, Path=Height}" VerticalAlignment="Top">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Height="{Binding ElementName=xPaneTop, Path=Height}">
+                    <Grid x:Name="xPaneTop" Grid.Row="0" Height="35"/>
+                    <Grid x:Name="xContentGrid" Grid.Row="1" Height="685">
+                        <Frame x:Name="xContentFrame" Height="685"/>
                     </Grid>
                 </Grid>
             </SplitView.Content>

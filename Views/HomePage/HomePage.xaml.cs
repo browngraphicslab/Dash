@@ -53,5 +53,10 @@ namespace Dash.Views.HomePage
         {
             this.Frame.Navigate(typeof(LoginPage));
         }
+
+        private void xAllDashboardsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xContentFrame.Navigate(typeof(CollectionScreen));
+        }
     }
 }
