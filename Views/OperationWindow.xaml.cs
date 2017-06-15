@@ -37,7 +37,8 @@ namespace Dash
 
         private DocumentModel _output;
 
-        private Line connectionLine;
+        private Line _connectionLine;
+        private HashSet<uint> _currentPointers = new HashSet<uint>();
 
         public DocumentViewModel DocumentViewModel
         {
@@ -94,18 +95,30 @@ namespace Dash
             }
         }
 
+        public OperationWindow(int width, int height)
+        {
+            this.InitializeComponent();
+            Width = width;
+            Height = height;
+        }
+
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
-            Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
-            connectionLine = new Line();
-            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
-            connectionLine.X1 = pos.X;
-            connectionLine.Y1 = pos.Y;
-            connectionLine.X2 = 0;
-            connectionLine.Y2 = 0;
-            connectionLine.Stroke = new SolidColorBrush(Colors.Black);
-            connectionLine.StrokeThickness = 5;
-            XFreeformView.Canvas.Children.Add(connectionLine);
+            Debug.WriteLine($"Operation Window Drag started: {ioReference.PointerID}");
+            if (_currentPointers.Contains(ioReference.PointerID))
+            {
+                return;
+            }
+            _currentPointers.Add(ioReference.PointerID);
+            _connectionLine = new Line();
+            Point pos = Util.PointTransformFromVisual(ioReference.PointerPosition, XFreeformView);
+            _connectionLine.X1 = pos.X;
+            _connectionLine.Y1 = pos.Y;
+            _connectionLine.X2 = 0;
+            _connectionLine.Y2 = 0;
+            _connectionLine.Stroke = new SolidColorBrush(Colors.Black);
+            _connectionLine.StrokeThickness = 3;
+            XFreeformView.Canvas.Children.Add(_connectionLine);
         }
 
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
@@ -114,13 +127,6 @@ namespace Dash
             DocumentViewModel viewModel = new DocumentViewModel(_output, DocumentLayoutModelSource.DefaultLayoutModelSource);
             view.DataContext = viewModel;
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
-        }
-
-        public OperationWindow(int width, int height)
-        {
-            this.InitializeComponent();
-            Width = width;
-            Height = height;
         }
 
         /// <summary>
@@ -246,19 +252,20 @@ namespace Dash
 
         private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            if (connectionLine != null)
+            if (_connectionLine != null)
             {
                 Point pos = e.GetCurrentPoint(XFreeformView).Position;
-                connectionLine.X2 = pos.X;
-                connectionLine.Y2 = pos.Y;
+                _connectionLine.X2 = pos.X;
+                _connectionLine.Y2 = pos.Y;
             }
         }
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (connectionLine != null)
+            _currentPointers.Remove(e.Pointer.PointerId);
+            if (_connectionLine != null)
             {
-                connectionLine = null;
+                _connectionLine = null;
             }
         }
     }

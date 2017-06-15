@@ -34,13 +34,16 @@ namespace Dash
             public ReferenceFieldModel ReferenceFieldModel { get; set; }
             public bool IsOutput { get; set; }
 
-            public Point CursorPosition { get; set; }
+            public Point PointerPosition { get; set; }
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p)
+            public uint PointerID { get; set; }
+
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, uint pointerID)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
-                CursorPosition = p; 
+                PointerPosition = p;
+                PointerID = pointerID;
             }
         }
 
@@ -60,21 +63,21 @@ namespace Dash
         private void InputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point())));
+            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point(), 0)));
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
         private void OutputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point())));
+            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point(), 0)));
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
         /// <summary>
         ///  Can return the position of the click in screen space 
         /// </summary>
-        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)//TODO PointerPressed doesn't need to have happened so dragging over the ellipse triggers this
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -83,7 +86,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer.PointerId);
                 OnIODragStarted(ioRef);
                 //Debug.WriteLine(
                     //$"Input Drag started {this.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(this).Position)}");
@@ -91,7 +94,7 @@ namespace Dash
             Debug.WriteLine("Pointer exited");
         }
 
-        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)//TODO PointerPressed doesn't need to have happened so dragging over the ellipse triggers this
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -100,7 +103,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer.PointerId);
                 OnIODragStarted(ioRef);
                 //Debug.WriteLine(
                     //$"Output Drag started {el.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(el).Position)}, {el.TransformToVisual(Window.Current.Content).TransformPoint(new Point(el.Width / 2, el.Height / 2))}");
@@ -116,6 +119,16 @@ namespace Dash
         private void OnIODragStarted(OperatorView.IOReference ioreference)
         {
             IODragStarted?.Invoke(ioreference);
+        }
+
+        private void Ellipse_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("Ellipse_PointerReleased");
+        }
+
+        private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("Ellipse_PointerEntered");
         }
     }
 }
