@@ -26,5 +26,32 @@ namespace Dash.Views.HomePage
         {
             this.InitializeComponent();
         }
+
+        private void GridView_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(MainPage));
+        }
+
+        private void xLogoutButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(LoginPage));
+        }
+
+        private void Button_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(MainPage));
+        }
+
+        private void xMyDashBoardsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xMyDashboardsSubMenu.Visibility = xMyDashboardsSubMenu.Visibility == Visibility.Collapsed ? Visibility.Visible: Visibility.Collapsed;
+            xExpand.Visibility = xExpand.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+            xCollapse.Visibility = xCollapse.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        private void xBackButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            this.Frame.Navigate(typeof(LoginPage));
+        }
     }
 }

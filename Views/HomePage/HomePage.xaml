@@ -6,7 +6,95 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition>
+                <CommonNavigationTransitionInfo/>
+            </NavigationThemeTransition>
+        </TransitionCollection>
+    </Page.Transitions>
+    <Grid x:Name="xMainGrid" Background="White">
+        <SplitView x:Name="xMainSplitView" Background="#CCFFFFFF" DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250">
+            <SplitView.PaneBackground>
+                <SolidColorBrush Color="Black"></SolidColorBrush>
+            </SplitView.PaneBackground>
+            <SplitView.Pane>
+                <StackPanel Orientation="Vertical">
+                    <Button x:Name="xMyDashBoardsButton" Background="Transparent" Foreground="WhiteSmoke" Margin="0,40,0,0" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Tapped="xMyDashBoardsButton_Tapped" Padding="10">
+                        <StackPanel x:Name="xMyDashboardsStackPanel" Orientation="Horizontal" Margin="15,0,0,0" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center">
+                            <SymbolIcon Symbol="AllApps" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
+                            <TextBlock x:Name="xMyDashboardsTextBlock" Text="MY DASHBOARDS" VerticalAlignment="Center" IsHitTestVisible="False" HorizontalAlignment="Center" FontSize="12"  Margin="20,0,0,0"/>
+                            <Button x:Name="xCollapse" FontFamily="Marlett" IsHitTestVisible="False" FontSize="{Binding ElementName=xMyDashboardsTextBlock,Path=FontSize}" Content="5" Foreground="WhiteSmoke" Margin="5,0,0,0"/>
+                            <Button x:Name="xExpand" FontFamily="Marlett" IsHitTestVisible="False" FontSize="{Binding ElementName=xMyDashboardsTextBlock,Path=FontSize}" Content="6" Foreground="WhiteSmoke" Margin="5,0,0,0" Visibility="Collapsed"/>
+                        </StackPanel>
+                    </Button>
+                    <StackPanel x:Name="xMyDashboardsSubMenu">
+                        <StackPanel.Resources></StackPanel.Resources>
+                        <Button x:Name="xAllDashboardsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="5">
+                            <StackPanel x:Name="xAllDashboardsStackPanel" Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="55,0,0,0">
+                                <SymbolIcon Symbol="ViewAll" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
+                                <TextBlock x:Name="xAllDashboardsTextBlock" Text="All Dashboards" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           FontSize="12" Margin="5,0,60,0">
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>
+                        <!--<Button x:Name="xSearchButton" Margin="60,0,0,0" Background="Transparent">
+                            <StackPanel Orientation="Horizontal" Height="35" VerticalAlignment="Center">
+                                <SymbolIcon Symbol="Find" Height="35" Width="35" />
+                                <TextBlock Text="Search" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                           FontSize="12" Margin="5,0,60,0">
+                                </TextBlock>
+                            </StackPanel>
+                        </Button>-->
+                        <Button x:Name="xRecentlyViewedButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xAllDashboardsButton,Path=Padding}">
+                            <StackPanel Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="{Binding ElementName=xAllDashboardsStackPanel, Path=Margin}" >
+                                <SymbolIcon Symbol="Clock" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}" />
+                                <TextBlock Text="Recently Viewed" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding ElementName=xAllDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xAllDashboardsTextBlock, Path=Margin}"></TextBlock>
+                            </StackPanel>
+                        </Button>
+                        <Button x:Name="xDeletedButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xAllDashboardsButton,Path=Padding}">
+                            <StackPanel Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="{Binding ElementName=xAllDashboardsStackPanel, Path=Margin}">
+                                <SymbolIcon Symbol="Delete" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}" />
+                                <TextBlock Text="Deleted" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding ElementName=xAllDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xAllDashboardsTextBlock, Path=Margin}"></TextBlock>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                    <Button x:Name="xProfileButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xMyDashBoardsButton, Path=Padding}">
+                        <StackPanel Orientation="Horizontal" Margin="{Binding ElementName=xMyDashboardsStackPanel,Path=Margin}" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" >
+                            <SymbolIcon Symbol="Contact" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
+                            <TextBlock Text="PROFILE" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding ElementName=xMyDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xMyDashboardsTextBlock,Path=Margin}"/>
+                        </StackPanel>
+                    </Button>
+                    <Button x:Name="xSettingsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xMyDashBoardsButton,Path=Padding}">
+                        <StackPanel Orientation="Horizontal" Margin="{Binding ElementName=xMyDashboardsStackPanel,Path=Margin}" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center">
+                            <SymbolIcon Symbol="Setting" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
+                            <TextBlock Text="SETTINGS" VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="{Binding ElementName=xMyDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xMyDashboardsTextBlock,Path=Margin}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </SplitView.Pane>
+            <SplitView.Content>
+                <Grid Height="{Binding ElementName=xMainSplitView, Path=Height}" VerticalAlignment="Top">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Height="{Binding ElementName=xPaneTop, Path=Height}">
+                    </Grid>
+                </Grid>
+            </SplitView.Content>
+        </SplitView>
+        <Grid Height="{Binding ElementName=xMainSplitView, Path=Height}" VerticalAlignment="Top" >
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Height="{Binding ElementName=xPaneTop, Path=Height}" Background="MidnightBlue">
+                <Button x:Name="xBackButton" HorizontalContentAlignment="Left" Background="MidnightBlue" Foreground="WhiteSmoke" Tapped="xBackButton_Tapped">
+                    <SymbolIcon Symbol="Back"></SymbolIcon>
+                </Button>
+                <TextBlock Height="{Binding ElementName=xMainSplitView, Path=Height}" Text="dashboards" FontSize="25" TextAlignment="Center" VerticalAlignment="Bottom" FontFamily="Rockwell" Margin="4,0,-4,0" d:LayoutOverrides="TopMargin, BottomMargin" Foreground="#E5FFFFFF" IsHitTestVisible="False"/>
+            </Grid>
+        </Grid>
     </Grid>
 </Page>
+
