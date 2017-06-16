@@ -39,15 +39,6 @@ namespace Dash
 
         private Line _connectionLine;
 
-        struct Ref
-        {
-            public OperatorView.IOReference ioRef;
-            public KeyValuePair<Key, FieldModel> pair;
-            public bool isOutput;
-        }
-
-        //private Ref _currReference; 
-
         private OperatorView.IOReference _currReference; 
 
         private List<Ellipse> _leftEllipses = new List<Ellipse>();
@@ -73,7 +64,6 @@ namespace Dash
                 _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.Fields = fields;
 
-                //DivideOperatorModel divide = new DivideOperatorModel();
                 OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
                 opModel.Id = docController.GetDocumentId();
                 opModel.OperatorField = new DivideOperatorModel();
@@ -86,12 +76,8 @@ namespace Dash
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
-                //opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.PriceKey));
                 NumberFieldModel nfm = new NumberFieldModel(0);
-                //nfm.InputReference =
-                    //new ReferenceFieldModel(opModel.Id, DivideOperatorModel.QuotientKey);
                 _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
-                //opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.SqftKey));
 
                 InitializeGrid(XDocumentGridRight, _output, layout, false);
 
@@ -112,7 +98,7 @@ namespace Dash
 
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
-            Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+            //Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
 
             _currReference = ioReference; 
             _connectionLine = new Line();
@@ -141,31 +127,6 @@ namespace Dash
              _connectionLine = null;
              _currReference = null; 
         }
-
-        /*
-        private void Ellipse_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (_connectionLine == null) Debug.WriteLine("there's no reference");
-            else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
-            /*
-            if (_currReference == null) return;
-            if (_currReference.IsOutput == isOutput)
-            {
-                return;
-            }
-            if (_currReference.IsOutput)
-            {
-                pair.Value.InputReference = _currReference.ReferenceFieldModel;
-            }
-            else
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
-                var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
-            }
-        }
-        */ 
-        
 
         /// <summary>
         ///  Makes the left grid representing Key,Value pairs of document tapped 
@@ -223,41 +184,6 @@ namespace Dash
                 element.VerticalAlignment = VerticalAlignment.Center;
                 element.HorizontalAlignment = HorizontalAlignment.Center;
 
-                /* 
-                // drag drop functionality 
-                element.AllowDrop = true;
-                element.DragEnter += (sender, args) =>
-                {
-                    args.AcceptedOperation = DataPackageOperation.Copy;
-                };
-
-                element.Drop += async (sender, args) =>
-                {
-                    if (args.DataView.Contains(StandardDataFormats.Text))
-                    {
-                        var text = await args.DataView.GetTextAsync();
-                        var key = JsonConvert.DeserializeObject<OperatorView.IOReference>(text);
-
-                        Debug.WriteLine("fieldkey name " + key.ReferenceFieldModel.FieldKey.Name);
-
-                        if (key.IsOutput == isOutput)
-                        {
-                            return;
-                        }
-                        if (key.IsOutput)
-                        {
-                            pair.Value.InputReference = key.ReferenceFieldModel;
-                        }
-                        else
-                        {
-                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
-                            var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                            opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
-                        }
-                    }
-                };
-           //    */ 
-
                 element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
                 Grid.SetRow(element, j);
@@ -290,14 +216,9 @@ namespace Dash
 
                 el.PointerReleased += (sender, args) =>
                 {
-                    el.Fill = new SolidColorBrush(Colors.Red);               //TODO remove afterwards 
-                    if (_connectionLine == null) /*return;*/ Debug.WriteLine("there's no reference");
-                    else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
+                    if (_connectionLine == null) return;
 
-                    Debug.WriteLine("before update " + (pair.Value as NumberFieldModel).Data);
-                    Debug.WriteLine("_currReference.IsOutput " + _currReference.IsOutput + " //should be false");
-                    Debug.WriteLine("isOutput " + isOutput + " //should be true");
-
+                    el.Fill = new SolidColorBrush(Colors.DodgerBlue);
                     if (_currReference.IsOutput == isOutput)
                     {
                         return;
@@ -305,8 +226,6 @@ namespace Dash
                     if (_currReference.IsOutput)
                     {
                         pair.Value.InputReference = _currReference.ReferenceFieldModel;
-
-                        Debug.WriteLine("after update " + (pair.Value as NumberFieldModel).Data);
                     }
                     else
                     {
@@ -314,8 +233,6 @@ namespace Dash
                         var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
                         opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
                             new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
-
-                        Debug.WriteLine("after update, input reference count of operationmodel " + opDoc.InputReferences.Count);
                     }
                 };
 
@@ -328,10 +245,10 @@ namespace Dash
         {
             FreeformView freeform = sender as FreeformView;
             Debug.Assert(freeform != null);
-            this.MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
-            this.MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
-            this.MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
-            this.MinHeight = HeaderHeight * 2;
+            MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
+            MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
+            MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
+            MinHeight = HeaderHeight * 2;
         }
 
         private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -364,22 +281,18 @@ namespace Dash
 
                     el.PointerReleased += (sendingDude, args) =>
                     {
+                        if (_connectionLine == null) return;
                         Key key = _output.Fields.Keys.ElementAt(i);                                          
                         FieldModel fm = _output.Fields.Values.ElementAt(i);                                          
-                        el.Fill = new SolidColorBrush(Colors.Red);          //TODO remove afterwards 
-                        if (_connectionLine == null) /*return;*/ Debug.WriteLine("there's no reference");
-                        else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
-
-                        Debug.WriteLine("before update " + (fm as NumberFieldModel).Data);
+                        el.Fill = new SolidColorBrush(Colors.DodgerBlue);
 
                         if (!_currReference.IsOutput)
                         {
                             return;
                         }
-                        if (_currReference.IsOutput)            // goes in here 
+                        if (_currReference.IsOutput)           
                         {
                             fm.InputReference = _currReference.ReferenceFieldModel;
-                            Debug.WriteLine("after update " + (fm as NumberFieldModel).Data);
                         }
                         else
                         {

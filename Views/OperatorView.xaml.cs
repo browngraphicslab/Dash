@@ -27,7 +27,7 @@ namespace Dash
     {
         public delegate void IODragEventHandler(IOReference ioReference);
 
-        public event IODragEventHandler IODragStarted;
+        public event IODragEventHandler IoDragStarted;
 
         public class IOReference
         {
@@ -53,44 +53,9 @@ namespace Dash
         {
             InputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Inputs;
             OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;
-
-            //TODO functionality of drag/drop, but lose the line functionality 
-           // InputListView.CanDragItems = true;
-           // OutputListView.CanDragItems = true;
+            
         }
 
-        private void InputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject(new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point())));
-            e.Data.RequestedOperation = DataPackageOperation.Copy;
-        }
-
-        private void OutputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject(new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point())));
-            e.Data.RequestedOperation = DataPackageOperation.Copy;
-        }
-
-        /*
-        //TODO delete this
-        private void InputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs e)
-        {
-            Ellipse el = sender as Ellipse;
-            Key key = el.DataContext as Key;
-            e.Data.SetText(JsonConvert.SerializeObject(new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point())));
-            e.Data.RequestedOperation = DataPackageOperation.Copy;
-        }
-
-        private void OutputEllipse_OnDragStarting(UIElement sender, DragStartingEventArgs e)
-        {
-            Ellipse el = sender as Ellipse;
-            Key key = el.DataContext as Key;
-            e.Data.SetText(JsonConvert.SerializeObject(new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point())));
-            e.Data.RequestedOperation = DataPackageOperation.Copy;
-        }
-        */ 
         /// <summary>
         ///  Can return the position of the click in screen space 
         /// </summary>
@@ -104,9 +69,8 @@ namespace Dash
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false,
                     el.TransformToVisual(Window.Current.Content)
                         .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
-                OnIODragStarted(ioRef);
+                OnIoDragStarted(ioRef);
             }
-            //Debug.WriteLine("Pointer exited");
         }
 
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
@@ -119,9 +83,8 @@ namespace Dash
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true,
                     el.TransformToVisual(Window.Current.Content)
                         .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
-                OnIODragStarted(ioRef);
+                OnIoDragStarted(ioRef);
             }
-            //Debug.WriteLine("Pointer exited");
         }
 
         private void Ellipse_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -129,9 +92,9 @@ namespace Dash
             e.Complete();
         }
 
-        private void OnIODragStarted(IOReference ioreference)
+        private void OnIoDragStarted(IOReference ioreference)
         {
-            IODragStarted?.Invoke(ioreference);
+            IoDragStarted?.Invoke(ioreference);
         }
 
         

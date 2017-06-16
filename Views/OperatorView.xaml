@@ -15,7 +15,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <ListView x:Name="InputListView" Grid.Column="0" DragItemsStarting="InputListView_DragItemsStarting">
+        <ListView x:Name="InputListView" Grid.Column="0">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -30,7 +30,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2" DragItemsStarting="OutputListView_DragItemsStarting">
+        <ListView x:Name="OutputListView" Grid.Column="2">
             <ListView.ItemTemplate> 
                 <DataTemplate>
                     <Grid>
