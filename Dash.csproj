@@ -154,6 +154,7 @@
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\EditableFieldFrame.cs" />
     <Compile Include="Views\FreeformView.xaml.cs">
       <DependentUpon>FreeformView.xaml</DependentUpon>
     </Compile>

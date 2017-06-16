@@ -34,4 +34,22 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style TargetType="local:EditableFieldFrame">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:EditableFieldFrame">
+                    <Border x:Name="PART_Container"
+                          Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        
+                        <!--editable content-->
+                        <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
+                                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

@@ -57,6 +57,28 @@ namespace Dash
             }
         }
 
+        public List<UIElement> GetUIElements()
+        {
+            var dvm = DataContext as DocumentViewModel;
+            dvm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+            if (dvm != null)
+            {
+                List<UIElement> elements = dvm.GetUiElements();
+                return elements;
+            }
+
+            return null;
+        }
+
+        public void SetUIElements(List<UIElement> uiElements)
+        {
+            xCanvas.Children.Clear();
+            foreach (var element in uiElements)
+            {
+                xCanvas.Children.Add(element);
+            }
+        }
+
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
             DocumentView_DataContextChanged(null, null);
