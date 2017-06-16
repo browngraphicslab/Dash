@@ -74,17 +74,7 @@
                 </StackPanel>
             </SplitView.Pane>
             <SplitView.Content>
-
-                <Grid Height="{Binding ElementName=xMainSplitView, Path=Height}" VerticalAlignment="Top">
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <Grid x:Name="xPaneTop" Grid.Row="0" Height="35"/>
-                    <Grid x:Name="xContentGrid" Grid.Row="1" Height="685">
-                        <Frame x:Name="xContentFrame" Height="685"/>
-                    </Grid>
-                </Grid>
+                <Frame x:Name="xContentFrame" Margin="-2,30,0,0"/>
             </SplitView.Content>
         </SplitView>
         <Grid Height="{Binding ElementName=xMainSplitView, Path=Height}" VerticalAlignment="Top" >
