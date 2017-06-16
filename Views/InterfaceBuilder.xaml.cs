@@ -23,6 +23,8 @@ namespace Dash
     public sealed partial class InterfaceBuilder : WindowTemplate
     {
 
+        private List<GuideLineViewModel> _guides = new List<GuideLineViewModel>();
+
         private DocumentViewModel _documentViewModel;
 
         private DocumentModel _documentModel;
@@ -79,6 +81,12 @@ namespace Dash
                 var top = Canvas.GetTop(uiElement);
 
                 var editableBorder = new EditableFieldFrame(key) { EditableContent = uiElement, BorderBrush = new SolidColorBrush(Colors.CornflowerBlue), BorderThickness = new Thickness(1) };
+                var guideModel = new GuideLineModel();
+                var guideViewModel = new GuideLineViewModel(guideModel);
+                var guideView = new GuideLineView(guideViewModel);
+                // maybe add guideView to documentView Canvas
+                _guides.Add(guideViewModel);
+
                 editableBorder.SizeChanged += EditableBorder_SizeChanged;
                 editableBorder.PositionChanged += EditableBorderPositionChanged;
                 editableElements.Add(editableBorder);
@@ -88,6 +96,7 @@ namespace Dash
 
             _documentView.SetUIElements(editableElements);
         }
+
 
         private void EditableBorderPositionChanged(object sender, double deltaX, double deltaY)
         {
