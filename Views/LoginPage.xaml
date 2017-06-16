@@ -21,20 +21,25 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="240*"/>
-            <RowDefinition Height="163*"/>
-            <RowDefinition Height="317*"/>
-            <RowDefinition Height="240*"/>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="5*"/>
         </Grid.RowDefinitions>
         <Grid x:Name="TopGrid" Grid.Column="1" Grid.Row="1" Margin="0,0,0,-0.333" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
             <TextBlock x:Name="textBlock" Height="122" Text="dashboards" FontSize="75" TextAlignment="Center" VerticalAlignment="Bottom" FontFamily="Rockwell" Margin="4,0,-4,0" d:LayoutOverrides="TopMargin, BottomMargin" Foreground="#E5FFFFFF"/>
         </Grid>
-        <Grid x:Name="FirstGrid" Grid.Column="1" Grid.Row="2" Margin="0,0.333,0,0" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
+        <Grid x:Name="FirstGrid" Grid.Column="1" Grid.Row="2" Margin="0,0,0,0" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
             <StackPanel Orientation="Vertical">
-                <TextBox x:Name="textBox" PlaceholderText="Username" Height="40" Margin="5" TextWrapping="Wrap" Text="" Width =" 250" BorderThickness="1" d:LayoutOverrides="VerticalAlignment, LeftPosition, RightPosition" Background="#D8FFFFFF"/>
-                <PasswordBox x:Name="passwordBox" PlaceholderText="Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1"/>
-                <Button x:Name="button" Content="LOGIN" HorizontalAlignment="Center" Margin="25" Tapped="button_Tapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
-
+                <TextBox x:Name="xLoginUserBox" PlaceholderText="Username" Height="40" Margin="5" TextWrapping="Wrap" Text="" Width =" 250" BorderThickness="1" d:LayoutOverrides="VerticalAlignment, LeftPosition, RightPosition" Background="#D8FFFFFF"/>
+                <PasswordBox x:Name="XLoginPasswordBox" PlaceholderText="Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1"/>
+                <PasswordBox x:Name="xRegisterConfirmPasswordBox" Visibility="Collapsed" PlaceholderText="Confirm Password"  Height="40" Margin="5" Width="250" Background="#D8FFFFFF" BorderThickness="1"/>
+                <CheckBox x:Name="xRememberMeCheckbox" HorizontalAlignment="Center" Width="250" Margin="0,5,0,0" IsThreeState="False" Foreground="#E547ABF6" IsChecked="True">
+                    <TextBlock Foreground="#E547ABF6">Remember Me</TextBlock>
+                </CheckBox>
+                <Button x:Name="xLoginButton" Content="LOGIN" HorizontalAlignment="Center" Margin="0,20,0,10" Tapped="LoginButtonTapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button x:Name="xRegisterButton" Visibility="Collapsed" Content="REGISTER" HorizontalAlignment="Center" Margin="10" Tapped="RegisterButtonTapped" Width="250" Height="33" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <TextBlock x:Name="xSwitchRegisterLoginText" Text="Register" HorizontalAlignment="Center" Foreground="#E547ABF6" Margin="0,0,0,10" Tapped="SwitchViewOnTapped"></TextBlock>
+                <TextBlock x:Name="xErrorText" Foreground="Red" HorizontalAlignment="Center" TextWrapping="WrapWholeWords"></TextBlock>
             </StackPanel>
         </Grid>
 

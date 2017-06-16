@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -23,11 +24,17 @@ namespace Dash
     sealed partial class App : Application
     {
         /// <summary>
+        /// The instance of the app this can be used to access the services for dependency injection
+        /// </summary>
+        public static App Instance;
+
+        /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
         public App()
         {
+            Instance = this;
             this.InitializeComponent();
             this.Suspending += OnSuspending;
         }
@@ -45,6 +52,10 @@ namespace Dash
                 this.DebugSettings.EnableFrameRateCounter = true;
             }
 #endif
+
+            // register dependency injection container
+            Container = RegisterServices();
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
@@ -72,6 +83,7 @@ namespace Dash
                     // When the navigation stack isn't restored navigate to the first page,
                     // configuring the new page by passing required information as a navigation
                     // parameter
+                    //TODO Navigate to a prelogged in page if we can!
                     rootFrame.Navigate(typeof(MainPage), e.Arguments);
                 }
                 // Ensure the current window is active

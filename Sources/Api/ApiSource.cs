@@ -1,5 +1,7 @@
 ﻿using Dash.Models;
 using Dash.Sources.Api.XAML_Elements;
+using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -33,21 +35,27 @@ namespace Dash.Sources.Api {
         private List<DocumentModel> responseAsDocuments; // list of results formatted as documents
         private ApiSourceDisplay display;
         public TextBlock debugger;
-        private Grid testGrid;
+        private Canvas testGrid;
 
         // == CONSTRUCTORS ==
         public ApiSource(HttpMethod requestType, string apiURL,
             Dictionary<string, ApiProperty> headerProperties, Dictionary<string, ApiProperty> parameterProperties,
                 Dictionary<string, ApiProperty> authParameterProperties, Dictionary<string, ApiProperty> authHeaderProperties,
-                string authURL, string secret, string key, Grid testGridToAddDocumentsTo = null) {
+                string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
             this.headers = headerProperties;
             this.parameters = parameterProperties;
             this.authHeaders = authHeaderProperties;
             this.authParameters = authParameterProperties;
             this.apiURI = new Uri(apiURL);
-            this.authURI = new Uri(authURL);
-            this.secret = secret;
-            this.key = key;
+            if (!string.IsNullOrWhiteSpace(authURL)) {
+                this.authURI = new Uri(authURL);
+                this.secret = secret;
+                this.key = key;
+            } else {
+                this.authURI = null;
+                this.secret = null;
+                this.key = null;
+            }
             this.requestType = requestType;
             text = new TextBlock();
             response = null;
@@ -73,19 +81,27 @@ namespace Dash.Sources.Api {
             DocumentModel testDocument = responseAsDocuments[0];
 
             //set layout
-            testDocument.DocumentType = "default";
-            DocumentViewModel testModel = new DocumentViewModel(testDocument, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            testDocument.DocumentType = DocumentType.DefaultType;
+
+            // this part generates a defaultlayoutmodel that shows key/value string text pairs
+            DocumentViewModel testModel = new DocumentViewModel(testDocument);
+            testModel.SetLayoutModel(LayoutModel.DefaultLayoutModel(testDocument)); // TODO: simplify this in dvm constructor
             DocumentView testView = new DocumentView();
             testView.DataContext = testModel;
             testGrid.Children.Add(testView);
+            LayoutModel.DefaultLayoutModel(testDocument);
 
+
+            Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
             // put document results into collection model
-            /*
-            CollectionModel c = new CollectionModel(new ObservableCollection<DocumentModel>(responseAsDocuments));
-            CollectionViewModel cm = new CollectionViewModel(c);
-            testGrid.Children.Add(cm.View);
-            */
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var collection = docController.CreateDocumentAsync("collection");
+            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
+            DocumentViewModel cm = new DocumentViewModel(collection);
+            DocumentView v = new DocumentView() { DataContext = cm };
+            testGrid.Children.Add(v);
+
 
             return true;
         }
@@ -251,7 +267,8 @@ namespace Dash.Sources.Api {
 
             // fetch authentication token if required
             string token;
-            if (!(string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))) {
+        
+            if (!(string.IsNullOrWhiteSpace(apiURI.AbsolutePath) || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))) {
                 HttpRequestMessage tokenmsg = new HttpRequestMessage(HttpMethod.Post, authURI);
                 var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
                 var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray));
@@ -276,7 +293,6 @@ namespace Dash.Sources.Api {
 
             // send message
             response = await client.SendRequestAsync(message);
-            debugger.Text = response.Content.ToString();
             text.Text = response.Content.ToString();
             Debug.WriteLine("Content: " + response.Content.ToString());
 
@@ -294,15 +310,15 @@ namespace Dash.Sources.Api {
 
                 // loop through all instantiated objects, making 
                 foreach (JObject result in resultObjects) {
-                    Dictionary<string, FieldModel> toAdd = new Dictionary<string, FieldModel>();
+                    Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                     foreach (JProperty property in result.Properties()) {
-                        Debug.WriteLine(property.Name + ": " + property.Value);
+                        //Debug.WriteLine(property.Name + ": " + property.Value);
 
                         // TODO: we can add special viewmodels for each of the JOBJECT types here
                         //       concerns: rabbit hole-ing?
-                        toAdd.Add(property.Name, new TextFieldModel(property.Value.ToString()));
+                        toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                     }
-                    responseAsDocuments.Add(new DocumentModel(toAdd, /*apiURL.Host.ToString()*/ "default"));
+                    responseAsDocuments.Add(new DocumentModel(toAdd, /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
                 // at this point resultAsDocuments contains a list of all JSON results formatted
@@ -315,16 +331,16 @@ namespace Dash.Sources.Api {
                 // then try and parse it as a single object
             } catch (InvalidOperationException e) {
                 JObject result = JObject.Parse(text.Text);
-                Dictionary<string, FieldModel> resultAsDictionary = new Dictionary<string, FieldModel>();
+                Dictionary<Key, FieldModel> resultAsDictionary = new Dictionary<Key, FieldModel>();
                 foreach (JProperty property in result.Properties()) {
-                    Debug.WriteLine(property.Name + ": " + property.Value.Type);
-                    resultAsDictionary.Add(property.Name, new TextFieldModel(property.Value.ToString()));
+                    //Debug.WriteLine(property.Name + ": " + property.Value.Type);
+                    resultAsDictionary.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                 }
 
                 // at this point, resultAsDocument is a new document
                 //
                 // TODO: unique identifiers as above
-                responseAsDocuments.Add(new DocumentModel(resultAsDictionary, /*apiURL.Host.ToString()*/ "default"));
+                responseAsDocuments.Add(new DocumentModel(resultAsDictionary, /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
             }
 
             // add document to children

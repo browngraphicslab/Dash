@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Width="400" Height="300" Style="{StaticResource xNodeContainerGrid}">
+    <Grid Width="400" Height="300" x:Name="xGrid" Style="{StaticResource xNodeContainerGrid}">
         <TextBlock Style="{StaticResource xTitleStyle}" Text="File Picker"/>
         <Grid Margin="0,35,0,0">
             <Grid.ColumnDefinitions>

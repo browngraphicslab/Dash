@@ -33,40 +33,78 @@ namespace Dash
         {
             this.InitializeComponent();
 
-            OverlayCanvas.OnEllipseTapped += Ellipse_Tapped;
-            OverlayCanvas.OnEllipseTapped2 += EllipseTapped2;
+            // adds items from the overlay canvas onto the freeform canvas
+            OverlayCanvas.OnAddDocumentsTapped += AddDocuments;
+            OverlayCanvas.OnAddCollectionTapped += AddCollection;
+            OverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
+            OverlayCanvas.OnAddImageTapped += AddImage;
+        }
+        DocumentViewModel model7;
+
+        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+            FreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
+        }
+        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+            FreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
         }
 
-        private void EllipseTapped2(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-          
+
         }
 
-        private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            // TODO: let's just make a static method that does this whole thing
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             DocumentModel image = DocumentModel.OneImage();
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
+            DocumentModel collection = await DocumentModel.CollectionExample();
+            DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
-            DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model2 = new DocumentViewModel(recipe, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model3 = new DocumentViewModel(image, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model4 = new DocumentViewModel(image2, DocumentLayoutModelSource.DefaultLayoutModelSource);
+
+            DocumentViewModel model1 = new DocumentViewModel(umpire);
+            DocumentViewModel model2 = new DocumentViewModel(recipe);
+            DocumentViewModel model3 = new DocumentViewModel(image);
+            DocumentViewModel model4 = new DocumentViewModel(image2);
+            DocumentViewModel model5 = new DocumentViewModel(collection);
+            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
+                              model7 = new DocumentViewModel(image2.MakeDelegate());
+
 
             DocumentView view1 = new DocumentView();
             DocumentView view2 = new DocumentView();
             DocumentView view3 = new DocumentView();
             DocumentView view4 = new DocumentView();
+            DocumentView view5 = new DocumentView();
+            DocumentView view6 = new DocumentView();
+            DocumentView view7 = new DocumentView() { DataContext = model7 };
 
             view1.DataContext = model1;
             view2.DataContext = model2;
             view3.DataContext = model3;
             view4.DataContext = model4;
+            view5.DataContext = model5;
+            view6.DataContext = model6;
 
+            //view1.Margin = new Thickness(20, 20, 0, 0);
+            //view1.Width = 200;
+            //view1.Height = 400;
+            //view2.Margin = new Thickness(400, 20, 0, 0);
+            //view2.Width = 200;
+            //view2.Height = 400;
+
+
+            //MyGrid.Children.Add(view1);
+            //MyGrid.Children.Add(view2);
+            //FreeformView.Canvas.Children.Add(view1);
+            //FreeformView.Canvas.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view3);
             FreeformView.Canvas.Children.Add(view4);
+            //FreeformView.Canvas.Children.Add(view5);
+            FreeformView.Canvas.Children.Add(view6);
+            FreeformView.Canvas.Children.Add(view7);
+
 
 
         }

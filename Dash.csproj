@@ -95,24 +95,56 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BaseINPC.cs" />
-    <Compile Include="Camera.cs" />
+    <Compile Include="ManipulationControls.cs" />
+    <Compile Include="Models\CollectionModel.cs" />
+    <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
-    <Compile Include="Models\FieldModels\FieldModel.cs" />
+    <Compile Include="Models\DocumentCollectionFieldModel.cs" />
+    <Compile Include="Models\DocumentModelFieldModel.cs" />
+    <Compile Include="Models\ExampleApiSource.cs" />
+    <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
-    <Compile Include="Models\FieldModels\ImageFieldModel.cs" />
-    <Compile Include="Models\TemplateModels\ImageTemplateModel.cs" />
+    <Compile Include="Models\ImageFieldModel.cs" />
+    <Compile Include="Models\ImageTemplateModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
-    <Compile Include="Models\TemplateModels\TemplateModel.cs" />
-    <Compile Include="Models\FieldModels\TextFieldModel.cs" />
-    <Compile Include="Models\TemplateModels\TextTemplateModel.cs" />
+    <Compile Include="Models\LayoutModelFieldModel.cs" />
+    <Compile Include="Models\NumberFieldModel.cs" />
+    <Compile Include="Models\OperatorDocumentModel.cs" />
+    <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
+    <Compile Include="Models\PricePerSquareFootApi.cs" />
+    <Compile Include="Models\ReferenceFieldModel.cs" />
+    <Compile Include="Models\TemplateModel.cs" />
+    <Compile Include="Models\TextFieldModel.cs" />
+    <Compile Include="Models\TextTemplateModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerXAML\ServerXAMLSet.cs" />
+    <Compile Include="ServerClient\Controllers\AccountController.cs" />
+    <Compile Include="ServerClient\Controllers\AuthenticationController.cs" />
+    <Compile Include="ServerClient\Controllers\DocumentController.cs" />
+    <Compile Include="ServerClient\Controllers\KeyController.cs" />
+    <Compile Include="ServerClient\Controllers\TypeController.cs" />
+    <Compile Include="ServerClient\Exceptions\ApiException.cs" />
+    <Compile Include="ServerClient\Controllers\ServerController.cs" />
+    <Compile Include="ServerClient\Controllers\SignalrClient.cs" />
+    <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
+    <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
+    <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
+    <Compile Include="ServerClient\SignalRClientExtensions\IHubProxy.cs" />
+    <Compile Include="ServerClient\SignalRClientExtensions\IHubProxyOneWay.cs" />
+    <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
+    <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Api\ApiSource.cs" />
     <Compile Include="Sources\Api\ApiSourceCreator.cs" />
+    <Compile Include="Sources\Api\ApiSourceDisplay.xaml.cs">
+      <DependentUpon>ApiSourceDisplay.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml.cs">
       <DependentUpon>ApiCreatorAuthenticationDisplay.xaml</DependentUpon>
     </Compile>
@@ -125,19 +157,27 @@
     <Compile Include="Sources\Api\XAML Elements\ApiProperty.xaml.cs">
       <DependentUpon>ApiProperty.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Sources\Api\ApiSourceDisplay.xaml.cs">
-      <DependentUpon>ApiSourceDisplay.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Sources\FilePicker\FilePickerDisplay.xaml.cs">
       <DependentUpon>FilePickerDisplay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Source.cs" />
+    <Compile Include="Util\FilterUtils.cs" />
+    <Compile Include="Util\LocalCredentialHelper.cs" />
+    <Compile Include="Util\Util.cs" />
+    <Compile Include="ViewModels\CollectionViewModel.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
-    <Compile Include="ViewModels\FieldViewModels\FieldViewModel.cs" />
+    <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\FreeformViewModel.cs" />
-    <Compile Include="ViewModels\FieldViewModels\ImageViewModel.cs" />
+    <Compile Include="ViewModels\ImageViewModel.cs" />
     <Compile Include="ViewModels\LayoutViewModel.cs" />
-    <Compile Include="ViewModels\FieldViewModels\TextViewModel.cs" />
+    <Compile Include="ViewModels\LoginViewModel.cs" />
+    <Compile Include="ViewModels\OperationWindowViewModel.cs" />
+    <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
+    <Compile Include="ViewModels\TextViewModel.cs" />
+    <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\CollectionView.xaml.cs">
+      <DependentUpon>CollectionView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
@@ -150,13 +190,22 @@
     <Compile Include="Views\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MyDashboardsPage.xaml.cs">
-      <DependentUpon>MyDashboardsPage.xaml</DependentUpon>
+    <Compile Include="Views\HomePage.xaml.cs">
+      <DependentUpon>HomePage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OperationWindow.xaml.cs">
+      <DependentUpon>OperationWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OperatorView.xaml.cs">
+      <DependentUpon>OperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="WorkspaceExample.xaml.cs" />
+    <Compile Include="Views\WindowTemplate.cs" />
+    <Compile Include="Views\WindowView.xaml.cs">
+      <DependentUpon>WindowView.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -164,11 +213,13 @@
     </AppxManifest>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Assets\api-page.png" />
+    <Content Include="Assets\a.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
-    <Content Include="Assets\icon.png" />
-    <Content Include="Assets\picture.png" />
+    <Content Include="Assets\grid.gif" />
+    <Content Include="Assets\addApi.png" />
+    <Content Include="Assets\addPhoto.png" />
+    <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -178,7 +229,6 @@
     <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
     <Content Include="Assets\StoreLogo.png" />
     <Content Include="Assets\Wide310x150Logo.scale-200.png" />
-    <Content Include="Workspace_image.PNG" />
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -186,32 +236,40 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Sources\Api\ApiSourceDisplay.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -229,18 +287,32 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\MyDashboardsPage.xaml">
+    <Page Include="Views\HomePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OperationWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OperatorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="WorkspaceExample.xaml">
-      <Generator>MSBuild:Compile</Generator>
+    <Page Include="Views\WindowView.xaml">
       <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DashShared\DashShared.csproj">
+      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
+      <Name>DashShared</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

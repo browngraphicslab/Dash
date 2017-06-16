@@ -7,41 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" SizeChanged="UserControl_SizeChanged">
+    d:DesignWidth="400" SizeChanged="UserControl_SizeChanged"
+    Name="XControl">
 
-    <Canvas x:Name="XCanvas" HorizontalAlignment="Left" Width="20000" Margin="0,0,-0,-0" Height="20000" VerticalAlignment="Top" ManipulationMode="All" PointerWheelChanged="UserControl_PointerWheelChanged" ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" ManipulationDelta="UserControl_ManipulationDelta">
-        <Canvas.Background>
-            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                <LinearGradientBrush.RelativeTransform>
-                    <CompositeTransform CenterY="0.5" CenterX="0.5" Rotation="45"/>
-                </LinearGradientBrush.RelativeTransform>
-                <GradientStop Color="Red" Offset="0"/>
-                <GradientStop Color="#FF27B2AB" Offset="1"/>
-            </LinearGradientBrush>
-        </Canvas.Background>
-        <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="20000" VerticalAlignment="Top" Width="20000" />
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Canvas.Left="10113" Canvas.Top="10059"/>
-        <TextBox x:Name="textBox_Copy" HorizontalAlignment="Left" Margin="61,503,0,0" TextWrapping="Wrap" Text="TextBox2" VerticalAlignment="Top"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="992" Stroke="Black" Canvas.Top="874" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="1824" Stroke="Black" Canvas.Top="1610" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="2933" Stroke="Black" Canvas.Top="2495" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="4682" Stroke="Black" Canvas.Top="3498" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="5802" Stroke="Black" Canvas.Top="4266" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="7306" Stroke="Black" Canvas.Top="5226" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="8767" Stroke="Black" Canvas.Top="7199" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="9492" Stroke="Black" Canvas.Top="8948" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="7306" Stroke="Black" Canvas.Top="6324" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="11808" Stroke="Black" Canvas.Top="10890" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="12640" Stroke="Black" Canvas.Top="11626" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="13749" Stroke="Black" Canvas.Top="12511" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="15498" Stroke="Black" Canvas.Top="13514" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="16618" Stroke="Black" Canvas.Top="14282" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="18122" Stroke="Black" Canvas.Top="15242" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="13163" Stroke="Black" Canvas.Top="15040" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="13995" Stroke="Black" Canvas.Top="15776" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="15104" Stroke="Black" Canvas.Top="16661" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="16853" Stroke="Black" Canvas.Top="17664" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="17973" Stroke="Black" Canvas.Top="18432" Width="100"/>
-        <Rectangle Fill="#FFF4F4F5" Height="100" Canvas.Left="19477" Stroke="Black" Canvas.Top="19392" Width="100"/>
+    <Canvas x:Name="XCanvas" HorizontalAlignment="Stretch" Width="{Binding CanvasWidth}" Margin="0,0,-0,-0" Height="{Binding CanvasHeight}" 
+            VerticalAlignment="Stretch" ManipulationMode="All" PointerWheelChanged="UserControl_PointerWheelChanged" ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" ManipulationDelta="UserControl_ManipulationDelta" Background="#FFECECEC">
+        <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="{Binding CanvasHeight}" VerticalAlignment="Top" Width="{Binding CanvasWidth}" />
+
     </Canvas>
 </UserControl>

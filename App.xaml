@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
     RequestedTheme="Light">
-    
+
     <!-- Application-wide XAML stylesheet-->
-    
+
     <!-- 
     HOW TO STYLE YOUR NODES
     1. All nodes should be contained in a grid or similar structure which has
@@ -34,11 +34,11 @@
     
     -->
     <Application.Resources>
-        
+
         <!-- COLORS -->
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
-        
+
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">
@@ -83,7 +83,7 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderThickness" Value="2" />
         </Style>
-        
+
         <!-- app Titles -->
         <Style TargetType="TextBlock" x:Name="xTitleStyle">
             <Setter Property="FontSize" Value="20" />
@@ -92,7 +92,7 @@
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top"/>
         </Style>
-        
+
         <!-- green accent button -->
         <Style TargetType="Button" x:Name="xAccentButtonStyle">
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -101,11 +101,31 @@
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
         </Style>
 
+
         <!-- NODE SPECIFIC STYLES -->
-        <!-- SAMPLE NODE HERE -->
+        <!-- Collection View -->
+
+        <Style TargetType="Button" x:Name="xBlueTextButtonStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Name="xBlueTextBoxStyle">
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
+
+        <Style TargetType="FlyoutPresenter" x:Name="xFlyoutPresenterStyle">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+        </Style>
+        
         <!-- SAMPLE NODE HERE-->
-        
+
         <!-- MISC. STYLES-->
-        
+
     </Application.Resources>
 </Application>

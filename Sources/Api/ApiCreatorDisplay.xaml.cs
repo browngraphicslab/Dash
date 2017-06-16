@@ -21,9 +21,12 @@ namespace Dash.Sources.Api {
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class ApiCreatorDisplay : UserControl {
+        private ManipulationControls manipulator;
+
         public ApiCreatorDisplay() {
             this.InitializeComponent();
 
+            manipulator = new ManipulationControls(xGrid, this);
         }
 
         // == API FUNCTIONALITY ==
@@ -86,8 +89,8 @@ namespace Dash.Sources.Api {
             // instantiate new APISource
             ApiSource newApi = new ApiSource(requestType, xApiURLTB.Text, headers, parameters,
                 authParameters, authHeaders, xAuthControl.AuthURL, xAuthControl.Secret,
-                xAuthControl.Key);
-            Grid parent = (Grid)this.Parent;
+                xAuthControl.Key, (Canvas)this.Parent);
+            Canvas parent = (Canvas)this.Parent;
             parent.Children.Add(newApi.createAPISourceDisplay());
 
         }

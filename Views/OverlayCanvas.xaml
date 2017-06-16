@@ -8,18 +8,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    AllowDrop="True"
-    DragOver="UserControl_DragOver"
-    Drop="UserControl_Drop"
     d:DesignHeight="720"
     d:DesignWidth="1280">
 
-    <Grid x:Name="ApiSourceCreatorContainer" HorizontalAlignment="Left" Width="1280" Height="720" VerticalAlignment="Top" Background="White">
-        <filepicker:FilePickerDisplay HorizontalAlignment="Right" VerticalAlignment="Center"></filepicker:FilePickerDisplay>
-        <api:ApiCreatorDisplay Margin="114,33,-114,-33"></api:ApiCreatorDisplay>
-        <StackPanel Background="{StaticResource WindowsBlue}" Orientation="Vertical" Width="83" HorizontalAlignment="Left" >
-            <Image x:Name="image" HorizontalAlignment="Center" Height="64" VerticalAlignment="Top" Width="64" Source="ms-appx:///Assets/api-page (1).png" Stretch="None" />
-            <Image x:Name="image" HorizontalAlignment="Center" Height="64" VerticalAlignment="Top" Width="64" Source="ms-appx:///Assets/api-page (1).png" Stretch="None" />
-        </StackPanel>
+    <Grid>
+        <Grid x:Name="xToolbar" Width="83" Background="{StaticResource WindowsBlue}" Padding="10,10" HorizontalAlignment="Left" VerticalAlignment="Center">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock HorizontalAlignment="Center" Foreground="white">SOURCES</TextBlock>
+                <Image x:Name="image" Tapped="image_Tapped" Source="ms-appx:///Assets/addApi.png" Stretch="None"/>
+                <Image Tapped="image1_Tapped" x:Name="image1" Height="54" Source="ms-appx:///Assets/addPhoto.png" Stretch="Fill"/>
+                <TextBlock HorizontalAlignment="Center" Foreground="white" Margin="0,10,0,5">SAMPLES</TextBlock>
+                <Button  Tapped="AddDocumentsTapped" Height="54" HorizontalAlignment="Stretch" BorderThickness="2" Margin="0,0,0,5" BorderBrush="White" FontSize="14">+DOC</Button>
+                <Button  Tapped="AddCollectionTapped"  Height="54" HorizontalAlignment="Stretch"  BorderThickness="2" BorderBrush="White" FontSize="14">+COL</Button>
+            </StackPanel>
+        </Grid>
+        <Canvas x:Name="XCanvas">
+        <!--filepicker:FilePickerDisplay HorizontalAlignment="Right" VerticalAlignment="Center" Canvas.Left="838" Canvas.Top="392"></>
+        <api:ApiCreatorDisplay Canvas.Left="786" Canvas.Top="24"/-->
+
+
+    </Canvas>
     </Grid>
 </UserControl>

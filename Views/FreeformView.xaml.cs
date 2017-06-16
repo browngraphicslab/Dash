@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.Extensions.DependencyInjection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,6 +32,44 @@ namespace Dash
             get { return XCanvas.RenderTransform; }
             set { XCanvas.RenderTransform = value; }
         }
+
+        public int CanvasWidth
+        {
+            get { return (int)GetValue(CanvasWidthProperty); }
+            set { SetValue(CanvasWidthProperty, value); }
+        }
+        public int CanvasHeight
+        {
+            get { return (int)GetValue(CanvasHeightProperty); }
+            set { SetValue(CanvasHeightProperty, value); }
+        }
+
+        public static readonly DependencyProperty CanvasWidthProperty = DependencyProperty.Register(
+            "CanvasWidth",
+            typeof(int),
+            typeof(FreeformView),
+            new PropertyMetadata(null)
+        );
+
+        public static readonly DependencyProperty CanvasHeightProperty = DependencyProperty.Register(
+            "CanvasHeight",
+            typeof(int),
+            typeof(FreeformView),
+            new PropertyMetadata(null)
+        );
+
+        //public Rect CanvasClipRect
+        //{
+        //    get { return (Rect)GetValue(CanvasClipRectProperty); }
+        //    set { SetValue(CanvasClipRectProperty, value); }
+        //}
+
+        //public static readonly DependencyProperty CanvasClipRectProperty = DependencyProperty.Register(
+        //    "CanvasClipRect",
+        //    typeof(Rect),
+        //    typeof(FreeformView),
+        //    new PropertyMetadata(null)
+        //);
 
         public Canvas Canvas => XCanvas;
 
@@ -51,27 +90,31 @@ namespace Dash
             }
         }
 
-        public static FreeformView Instance;
+        public static FreeformView MainFreeformView { get; private set; }
 
-        private FreeformViewModel _vm;
+        public FreeformViewModel ViewModel { get; private set; }
 
         public FreeformView()
         {
             this.InitializeComponent();
+            XCanvas.DataContext = this;
 
-            _vm = new FreeformViewModel();
-            _vm.OnElementAdded += VmOnOnElementAdded;
+            ViewModel = new FreeformViewModel();
+            ViewModel.ElementAdded += VmElementAdded;
 
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen;
 
             // set screen in middle of canvas 
             //CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
 
-            Debug.Assert(Instance == null);
-            Instance = this;
+            if (MainFreeformView == null)
+            {
+                MainFreeformView = this;
+            }
         }
 
-        private void VmOnOnElementAdded(UIElement element, float left, float top)
+
+        private void VmElementAdded(UIElement element, float left, float top)
         {
             XCanvas.Children.Add(element);
             Canvas.SetLeft(element, left);
@@ -83,6 +126,7 @@ namespace Dash
         /// </summary>
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            e.Handled = true;
             ManipulationDelta delta = e.Delta;
 
             //Create initial translate and scale transforms
@@ -138,7 +182,16 @@ namespace Dash
             bool outOfBounds = false;
             //Create a canvas space translation to correct the translation if necessary
             TranslateTransform fixTranslate = new TranslateTransform();
-            if (topLeft.X < 0)
+            if (topLeft.X < 0 && bottomRight.X > XCanvas.ActualWidth)
+            {
+                translate.X = 0;
+                fixTranslate.X = 0;
+                double scaleAmount = (bottomRight.X - topLeft.X) / CanvasWidth;
+                scale.ScaleY = scaleAmount;
+                scale.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.X < 0)
             {
                 translate.X = 0;
                 fixTranslate.X = preTopLeft.X;
@@ -152,7 +205,16 @@ namespace Dash
                 scale.CenterX = XCanvas.ActualWidth;
                 outOfBounds = true;
             }
-            if (topLeft.Y < 0)
+            if (topLeft.Y < 0 && bottomRight.Y > XCanvas.ActualHeight)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = 0;
+                double scaleAmount = (bottomRight.Y - topLeft.Y) / CanvasHeight;
+                scale.ScaleX = scaleAmount;
+                scale.ScaleY = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.Y < 0)
             {
                 translate.Y = 0;
                 fixTranslate.Y = preTopLeft.Y;
@@ -185,6 +247,7 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
+            e.Handled = true;
             //Get mousepoint in canvas space 
             PointerPoint point = e.GetCurrentPoint(XCanvas);
             double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
@@ -241,7 +304,15 @@ namespace Dash
             //Check if the zooming puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly 
             bool outOfBounds = false;
-            if (topLeft.X < 0)
+            if (topLeft.X < 0 && bottomRight.X > XCanvas.ActualWidth)
+            {
+                translate.X = 0;
+                double scaleAmount = (bottomRight.X - topLeft.X) / CanvasWidth;
+                scaleTransform.ScaleY = scaleAmount;
+                scaleTransform.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.X < 0)
             {
                 scaleTransform.CenterX = 0;
                 outOfBounds = true;
@@ -252,7 +323,15 @@ namespace Dash
                 scaleTransform.CenterX = ParentElement.ActualWidth;
                 outOfBounds = true;
             }
-            if (topLeft.Y < 0)
+            if (topLeft.Y < 0 && bottomRight.Y > XCanvas.ActualHeight)
+            {
+                translate.Y = 0;
+                double scaleAmount = (bottomRight.Y - topLeft.Y) / CanvasHeight;
+                scaleTransform.ScaleY = scaleAmount;
+                scaleTransform.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if(topLeft.Y < 0)
             {
                 scaleTransform.CenterY = 0;
                 outOfBounds = true;
@@ -318,6 +397,8 @@ namespace Dash
                 composite.Children.Add(XCanvas.RenderTransform);
                 XCanvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             }
+
+            Clip = new RectangleGeometry {Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height)};
         }
 
     }

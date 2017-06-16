@@ -1,0 +1,47 @@
+﻿<UserControl
+    x:Class="Dash.OperatorView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" >
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="Auto"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <ListView x:Name="InputListView" Grid.Column="0" DragItemsStarting="InputListView_DragItemsStarting">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}" Grid.Column="1"></TextBlock>
+                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="0" PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <ListView x:Name="OutputListView" Grid.Column="2" DragItemsStarting="OutputListView_DragItemsStarting">
+            <ListView.ItemTemplate> 
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Name}" Grid.Column="0"></TextBlock>
+                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted" PointerReleased="Ellipse_PointerReleased" AllowDrop="True" PointerEntered="Ellipse_PointerEntered"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</UserControl>

@@ -6,17 +6,18 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="330"
-    d:DesignWidth="255" ManipulationMode="All">
+    Width="{Binding Width}"
+    Height="{Binding Height}"
+    d:DesignHeight="300"
+    d:DesignWidth="300"  DoubleTapped="UserControl_DoubleTapped">
 
-    <Grid x:Name="XGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderBrush="Aquamarine" BorderThickness="2"  RightTapped="Grid_RightTapped" ManipulationDelta="Grid_ManipulationDelta" >
-        <ScrollViewer>
+    <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}"  BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped" >
         <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch" 
-            Background="AliceBlue" ManipulationMode="All">
+            VerticalAlignment="Stretch"
+            ManipulationMode="All"
+            Background="{Binding BackgroundBrush}">
         </Canvas>
-        </ScrollViewer>
     </Grid>
 </UserControl>

@@ -7,9 +7,11 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dash.Models;
-using Windows.UI.Xaml;
 using Windows.UI.Text;
+using Windows.UI.Xaml;
+using Dash.Models;
+using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -18,34 +20,34 @@ namespace Dash
     /// </summary>
     public class LayoutModel
     {
-        // == MEMBERS == 
         /// <summary>
         /// A dictionary of keys to ElementModels.
         /// </summary>
-        public Dictionary<string, TemplateModel> Fields = new Dictionary<string, TemplateModel>();
+        public Dictionary<Key, TemplateModel> Fields;
 
         /// <summary>
         /// The type for which this layout is valid.
         /// </summary>
-        public string DocumentType { get; set; }
+        public DocumentType DocumentType { get; set; }
 
-        // == CONSTRUCTOR ==
         /// <summary>
         /// Initializes a LayoutModel with a given dictionary and type.
         /// </summary>
         /// <param name="fields"></param> Should contain the keys for which this layout is defined.
         /// <param name="type"></param> The string type for which this layout is valid.
-        public LayoutModel(IDictionary<string, TemplateModel> fields, string type)
+        public LayoutModel(IDictionary<Key, TemplateModel> fields, DocumentType type)
         {
             if (type == null)
             {
-                throw new ArgumentNullException();
+                //throw new ArgumentNullException();
             }
 
-            Fields = new Dictionary<string, TemplateModel>(fields);
+            Fields = new Dictionary<Key, TemplateModel>(fields);
+            //TODO Add this back in
             //Fields.Add("Type", new TextTemplateModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
             DocumentType = type;
         }
+
 
         // == METHODS ==
 
@@ -58,19 +60,16 @@ namespace Dash
         /// <param name="doc"></param>
         /// <returns></returns>
         static public LayoutModel DefaultLayoutModel(DocumentModel doc) {
-            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
 
             int x = 1; // counts how many fields we've added
-            foreach (KeyValuePair<string, FieldModel> entry in doc.Fields) {
+            foreach (KeyValuePair<Key, FieldModel> entry in doc.EnumFields()) {
                 fields[entry.Key] = new TextTemplateModel(0, x * 16, FontWeights.Normal, TextWrapping.Wrap, Visibility.Visible);
                 x++;
             }
-            
+
             return new LayoutModel(fields, doc.DocumentType);
         }
-        
-
-        // - TESTING DOCUMENT LAYOUTS - 
 
         /// <summary>
         /// A helpe method for the prototype. This will be removed!
@@ -79,13 +78,14 @@ namespace Dash
         /// <returns></returns>
         static public LayoutModel Food2ForkRecipeModel(DocumentModel doc)
         {
-            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
-            fields["publisher"] = new TextTemplateModel(10, 10, FontWeights.Normal, TextWrapping.Wrap, Visibility.Visible);
-            fields["source_url"] = new TextTemplateModel(10, 250, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
-            fields["title"] = new TextTemplateModel(30, 115, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible);
-            fields["f2f_url"] = new TextTemplateModel(10, 275, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
+            var fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("publisher")]  = new TextTemplateModel(10, 10,  FontWeights.Normal, TextWrapping.Wrap,   Visibility.Visible);
+            fields[DocumentModel.GetFieldKeyByName("source_url")] = new TextTemplateModel(10, 250, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
+            fields[DocumentModel.GetFieldKeyByName("title")]      = new TextTemplateModel(30, 115, FontWeights.Bold,   TextWrapping.Wrap,   Visibility.Visible);
+            fields[DocumentModel.GetFieldKeyByName("f2f_url")]    = new TextTemplateModel(10, 275, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
 
-            Debug.Assert(doc.DocumentType.Equals("recipes"));
+            Debug.Assert(doc.DocumentType.Type.Equals("recipes"));
             return new LayoutModel(fields, doc.DocumentType);
         }
 
@@ -94,35 +94,85 @@ namespace Dash
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        static public LayoutModel UmpireModel(DocumentModel doc)
+        public static LayoutModel UmpireModel(DocumentModel doc)
         {
-            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("name")]       = new TextTemplateModel(10, 10, FontWeights.Bold, TextWrapping.Wrap);
+            fields[DocumentModel.GetFieldKeyByName("experience")] = new TextTemplateModel(10, 250, FontWeights.Normal);
 
-            fields["name"] = new TextTemplateModel(10, 10, FontWeights.Bold, TextWrapping.Wrap);
-            fields["experience"] = new TextTemplateModel(10, 250, FontWeights.Normal);
-
-            Debug.Assert(doc.DocumentType.Equals("Umpires"));
+            Debug.Assert(doc.DocumentType.Type.Equals("Umpires"));
 
             return new LayoutModel(fields, doc.DocumentType);
         }
 
-        static public LayoutModel OneImageModel(DocumentModel doc)
+        public static LayoutModel OneImageModel(DocumentModel doc)
         {
-            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
-            fields["content"] = new ImageTemplateModel(5, 20, 100, 100);
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("content")] = new ImageTemplateModel(5, 20, 100, 100);
 
-            Debug.Assert(doc.DocumentType.Equals("oneimage"));
+            Debug.Assert(doc.DocumentType.Type.Equals("oneimage"));
             return new LayoutModel(fields, doc.DocumentType);
         }
 
-        static public LayoutModel TwoImagesAndTextModel(DocumentModel doc)
-        {
-            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
-            fields["content2"] = new ImageTemplateModel(5, 20, 100, 100);
-            fields["content"] = new ImageTemplateModel(5, 140, 100, 100);
-            fields["text"] = new TextTemplateModel(5, 260, FontWeights.Normal);
 
-            Debug.Assert(doc.DocumentType.Equals("twoimages"));
+        public static LayoutModel TwoImagesAndTextModel(DocumentModel doc)
+        {
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+
+
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("content")]  = new ImageTemplateModel(5, 140, 100, 100);
+            fields[DocumentModel.GetFieldKeyByName("content2")] = new ImageTemplateModel(5, 20, 100, 100);
+            fields[DocumentModel.GetFieldKeyByName("text")]     = new TextTemplateModel(5, 260, FontWeights.Normal);
+
+            Debug.Assert(doc.DocumentType.Type.Equals("twoimages"));
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel OperatorLayoutModel(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            fields[OperatorDocumentModel.OperatorKey] = new TextTemplateModel(0, 0, FontWeights.Normal);
+
+            Debug.Assert(doc.DocumentType.Type.Equals("operator"));
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel ExampleApiObject(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            
+            fields[DocumentModel.GetFieldKeyByName("id")] = new TextTemplateModel(0, 20, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("first_name")] = new TextTemplateModel(0, 60, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("last_name")] = new TextTemplateModel(0, 100, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("email")] = new TextTemplateModel(0, 140, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("gender")] = new TextTemplateModel(0, 180, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("ip_address")] = new TextTemplateModel(0, 220, FontWeights.Normal);
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel PricePerSquareFootApiObject(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            
+            fields[PricePerSquareFootApi.PriceKey] = new TextTemplateModel(0,0, FontWeights.Normal);
+            fields[PricePerSquareFootApi.SqftKey] = new TextTemplateModel(0, 100, FontWeights.Normal);
+            fields[PricePerSquareFootApi.TestKey] = new TextTemplateModel(0, 200, FontWeights.Normal);
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
+        public static LayoutModel ExampleCollectionModel(DocumentModel doc)
+        {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            
+            fields[DocumentModel.GetFieldKeyByName("documents")] = new DocumentCollectionTemplateModel(0, 0, 400, 400);
+
             return new LayoutModel(fields, doc.DocumentType);
         }
     }
