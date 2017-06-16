@@ -679,6 +679,7 @@ namespace Dash
                 //viewModel.DefaultViewVisibility = Visibility.Collapsed;
                 //viewModel.ListViewVisibility = Visibility.Visible;
                 viewModel.ManipulationMode = ManipulationModes.System;
+                viewModel.DoubleTapEnabled = false;
                 //viewModel.CanMoveControl = false;
                 DocumentViewModels.Add(viewModel);
             }

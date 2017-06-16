@@ -6,9 +6,11 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Dash.Models;
@@ -35,10 +37,35 @@ namespace Dash
             set { SetProperty(ref _manipulationMode, value); }
         }
 
+        public Brush BackgroundBrush
+        {
+            get { return _backgroundBrush; }
+            set { SetProperty(ref _backgroundBrush, value); }
+        }
+
+        public Brush BorderBrush
+        {
+            get { return _borderBrush; }
+            set { SetProperty(ref _borderBrush, value); }
+        }
+
+        public bool DoubleTapEnabled = true;
+
         public DocumentViewModel() { }
         public DocumentViewModel(DocumentModel docModel)
         {
             DocumentModel = docModel;
+            if (docModel.DocumentType.Type == "collection_example")
+            {
+                DoubleTapEnabled = false;
+                BackgroundBrush = new SolidColorBrush(Colors.Transparent);
+                BorderBrush = new SolidColorBrush(Colors.Transparent);
+            }
+            else
+            {
+                BackgroundBrush = new SolidColorBrush(Colors.AliceBlue);
+                BorderBrush = new SolidColorBrush(Colors.DarkGoldenrod);
+            }
         }
         public DocumentModel DocumentModel { get; set; }
 
@@ -77,6 +104,8 @@ namespace Dash
         private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
+        private Brush _backgroundBrush;
+        private Brush _borderBrush;
 
         static Key GetFieldKeyByName(string name)
         {

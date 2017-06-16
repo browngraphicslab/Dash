@@ -4,5 +4,98 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
     RequestedTheme="Light">
+    <Application.Resources>
 
+        <!-- COLORS -->
+        <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
+
+        <!-- DEFAULT STYLES-->
+        <!-- gray border on textboxes -->
+        <Style TargetType="TextBox">
+            <Setter Property="BorderBrush" Value="#FF474747"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <!-- gray border on combobox -->
+        <Style TargetType="ComboBox">
+            <Setter Property="BorderBrush" Value="#FF474747"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <!-- blue (default) button with white text -->
+        <Style TargetType="Button">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0,0,0,0"/>
+        </Style>
+
+
+        <!-- GLOBAL STYLES -->
+        <!-- border & padding on node-containing elements-->
+        <Style TargetType="Grid" x:Name="xNodeContainerGrid">
+            <Setter Property="BorderBrush" Value="#FF0078D7"/>
+            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style TargetType="StackPanel" x:Name="xNodeContainerStackPanel">
+            <Setter Property="BorderBrush" Value="#FF0078D7"/>
+            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style TargetType="UserControl" x:Name="xNodeContainerUserControl">
+            <Setter Property="BorderBrush" Value="#FF0078D7"/>
+            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <!-- app Titles -->
+        <Style TargetType="TextBlock" x:Name="xTitleStyle">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+        <!-- green accent button -->
+        <Style TargetType="Button" x:Name="xAccentButtonStyle">
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0,0,0,0"/>
+        </Style>
+
+        <Style TargetType="Button" x:Name="xBlueTextButtonStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Name="xBlueTextBoxStyle">
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
+
+        <Style TargetType="FlyoutPresenter" x:Name="xFlyoutPresenterStyle">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+        </Style>
+
+
+        <!-- NODE SPECIFIC STYLES -->
+        <!-- SAMPLE NODE HERE -->
+        <!-- SAMPLE NODE HERE-->
+
+        <!-- MISC. STYLES-->
+
+    </Application.Resources>
 </Application>
