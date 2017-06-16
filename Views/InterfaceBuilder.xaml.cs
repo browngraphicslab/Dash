@@ -20,12 +20,37 @@ namespace Dash
 {
     public sealed partial class InterfaceBuilder : WindowTemplate
     {
-        public InterfaceBuilder(int width=500, int height=500)
+
+        private DocumentViewModel _documentViewModel;
+
+        private DocumentModel _documentModel;
+
+        public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
         {
             this.InitializeComponent();
+
+            // set width and height to avoid Width = NaN ...
             Width = 500;
             Height = 500;
+
+
+            _documentViewModel = viewModel;
+            _documentModel = viewModel.DocumentModel;
+
+            RenderDocument();
         }
+
+        private void RenderDocument()
+        {
+            var documentView = new DocumentView();
+            documentView.DataContext = _documentViewModel;
+            Canvas.SetLeft(documentView, xDocumentsPane.CanvasWidth / 2 - documentView.Width);
+            Canvas.SetTop(documentView, xDocumentsPane.CanvasHeight / 2 - documentView.Height);
+
+            //TODO dangerous to add the document repeatedly
+            xDocumentsPane.Canvas.Children.Add(documentView);
+        }
+
 
         /// <summary>
         /// Needed to make sure that the bounds on the windows size (min and max) don't exceed the size of the free form canvas

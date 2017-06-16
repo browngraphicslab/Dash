@@ -248,7 +248,11 @@ namespace Dash
         private void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             e.Handled = true;
-            var window = new InterfaceBuilder();
+
+            var dvm = DataContext as DocumentViewModel;
+            Debug.Assert(dvm != null);
+
+            var window = new InterfaceBuilder(dvm);
 
             //var dvm = DataContext as DocumentViewModel;
             //if (dvm != null)
