@@ -39,6 +39,17 @@ namespace Dash
 
         private Line _connectionLine;
 
+        struct Ref
+        {
+            public OperatorView.IOReference ioRef;
+            public KeyValuePair<Key, FieldModel> pair;
+            public bool isOutput;
+        }
+
+        //private Ref _currReference; 
+
+        private OperatorView.IOReference _currReference; 
+
         private List<Ellipse> _leftEllipses = new List<Ellipse>();
 
         private List<Ellipse> _rightEllipses = new List<Ellipse>();
@@ -98,9 +109,13 @@ namespace Dash
             }
         }
 
+
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
             Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+
+            //_currReference = new Ref {ioRef = ioReference };
+            _currReference = ioReference; 
 
             _connectionLine = new Line();
             Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
@@ -125,29 +140,33 @@ namespace Dash
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (_connectionLine != null)
+             _connectionLine = null;
+            //_currReference = null; 
+        }
+
+        private void Ellipse_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_connectionLine == null) Debug.WriteLine("there's no reference");
+            else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
+            /*
+            if (_currReference == null) return;
+            if (_currReference.IsOutput == isOutput)
             {
-                _connectionLine = null;
+                return;
             }
+            if (_currReference.IsOutput)
+            {
+                pair.Value.InputReference = _currReference.ReferenceFieldModel;
+            }
+            else
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
+            }
+            */
         }
-
-        /// <summary>
-        /// Adds the new document created by operation to the MainView 
-        /// </summary>
-        private void B_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            DocumentView view = new DocumentView();
-            DocumentViewModel viewModel = new DocumentViewModel(_output, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            view.DataContext = viewModel;
-            FreeformView.MainFreeformView.Canvas.Children.Add(view);
-        }
-
-        public OperationWindow(int width, int height)
-        {
-            this.InitializeComponent();
-            Width = width;
-            Height = height;
-        }
+        
 
         /// <summary>
         ///  Makes the left grid representing Key,Value pairs of document tapped 
@@ -205,6 +224,41 @@ namespace Dash
                 element.VerticalAlignment = VerticalAlignment.Center;
                 element.HorizontalAlignment = HorizontalAlignment.Center;
 
+                /* 
+                // drag drop functionality 
+                element.AllowDrop = true;
+                element.DragEnter += (sender, args) =>
+                {
+                    args.AcceptedOperation = DataPackageOperation.Copy;
+                };
+
+                element.Drop += async (sender, args) =>
+                {
+                    if (args.DataView.Contains(StandardDataFormats.Text))
+                    {
+                        var text = await args.DataView.GetTextAsync();
+                        var key = JsonConvert.DeserializeObject<OperatorView.IOReference>(text);
+
+                        Debug.WriteLine("fieldkey name " + key.ReferenceFieldModel.FieldKey.Name);
+
+                        if (key.IsOutput == isOutput)
+                        {
+                            return;
+                        }
+                        if (key.IsOutput)
+                        {
+                            pair.Value.InputReference = key.ReferenceFieldModel;
+                        }
+                        else
+                        {
+                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                            var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                            opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
+                        }
+                    }
+                };
+                */ 
+
                 element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
                 Grid.SetRow(element, j);
@@ -234,39 +288,34 @@ namespace Dash
                 }; 
                 if (isOutput) _rightEllipses.Add(el);
                 else _leftEllipses.Add(el);
-                XCanvas.Children.Add(el);
 
-                // drag drop functionality 
-                element.AllowDrop = true;
-                element.DragEnter += (sender, args) =>
+                el.PointerReleased += (sender, args) =>
                 {
-                    args.AcceptedOperation = DataPackageOperation.Copy;
-                };
+                    el.Fill = new SolidColorBrush(Colors.Red);               //TODO remove afterwards 
+                    if (_connectionLine == null) Debug.WriteLine("there's no reference");
+                    else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
 
-                element.Drop += async (sender, args) =>
-                {
-                    if (args.DataView.Contains(StandardDataFormats.Text))
+                    if (_currReference.IsOutput == isOutput)
                     {
-                        var text = await args.DataView.GetTextAsync();
-                        var key = JsonConvert.DeserializeObject<OperatorView.IOReference>(text);
-                        if (key.IsOutput == isOutput)
-                        {
-                            return;
-                        }
-                        if (key.IsOutput)
-                        {
-                            pair.Value.InputReference = key.ReferenceFieldModel;
-                        }
-                        else
-                        {
-                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
-                            var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                            opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
-                        }
+                        return;
+                    }
+                    if (_currReference.IsOutput)
+                    {
+                        pair.Value.InputReference = _currReference.ReferenceFieldModel;
+                    }
+                    else
+                    {
+                        var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                        var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                        opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                            new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
                     }
                 };
+
+                XCanvas.Children.Add(el);
             }
         }
+
 
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -305,6 +354,31 @@ namespace Dash
                     };
                     _rightEllipses.Add(el);
                     XCanvas.Children.Add(el);
+
+                    el.PointerReleased += (sendingDude, args) =>
+                    {
+                        Key key = _output.Fields.Keys.ElementAt(i);                                          
+                        FieldModel fm = _output.Fields.Values.ElementAt(i);                                          
+                        el.Fill = new SolidColorBrush(Colors.Red);          //TODO remove afterwards 
+                        if (_connectionLine == null) Debug.WriteLine("there's no reference");
+                        else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
+
+                        if (_currReference.IsOutput == false)
+                        {
+                            return;
+                        }
+                        if (_currReference.IsOutput)
+                        {
+                            fm.InputReference = _currReference.ReferenceFieldModel;
+                        }
+                        else
+                        {
+                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                            var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                            opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                                new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, key));
+                        }
+                    };
                 }
             }
             height = XDocumentGridRight.RowDefinitions[0].ActualHeight;
@@ -315,6 +389,25 @@ namespace Dash
 
                 height += r.ActualHeight;
             }
+        }
+
+
+        /// <summary>
+        /// Adds the new document created by operation to the MainView 
+        /// </summary>
+        private void B_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            DocumentView view = new DocumentView();
+            DocumentViewModel viewModel = new DocumentViewModel(_output, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            view.DataContext = viewModel;
+            FreeformView.MainFreeformView.Canvas.Children.Add(view);
+        }
+
+        public OperationWindow(int width, int height)
+        {
+            this.InitializeComponent();
+            Width = width;
+            Height = height;
         }
     }
 }

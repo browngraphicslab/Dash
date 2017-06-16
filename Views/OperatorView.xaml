@@ -24,7 +24,8 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="1"></TextBlock>
-                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="0" PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
+                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="0" 
+                                 PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -38,7 +39,8 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="0"></TextBlock>
-                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
+                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" 
+                                 PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
