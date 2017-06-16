@@ -55,8 +55,8 @@ namespace Dash
             OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;
 
             //TODO functionality of drag/drop, but lose the line functionality 
-            //InputListView.CanDragItems = true;
-            //OutputListView.CanDragItems = true;
+           // InputListView.CanDragItems = true;
+           // OutputListView.CanDragItems = true;
         }
 
         private void InputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
@@ -106,7 +106,7 @@ namespace Dash
                         .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
                 OnIODragStarted(ioRef);
             }
-            Debug.WriteLine("Pointer exited");
+            //Debug.WriteLine("Pointer exited");
         }
 
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
@@ -121,7 +121,7 @@ namespace Dash
                         .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
                 OnIODragStarted(ioRef);
             }
-            Debug.WriteLine("Pointer exited");
+            //Debug.WriteLine("Pointer exited");
         }
 
         private void Ellipse_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)

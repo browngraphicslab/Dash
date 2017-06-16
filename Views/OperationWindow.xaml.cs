@@ -114,9 +114,7 @@ namespace Dash
         {
             Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
 
-            //_currReference = new Ref {ioRef = ioReference };
             _currReference = ioReference; 
-
             _connectionLine = new Line();
             Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
             _connectionLine.X1 = pos.X;
@@ -141,9 +139,10 @@ namespace Dash
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
              _connectionLine = null;
-            //_currReference = null; 
+             _currReference = null; 
         }
 
+        /*
         private void Ellipse_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_connectionLine == null) Debug.WriteLine("there's no reference");
@@ -164,8 +163,8 @@ namespace Dash
                 var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
                 opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
             }
-            */
         }
+        */ 
         
 
         /// <summary>
@@ -257,7 +256,7 @@ namespace Dash
                         }
                     }
                 };
-                */ 
+           //    */ 
 
                 element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
@@ -278,7 +277,7 @@ namespace Dash
                 grid.Children.Add(tb);
 
                 j++;
-                if (j == 2) continue; 
+                //if (j == 2) continue; 
 
                 Ellipse el = new Ellipse
                 {
@@ -286,14 +285,18 @@ namespace Dash
                     Fill = new SolidColorBrush(Colors.Black),
                     HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top
                 }; 
-                if (isOutput) _rightEllipses.Add(el);
-                else _leftEllipses.Add(el);
+                if (isOutput) _leftEllipses.Add(el);
+                else _rightEllipses.Add(el);
 
                 el.PointerReleased += (sender, args) =>
                 {
                     el.Fill = new SolidColorBrush(Colors.Red);               //TODO remove afterwards 
-                    if (_connectionLine == null) Debug.WriteLine("there's no reference");
+                    if (_connectionLine == null) /*return;*/ Debug.WriteLine("there's no reference");
                     else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
+
+                    Debug.WriteLine("before update " + (pair.Value as NumberFieldModel).Data);
+                    Debug.WriteLine("_currReference.IsOutput " + _currReference.IsOutput + " //should be false");
+                    Debug.WriteLine("isOutput " + isOutput + " //should be true");
 
                     if (_currReference.IsOutput == isOutput)
                     {
@@ -302,6 +305,8 @@ namespace Dash
                     if (_currReference.IsOutput)
                     {
                         pair.Value.InputReference = _currReference.ReferenceFieldModel;
+
+                        Debug.WriteLine("after update " + (pair.Value as NumberFieldModel).Data);
                     }
                     else
                     {
@@ -309,6 +314,8 @@ namespace Dash
                         var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
                         opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
                             new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
+
+                        Debug.WriteLine("after update, input reference count of operationmodel " + opDoc.InputReferences.Count);
                     }
                 };
 
@@ -360,16 +367,19 @@ namespace Dash
                         Key key = _output.Fields.Keys.ElementAt(i);                                          
                         FieldModel fm = _output.Fields.Values.ElementAt(i);                                          
                         el.Fill = new SolidColorBrush(Colors.Red);          //TODO remove afterwards 
-                        if (_connectionLine == null) Debug.WriteLine("there's no reference");
+                        if (_connectionLine == null) /*return;*/ Debug.WriteLine("there's no reference");
                         else Debug.WriteLine("fieldkey name " + _currReference.ReferenceFieldModel.FieldKey.Name);
 
-                        if (_currReference.IsOutput == false)
+                        Debug.WriteLine("before update " + (fm as NumberFieldModel).Data);
+
+                        if (!_currReference.IsOutput)
                         {
                             return;
                         }
-                        if (_currReference.IsOutput)
+                        if (_currReference.IsOutput)            // goes in here 
                         {
                             fm.InputReference = _currReference.ReferenceFieldModel;
+                            Debug.WriteLine("after update " + (fm as NumberFieldModel).Data);
                         }
                         else
                         {

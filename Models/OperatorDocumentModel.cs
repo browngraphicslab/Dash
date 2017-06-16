@@ -16,7 +16,9 @@ namespace Dash
         /// <summary>
         /// Dictionary that maps Field input name to the ReferenceFieldModel that it is set to
         /// </summary>
-        protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+        // TODO make this protected 
+      //  protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+        public Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
 
         public OperatorFieldModel OperatorField
         {
