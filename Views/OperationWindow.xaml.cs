@@ -113,8 +113,9 @@ namespace Dash
             _connectionLine = new Line
             {
                 StrokeThickness = 5, Stroke = new SolidColorBrush(Colors.Black), X2 = 0, Y2 = 0
-            }; 
-            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+            };
+            //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XCanvas);
 
             _connectionLine.X1 = pos.X;
             _connectionLine.Y1 = pos.Y;
@@ -128,9 +129,9 @@ namespace Dash
             // TODO LOL OF COURSE THIS DOESN'T WORK 
             // TODO ALSO ioReference.Ellipse has margin of 0 so???????????????????????????????????
             */
-           
-            XFreeformView.Canvas.Children.Add(_connectionLine);
-            Debug.WriteLine("# of lines " + _lines.Count);
+
+            //XFreeformView.Canvas.Children.Add(_connectionLine);
+            XCanvas.Children.Add(_connectionLine);
 
             CheckLinePresence(pos.X, pos.Y);
             _lines.Add(_connectionLine);
@@ -140,7 +141,8 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
-                Point pos = e.GetCurrentPoint(XFreeformView).Position;
+                //Point pos = e.GetCurrentPoint(XFreeformView).Position;
+                Point pos = e.GetCurrentPoint(XCanvas).Position;
                 _connectionLine.X2 = pos.X;
                 _connectionLine.Y2 = pos.Y;
             }
@@ -148,7 +150,8 @@ namespace Dash
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            XFreeformView.Canvas.Children.Remove(_connectionLine);
+            //XFreeformView.Canvas.Children.Remove(_connectionLine);
+            XCanvas.Children.Remove(_connectionLine);
             _lines.Remove(_connectionLine); 
             _connectionLine = null;
              _currReference = null; 
@@ -275,7 +278,8 @@ namespace Dash
                     line = l;
             }
             _lines.Remove(line);
-            XFreeformView.Canvas.Children.Remove(line); 
+            //XFreeformView.Canvas.Children.Remove(line); 
+            XCanvas.Children.Remove(line); 
         }
 
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
