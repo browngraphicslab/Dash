@@ -10,7 +10,7 @@
     d:DesignHeight="620"
     d:DesignWidth="470">
     <Grid x:Name="xGrid">
-    <StackPanel  x:Name="xApiSourceCreatorPanel" Style="{StaticResource xNodeContainerStackPanel}" Width="470" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0">
+    <StackPanel ManipulationMode="All"  x:Name="xApiSourceCreatorPanel" Style="{StaticResource xNodeContainerStackPanel}" Width="470" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0">
         <TextBlock Text="HTTP API Builder" HorizontalAlignment="Center" Style="{StaticResource xTitleStyle}" FontWeight="Normal"/>
         <StackPanel Orientation="Vertical" Background="#99FFFFFF">
             <StackPanel Name="xTopAPIURL" Orientation="Horizontal" Margin="0,0,0,15">
