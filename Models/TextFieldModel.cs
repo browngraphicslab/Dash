@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -29,6 +30,16 @@ namespace Dash
             set { SetProperty(ref _data, value); }
         }
 
+        protected override void UpdateValue(ReferenceFieldModel fieldReference)
+        {
+            DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
+            TextFieldModel fm = cont.GetFieldInDocument(fieldReference) as TextFieldModel;
+            if (fm != null)
+            {
+                Data = fm.Data;
+            }
+        }
+
         /// <summary>
         /// Creates TextBlock using layout information from template and Data 
         /// </summary>
@@ -36,7 +47,7 @@ namespace Dash
         {
             TextTemplateModel textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
-        //    TextViewModel vm = new TextViewModel(this, template);
+
             TextBlock tb = new TextBlock();
             Binding binding = new Binding
             {
@@ -44,11 +55,13 @@ namespace Dash
                 Path = new PropertyPath("Data")
             };
             tb.SetBinding(TextBlock.TextProperty, binding);
+
             Canvas.SetTop(tb, textTemplate.Top);
             Canvas.SetLeft(tb, textTemplate.Left);
             tb.FontWeight = textTemplate.FontWeight;
             tb.TextWrapping = textTemplate.TextWrapping;
             tb.Visibility = textTemplate.Visibility;
+
             return tb;
         }
     }
