@@ -72,7 +72,8 @@
                               ScrollViewer.VerticalScrollMode="Enabled"
                               ScrollViewer.VerticalScrollBarVisibility="Auto"
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ItemsSource="{Binding SoloDisplayElements}">
+                              ItemsSource="{Binding SoloDisplayElements}"
+                              Background="LightSlateGray">
                             <ListView.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ItemsStackPanel Background="Transparent" Orientation="Vertical"/>

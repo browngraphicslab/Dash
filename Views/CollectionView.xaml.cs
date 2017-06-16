@@ -30,7 +30,7 @@ namespace Dash
         {
             GridOption.Tapped += ViewModel.GridViewButton_Tapped;
             ListOption.Tapped += ViewModel.ListViewButton_Tapped;
-            CloseButton.Tapped += ViewModel.CloseButton_Tapped;
+            CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
             DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
             Filter.Tapped += ViewModel.FilterSelection_Tapped;
@@ -67,6 +67,12 @@ namespace Dash
 
 
 
+        }
+
+        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var canvas = Parent as Canvas;
+            canvas.Children.Remove(this);
         }
 
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

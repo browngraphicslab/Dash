@@ -55,7 +55,7 @@ namespace Dash
         public DocumentViewModel(DocumentModel docModel)
         {
             DocumentModel = docModel;
-            if (docModel.DocumentType.Type == "collection_example")
+            if (docModel.DocumentType.Type == "collection")
             {
                 DoubleTapEnabled = false;
                 BackgroundBrush = new SolidColorBrush(Colors.Transparent);

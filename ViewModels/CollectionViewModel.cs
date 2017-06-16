@@ -500,7 +500,7 @@ namespace Dash
 
         public void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            //Todo: Remove from Canvas
+            
         }
 
         /// <summary>

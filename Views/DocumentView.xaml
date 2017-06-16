@@ -11,7 +11,7 @@
     d:DesignHeight="330"
     d:DesignWidth="255" ManipulationMode="{Binding ManipulationMode}" DoubleTapped="UserControl_DoubleTapped" RightTapped="DocumentView_OnRightTapped">
 
-    <Grid x:Name="XGrid" BorderBrush="{Binding BorderBrush}" RightTapped="Grid_RightTapped" ManipulationDelta="Grid_ManipulationDelta" >
+    <Grid x:Name="XGrid" BorderBrush="{Binding BorderBrush}" BorderThickness="2" RightTapped="Grid_RightTapped" ManipulationDelta="Grid_ManipulationDelta" >
         <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 
