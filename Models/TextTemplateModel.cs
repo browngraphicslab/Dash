@@ -16,12 +16,15 @@ namespace Dash
         public FontWeight FontWeight { get; set;  }
 
         public TextWrapping TextWrapping { get; set; }
+
+        public bool Editable { get; set;  }
          
-        public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible)
+        public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible, bool editable= false)
             : base(left, top, 0, 0, visibility)
         {
             FontWeight = weight;
             TextWrapping = wrap;
+            Editable = editable;
         }
     }
 }

@@ -94,7 +94,7 @@ namespace Dash
         }
 
 
-        public static LayoutModel TwoImagesAndTextModel(DocumentModel doc)
+        public static LayoutModel TwoImagesAndTextModel(DocumentModel doc, bool editable = false)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
 
@@ -103,7 +103,7 @@ namespace Dash
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")]  = new ImageTemplateModel(5, 140, 100, 100);
             fields[DocumentModel.GetFieldKeyByName("content2")] = new ImageTemplateModel(5, 20, 100, 100);
-            fields[DocumentModel.GetFieldKeyByName("text")]     = new TextTemplateModel(5, 260, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("text")]     = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible, editable);
 
             Debug.Assert(doc.DocumentType.Type.Equals("twoimages"));
             return new LayoutModel(fields, doc.DocumentType);

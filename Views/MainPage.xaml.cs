@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Dash.Models;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -69,6 +70,7 @@ namespace Dash
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
             model7 = new DocumentViewModel(image2.MakeDelegate());
+            model7.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Layout"), new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel, true)));
 
 
             DocumentView view1 = new DocumentView();
