@@ -71,9 +71,7 @@ namespace Dash
                 view.Width = 200;
                 view.Height = 200;
                 OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
-
                 vm.IODragStarted += Vm_IODragStarted;
-
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
@@ -97,9 +95,6 @@ namespace Dash
                 XDocumentGridRight.Children.Add(createButton);
 
                 createButton.Tapped += B_Tapped;
-
-                _rightEllipses.Add(new Ellipse { Width = 10, Height = 10, Fill = new SolidColorBrush() });
-
             }
         }
 
@@ -179,8 +174,9 @@ namespace Dash
                 TemplateModel template = null;
                 if (layout.Fields.ContainsKey(pair.Key))
                     template = layout.Fields[pair.Key];
-                else
-                    Debug.Assert(false);
+                // TODO commented out for debugging 
+                //else
+                //    Debug.Assert(false);
 
                 FrameworkElement element = pair.Value.MakeView(template) as FrameworkElement;
                 if (element != null)
@@ -235,6 +231,9 @@ namespace Dash
                 tb.Padding = new Thickness(12, 5, 12, 5);
                 grid.Children.Add(tb);
 
+                j++;
+                if (j == 2) continue; 
+
                 Ellipse el = new Ellipse
                 {
                     Width = 10, Height = 10,
@@ -245,7 +244,6 @@ namespace Dash
                 else _leftEllipses.Add(el);
                 XCanvas.Children.Add(el);
 
-                j++;
             }
         }
 
@@ -280,34 +278,37 @@ namespace Dash
         private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Ellipses on the left grid 
-            double height = 0; 
-            for (int i = 0; i < XDocumentGridLeft.RowDefinitions.Count; i++)
+            double height = XDocumentGridLeft.RowDefinitions[0].ActualHeight; 
+            for (int i = 0; i < XDocumentGridLeft.RowDefinitions.Count - 1; i++)
             {
-                RowDefinition r = XDocumentGridLeft.RowDefinitions[i];
-                _leftEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth-5, height + r.ActualHeight / 2, 0, 0); 
+                RowDefinition r = XDocumentGridLeft.RowDefinitions[i+1];
+                _leftEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth-5, height + r.ActualHeight / 2 - 5, 0, 0); 
                 
                 height += r.ActualHeight; 
             }
 
             // Ellipses on the right grid  
-            height = 0;
             if (_rightEllipses.Count < XDocumentGridRight.RowDefinitions.Count)
             {
                 for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - _rightEllipses.Count - 2; i++)
                 {
                     Ellipse el = new Ellipse
                     {
-                        Width = 10, Height = 10, Fill = new SolidColorBrush(Colors.Black),
-                        HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top
+                        Width = 10,
+                        Height = 10,
+                        Fill = new SolidColorBrush(Colors.Black),
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top
                     };
                     _rightEllipses.Add(el);
                     XCanvas.Children.Add(el);
                 }
             }
-            for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 2; i++)
+            height = XDocumentGridRight.RowDefinitions[0].ActualHeight;
+            for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 3; i++)
             {
-                RowDefinition r = XDocumentGridRight.RowDefinitions[i];
-                _rightEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth + XFreeformView.ActualWidth-5, height + r.ActualHeight / 2, 0, 0);
+                RowDefinition r = XDocumentGridRight.RowDefinitions[i+1];
+                _rightEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth + XFreeformView.ActualWidth-5, height + r.ActualHeight / 2 -5, 0, 0);
 
                 height += r.ActualHeight;
             }
