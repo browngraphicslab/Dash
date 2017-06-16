@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -27,6 +28,9 @@ namespace Dash
         private DocumentModel _documentModel;
 
         private DocumentView _documentView;
+
+        private Dictionary<Key, TemplateModel> _keyToTemplateModel = new Dictionary<Key, TemplateModel>();
+        private Dictionary<Key, FieldModel> _keyToFieldModel = new Dictionary<Key, FieldModel>();
 
         public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
         {
@@ -47,28 +51,66 @@ namespace Dash
             Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2 - _documentView.Height);
 
             xDocumentsPane.Canvas.Children.Add(_documentView);
+
+            InitializeKeyDicts();
+        }
+
+        private void InitializeKeyDicts()
+        {
+            _keyToTemplateModel = _documentViewModel.GetLayoutModel().Fields;
+            _keyToFieldModel = _documentModel.EnumFields().ToDictionary(x => x.Key, x => x.Value);
         }
 
         private void ApplyEditable()
         {
             List<UIElement> editableElements = new List<UIElement>();
 
-            var elements = _documentView.GetUIElements();
-            foreach (var uiElement in elements)
+            foreach (var kvp in _keyToFieldModel)
             {
+                var key = kvp.Key;
+
+                if (!_keyToTemplateModel.ContainsKey(key))
+                    continue;
+
+                var fieldModel = kvp.Value;
+
+                var uiElement = fieldModel.MakeView(_keyToTemplateModel[key]);
                 var left = Canvas.GetLeft(uiElement);
                 var top = Canvas.GetTop(uiElement);
 
-                var editableBorder = new EditableFieldFrame {EditableContent = uiElement, BorderBrush = new SolidColorBrush(Colors.HotPink), BorderThickness = new Thickness(5)};
+                var editableBorder = new EditableFieldFrame(key) { EditableContent = uiElement, BorderBrush = new SolidColorBrush(Colors.CornflowerBlue), BorderThickness = new Thickness(1) };
+                editableBorder.SizeChanged += EditableBorder_SizeChanged;
+                editableBorder.PositionChanged += EditableBorderPositionChanged;
                 editableElements.Add(editableBorder);
                 Canvas.SetLeft(editableBorder, left);
                 Canvas.SetTop(editableBorder, top);
-
             }
 
-
             _documentView.SetUIElements(editableElements);
-            //TODO dangerous to add the document repeatedly
+        }
+
+        private void EditableBorderPositionChanged(object sender, double deltaX, double deltaY)
+        {
+            var editableFieldFrame = sender as EditableFieldFrame;
+            Debug.Assert(editableFieldFrame != null);
+
+            var key = editableFieldFrame.Key;
+
+            var templateModel = _keyToTemplateModel[key];
+            templateModel.Left += deltaX;
+            templateModel.Top += deltaY;
+        }
+
+        private void EditableBorder_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var editableFieldFrame = sender as EditableFieldFrame;
+            Debug.Assert(editableFieldFrame != null);
+
+            var key = editableFieldFrame.Key;
+
+            var templateModel = _keyToTemplateModel[key];
+            templateModel.Width = e.NewSize.Width;
+            templateModel.Height = e.NewSize.Height;
         }
 
 

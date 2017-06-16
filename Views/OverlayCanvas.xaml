@@ -12,6 +12,5 @@
     <Canvas x:Name="XCanvas">
         <Button Background="Pink" Height="46" Canvas.Left="28" Canvas.Top="24" Width="212" Tapped="AddDocumentsTapped">Add Documents</Button>
         <Button Background="Pink" Height="100" Canvas.Left="31" Canvas.Top="91" Width="208" Tapped="AddCollectionTapped">Add Collection</Button>
-
     </Canvas>
 </UserControl>

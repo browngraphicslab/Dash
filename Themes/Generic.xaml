@@ -39,15 +39,21 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:EditableFieldFrame">
-                    <Border x:Name="PART_Container"
-                          Background="{TemplateBinding Background}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                        
-                        <!--editable content-->
-                        <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
-                                        HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
-                    </Border>
+                    <Grid>
+                        <Border x:Name="PART_Container"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+
+                                <!--editable content-->
+                                <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
+                                                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+
+
+                        </Border>
+                        <Canvas x:Name="PART_OverlayCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Canvas>
+                    </Grid>
+                    
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
