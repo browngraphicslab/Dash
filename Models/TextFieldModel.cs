@@ -34,20 +34,28 @@ namespace Dash
         /// </summary>
         public override UIElement MakeView(TemplateModel template)
         {
-            TextTemplateModel textTemplate = template as TextTemplateModel;
+            var textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
-        //    TextViewModel vm = new TextViewModel(this, template);
-            TextBlock tb = new TextBlock();
-            Binding binding = new Binding
+            var binding = new Binding
             {
                 Source = this,
                 Path = new PropertyPath("Data")
             };
-            tb.SetBinding(TextBlock.TextProperty, binding);
+            var tb = textTemplate.Editable ? (FrameworkElement)new TextBox() : new TextBlock();
+            if (tb is TextBox)
+            {
+                tb.SetBinding(TextBox.TextProperty, binding);
+                (tb as TextBox).TextChanged += ((s,e) => Data = (s as TextBox).Text);
+                (tb as TextBox).FontWeight   = textTemplate.FontWeight;
+                (tb as TextBox).TextWrapping = textTemplate.TextWrapping;
+            } else
+            {
+                tb.SetBinding(TextBlock.TextProperty, binding);
+                (tb as TextBlock).FontWeight   = textTemplate.FontWeight;
+                (tb as TextBlock).TextWrapping = textTemplate.TextWrapping;
+            }
             Canvas.SetTop(tb, textTemplate.Top);
             Canvas.SetLeft(tb, textTemplate.Left);
-            tb.FontWeight = textTemplate.FontWeight;
-            tb.TextWrapping = textTemplate.TextWrapping;
             tb.Visibility = textTemplate.Visibility;
             return tb;
         }

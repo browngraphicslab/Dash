@@ -53,8 +53,7 @@ namespace Dash
                 throw new ArgumentNullException();
             }
             DocumentType = type;
-
-            Fields = new Dictionary<Key, FieldModel>(fields);
+            SetFields(fields);
         }
 
         public void SetField(Key key, FieldModel field)
@@ -67,9 +66,11 @@ namespace Dash
                     d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
         }
 
-        public void SetFields(Dictionary<Key,FieldModel> fields)
+        public void SetFields(IDictionary<Key,FieldModel> fields)
         {
-            Fields = fields;
+            Fields = new Dictionary<Key, FieldModel>();
+            foreach (var f in fields)
+                SetField(f.Key, f.Value);
         }
 
         public DocumentModel()
@@ -91,7 +92,8 @@ namespace Dash
         /// <returns></returns>
         public DocumentModel MakeDelegate()
         {
-            var dm = new DocumentModel(new Dictionary<Key, FieldModel>(), DocumentType);
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var dm = docController.CreateDocumentAsync(DocumentType);
             dm.SetField(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
             var currentDelegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
             if (currentDelegates == null)
@@ -191,7 +193,7 @@ namespace Dash
 
             // create the type //TODO this is not going to work in the real world
             var dm = docController.CreateDocumentAsync("Umpires");
-            dm.Fields = fields;
+            dm.SetFields(fields);
             return dm;
         }
 
@@ -216,7 +218,7 @@ namespace Dash
 
             // create the type //TODO this is not going to work in the real world
             var dm = docController.CreateDocumentAsync("recipes");
-            dm.Fields = fields;
+            dm.SetFields(fields);
             return dm;
         }
 
@@ -233,7 +235,7 @@ namespace Dash
             fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
 
             var dm = docController.CreateDocumentAsync("oneimage");
-            dm.Fields = fields;
+            dm.SetFields(fields);
             return dm;
         }
 
@@ -254,7 +256,7 @@ namespace Dash
             fields[textKey] = new TextFieldModel("These are 2 cats");
 
             var dm = docController.CreateDocumentAsync("twoimages");
-            dm.Fields = fields;
+            dm.SetFields(fields);
             return dm;
         }
 
@@ -274,7 +276,7 @@ namespace Dash
             fields[documentsKey] = new DocumentCollectionFieldModel(apiSource.GetDocumentsAsync());
 
             var dm = docController.CreateDocumentAsync("collection_example");
-            dm.Fields = fields;
+            dm.SetFields(fields);
             return dm;
         }
 
