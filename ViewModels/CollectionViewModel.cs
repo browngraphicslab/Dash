@@ -150,7 +150,8 @@ namespace Dash
             SetInitialValues();
             SetDimensions();
             ResizeElements();
-            
+
+            GridViewButton_Tapped(null, null);
         }
 
         #region Setup Methods

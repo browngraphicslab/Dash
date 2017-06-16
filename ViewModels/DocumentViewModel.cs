@@ -111,11 +111,18 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(doc)));
                 else
                 {
-                    Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+                    var fields = new Dictionary<Key, TemplateModel>();
+                    double yloc = 0;
                     foreach (var f in doc.EnumFields())
                         if (f.Value is DocumentCollectionFieldModel)
                         {
-                            fields.Add(f.Key, new DocumentCollectionTemplateModel(0, 0, 500, 100, Visibility.Visible));
+                            fields.Add(f.Key, new DocumentCollectionTemplateModel(0, yloc, 500, 100, Visibility.Visible));
+                            yloc += 500;
+                        }
+                        else if (f.Value is TextFieldModel)
+                        {
+                            fields.Add(f.Key, new TextTemplateModel(0, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible));
+                            yloc += 20;
                         }
                     var lm = new LayoutModel(fields, doc.DocumentType);
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(lm));

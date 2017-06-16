@@ -46,6 +46,7 @@ namespace Dash
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var collection = docController.CreateDocumentAsync("newtype");
             collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
+            collection.SetField(DocumentModel.GetFieldKeyByName("Description"), new TextFieldModel("kids are all right - The Who"));
             DocumentViewModel modelC = new DocumentViewModel(collection);
             DocumentView view1 = new DocumentView() { DataContext = modelC };
             FreeformView.Canvas.Children.Add(view1);

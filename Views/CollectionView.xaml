@@ -11,7 +11,7 @@
     d:DesignWidth="600">
 
     <Grid>
-        <Grid x:Name="Grid" Height="{Binding OuterGridHeight}" Width="{Binding  OuterGridWidth}" BorderThickness="1" Margin="178,178,22,22">
+        <Grid x:Name="Grid" Height="{Binding OuterGridHeight}" Width="{Binding  OuterGridWidth}" BorderThickness="1">
             <Grid.Background>
                 <SolidColorBrush Color="White"/>
             </Grid.Background>
