@@ -45,9 +45,10 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var dvm = DataContext as DocumentViewModel;
-            dvm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+            
             if (dvm != null)
             {
+                dvm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
                 xCanvas.Children.Clear();
                 List<UIElement> elements = dvm.GetUiElements();
                 foreach (var element in elements)
@@ -254,17 +255,21 @@ namespace Dash
         /// <param name="e"></param>
         private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            e.Handled = true;
-            OperationWindow window = new OperationWindow(1000, 800);
-
-            var dvm = DataContext as DocumentViewModel;
-            if (dvm != null)
+            var documentViewModel = DataContext as DocumentViewModel;
+            if (documentViewModel != null && documentViewModel.DoubleTapEnabled)
             {
-                window.DocumentViewModel = dvm;
-            }
-            Point center = RenderTransform.TransformPoint(e.GetPosition(this));
+                e.Handled = true;
+                OperationWindow window = new OperationWindow(1000, 800);
 
-            FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+                var dvm = DataContext as DocumentViewModel;
+                if (dvm != null)
+                {
+                    window.DocumentViewModel = dvm;
+                }
+                Point center = RenderTransform.TransformPoint(e.GetPosition(this));
+
+                FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+            }
         }
 
         private void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)

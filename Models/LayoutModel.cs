@@ -53,7 +53,7 @@ namespace Dash
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        static public LayoutModel Food2ForkRecipeModel(DocumentModel doc)
+        static public LayoutModel Food2ForkRecipeModel(DocumentType docType)
         {
             var fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
@@ -62,8 +62,8 @@ namespace Dash
             fields[DocumentModel.GetFieldKeyByName("title")]      = new TextTemplateModel(30, 115, FontWeights.Bold,   TextWrapping.Wrap,   Visibility.Visible);
             fields[DocumentModel.GetFieldKeyByName("f2f_url")]    = new TextTemplateModel(10, 275, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
 
-            Debug.Assert(doc.DocumentType.Type.Equals("recipes"));
-            return new LayoutModel(fields, doc.DocumentType);
+            Debug.Assert(docType.Type.Equals("recipes"));
+            return new LayoutModel(fields, docType);
         }
 
         /// <summary>
@@ -71,30 +71,30 @@ namespace Dash
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
-        public static LayoutModel UmpireModel(DocumentModel doc)
+        public static LayoutModel UmpireModel(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("name")]       = new TextTemplateModel(10, 10, FontWeights.Bold, TextWrapping.Wrap);
             fields[DocumentModel.GetFieldKeyByName("experience")] = new TextTemplateModel(10, 250, FontWeights.Normal);
 
-            Debug.Assert(doc.DocumentType.Type.Equals("Umpires"));
+            Debug.Assert(docType.Type.Equals("Umpires"));
 
-            return new LayoutModel(fields, doc.DocumentType);
+            return new LayoutModel(fields, docType);
         }
 
-        public static LayoutModel OneImageModel(DocumentModel doc)
+        public static LayoutModel OneImageModel(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")] = new ImageTemplateModel(5, 20, 100, 100);
 
-            Debug.Assert(doc.DocumentType.Type.Equals("oneimage"));
-            return new LayoutModel(fields, doc.DocumentType);
+            Debug.Assert(docType.Type.Equals("oneimage"));
+            return new LayoutModel(fields, docType);
         }
 
 
-        public static LayoutModel TwoImagesAndTextModel(DocumentModel doc)
+        public static LayoutModel TwoImagesAndTextModel(DocumentType docType, bool editable = false)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
 
@@ -103,23 +103,23 @@ namespace Dash
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")]  = new ImageTemplateModel(5, 140, 100, 100);
             fields[DocumentModel.GetFieldKeyByName("content2")] = new ImageTemplateModel(5, 20, 100, 100);
-            fields[DocumentModel.GetFieldKeyByName("text")]     = new TextTemplateModel(5, 260, FontWeights.Normal);
+            fields[DocumentModel.GetFieldKeyByName("text")]     = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible, editable);
 
-            Debug.Assert(doc.DocumentType.Type.Equals("twoimages"));
-            return new LayoutModel(fields, doc.DocumentType);
+            Debug.Assert(docType.Type.Equals("twoimages"));
+            return new LayoutModel(fields, docType);
         }
 
-        public static LayoutModel OperatorLayoutModel(DocumentModel doc)
+        public static LayoutModel OperatorLayoutModel(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
 
             fields[OperatorDocumentModel.OperatorKey] = new TextTemplateModel(0, 0, FontWeights.Normal);
 
-            Debug.Assert(doc.DocumentType.Type.Equals("operator"));
-            return new LayoutModel(fields, doc.DocumentType);
+            Debug.Assert(docType.Type.Equals("operator"));
+            return new LayoutModel(fields, docType);
         }
 
-        public static LayoutModel ExampleApiObject(DocumentModel doc)
+        public static LayoutModel ExampleApiObject(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             
@@ -130,10 +130,10 @@ namespace Dash
             fields[DocumentModel.GetFieldKeyByName("gender")] = new TextTemplateModel(0, 180, FontWeights.Normal);
             fields[DocumentModel.GetFieldKeyByName("ip_address")] = new TextTemplateModel(0, 220, FontWeights.Normal);
 
-            return new LayoutModel(fields, doc.DocumentType);
+            return new LayoutModel(fields, docType);
         }
 
-        public static LayoutModel PricePerSquareFootApiObject(DocumentModel doc)
+        public static LayoutModel PricePerSquareFootApiObject(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             
@@ -141,16 +141,16 @@ namespace Dash
             fields[PricePerSquareFootApi.SqftKey] = new TextTemplateModel(0, 100, FontWeights.Normal);
             fields[PricePerSquareFootApi.TestKey] = new TextTemplateModel(0, 200, FontWeights.Normal);
 
-            return new LayoutModel(fields, doc.DocumentType);
+            return new LayoutModel(fields, docType);
         }
 
-        public static LayoutModel ExampleCollectionModel(DocumentModel doc)
+        public static LayoutModel ExampleCollectionModel(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             
             fields[DocumentModel.GetFieldKeyByName("documents")] = new DocumentCollectionTemplateModel(0, 0, 400, 400);
 
-            return new LayoutModel(fields, doc.DocumentType);
+            return new LayoutModel(fields, docType);
         }
     }
 }

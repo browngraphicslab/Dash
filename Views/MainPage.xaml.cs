@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dash.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -36,11 +38,18 @@ namespace Dash
             OverlayCanvas.OnAddDocumentsTapped += AddDocuments;
             OverlayCanvas.OnAddCollectionTapped += AddCollection;
         }
-        DocumentViewModel model7;
+        DocumentViewModel model7, model4, model1;
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+
+            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var collection = docController.CreateDocumentAsync("newtype");
+            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
+            DocumentViewModel modelC = new DocumentViewModel(collection);
+            DocumentView view1 = new DocumentView() { DataContext = modelC };
+            FreeformView.Canvas.Children.Add(view1);
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
@@ -53,13 +62,14 @@ namespace Dash
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
 
-            DocumentViewModel model1 = new DocumentViewModel(umpire);
+            model1 = new DocumentViewModel(umpire);
             DocumentViewModel model2 = new DocumentViewModel(recipe);
             DocumentViewModel model3 = new DocumentViewModel(image);
-            DocumentViewModel model4 = new DocumentViewModel(image2);
+            model4 = new DocumentViewModel(image2);
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
-                              model7 = new DocumentViewModel(image2.MakeDelegate());
+            model7 = new DocumentViewModel(image2.MakeDelegate());
+            model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
 
 
             DocumentView view1 = new DocumentView();
