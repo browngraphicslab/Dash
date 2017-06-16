@@ -100,15 +100,26 @@ namespace Dash
         {
             //Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
 
-            _currReference = ioReference; 
-            _connectionLine = new Line();
+            _currReference = ioReference;
+            _connectionLine = new Line
+            {
+                StrokeThickness = 5, Stroke = new SolidColorBrush(Colors.Black), X2 = 0, Y2 = 0
+            }; 
             Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+
             _connectionLine.X1 = pos.X;
             _connectionLine.Y1 = pos.Y;
-            _connectionLine.X2 = 0;
-            _connectionLine.Y2 = 0;
-            _connectionLine.Stroke = new SolidColorBrush(Colors.Black);
-            _connectionLine.StrokeThickness = 5;
+
+            /* 
+            Binding x1 = new Binding {Path = new PropertyPath("Canvas.LeftProperty"), Source = ioReference.Ellipse };
+            Binding y1 = new Binding {Path = new PropertyPath("Canvas.TopProperty"), Source = ioReference.Ellipse };
+            _connectionLine.SetBinding(Line.X1Property, x1);
+            _connectionLine.SetBinding(Line.Y1Property, y1);
+
+            // TODO LOL OF COURSE THIS DOESN'T WORK 
+            // TODO ALSO ioReference.Ellipse has margin of 0 so???????????????????????????????????
+            */
+           
             XFreeformView.Canvas.Children.Add(_connectionLine);
         }
 
@@ -203,7 +214,6 @@ namespace Dash
                 grid.Children.Add(tb);
 
                 j++;
-                //if (j == 2) continue; 
 
                 Ellipse el = new Ellipse
                 {
@@ -264,46 +274,6 @@ namespace Dash
             }
 
             // Ellipses on the right grid  
-            if (_rightEllipses.Count < XDocumentGridRight.RowDefinitions.Count)
-            {
-                for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - _rightEllipses.Count - 2; i++)
-                {
-                    Ellipse el = new Ellipse
-                    {
-                        Width = 10,
-                        Height = 10,
-                        Fill = new SolidColorBrush(Colors.Black),
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Top
-                    };
-                    _rightEllipses.Add(el);
-                    XCanvas.Children.Add(el);
-
-                    el.PointerReleased += (sendingDude, args) =>
-                    {
-                        if (_connectionLine == null) return;
-                        Key key = _output.Fields.Keys.ElementAt(i);                                          
-                        FieldModel fm = _output.Fields.Values.ElementAt(i);                                          
-                        el.Fill = new SolidColorBrush(Colors.DodgerBlue);
-
-                        if (!_currReference.IsOutput)
-                        {
-                            return;
-                        }
-                        if (_currReference.IsOutput)           
-                        {
-                            fm.InputReference = _currReference.ReferenceFieldModel;
-                        }
-                        else
-                        {
-                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
-                            var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                            opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
-                                new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, key));
-                        }
-                    };
-                }
-            }
             height = XDocumentGridRight.RowDefinitions[0].ActualHeight;
             for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 3; i++)
             {

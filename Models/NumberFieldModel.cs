@@ -58,7 +58,6 @@ namespace Dash
             // TODO commented out for debugging 
             //Debug.Assert(textTemplate != null);
 
-            //    TextViewModel vm = new TextViewModel(this, template);
             TextBlock tb = new TextBlock();
             Binding binding = new Binding
             {
