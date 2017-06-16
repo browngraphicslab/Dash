@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models;
+using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
@@ -15,13 +15,16 @@ namespace Dash
     /// </summary>
     class ImageFieldModel : FieldModel
     {
+        // == MEMBERS ==
         public BitmapImage Data { get; set; }
         
+        // == CONSTRUCTORS ==
         public ImageFieldModel(Uri image)
         {
             Data = new BitmapImage(image);
         }
 
+        // == METHODS ==
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>

@@ -7,21 +7,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Storage.Pickers;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
 
 namespace Dash
 {
     /// <summary>
-    /// A mapping of keys to FieldModels.
+    /// Represents a document, inlcuding a user-defined type and a mapping of keys 
+    /// to FieldModels representing the document's properties.
     /// </summary>
     public class DocumentModel
     {
+        // == MEMBERS == 
+
         /// <summary>
         /// A dictionary of keys to FieldModels.
+        /// 
+        /// TODO: Why is this public? Abstract out, create methods to add/remove fields and
+        /// to get fields, but we wouldn't want outside code to redefine our entire dictionary,
+        /// right?
         /// </summary>
         public Dictionary<string, FieldModel> Fields;
-
+        
         /// <summary>
         /// The type of this document.
         /// </summary>
@@ -31,11 +36,14 @@ namespace Dash
             set { (Fields["Type"] as TextFieldModel).Data = value; }
         }
 
+        // == METHODS ==
+
         /// <summary>
         /// Initializes a document with given data and type.
         /// </summary>
-        /// <param name="fields"></param>
-        /// <param name="type"></param>
+        /// <param name="fields">mapping of key FieldModel (value) pairs representing
+        /// a document's fields</param>
+        /// <param name="type">user-defined string representing the document type</param>
         public DocumentModel(IDictionary<string, FieldModel> fields, string type)
         {
             if (type == null)
@@ -46,8 +54,8 @@ namespace Dash
             Fields = new Dictionary<string, FieldModel>(fields);
             Fields["Type"] = new TextFieldModel(type);
         }
-
-
+        
+        // == STATIC DOCUMENT MODELS FOR TESTING ==
         public static DocumentModel UmpireDocumentModel()
         {
             Dictionary<string, FieldModel> fields = new Dictionary<string, FieldModel>();

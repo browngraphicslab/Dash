@@ -44,6 +44,7 @@ namespace Dash
 
         private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            // TODO: let's just make a static method that does this whole thing
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             DocumentModel image = DocumentModel.OneImage();
@@ -64,18 +65,6 @@ namespace Dash
             view3.DataContext = model3;
             view4.DataContext = model4;
 
-            //view1.Margin = new Thickness(20, 20, 0, 0);
-            //view1.Width = 200;
-            //view1.Height = 400;
-            //view2.Margin = new Thickness(400, 20, 0, 0);
-            //view2.Width = 200;
-            //view2.Height = 400;
-
-
-            //MyGrid.Children.Add(view1);
-            //MyGrid.Children.Add(view2);
-            //FreeformView.Canvas.Children.Add(view1);
-            //FreeformView.Canvas.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view3);
             FreeformView.Canvas.Children.Add(view4);
 

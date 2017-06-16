@@ -7,9 +7,9 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
 using Dash.Models;
+using Windows.UI.Xaml;
+using Windows.UI.Text;
 
 namespace Dash
 {
@@ -18,6 +18,7 @@ namespace Dash
     /// </summary>
     public class LayoutModel
     {
+        // == MEMBERS == 
         /// <summary>
         /// A dictionary of keys to ElementModels.
         /// </summary>
@@ -28,6 +29,7 @@ namespace Dash
         /// </summary>
         public string DocumentType { get; set; }
 
+        // == CONSTRUCTOR ==
         /// <summary>
         /// Initializes a LayoutModel with a given dictionary and type.
         /// </summary>
@@ -41,9 +43,34 @@ namespace Dash
             }
 
             Fields = new Dictionary<string, TemplateModel>(fields);
-            Fields.Add("Type", new TextTemplateModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
+            //Fields.Add("Type", new TextTemplateModel(-10000, -1000, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Collapsed));
             DocumentType = type;
         }
+
+        // == METHODS ==
+
+        // - DEFAULT DOCUMENT LAYOUTS -
+        // TODO: I imagine these will be moved out of LayoutModel at some point.
+
+        /// <summary>
+        /// Generates a new layout model to display a document as a list of string key/value pairs.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        static public LayoutModel DefaultLayoutModel(DocumentModel doc) {
+            Dictionary<string, TemplateModel> fields = new Dictionary<string, TemplateModel>();
+
+            int x = 1; // counts how many fields we've added
+            foreach (KeyValuePair<string, FieldModel> entry in doc.Fields) {
+                fields[entry.Key] = new TextTemplateModel(0, x * 16, FontWeights.Normal, TextWrapping.Wrap, Visibility.Visible);
+                x++;
+            }
+            
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+        
+
+        // - TESTING DOCUMENT LAYOUTS - 
 
         /// <summary>
         /// A helpe method for the prototype. This will be removed!

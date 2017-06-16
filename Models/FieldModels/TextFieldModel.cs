@@ -4,16 +4,21 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml;
+using Windows.UI.Xaml; 
 using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
+
     /// <summary>
     /// Field model for holding text data
     /// </summary>
     class TextFieldModel : FieldModel
     {
+        // == MEMBERS ==
+        public string Data { get; set; }
+
+        // == CONSTRUCTORS ==
         public TextFieldModel() { }
 
         public TextFieldModel(string data)
@@ -21,8 +26,7 @@ namespace Dash
             Data = data;
         }
 
-        public string Data { get; set; }
-
+        // == METHODS ==
         /// <summary>
         /// Creates TextBlock using layout information from template and Data 
         /// </summary>

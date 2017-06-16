@@ -3,14 +3,23 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
+    xmlns:filepicker="using:Dash.Sources.FilePicker"
+    xmlns:api="using:Dash.Sources.Api"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    AllowDrop="True"
+    DragOver="UserControl_DragOver"
+    Drop="UserControl_Drop"
+    d:DesignHeight="720"
+    d:DesignWidth="1280">
 
-    <Canvas x:Name="XCanvas">
-        <Ellipse Fill="#FFF4F4F5" Height="70" Stroke="Black" Width="101" Tapped="Ellipse_Tapped" Canvas.Left="284" Canvas.Top="10"/>
-        <Ellipse Fill="#FFF4F4F5" Height="100" Canvas.Left="285" Stroke="Black" Canvas.Top="127" Width="100" Tapped="Ellipse_Tapped_1"/>
-    </Canvas>
+    <Grid x:Name="ApiSourceCreatorContainer" HorizontalAlignment="Left" Width="1280" Height="720" VerticalAlignment="Top" Background="White">
+        <filepicker:FilePickerDisplay HorizontalAlignment="Right" VerticalAlignment="Center"></filepicker:FilePickerDisplay>
+        <api:ApiCreatorDisplay Margin="114,33,-114,-33"></api:ApiCreatorDisplay>
+        <StackPanel Background="{StaticResource WindowsBlue}" Orientation="Vertical" Width="83" HorizontalAlignment="Left" >
+            <Image x:Name="image" HorizontalAlignment="Center" Height="64" VerticalAlignment="Top" Width="64" Source="ms-appx:///Assets/api-page (1).png" Stretch="None" />
+            <Image x:Name="image" HorizontalAlignment="Center" Height="64" VerticalAlignment="Top" Width="64" Source="ms-appx:///Assets/api-page (1).png" Stretch="None" />
+        </StackPanel>
+    </Grid>
 </UserControl>

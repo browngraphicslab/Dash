@@ -12,8 +12,10 @@ namespace Dash
     /// </summary>
     public abstract class FieldModel
     {
+        // == MEMBERS ==
         public string Key { get; set; }
 
+        // == METHODS ==
         /// <summary>
         /// Abstract method to return views using layout information from templates 
         /// </summary>
