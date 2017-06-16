@@ -261,6 +261,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Needed to make sure that the bounds on the windows size (min and max) don't exceed the size of the free form canvas
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             FreeformView freeform = sender as FreeformView;

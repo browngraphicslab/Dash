@@ -239,19 +239,25 @@ namespace Dash
             if (dvm != null)
             {
                 window.DocumentViewModel = dvm;
-                //LayoutModel model = dvm.DocumentViewModelSource.DocumentLayoutModel(dvm.DocumentModel);
-                //LayoutModel model = new LayoutModel(dvm.DocumentModel.DocumentType);
             }
             Point center = RenderTransform.TransformPoint(e.GetPosition(this));
 
             FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+        }
 
-            ////Get top left and bottom right points of documents in canvas space
-            //Point p1 = this.RenderTransform.TransformPoint(new Point(0, 0));
-            //Point p2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
-            //Debug.Assert(this.RenderTransform != null);
-            //Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
-            //Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+        private void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var window = new InterfaceBuilder();
+
+            //var dvm = DataContext as DocumentViewModel;
+            //if (dvm != null)
+            //{
+            //    window.DocumentViewModel = dvm;
+            //}
+            Point center = RenderTransform.TransformPoint(e.GetPosition(this));
+
+            FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
         }
     }
 }
