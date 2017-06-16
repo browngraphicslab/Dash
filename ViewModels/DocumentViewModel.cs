@@ -109,6 +109,17 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(doc)));
                 else if (doc.DocumentType.Type == "price_per_square_foot")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(doc)));
+                else
+                {
+                    Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+                    foreach (var f in doc.EnumFields())
+                        if (f.Value is DocumentCollectionFieldModel)
+                        {
+                            fields.Add(f.Key, new DocumentCollectionTemplateModel(0, 0, 500, 100, Visibility.Visible));
+                        }
+                    var lm = new LayoutModel(fields, doc.DocumentType);
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(lm));
+                }
             }
             return new ReferenceFieldModel(layoutModelSource.Id, layoutKeyForDocumentType);
         }
