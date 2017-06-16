@@ -8,14 +8,33 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Input;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Dash.Models;
 
 namespace Dash
 {
-    public class DocumentViewModel
+    public class DocumentViewModel : ViewModelBase
     {
+        public double Width
+        {
+            get { return _width; }
+            set { SetProperty(ref _width, value); }
+        }
+
+        public double Height
+        {
+            get { return _height; }
+            set { SetProperty(ref _height, value); }
+        }
+
+        public ManipulationModes ManipulationMode
+        {
+            get { return _manipulationMode; }
+            set { SetProperty(ref _manipulationMode, value); }
+        }
+
         public DocumentViewModel() { }
         public DocumentViewModel(DocumentModel docModel)
         {
@@ -55,6 +74,10 @@ namespace Dash
         }
 
         static DocumentModel DefaultLayoutModelSource = null;
+        private ManipulationModes _manipulationMode;
+        private double _height;
+        private double _width;
+
         static Key GetFieldKeyByName(string name)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();

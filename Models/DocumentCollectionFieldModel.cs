@@ -31,18 +31,9 @@ namespace Dash
             var collectionTemplate = template as DocumentCollectionTemplateModel;
             Debug.Assert(collectionTemplate != null);
 
-            var docViews = new ObservableCollection<DocumentView>();
-            foreach (var docModel in _docs)
-            {
-                DocumentViewModel docVM = new DocumentViewModel(docModel);
-                DocumentView docView = new DocumentView();
-                docView.DataContext = docVM;
-                docViews.Add(docView);
-            }
-
-            var collectionModel = new CollectionModel(docViews);
+            var collectionModel = new CollectionModel(new ObservableCollection<DocumentModel>(_docs));
             var collectionViewModel = new CollectionViewModel(collectionModel);
-            var view = collectionViewModel.View;
+            var view = new CollectionView(collectionViewModel);
 
             Canvas.SetTop(view, collectionTemplate.Top);
             Canvas.SetLeft(view, collectionTemplate.Left);

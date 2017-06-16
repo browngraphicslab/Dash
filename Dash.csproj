@@ -102,6 +102,7 @@
     <Compile Include="Models\DocumentModelFieldModel.cs" />
     <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\ImageTemplateModel.cs" />
@@ -135,6 +136,7 @@
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxyOneWay.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
+    <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
