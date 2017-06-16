@@ -25,9 +25,9 @@ namespace Dash
 
         public virtual List<UIElement> GetUiElements()
         {
-            var uiElements = new List<UIElement>(DocumentModel.Fields.Count);
+            var uiElements = new List<UIElement>();
             LayoutModel layout = GetLayoutModel();
-            foreach (var field in DocumentModel.Fields)
+            foreach (var field in DocumentModel.EnumFields())
             {
                 if (layout.Fields.ContainsKey(field.Key))
                 {
@@ -90,25 +90,25 @@ namespace Dash
                 layoutModelSource = DefaultLayoutModelSource;
             }
             var layoutKeyForDocumentType = GetFieldKeyByName(doc.DocumentType.Type);
-            if (!layoutModelSource.Fields.ContainsKey(layoutKeyForDocumentType))
+            if (layoutModelSource.Field(layoutKeyForDocumentType) == null)
             {
                 // bcz: hack to have a default layout for known types: recipes, Umpires
                 if (doc.DocumentType.Type == "recipes")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(doc)));
                 else if (doc.DocumentType.Type == "Umpires")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.UmpireModel(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.UmpireModel(doc)));
                 else if (doc.DocumentType.Type == "oneimage")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(doc)));
                 else if (doc.DocumentType.Type == "twoimages")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(doc)));
                 else if (doc.DocumentType.Type == "operator")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(doc)));
                 else if (doc.DocumentType.Type == "example_api_object")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleApiObject(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleApiObject(doc)));
                 else if (doc.DocumentType.Type == "collection_example")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(doc)));
                 else if (doc.DocumentType.Type == "price_per_square_foot")
-                    layoutModelSource.Fields.Add(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(doc)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(doc)));
             }
             return new ReferenceFieldModel(layoutModelSource.Id, layoutKeyForDocumentType);
         }

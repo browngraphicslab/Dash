@@ -38,15 +38,15 @@ namespace Dash
         public FieldModel GetFieldInDocument(string docId, Key field)
         {
             DocumentModel model = _documents[docId];
-            return model?.Fields[field];
+            return model?.Field(field);
         }
 
         public FieldModel GetFieldInDocument(ReferenceFieldModel referenceFieldModel)
         {
             DocumentModel model = _documents[referenceFieldModel.DocId];
-            if (model != null && model.Fields.ContainsKey(referenceFieldModel.FieldKey))
+            if (model != null)
             {
-                return model.Fields[referenceFieldModel.FieldKey];
+                return model.Field(referenceFieldModel.FieldKey);
             }
             return null;
         }
@@ -80,7 +80,6 @@ namespace Dash
             var newDoc = new DocumentModel
             {
                 DocumentType = _typeController.CreateTypeAsync(type),
-                Fields = new Dictionary<Key, FieldModel>(),
                 Id = id
             };
 
@@ -96,7 +95,6 @@ namespace Dash
             var newDoc = new DocumentModel
             {
                 DocumentType = type,
-                Fields = new Dictionary<Key, FieldModel>(),
                 Id = id
             };
 

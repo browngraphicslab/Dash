@@ -30,8 +30,8 @@ namespace Dash
 
         public OperatorDocumentModel(OperatorFieldModel operatorField)
         {
-            Fields = new Dictionary<Key, FieldModel>();
-            Fields[OperatorKey] = operatorField;
+            // Fields = new Dictionary<Key, FieldModel>();
+            SetField(OperatorKey, operatorField);
             OperatorField = operatorField;
             DocumentType = OperatorType;
         }
@@ -74,7 +74,6 @@ namespace Dash
             foreach (var fieldModel in results)
             {
                 SetField(fieldModel.Key, fieldModel.Value);
-                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, fieldModel.Key));
             }
         }
     }

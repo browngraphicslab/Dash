@@ -50,13 +50,13 @@ namespace Dash
                 InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
 
                 Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-                foreach (var documentModelField in _documentViewModel.DocumentModel.Fields)
+                foreach (var documentModelField in _documentViewModel.DocumentModel.EnumFields())
                 {
                     fields.Add(documentModelField.Key, documentModelField.Value.Copy());
                 }
                 DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
                 _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
-                _output.Fields = fields;
+                _output.SetFields(fields);
 
                 //DivideOperatorModel divide = new DivideOperatorModel();
                 OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
@@ -75,7 +75,7 @@ namespace Dash
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 //nfm.InputReference =
                     //new ReferenceFieldModel(opModel.Id, DivideOperatorModel.QuotientKey);
-                _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
+                _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
                 //opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.SqftKey));
 
                 InitializeGrid(XDocumentGridRight, _output, layout, false);
@@ -136,10 +136,11 @@ namespace Dash
             grid.Children.Clear();
 
             //Create rows
-            for (int i = 0; i < doc.Fields.Count + 1; ++i)
+            foreach (var f in doc.EnumFields()) 
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             }
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             //Create columns 
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -169,7 +170,7 @@ namespace Dash
 
             //Fill in Grid 
             int j = 1;
-            foreach (KeyValuePair<Key, FieldModel> pair in doc.Fields)
+            foreach (KeyValuePair<Key, FieldModel> pair in doc.EnumFields())
             {
                 //Add Value as FrameworkElement (field values)  
                 TemplateModel template = null;

@@ -19,7 +19,7 @@ namespace Dash.ViewModels
         {
             List<UIElement> elements = new List<UIElement>();
             LayoutModel model = GetLayoutModel();
-            OperatorView view = DocumentModel.Fields[OperatorDocumentModel.OperatorKey].MakeView(model.Fields[OperatorDocumentModel.OperatorKey]) as OperatorView;
+            OperatorView view = DocumentModel.Field(OperatorDocumentModel.OperatorKey).MakeView(model.Fields[OperatorDocumentModel.OperatorKey]) as OperatorView;
             Debug.Assert(view != null);
             view.IODragStarted += View_IODragStarted;
             elements.Add(view);

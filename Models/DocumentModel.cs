@@ -25,7 +25,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        public Dictionary<Key, FieldModel> Fields;
+        Dictionary<Key, FieldModel> Fields;
 
         /// <summary>
         /// The type of this document.
@@ -57,10 +57,26 @@ namespace Dash
             Fields = new Dictionary<Key, FieldModel>(fields);
         }
 
+        public void SetField(Key key, FieldModel field)
+        {
+            Fields[key] = field;
+            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
+            var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+            if (delegates != null)
+                foreach (var d in delegates.EnumDocuments())
+                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
+        }
+
+        public void SetFields(Dictionary<Key,FieldModel> fields)
+        {
+            Fields = fields;
+        }
+
         public DocumentModel()
         {
+            Fields = new Dictionary<Key, FieldModel>();
         }
-        static Key GetFieldKeyByName(string name)
+        static public Key GetFieldKeyByName(string name)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
             var key = keyController.GetKeyAsync(name);
@@ -75,10 +91,35 @@ namespace Dash
         /// <returns></returns>
         public DocumentModel MakeDelegate()
         {
-            var dm = new DocumentModel(new Dictionary<Key,FieldModel>(), DocumentType);
-            dm.Fields.Add(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
+            var dm = new DocumentModel(new Dictionary<Key, FieldModel>(), DocumentType);
+            dm.SetField(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
+            var currentDelegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+            if (currentDelegates == null)
+                currentDelegates = new DocumentCollectionFieldModel(new List<DocumentModel>());
+            currentDelegates.AddDocumentModel(dm);
+            SetField(GetFieldKeyByName("Delegates"), currentDelegates);
             return dm;
         }
+
+        public DocumentModel GetPrototype()
+        {
+
+            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+                return (Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel).Data;
+            return null;
+        }
+
+        public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields()
+        {
+            foreach (var field in Fields)
+                yield return field;
+
+            var prototype = GetPrototype();
+            if (prototype != null)
+                foreach (var field in prototype.EnumFields())
+                    yield return field;
+        }
+
 
         /// <summary>
         /// returns the fieldModel for the specified key by looking first in the delegate, and then sequentially in all prototypes
@@ -205,11 +246,11 @@ namespace Dash
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
 
-            var contentKey = keyController.CreateKeyAsync("content");
+            var contentKey = DocumentModel.GetFieldKeyByName("content"); //  keyController.CreateKeyAsync("content");
             fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-            var content2Key = keyController.CreateKeyAsync("content2");
+            var content2Key = DocumentModel.GetFieldKeyByName("content2"); // keyController.CreateKeyAsync("content2");
             fields[content2Key] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-            var textKey = keyController.CreateKeyAsync("text");
+            var textKey = DocumentModel.GetFieldKeyByName("text"); //  keyController.CreateKeyAsync("text");
             fields[textKey] = new TextFieldModel("These are 2 cats");
 
             var dm = docController.CreateDocumentAsync("twoimages");

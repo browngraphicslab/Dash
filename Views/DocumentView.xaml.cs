@@ -45,6 +45,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var dvm = DataContext as DocumentViewModel;
+            dvm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
             if (dvm != null)
             {
                 xCanvas.Children.Clear();
@@ -54,6 +55,11 @@ namespace Dash
                     xCanvas.Children.Add(element);
                 }
             }
+        }
+
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            DocumentView_DataContextChanged(null, null);
         }
 
         private void elementModel_PropertyChanged(object sender, PropertyChangedEventArgs e)

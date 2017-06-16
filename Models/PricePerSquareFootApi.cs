@@ -64,7 +64,7 @@ namespace Dash
                 fields[TestKey] = new NumberFieldModel(doc.test);
 
                 var newDoc = docController.CreateDocumentAsync(DocumentType);
-                newDoc.Fields = fields;
+                newDoc.SetFields(fields);
 
                 outputDocs.Add(newDoc);
             }
