@@ -9,14 +9,14 @@
     d:DesignHeight="300"
     d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" >
 
-    <Grid>
+    <Grid x:Name="XGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <ListView x:Name="InputListView" Grid.Column="0">
-            <ListView.ItemTemplate>
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -28,10 +28,10 @@
                                  PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
+            </ItemsControl.ItemTemplate>
         </ListView>
         <ListView x:Name="OutputListView" Grid.Column="2">
-            <ListView.ItemTemplate> 
+            <ItemsControl.ItemTemplate> 
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -43,7 +43,7 @@
                                  PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
+            </ItemsControl.ItemTemplate>
         </ListView>
     </Grid>
 </UserControl>

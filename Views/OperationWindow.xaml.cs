@@ -104,6 +104,24 @@ namespace Dash
             }
         }
 
+        /* 
+        /// <summary>
+        /// Use this class to use RenderTransform passed in from Converter to convert to X,Y that connecting line can bind to 
+        /// </summary>
+        public class ConvertRenderTransform : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                GeneralTransform r = value as GeneralTransform;  
+                throw new NotImplementedException();
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        */ 
 
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
@@ -114,24 +132,26 @@ namespace Dash
             {
                 StrokeThickness = 5, Stroke = new SolidColorBrush(Colors.Black), X2 = 0, Y2 = 0
             };
-            //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
-            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XCanvas);
+            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+            //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XCanvas);
 
             _connectionLine.X1 = pos.X;
             _connectionLine.Y1 = pos.Y;
 
-            /* 
-            Binding x1 = new Binding {Path = new PropertyPath("Canvas.LeftProperty"), Source = ioReference.Ellipse };
-            Binding y1 = new Binding {Path = new PropertyPath("Canvas.TopProperty"), Source = ioReference.Ellipse };
+            /*
+            Binding x1 = new Binding {Path = new PropertyPath("RenderTransform"), Source = ioReference.Box };
+            Binding y1 = new Binding {Path = new PropertyPath("RenderTransform"), Source = ioReference.Box };
+            //x1.Converter = new ConvertRenderTransform();
+            //y1.Converter = new ConvertRenderTransform();
             _connectionLine.SetBinding(Line.X1Property, x1);
             _connectionLine.SetBinding(Line.Y1Property, y1);
 
             // TODO attempt at binding, binding to position calculated doesn't work obviously 
             // TODO ALSO ioReference.Ellipse has margin of 0 so???????????????????????????????????
-            */
+            //*/ 
 
-            //XFreeformView.Canvas.Children.Add(_connectionLine);
-            XCanvas.Children.Add(_connectionLine);
+            XFreeformView.Canvas.Children.Add(_connectionLine);
+            //XCanvas.Children.Add(_connectionLine);
 
             CheckLinePresence(pos.X, pos.Y);
             _lines.Add(_connectionLine);
@@ -141,8 +161,8 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
-                //Point pos = e.GetCurrentPoint(XFreeformView).Position;
-                Point pos = e.GetCurrentPoint(XCanvas).Position;
+                Point pos = e.GetCurrentPoint(XFreeformView).Position;
+                //Point pos = e.GetCurrentPoint(XCanvas).Position;
                 _connectionLine.X2 = pos.X;
                 _connectionLine.Y2 = pos.Y;
             }
@@ -150,8 +170,8 @@ namespace Dash
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            //XFreeformView.Canvas.Children.Remove(_connectionLine);
-            XCanvas.Children.Remove(_connectionLine);
+            XFreeformView.Canvas.Children.Remove(_connectionLine);
+            //XCanvas.Children.Remove(_connectionLine);
             _lines.Remove(_connectionLine); 
             _connectionLine = null;
              _currReference = null; 
@@ -246,7 +266,6 @@ namespace Dash
                 {
                     if (_connectionLine == null) return;
 
-                    el.Fill = new SolidColorBrush(Colors.DodgerBlue);
                     if (_currReference.IsOutput == isOutput)
                     {
                         return;
@@ -278,8 +297,8 @@ namespace Dash
                     line = l;
             }
             _lines.Remove(line);
-            //XFreeformView.Canvas.Children.Remove(line); 
-            XCanvas.Children.Remove(line); 
+            XFreeformView.Canvas.Children.Remove(line);
+            //XCanvas.Children.Remove(line); 
         }
 
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
