@@ -101,6 +101,7 @@ namespace Dash
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
             Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+
             _connectionLine = new Line();
             Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
             _connectionLine.X1 = pos.X;
@@ -112,6 +113,27 @@ namespace Dash
             XFreeformView.Canvas.Children.Add(_connectionLine);
         }
 
+        private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (_connectionLine != null)
+            {
+                Point pos = e.GetCurrentPoint(XFreeformView).Position;
+                _connectionLine.X2 = pos.X;
+                _connectionLine.Y2 = pos.Y;
+            }
+        }
+
+        private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_connectionLine != null)
+            {
+                _connectionLine = null;
+            }
+        }
+
+        /// <summary>
+        /// Adds the new document created by operation to the MainView 
+        /// </summary>
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
             DocumentView view = new DocumentView();
@@ -179,39 +201,9 @@ namespace Dash
                 //    Debug.Assert(false);
 
                 FrameworkElement element = pair.Value.MakeView(template) as FrameworkElement;
-                if (element != null)
-                {
-                    element.VerticalAlignment = VerticalAlignment.Center;
-                    element.HorizontalAlignment = HorizontalAlignment.Center;
-                }
-                element.AllowDrop = true;
-                element.DragEnter += (sender, args) =>
-                {
-                    args.AcceptedOperation = DataPackageOperation.Copy;
-                };
-
-                element.Drop += async (sender, args) =>
-                {
-                    if (args.DataView.Contains(StandardDataFormats.Text))
-                    {
-                        var text = await args.DataView.GetTextAsync();
-                        var key = JsonConvert.DeserializeObject<OperatorView.IOReference>(text);
-                        if (key.IsOutput == isOutput)
-                        {
-                            return;
-                        }
-                        if (key.IsOutput)
-                        {
-                            pair.Value.InputReference = key.ReferenceFieldModel;
-                        }
-                        else
-                        {
-                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
-                            var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                            opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
-                        }
-                    }
-                };
+                Debug.Assert(element != null);
+                element.VerticalAlignment = VerticalAlignment.Center;
+                element.HorizontalAlignment = HorizontalAlignment.Center;
 
                 element.Margin = new Thickness(12, 5, 12, 5);
                 Grid.SetColumn(element, 1);
@@ -244,6 +236,35 @@ namespace Dash
                 else _leftEllipses.Add(el);
                 XCanvas.Children.Add(el);
 
+                // drag drop functionality 
+                element.AllowDrop = true;
+                element.DragEnter += (sender, args) =>
+                {
+                    args.AcceptedOperation = DataPackageOperation.Copy;
+                };
+
+                element.Drop += async (sender, args) =>
+                {
+                    if (args.DataView.Contains(StandardDataFormats.Text))
+                    {
+                        var text = await args.DataView.GetTextAsync();
+                        var key = JsonConvert.DeserializeObject<OperatorView.IOReference>(text);
+                        if (key.IsOutput == isOutput)
+                        {
+                            return;
+                        }
+                        if (key.IsOutput)
+                        {
+                            pair.Value.InputReference = key.ReferenceFieldModel;
+                        }
+                        else
+                        {
+                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                            var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                            opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
+                        }
+                    }
+                };
             }
         }
 
@@ -255,24 +276,6 @@ namespace Dash
             this.MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
             this.MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
             this.MinHeight = HeaderHeight * 2;
-        }
-
-        private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
-        {
-            if (_connectionLine != null)
-            {
-                Point pos = e.GetCurrentPoint(XFreeformView).Position;
-                _connectionLine.X2 = pos.X;
-                _connectionLine.Y2 = pos.Y;
-            }
-        }
-
-        private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            if (_connectionLine != null)
-            {
-                _connectionLine = null;
-            }
         }
 
         private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)

@@ -87,8 +87,6 @@ namespace Dash
                     el.TransformToVisual(Window.Current.Content)
                         .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
                 OnIODragStarted(ioRef);
-                //Debug.WriteLine(
-                    //$"Input Drag started {this.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(this).Position)}");
             }
             Debug.WriteLine("Pointer exited");
         }
@@ -104,8 +102,6 @@ namespace Dash
                     el.TransformToVisual(Window.Current.Content)
                         .TransformPoint(new Point(el.Width / 2, el.Height / 2)));
                 OnIODragStarted(ioRef);
-                //Debug.WriteLine(
-                    //$"Output Drag started {el.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(el).Position)}, {el.TransformToVisual(Window.Current.Content).TransformPoint(new Point(el.Width / 2, el.Height / 2))}");
             }
             Debug.WriteLine("Pointer exited");
         }

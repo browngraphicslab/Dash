@@ -21,7 +21,7 @@
             </LinearGradientBrush>
         </Canvas.Background>
         <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="{Binding CanvasHeight}" VerticalAlignment="Top" Width="{Binding CanvasWidth}" />
-        <TextBox x:Name="textBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Canvas.Left="100" Canvas.Top="100"/>
+        <!--<TextBox x:Name="textBox" HorizontalAlignment="Left" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Canvas.Left="100" Canvas.Top="100"/>-->
         
     </Canvas>
 </UserControl>
