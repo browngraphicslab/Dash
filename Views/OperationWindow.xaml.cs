@@ -43,24 +43,25 @@ namespace Dash
 
         private List<Ellipse> _rightEllipses = new List<Ellipse>();
 
+        private HashSet<uint> _currentPointers = new HashSet<uint>();
+
         public DocumentViewModel DocumentViewModel
         {
             get { return _documentViewModel; }
             set
             {
                 _documentViewModel = value;
-                var layout =
-                    DocumentViewModel.DocumentViewModelSource.DocumentLayoutModel(DocumentViewModel.DocumentModel);
+                var layout = DocumentViewModel.GetLayoutModel();
                 InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
 
                 Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-                foreach (var documentModelField in _documentViewModel.DocumentModel.Fields)
+                foreach (var documentModelField in _documentViewModel.DocumentModel.EnumFields())
                 {
                     fields.Add(documentModelField.Key, documentModelField.Value.Copy());
                 }
                 DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
                 _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
-                _output.Fields = fields;
+                _output.SetFields(fields);
 
                 //DivideOperatorModel divide = new DivideOperatorModel();
                 OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
@@ -70,7 +71,7 @@ namespace Dash
                 DocumentView view = new DocumentView();
                 view.Width = 200;
                 view.Height = 200;
-                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel);
                 vm.IODragStarted += Vm_IODragStarted;
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
@@ -79,7 +80,7 @@ namespace Dash
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 //nfm.InputReference =
                     //new ReferenceFieldModel(opModel.Id, DivideOperatorModel.QuotientKey);
-                _output.Fields[new Key(Guid.NewGuid().ToString(), "Price/Sqft")] = nfm;
+                _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
                 //opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.SqftKey));
 
                 InitializeGrid(XDocumentGridRight, _output, layout, false);
@@ -98,33 +99,45 @@ namespace Dash
             }
         }
 
+        public OperationWindow(int width, int height)
+        {
+            this.InitializeComponent();
+            Width = width;
+            Height = height;
+        }
+
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
-            Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+            //TODO determine if this is the correct code if not remove it
+            //Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+            //_connectionLine = new Line();
+            //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+
+            Debug.WriteLine($"Operation Window Drag started: {ioReference.Pointer.PointerId}");
+            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            {
+                return;
+            }
+            _currentPointers.Add(ioReference.Pointer.PointerId);
             _connectionLine = new Line();
-            Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XFreeformView);
+            Point pos = Util.PointTransformFromVisual(ioReference.PointerPosition, XFreeformView);
+
             _connectionLine.X1 = pos.X;
             _connectionLine.Y1 = pos.Y;
             _connectionLine.X2 = 0;
             _connectionLine.Y2 = 0;
             _connectionLine.Stroke = new SolidColorBrush(Colors.Black);
             _connectionLine.StrokeThickness = 5;
+
             XFreeformView.Canvas.Children.Add(_connectionLine);
         }
 
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
             DocumentView view = new DocumentView();
-            DocumentViewModel viewModel = new DocumentViewModel(_output, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            DocumentViewModel viewModel = new DocumentViewModel(_output);
             view.DataContext = viewModel;
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
-        }
-
-        public OperationWindow(int width, int height)
-        {
-            this.InitializeComponent();
-            Width = width;
-            Height = height;
         }
 
         /// <summary>
@@ -135,10 +148,11 @@ namespace Dash
             grid.Children.Clear();
 
             //Create rows
-            for (int i = 0; i < doc.Fields.Count + 1; ++i)
+            foreach (var f in doc.EnumFields()) 
             {
                 grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             }
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             //Create columns 
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -168,7 +182,7 @@ namespace Dash
 
             //Fill in Grid 
             int j = 1;
-            foreach (KeyValuePair<Key, FieldModel> pair in doc.Fields)
+            foreach (KeyValuePair<Key, FieldModel> pair in doc.EnumFields())
             {
                 //Add Value as FrameworkElement (field values)  
                 TemplateModel template = null;

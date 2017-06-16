@@ -84,7 +84,7 @@ namespace Dash
                 fields[Keys.First(k => k.Name == "ip_address")] = new TextFieldModel(doc.ip_address);
 
                 var newDoc = docController.CreateDocumentAsync(DocumentType);
-                newDoc.Fields = fields;
+                newDoc.SetFields(fields);
 
                 outputDocs.Add(newDoc);
             }

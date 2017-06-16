@@ -1,4 +1,4 @@
-﻿ using Dash;
+﻿using Dash;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using Dash.Models;
 
 namespace Dash
 {
@@ -24,7 +25,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        public Dictionary<Key, FieldModel> Fields;
+        Dictionary<Key, FieldModel> Fields;
 
         /// <summary>
         /// The type of this document.
@@ -56,8 +57,114 @@ namespace Dash
             Fields = new Dictionary<Key, FieldModel>(fields);
         }
 
+        public void SetField(Key key, FieldModel field)
+        {
+            Fields[key] = field;
+            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
+            var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+            if (delegates != null)
+                foreach (var d in delegates.EnumDocuments())
+                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
+        }
+
+        public void SetFields(Dictionary<Key,FieldModel> fields)
+        {
+            Fields = fields;
+        }
+
         public DocumentModel()
         {
+            Fields = new Dictionary<Key, FieldModel>();
+        }
+        static public Key GetFieldKeyByName(string name)
+        {
+            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var key = keyController.GetKeyAsync(name);
+            if (key == null)
+                key = keyController.CreateKeyAsync(name);
+            return key;
+        }
+
+        /// <summary>
+        /// Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
+        /// </summary>
+        /// <returns></returns>
+        public DocumentModel MakeDelegate()
+        {
+            var dm = new DocumentModel(new Dictionary<Key, FieldModel>(), DocumentType);
+            dm.SetField(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
+            var currentDelegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+            if (currentDelegates == null)
+                currentDelegates = new DocumentCollectionFieldModel(new List<DocumentModel>());
+            currentDelegates.AddDocumentModel(dm);
+            SetField(GetFieldKeyByName("Delegates"), currentDelegates);
+            return dm;
+        }
+
+        public DocumentModel GetPrototype()
+        {
+
+            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+                return (Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel).Data;
+            return null;
+        }
+
+        public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields()
+        {
+            foreach (var field in Fields)
+                yield return field;
+
+            var prototype = GetPrototype();
+            if (prototype != null)
+                foreach (var field in prototype.EnumFields())
+                    yield return field;
+        }
+
+
+        /// <summary>
+        /// returns the fieldModel for the specified key by looking first in the delegate, and then sequentially in all prototypes
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public FieldModel Field(Key key)
+        {
+            if (Fields.ContainsKey(key))
+                return Fields[key];
+            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+            {
+                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
+                if (parent != null)
+                    return parent.Data.Field(key);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// sets the fieldModel for a specified key by first trying to find the field in the document, then in each prototype.
+        /// if the field does not exist anywhere, it is created in this document, otherwise the found field is modified.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="force"></param>
+        /// <returns></returns>
+        public bool SetField(Key key, FieldModel value, bool force = true)
+        {
+            if (Fields.ContainsKey(key)) {
+                Fields[key] = value;
+                return true;
+            }
+            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+            {
+                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
+                if (parent != null && parent.Data.SetField(key, value, false))
+                    return true;
+            }
+            if (force)
+            {
+                Fields[key] = value;
+                return true;
+            }
+            return false;
         }
 
         protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -139,11 +246,11 @@ namespace Dash
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
 
-            var contentKey = keyController.CreateKeyAsync("content");
+            var contentKey = DocumentModel.GetFieldKeyByName("content"); //  keyController.CreateKeyAsync("content");
             fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-            var content2Key = keyController.CreateKeyAsync("content2");
+            var content2Key = DocumentModel.GetFieldKeyByName("content2"); // keyController.CreateKeyAsync("content2");
             fields[content2Key] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-            var textKey = keyController.CreateKeyAsync("text");
+            var textKey = DocumentModel.GetFieldKeyByName("text"); //  keyController.CreateKeyAsync("text");
             fields[textKey] = new TextFieldModel("These are 2 cats");
 
             var dm = docController.CreateDocumentAsync("twoimages");

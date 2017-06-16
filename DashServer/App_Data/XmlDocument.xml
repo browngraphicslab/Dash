@@ -586,50 +586,6 @@
             <param name="id">The id of the key which is to be deleted</param>
             <returns>The key which was deleted</returns>
         </member>
-        <member name="T:DashServer.Controllers.WorkspaceController">
-            <summary>
-            The controller for the workspace endpoint
-            </summary>
-        </member>
-        <member name="F:DashServer.Controllers.WorkspaceController._documentRepository">
-            <summary>
-            The document repository represents a connection to a database which contains documents
-            </summary>
-        </member>
-        <member name="M:DashServer.Controllers.WorkspaceController.#ctor(DashServer.IDocumentRepository)">
-            <summary>
-            Creates a new instance of the workspace controller
-            </summary>
-            <param name="documentRepository">The connection to a document db satisfied through dependency injection</param>
-        </member>
-        <member name="M:DashServer.Controllers.WorkspaceController.Post(System.String)">
-            <summary>
-            Creates and returns a new workspace with a unique id but the same name
-            </summary>
-            <param name="name">The name of the workspace which will be created</param>
-            <returns>The new workspace with the given name and a unique id</returns>
-        </member>
-        <member name="M:DashServer.Controllers.WorkspaceController.Put(DashShared.WorkspaceModel)">
-            <summary>
-            Updates and returns a Workspace with a new name
-            </summary>
-            <param name="workspace">The workspace model which is going to be replaced in the database</param>
-            <returns>The updated workspace model</returns>
-        </member>
-        <member name="M:DashServer.Controllers.WorkspaceController.Get(System.String)">
-            <summary>
-            Returns a Workspace with the same id
-            </summary>
-            <param name="id">The id of the workspace to be searched for</param>
-            <returns>The workspace with the unique id that was passed in</returns>
-        </member>
-        <member name="M:DashServer.Controllers.WorkspaceController.Delete(System.String)">
-            <summary>
-            Deletes the workspace with the passed in id from the database
-            </summary>
-            <param name="id">The id of the workspace which is to be deleted</param>
-            <returns>The workspace which was deleted</returns>
-        </member>
         <member name="T:DashServer.CosmosDb">
             <summary>
                 Serves as the connector for the cosmosDb database

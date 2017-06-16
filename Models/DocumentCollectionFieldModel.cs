@@ -16,6 +16,16 @@ namespace Dash
             _docs = docs;
         }
 
+        public void AddDocumentModel(DocumentModel doc)
+        {
+            _docs.Add(doc);
+        }
+
+        public IEnumerable<DocumentModel> EnumDocuments()
+        {
+            return _docs;
+        }
+
         public override UIElement MakeView(TemplateModel template)
         {
             var collectionTemplate = template as DocumentCollectionTemplateModel;
@@ -24,7 +34,7 @@ namespace Dash
             var docViews = new ObservableCollection<DocumentView>();
             foreach (var docModel in _docs)
             {
-                DocumentViewModel docVM = new DocumentViewModel(docModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+                DocumentViewModel docVM = new DocumentViewModel(docModel);
                 DocumentView docView = new DocumentView();
                 docView.DataContext = docVM;
                 docViews.Add(docView);

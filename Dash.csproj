@@ -99,12 +99,14 @@
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
+    <Compile Include="Models\DocumentModelFieldModel.cs" />
     <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\ImageTemplateModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
+    <Compile Include="Models\LayoutModelFieldModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />

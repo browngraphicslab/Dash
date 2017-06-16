@@ -38,7 +38,7 @@ namespace Dash
 
         public Key CreateKeyAsync(string name)
         {
-            var id = $"{_numKeys++}";
+            var id = name; // $"{_numKeys++}";
 
             var newKey = new Key
             {

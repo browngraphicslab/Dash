@@ -36,9 +36,11 @@ namespace Dash
             OverlayCanvas.OnAddDocumentsTapped += AddDocuments;
             OverlayCanvas.OnAddCollectionTapped += AddCollection;
         }
+        DocumentViewModel model7;
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
+            model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
@@ -51,12 +53,13 @@ namespace Dash
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
 
-            DocumentViewModel model1 = new DocumentViewModel(umpire, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model2 = new DocumentViewModel(recipe, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model3 = new DocumentViewModel(image, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model4 = new DocumentViewModel(image2, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model5 = new DocumentViewModel(collection, DocumentLayoutModelSource.DefaultLayoutModelSource);
-            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt, DocumentLayoutModelSource.DefaultLayoutModelSource);
+            DocumentViewModel model1 = new DocumentViewModel(umpire);
+            DocumentViewModel model2 = new DocumentViewModel(recipe);
+            DocumentViewModel model3 = new DocumentViewModel(image);
+            DocumentViewModel model4 = new DocumentViewModel(image2);
+            DocumentViewModel model5 = new DocumentViewModel(collection);
+            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
+                              model7 = new DocumentViewModel(image2.MakeDelegate());
 
 
             DocumentView view1 = new DocumentView();
@@ -65,6 +68,7 @@ namespace Dash
             DocumentView view4 = new DocumentView();
             DocumentView view5 = new DocumentView();
             DocumentView view6 = new DocumentView();
+            DocumentView view7 = new DocumentView() { DataContext = model7 };
 
             view1.DataContext = model1;
             view2.DataContext = model2;
@@ -89,6 +93,7 @@ namespace Dash
             FreeformView.Canvas.Children.Add(view4);
             //FreeformView.Canvas.Children.Add(view5);
             FreeformView.Canvas.Children.Add(view6);
+            FreeformView.Canvas.Children.Add(view7);
 
 
 

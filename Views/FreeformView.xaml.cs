@@ -102,7 +102,7 @@ namespace Dash
             ViewModel = new FreeformViewModel();
             ViewModel.ElementAdded += VmElementAdded;
 
-            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
+            XInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Pen;
 
             // set screen in middle of canvas 
             //CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
