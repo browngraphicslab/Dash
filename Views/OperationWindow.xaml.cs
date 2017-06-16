@@ -126,7 +126,7 @@ namespace Dash
             _connectionLine.SetBinding(Line.X1Property, x1);
             _connectionLine.SetBinding(Line.Y1Property, y1);
 
-            // TODO LOL OF COURSE THIS DOESN'T WORK 
+            // TODO attempt at binding, binding to position calculated doesn't work obviously 
             // TODO ALSO ioReference.Ellipse has margin of 0 so???????????????????????????????????
             */
 
