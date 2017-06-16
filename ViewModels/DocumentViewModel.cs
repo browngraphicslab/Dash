@@ -85,7 +85,7 @@ namespace Dash
         public LayoutModel GetLayoutModel()
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            var layoutModelRef = GetLayoutModelRefForDoc(DocumentModel);
+            var layoutModelRef = GetLayoutModelReferenceForDoc(DocumentModel);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentController>();
             var refField = docController.GetDocumentAsync(layoutModelRef.DocId).Field(layoutModelRef.FieldKey) as LayoutModelFieldModel;
@@ -95,7 +95,7 @@ namespace Dash
         public void SetLayoutModel(LayoutModel layoutModel)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyController>();
-            var layoutModelRef = GetLayoutModelRefForDoc(DocumentModel);
+            var layoutModelRef = GetLayoutModelReferenceForDoc(DocumentModel);
 
             // set value of layoutModelRef to layoutModel
         }
@@ -115,57 +115,59 @@ namespace Dash
                 key = keyController.CreateKeyAsync(name);
             return key;
         }
-        static ReferenceFieldModel GetLayoutModelRefForDoc(DocumentModel doc)
+
+        /// <summary>
+        /// find the layoutModel to use to display this document and return it as referenceField to where the layoutModel is stored.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        static ReferenceFieldModel GetLayoutModelReferenceForDoc(DocumentModel doc)
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var layoutKey = GetFieldKeyByName("Layout");
+            var layoutField = doc.Field(DocumentModel.LayoutKey);
 
-            // look for a specific layout stored on the document itself
-            if (doc.Field(layoutKey) is LayoutModelFieldModel)
+            // If the Layout field is a LayoutModel, then use it.
+            if (layoutField is LayoutModelFieldModel)
             {
-                return new ReferenceFieldModel(doc.Id, layoutKey);
+                return new ReferenceFieldModel(doc.Id, DocumentModel.LayoutKey);
             }
 
-            // then look for a directory document where we can lookup a layoutModel
-            DocumentModel layoutModelSource = null;
-            if (doc.Field(layoutKey) is DocumentModelFieldModel)
+            // otherwise lookup a LayoutModel for doc's type on a specified settings document or the default settings document
+            var settingsDocument = layoutField is DocumentModelFieldModel ? (layoutField as DocumentModelFieldModel).Data : DefaultLayoutModelSource;
+            return getLayoutModelReferenceForDocumentType(doc.DocumentType, doc.EnumFields(), settingsDocument);
+        }
+
+        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType, IEnumerable<KeyValuePair<Key,FieldModel>> docFields, DocumentModel layoutModelSource)
+        {
+            if (layoutModelSource == null)
             {
-                layoutModelSource = (doc.Field(layoutKey) as DocumentModelFieldModel).Data;
+                var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+                layoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
             }
-             // finally, use the default directory document for looking up a layout model given a document type
-            else
-            {
-                if (DefaultLayoutModelSource == null)
-                {
-                    DefaultLayoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
-                }
-                layoutModelSource = DefaultLayoutModelSource;
-            }
-            var layoutKeyForDocumentType = GetFieldKeyByName(doc.DocumentType.Type);
+            var layoutKeyForDocumentType = GetFieldKeyByName(docType.Type);
             if (layoutModelSource.Field(layoutKeyForDocumentType) == null)
             {
                 // bcz: hack to have a default layout for known types: recipes, Umpires
-                if (doc.DocumentType.Type == "recipes")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(doc)));
-                else if (doc.DocumentType.Type == "Umpires")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.UmpireModel(doc)));
-                else if (doc.DocumentType.Type == "oneimage")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(doc)));
-                else if (doc.DocumentType.Type == "twoimages")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(doc)));
-                else if (doc.DocumentType.Type == "operator")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(doc)));
-                else if (doc.DocumentType.Type == "example_api_object")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleApiObject(doc)));
-                else if (doc.DocumentType.Type == "collection_example")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(doc)));
-                else if (doc.DocumentType.Type == "price_per_square_foot")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(doc)));
-                else
+                if (docType.Type == "recipes")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(docType)));
+                else if (docType.Type == "Umpires")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.UmpireModel(docType)));
+                else if (docType.Type == "oneimage")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(docType)));
+                else if (docType.Type == "twoimages")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(docType)));
+                else if (docType.Type == "operator")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(docType)));
+                else if (docType.Type == "example_api_object")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleApiObject(docType)));
+                else if (docType.Type == "collection_example")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(docType)));
+                else if (docType.Type == "price_per_square_foot")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)));
+                else // if it's an unknown document type, then create a display for its known field types
                 {
                     var fields = new Dictionary<Key, TemplateModel>();
                     double yloc = 0;
-                    foreach (var f in doc.EnumFields())
+                    foreach (var f in docFields)
                         if (f.Value is DocumentCollectionFieldModel)
                         {
                             fields.Add(f.Key, new DocumentCollectionTemplateModel(0, yloc, 500, 100, Visibility.Visible));
@@ -176,7 +178,7 @@ namespace Dash
                             fields.Add(f.Key, new TextTemplateModel(0, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible));
                             yloc += 20;
                         }
-                    var lm = new LayoutModel(fields, doc.DocumentType);
+                    var lm = new LayoutModel(fields, docType);
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(lm));
                 }
             }

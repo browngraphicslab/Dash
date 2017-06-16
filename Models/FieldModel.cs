@@ -14,8 +14,6 @@ namespace Dash
     /// </summary>
     public abstract class FieldModel : ViewModelBase //TODO Should ViewModelBase be named something else or should FieldModel have a ViewModel
     {
-        public Key Key { get; set; }
-
         private ReferenceFieldModel _inputReference;
 
         public ReferenceFieldModel InputReference

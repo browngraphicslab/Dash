@@ -21,6 +21,7 @@ namespace Dash
     /// </summary>
     public class DocumentModel : AuthorizableEntityBase
     {
+        public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
 
         /// <summary>
         /// A dictionary of keys to FieldModels.
@@ -59,11 +60,11 @@ namespace Dash
         public void SetField(Key key, FieldModel field)
         {
             Fields[key] = field;
-            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
+            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
             var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
             if (delegates != null)
                 foreach (var d in delegates.EnumDocuments())
-                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, field.Key));
+                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
         }
 
         public void SetFields(IDictionary<Key,FieldModel> fields)
