@@ -39,11 +39,20 @@ namespace Dash
 
         private Line _connectionLine;
 
-        private OperatorView.IOReference _currReference; 
+        private OperatorView.IOReference _currReference;
 
-        private List<Ellipse> _leftEllipses = new List<Ellipse>();
+        private readonly List<Line> _lines = new List<Line>();
 
-        private List<Ellipse> _rightEllipses = new List<Ellipse>();
+        private readonly List<Ellipse> _leftEllipses = new List<Ellipse>();
+
+        private readonly List<Ellipse> _rightEllipses = new List<Ellipse>();
+
+        public OperationWindow(int width, int height)
+        {
+            this.InitializeComponent();
+            Width = width;
+            Height = height;
+        }
 
         public DocumentViewModel DocumentViewModel
         {
@@ -121,6 +130,10 @@ namespace Dash
             */
            
             XFreeformView.Canvas.Children.Add(_connectionLine);
+            Debug.WriteLine("# of lines " + _lines.Count);
+
+            CheckLinePresence(pos.X, pos.Y);
+            _lines.Add(_connectionLine);
         }
 
         private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -135,7 +148,9 @@ namespace Dash
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-             _connectionLine = null;
+            XFreeformView.Canvas.Children.Remove(_connectionLine);
+            _lines.Remove(_connectionLine); 
+            _connectionLine = null;
              _currReference = null; 
         }
 
@@ -244,12 +259,24 @@ namespace Dash
                         opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
                             new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
                     }
+                    _connectionLine = null;
                 };
 
                 XCanvas.Children.Add(el);
             }
         }
 
+        private void CheckLinePresence(Double X, Double Y)
+        {
+            Line line = null; 
+            foreach (Line l in _lines)
+            {
+                if (l.X1 < X + 5 && l.X1 > X - 5 && l.Y1 < Y + 5 && l.Y1 > Y - 5)
+                    line = l;
+            }
+            _lines.Remove(line);
+            XFreeformView.Canvas.Children.Remove(line); 
+        }
 
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -296,11 +323,6 @@ namespace Dash
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
 
-        public OperationWindow(int width, int height)
-        {
-            this.InitializeComponent();
-            Width = width;
-            Height = height;
-        }
+
     }
 }
