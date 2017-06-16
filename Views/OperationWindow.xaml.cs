@@ -71,7 +71,9 @@ namespace Dash
                 view.Width = 200;
                 view.Height = 200;
                 OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel, DocumentLayoutModelSource.DefaultLayoutModelSource);
+
                 vm.IODragStarted += Vm_IODragStarted;
+
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
@@ -236,17 +238,15 @@ namespace Dash
                 Ellipse el = new Ellipse
                 {
                     Width = 10, Height = 10,
-                    Fill = new SolidColorBrush(Colors.Black)
+                    Fill = new SolidColorBrush(Colors.Black),
+                    HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top
                 }; 
-                el.HorizontalAlignment = HorizontalAlignment.Left;
-                el.VerticalAlignment = VerticalAlignment.Top;
                 if (isOutput) _rightEllipses.Add(el);
                 else _leftEllipses.Add(el);
                 XCanvas.Children.Add(el);
 
                 j++;
             }
-            //if (!isOutput) _rightEllipses.Add(new Ellipse {Width = 10, Height = 10, Fill = new SolidColorBrush()}); 
         }
 
         private void FreeformView_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -291,11 +291,17 @@ namespace Dash
 
             // Ellipses on the right grid  
             height = 0;
-            if (_rightEllipses.Count < XDocumentGridRight.RowDefinitions.Count - 2)
+            if (_rightEllipses.Count < XDocumentGridRight.RowDefinitions.Count)
             {
-                for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 1 - _rightEllipses.Count; i++)
+                for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - _rightEllipses.Count - 2; i++)
                 {
-                    _rightEllipses.Add(new Ellipse { Width=10,Height=10, Fill = new SolidColorBrush(Colors.Black)});
+                    Ellipse el = new Ellipse
+                    {
+                        Width = 10, Height = 10, Fill = new SolidColorBrush(Colors.Black),
+                        HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top
+                    };
+                    _rightEllipses.Add(el);
+                    XCanvas.Children.Add(el);
                 }
             }
             for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 2; i++)

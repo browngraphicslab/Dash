@@ -53,8 +53,10 @@ namespace Dash
         {
             InputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Inputs;
             OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;
-            //InputListView.CanDragItems = true;
-            //OutputListView.CanDragItems = true;
+
+            //TODO functionality of drag/drop, but lose the line functionality 
+            InputListView.CanDragItems = true;
+            OutputListView.CanDragItems = true;
         }
 
         private void InputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
