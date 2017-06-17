@@ -35,17 +35,23 @@ namespace DashShared
         /// <param name="isSuccess"></param>
         /// <param name="errorMessage"></param>
         /// <param name="content"></param>
-        public Result(bool isSuccess, string errorMessage="", T content=null)
+        public Result(bool isSuccess, string errorMessage="")
         {
             IsSuccess = isSuccess;
             ErrorMessage = errorMessage;
+        }
+
+        public Result(bool isSuccess, T content)
+        {
+            IsSuccess = isSuccess;
             Content = content;
+            ErrorMessage = string.Empty;
         }
     }
 
     public class Result : Result<object>
     {
-        public Result(bool isSuccess, string errorMessage="") : base(isSuccess, errorMessage, null)
+        public Result(bool isSuccess, string errorMessage="") : base(isSuccess, errorMessage)
         {
         }
     }

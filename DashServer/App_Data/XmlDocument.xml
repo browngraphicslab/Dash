@@ -586,6 +586,11 @@
             <param name="id">The id of the key which is to be deleted</param>
             <returns>The key which was deleted</returns>
         </member>
+        <member name="T:DashServer.Controllers.ShapeController">
+            <summary>
+            Used to add and remove 
+            </summary>
+        </member>
         <member name="T:DashServer.CosmosDb">
             <summary>
                 Serves as the connector for the cosmosDb database

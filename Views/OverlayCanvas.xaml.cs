@@ -26,6 +26,7 @@ namespace Dash
 
         public TappedEventHandler OnAddDocumentsTapped;
         public TappedEventHandler OnAddCollectionTapped;
+        public TappedEventHandler OnAddShapeTapped;
         
         public OverlayCanvas()
         {
@@ -43,6 +44,11 @@ namespace Dash
         private void AddCollectionTapped(object sender, TappedRoutedEventArgs e)
         {
             OnAddCollectionTapped.Invoke(sender, e);
+        }
+
+        private void AddShapeTapped(object sender, TappedRoutedEventArgs e)
+        {
+            OnAddShapeTapped.Invoke(sender, e);
         }
 
     }

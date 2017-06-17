@@ -46,6 +46,7 @@
     <Compile Include="Models\AuthorizableEntityBase.cs" />
     <Compile Include="Models\Key.cs" />
     <Compile Include="Models\Result.cs" />
+    <Compile Include="Models\ShapeModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

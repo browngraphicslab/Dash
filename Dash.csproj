@@ -125,6 +125,7 @@
     <Compile Include="ServerClient\Controllers\AuthenticationController.cs" />
     <Compile Include="ServerClient\Controllers\DocumentController.cs" />
     <Compile Include="ServerClient\Controllers\KeyController.cs" />
+    <Compile Include="ServerClient\Controllers\ShapeController.cs" />
     <Compile Include="ServerClient\Controllers\TypeController.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Controllers\ServerController.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
+    <Compile Include="ViewModels\ShapeViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\CollectionView.xaml.cs">
@@ -180,6 +182,9 @@
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ShapeView.xaml.cs">
+      <DependentUpon>ShapeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
@@ -254,6 +259,10 @@
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ShapeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\WindowView.xaml">
       <SubType>Designer</SubType>

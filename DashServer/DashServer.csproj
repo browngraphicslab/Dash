@@ -463,6 +463,7 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\DocumentTypeController.cs" />
     <Compile Include="Controllers\KeyController.cs" />
+    <Compile Include="Controllers\ShapeController.cs" />
     <Compile Include="Database\CosmosDb.cs" />
     <Compile Include="Database\IDocumentRepository.cs" />
     <Compile Include="Global.asax.cs">

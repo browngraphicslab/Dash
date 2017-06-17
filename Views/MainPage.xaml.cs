@@ -20,6 +20,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -37,7 +38,27 @@ namespace Dash
 
             OverlayCanvas.OnAddDocumentsTapped += AddDocuments;
             OverlayCanvas.OnAddCollectionTapped += AddCollection;
+            OverlayCanvas.OnAddShapeTapped += AddShape;
         }
+
+        private void AddShape(object sender, TappedRoutedEventArgs e)
+        {
+            var shapeModel = new ShapeModel
+            {
+                Width = 300,
+                Height = 300,
+                X = 300,
+                Y = 300,
+                Id = $"{Guid.NewGuid()}"
+            };
+
+            var shapeVM = new ShapeViewModel(shapeModel);
+            var shapeView = new ShapeView(shapeVM);
+
+
+            FreeformView.Canvas.Children.Add(shapeView);
+        }
+
         DocumentViewModel model7, model4, model1;
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
