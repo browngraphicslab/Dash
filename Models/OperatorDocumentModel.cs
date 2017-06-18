@@ -38,16 +38,16 @@ namespace Dash
 
         public void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
         {
-            DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
             //TODO Remove existing output references and add new output reference
             //if (InputReferences.ContainsKey(fieldKey))
             //{
-            //    FieldModel fm = docController.GetFieldInDocument(InputReferences[fieldKey]);
+            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             InputReferences[fieldKey] = reference;
-            docController.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
+            docEndpoint.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
             Execute();
         }
 

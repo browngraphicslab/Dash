@@ -30,7 +30,7 @@ namespace Dash
 
         protected override void UpdateValue(ReferenceFieldModel fieldReference)
         {
-            DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
+            DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             NumberFieldModel fm = cont.GetFieldInDocument(fieldReference) as NumberFieldModel;
             if (fm != null)
             {

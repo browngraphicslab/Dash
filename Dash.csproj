@@ -95,6 +95,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\ContentController.cs" />
+    <Compile Include="Controllers\ShapeController.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
@@ -121,21 +123,22 @@
     <Compile Include="Models\TextTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerClient\Controllers\AccountController.cs" />
-    <Compile Include="ServerClient\Controllers\AuthenticationController.cs" />
-    <Compile Include="ServerClient\Controllers\DocumentController.cs" />
-    <Compile Include="ServerClient\Controllers\KeyController.cs" />
-    <Compile Include="ServerClient\Controllers\ShapeController.cs" />
-    <Compile Include="ServerClient\Controllers\TypeController.cs" />
+    <Compile Include="ServerClient\Endpoints\AccountEndpoint.cs" />
+    <Compile Include="ServerClient\Endpoints\AuthenticationEndpoint.cs" />
+    <Compile Include="ServerClient\Endpoints\DocumentEndpoint.cs" />
+    <Compile Include="ServerClient\Endpoints\KeyEndpoint.cs" />
+    <Compile Include="ServerClient\Endpoints\ShapeEndpoint.cs" />
+    <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
-    <Compile Include="ServerClient\Controllers\ServerController.cs" />
-    <Compile Include="ServerClient\Controllers\SignalrClient.cs" />
+    <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="ServerClient\Endpoints\SignalrClient.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxy.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxyOneWay.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
+    <Compile Include="ServerClient\SignalRHubProxies\ShapeProxy.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />

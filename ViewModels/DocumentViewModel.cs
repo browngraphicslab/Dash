@@ -84,17 +84,17 @@ namespace Dash
         }
         public LayoutModel GetLayoutModel()
         {
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             var layoutModelRef = GetLayoutModelReferenceForDoc(DocumentModel);
 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var refField = docController.GetDocumentAsync(layoutModelRef.DocId).Field(layoutModelRef.FieldKey) as LayoutModelFieldModel;
 
             return refField.Data;
         }
         public void SetLayoutModel(LayoutModel layoutModel)
         {
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             var layoutModelRef = GetLayoutModelReferenceForDoc(DocumentModel);
 
             // set value of layoutModelRef to layoutModel
@@ -109,7 +109,7 @@ namespace Dash
 
         static Key GetFieldKeyByName(string name)
         {
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             var key = keyController.GetKeyAsync(name);
             if (key == null)
                 key = keyController.CreateKeyAsync(name);
@@ -140,7 +140,7 @@ namespace Dash
         {
             if (layoutModelSource == null)
             {
-                var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 layoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
             }
             var layoutKeyForDocumentType = GetFieldKeyByName(docType.Type);

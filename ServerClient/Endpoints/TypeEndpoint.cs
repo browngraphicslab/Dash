@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class TypeController
+    public class TypeEndpoint
     {
         #region RemovedFakeLocal
         private Dictionary<string, DocumentType> _types;
@@ -16,7 +16,7 @@ namespace Dash
 
         #endregion
 
-        public TypeController()
+        public TypeEndpoint()
         {
             _types = new Dictionary<string, DocumentType>();
         }

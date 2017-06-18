@@ -7,22 +7,22 @@ using DashShared;
 
 namespace Dash
 {
-    public class AccountController
+    public class AccountEndpoint
     {
         /// <summary>
         /// The connection to the server, provided by dependency injection
         /// </summary>
-        private readonly ServerController _connection;
+        private readonly ServerEndpoint _connection;
 
         /// <summary>
         /// The connection to the authorization service, provided by dependency injection
         /// </summary>
-        private readonly AuthenticationController _authenticationController;
+        private readonly AuthenticationEndpoint _authenticationEndpoint;
 
-        public AccountController(ServerController connection, AuthenticationController authenticationController)
+        public AccountEndpoint(ServerEndpoint connection, AuthenticationEndpoint authenticationEndpoint)
         {
             _connection = connection;
-            _authenticationController = authenticationController;
+            _authenticationEndpoint = authenticationEndpoint;
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Dash
                 // try to register
                 Register(user, pass, confirmPass);
                 // if we registered without error then we try to login with the same credentials
-                return await _authenticationController.TryLogin(user, pass);
+                return await _authenticationEndpoint.TryLogin(user, pass);
             }
             catch (ApiException e)
             {

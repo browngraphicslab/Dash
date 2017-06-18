@@ -51,7 +51,7 @@ namespace Dash
             _documents = JsonConvert.DeserializeObject<List<ExampleObject>>(docSource);
 
 
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             Keys = new List<Key>
             {
                 keyController.CreateKeyAsync("id"),
@@ -62,14 +62,14 @@ namespace Dash
                 keyController.CreateKeyAsync("ip_address"),
             };
 
-            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
+            var typeController = App.Instance.Container.GetRequiredService<TypeEndpoint>();
             DocumentType = typeController.CreateTypeAsync("example_api_object");
 
         }
 
         public List<DocumentModel> GetDocumentsAsync()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
             var outputDocs = new List<DocumentModel>();
 

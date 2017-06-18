@@ -25,7 +25,7 @@ namespace Dash
 
         public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
 
             NumberFieldModel numberA = docController.GetFieldInDocument(inputReferences[AKey]) as NumberFieldModel; 

@@ -96,7 +96,7 @@ namespace Dash
 
         public static LayoutModel TwoImagesAndTextModel(DocumentType docType, bool editable = false)
         {
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
 
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();

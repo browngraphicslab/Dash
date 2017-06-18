@@ -59,15 +59,15 @@ namespace Dash
                 {
                     fields.Add(documentModelField.Key, documentModelField.Value.Copy());
                 }
-                DocumentController docController = App.Instance.Container.GetRequiredService<DocumentController>();
-                _output = docController.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
+                DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                _output = docEndpoint.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.SetFields(fields);
 
                 //DivideOperatorModel divide = new DivideOperatorModel();
                 OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
-                opModel.Id = docController.GetDocumentId();
+                opModel.Id = docEndpoint.GetDocumentId();
                 opModel.OperatorField = new DivideOperatorModel();
-                docController.UpdateDocumentAsync(opModel);
+                docEndpoint.UpdateDocumentAsync(opModel);
                 DocumentView view = new DocumentView();
                 view.Width = 200;
                 view.Height = 200;
@@ -220,7 +220,7 @@ namespace Dash
                         }
                         else
                         {
-                            var docCont = App.Instance.Container.GetRequiredService<DocumentController>();
+                            var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                             var opDoc = docCont.GetDocumentAsync(key.ReferenceFieldModel.DocId) as OperatorDocumentModel;
                             opDoc.AddInputReference(key.ReferenceFieldModel.FieldKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
                         }

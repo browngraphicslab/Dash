@@ -102,6 +102,9 @@ namespace DashShared
         /// </summary>
         public const string SignalrBaseUrl = "signalr";
 
+        public const string HubShapeName = "shapeHub";
+
+
         #endregion
 
         #region LocalCredentials
@@ -112,8 +115,6 @@ namespace DashShared
         public const string ResourceName = "DashApp";
 
         #endregion
-
-
 
     }
 }

@@ -8,11 +8,11 @@ using DashShared;
 
 namespace Dash
 {
-    public class ShapeController
+    public class ShapeEndpoint
     {
-        private ServerController _connection;
+        private ServerEndpoint _connection;
 
-        public ShapeController(ServerController connection)
+        public ShapeEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
         }

@@ -31,6 +31,7 @@ namespace Dash
 
         private void ShapeOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
+            e.Handled = true;
             var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this);
             _vm.MoveShape(translate.X, translate.Y);
         }

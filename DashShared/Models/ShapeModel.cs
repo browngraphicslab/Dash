@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DashShared
 {
-    public class ShapeModel : AuthorizableEntityBase
+    public class ShapeModel : EntityBase
     {
         [Required]
         public double Width { get; set; }

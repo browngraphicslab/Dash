@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class KeyController
+    public class KeyEndpoint
     {
         #region RemovedFakeLocal
         private Dictionary<string, Key> _keys;
@@ -15,7 +15,7 @@ namespace Dash
         private int _numKeys;
         #endregion
 
-        public KeyController()
+        public KeyEndpoint()
         {
             _keys = new Dictionary<string, Key>();
         }

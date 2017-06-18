@@ -36,7 +36,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ClientHubInterfaces\IClientContractBasicHub.cs" />
+    <Compile Include="ClientHubInterfaces\IClientContractShapeHub.cs" />
     <Compile Include="ClientHubInterfaces\IServerContractBasicHub.cs" />
+    <Compile Include="ClientHubInterfaces\IServerContractShapeHub.cs" />
     <Compile Include="DashConstants.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />

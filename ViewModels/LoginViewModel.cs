@@ -13,17 +13,17 @@ namespace Dash
         /// The authentication controller is used to check if the passed in
         /// username and password are valid
         /// </summary>
-        private readonly AuthenticationController _authenticationController;
+        private readonly AuthenticationEndpoint _authenticationEndpoint;
 
         /// <summary>
         /// The account controller is used to register new accounts, change passwords etc.
         /// </summary>
-        private readonly AccountController _accountController;
+        private readonly AccountEndpoint _accountEndpoint;
 
-        public LoginViewModel(AuthenticationController authenticationController, AccountController accountController)
+        public LoginViewModel(AuthenticationEndpoint authenticationEndpoint, AccountEndpoint accountEndpoint)
         {
-            _authenticationController = authenticationController;
-            _accountController = accountController;
+            _authenticationEndpoint = authenticationEndpoint;
+            _accountEndpoint = accountEndpoint;
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Dash
         public async Task<Result> TryLogin(string user, string password, bool rememberLogin)
         {
             //TODO hookup the rememberLogin to the LocalCredentialHelper
-            //var result = await _authenticationController.TryLogin(user, password);
+            //var result = await _authenticationEndpoint.TryLogin(user, password);
 
             //return result;
             return new Result(true);
@@ -53,7 +53,7 @@ namespace Dash
         public async Task<Result> TryRegister(string user, string password, string confirmPassword, bool rememberLogin)
         {
             ////TODO hookup the rememberLogin to the LocalCredentialHelper
-            //var result = await _accountController.TryRegister(user, password, confirmPassword);
+            //var result = await _accountEndpoint.TryRegister(user, password, confirmPassword);
 
             //return result;
             return new Result(true);

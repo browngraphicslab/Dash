@@ -26,7 +26,7 @@ namespace Dash
                     return;
                 }
                 _inputReference = value;
-                DocumentController cont = App.Instance.Container.GetRequiredService<DocumentController>();
+                DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 cont.GetDocumentAsync(value.DocId).DocumentFieldUpdated += FieldModel_DocumentFieldUpdated;
                 UpdateValue(value);
             }

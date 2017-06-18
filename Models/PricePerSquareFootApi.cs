@@ -45,14 +45,14 @@ namespace Dash
             _documents = JsonConvert.DeserializeObject<List<ExampleObject>>(docSource);
 
 
-            var typeController = App.Instance.Container.GetRequiredService<TypeController>();
+            var typeController = App.Instance.Container.GetRequiredService<TypeEndpoint>();
             DocumentType = typeController.CreateTypeAsync("price_per_square_foot");
 
         }
 
         public List<DocumentModel> GetDocumentsAsync()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
             var outputDocs = new List<DocumentModel>();
 

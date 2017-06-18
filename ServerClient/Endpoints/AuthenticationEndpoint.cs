@@ -12,18 +12,18 @@ namespace Dash
     /// <summary>
     /// The authentication controller lets us login the user
     /// </summary>
-    public class AuthenticationController
+    public class AuthenticationEndpoint
     {
         /// <summary>
         /// A class which provides a connection to the server
         /// </summary>
-        private readonly ServerController _connection;
+        private readonly ServerEndpoint _connection;
 
         /// <summary>
         /// Creates a new instance of the authentication controller
         /// </summary>
         /// <param name="connection">A class which provides a connection to the server, provided through dependency injection</param>
-        public AuthenticationController(ServerController connection)
+        public AuthenticationEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
         }

@@ -10,10 +10,10 @@ using DashShared;
 
 namespace Dash
 {
-    public class ServerController
+    public class ServerEndpoint
     {
 
-        public ServerController()
+        public ServerEndpoint()
         {
             Connection = InitializeConnection();
         }

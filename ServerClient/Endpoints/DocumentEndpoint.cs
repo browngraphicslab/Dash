@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash
 {
-    public class DocumentController
+    public class DocumentEndpoint
     {
 
         #region RemovedFakeLocal
@@ -27,11 +27,11 @@ namespace Dash
         /// <summary>
         /// Controller for getting new types
         /// </summary>
-        private readonly TypeController _typeController;
+        private readonly TypeEndpoint _typeEndpoint;
 
-        public DocumentController(TypeController typeController)
+        public DocumentEndpoint(TypeEndpoint typeEndpoint)
         {
-            _typeController = typeController;
+            _typeEndpoint = typeEndpoint;
             _documents = new Dictionary<string, DocumentModel>();
         }
 
@@ -79,7 +79,7 @@ namespace Dash
 
             var newDoc = new DocumentModel
             {
-                DocumentType = _typeController.CreateTypeAsync(type),
+                DocumentType = _typeEndpoint.CreateTypeAsync(type),
                 Id = id
             };
 

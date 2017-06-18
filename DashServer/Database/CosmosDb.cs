@@ -136,7 +136,8 @@ namespace DashServer
                 // transfer over all the new models
                 foreach (var item in items)
                 {
-                    T result = (dynamic) await _client.CreateDocumentAsync(GetCollectionLink, item);
+                    var resourceResponse = await _client.CreateDocumentAsync(GetCollectionLink, item);
+                    T result = (dynamic) resourceResponse.Resource;
                     results.Add(result);
                 }
 
@@ -159,7 +160,8 @@ namespace DashServer
         {
             try
             {
-                T result = (dynamic)await _client.CreateDocumentAsync(GetCollectionLink, item);
+                var resourceResponse = await _client.CreateDocumentAsync(GetCollectionLink, item);
+                T result = (dynamic) resourceResponse.Resource;
                 return result;
             }
             catch (DocumentClientException e)
@@ -184,7 +186,8 @@ namespace DashServer
                 // transfer over all the new models
                 foreach (var item in items)
                 {
-                    T result = (dynamic)await _client.ReplaceDocumentAsync(GetCollectionLink, item);
+                    var resourceResponse = await _client.ReplaceDocumentAsync(GetCollectionLink, item);
+                    T result = (dynamic)resourceResponse.Resource;
                     results.Add(result);
                 }
 
@@ -207,7 +210,8 @@ namespace DashServer
         {
             try
             {
-                T result = (dynamic)await _client.ReplaceDocumentAsync(GetCollectionLink, item);
+                var resourceResponse = await _client.ReplaceDocumentAsync(GetCollectionLink, item);
+                T result = (dynamic)resourceResponse.Resource;
                 return result;
             }
             catch (DocumentClientException e)

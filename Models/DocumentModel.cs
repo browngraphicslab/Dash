@@ -80,7 +80,7 @@ namespace Dash
         }
         static public Key GetFieldKeyByName(string name)
         {
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             var key = keyController.GetKeyAsync(name);
             if (key == null)
                 key = keyController.CreateKeyAsync(name);
@@ -93,7 +93,7 @@ namespace Dash
         /// <returns></returns>
         public DocumentModel MakeDelegate()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var dm = docController.CreateDocumentAsync(DocumentType);
             dm.SetField(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
             var currentDelegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
@@ -180,8 +180,8 @@ namespace Dash
         public static DocumentModel UmpireDocumentModel()
         {
             // get access to controllers, 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -201,8 +201,8 @@ namespace Dash
         public static DocumentModel Food2ForkRecipeDocumentModel()
         {
             // get access to controllers, 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -226,8 +226,8 @@ namespace Dash
         public static DocumentModel OneImage()
         {
             // get access to controllers, 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -243,8 +243,8 @@ namespace Dash
         public static DocumentModel TwoImagesAndText()
         {
             // get access to controllers, 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -267,8 +267,8 @@ namespace Dash
             var apiSource = App.Instance.Container.GetRequiredService<ExampleApiSource>();
             await apiSource.Initialize();
 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
@@ -287,8 +287,8 @@ namespace Dash
             var apiSource = App.Instance.Container.GetRequiredService<PricePerSquareFootApi>();
             await apiSource.Initialize();
 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();

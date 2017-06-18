@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -41,7 +42,7 @@ namespace Dash
             OverlayCanvas.OnAddShapeTapped += AddShape;
         }
 
-        private void AddShape(object sender, TappedRoutedEventArgs e)
+        private async void AddShape(object sender, TappedRoutedEventArgs e)
         {
             var shapeModel = new ShapeModel
             {
@@ -52,7 +53,22 @@ namespace Dash
                 Id = $"{Guid.NewGuid()}"
             };
 
-            var shapeVM = new ShapeViewModel(shapeModel);
+            var shapeEndpoint = App.Instance.Container.GetRequiredService<ShapeEndpoint>();
+            var result = await shapeEndpoint.CreateNewShape(shapeModel);
+            if (result.IsSuccess)
+            {
+                shapeModel = result.Content;
+            }
+            else
+            {
+                Debug.WriteLine(result.ErrorMessage);
+                return;
+            }
+
+            var shapeController = new ShapeController(shapeModel);
+            ContentController.AddShapeController(shapeController);
+
+            var shapeVM = new ShapeViewModel(shapeController);
             var shapeView = new ShapeView(shapeVM);
 
 
@@ -65,7 +81,7 @@ namespace Dash
         {
             model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
 
-            var docController = App.Instance.Container.GetRequiredService<DocumentController>();
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("newtype");
             collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
             DocumentViewModel modelC = new DocumentViewModel(collection);
