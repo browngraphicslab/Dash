@@ -25,7 +25,7 @@ namespace Dash
             ShapeModel = shapeModel;
         }
 
-        public void SetShapeSize(double width, double height)
+        public async Task SetShapeSize(double width, double height)
         {
             ShapeModel.Width = width;
             ShapeModel.Height = height;
@@ -34,10 +34,10 @@ namespace Dash
             ShapeSizeChanged?.Invoke(ShapeModel.Width, ShapeModel.Height);
 
             // update the server
-            App.Instance.Container.GetRequiredService<ShapeProxy>().UpdateShapePosition(ShapeModel.Id, width, height);
+            var result = await App.Instance.Container.GetRequiredService<ShapeProxy>().UpdateShapePosition(ShapeModel.Id, width, height);
         }
 
-        public void SetShapePosition(double x, double y)
+        public async Task SetShapePosition(double x, double y)
         {
             ShapeModel.X = x;
             ShapeModel.Y = y;
@@ -46,7 +46,7 @@ namespace Dash
             ShapePositionChanged?.Invoke(ShapeModel.X, ShapeModel.Y);
 
             // update the server
-            App.Instance.Container.GetRequiredService<ShapeProxy>().UpdateShapePosition(ShapeModel.Id, x, y);
+            var result = App.Instance.Container.GetRequiredService<ShapeProxy>().UpdateShapePosition(ShapeModel.Id, x, y);
         }
     }
 }

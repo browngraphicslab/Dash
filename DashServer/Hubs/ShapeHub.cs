@@ -19,7 +19,7 @@ namespace DashServer.Hubs
             _documentRepository = documentRepository;
         }
 
-        public async Task UpdateShapePosition(string id, double x, double y)
+        public async Task<Result> UpdateShapePosition(string id, double x, double y)
         {
             var shapeModel = (await _documentRepository.GetItemsAsync<ShapeModel>(item => item.Id == id)).FirstOrDefault();
 
@@ -28,9 +28,12 @@ namespace DashServer.Hubs
                 Clients.Others.MoveShapeTo(id, x, y);
             }
 
+            var result = new Result(true);
+            return result;
+
         }
 
-        public async Task UpdateShapeSize(string id, double width, double height)
+        public async Task<Result> UpdateShapeSize(string id, double width, double height)
         {
             var shapeModel = (await _documentRepository.GetItemsAsync<ShapeModel>(item => item.Id == id)).FirstOrDefault();
 
@@ -38,6 +41,9 @@ namespace DashServer.Hubs
             {
                 Clients.Others.SetShapeSizeTo(id, width, height);
             }
+
+            var result = new Result(true);
+            return result;
         }
     }
 }

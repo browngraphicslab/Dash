@@ -8,9 +8,9 @@ namespace DashShared
 {
     public interface IServerContractShapeHub
     {
-        Task UpdateShapePosition(string id, double x, double y);
+        Task<Result> UpdateShapePosition(string id, double x, double y);
 
-        Task UpdateShapeSize(string id, double width, double height);
+        Task<Result> UpdateShapeSize(string id, double width, double height);
 
     }
 }

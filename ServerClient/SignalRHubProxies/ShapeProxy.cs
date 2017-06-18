@@ -40,12 +40,12 @@ namespace Dash
 
         #region ServerMethods
 
-        public Task UpdateShapePosition(string id, double x, double y)
+        public Task<Result> UpdateShapePosition(string id, double x, double y)
         {
             return _shapeProxy.CallAsync(hub => hub.UpdateShapePosition(id, x, y));
         }
 
-        public Task UpdateShapeSize(string id, double width, double height)
+        public Task<Result> UpdateShapeSize(string id, double width, double height)
         {
             return _shapeProxy.CallAsync(hub => hub.UpdateShapeSize(id, width, height));
         }
