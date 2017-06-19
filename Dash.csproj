@@ -107,6 +107,7 @@
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
+    <Compile Include="Models\GuideLineModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\ImageTemplateModel.cs" />
     <Compile Include="Models\LayoutModel.cs" />
@@ -172,6 +173,7 @@
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\FreeformViewModel.cs" />
+    <Compile Include="ViewModels\GuideLineViewModel.cs" />
     <Compile Include="ViewModels\ImageViewModel.cs" />
     <Compile Include="ViewModels\LayoutViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
@@ -189,6 +191,9 @@
     <Compile Include="Views\EditableFieldFrame.cs" />
     <Compile Include="Views\FreeformView.xaml.cs">
       <DependentUpon>FreeformView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GuideLineView.xaml.cs">
+      <DependentUpon>GuideLineView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
@@ -288,6 +293,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\FreeformView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\GuideLineView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
