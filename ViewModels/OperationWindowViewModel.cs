@@ -10,15 +10,8 @@ namespace Dash.ViewModels
 {
     class OperationWindowViewModel
     {
-        public ObservableCollection<Button> Buttons { get; set; } = new ObservableCollection<Button>();
-
         public OperationWindowViewModel()
         {
-            for (int i = 0; i < 10; ++i)
-            {
-                Button b = new Button {Content = "Test"};
-                Buttons.Add(b);
-            }
         }
     }
 }

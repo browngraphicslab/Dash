@@ -15,6 +15,11 @@ namespace Dash.ViewModels
         {
         }
 
+        /// <summary>
+        /// Overrides DocumentViewModel.GetUiElements to just return the operators view
+        /// and listens to the operator view's IO event
+        /// </summary>
+        /// <returns></returns>
         public override List<UIElement> GetUiElements()
         {
             List<UIElement> elements = new List<UIElement>();

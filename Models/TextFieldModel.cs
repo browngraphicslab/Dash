@@ -48,20 +48,23 @@ namespace Dash
             var textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
 
+            // Binds Data Property of the class with the Text field in UIElement 
             Binding binding = new Binding
             {
                 Source = this,
                 Path = new PropertyPath("Data")
             };
 
+            // Allows for edits on Prototype to be reflected on delegates 
             var tb = textTemplate.Editable ? (FrameworkElement)new TextBox() : new TextBlock();
             if (tb is TextBox)
             {
+                //binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
                 tb.SetBinding(TextBox.TextProperty, binding);
-                (tb as TextBox).TextChanged += ((s,e) => Data = (s as TextBox).Text);
+                (tb as TextBox).TextChanged += ((s, e) => Data = (s as TextBox).Text);
                 (tb as TextBox).FontWeight   = textTemplate.FontWeight;
                 (tb as TextBox).TextWrapping = textTemplate.TextWrapping;
-            } else
+            } else if(tb is TextBlock)
             {
                 tb.SetBinding(TextBlock.TextProperty, binding);
                 (tb as TextBlock).FontWeight   = textTemplate.FontWeight;
