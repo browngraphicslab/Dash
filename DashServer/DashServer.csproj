@@ -112,6 +112,20 @@
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="DashShared\ClientHubInterfaces\IClientContractBasicHub.cs" />
+    <Compile Include="DashShared\ClientHubInterfaces\IClientContractShapeHub.cs" />
+    <Compile Include="DashShared\ClientHubInterfaces\IServerContractBasicHub.cs" />
+    <Compile Include="DashShared\ClientHubInterfaces\IServerContractShapeHub.cs" />
+    <Compile Include="DashShared\DashConstants.cs" />
+    <Compile Include="DashShared\Models\AccountBindingModels.cs" />
+    <Compile Include="DashShared\Models\AccountViewModels.cs" />
+    <Compile Include="DashShared\Models\AuthenticationTokenModel.cs" />
+    <Compile Include="DashShared\Models\AuthorizableEntityBase.cs" />
+    <Compile Include="DashShared\Models\DocumentType.cs" />
+    <Compile Include="DashShared\Models\EntityBase.cs" />
+    <Compile Include="DashShared\Models\Key.cs" />
+    <Compile Include="DashShared\Models\Result.cs" />
+    <Compile Include="DashShared\Models\ShapeModel.cs" />
     <Compile Include="Database\CosmosDb.cs" />
     <Compile Include="Database\IDocumentRepository.cs" />
     <Compile Include="Global.asax.cs">
@@ -190,12 +204,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Project_Readme.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\DashShared\DashShared.csproj">
-      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
-      <Name>DashShared</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

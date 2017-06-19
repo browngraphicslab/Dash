@@ -750,5 +750,184 @@
             essentially wraps ninject methods in the equivalent methods required by the DefaultDependencyResolver
             </summary>
         </member>
+        <member name="T:DashShared.IClientContractBasicHub">
+            <summary>
+            Encapsulates the methods that the client has to respond to
+            </summary>
+        </member>
+        <member name="T:DashShared.IServerContractBasicHub">
+            <summary>
+            Encapsulate the hub methods that the server has to respond to 
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DEVELOP_LOCALLY">
+            <summary>
+                Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DbLocalEndpointUrl">
+            <summary>
+            The endpoint for the local cosmosDb emulator. If you do not have a document DB emulator you must install it from microsoft
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DbProductionEndpointUrl">
+            <summary>
+            The endpoint for the server cosmosDb database found on azure portal
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DbEndpointUrl">
+            <summary>
+            The endpoitn for the database used at runtime
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DbLocalPrimaryKey">
+            <summary>
+            The access key for the local cosmosDb emulator. This is default and is always the same
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DbProductionPrimaryKey">
+            <summary>
+            The access key for the server cosmosDb database, this is secret and is found on the azure portal
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DbPrimaryKey">
+            <summary>
+            The access key used to connect to the database used at runtime
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DocDbDatabaseId">
+            <summary>
+            The name of our cosmosDb database
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.DocDbCollectionId">
+            <summary>
+            The name of our cosmosDb collection
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.ServerLocalBaseUrl">
+            <summary>
+            The base url for the local version of the server, should end with a /
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.ServerProductionBaseUrl">
+            <summary>
+            The base url for the production version of the server, should end with a /
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.ServerBaseUrl">
+            <summary>
+            The base url used to connect to the server at runtime
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.TokenEndpoint">
+            <summary>
+            The endpoint on the server where tokens can be retrieved
+            <para>
+            To get the full path use <code>DashConstants.ServerBaseUrl + DashConstants.TokenEndpoint</code>
+            </para>
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.PasswordMinimumLength">
+            <summary>
+            The minimum required length of a password for our users
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.SignalrBaseUrl">
+            <summary>
+            The endpoint on the server where signalr code is accessed
+            <para>
+            To get the full path use <code>DashConstants.ServerBaseUrl + DashConstants.SignalrBaseUrl</code>
+            </para>
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.HubShapeName">
+            <summary>
+            The name of the shape hub
+            </summary>
+        </member>
+        <member name="F:DashShared.DashConstants.ResourceName">
+            <summary>
+            The resource name used to store credentials in the local credential store
+            </summary>
+        </member>
+        <member name="T:DashShared.AuthenticationTokenModel">
+            <summary>
+            The authorization token returned from the server used to make requests
+            </summary>
+        </member>
+        <member name="F:DashShared.AuthenticationTokenModel.Access_token">
+            <summary>
+            The actual access token is the secret key which grants us access to the server
+            </summary>
+        </member>
+        <member name="F:DashShared.AuthenticationTokenModel.Token_type">
+            <summary>
+            The type of this authorization token
+            </summary>
+        </member>
+        <member name="F:DashShared.AuthenticationTokenModel.Expires_in">
+            <summary>
+            Number of seconds until the token expires
+            </summary>
+        </member>
+        <member name="T:DashShared.AuthorizableEntityBase">
+            <summary>
+            Interface used to determine when an item is something that users must be authorized to view
+            </summary>
+        </member>
+        <member name="P:DashShared.DocumentType.Type">
+            <summary>
+            The actual name of the type which is displayed but can change
+            </summary>
+        </member>
+        <member name="P:DashShared.EntityBase.Id">
+            <summary>
+            Object unique identifier
+            </summary>
+        </member>
+        <member name="M:DashShared.EntityBase.ToString">
+            <summary>
+            Pretty print the key for debugging purposes
+            </summary>
+            <returns>The well formatted string</returns>
+        </member>
+        <member name="P:DashShared.Key.Name">
+            <summary>
+            The name of the entity, this is useful for search and provides a front end that
+            can be displayed to the user
+            </summary>
+        </member>
+        <member name="T:DashShared.Result`1">
+            <summary>
+            The result class is a wrapper for communicating with the server
+            it has a content which is typed, a value for determining whether the result was succesful
+            and a error message which can be displayed to the user
+            </summary>
+            <typeparam name="T">The content the result will return</typeparam>
+        </member>
+        <member name="F:DashShared.Result`1.IsSuccess">
+            <summary>
+            Whether or not the result was succesful
+            </summary>
+        </member>
+        <member name="F:DashShared.Result`1.ErrorMessage">
+            <summary>
+            Error message to display to the user if the result was not succesful
+            </summary>
+        </member>
+        <member name="F:DashShared.Result`1.Content">
+            <summary>
+            The content of the result
+            </summary>
+        </member>
+        <member name="M:DashShared.Result`1.#ctor(System.Boolean,System.String)">
+            <summary>
+            Instantiates a new instance of the result class
+            </summary>
+            <param name="isSuccess"></param>
+            <param name="errorMessage"></param>
+            <param name="content"></param>
+        </member>
     </members>
 </doc>
