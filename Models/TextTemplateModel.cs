@@ -20,7 +20,7 @@ namespace Dash
         public bool Editable { get; set;  }
          
         public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible, bool editable= false)
-            : base(left, top, 0, 0, visibility)
+            : base(left, top, 200, 50, visibility)
         {
             FontWeight = weight;
             TextWrapping = wrap;

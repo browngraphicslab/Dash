@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,20 +40,52 @@ namespace Dash
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
-            // cast the template ot an image template
+            // cast the template to an image template
             var imageTemplate = template as ImageTemplateModel;
             Debug.Assert(imageTemplate != null);
 
-
+            // set the image to its source
             var image = new Image();
             image.Source = Data;
-            Canvas.SetTop(image, imageTemplate.Top);
-            Canvas.SetLeft(image, imageTemplate.Left);
-            image.Visibility = imageTemplate.Visibility;
-            image.Width = imageTemplate.Width;
-            image.Height = imageTemplate.Height;
+
+            // move the image when its left property changes
+            var leftBinding = new Binding
+            {
+                Source = imageTemplate,
+                Path = new PropertyPath("Left"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(Canvas.LeftProperty, leftBinding);
+
+            // move the image when its top property changes
+            var topBinding = new Binding
+            {
+                Source = imageTemplate,
+                Path = new PropertyPath("Top"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(Canvas.TopProperty, topBinding);
+
+            // resize the image when its width property changes
+            var widthBinding = new Binding
+            {
+                Source = imageTemplate,
+                Path = new PropertyPath("Width"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(Image.WidthProperty, widthBinding);
+
+            // resize the image when its height property changes
+            var heightBinding = new Binding
+            {
+                Source = imageTemplate,
+                Path = new PropertyPath("Height"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(Image.HeightProperty, heightBinding);
+
             return image;
         }
     }

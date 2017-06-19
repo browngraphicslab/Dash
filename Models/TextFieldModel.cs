@@ -51,33 +51,71 @@ namespace Dash
         /// <summary>
         /// Creates TextBlock using layout information from template and Data 
         /// </summary>
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
             var textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
 
-            var binding = new Binding
+            // bind to editable text if the textTemplate is editable
+            var textBinding = new Binding
             {
                 Source = this,
                 Path = new PropertyPath("Data")
             };
 
             var tb = textTemplate.Editable ? (FrameworkElement)new TextBox() : new TextBlock();
+
+            // if we are editable
             if (tb is TextBox)
             {
-                tb.SetBinding(TextBox.TextProperty, binding);
+                tb.SetBinding(TextBox.TextProperty, textBinding);
                 (tb as TextBox).TextChanged += ((s,e) => Data = (s as TextBox).Text);
                 (tb as TextBox).FontWeight   = textTemplate.FontWeight;
                 (tb as TextBox).TextWrapping = textTemplate.TextWrapping;
-            } else
+            }
+            // if we are not editable
+            else if (tb is TextBlock)
             {
-                tb.SetBinding(TextBlock.TextProperty, binding);
+                tb.SetBinding(TextBlock.TextProperty, textBinding);
                 (tb as TextBlock).FontWeight   = textTemplate.FontWeight;
                 (tb as TextBlock).TextWrapping = textTemplate.TextWrapping;
             }
 
-            Canvas.SetTop(tb, textTemplate.Top);
-            Canvas.SetLeft(tb, textTemplate.Left);
+            // move the text when its left property changes
+            var leftBinding = new Binding
+            {
+                Source = textTemplate,
+                Path = new PropertyPath("Left"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(Canvas.LeftProperty, leftBinding);
+
+            // move the text when its top property changes
+            var topBinding = new Binding
+            {
+                Source = textTemplate,
+                Path = new PropertyPath("Top"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(Canvas.TopProperty, topBinding);
+
+            // resize the text when its width property changes
+            var widthBinding = new Binding
+            {
+                Source = textTemplate,
+                Path = new PropertyPath("Width"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(TextBlock.WidthProperty, widthBinding);
+
+            // resize the text when its height property changes
+            var heightBinding = new Binding
+            {
+                Source = textTemplate,
+                Path = new PropertyPath("Height"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(TextBlock.HeightProperty, heightBinding);
             tb.Visibility = textTemplate.Visibility;
 
             return tb;

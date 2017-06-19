@@ -26,7 +26,7 @@ namespace Dash
             return _docs;
         }
 
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
             var collectionTemplate = template as DocumentCollectionTemplateModel;
             Debug.Assert(collectionTemplate != null);

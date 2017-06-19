@@ -61,15 +61,16 @@ namespace Dash
             // set the view model, document model and view variables
             _documentViewModel = viewModel;
             _documentModel = viewModel.DocumentModel;
-            _documentView = new DocumentView();
+            _documentView = new DocumentView(_documentViewModel);
 
             // add the document view to the canvas in the center
-            _documentView.DataContext = _documentViewModel;
             Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2 - _documentView.Width);
             Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2 - _documentView.Height);
             xDocumentsPane.Canvas.Children.Add(_documentView);
 
             InitializeKeyDicts();
+
+            ApplyEditable();
         }
 
         private void InitializeKeyDicts()
@@ -86,16 +87,22 @@ namespace Dash
             {
                 var key = kvp.Key;
 
+                // if there is no template model for the key don't try to display it
                 if (!_keyToTemplateModel.ContainsKey(key))
                     continue;
 
                 var fieldModel = kvp.Value;
 
-                var uiElement = fieldModel.MakeView(_keyToTemplateModel[key]);
-                var left = Canvas.GetLeft(uiElement);
-                var top = Canvas.GetTop(uiElement);
+                var fieldView = fieldModel.MakeView(_keyToTemplateModel[key]);
 
-                var editableBorder = new EditableFieldFrame(key) { EditableContent = uiElement, BorderBrush = new SolidColorBrush(Colors.CornflowerBlue), BorderThickness = new Thickness(1) };
+                var editableBorder = new EditableFieldFrame(key)
+                {
+                    EditableContent = fieldView,
+                    Width = fieldView.Width,
+                    Height = fieldView.Height
+                };
+                Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Left);
+                Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Top);
                 var guideModel = new GuideLineModel();
                 var guideViewModel = new GuideLineViewModel(guideModel);
                 var guideView = new GuideLineView(guideViewModel);
@@ -105,8 +112,6 @@ namespace Dash
                 editableBorder.SizeChanged += EditableBorder_SizeChanged;
                 editableBorder.PositionChanged += EditableBorderPositionChanged;
                 editableElements.Add(editableBorder);
-                Canvas.SetLeft(editableBorder, left);
-                Canvas.SetTop(editableBorder, top);
             }
 
             _documentView.SetUIElements(editableElements);

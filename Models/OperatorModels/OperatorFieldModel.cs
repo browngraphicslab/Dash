@@ -20,7 +20,7 @@ namespace Dash
         public virtual List<Key> Inputs { get; } = new List<Key>();
         public virtual List<Key> Outputs{ get; } = new List<Key>();
 
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
             OperatorView view = new OperatorView();
             view.DataContext = this;

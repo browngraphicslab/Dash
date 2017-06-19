@@ -86,8 +86,7 @@ namespace Dash.Sources.Api {
             // this part generates a defaultlayoutmodel that shows key/value string text pairs
             DocumentViewModel testModel = new DocumentViewModel(testDocument);
             testModel.SetLayoutModel(LayoutModel.DefaultLayoutModel(testDocument)); // TODO: simplify this in dvm constructor
-            DocumentView testView = new DocumentView();
-            testView.DataContext = testModel;
+            DocumentView testView = new DocumentView(testModel);
             testGrid.Children.Add(testView);
             LayoutModel.DefaultLayoutModel(testDocument);
 
@@ -99,7 +98,7 @@ namespace Dash.Sources.Api {
             var collection = docController.CreateDocumentAsync("collection");
             collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
             DocumentViewModel cm = new DocumentViewModel(collection);
-            DocumentView v = new DocumentView() { DataContext = cm };
+            DocumentView v = new DocumentView(cm);
             testGrid.Children.Add(v);
 
 

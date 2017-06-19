@@ -59,7 +59,7 @@ namespace Dash
         /// <summary>
         /// Abstract method to return views using layout information from templates 
         /// </summary>
-        public abstract UIElement MakeView(TemplateModel template);
+        public abstract FrameworkElement MakeView(TemplateModel template);
 
         public FieldModel Copy()
         {

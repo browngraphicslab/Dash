@@ -20,7 +20,7 @@ namespace Dash.Models
             get { return _data; }
             set { SetProperty(ref _data, value); }
         }
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
             return null;
         }

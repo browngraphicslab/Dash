@@ -19,7 +19,7 @@
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XDocumentsPane_OnSizeChanged">
             </local:FreeformView>
             <Grid x:Name="xSettingsPane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="1" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
-                <Button Tapped="ApplyEditableOnTapped">Apply Editable</Button>
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Settings Menu</TextBlock>
             </Grid>
         </Grid>
     </local:WindowTemplate.InnerContent>
