@@ -58,16 +58,31 @@ namespace Dash
             SetFields(fields);
         }
 
+        /// <summary>
+        /// Sets the value of the field indexed by key. If key is not a valid index in the
+        /// fields, this function adds it or throws an error.
+        /// </summary>
+        /// <param name="key">key index of field to update</param>
+        /// <param name="field">FieldModel to update to</param>
         public void SetField(Key key, FieldModel field)
         {
-            Fields[key] = field;
-            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-            var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
-            if (delegates != null)
-                foreach (var d in delegates.EnumDocuments())
-                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+            if (Fields.ContainsKey(key)) {
+                Fields[key] = field;
+                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+                var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+                if (delegates != null)
+                    foreach (var d in delegates.EnumDocuments())
+                        d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+            } else {
+                // TODO: return error here or just add it ot the field list?
+            }
         }
 
+        /// <summary>
+        /// Sets all of the document's fields to a given Dictionary of Key FieldModel
+        /// pairs. Overwrites existing fields.
+        /// </summary>
+        /// <param name="fields"></param>
         public void SetFields(IDictionary<Key,FieldModel> fields)
         {
             Fields = new Dictionary<Key, FieldModel>();
@@ -79,6 +94,7 @@ namespace Dash
         {
             Fields = new Dictionary<Key, FieldModel>();
         }
+
         static public Key GetFieldKeyByName(string name)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();

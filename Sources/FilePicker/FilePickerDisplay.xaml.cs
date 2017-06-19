@@ -56,9 +56,17 @@ namespace Dash.Sources.FilePicker {
         }
 
         
-
+        /// <summary>
+        /// Wrapper for calling getFile when the file picker button is tapped.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xFilePickBtn_Tapped(object sender, TappedRoutedEventArgs e) {
             getFile();
+        }
+
+        private void xImageResult_DragStarting(UIElement sender, DragStartingEventArgs args) {
+            args.Data.Properties.Add("image", sender);
         }
     }
 }

@@ -17,6 +17,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -402,5 +405,22 @@ namespace Dash
             Clip = new RectangleGeometry {Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height)};
         }
 
+        private void XCanvas_Drop(object sender, DragEventArgs e) {
+            XCanvas.Background = new SolidColorBrush(Colors.Yellow);
+            Image copy = new Image();
+            Image dragged = e.DataView.Properties["image"] as Image;
+            copy.Source = dragged.Source;
+            copy.Height = dragged.Height;
+            copy.Width = dragged.Width;
+            copy.Stretch = dragged.Stretch;
+            Point dropPos = e.GetPosition(XCanvas);
+            copy.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
+            Dictionary<DashShared.Key, FieldViewModel> fields = new Dictionary<DashShared.Key, FieldViewModel>();
+            XCanvas.Children.Add(copy);
+        }
+        
+        private void XCanvas_DragOver_1(object sender, DragEventArgs e) {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+        }
     }
 }

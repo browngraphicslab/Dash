@@ -90,10 +90,7 @@ namespace Dash.Sources.Api {
             testView.DataContext = testModel;
             testGrid.Children.Add(testView);
             LayoutModel.DefaultLayoutModel(testDocument);
-
-
-            Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
+            
             // put document results into collection model
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("collection");
@@ -101,8 +98,7 @@ namespace Dash.Sources.Api {
             DocumentViewModel cm = new DocumentViewModel(collection);
             DocumentView v = new DocumentView() { DataContext = cm };
             testGrid.Children.Add(v);
-
-
+            
             return true;
         }
 
@@ -320,6 +316,7 @@ namespace Dash.Sources.Api {
                     }
                     responseAsDocuments.Add(new DocumentModel(toAdd, /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
+
 
                 // at this point resultAsDocuments contains a list of all JSON results formatted
                 // as documents! They all have the same type, indexed by api URL you could store 
