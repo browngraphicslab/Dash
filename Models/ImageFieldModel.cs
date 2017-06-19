@@ -35,22 +35,5 @@ namespace Dash
                 Data = fm.Data;
             }
         }
-
-        /// <summary>
-        /// Creates Image using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            ImageTemplateModel imageTemplate = template as ImageTemplateModel;
-            Debug.Assert(imageTemplate != null);
-            Image image = new Image();
-            image.Source = Data;
-            Canvas.SetTop(image, imageTemplate.Top);
-            Canvas.SetLeft(image, imageTemplate.Left);
-            image.Visibility = imageTemplate.Visibility;
-            image.Width = imageTemplate.Width;
-            image.Height = imageTemplate.Height;
-            return image;
-        }
     }
 }

@@ -48,6 +48,14 @@ namespace Dash
             DocumentType = type;
         }
 
+        public LayoutModel(bool showAllFields, DocumentType type)
+        {
+            DocumentType = type;
+
+            ShowAllFields = showAllFields;
+        }
+
+        public bool ShowAllFields { get; set; }
 
         // == METHODS ==
 
@@ -116,13 +124,36 @@ namespace Dash
             return new LayoutModel(fields, docType);
         }
 
+        public static LayoutModel itunesLite(DocumentType docType)
+        {
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName Title")] = new TextTemplateModel(5, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true, "Collection: ");
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName")] = new TextTemplateModel(30, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comtrackName Title")] = new TextTemplateModel(5, 30, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true, "Track: ");
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comtrackName")] = new TextTemplateModel(25, 30, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
+            Debug.Assert(docType.Type.Equals("itunesLite"));
+            return new LayoutModel(fields, docType);
+        }
+
+        public static LayoutModel itunes(DocumentType docType)
+        {
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName")] = new TextTemplateModel(5, 0, FontWeights.Bold);
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")] = new ImageTemplateModel(5, 20, 100, 100);
+            Debug.Assert(docType.Type.Equals("itunes"));
+            return new LayoutModel(fields, docType);
+        }
 
         public static LayoutModel TwoImagesAndTextModel(DocumentType docType, bool editable = false)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
-
-
-
+            
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")]  = new ImageTemplateModel(5, 140, 100, 100);

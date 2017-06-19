@@ -54,6 +54,12 @@ namespace Dash
             Width = width;
             Height = height;
             Visibility = visibility;
+        }/// <summary>
+         /// Creates TextBlock using layout information from template and Data 
+         /// </summary>
+        public virtual UIElement MakeView(FieldModel fieldModel)
+        {
+            return null;
         }
     }
 }

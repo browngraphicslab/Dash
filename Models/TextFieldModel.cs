@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Microsoft.Extensions.DependencyInjection;
+using Dash.Models;
 
 namespace Dash
 {
@@ -39,40 +40,6 @@ namespace Dash
                 Data = fm.Data;
             }
         }
-
-        /// <summary>
-        /// Creates TextBlock using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            var textTemplate = template as TextTemplateModel;
-            Debug.Assert(textTemplate != null);
-
-            Binding binding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Data")
-            };
-
-            var tb = textTemplate.Editable ? (FrameworkElement)new TextBox() : new TextBlock();
-            if (tb is TextBox)
-            {
-                tb.SetBinding(TextBox.TextProperty, binding);
-                (tb as TextBox).TextChanged += ((s,e) => Data = (s as TextBox).Text);
-                (tb as TextBox).FontWeight   = textTemplate.FontWeight;
-                (tb as TextBox).TextWrapping = textTemplate.TextWrapping;
-            } else
-            {
-                tb.SetBinding(TextBlock.TextProperty, binding);
-                (tb as TextBlock).FontWeight   = textTemplate.FontWeight;
-                (tb as TextBlock).TextWrapping = textTemplate.TextWrapping;
-            }
-
-            Canvas.SetTop(tb, textTemplate.Top);
-            Canvas.SetLeft(tb, textTemplate.Left);
-            tb.Visibility = textTemplate.Visibility;
-
-            return tb;
-        }
+        
     }
 }
