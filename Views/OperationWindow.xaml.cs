@@ -47,6 +47,8 @@ namespace Dash
 
         private readonly List<Ellipse> _rightEllipses = new List<Ellipse>();
 
+        private HashSet<uint> _currentPointers = new HashSet<uint>();
+
         public OperationWindow(int width, int height)
         {
             this.InitializeComponent();
@@ -126,6 +128,11 @@ namespace Dash
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
             //Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
+            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            {
+                return;
+            }
+            _currentPointers.Add(ioReference.Pointer.PointerId);
 
             _currReference = ioReference;
             _connectionLine = new Line
@@ -170,6 +177,7 @@ namespace Dash
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            _currentPointers.Remove(e.Pointer.PointerId);
             XFreeformView.Canvas.Children.Remove(_connectionLine);
             //XCanvas.Children.Remove(_connectionLine);
             _lines.Remove(_connectionLine); 
@@ -264,6 +272,7 @@ namespace Dash
 
                 el.PointerReleased += (sender, args) =>
                 {
+                    _currentPointers.Remove(args.Pointer.PointerId);
                     if (_connectionLine == null) return;
 
                     if (_currReference.IsOutput == isOutput)

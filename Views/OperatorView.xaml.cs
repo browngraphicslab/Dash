@@ -36,15 +36,18 @@ namespace Dash
 
             public Point CursorPosition { get; set; }
 
+            public Pointer Pointer { get; set; }
+
             public Ellipse Ellipse { get; set; }
 
             public FrameworkElement Box { get; set; } 
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Ellipse e, FrameworkElement box)
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Pointer pointer, Ellipse e, FrameworkElement box)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
                 CursorPosition = p;
+                Pointer = pointer;
                 Ellipse = e;
                 Box = box; 
             }
@@ -74,7 +77,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), el, XGrid);
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer, el, XGrid);
                 OnIoDragStarted(ioRef);
             }
         }
@@ -88,7 +91,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), el, XGrid);
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer, el, XGrid);
                 OnIoDragStarted(ioRef);
             }
         }
