@@ -27,7 +27,14 @@ namespace Dash
     {
         public delegate void IODragEventHandler(IOReference ioReference);
 
+        /// <summary>
+        /// Event that gets fired when an ellipse is dragged off of and a connection should be started
+        /// </summary>
         public event IODragEventHandler IoDragStarted;
+
+        /// <summary>
+        /// Reference to either a field input or output with other information about the pointer
+        /// </summary>
         public class IOReference
         {
             public ReferenceFieldModel ReferenceFieldModel { get; set; }
@@ -64,7 +71,8 @@ namespace Dash
         }
 
         /// <summary>
-        ///  Can return the position of the click in screen space 
+        /// Can return the position of the click in screen space;
+        /// Gets the OperatorFieldModel associated with the input ellipse that is clicked 
         /// </summary>
         private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
@@ -80,6 +88,10 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Can return the position of the click in screen space;
+        /// Gets the OperatorFieldModel associated with the output ellipse that is clicked 
+        /// </summary>
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -94,6 +106,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Keep operator view from moving when you drag on an ellipse
+        /// </summary>
         private void Ellipse_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();

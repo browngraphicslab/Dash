@@ -37,8 +37,14 @@ namespace Dash
 
         private DocumentModel _output;
 
+        /// <summary>
+        /// Line to create and display connection lines between OperationView fields and Document fields 
+        /// </summary>
         private Line _connectionLine;
 
+        /// <summary>
+        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
+        /// </summary>
         private OperatorView.IOReference _currReference;
 
         private readonly List<Line> _lines = new List<Line>();
@@ -47,8 +53,14 @@ namespace Dash
 
         private List<Ellipse> _rightEllipses = new List<Ellipse>();
 
+        /// <summary>
+        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
+        /// </summary>
         private HashSet<uint> _currentPointers = new HashSet<uint>();
 
+        /// <summary>
+        /// DocumentViewModel of document that this operation window has as input
+        /// </summary>
         public DocumentViewModel DocumentViewModel
         {
             get { return _documentViewModel; }
@@ -67,25 +79,23 @@ namespace Dash
                 _output = docEndpoint.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.SetFields(fields);
 
-                //DivideOperatorModel divide = new DivideOperatorModel();
-                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
-                opModel.Id = docEndpoint.GetDocumentId();
-                opModel.OperatorField = new DivideOperatorModel();
+                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel())
+                {
+                    Id = docEndpoint.GetDocumentId(),
+                    OperatorField = new DivideOperatorModel()
+                };
                 docEndpoint.UpdateDocumentAsync(opModel);
-                DocumentView view = new DocumentView();
-                view.Width = 200;
-                view.Height = 200;
+                DocumentView view = new DocumentView
+                {
+                    Width = 200, Height = 200
+                };
                 OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel);
                 vm.IODragStarted += Vm_IODragStarted;
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
 
-                //opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.PriceKey));
                 NumberFieldModel nfm = new NumberFieldModel(0);
-                //nfm.InputReference =
-                    //new ReferenceFieldModel(opModel.Id, DivideOperatorModel.QuotientKey);
                 _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
-                //opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.SqftKey));
 
                 InitializeGrid(XDocumentGridRight, _output, layout, false);
 
@@ -103,6 +113,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Create OperationWindow with a width and height
+        /// </summary>
+        /// <param name="width">Width of the window</param>
+        /// <param name="height">Height of the window</param>
         public OperationWindow(int width, int height)
         {
             this.InitializeComponent();
@@ -110,9 +125,12 @@ namespace Dash
             Height = height;
         }
 
+        /// <summary>
+        /// EventHandler for when a drag for connecting input/output for operators or fields has started
+        /// </summary>
+        /// <param name="ioReference">IOReference for the field and the event info</param>
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
-            //Debug.WriteLine($"Operation Window Drag started: IsOutput: {ioReference.IsOutput}, DocId: {ioReference.ReferenceFieldModel.DocId},\n FieldName: {ioReference.ReferenceFieldModel.FieldKey.Name}, Key: {ioReference.ReferenceFieldModel.FieldKey.Id}, CursorPosition: {ioReference.CursorPosition}");
             if (_currentPointers.Contains(ioReference.Pointer.PointerId))
             {
                 return;
@@ -128,7 +146,8 @@ namespace Dash
                 X1 = pos.X,
                 Y1 = pos.Y,
                 X2 = pos.X,
-                Y2 = pos.Y
+                Y2 = pos.Y,
+                CompositeMode = ElementCompositeMode.SourceOver//TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XCanvas);
 
@@ -171,6 +190,11 @@ namespace Dash
             _currReference = null;
         }
 
+        /// <summary>
+        /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         private void CheckLinePresence(double x, double y)
         {
             Line line = null;
@@ -184,6 +208,11 @@ namespace Dash
             //XCanvas.Children.Remove(line); 
         }
 
+        /// <summary>
+        /// Creates new DocumentModel with a view from the updated document on the right
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
             DocumentView view = new DocumentView();
@@ -282,6 +311,7 @@ namespace Dash
                 if (isOutput) _leftEllipses.Add(el);
                 else _rightEllipses.Add(el);
 
+                // Events that get fired when pointer is released upon output ellipses 
                 el.PointerReleased += (sender, args) =>
                 {
                     _currentPointers.Remove(args.Pointer.PointerId);
@@ -324,6 +354,11 @@ namespace Dash
             MinHeight = HeaderHeight * 2;
         }
 
+        /// <summary>
+        /// Creates the output ellipses
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Ellipses on the left grid 
