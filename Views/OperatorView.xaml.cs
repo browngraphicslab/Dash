@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -37,14 +36,20 @@ namespace Dash
 
             public Point PointerPosition { get; set; }
 
-            public Pointer Pointer{ get; set; }
+            public Pointer Pointer { get; set; }
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Pointer pointer)
+            public Ellipse Ellipse { get; set; }
+
+            public FrameworkElement Box { get; set; }
+
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Pointer pointer, Ellipse e, FrameworkElement box)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
                 PointerPosition = p;
                 Pointer = pointer;
+                Ellipse = e;
+                Box = box;
             }
         }
 
@@ -58,29 +63,12 @@ namespace Dash
             InputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Inputs;
             OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;
 
-            //TODO functionality of drag/drop, but lose the line functionality 
-            InputListView.CanDragItems = true;
-            OutputListView.CanDragItems = true;
-        }
-
-        private void InputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), false, new Point(), null)));
-            e.Data.RequestedOperation = DataPackageOperation.Copy;
-        }
-
-        private void OutputListView_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            var key = e.Items.Cast<Key>().FirstOrDefault();
-            e.Data.SetText(JsonConvert.SerializeObject((object) new IOReference(new ReferenceFieldModel((DataContext as OperatorFieldModel).DocumentID, key), true, new Point(), null)));
-            e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
 
         /// <summary>
         ///  Can return the position of the click in screen space 
         /// </summary>
-        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)//TODO PointerPressed doesn't need to have happened so dragging over the ellipse triggers this
+        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -89,15 +77,12 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer);
-                OnIODragStarted(ioRef);
-                //Debug.WriteLine(
-                    //$"Input Drag started {this.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(this).Position)}");
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer, el, XGrid);
+                OnIoDragStarted(ioRef);
             }
-            Debug.WriteLine("Pointer exited");
         }
 
-        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)//TODO PointerPressed doesn't need to have happened so dragging over the ellipse triggers this
+        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -106,12 +91,9 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true,
                     el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer);
-                OnIODragStarted(ioRef);
-                //Debug.WriteLine(
-                    //$"Output Drag started {el.TransformToVisual(Window.Current.Content).TransformPoint(e.GetCurrentPoint(el).Position)}, {el.TransformToVisual(Window.Current.Content).TransformPoint(new Point(el.Width / 2, el.Height / 2))}");
+                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer, el, XGrid);
+                OnIoDragStarted(ioRef);
             }
-            Debug.WriteLine("Pointer exited");
         }
 
         private void Ellipse_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -119,19 +101,11 @@ namespace Dash
             e.Complete();
         }
 
-        private void OnIODragStarted(OperatorView.IOReference ioreference)
+        private void OnIoDragStarted(IOReference ioreference)
         {
             IODragStarted?.Invoke(ioreference);
         }
 
-        private void Ellipse_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("Ellipse_PointerReleased");
-        }
 
-        private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("Ellipse_PointerEntered");
-        }
     }
 }
