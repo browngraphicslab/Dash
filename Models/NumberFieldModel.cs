@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,7 +51,6 @@ namespace Dash
             // TODO commented out for debugging 
             //Debug.Assert(textTemplate != null);
 
-            //    TextViewModel vm = new TextViewModel(this, template);
             TextBlock tb = new TextBlock();
             Binding binding = new Binding
             {
@@ -66,7 +58,7 @@ namespace Dash
                 Path = new PropertyPath("Data")
             };
             tb.SetBinding(TextBlock.TextProperty, binding);
-            if (textTemplate != null)//TODO remove this check
+            if (textTemplate != null)                   //TODO remove this check
             {
                 Canvas.SetTop(tb, textTemplate.Top);
                 Canvas.SetLeft(tb, textTemplate.Left);

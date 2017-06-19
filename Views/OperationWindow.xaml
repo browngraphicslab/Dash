@@ -23,6 +23,7 @@
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged" PointerMoved="XFreeformView_PointerMoved"></local:FreeformView>
                 <Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid>
             </Grid>
+            <Ellipse></Ellipse>
         </Grid>
     </local:WindowTemplate.InnerContent>
 

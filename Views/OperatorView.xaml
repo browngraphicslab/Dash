@@ -9,14 +9,14 @@
     d:DesignHeight="300"
     d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" >
 
-    <Grid>
+    <Grid x:Name="XGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <ListView x:Name="InputListView" Grid.Column="0" DragItemsStarting="InputListView_DragItemsStarting">
-            <ListView.ItemTemplate>
+        <ListView x:Name="InputListView" Grid.Column="0">
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -24,13 +24,14 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="1"></TextBlock>
-                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="0" PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
+                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="0" 
+                                 PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
+            </ItemsControl.ItemTemplate>
         </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2" DragItemsStarting="OutputListView_DragItemsStarting">
-            <ListView.ItemTemplate> 
+        <ListView x:Name="OutputListView" Grid.Column="2">
+            <ItemsControl.ItemTemplate> 
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -41,7 +42,7 @@
                         <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted" PointerReleased="Ellipse_PointerReleased" AllowDrop="True" PointerEntered="Ellipse_PointerEntered"/>
                     </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
+            </ItemsControl.ItemTemplate>
         </ListView>
     </Grid>
 </UserControl>
