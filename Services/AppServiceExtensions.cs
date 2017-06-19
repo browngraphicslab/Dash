@@ -57,7 +57,7 @@ namespace Dash
             serviceCollection.AddSingleton<ShapeProxy>(shapeProxy);
 
             // initialize the connection to the hub, no more proxies can be added after this line
-            //hubConnection.Start().Wait();
+            hubConnection.Start().Wait();
             return serviceCollection.BuildServiceProvider();
         }
 

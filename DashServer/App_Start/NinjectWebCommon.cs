@@ -1,3 +1,5 @@
+using DashServer.Controllers;
+
 [assembly: WebActivatorEx.PreApplicationStartMethod(typeof(DashServer.App_Start.NinjectWebCommon), "Start")]
 [assembly: WebActivatorEx.ApplicationShutdownMethodAttribute(typeof(DashServer.App_Start.NinjectWebCommon), "Stop")]
 
@@ -55,7 +57,8 @@ namespace DashServer.App_Start
                 kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
 
                 RegisterServices(kernel);
-                GlobalConfiguration.Configuration.DependencyResolver = new NinjectDependencyResolver(kernel); // make ninject the dependency resolver
+                // make ninject the dependency resolver
+                GlobalConfiguration.Configuration.DependencyResolver = new NinjectDependencyResolver(kernel);
                 return kernel;
             }
             catch

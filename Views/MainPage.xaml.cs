@@ -42,6 +42,7 @@ namespace Dash
             xOverlayCanvas.OnAddCollectionTapped += AddCollection;
             xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
             xOverlayCanvas.OnAddImageTapped += AddImage;
+            xOverlayCanvas.OnAddShapeTapped += AddShape;
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)
