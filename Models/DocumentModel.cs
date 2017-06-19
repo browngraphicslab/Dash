@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media.Animation;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -27,7 +29,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        Dictionary<Key, FieldModel> Fields;
+        public ObservableDictionary<Key, FieldModel> Fields { get; set; }
 
         /// <summary>
         /// The type of this document.
@@ -42,6 +44,7 @@ namespace Dash
         public delegate void FieldUpdatedEvent(ReferenceFieldModel fieldReference);
 
         public event FieldUpdatedEvent DocumentFieldUpdated;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a document with given data and type.
@@ -58,26 +61,16 @@ namespace Dash
             SetFields(fields);
         }
 
-        public void SetField(Key key, FieldModel field)
-        {
-            Fields[key] = field;
-            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-            var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
-            if (delegates != null)
-                foreach (var d in delegates.EnumDocuments())
-                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-        }
-
         public void SetFields(IDictionary<Key,FieldModel> fields)
         {
-            Fields = new Dictionary<Key, FieldModel>();
+            Fields = new ObservableDictionary<Key, FieldModel>();
             foreach (var f in fields)
                 SetField(f.Key, f.Value);
         }
 
         public DocumentModel()
         {
-            Fields = new Dictionary<Key, FieldModel>();
+            Fields = new ObservableDictionary<Key, FieldModel>();
         }
         static public Key GetFieldKeyByName(string name)
         {
@@ -113,10 +106,14 @@ namespace Dash
             return null;
         }
 
+        public IEnumerable<KeyValuePair<Key, FieldModel>> PropFields => EnumFields();
+
         public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields()
         {
-            foreach (var field in Fields)
-                yield return field;
+            foreach (KeyValuePair<Key, FieldModel> fieldModel in Fields)
+            {
+                yield return fieldModel;
+            }
 
             var prototype = GetPrototype();
             if (prototype != null)
@@ -153,8 +150,13 @@ namespace Dash
         /// <returns></returns>
         public bool SetField(Key key, FieldModel value, bool force = true)
         {
-            if (Fields.ContainsKey(key)) {
+            if (force || Fields.ContainsKey(key)) {
                 Fields[key] = value;
+                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+                var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+                if (delegates != null)
+                    foreach (var d in delegates.EnumDocuments())
+                        d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
                 return true;
             }
             if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
@@ -162,11 +164,6 @@ namespace Dash
                 var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
                 if (parent != null && parent.Data.SetField(key, value, false))
                     return true;
-            }
-            if (force)
-            {
-                Fields[key] = value;
-                return true;
             }
             return false;
         }
@@ -304,6 +301,11 @@ namespace Dash
             //dm.Fields = fields;
 
             return apiSource.GetDocumentsAsync().First();
+        }
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, e);
         }
     }
 }

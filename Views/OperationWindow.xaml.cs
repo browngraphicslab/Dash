@@ -68,7 +68,13 @@ namespace Dash
             {
                 _documentViewModel = value;
                 var layout = DocumentViewModel.GetLayoutModel();
-                InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
+                //InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
+                Binding binding = new Binding();
+                binding.Source = _documentViewModel.DocumentModel.PropFields;
+                LeftListView.SetBinding(ListView.ItemsSourceProperty, binding);
+                //LeftListView.ItemsSource = _documentViewModel.DocumentModel.PropFields;
+                //InputValues.ItemsSource = _documentViewModel.DocumentModel.PropFields;
+                //InputEllipses.ItemsSource = _documentViewModel.DocumentModel.PropFields;
 
                 Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
                 foreach (var documentModelField in _documentViewModel.DocumentModel.EnumFields())
@@ -78,6 +84,7 @@ namespace Dash
                 DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 _output = docEndpoint.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
                 _output.SetFields(fields);
+                RightListView.ItemsSource = _output.Fields;
 
                 OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel())
                 {
@@ -97,19 +104,19 @@ namespace Dash
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
 
-                InitializeGrid(XDocumentGridRight, _output, layout, false);
+                //InitializeGrid(XDocumentGridRight, _output, layout, false);
 
 
-                XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                Button createButton = new Button
-                {
-                    Content = "Create"
-                };
-                Grid.SetRow(createButton, XDocumentGridRight.RowDefinitions.Count - 1);
-                XDocumentGridRight.Children.Add(createButton);
+                //XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                //XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                //Button createButton = new Button
+                //{
+                //    Content = "Create"
+                //};
+                //Grid.SetRow(createButton, XDocumentGridRight.RowDefinitions.Count - 1);
+                //XDocumentGridRight.Children.Add(createButton);
 
-                createButton.Tapped += B_Tapped;
+                //createButton.Tapped += B_Tapped;
             }
         }
 
@@ -349,8 +356,8 @@ namespace Dash
             FreeformView freeform = sender as FreeformView;
             Debug.Assert(freeform != null);
             MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
-            MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
-            MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
+            //MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
+            //MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
             MinHeight = HeaderHeight * 2;
         }
 
@@ -362,24 +369,24 @@ namespace Dash
         private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             // Ellipses on the left grid 
-            double height = XDocumentGridLeft.RowDefinitions[0].ActualHeight;
-            for (int i = 0; i < XDocumentGridLeft.RowDefinitions.Count - 1; i++)
-            {
-                RowDefinition r = XDocumentGridLeft.RowDefinitions[i + 1];
-                _leftEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth - 5, height + r.ActualHeight / 2 - 5, 0, 0);
+            //double height = XDocumentGridLeft.RowDefinitions[0].ActualHeight;
+            //for (int i = 0; i < XDocumentGridLeft.RowDefinitions.Count - 1; i++)
+            //{
+            //    RowDefinition r = XDocumentGridLeft.RowDefinitions[i + 1];
+            //    _leftEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth - 5, height + r.ActualHeight / 2 - 5, 0, 0);
 
-                height += r.ActualHeight;
-            }
+            //    height += r.ActualHeight;
+            //}
 
-            // Ellipses on the right grid  
-            height = XDocumentGridRight.RowDefinitions[0].ActualHeight;
-            for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 3; i++)
-            {
-                RowDefinition r = XDocumentGridRight.RowDefinitions[i + 1];
-                _rightEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth + XFreeformView.ActualWidth - 5, height + r.ActualHeight / 2 - 5, 0, 0);
+            //// Ellipses on the right grid  
+            //height = XDocumentGridRight.RowDefinitions[0].ActualHeight;
+            //for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 3; i++)
+            //{
+            //    RowDefinition r = XDocumentGridRight.RowDefinitions[i + 1];
+            //    _rightEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth + XFreeformView.ActualWidth - 5, height + r.ActualHeight / 2 - 5, 0, 0);
 
-                height += r.ActualHeight;
-            }
+            //    height += r.ActualHeight;
+            //}
         }
     }
 }

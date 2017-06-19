@@ -14,14 +14,124 @@
         <Grid x:Name="XCanvas">
             <Grid x:Name="XGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
-                    <ColumnDefinition Width="*"></ColumnDefinition>
-                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="2*"></ColumnDefinition>
+                    <ColumnDefinition Width="5*"></ColumnDefinition>
+                    <ColumnDefinition Width="2*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0"></Grid>
+                <!--<Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <ListBox x:Name="InputKeys" Grid.Column="0">
+                        --><!--<ListView.Header>
+                            <TextBlock Text="Key" HorizontalAlignment="Center" TextAlignment="Center"></TextBlock>
+                        </ListView.Header>--><!--
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Key.Name}" ></TextBlock>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox x:Name="InputValues" Grid.Column="1">
+                        --><!--<ListView.Header>
+                            <TextBlock Text="Value" HorizontalAlignment="Center" TextAlignment="Center"></TextBlock>
+                        </ListView.Header>--><!--
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <ContentPresenter Content="{Binding Value.View}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <ListBox x:Name="InputEllipses" Grid.Column="2" MinWidth="20">
+                        --><!--<ListView.Header>
+                            <TextBlock Text=""></TextBlock>
+                        </ListView.Header>--><!--
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Ellipse Width="10" Height="10" Fill="Black" HorizontalAlignment="Center"></Ellipse>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    
+                </Grid>-->
+                
+                
+                
+                <ListView x:Name="LeftListView" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                            <Setter Property="Margin" Value="0"></Setter>
+                            <Setter Property="Padding" Value="0"></Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></StackPanel>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="20"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <TextBlock Text="{Binding Key.Name}"></TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <TextBlock Text="Test"></TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <Ellipse Width="10" Height="10" Fill="Black"></Ellipse>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <!--<Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0"></Grid>-->
+
                 <local:FreeformView x:Name ="XFreeformView" Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged" PointerMoved="XFreeformView_PointerMoved"></local:FreeformView>
-                <Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid>
+                <!--<Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid>-->
+                <ListView x:Name="RightListView" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                            <Setter Property="Margin" Value="0"></Setter>
+                            <Setter Property="Padding" Value="0"></Setter>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></StackPanel>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <TextBlock Text="{Binding Key.Name}"></TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <TextBlock Text="Test"></TextBlock>
+                                </StackPanel>
+                                <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <Ellipse Width="10" Height="10" Fill="Black"></Ellipse>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
             <Ellipse></Ellipse>
         </Grid>

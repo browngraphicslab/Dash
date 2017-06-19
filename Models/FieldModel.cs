@@ -71,6 +71,8 @@ namespace Dash
             OutputReferences.Remove(reference); 
         }
 
+        public UIElement View => MakeView(null);
+
         /// <summary>
         /// Abstract method to return views using layout information from templates 
         /// </summary>

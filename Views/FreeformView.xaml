@@ -10,11 +10,17 @@
     d:DesignWidth="400" SizeChanged="UserControl_SizeChanged"
     Name="XControl">
 
-    <Canvas x:Name="XCanvas" HorizontalAlignment="Stretch" Width="{Binding CanvasWidth}" Background="White" 
+    <Canvas x:Name="XCanvas" HorizontalAlignment="Stretch" Width="{Binding CanvasWidth}" 
             Margin="0,0,-0,-0" Height="{Binding CanvasHeight}" VerticalAlignment="Stretch" 
             ManipulationMode="All" PointerWheelChanged="UserControl_PointerWheelChanged" 
             ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
             ManipulationDelta="UserControl_ManipulationDelta">
+        <Canvas.Background>
+            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                <GradientStop Color="Red" Offset="0"/>
+                <GradientStop Color="#FFC1C1C1" Offset="1"/>
+            </LinearGradientBrush>
+        </Canvas.Background>
 
         <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="{Binding CanvasHeight}" VerticalAlignment="Top" Width="{Binding CanvasWidth}" />
     </Canvas>
