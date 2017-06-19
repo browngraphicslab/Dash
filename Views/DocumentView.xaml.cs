@@ -150,9 +150,13 @@ namespace Dash
 
         private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            //   var viewEditor = new ViewEditor();
-            //   FreeFormViewModel.MainFreeformView.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
-            //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
+            var dvm = DataContext as DocumentViewModel;
+            Debug.Assert(dvm != null);
+
+            var interfaceBuilder = new InterfaceBuilder(dvm);
+            var center = RenderTransform.TransformPoint(e.GetPosition(this));
+            FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
+
         }
 
         protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e)

@@ -21,7 +21,7 @@ namespace Dash
     public class LayoutModel
     {
         /// <summary>
-        /// A dictionary of keys to ElementModels.
+        /// A dictionary of keys to TemplateModel. //TODO rename to Templates
         /// </summary>
         public Dictionary<Key, TemplateModel> Fields;
 
