@@ -23,10 +23,14 @@ namespace Dash.Sources.FilePicker {
 
         public FilePickerDisplay() {
             this.InitializeComponent();
-            new ManipulationControls(xGrid, xMoveArea);
+            new ManipulationControls(xGrid, this);
 
         }
 
+        /// <summary>
+        /// Opens a pop up for user to choose a file of given fileExtensions types. Loads
+        /// in the file and stores a preview of it in the resultSource element. 
+        /// </summary>
         public async void getFile() {
 
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
