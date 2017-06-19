@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 
-namespace Dash.Models
+namespace Dash
 {
     public class ImageTemplateModel : TemplateModel
     {

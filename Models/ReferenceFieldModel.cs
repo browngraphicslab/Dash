@@ -31,7 +31,7 @@ namespace Dash
             FieldKey = fieldKey;
         }
         
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
             throw new NotImplementedException();
         }

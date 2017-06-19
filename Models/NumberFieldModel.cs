@@ -45,7 +45,7 @@ namespace Dash
         /// <summary>
         /// Creates TextBlock using layout information from template and Data 
         /// </summary>
-        public override UIElement MakeView(TemplateModel template)
+        public override FrameworkElement MakeView(TemplateModel template)
         {
             TextTemplateModel textTemplate = template as TextTemplateModel;
             // TODO commented out for debugging 

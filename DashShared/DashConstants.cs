@@ -102,6 +102,9 @@ namespace DashShared
         /// </summary>
         public const string SignalrBaseUrl = "signalr";
 
+        /// <summary>
+        /// The name of the shape hub
+        /// </summary>
         public const string HubShapeName = "shapeHub";
         #endregion
 

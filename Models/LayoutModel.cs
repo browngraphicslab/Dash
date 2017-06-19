@@ -21,7 +21,7 @@ namespace Dash
     public class LayoutModel
     {
         /// <summary>
-        /// A dictionary of keys to ElementModels.
+        /// A dictionary of keys to TemplateModel. //TODO rename to Templates
         /// </summary>
         public Dictionary<Key, TemplateModel> Fields;
 
@@ -116,6 +116,11 @@ namespace Dash
             return new LayoutModel(fields, docType);
         }
 
+        
+        private static ImageTemplateModel contentImageTemplateModel = new ImageTemplateModel(5, 140, 100, 100);
+        private static ImageTemplateModel content2ImageTemplateModel = new ImageTemplateModel(5, 20, 100, 100);
+        private static TextTemplateModel textTemplateModel = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
+
 
         public static LayoutModel TwoImagesAndTextModel(DocumentType docType, bool editable = false)
         {
@@ -125,9 +130,10 @@ namespace Dash
 
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
-            fields[DocumentModel.GetFieldKeyByName("content")]  = new ImageTemplateModel(5, 140, 100, 100);
-            fields[DocumentModel.GetFieldKeyByName("content2")] = new ImageTemplateModel(5, 20, 100, 100);
-            fields[DocumentModel.GetFieldKeyByName("text")]     = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible, editable);
+            fields[DocumentModel.GetFieldKeyByName("content")] = contentImageTemplateModel;
+            fields[DocumentModel.GetFieldKeyByName("content2")] = content2ImageTemplateModel;
+            textTemplateModel.Editable = editable;
+            fields[DocumentModel.GetFieldKeyByName("text")] = textTemplateModel;
 
             Debug.Assert(docType.Type.Equals("twoimages"));
             return new LayoutModel(fields, docType);

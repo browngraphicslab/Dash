@@ -12,7 +12,7 @@ namespace DashServer
     /// </summary>
     public interface IDocumentRepository
     {
-
+        // See comments in Database/CosmosDb.cs
         Task<IEnumerable<T>> GetItemsAsync<T>(Expression<Func<T, bool>> predicate);
 
         Task<IEnumerable<T>> AddItemsAsync<T>(IEnumerable<T> items);
