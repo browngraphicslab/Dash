@@ -41,9 +41,12 @@ namespace Dash
         /// </summary>
         public override UIElement MakeView(TemplateModel template)
         {
-            ImageTemplateModel imageTemplate = template as ImageTemplateModel;
+            // cast the template ot an image template
+            var imageTemplate = template as ImageTemplateModel;
             Debug.Assert(imageTemplate != null);
-            Image image = new Image();
+
+
+            var image = new Image();
             image.Source = Data;
             Canvas.SetTop(image, imageTemplate.Top);
             Canvas.SetLeft(image, imageTemplate.Left);

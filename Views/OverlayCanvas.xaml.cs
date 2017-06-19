@@ -37,25 +37,25 @@ namespace Dash
 
         private void AddDocumentsTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnAddDocumentsTapped.Invoke(sender, e);
+            OnAddDocumentsTapped?.Invoke(sender, e);
         }
 
         private void AddCollectionTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnAddCollectionTapped.Invoke(sender, e);
+            OnAddCollectionTapped?.Invoke(sender, e);
         }
 
         private void AddShapeTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnAddShapeTapped.Invoke(sender, e);
+            OnAddShapeTapped?.Invoke(sender, e);
         }
 
         private void image1_Tapped(object sender, TappedRoutedEventArgs e) {
-            OnAddImageTapped.Invoke(sender, e);
+            OnAddImageTapped?.Invoke(sender, e);
         }
 
         private void image_Tapped(object sender, TappedRoutedEventArgs e) {
-            OnAddAPICreatorTapped.Invoke(sender, e);
+            OnAddAPICreatorTapped?.Invoke(sender, e);
         }
     }
 }

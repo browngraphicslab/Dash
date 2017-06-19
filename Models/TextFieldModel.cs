@@ -18,12 +18,20 @@ namespace Dash
     {
         public TextFieldModel() { }
 
+        /// <summary>
+        /// Create a new text field model with the passed in string as data
+        /// </summary>
+        /// <param name="data"></param>
         public TextFieldModel(string data)
         {
             Data = data;
         }
 
         private string _data;
+
+        /// <summary>
+        /// The text which is the field model contains
+        /// </summary>
         public string Data
         {
             get { return _data; }
@@ -48,7 +56,7 @@ namespace Dash
             var textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
 
-            Binding binding = new Binding
+            var binding = new Binding
             {
                 Source = this,
                 Path = new PropertyPath("Data")

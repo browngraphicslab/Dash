@@ -113,6 +113,57 @@ namespace Dash
         {
             DocumentView_DataContextChanged(null, null);
         }
+
+        private void elementModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            ReLayout();
+        }
+
+        public void ReLayout()
+        {
+            //var dvm = DataContext as DocumentViewModel;
+            //if (dvm != null)
+            //{
+            //    var lm = dvm.DocumentViewModelSource.DocumentLayoutModel(dvm.DocumentModel);
+            //    foreach (var item in dvm.DocumentModel.Fields)
+            //    {
+            //        var elementKey   = item.Key;
+            //        var elementModel = lm.Fields[elementKey];
+            //        var content      = item.Value;
+
+            //        if (!textElementViews.ContainsKey(elementKey))
+            //        {
+            //            xCanvas.Children.Add(new TextBlock());
+            //            textElementViews.Add(elementKey, xCanvas.Children.Last() as TextBlock);
+            //        }
+            //        var tb = textElementViews[elementKey];
+            //        tb.FontSize = 16;
+            //        tb.Width = 200;
+            //        tb.TextWrapping = elementModel.TextWrapping;
+            //        tb.FontWeight = elementModel.FontWeight;
+            //        tb.Text = content == null ? "" : content.ToString();
+            //        tb.Name = "x" + elementKey;
+            //        tb.HorizontalAlignment = HorizontalAlignment.Center;
+            //        tb.VerticalAlignment = VerticalAlignment.Center;
+            //        Canvas.SetLeft(tb, elementModel.Left);
+            //        Canvas.SetTop(tb,  elementModel.Top);
+            //        tb.Visibility = elementModel.Visibility;
+            //        elementModel.PropertyChanged -= elementModel_PropertyChanged;
+            //        elementModel.PropertyChanged += elementModel_PropertyChanged;
+            //    }
+            //}
+        }
+
+        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var dvm = DataContext as DocumentViewModel;
+            Debug.Assert(dvm != null);
+
+            var interfaceBuilder = new InterfaceBuilder(dvm);
+            var center = RenderTransform.TransformPoint(e.GetPosition(this));
+            FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
+
+        }
         
         protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e)
         {

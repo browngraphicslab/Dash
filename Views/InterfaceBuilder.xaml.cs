@@ -25,13 +25,29 @@ namespace Dash
 
         private List<GuideLineViewModel> _guides = new List<GuideLineViewModel>();
 
+        /// <summary>
+        /// The document view model of the document which is being edited
+        /// </summary>
         private DocumentViewModel _documentViewModel;
 
+        /// <summary>
+        /// the document model of the document which is being edited
+        /// </summary>
         private DocumentModel _documentModel;
 
+        /// <summary>
+        /// The document view of the document which is being edited
+        /// </summary>
         private DocumentView _documentView;
 
+        /// <summary>
+        /// dictionary of keys to template models for the template models on the document which is being edited
+        /// </summary>
         private Dictionary<Key, TemplateModel> _keyToTemplateModel = new Dictionary<Key, TemplateModel>();
+
+        /// <summary>
+        /// dictionary of keys to field models for the field models on the document which is being edited
+        /// </summary>
         private Dictionary<Key, FieldModel> _keyToFieldModel = new Dictionary<Key, FieldModel>();
 
         public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
@@ -42,16 +58,15 @@ namespace Dash
             Width = 500;
             Height = 500;
 
-
+            // set the view model, document model and view variables
             _documentViewModel = viewModel;
             _documentModel = viewModel.DocumentModel;
             _documentView = new DocumentView();
 
+            // add the document view to the canvas in the center
             _documentView.DataContext = _documentViewModel;
-
             Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2 - _documentView.Width);
             Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2 - _documentView.Height);
-
             xDocumentsPane.Canvas.Children.Add(_documentView);
 
             InitializeKeyDicts();
@@ -134,6 +149,7 @@ namespace Dash
             Debug.Assert(freeform != null);
             this.MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
             this.MaxWidth = xSettingsPane.ActualWidth + freeform.CanvasWidth;
+            
             this.MinWidth = xSettingsPane.ActualWidth + 50;
             this.MinHeight = HeaderHeight * 2;
         }

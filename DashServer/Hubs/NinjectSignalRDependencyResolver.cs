@@ -7,6 +7,10 @@ using Ninject;
 
 namespace DashServer
 {
+    /// <summary>
+    /// A dependency resolver which allows ninject dependency resolution to work with signalr
+    /// essentially wraps ninject methods in the equivalent methods required by the DefaultDependencyResolver
+    /// </summary>
     internal class NinjectSignalRDependencyResolver : DefaultDependencyResolver
     {
         private readonly IKernel _kernel;
