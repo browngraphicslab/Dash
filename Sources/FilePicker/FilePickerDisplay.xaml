@@ -9,7 +9,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Width="400" Height="300" x:Name="xGrid" Style="{StaticResource xNodeContainerGrid}" ManipulationMode="All">
+    <StackPanel x:Name="xMoveArea">
+        <Grid Height="32" x:Name="xGrid" Background="{StaticResource WindowsBlue}"></Grid>
+    <Grid Width="400" Height="300"  Style="{StaticResource xNodeContainerGrid}" ManipulationMode="All">
         
         <TextBlock Style="{StaticResource xTitleStyle}" Text="File Picker"/>
         <Grid Margin="0,35,0,0">
@@ -28,4 +30,6 @@
             </Border>
         </Grid>
     </Grid>
+
+    </StackPanel>
 </UserControl>

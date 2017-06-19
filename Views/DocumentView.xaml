@@ -11,7 +11,7 @@
     d:DesignHeight="300"
     d:DesignWidth="300"  DoubleTapped="UserControl_DoubleTapped">
 
-    <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}"  BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped" >
+    <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}"  BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" >
                 <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 

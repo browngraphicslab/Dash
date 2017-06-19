@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
+    // TODO: name this to something more descriptive
     public static class Util
     {
         /// <summary>

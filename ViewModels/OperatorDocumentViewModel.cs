@@ -15,7 +15,7 @@ namespace Dash.ViewModels
         {
         }
 
-        public override List<UIElement> GetUiElements()
+        public override List<UIElement> CreateUIElements()
         {
             List<UIElement> elements = new List<UIElement>();
             LayoutModel model = GetLayoutModel();

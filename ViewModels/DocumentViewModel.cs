@@ -19,6 +19,15 @@ namespace Dash
 {
     public class DocumentViewModel : ViewModelBase
     {
+        // == MEMBERS, GETTERS, SETTERS ==
+        static DocumentModel DefaultLayoutModelSource = null;
+        private ManipulationModes _manipulationMode;
+        private double _height;
+        private double _width;
+        private Brush _backgroundBrush;
+        private Brush _borderBrush;
+        public bool DoubleTapEnabled = true;
+
         public double Width
         {
             get { return _width; }
@@ -48,14 +57,15 @@ namespace Dash
             get { return _borderBrush; }
             set { SetProperty(ref _borderBrush, value); }
         }
+        public DocumentModel DocumentModel { get; set; }
 
-        public bool DoubleTapEnabled = true;
-
+        // == CONSTRUCTORS == 
         public DocumentViewModel() { }
+
         public DocumentViewModel(DocumentModel docModel)
         {
             DocumentModel = docModel;
-            if (docModel.DocumentType.Type == "collection")
+            if (docModel.DocumentType.Type == "collection_example")
             {
                 DoubleTapEnabled = false;
                 BackgroundBrush = new SolidColorBrush(Colors.Transparent);
@@ -63,13 +73,18 @@ namespace Dash
             }
             else
             {
-                BackgroundBrush = new SolidColorBrush(Colors.AliceBlue);
+                BackgroundBrush = new SolidColorBrush(Colors.White);
                 BorderBrush = new SolidColorBrush(Colors.DarkGoldenrod);
             }
         }
-        public DocumentModel DocumentModel { get; set; }
 
-        public virtual List<UIElement> GetUiElements()
+        // == METHODS ==
+        /// <summary>
+        /// Generates a list of UIElements by making FieldViewModels of a document;s
+        /// given fields.
+        /// </summary>
+        /// <returns>List of all UIElements generated</returns>
+        public virtual List<UIElement> CreateUIElements()
         {
             var uiElements = new List<UIElement>();
             LayoutModel layout = GetLayoutModel();
@@ -82,6 +97,7 @@ namespace Dash
             }
             return uiElements;
         }
+
         public LayoutModel GetLayoutModel()
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -92,20 +108,12 @@ namespace Dash
 
             return refField.Data;
         }
+
         public void SetLayoutModel(LayoutModel layoutModel)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             var layoutModelRef = GetLayoutModelReferenceForDoc(DocumentModel);
-
-            // set value of layoutModelRef to layoutModel
         }
-
-        static DocumentModel DefaultLayoutModelSource = null;
-        private ManipulationModes _manipulationMode;
-        private double _height;
-        private double _width;
-        private Brush _backgroundBrush;
-        private Brush _borderBrush;
 
         static Key GetFieldKeyByName(string name)
         {
@@ -182,6 +190,7 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(lm));
                 }
             }
+
             return new ReferenceFieldModel(layoutModelSource.Id, layoutKeyForDocumentType);
         }
     }

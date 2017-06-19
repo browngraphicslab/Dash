@@ -10,6 +10,9 @@ using DashShared;
 
 namespace Dash.StaticClasses
 {
+    /// <summary>
+    /// Provides a series of utility functions for filtering documents.
+    /// </summary>
     public static class FilterUtils
     {
         /// <summary>
