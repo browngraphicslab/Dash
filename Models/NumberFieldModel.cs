@@ -41,32 +41,6 @@ namespace Dash
             //    }
             //}
         }
-
-        /// <summary>
-        /// Creates TextBlock using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            TextTemplateModel textTemplate = template as TextTemplateModel;
-            // TODO commented out for debugging 
-            //Debug.Assert(textTemplate != null);
-
-            TextBlock tb = new TextBlock();
-            Binding binding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Data")
-            };
-            tb.SetBinding(TextBlock.TextProperty, binding);
-            if (textTemplate != null)                   //TODO remove this check
-            {
-                Canvas.SetTop(tb, textTemplate.Top);
-                Canvas.SetLeft(tb, textTemplate.Left);
-                tb.FontWeight = textTemplate.FontWeight;
-                tb.TextWrapping = textTemplate.TextWrapping;
-                tb.Visibility = textTemplate.Visibility;
-            }
-            return tb;
-        }
+        
     }
 }

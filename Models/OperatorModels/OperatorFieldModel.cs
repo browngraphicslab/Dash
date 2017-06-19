@@ -20,12 +20,13 @@ namespace Dash
         public virtual List<Key> Inputs { get; } = new List<Key>();
         public virtual List<Key> Outputs{ get; } = new List<Key>();
 
-        public override UIElement MakeView(TemplateModel template)
-        {
-            OperatorView view = new OperatorView();
-            view.DataContext = this;
-            return view;
-        }
+        // this needs to be mobed into an OperatorTemplateModel instance ...
+        //public override FrameworkElement MakeView(TemplateModel template)
+        //{
+        //    OperatorView view = new OperatorView();
+        //    view.DataContext = this;
+        //    return view;
+        //}
 
         public abstract Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences);
     }

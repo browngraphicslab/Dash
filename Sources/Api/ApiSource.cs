@@ -92,6 +92,7 @@ namespace Dash.Sources.Api {
             //LayoutModel.DefaultLayoutModel(testDocument);
 
 
+
             Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
 
             // put document results into collection model
@@ -99,7 +100,7 @@ namespace Dash.Sources.Api {
             var collection = docController.CreateDocumentAsync("collection");
             collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
             DocumentViewModel cm = new DocumentViewModel(collection);
-            DocumentView v = new DocumentView() { DataContext = cm };
+            DocumentView v = new DocumentView(cm);
             testGrid.Children.Add(v);
 
 
