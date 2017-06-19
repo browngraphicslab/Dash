@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -40,7 +39,7 @@ namespace Dash
 
             public Ellipse Ellipse { get; set; }
 
-            public FrameworkElement Box { get; set; } 
+            public FrameworkElement Box { get; set; }
 
             public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Pointer pointer, Ellipse e, FrameworkElement box)
             {
@@ -67,7 +66,7 @@ namespace Dash
         /// <summary>
         ///  Can return the position of the click in screen space 
         /// </summary>
-        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)//TODO PointerPressed doesn't need to have happened so dragging over the ellipse triggers this
+        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -81,7 +80,7 @@ namespace Dash
             }
         }
 
-        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)//TODO PointerPressed doesn't need to have happened so dragging over the ellipse triggers this
+        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
@@ -105,14 +104,6 @@ namespace Dash
             IoDragStarted?.Invoke(ioreference);
         }
 
-        private void Ellipse_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("Ellipse_PointerReleased");
-        }
 
-        private void Ellipse_PointerEntered(object sender, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("Ellipse_PointerEntered");
-        }
     }
 }
