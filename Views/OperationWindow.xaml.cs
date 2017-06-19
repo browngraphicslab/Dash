@@ -146,7 +146,8 @@ namespace Dash
                 X1 = pos.X,
                 Y1 = pos.Y,
                 X2 = pos.X,
-                Y2 = pos.Y
+                Y2 = pos.Y,
+                CompositeMode = ElementCompositeMode.SourceOver//TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XCanvas);
 

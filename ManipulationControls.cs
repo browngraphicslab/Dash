@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -58,7 +59,7 @@ namespace Dash {
             //    X = p.X,
             //    Y = p.Y
             //};
-            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, usercontrol);
+            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, usercontrol.Parent as UIElement);//TODO Clean up parent code and assert it isn't null
 
 
             //Clamp the scale factor 
@@ -78,7 +79,7 @@ namespace Dash {
             group.Children.Add(scale);
             group.Children.Add(usercontrol.RenderTransform);
             group.Children.Add(translate);
-            /*
+            
             //Get top left and bottom right points of documents in canvas space
             Point p1 = group.TransformPoint(new Point(0, 0));
             Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
@@ -115,7 +116,7 @@ namespace Dash {
                 group.Children.Add(usercontrol.RenderTransform);
                 group.Children.Add(translate);
             }
-            */
+            
             usercontrol.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 

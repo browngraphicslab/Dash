@@ -12,12 +12,12 @@
     d:DesignWidth="300"  DoubleTapped="UserControl_DoubleTapped">
 
     <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}"  BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped" >
-                <Canvas 
+        <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch"
             ManipulationMode="All"
             Background="{Binding BackgroundBrush}">
-                </Canvas>
+        </Canvas>
     </Grid>
 </UserControl>
