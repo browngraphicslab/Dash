@@ -37,9 +37,11 @@ namespace Dash
         {
             this.InitializeComponent();
 
-            OverlayCanvas.OnAddDocumentsTapped += AddDocuments;
-            OverlayCanvas.OnAddCollectionTapped += AddCollection;
-            OverlayCanvas.OnAddShapeTapped += AddShape;
+            // adds items from the overlay canvas onto the freeform canvas
+            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
+            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
+            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
+            xOverlayCanvas.OnAddImageTapped += AddImage;
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)
@@ -72,7 +74,7 @@ namespace Dash
             var shapeView = new ShapeView(shapeVM);
 
 
-            FreeformView.Canvas.Children.Add(shapeView);
+            xFreeformView.Canvas.Children.Add(shapeView);
         }
 
         DocumentViewModel model7, model4, model1;
@@ -86,7 +88,14 @@ namespace Dash
             collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
             DocumentViewModel modelC = new DocumentViewModel(collection);
             DocumentView view1 = new DocumentView() { DataContext = modelC };
-            FreeformView.Canvas.Children.Add(view1);
+            xFreeformView.Canvas.Children.Add(view1);
+        }
+
+        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+            xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
+        }
+        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+            xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
@@ -97,7 +106,6 @@ namespace Dash
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
             DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
-
 
             model1 = new DocumentViewModel(umpire);
             DocumentViewModel model2 = new DocumentViewModel(recipe);
@@ -134,13 +142,13 @@ namespace Dash
 
             //MyGrid.Children.Add(view1);
             //MyGrid.Children.Add(view2);
-            //FreeformView.Canvas.Children.Add(view1);
-            //FreeformView.Canvas.Children.Add(view2);
-            FreeformView.Canvas.Children.Add(view3);
-            FreeformView.Canvas.Children.Add(view4);
-            //FreeformView.Canvas.Children.Add(view5);
-            FreeformView.Canvas.Children.Add(view6);
-            FreeformView.Canvas.Children.Add(view7);
+            //xFreeformView.Canvas.Children.Add(view1);
+            //xFreeformView.Canvas.Children.Add(view2);
+            xFreeformView.Canvas.Children.Add(view3);
+            xFreeformView.Canvas.Children.Add(view4);
+            //xFreeformView.Canvas.Children.Add(view5);
+            xFreeformView.Canvas.Children.Add(view6);
+            xFreeformView.Canvas.Children.Add(view7);
 
 
 

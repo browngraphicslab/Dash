@@ -18,6 +18,7 @@ namespace Dash
         /// <summary>
         /// The account controller is used to register new accounts, change passwords etc.
         /// </summary>
+
         private readonly AccountEndpoint _accountEndpoint;
 
         public LoginViewModel(AuthenticationEndpoint authenticationEndpoint, AccountEndpoint accountEndpoint)

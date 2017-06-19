@@ -45,15 +45,15 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
 
-                                <!--editable content-->
-                                <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
+                            <!--editable content-->
+                            <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
                                                 HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
 
 
                         </Border>
                         <Canvas x:Name="PART_OverlayCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Canvas>
                     </Grid>
-                    
+
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

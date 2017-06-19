@@ -30,7 +30,6 @@ namespace Dash
         {
             var collectionTemplate = template as DocumentCollectionTemplateModel;
             Debug.Assert(collectionTemplate != null);
-
             var collectionModel = new CollectionModel(new ObservableCollection<DocumentModel>(_docs));
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = new CollectionView(collectionViewModel);

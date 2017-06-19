@@ -24,10 +24,9 @@ namespace Dash
     {
         public static OverlayCanvas Instance = null;
 
-        public TappedEventHandler OnAddDocumentsTapped;
-        public TappedEventHandler OnAddCollectionTapped;
-        public TappedEventHandler OnAddShapeTapped;
-        
+
+        public TappedEventHandler OnAddDocumentsTapped, OnAddCollectionTapped, OnAddAPICreatorTapped, OnAddImageTapped, OnAddShapeTapped;
+                
         public OverlayCanvas()
         {
             this.InitializeComponent();
@@ -51,5 +50,12 @@ namespace Dash
             OnAddShapeTapped.Invoke(sender, e);
         }
 
+        private void image1_Tapped(object sender, TappedRoutedEventArgs e) {
+            OnAddImageTapped.Invoke(sender, e);
+        }
+
+        private void image_Tapped(object sender, TappedRoutedEventArgs e) {
+            OnAddAPICreatorTapped.Invoke(sender, e);
+        }
     }
 }

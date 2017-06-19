@@ -50,7 +50,6 @@ namespace Dash
 
             _documents = JsonConvert.DeserializeObject<List<ExampleObject>>(docSource);
 
-
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             Keys = new List<Key>
             {

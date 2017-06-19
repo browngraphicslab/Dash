@@ -29,7 +29,6 @@ namespace Dash
         public delegate void IODragEventHandler(IOReference ioReference);
 
         public event IODragEventHandler IoDragStarted;
-
         public class IOReference
         {
             public ReferenceFieldModel ReferenceFieldModel { get; set; }
@@ -115,6 +114,5 @@ namespace Dash
         {
             Debug.WriteLine("Ellipse_PointerEntered");
         }
-
     }
 }

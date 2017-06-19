@@ -31,7 +31,7 @@
             </ItemsControl.ItemTemplate>
         </ListView>
         <ListView x:Name="OutputListView" Grid.Column="2">
-            <ItemsControl.ItemTemplate> 
+            <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>

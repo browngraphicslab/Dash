@@ -113,6 +113,7 @@ namespace Dash
             }
         }
 
+
         private void VmElementAdded(UIElement element, float left, float top)
         {
             XCanvas.Children.Add(element);

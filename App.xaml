@@ -4,8 +4,36 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
     RequestedTheme="Light">
-    <Application.Resources>
 
+    <!-- Application-wide XAML stylesheet-->
+
+    <!-- 
+    HOW TO STYLE YOUR NODES
+    1. All nodes should be contained in a grid or similar structure which has
+    the xNodeContainerType property applied. i.e.:
+    
+    <Grid Style="{StaticResource xNodeContainerGrid}">
+    </Grid>
+    
+    2. For nodes with a title, create a title textblock as follows:
+    <TextBlock Style="{StaticResource xTitleStyle}">
+    
+    3. Create the insides of the nodes. Some additional styles are reccomended:
+    <Button Style="{StaticResource xAccentButtonStyle}": displays buttons in accent color
+    
+    ADD AS YOU GO
+    - If you're styling more than a few elements manually, you probably want to
+    create a XAML style for it and apply it. If you think your style will be useful
+    to others, add it to the GLOBAL section. Otherwise, create a section that entails
+    the category of your styles (i.e. COLLECTION VIEW STYLES). For small, one-off styles,
+    just toss them in the MISC category.
+    
+    - Be nice to your fellow programmers. Throw in a comment saying what the style does if
+    it's not obvious frm the name. 
+    
+    
+    -->
+    <Application.Resources>
         <!-- COLORS -->
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
@@ -72,6 +100,9 @@
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
         </Style>
 
+        <!-- NODE SPECIFIC STYLES -->
+        <!-- Collection View -->
+
         <Style TargetType="Button" x:Name="xBlueTextButtonStyle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#DE0074FF"/>
@@ -91,11 +122,10 @@
         </Style>
 
 
-        <!-- NODE SPECIFIC STYLES -->
-        <!-- SAMPLE NODE HERE -->
         <!-- SAMPLE NODE HERE-->
 
         <!-- MISC. STYLES-->
 
     </Application.Resources>
 </Application>
+

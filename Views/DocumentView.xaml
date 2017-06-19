@@ -8,15 +8,16 @@
     mc:Ignorable="d"
     Width="{Binding Width}"
     Height="{Binding Height}"
-    d:DesignHeight="330"
-    d:DesignWidth="255" ManipulationMode="{Binding ManipulationMode}" DoubleTapped="UserControl_DoubleTapped" RightTapped="DocumentView_OnRightTapped">
+    d:DesignHeight="300"
+    d:DesignWidth="300"  DoubleTapped="UserControl_DoubleTapped">
 
-    <Grid x:Name="XGrid" BorderBrush="{Binding BorderBrush}" BorderThickness="2" RightTapped="Grid_RightTapped" ManipulationDelta="Grid_ManipulationDelta" >
-        <Canvas 
+    <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}"  BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped" >
+                <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch" 
-            Background="{Binding BackgroundBrush}" ManipulationMode="All">
-        </Canvas>
+            VerticalAlignment="Stretch"
+            ManipulationMode="All"
+            Background="{Binding BackgroundBrush}">
+                </Canvas>
     </Grid>
 </UserControl>

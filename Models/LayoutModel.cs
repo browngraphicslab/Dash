@@ -48,6 +48,29 @@ namespace Dash
             DocumentType = type;
         }
 
+
+        // == METHODS ==
+
+        // - DEFAULT DOCUMENT LAYOUTS -
+        // TODO: I imagine these will be moved out of LayoutModel at some point.
+
+        /// <summary>
+        /// Generates a new layout model to display a document as a list of string key/value pairs.
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        static public LayoutModel DefaultLayoutModel(DocumentModel doc) {
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+
+            int x = 1; // counts how many fields we've added
+            foreach (KeyValuePair<Key, FieldModel> entry in doc.EnumFields()) {
+                fields[entry.Key] = new TextTemplateModel(0, x * 16, FontWeights.Normal, TextWrapping.Wrap, Visibility.Visible);
+                x++;
+            }
+
+            return new LayoutModel(fields, doc.DocumentType);
+        }
+
         /// <summary>
         /// A helpe method for the prototype. This will be removed!
         /// </summary>
@@ -99,6 +122,7 @@ namespace Dash
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
 
+
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")]  = new ImageTemplateModel(5, 140, 100, 100);
@@ -132,6 +156,7 @@ namespace Dash
 
             return new LayoutModel(fields, docType);
         }
+
 
         public static LayoutModel PricePerSquareFootApiObject(DocumentType docType)
         {

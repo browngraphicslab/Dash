@@ -19,10 +19,7 @@ namespace Dash
     public sealed partial class DocumentView : UserControl
     {
         Dictionary<string, TextBlock> textElementViews = new Dictionary<string, TextBlock>();
-
-        private float _documentScale = 1.0f;
-        public const float MinScale = 0.5f;
-        public const float MaxScale = 2.0f;
+        private ManipulationControls manipulator;
 
         public DocumentView()
         {
@@ -30,8 +27,10 @@ namespace Dash
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             this.DataContextChanged += DocumentView_DataContextChanged;
 
-            this.Width = 200;
-            this.Height = 400;
+            manipulator = new ManipulationControls(XGrid, this);
+            this.MinWidth = 200;
+            this.MinHeight = 400;
+            
         }
 
         //public static readonly DependencyProperty InnerContentProperty = DependencyProperty.Register("InnerContent", typeof(object), typeof(DocumentView), new PropertyMetadata(null));
@@ -45,10 +44,10 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var dvm = DataContext as DocumentViewModel;
-            
-            if (dvm != null)
-            {
+
+            if (dvm != null) {
                 dvm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+
                 xCanvas.Children.Clear();
                 List<UIElement> elements = dvm.GetUiElements();
                 foreach (var element in elements)
@@ -57,6 +56,7 @@ namespace Dash
                 }
             }
         }
+
 
         public List<UIElement> GetUIElements()
         {
@@ -77,6 +77,29 @@ namespace Dash
             foreach (var element in uiElements)
             {
                 xCanvas.Children.Add(element);
+            }
+        }
+
+
+        /// <summary>
+        /// Brings up OperationWindow when DocumentView is double tapped 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+            var documentViewModel = DataContext as DocumentViewModel;
+            if (documentViewModel != null && documentViewModel.DoubleTapEnabled) {
+                e.Handled = true;
+                OperationWindow window = new OperationWindow(1000, 800);
+
+                var dvm = DataContext as DocumentViewModel;
+                if (dvm != null) {
+                    window.DocumentViewModel = dvm;
+                }
+                Point center = RenderTransform.TransformPoint(e.GetPosition(this));
+
+                FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+
             }
         }
 
@@ -151,144 +174,6 @@ namespace Dash
             //        }
             //}
             base.OnManipulationCompleted(e);
-        }
-
-        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            //Create initial composite transform 
-            TransformGroup group = new TransformGroup();
-
-            ScaleTransform scale = new ScaleTransform
-            {
-                CenterX = e.Position.X,
-                CenterY = e.Position.Y,
-                ScaleX = e.Delta.Scale,
-                ScaleY = e.Delta.Scale
-            };
-
-            //Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            //TranslateTransform translate = new TranslateTransform
-            //{
-            //    X = p.X,
-            //    Y = p.Y
-            //};
-            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this);
-
-
-            //Clamp the scale factor 
-            float newScale = _documentScale * e.Delta.Scale;
-            if (newScale > MaxScale)
-            {
-                scale.ScaleX = MaxScale / _documentScale;
-                scale.ScaleY = MaxScale / _documentScale;
-                _documentScale = MaxScale;
-            }
-            else if (newScale < MinScale)
-            {
-                scale.ScaleX = MinScale / _documentScale;
-                scale.ScaleY = MinScale / _documentScale;
-                _documentScale = MinScale;
-            }
-            else
-            {
-                _documentScale = newScale;
-            }
-
-            group.Children.Add(scale);
-            group.Children.Add(this.RenderTransform);
-            group.Children.Add(translate);
-
-            //Get top left and bottom right points of documents in canvas space
-            Point p1 = group.TransformPoint(new Point(0, 0));
-            Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
-            Debug.Assert(this.RenderTransform != null);
-            Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
-            Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
-
-            //Check if translating or scaling the document puts the view out of bounds of the canvas
-            //Nullify scale or translate components accordingly
-            bool outOfBounds = false;
-            if (p1.X < 0)
-            {
-                outOfBounds = true;
-                translate.X = -oldP1.X;
-                scale.CenterX = 0;
-            }
-            
-            else if (p2.X > FreeformView.MainFreeformView.Canvas.ActualWidth)
-            {
-                outOfBounds = true;
-                translate.X = FreeformView.MainFreeformView.Canvas.ActualWidth - oldP2.X;
-                scale.CenterX = XGrid.ActualWidth;
-            }
-            if (p1.Y < 0)
-            {
-                outOfBounds = true;
-                translate.Y = -oldP1.Y;
-                scale.CenterY = 0;
-            }
-            else if (p2.Y > FreeformView.MainFreeformView.Canvas.ActualHeight)
-            {
-                outOfBounds = true;
-                translate.Y = FreeformView.MainFreeformView.Canvas.ActualHeight - oldP2.Y;
-                scale.CenterY = XGrid.ActualHeight;
-            }
-
-            //If the view was out of bounds recalculate the composite matrix
-            if (outOfBounds)
-            {
-                group = new TransformGroup();
-                group.Children.Add(scale);
-                group.Children.Add(this.RenderTransform);
-                group.Children.Add(translate);
-            }
-
-            this.RenderTransform = new MatrixTransform { Matrix = group.Value };
-        }
-
-        /// <summary>
-        /// Brings up OperationWindow when DocumentView is double tapped 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            var documentViewModel = DataContext as DocumentViewModel;
-            if (documentViewModel != null && documentViewModel.DoubleTapEnabled)
-            {
-                e.Handled = true;
-                OperationWindow window = new OperationWindow(1000, 800);
-
-                var dvm = DataContext as DocumentViewModel;
-                if (dvm != null)
-                {
-                    window.DocumentViewModel = dvm;
-                }
-                Point center = RenderTransform.TransformPoint(e.GetPosition(this));
-
-                FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
-            }
-        }
-
-        private void DocumentView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            var dvm = DataContext as DocumentViewModel;
-            Debug.Assert(dvm != null);
-
-            var window = new InterfaceBuilder(dvm);
-
-            //var dvm = DataContext as DocumentViewModel;
-            //if (dvm != null)
-            //{
-            //    window.DocumentViewModel = dvm;
-            //}
-            Point center = RenderTransform.TransformPoint(e.GetPosition(this));
-
-            FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
         }
     }
 }

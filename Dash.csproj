@@ -97,6 +97,7 @@
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
@@ -140,6 +141,30 @@
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
     <Compile Include="ServerClient\SignalRHubProxies\ShapeProxy.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
+    <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
+      <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\Api\ApiSource.cs" />
+    <Compile Include="Sources\Api\ApiSourceCreator.cs" />
+    <Compile Include="Sources\Api\ApiSourceDisplay.xaml.cs">
+      <DependentUpon>ApiSourceDisplay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml.cs">
+      <DependentUpon>ApiCreatorAuthenticationDisplay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml.cs">
+      <DependentUpon>ApiCreatorProperty.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml.cs">
+      <DependentUpon>ApiCreatorPropertyGenerator.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\Api\XAML Elements\ApiProperty.xaml.cs">
+      <DependentUpon>ApiProperty.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\FilePicker\FilePickerDisplay.xaml.cs">
+      <DependentUpon>FilePickerDisplay.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\Util.cs" />
@@ -203,6 +228,9 @@
     <Content Include="Assets\a.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
+    <Content Include="Assets\grid.gif" />
+    <Content Include="Assets\addApi.png" />
+    <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
     <Content Include="Properties\Default.rd.xml" />
@@ -219,6 +247,34 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\ApiSourceDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -261,16 +317,20 @@
     </Page>
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\ShapeView.xaml">
       <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\WindowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="DashShared\DashShared.csproj">
+      <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
+      <Name>DashShared</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="DashShared\DashShared.csproj">

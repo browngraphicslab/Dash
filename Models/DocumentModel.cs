@@ -21,6 +21,7 @@ namespace Dash
     /// </summary>
     public class DocumentModel : AuthorizableEntityBase
     {
+
         public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
 
         /// <summary>
@@ -203,6 +204,7 @@ namespace Dash
             // get access to controllers, 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
 
             // create fields for document
             var fields = new Dictionary<Key, FieldModel>();
