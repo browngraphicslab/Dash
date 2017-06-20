@@ -128,8 +128,9 @@ namespace Dash
         private static ImageTemplateModel contentImageTemplateModel = new ImageTemplateModel(5, 140, 100, 100);
         private static ImageTemplateModel content2ImageTemplateModel = new ImageTemplateModel(5, 20, 100, 100);
         private static TextTemplateModel textTemplateModel = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
+        private static TextTemplateModel textEditableTemplateModel = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible, true);
 
-        
+
         public static LayoutModel itunesLite(DocumentType docType)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -164,8 +165,7 @@ namespace Dash
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")] = contentImageTemplateModel;
             fields[DocumentModel.GetFieldKeyByName("content2")] = content2ImageTemplateModel;
-            textTemplateModel.Editable = editable;
-            fields[DocumentModel.GetFieldKeyByName("text")] = textTemplateModel;
+            fields[DocumentModel.GetFieldKeyByName("text")] = editable ? textEditableTemplateModel : textTemplateModel;
 
             Debug.Assert(docType.Type.Equals("twoimages"));
             return new LayoutModel(fields, docType);
