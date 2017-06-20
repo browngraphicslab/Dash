@@ -419,24 +419,18 @@ namespace Dash
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
-            // create fields for document
-            var fields = new Dictionary<Key, FieldModel>();
-
+            // generate single-image document model
+            DocumentModel image = DocumentModel.OneImage();
+            image.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(dragged), true);
             Key contentKey = keyController.CreateKeyAsync("content");
-            fields[contentKey] = new ImageFieldModel(dragged.BaseUri);
+            DocumentViewModel model3 = new DocumentViewModel(image);
+            DocumentView view3 = new DocumentView(model3);
 
-            DocumentModel d = docController.CreateDocumentAsync("animage");
-            d.SetFields(fields);
-
-            d = DocumentModel.OneImage();
-            DocumentViewModel senpai = new DocumentViewModel(d);
-            // update views
-            DocumentView v = new DocumentView();
-            v.DataContext = senpai;
+            // position relative to mouse
             Point dropPos = e.GetPosition(XCanvas);
-            v.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
-
-            XCanvas.Children.Add(v);
+            view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
+            
+            XCanvas.Children.Add(view3);
         }
         
         private void XCanvas_DragOver_1(object sender, DragEventArgs e) {

@@ -103,14 +103,13 @@ namespace Dash
         {
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
-            DocumentModel image = DocumentModel.OneImage();
+            
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
             DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
             model1 = new DocumentViewModel(umpire);
             DocumentViewModel model2 = new DocumentViewModel(recipe);
-            DocumentViewModel model3 = new DocumentViewModel(image);
             model4 = new DocumentViewModel(image2);
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
@@ -120,28 +119,18 @@ namespace Dash
 
             DocumentView view1 = new DocumentView(model1);
             DocumentView view2 = new DocumentView(model2);
-            DocumentView view3 = new DocumentView(model3);
             DocumentView view4 = new DocumentView(model4);
             DocumentView view5 = new DocumentView(model5);
             DocumentView view6 = new DocumentView(model6);
             DocumentView view7 = new DocumentView(model7);
 
-
-            //view1.Margin = new Thickness(20, 20, 0, 0);
-            //view1.Width = 200;
-            //view1.Height = 400;
-            //view2.Margin = new Thickness(400, 20, 0, 0);
-            //view2.Width = 200;
-            //view2.Height = 400;
-
-
-            //MyGrid.Children.Add(view1);
-            //MyGrid.Children.Add(view2);
-            //xFreeformView.Canvas.Children.Add(view1);
-            //xFreeformView.Canvas.Children.Add(view2);
+            // makes oneimage doc model
+            DocumentModel image = DocumentModel.OneImage();
+            DocumentViewModel model3 = new DocumentViewModel(image);
+            DocumentView view3 = new DocumentView(model3);
+            
             xFreeformView.Canvas.Children.Add(view3);
             xFreeformView.Canvas.Children.Add(view4);
-            //xFreeformView.Canvas.Children.Add(view5);
             xFreeformView.Canvas.Children.Add(view6);
             xFreeformView.Canvas.Children.Add(view7);
 

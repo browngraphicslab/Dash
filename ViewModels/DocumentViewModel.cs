@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Dash.Models;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -83,6 +84,7 @@ namespace Dash
         /// Generates a list of UIElements by making FieldViewModels of a document;s
         /// given fields.
         /// </summary>
+        /// TODO: rename this to create ui elements
         /// <returns>List of all UIElements generated</returns>
         public virtual List<UIElement> GetUiElements()
         {
@@ -166,25 +168,26 @@ namespace Dash
             // If the Layout field is a LayoutModel, then use it.
             if (layoutField is LayoutModelFieldModel)
             {
-
                 return new ReferenceFieldModel(doc.Id, DocumentModel.LayoutKey);
             }
 
             // otherwise lookup a LayoutModel for doc's type on a specified settings document or the default settings document
             var settingsDocument = layoutField is DocumentModelFieldModel ? (layoutField as DocumentModelFieldModel).Data : DefaultLayoutModelSource;
-            return getLayoutModelReferenceForDocumentType(doc.DocumentType, doc.EnumFields(), settingsDocument);
+            return getLayoutModelReferenceForDocumentType(doc.DocumentType, settingsDocument);
         }
 
-        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType, IEnumerable<KeyValuePair<Key,FieldModel>> docFields, DocumentModel layoutModelSource)
+        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType,DocumentModel layoutModelSource)
         {
+            //effectively, this sets defaultlayoutmodelsource if it hasnt been instantiated yet to a new doc each time
             if (layoutModelSource == null)
             {
                 var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 layoutModelSource = DefaultLayoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
             }
             var layoutKeyForDocumentType = GetFieldKeyByName(docType.Type);
-            if (layoutModelSource.Field(layoutKeyForDocumentType) == null)
-            {
+            if (layoutModelSource.Field(layoutKeyForDocumentType) == null) {
+                Debug.WriteLine("Using default layout model");
+
                 // bcz: hack to have a default layout for known types: recipes, Umpires
                 if (docType.Type == "recipes")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(docType)));
@@ -208,6 +211,7 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)));
                 else { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
                        // this layout is created in showAllDocumentFields() 
+                    Debug.WriteLine("now we gere");
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(new LayoutModel(true, docType)));
                 }
             }

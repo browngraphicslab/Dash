@@ -66,16 +66,13 @@ namespace Dash
         /// <param name="field">FieldModel to update to</param>
         public void SetField(Key key, FieldModel field)
         {
-            if (Fields.ContainsKey(key)) {
                 Fields[key] = field;
                 OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
                 var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
                 if (delegates != null)
                     foreach (var d in delegates.EnumDocuments())
                         d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-            } else {
-                // TODO: return error here or just add it ot the field list?
-            }
+            
         }
 
         /// <summary>
@@ -87,7 +84,7 @@ namespace Dash
         {
             Fields = new Dictionary<Key, FieldModel>();
             foreach (var f in fields)
-                SetField(f.Key, f.Value);
+                SetField(f.Key, f.Value, true);
         }
 
         public DocumentModel()
