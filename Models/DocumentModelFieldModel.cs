@@ -19,13 +19,5 @@ namespace Dash.Models
             get { return _data; }
             set { SetProperty(ref _data, value); }
         }
-
-        /// <summary>
-        /// Creates TextBlock using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            return null;
-        }
     }
 }

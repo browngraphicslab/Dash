@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,26 +35,6 @@ namespace Dash
             {
                 Data = fm.Data;
             }
-        }
-
-        /// <summary>
-        /// Creates Image using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            // cast the template ot an image template
-            var imageTemplate = template as ImageTemplateModel;
-            Debug.Assert(imageTemplate != null);
-
-
-            var image = new Image();
-            image.Source = Data;
-            Canvas.SetTop(image, imageTemplate.Top);
-            Canvas.SetLeft(image, imageTemplate.Left);
-            image.Visibility = imageTemplate.Visibility;
-            image.Width = imageTemplate.Width;
-            image.Height = imageTemplate.Height;
-            return image;
         }
     }
 }

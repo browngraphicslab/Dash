@@ -78,25 +78,25 @@ namespace Dash.Sources.Api {
                 return false;
 
             // add document to given canvas
-            DocumentModel testDocument = responseAsDocuments[0];
+            //DocumentModel testDocument = responseAsDocuments[0];
 
-            //set layout
-            testDocument.DocumentType = DocumentType.DefaultType;
+            ////set layout
+            //testDocument.DocumentType = DocumentType.DefaultType;
 
-            // this part generates a defaultlayoutmodel that shows key/value string text pairs
-            DocumentViewModel testModel = new DocumentViewModel(testDocument);
-            testModel.SetLayoutModel(LayoutModel.DefaultLayoutModel(testDocument)); // TODO: simplify this in dvm constructor
-            DocumentView testView = new DocumentView();
-            testView.DataContext = testModel;
-            testGrid.Children.Add(testView);
-            LayoutModel.DefaultLayoutModel(testDocument);
-            
+            //// this part generates a defaultlayoutmodel that shows key/value string text pairs
+            //DocumentViewModel testModel = new DocumentViewModel(testDocument);
+            //testModel.SetLayoutModel(LayoutModel.DefaultLayoutModel(testDocument)); // TODO: simplify this in dvm constructor
+            //DocumentView testView = new DocumentView();
+            //testView.DataContext = testModel;
+            //testGrid.Children.Add(testView);
+            //LayoutModel.DefaultLayoutModel(testDocument);
+
             // put document results into collection model
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("collection"); //_example?
             collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
             DocumentViewModel cm = new DocumentViewModel(collection);
-            DocumentView v = new DocumentView() { DataContext = cm };
+            DocumentView v = new DocumentView(cm);
             testGrid.Children.Add(v);
             
             return true;
@@ -299,6 +299,7 @@ namespace Dash.Sources.Api {
             // representing all of them? Ask how to have nested properties inside of documents
             //      -> document of documents? or create custom object type maybe?
             responseAsDocuments = new List<DocumentModel>();
+            var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
@@ -314,7 +315,7 @@ namespace Dash.Sources.Api {
                         //       concerns: rabbit hole-ing?
                         toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                     }
-                    responseAsDocuments.Add(new DocumentModel(toAdd, /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                    responseAsDocuments.Add(new DocumentModel(toAdd, apiDocType)); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
 
@@ -337,7 +338,7 @@ namespace Dash.Sources.Api {
                 // at this point, resultAsDocument is a new document
                 //
                 // TODO: unique identifiers as above
-                responseAsDocuments.Add(new DocumentModel(resultAsDictionary, /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                responseAsDocuments.Add(new DocumentModel(resultAsDictionary, apiDocType)); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
             }
 
             // add document to children

@@ -88,7 +88,7 @@ namespace Dash
             var collection = docController.CreateDocumentAsync("newtype");
             collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
             DocumentViewModel modelC = new DocumentViewModel(collection);
-            DocumentView view1 = new DocumentView() { DataContext = modelC };
+            DocumentView view1 = new DocumentView(modelC);
             xFreeformView.Canvas.Children.Add(view1);
         }
 
@@ -118,20 +118,14 @@ namespace Dash
             model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
 
 
-            DocumentView view1 = new DocumentView();
-            DocumentView view2 = new DocumentView();
-            DocumentView view3 = new DocumentView();
-            DocumentView view4 = new DocumentView();
-            DocumentView view5 = new DocumentView();
-            DocumentView view6 = new DocumentView();
-            DocumentView view7 = new DocumentView() { DataContext = model7 };
+            DocumentView view1 = new DocumentView(model1);
+            DocumentView view2 = new DocumentView(model2);
+            DocumentView view3 = new DocumentView(model3);
+            DocumentView view4 = new DocumentView(model4);
+            DocumentView view5 = new DocumentView(model5);
+            DocumentView view6 = new DocumentView(model6);
+            DocumentView view7 = new DocumentView(model7);
 
-            view1.DataContext = model1;
-            view2.DataContext = model2;
-            view3.DataContext = model3;
-            view4.DataContext = model4;
-            view5.DataContext = model5;
-            view6.DataContext = model6;
 
             //view1.Margin = new Thickness(20, 20, 0, 0);
             //view1.Width = 200;

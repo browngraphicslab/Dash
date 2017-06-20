@@ -68,16 +68,20 @@ namespace Dash
                 _output.SetFields(fields);
 
                 //DivideOperatorModel divide = new DivideOperatorModel();
-                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel());
-                opModel.Id = docEndpoint.GetDocumentId();
-                opModel.OperatorField = new DivideOperatorModel();
+                var opModel = new OperatorDocumentModel(new DivideOperatorModel())
+                {
+                    Id = docEndpoint.GetDocumentId(),
+                    OperatorField = new DivideOperatorModel()
+                };
                 docEndpoint.UpdateDocumentAsync(opModel);
-                DocumentView view = new DocumentView();
-                view.Width = 200;
-                view.Height = 200;
-                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel);
+                var vm = new OperatorDocumentViewModel(opModel);
+                var view = new DocumentView(vm)
+                {
+                    Width = 200,
+                    Height = 200
+                };
                 vm.IODragStarted += Vm_IODragStarted;
-                view.DataContext = vm;
+                
                 XFreeformView.Canvas.Children.Add(view);
 
                 //opModel.AddInputReference(DivideOperatorModel.AKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.PriceKey));
@@ -186,9 +190,8 @@ namespace Dash
 
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DocumentView view = new DocumentView();
             DocumentViewModel viewModel = new DocumentViewModel(_output);
-            view.DataContext = viewModel;
+            DocumentView view = new DocumentView(viewModel);
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
 
@@ -242,19 +245,23 @@ namespace Dash
                 TemplateModel template = null;
                 if (layout.Fields.ContainsKey(pair.Key))
                     template = layout.Fields[pair.Key];
-                // TODO commented out for debugging 
-                //else
-                //    Debug.Assert(false);
+                if (template != null) { 
+                    // TODO commented out for debugging 
+                    //else
+                    //    Debug.Assert(false);
 
-                FrameworkElement element = pair.Value.MakeView(template) as FrameworkElement;
-                Debug.Assert(element != null);
-                element.VerticalAlignment = VerticalAlignment.Center;
-                element.HorizontalAlignment = HorizontalAlignment.Center;
+                    FrameworkElement element = template.MakeView(pair.Value) as FrameworkElement;
+                    if (element != null)
+                    {
+                        element.VerticalAlignment = VerticalAlignment.Center;
+                        element.HorizontalAlignment = HorizontalAlignment.Center;
 
-                element.Margin = new Thickness(12, 5, 12, 5);
-                Grid.SetColumn(element, 1);
-                Grid.SetRow(element, j);
-                grid.Children.Add(element);
+                        element.Margin = new Thickness(12, 5, 12, 5);
+                        Grid.SetColumn(element, 1);
+                        Grid.SetRow(element, j);
+                        grid.Children.Add(element);
+                    }
+                }
 
                 //Add Key Values (field names) 
                 TextBlock tb = new TextBlock
