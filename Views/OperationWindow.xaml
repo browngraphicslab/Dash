@@ -123,6 +123,7 @@
                                     <TextBlock Text="{Binding Key.Name}"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                                    <!--<ContentPresenter Content="{Binding Value.View}"></ContentPresenter>-->
                                     <TextBlock Text="Test"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">

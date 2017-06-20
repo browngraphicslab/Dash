@@ -103,6 +103,7 @@ namespace Dash
 
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
+                _output.SetField(DocumentModel.GetFieldKeyByName("Test Key"), new TextFieldModel("Test String"));
 
                 //InitializeGrid(XDocumentGridRight, _output, layout, false);
 

@@ -47,7 +47,7 @@ namespace Dash
         {
             var textTemplate = template as TextTemplateModel;
             Debug.Assert(textTemplate != null);
-
+            
             // Binds Data Property of the class with the Text field in UIElement 
             Binding binding = new Binding
             {
