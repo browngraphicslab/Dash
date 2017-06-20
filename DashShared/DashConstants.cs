@@ -10,7 +10,7 @@ namespace DashShared
         /// <summary>
         ///     Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
         /// </summary>
-        public const bool DEVELOP_LOCALLY = true;
+        public const bool DEVELOP_LOCALLY = false;
 
         #region DocumentDB
 
@@ -22,7 +22,7 @@ namespace DashShared
         /// <summary>
         /// The endpoint for the server cosmosDb database found on azure portal
         /// </summary>
-        private const string DbProductionEndpointUrl = "CREATE THIS";
+        private const string DbProductionEndpointUrl = "https://dash.documents.azure.com:443/";
 
         /// <summary>
         /// The endpoitn for the database used at runtime
@@ -39,7 +39,7 @@ namespace DashShared
         /// The access key for the server cosmosDb database, this is secret and is found on the azure portal
         /// </summary>
         private const string DbProductionPrimaryKey =
-            "CREATE THIS";
+            "GLuiQOtiC7AQQLsMlJJHmFevos5515q1HZeWBxkGTxZPNg8qXKEMgkeKnLOlxU3Sg9oS7BYrGGxSWGXx8Otkug==";
 
         /// <summary>
         /// The access key used to connect to the database used at runtime
@@ -69,7 +69,7 @@ namespace DashShared
         /// <summary>
         /// The base url for the production version of the server, should end with a /
         /// </summary>
-        private const string ServerProductionBaseUrl = "TODOMAKETHIS";
+        private const string ServerProductionBaseUrl = "http://dashapp.azurewebsites.net";
 
         /// <summary>
         /// The base url used to connect to the server at runtime
