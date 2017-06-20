@@ -18,47 +18,7 @@
                     <ColumnDefinition Width="5*"></ColumnDefinition>
                     <ColumnDefinition Width="2*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
-                <!--<Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        <ColumnDefinition Width="*"></ColumnDefinition>
-                        <ColumnDefinition Width="Auto"></ColumnDefinition>
-                    </Grid.ColumnDefinitions>
-                    <ListBox x:Name="InputKeys" Grid.Column="0">
-                        --><!--<ListView.Header>
-                            <TextBlock Text="Key" HorizontalAlignment="Center" TextAlignment="Center"></TextBlock>
-                        </ListView.Header>--><!--
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Key.Name}" ></TextBlock>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <ListBox x:Name="InputValues" Grid.Column="1">
-                        --><!--<ListView.Header>
-                            <TextBlock Text="Value" HorizontalAlignment="Center" TextAlignment="Center"></TextBlock>
-                        </ListView.Header>--><!--
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <ContentPresenter Content="{Binding Value.View}" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    <ListBox x:Name="InputEllipses" Grid.Column="2" MinWidth="20">
-                        --><!--<ListView.Header>
-                            <TextBlock Text=""></TextBlock>
-                        </ListView.Header>--><!--
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <Ellipse Width="10" Height="10" Fill="Black" HorizontalAlignment="Center"></Ellipse>
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                    
-                </Grid>-->
-                
-                
-                
+
                 <ListView x:Name="LeftListView" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" SelectionMode="None">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
@@ -78,7 +38,7 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="30"/>
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <TextBlock Text="{Binding Key.Name}"></TextBlock>
@@ -87,7 +47,7 @@
                                     <TextBlock Text="Test"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Ellipse Width="10" Height="10" Fill="Black" PointerReleased="InputEllipse_OnPointerReleased"></Ellipse>
+                                    <Ellipse Width="20" Height="20" Fill="Black" PointerReleased="InputEllipse_OnPointerReleased"></Ellipse>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
@@ -112,7 +72,7 @@
                         <DataTemplate>
                             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="30"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
@@ -121,10 +81,9 @@
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
-                                    <!--<TextBlock Text="Test"></TextBlock>-->
                                 </StackPanel>
                                 <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Ellipse Width="10" Height="10" Fill="Black" PointerReleased="OutputEllipse_OnPointerReleased"></Ellipse>
+                                    <Ellipse Width="20" Height="20" Fill="Black" PointerReleased="OutputEllipse_OnPointerReleased"></Ellipse>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
