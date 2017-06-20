@@ -1,4 +1,0 @@
-[config]
-project=DashServer/DashServer.csproj
-SCM_COMMAND_IDLE_TIMEOUT=9999
-SCM_BUILD_ARGS=-p:Configuration=Debug
