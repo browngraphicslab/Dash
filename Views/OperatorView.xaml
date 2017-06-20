@@ -15,7 +15,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <ListView x:Name="InputListView" Grid.Column="0">
+        <ListView x:Name="InputListView" Grid.Column="0" SelectionMode="None">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -30,7 +30,7 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2">
+        <ListView x:Name="OutputListView" Grid.Column="2" SelectionMode="None">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>

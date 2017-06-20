@@ -169,6 +169,7 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
+    <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />

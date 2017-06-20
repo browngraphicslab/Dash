@@ -11,7 +11,7 @@
     d:DesignWidth="800" PointerReleased="WindowTemplate_PointerReleased" SizeChanged="WindowTemplate_SizeChanged" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
 
     <local:WindowTemplate.InnerContent>
-        <Grid x:Name="XCanvas">
+        <Grid x:Name="XCanvas" PointerMoved="XCanvas_PointerMoved">
             <Grid x:Name="XGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"></ColumnDefinition>
@@ -59,7 +59,7 @@
                 
                 
                 
-                <ListView x:Name="LeftListView" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <ListView x:Name="LeftListView" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" SelectionMode="None">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
@@ -96,9 +96,9 @@
                 <!--<Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0"></Grid>-->
 
                 <local:FreeformView x:Name ="XFreeformView" Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
-                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged" PointerMoved="XFreeformView_PointerMoved"></local:FreeformView>
+                                HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged"></local:FreeformView>
                 <!--<Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid>-->
-                <ListView x:Name="RightListView" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                <ListView x:Name="RightListView" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" SelectionMode="None">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
@@ -134,7 +134,6 @@
                     </ListView.ItemTemplate>
                 </ListView>
             </Grid>
-            <Ellipse></Ellipse>
         </Grid>
     </local:WindowTemplate.InnerContent>
 

@@ -158,38 +158,38 @@ namespace Dash
                 CompositeMode = ElementCompositeMode.SourceOver//TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+            MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true), new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+            x1MultiBinding.AddBinding(view, RenderTransformProperty);
+            x1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
+            MultiBinding<double> y1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(false), new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+            y1MultiBinding.AddBinding(view, RenderTransformProperty);
+            y1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
             Binding x1Binding = new Binding
             {
-                Converter = new FrameworkElementToPosition(true),
-                Source = view,
-                Path = new PropertyPath("RenderTransform"),
-                ConverterParameter = new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XFreeformView.Canvas)
+                Source = x1MultiBinding,
+                Path = new PropertyPath("Property")
             };
             Binding y1Binding = new Binding
             {
-                Converter = new FrameworkElementToPosition(false),
-                Source = view,
-                Path = new PropertyPath("RenderTransform"),
-                ConverterParameter = new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XFreeformView.Canvas)
+                Source = y1MultiBinding,
+                Path = new PropertyPath("Property")
             };
 
-             
             _connectionLine.SetBinding(Line.X1Property, x1Binding);
             _connectionLine.SetBinding(Line.Y1Property, y1Binding);
 
-            XFreeformView.Canvas.Children.Add(_connectionLine);
-            //XCanvas.Children.Add(_connectionLine);
+            XCanvas.Children.Add(_connectionLine);
 
             CheckLinePresence(pos.X, pos.Y);
             _lines.Add(_connectionLine);
         }
 
-        private void XFreeformView_PointerMoved(object sender, PointerRoutedEventArgs e)
+        private void XCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (_connectionLine != null)
             {
-                Point pos = e.GetCurrentPoint(XFreeformView).Position;
-                //Point pos = e.GetCurrentPoint(XCanvas).Position;
+                //Point pos = e.GetCurrentPoint(XFreeformView).Position;
+                Point pos = e.GetCurrentPoint(XCanvas).Position;
                 _connectionLine.X2 = pos.X;
                 _connectionLine.Y2 = pos.Y;
             }
