@@ -17,7 +17,7 @@ namespace Dash
 
         // the keys to the documents in this api
         public static readonly Key PriceKey = new Key("20D406EA-C7BE-4BAC-BEC2-E740ABB48876", "price");
-        public static readonly Key SqftKey = new Key("1F5E81A6-4D63-4F1F-B17F-EEF01508A4EC", "s");
+        public static readonly Key SqftKey = new Key("1F5E81A6-4D63-4F1F-B17F-EEF01508A4EC", "sqft");
         public static readonly Key TestKey = new Key("882978C8-5D04-4A67-9A7F-C61633A2FF02", "TestKey");
         public static readonly Key Test2Key = new Key("882978C8-5D04-4A67-9A7F-C61633A2FF02", "TestKeys");
 

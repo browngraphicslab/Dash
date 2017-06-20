@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -47,11 +48,11 @@ namespace Dash
         /// </summary>
         private OperatorView.IOReference _currReference;
 
-        private readonly List<Line> _lines = new List<Line>();
-
         private List<Ellipse> _leftEllipses = new List<Ellipse>();
 
         private List<Ellipse> _rightEllipses = new List<Ellipse>();
+
+        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>(); 
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -70,9 +71,7 @@ namespace Dash
                 _documentViewModel = value;
                 var layout = DocumentViewModel.GetLayoutModel();
                 //InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
-                Binding binding = new Binding();
-                binding.Source = _documentViewModel.DocumentModel.PropFields;
-                LeftListView.SetBinding(ListView.ItemsSourceProperty, binding);
+                LeftListView.ItemsSource = _documentViewModel.DocumentModel.Fields;
                 //LeftListView.ItemsSource = _documentViewModel.DocumentModel.PropFields;
                 //InputValues.ItemsSource = _documentViewModel.DocumentModel.PropFields;
                 //InputEllipses.ItemsSource = _documentViewModel.DocumentModel.PropFields;
@@ -95,7 +94,8 @@ namespace Dash
                 docEndpoint.UpdateDocumentAsync(opModel);
                 DocumentView view = new DocumentView
                 {
-                    Width = 200, Height = 200
+                    Width = 200,
+                    Height = 200
                 };
                 OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel);
                 vm.IODragStarted += Vm_IODragStarted;
@@ -105,7 +105,7 @@ namespace Dash
 
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
-                _output.SetField(DocumentModel.GetFieldKeyByName("Test Key"), new TextFieldModel("Test String"));
+                //_output.SetField(DocumentModel.GetFieldKeyByName("Test Key"), new TextFieldModel("Test String"));
 
                 //InitializeGrid(XDocumentGridRight, _output, layout, false);
 
@@ -147,15 +147,14 @@ namespace Dash
             }
             _currentPointers.Add(ioReference.Pointer.PointerId);
 
-            Point pos = Util.PointTransformFromVisual(ioReference.PointerPosition, XFreeformView);
             _currReference = ioReference;
+
             _connectionLine = new Line
             {
                 StrokeThickness = 5,
                 Stroke = new SolidColorBrush(Colors.Black),
-                X2 = pos.X,
-                Y2 = pos.Y,
-                CompositeMode = ElementCompositeMode.SourceOver//TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                IsHitTestVisible = false,
+                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
             MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true), new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
@@ -180,15 +179,15 @@ namespace Dash
 
             XCanvas.Children.Add(_connectionLine);
 
-            CheckLinePresence(pos.X, pos.Y);
-            _lines.Add(_connectionLine);
+            
+            CheckLinePresence(ioReference.ReferenceFieldModel);
+            _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine); 
         }
 
         private void XCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (_connectionLine != null)
             {
-                //Point pos = e.GetCurrentPoint(XFreeformView).Position;
                 Point pos = e.GetCurrentPoint(XCanvas).Position;
                 _connectionLine.X2 = pos.X;
                 _connectionLine.Y2 = pos.Y;
@@ -198,11 +197,7 @@ namespace Dash
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _currentPointers.Remove(e.Pointer.PointerId);
-            //XFreeformView.Canvas.Children.Remove(_connectionLine);
-            //XCanvas.Children.Remove(_connectionLine);
-            //_lines.Remove(_connectionLine);
-            _connectionLine = null;
-            _currReference = null;
+            UndoLine();
         }
 
         /// <summary>
@@ -210,17 +205,22 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(double x, double y)
+        private void CheckLinePresence(ReferenceFieldModel model)
         {
+            /* 
             Line line = null;
             foreach (Line l in _lines)
             {
                 if (l.X1 < x + 5 && l.X1 > x - 5 && l.Y1 < y + 5 && l.Y1 > y - 5)
                     line = l;
             }
-            _lines.Remove(line);
-            XFreeformView.Canvas.Children.Remove(line);
-            //XCanvas.Children.Remove(line); 
+            */
+            if (_lineDict.ContainsKey(model))
+            {
+                Line line = _lineDict[model]; 
+                XCanvas.Children.Remove(line);
+                _lineDict.Remove(model); 
+            }
         }
 
         /// <summary>
@@ -234,124 +234,6 @@ namespace Dash
             DocumentViewModel viewModel = new DocumentViewModel(_output);
             view.DataContext = viewModel;
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
-        }
-
-        /// <summary>
-        ///  Makes the left grid representing Key,Value pairs of document tapped 
-        /// </summary>
-        public void InitializeGrid(Grid grid, DocumentModel doc, LayoutModel layout, bool isOutput)
-        {
-            grid.Children.Clear();
-
-            var fields = doc.EnumFields();
-            //Create rows
-            foreach (var field in fields)
-            {
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            }
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-
-            //Create columns 
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-
-            //Make Key, Value headers 
-            TextBlock v = new TextBlock
-            {
-                Text = "Value",
-                FontWeight = FontWeights.Bold,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            Grid.SetColumn(v, 1);
-            Grid.SetRow(v, 0);
-            grid.Children.Add(v);
-
-            TextBlock k = new TextBlock
-            {
-                Text = "Key",
-                FontWeight = FontWeights.Bold,
-                VerticalAlignment = VerticalAlignment.Center,
-                HorizontalAlignment = HorizontalAlignment.Center
-            };
-            Grid.SetColumn(k, 0);
-            Grid.SetRow(k, 0);
-            grid.Children.Add(k);
-
-            //Fill in Grid 
-            int j = 1;
-            foreach (KeyValuePair<Key, FieldModel> pair in fields)
-            {
-                //Add Value as FrameworkElement (field values)  
-                TemplateModel template = null;
-                if (layout.Fields.ContainsKey(pair.Key))
-                    template = layout.Fields[pair.Key];
-                // TODO commented out for debugging 
-                //else
-                //    Debug.Assert(false);
-
-                FrameworkElement element = pair.Value.MakeView(template) as FrameworkElement;
-                Debug.Assert(element != null);
-                element.VerticalAlignment = VerticalAlignment.Center;
-                element.HorizontalAlignment = HorizontalAlignment.Center;
-
-                element.Margin = new Thickness(12, 5, 12, 5);
-                Grid.SetColumn(element, 1);
-                Grid.SetRow(element, j);
-                grid.Children.Add(element);
-
-                //Add Key Values (field names) 
-                TextBlock tb = new TextBlock
-                {
-                    Text = pair.Key.Name,
-                    TextWrapping = TextWrapping.Wrap,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    HorizontalAlignment = HorizontalAlignment.Center
-                };
-                Grid.SetColumn(tb, 0);
-                Grid.SetRow(tb, j);
-                tb.Padding = new Thickness(12, 5, 12, 5);
-                grid.Children.Add(tb);
-
-                j++;
-
-                Ellipse el = new Ellipse
-                {
-                    Width = 10,
-                    Height = 10,
-                    Fill = new SolidColorBrush(Colors.Black),
-                    HorizontalAlignment = HorizontalAlignment.Left,
-                    VerticalAlignment = VerticalAlignment.Top
-                };
-                if (isOutput) _leftEllipses.Add(el);
-                else _rightEllipses.Add(el);
-
-                // Events that get fired when pointer is released upon output ellipses 
-                el.PointerReleased += (sender, args) =>
-                {
-                    _currentPointers.Remove(args.Pointer.PointerId);
-                    if (_connectionLine == null) return;
-
-                    if (_currReference.IsOutput == isOutput)
-                    {
-                        return;
-                    }
-                    if (_currReference.IsOutput)
-                    {
-                        pair.Value.InputReference = _currReference.ReferenceFieldModel;
-                    }
-                    else
-                    {
-                        var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                        var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                        opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
-                            new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, pair.Key));
-                    }
-                    _connectionLine = null;
-                };
-
-                XCanvas.Children.Add(el);
-            }
         }
 
         /// <summary>
@@ -369,32 +251,49 @@ namespace Dash
             MinHeight = HeaderHeight * 2;
         }
 
-        /// <summary>
-        /// Creates the output ellipses
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void WindowTemplate_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            // Ellipses on the left grid 
-            //double height = XDocumentGridLeft.RowDefinitions[0].ActualHeight;
-            //for (int i = 0; i < XDocumentGridLeft.RowDefinitions.Count - 1; i++)
-            //{
-            //    RowDefinition r = XDocumentGridLeft.RowDefinitions[i + 1];
-            //    _leftEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth - 5, height + r.ActualHeight / 2 - 5, 0, 0);
+            e.Handled = true;
+            _currentPointers.Remove(e.Pointer.PointerId);
+            if (_connectionLine == null) return;
 
-            //    height += r.ActualHeight;
-            //}
+            if (_currReference.IsOutput)
+            {
+                UndoLine();
+                return;
+            }
+            var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+            Debug.Assert(opDoc != null);
+            var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
+            opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key));
+            _connectionLine = null;
+            
+        }
 
-            //// Ellipses on the right grid  
-            //height = XDocumentGridRight.RowDefinitions[0].ActualHeight;
-            //for (int i = 0; i < XDocumentGridRight.RowDefinitions.Count - 3; i++)
-            //{
-            //    RowDefinition r = XDocumentGridRight.RowDefinitions[i + 1];
-            //    _rightEllipses[i].Margin = new Thickness(XDocumentGridLeft.ActualWidth + XFreeformView.ActualWidth - 5, height + r.ActualHeight / 2 - 5, 0, 0);
+        private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+            _currentPointers.Remove(e.Pointer.PointerId);
+            if (_connectionLine == null) return;
 
-            //    height += r.ActualHeight;
-            //}
+            if (!_currReference.IsOutput)
+            {
+                UndoLine();
+                return;
+            }
+            var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
+            (dictEntry.Value as FieldModel).InputReference = _currReference.ReferenceFieldModel;
+            _connectionLine = null;
+        }
+
+        private void UndoLine()
+        {
+            XCanvas.Children.Remove(_connectionLine);
+            //_lineDict. //TODO lol figure this out later 
+            _connectionLine = null;
+            _currReference = null;
         }
     }
 }

@@ -105,7 +105,8 @@ namespace Dash
 
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
-            DocumentView_DataContextChanged(null, null);
+            // TODO ASK BOB 
+            //DocumentView_DataContextChanged(null, null);
         }
 
         private void elementModel_PropertyChanged(object sender, PropertyChangedEventArgs e)

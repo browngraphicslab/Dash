@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="1000"
-    d:DesignWidth="800" PointerReleased="WindowTemplate_PointerReleased" SizeChanged="WindowTemplate_SizeChanged" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+    d:DesignWidth="800" PointerReleased="WindowTemplate_PointerReleased" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
 
     <local:WindowTemplate.InnerContent>
         <Grid x:Name="XCanvas" PointerMoved="XCanvas_PointerMoved">
@@ -87,17 +87,14 @@
                                     <TextBlock Text="Test"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Ellipse Width="10" Height="10" Fill="Black"></Ellipse>
+                                    <Ellipse Width="10" Height="10" Fill="Black" PointerReleased="InputEllipse_OnPointerReleased"></Ellipse>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <!--<Grid x:Name="XDocumentGridLeft" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0"></Grid>-->
-
                 <local:FreeformView x:Name ="XFreeformView" Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Column="1" SizeChanged="FreeformView_SizeChanged"></local:FreeformView>
-                <!--<Grid x:Name="XDocumentGridRight" Width="Auto"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2"></Grid>-->
                 <ListView x:Name="RightListView" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" SelectionMode="None">
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
@@ -123,11 +120,11 @@
                                     <TextBlock Text="{Binding Key.Name}"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <!--<ContentPresenter Content="{Binding Value.View}"></ContentPresenter>-->
-                                    <TextBlock Text="Test"></TextBlock>
+                                    <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
+                                    <!--<TextBlock Text="Test"></TextBlock>-->
                                 </StackPanel>
                                 <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Ellipse Width="10" Height="10" Fill="Black"></Ellipse>
+                                    <Ellipse Width="10" Height="10" Fill="Black" PointerReleased="OutputEllipse_OnPointerReleased"></Ellipse>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>

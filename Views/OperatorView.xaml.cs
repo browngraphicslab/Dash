@@ -40,22 +40,16 @@ namespace Dash
             public ReferenceFieldModel ReferenceFieldModel { get; set; }
             public bool IsOutput { get; set; }
 
-            public Point PointerPosition { get; set; }
-
             public Pointer Pointer { get; set; }
 
             public Ellipse Ellipse { get; set; }
 
-            public FrameworkElement Box { get; set; }
-
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Point p, Pointer pointer, Ellipse e, FrameworkElement box)
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Pointer pointer, Ellipse e)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
-                PointerPosition = p;
                 Pointer = pointer;
                 Ellipse = e;
-                Box = box; 
             }
         }
 
@@ -81,9 +75,7 @@ namespace Dash
                 string docId = (DataContext as OperatorFieldModel).DocumentID;
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
-                IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false,
-                    el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer, el, XGrid);
+                IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e.Pointer, el);
                 OnIoDragStarted(ioRef);
             }
         }
@@ -99,9 +91,7 @@ namespace Dash
                 string docId = (DataContext as OperatorFieldModel).DocumentID;
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
-                IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true,
-                    el.TransformToVisual(Window.Current.Content)
-                        .TransformPoint(new Point(el.Width / 2, el.Height / 2)), e.Pointer, el, XGrid);
+                IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e.Pointer, el);
                 OnIoDragStarted(ioRef);
             }
         }
