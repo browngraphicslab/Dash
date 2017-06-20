@@ -86,6 +86,9 @@ namespace Dash
             view.DataContext = opvm;
             XFreeformView.Canvas.Children.Add(view);
             _documentViews.Add(opModel.Id, view);
+
+            NumberFieldModel nfm = new NumberFieldModel(0);
+            OutputDocument.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
         }
 
         /// <summary>

@@ -44,7 +44,7 @@
                                     <TextBlock Text="{Binding Key.Name}"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
+                                    <ContentPresenter Content="{Binding Value}"></ContentPresenter>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <Ellipse Width="20" Height="20" Fill="Black" PointerExited="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="UIElement_OnManipulationStarted"></Ellipse>
@@ -80,7 +80,7 @@
                                     <TextBlock Text="{Binding Key.Name}"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
+                                    <ContentPresenter Content="{Binding Value}"></ContentPresenter>
                                 </StackPanel>
                                 <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <Ellipse Width="20" Height="20" Fill="Black" PointerExited="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="UIElement_OnManipulationStarted"></Ellipse>

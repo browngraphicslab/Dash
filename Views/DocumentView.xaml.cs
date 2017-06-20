@@ -42,8 +42,6 @@ namespace Dash
 
         public DocumentView(DocumentViewModel documentViewModel):this()
         {
-            DataContextChanged += DocumentView_DataContextChanged;
-
             DataContext = documentViewModel;
 
             // reset the fields on the documetn to be those displayed by the documentViewModel
@@ -105,7 +103,7 @@ namespace Dash
         /// <param name="fieldReference"></param>
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
-            ResetFields(_vm);
+            //ResetFields(_vm);
         }
 
         /// <summary>

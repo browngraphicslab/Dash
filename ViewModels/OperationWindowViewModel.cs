@@ -26,6 +26,8 @@ namespace Dash
             foreach (var documentModelField in InputDocument.EnumFields())
             {
                 fields.Add(documentModelField.Key, documentModelField.Value.Copy());
+                InputDocumentCollection[documentModelField.Key] =
+                    _defaultTemplateModels[documentModelField.Value.GetType()].MakeView(documentModelField.Value);
             }
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             OutputDocument = docEndpoint.CreateDocumentAsync(InputDocument.DocumentType.Type);//TODO Should this be the same as source document?
