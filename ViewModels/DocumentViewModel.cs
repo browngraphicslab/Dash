@@ -105,7 +105,7 @@ namespace Dash
                         uiElements.Add(new DocumentCollectionTemplateModel(0, yloc, 500, 100, Visibility.Visible).MakeView(f.Value));
                         yloc += 500;
                     }
-                    else if (f.Value is TextFieldModel)
+                    else
                     {
                         uiElements.Add(new TextTemplateModel(0, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeView(f.Value));
                         yloc += 20;

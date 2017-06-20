@@ -61,7 +61,7 @@ namespace Dash
             }
             else
             {
-                if (textFieldModel == null && !(fieldModel is NumberFieldModel))
+                if (fieldModel == null)
                     (tb as TextBlock).Text = DefaultText;
                 else tb.SetBinding(TextBlock.TextProperty, binding);
                 (tb as TextBlock).FontWeight = FontWeight;
