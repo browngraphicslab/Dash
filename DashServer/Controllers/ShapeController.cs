@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
+using DashServer.Hubs;
 using DashShared;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Azure.Documents;
 
 namespace DashServer.Controllers
@@ -40,7 +42,10 @@ namespace DashServer.Controllers
 
             try
             {
-                return Ok(await _documentRepository.AddItemAsync(shapeModel));
+                var model = await _documentRepository.AddItemAsync(shapeModel);
+                var hub = GlobalHost.ConnectionManager.GetHubContext<IServerContractShapeHub>(DashConstants.HubShapeName);
+                hub.Clients.All.SendNewShape(model);
+                return Ok(model);
             }
             catch (DocumentClientException e)
             {

@@ -34,12 +34,11 @@ namespace DashServer.Hubs
         /// Called from the clients when they want to send an update to the shape's positions
         /// </summary>
         /// <returns></returns>
-        public async Task<Result> UpdateShapePosition(string id, double x, double y)
+        public async Task UpdateShapePosition(string id, double x, double y)
         {
             // get the shape model which has to be updated
             var shapeModel = (await _documentRepository.GetItemsAsync<ShapeModel>(item => item.Id == id)).FirstOrDefault();
 
-            Result result = null;
             if (shapeModel != null)
             {
                 // update the x and y of the model
@@ -51,15 +50,7 @@ namespace DashServer.Hubs
 
                 // update the database
                 await _documentRepository.UpdateItemAsync(shapeModel);
-                result = new Result(true);
             }
-            else
-            {
-                result = new Result(false);
-            }
-
-            return result;
-
         }
 
         /// <summary>
@@ -69,11 +60,10 @@ namespace DashServer.Hubs
         /// <param name="width"></param>
         /// <param name="height"></param>
         /// <returns></returns>
-        public async Task<Result> UpdateShapeSize(string id, double width, double height)
+        public async Task UpdateShapeSize(string id, double width, double height)
         {
             var shapeModel = (await _documentRepository.GetItemsAsync<ShapeModel>(item => item.Id == id)).FirstOrDefault();
 
-            Result result = null;
             if (shapeModel != null)
             {
                 // update the x and y of the model
@@ -85,14 +75,12 @@ namespace DashServer.Hubs
 
                 // update the database
                 await _documentRepository.UpdateItemAsync(shapeModel);
-                result = new Result(true);
             }
-            else
-            {
-                result = new Result(false);
-            }
+        }
 
-            return result;
+        public void SendNewShape(ShapeModel model)
+        {
+            Clients.Others.AddShape(model);
         }
     }
 }

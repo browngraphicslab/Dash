@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,18 +37,31 @@ namespace Dash
             shapeController.SetShapeSize(width, height);
         }
 
+        public void AddShape(ShapeModel shapeModel)
+        {
+            var newShapeController = new ShapeController(shapeModel);
+            ContentController.AddShapeController(newShapeController);
+        }
+
+
         #endregion
 
         #region ServerMethods
 
-        public Task<Result> UpdateShapePosition(string id, double x, double y)
+        public Task UpdateShapePosition(string id, double x, double y)
         {
             return _shapeProxy.CallAsync(hub => hub.UpdateShapePosition(id, x, y));
         }
 
-        public Task<Result> UpdateShapeSize(string id, double width, double height)
+        public Task UpdateShapeSize(string id, double width, double height)
         {
             return _shapeProxy.CallAsync(hub => hub.UpdateShapeSize(id, width, height));
+        }
+
+        public void SendNewShape(ShapeModel model)
+        {
+            Debug.Assert(false, "you should add new shapes by using the REST API");
+            //_shapeProxy.CallAsync(hub => hub.SendNewShape(model));
         }
 
         #endregion
