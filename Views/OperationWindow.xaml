@@ -44,7 +44,7 @@
                                     <TextBlock Text="{Binding Key.Name}"></TextBlock>
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <TextBlock Text="Test"></TextBlock>
+                                    <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                                     <Ellipse Width="20" Height="20" Fill="Black" PointerReleased="InputEllipse_OnPointerReleased"></Ellipse>
