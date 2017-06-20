@@ -99,6 +99,7 @@ namespace Dash
                 };
                 OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel);
                 vm.IODragStarted += Vm_IODragStarted;
+                vm.IODragEnded += Vm_IODragEnded;
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
                 _documentViews.Add(opModel.Id, view);
@@ -141,10 +142,15 @@ namespace Dash
         /// <param name="ioReference">IOReference for the field and the event info</param>
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
-            StartDrag(ioReference);
+            StartDrag(ioReference, false);
         }
 
-        private void StartDrag(OperatorView.IOReference ioReference)
+        private void Vm_IODragEnded(OperatorView.IOReference ioReference)
+        {
+            EndDrag(ioReference, false);
+        }
+
+        private void StartDrag(OperatorView.IOReference ioReference, bool fromDoc)
         {
             if (_currentPointers.Contains(ioReference.Pointer.PointerId))
             {
@@ -162,26 +168,52 @@ namespace Dash
                 Clip = new RectangleGeometry { Rect = new Rect(LeftListView.ActualWidth, 0, XFreeformView.ActualWidth, XFreeformView.ActualHeight) },
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
-            DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
-            MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true), new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
-            x1MultiBinding.AddBinding(view, RenderTransformProperty);
-            x1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
-            MultiBinding<double> y1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(false), new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
-            y1MultiBinding.AddBinding(view, RenderTransformProperty);
-            y1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
-            Binding x1Binding = new Binding
+            if (!fromDoc)
             {
-                Source = x1MultiBinding,
-                Path = new PropertyPath("Property")
-            };
-            Binding y1Binding = new Binding
-            {
-                Source = y1MultiBinding,
-                Path = new PropertyPath("Property")
-            };
+                DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+                MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                x1MultiBinding.AddBinding(view, RenderTransformProperty);
+                x1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
+                MultiBinding<double> y1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(false),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                y1MultiBinding.AddBinding(view, RenderTransformProperty);
+                y1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
+                Binding x1Binding = new Binding
+                {
+                    Source = x1MultiBinding,
+                    Path = new PropertyPath("Property")
+                };
+                Binding y1Binding = new Binding
+                {
+                    Source = y1MultiBinding,
+                    Path = new PropertyPath("Property")
+                };
 
-            _connectionLine.SetBinding(Line.X1Property, x1Binding);
-            _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+                _connectionLine.SetBinding(Line.X1Property, x1Binding);
+                _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+            }
+            else
+            {
+                Binding x1Binding = new Binding()
+                {
+                    Converter = new FrameworkElementToPosition(true),
+                    ConverterParameter =
+                        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                    Source = XCanvas,
+                    Path = new PropertyPath("RenderTransform")
+                };
+                Binding y1Binding = new Binding()
+                {
+                    Converter = new FrameworkElementToPosition(false),
+                    ConverterParameter =
+                        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                    Source = XCanvas,
+                    Path = new PropertyPath("RenderTransform")
+                };
+                _connectionLine.SetBinding(Line.X1Property, x1Binding);
+                _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+            }
 
             XCanvas.Children.Add(_connectionLine);
 
@@ -196,7 +228,7 @@ namespace Dash
             UndoLine();
         }
 
-        private void EndDrag(OperatorView.IOReference ioReference)
+        private void EndDrag(OperatorView.IOReference ioReference, bool onDoc)
         {
             _currentPointers.Remove(ioReference.Pointer.PointerId);
             if (_connectionLine == null) return;
@@ -207,21 +239,44 @@ namespace Dash
                 return;
             }
 
-            if (ioReference.IsOutput)
+            if (onDoc)
             {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                Debug.Assert(opDoc != null);
-                opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
-                    ioReference.ReferenceFieldModel);
-                _connectionLine = null;
+                if (ioReference.IsOutput)
+                {
+                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                    Debug.Assert(opDoc != null);
+                    opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                        ioReference.ReferenceFieldModel);
+                    _connectionLine = null;
+                }
+                else
+                {
+                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                    docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
+                    _connectionLine = null;
+                }
             }
             else
             {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
-                _connectionLine = null;
+                if (ioReference.IsOutput)
+                {
+                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                    docCont.GetFieldInDocument(_currReference.ReferenceFieldModel).InputReference = ioReference.ReferenceFieldModel;
+                    _connectionLine = null;
+                }
+                else
+                {
+                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                    var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                    Debug.Assert(opDoc != null);
+                    opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
+                        _currReference.ReferenceFieldModel);
+                    _connectionLine = null;
+                }
             }
+
+            
         }
 
         private void XCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -296,7 +351,7 @@ namespace Dash
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
                 new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key), true, e.Pointer,
-                sender as Ellipse));
+                sender as Ellipse), true);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -305,7 +360,7 @@ namespace Dash
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
                 new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), false, e.Pointer,
-                sender as Ellipse));
+                sender as Ellipse), true);
         }
 
         private void UndoLine()
@@ -314,6 +369,30 @@ namespace Dash
             //_lineDict. //TODO lol figure this out later 
             _connectionLine = null;
             _currReference = null;
+        }
+
+        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                e.Handled = true;
+                var dictEntry = (DictionaryEntry) (sender as Ellipse).DataContext;
+                StartDrag(new OperatorView.IOReference(
+                    new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), false, e.Pointer,
+                    sender as Ellipse), true);
+            }
+        }
+
+        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+            {
+                e.Handled = true;
+                var dictEntry = (DictionaryEntry) (sender as Ellipse).DataContext;
+                StartDrag(new OperatorView.IOReference(
+                    new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), true, e.Pointer,
+                    sender as Ellipse), true);
+            }
         }
     }
 }

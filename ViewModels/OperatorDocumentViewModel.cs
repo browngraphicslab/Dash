@@ -27,8 +27,14 @@ namespace Dash.ViewModels
             OperatorView view = DocumentModel.Field(OperatorDocumentModel.OperatorKey).MakeView(model.Fields[OperatorDocumentModel.OperatorKey]) as OperatorView;
             Debug.Assert(view != null);
             view.IoDragStarted += View_IODragStarted;
+            view.IoDragEnded += View_IoDragEnded;
             elements.Add(view);
             return elements;
+        }
+
+        private void View_IoDragEnded(OperatorView.IOReference ioReference)
+        {
+            IODragEnded?.Invoke(ioReference);
         }
 
         private void View_IODragStarted(OperatorView.IOReference ioReference)
@@ -37,5 +43,6 @@ namespace Dash.ViewModels
         }
 
         public event OperatorView.IODragEventHandler IODragStarted;
+        public event OperatorView.IODragEventHandler IODragEnded;
     }
 }

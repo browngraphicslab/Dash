@@ -47,7 +47,7 @@
                                     <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
                                 </StackPanel>
                                 <StackPanel Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Ellipse Width="20" Height="20" Fill="Black" PointerReleased="InputEllipse_OnPointerReleased"></Ellipse>
+                                    <Ellipse Width="20" Height="20" Fill="Black" PointerExited="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased"></Ellipse>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>
@@ -83,7 +83,7 @@
                                     <ContentPresenter Content="{Binding Value.View}"></ContentPresenter>
                                 </StackPanel>
                                 <StackPanel Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                                    <Ellipse Width="20" Height="20" Fill="Black" PointerReleased="OutputEllipse_OnPointerReleased"></Ellipse>
+                                    <Ellipse Width="20" Height="20" Fill="Black" PointerExited="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased"></Ellipse>
                                 </StackPanel>
                             </Grid>
                         </DataTemplate>

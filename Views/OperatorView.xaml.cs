@@ -33,6 +33,11 @@ namespace Dash
         public event IODragEventHandler IoDragStarted;
 
         /// <summary>
+        /// Event that gets fired when an ellipse is dragged on to and a connection should be ended
+        /// </summary>
+        public event IODragEventHandler IoDragEnded;
+
+        /// <summary>
         /// Reference to either a field input or output with other information about the pointer
         /// </summary>
         public class IOReference
@@ -109,6 +114,28 @@ namespace Dash
             IoDragStarted?.Invoke(ioreference);
         }
 
+        private void OnIoDragEnded(IOReference ioreference)
+        {
+            IoDragEnded?.Invoke(ioreference);
+        }
 
+
+        private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (DataContext as OperatorFieldModel).DocumentID;
+            Ellipse el = sender as Ellipse;
+            Key outputKey = el.DataContext as Key;
+            IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e.Pointer, el);
+            OnIoDragEnded(ioRef);
+        }
+
+        private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (DataContext as OperatorFieldModel).DocumentID;
+            Ellipse el = sender as Ellipse;
+            Key outputKey = el.DataContext as Key;
+            IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e.Pointer, el);
+            OnIoDragEnded(ioRef);
+        }
     }
 }

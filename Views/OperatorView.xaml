@@ -25,7 +25,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="1"></TextBlock>
                         <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="0" 
-                                 PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
+                                 PointerExited="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -40,7 +40,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="0"></TextBlock>
                         <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="1" 
-                                 PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
+                                 PointerExited="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
