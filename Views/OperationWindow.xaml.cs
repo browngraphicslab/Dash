@@ -34,9 +34,9 @@ namespace Dash
     /// </summary>
     public sealed partial class OperationWindow : WindowTemplate
     {
-        private DocumentViewModel _documentViewModel;
+        private DocumentModel InputDocument => (DataContext as OperationWindowViewModel).InputDocument;
+        private DocumentModel OutputDocument => (DataContext as OperationWindowViewModel).OutputDocument;
 
-        private DocumentModel _output;
 
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
@@ -60,68 +60,33 @@ namespace Dash
         private HashSet<uint> _currentPointers = new HashSet<uint>();
         private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
 
-        /// <summary>
-        /// DocumentViewModel of document that this operation window has as input
-        /// </summary>
-        public DocumentViewModel DocumentViewModel
+        private void OperationWindow_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            get { return _documentViewModel; }
-            set
+            OperationWindowViewModel vm = args.NewValue as OperationWindowViewModel;
+            Debug.Assert(vm != null);
+            LeftListView.ItemsSource = vm.InputDocumentCollection;
+            RightListView.ItemsSource = vm.OutputDocumentCollection;
+
+            //Create Operator document
+            var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel())
             {
-                _documentViewModel = value;
-                var layout = DocumentViewModel.GetLayoutModel();
-                //InitializeGrid(XDocumentGridLeft, DocumentViewModel.DocumentModel, layout, true);
-                LeftListView.ItemsSource = _documentViewModel.DocumentModel.Fields;
-                //LeftListView.ItemsSource = _documentViewModel.DocumentModel.PropFields;
-                //InputValues.ItemsSource = _documentViewModel.DocumentModel.PropFields;
-                //InputEllipses.ItemsSource = _documentViewModel.DocumentModel.PropFields;
+                Id = docEndpoint.GetDocumentId(),
+                OperatorField = new DivideOperatorModel()
+            };
+            docEndpoint.UpdateDocumentAsync(opModel);
+            DocumentView view = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+            opvm.IODragStarted += Vm_IODragStarted;
+            opvm.IODragEnded += Vm_IODragEnded;
+            view.DataContext = opvm;
+            XFreeformView.Canvas.Children.Add(view);
+            _documentViews.Add(opModel.Id, view);
 
-                Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-                foreach (var documentModelField in _documentViewModel.DocumentModel.EnumFields())
-                {
-                    fields.Add(documentModelField.Key, documentModelField.Value.Copy());
-                }
-                DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                _output = docEndpoint.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
-                _output.SetFields(fields);
-                RightListView.ItemsSource = _output.Fields;
-
-                OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel())
-                {
-                    Id = docEndpoint.GetDocumentId(),
-                    OperatorField = new DivideOperatorModel()
-                };
-                docEndpoint.UpdateDocumentAsync(opModel);
-                DocumentView view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                OperatorDocumentViewModel vm = new OperatorDocumentViewModel(opModel);
-                vm.IODragStarted += Vm_IODragStarted;
-                vm.IODragEnded += Vm_IODragEnded;
-                view.DataContext = vm;
-                XFreeformView.Canvas.Children.Add(view);
-                _documentViews.Add(opModel.Id, view);
-
-                NumberFieldModel nfm = new NumberFieldModel(0);
-                _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
-                //_output.SetField(DocumentModel.GetFieldKeyByName("Test Key"), new TextFieldModel("Test String"));
-
-                //InitializeGrid(XDocumentGridRight, _output, layout, false);
-
-
-                //XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                //XDocumentGridRight.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                //Button createButton = new Button
-                //{
-                //    Content = "Create"
-                //};
-                //Grid.SetRow(createButton, XDocumentGridRight.RowDefinitions.Count - 1);
-                //XDocumentGridRight.Children.Add(createButton);
-
-                //createButton.Tapped += B_Tapped;
-            }
         }
 
         /// <summary>
@@ -355,7 +320,7 @@ namespace Dash
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
             DocumentView view = new DocumentView();
-            DocumentViewModel viewModel = new DocumentViewModel(_output);
+            DocumentViewModel viewModel = new DocumentViewModel(OutputDocument);
             view.DataContext = viewModel;
             FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
@@ -380,7 +345,7 @@ namespace Dash
             e.Handled = true;
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
-                new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key), true, e.Pointer,
+                new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
                 sender as Ellipse), true);
         }
 
@@ -389,7 +354,7 @@ namespace Dash
             e.Handled = true;
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
-                new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), false, e.Pointer,
+                new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
                 sender as Ellipse), true);
         }
 
@@ -408,7 +373,7 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry) (sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), false, e.Pointer,
+                    new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
                     sender as Ellipse), true);
             }
         }
@@ -420,7 +385,7 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry) (sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key), true, e.Pointer,
+                    new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
                     sender as Ellipse), true);
             }
         }

@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Dash.ViewModels;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -30,7 +31,7 @@ namespace Dash
             manipulator = new ManipulationControls(XGrid, this);
             this.MinWidth = 200;
             this.MinHeight = 400;
-            
+
         }
 
         //public static readonly DependencyProperty InnerContentProperty = DependencyProperty.Register("InnerContent", typeof(object), typeof(DocumentView), new PropertyMetadata(null));
@@ -45,7 +46,8 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
 
-            if (dvm != null) {
+            if (dvm != null)
+            {
                 dvm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
 
                 xCanvas.Children.Clear();
@@ -86,16 +88,15 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
             var documentViewModel = DataContext as DocumentViewModel;
-            if (documentViewModel != null && documentViewModel.DoubleTapEnabled) {
+            if (documentViewModel != null && documentViewModel.DoubleTapEnabled)
+            {
                 e.Handled = true;
                 OperationWindow window = new OperationWindow(1000, 800);
+                window.DataContext = new OperationWindowViewModel(documentViewModel.DocumentModel);
 
-                var dvm = DataContext as DocumentViewModel;
-                if (dvm != null) {
-                    window.DocumentViewModel = dvm;
-                }
                 Point center = RenderTransform.TransformPoint(e.GetPosition(this));
 
                 FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
