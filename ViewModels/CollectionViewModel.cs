@@ -618,10 +618,9 @@ namespace Dash
                 else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
                     dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
                 (sender as DocumentView).DataContext = dvm;
-                var DocView2 = new DocumentView();
                 var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
                 testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
-                DocView2.DataContext = new DocumentViewModel(testPrototypedoc);
+                var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
                 var center = e.GetPosition(FreeformView.MainFreeformView);
                 FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
                 

@@ -39,6 +39,8 @@ namespace Dash
          /// </summary>
         public override UIElement MakeView(FieldModel fieldModel)
         {
+            if (fieldModel == null && DefaultText == null)
+                return null;
             if (fieldModel is ImageFieldModel)
                 return new ImageTemplateModel(Left,Top,Width,Height,Visibility).MakeView(fieldModel);
             var textFieldModel = fieldModel as TextFieldModel;

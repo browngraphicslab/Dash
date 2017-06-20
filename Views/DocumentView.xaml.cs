@@ -27,30 +27,26 @@ namespace Dash
 
         public DocumentView()
         {
-            DataContextChanged += DocumentView_DataContextChanged;
-        }
-
-        public DocumentView(DocumentViewModel documentViewModel)
-        {
-            // set the viewModle
-            _vm = documentViewModel;
-            DataContext = documentViewModel;
-
             this.InitializeComponent();
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            DataContextChanged += DocumentView_DataContextChanged;
 
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             // add manipulation code
             manipulator = new ManipulationControls(XGrid, this);
 
             // set bounds
             MinWidth = 200;
             MinHeight = 400;
+        }
+
+        public DocumentView(DocumentViewModel documentViewModel):this()
+        {
+            DataContextChanged += DocumentView_DataContextChanged;
+
+            DataContext = documentViewModel;
 
             // reset the fields on the documetn to be those displayed by the documentViewModel
             ResetFields(documentViewModel);
-
-            // Add any methods
-            documentViewModel.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
         }
 
         /// <summary>
@@ -131,11 +127,13 @@ namespace Dash
         /// <param name="args"></param>
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (_vm != null)
-                return;
-
             _vm = DataContext as DocumentViewModel;
-            ResetFields(_vm);
+            if (_vm != null) { 
+                ResetFields(_vm);
+                // Add any methods
+                _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+                _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+            }
         }
     }
 }
