@@ -22,15 +22,15 @@ namespace Dash {
         private float _documentScale = 1.0f;
         public const float MinScale = 0.5f;
         public const float MaxScale = 2.0f;
-        public Grid XGrid;
+        public FrameworkElement FrameworkElement;
         public UserControl usercontrol;
 
         // == CONSTRUCTORS ==
-        public ManipulationControls(Grid xGrid, UserControl usercontrol) {
-            xGrid.ManipulationDelta += Grid_ManipulationDelta;
+        public ManipulationControls(FrameworkElement frameworkElement, UserControl usercontrol) {
+            frameworkElement.ManipulationDelta += Grid_ManipulationDelta;
             //xGrid.ManipulationMode = ManipulationModes.All; for data binding of manip mode
             this.usercontrol = usercontrol;
-            XGrid = xGrid;
+            FrameworkElement = frameworkElement;
         }
 
         // == METHODS ==
@@ -82,10 +82,10 @@ namespace Dash {
             
             //Get top left and bottom right points of documents in canvas space
             Point p1 = group.TransformPoint(new Point(0, 0));
-            Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            Point p2 = group.TransformPoint(new Point(FrameworkElement.ActualWidth, FrameworkElement.ActualHeight));
             Debug.Assert(usercontrol.RenderTransform != null);
             Point oldP1 = usercontrol.RenderTransform.TransformPoint(new Point(0, 0));
-            Point oldP2 = usercontrol.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+            Point oldP2 = usercontrol.RenderTransform.TransformPoint(new Point(FrameworkElement.ActualWidth, FrameworkElement.ActualHeight));
 
             //Check if translating or scaling the document puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly
@@ -97,7 +97,7 @@ namespace Dash {
             } else if (p2.X > FreeformView.MainFreeformView.Canvas.ActualWidth) {
                 outOfBounds = true;
                 translate.X = FreeformView.MainFreeformView.Canvas.ActualWidth - oldP2.X;
-                scale.CenterX = XGrid.ActualWidth;
+                scale.CenterX = FrameworkElement.ActualWidth;
             }
             if (p1.Y < 0) {
                 outOfBounds = true;
@@ -106,7 +106,7 @@ namespace Dash {
             } else if (p2.Y > FreeformView.MainFreeformView.Canvas.ActualHeight) {
                 outOfBounds = true;
                 translate.Y = FreeformView.MainFreeformView.Canvas.ActualHeight - oldP2.Y;
-                scale.CenterY = XGrid.ActualHeight;
+                scale.CenterY = FrameworkElement.ActualHeight;
             }
 
             //If the view was out of bounds recalculate the composite matrix

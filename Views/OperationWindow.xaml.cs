@@ -52,7 +52,7 @@ namespace Dash
 
         private List<Ellipse> _rightEllipses = new List<Ellipse>();
 
-        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>(); 
+        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>();
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -141,6 +141,11 @@ namespace Dash
         /// <param name="ioReference">IOReference for the field and the event info</param>
         private void Vm_IODragStarted(OperatorView.IOReference ioReference)
         {
+            StartDrag(ioReference);
+        }
+
+        private void StartDrag(OperatorView.IOReference ioReference)
+        {
             if (_currentPointers.Contains(ioReference.Pointer.PointerId))
             {
                 return;
@@ -154,7 +159,7 @@ namespace Dash
                 StrokeThickness = 10,
                 Stroke = new SolidColorBrush(Colors.Black),
                 IsHitTestVisible = false,
-                Clip = new RectangleGeometry {Rect = new Rect(LeftListView.ActualWidth, 0, XFreeformView.ActualWidth, XFreeformView.ActualHeight) },
+                Clip = new RectangleGeometry { Rect = new Rect(LeftListView.ActualWidth, 0, XFreeformView.ActualWidth, XFreeformView.ActualHeight) },
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
@@ -180,9 +185,43 @@ namespace Dash
 
             XCanvas.Children.Add(_connectionLine);
 
-            
+
             CheckLinePresence(ioReference.ReferenceFieldModel);
-            _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine); 
+            _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+        }
+
+        private void CancelDrag(Pointer p)
+        {
+            _currentPointers.Remove(p.PointerId);
+            UndoLine();
+        }
+
+        private void EndDrag(OperatorView.IOReference ioReference)
+        {
+            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            if (_connectionLine == null) return;
+
+            if (_currReference.IsOutput == ioReference.IsOutput)
+            {
+                UndoLine();
+                return;
+            }
+
+            if (ioReference.IsOutput)
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                Debug.Assert(opDoc != null);
+                opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                    ioReference.ReferenceFieldModel);
+                _connectionLine = null;
+            }
+            else
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
+                _connectionLine = null;
+            }
         }
 
         private void XCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)
@@ -197,8 +236,7 @@ namespace Dash
 
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            _currentPointers.Remove(e.Pointer.PointerId);
-            UndoLine();
+            CancelDrag(e.Pointer);
         }
 
         /// <summary>
@@ -218,9 +256,9 @@ namespace Dash
             */
             if (_lineDict.ContainsKey(model))
             {
-                Line line = _lineDict[model]; 
+                Line line = _lineDict[model];
                 XCanvas.Children.Remove(line);
-                _lineDict.Remove(model); 
+                _lineDict.Remove(model);
             }
         }
 
@@ -255,38 +293,19 @@ namespace Dash
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = true;
-            _currentPointers.Remove(e.Pointer.PointerId);
-            if (_connectionLine == null) return;
-
-            if (_currReference.IsOutput)
-            {
-                UndoLine();
-                return;
-            }
-            var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-            Debug.Assert(opDoc != null);
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
-            opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
-                new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key));
-            _connectionLine = null;
-            
+            EndDrag(new OperatorView.IOReference(
+                new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key), true, e.Pointer,
+                sender as Ellipse));
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = true;
-            _currentPointers.Remove(e.Pointer.PointerId);
-            if (_connectionLine == null) return;
-
-            if (!_currReference.IsOutput)
-            {
-                UndoLine();
-                return;
-            }
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
-            (dictEntry.Value as FieldModel).InputReference = _currReference.ReferenceFieldModel;
-            _connectionLine = null;
+            EndDrag(new OperatorView.IOReference(
+                new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), false, e.Pointer,
+                sender as Ellipse));
         }
 
         private void UndoLine()
