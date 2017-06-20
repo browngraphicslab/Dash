@@ -117,6 +117,7 @@
     <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />

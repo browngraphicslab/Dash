@@ -81,14 +81,15 @@ namespace Dash
             else
             {
                 foreach (var lEle in layout.Fields)
-                if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel) {
-                    var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
-                    if (uiele != null)
-                        uiElements.Add(uiele);
-                } else if (DocumentModel.Field(lEle.Key) != null)
-                {
-                    uiElements.Add(lEle.Value.MakeView(DocumentModel.Field(lEle.Key)));
-                }
+                    if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel) {
+                        var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
+                        if (uiele != null)
+                            uiElements.Add(uiele);
+                    }
+                    else if (DocumentModel.Field(lEle.Key) != null)
+                    {
+                        uiElements.Add(lEle.Value.MakeView(DocumentModel.Field(lEle.Key)));
+                    }
             }
             return uiElements;
         }

@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using Dash.Models;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Dash.Models.OperatorModels;
 
 namespace Dash
 {
@@ -175,7 +176,7 @@ namespace Dash
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
 
-            fields[OperatorDocumentModel.OperatorKey] = new TextTemplateModel(0, 0, FontWeights.Normal);
+            fields[OperatorDocumentModel.OperatorKey] = new OperatorTemplateModel(0, 0);
 
             Debug.Assert(docType.Type.Equals("operator"));
             return new LayoutModel(fields, docType);

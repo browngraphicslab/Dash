@@ -245,19 +245,23 @@ namespace Dash
                 TemplateModel template = null;
                 if (layout.Fields.ContainsKey(pair.Key))
                     template = layout.Fields[pair.Key];
-                // TODO commented out for debugging 
-                //else
-                //    Debug.Assert(false);
+                if (template != null) { 
+                    // TODO commented out for debugging 
+                    //else
+                    //    Debug.Assert(false);
 
-                FrameworkElement element = pair.Value.MakeView(template) as FrameworkElement;
-                Debug.Assert(element != null);
-                element.VerticalAlignment = VerticalAlignment.Center;
-                element.HorizontalAlignment = HorizontalAlignment.Center;
+                    FrameworkElement element = template.MakeView(pair.Value) as FrameworkElement;
+                    if (element != null)
+                    {
+                        element.VerticalAlignment = VerticalAlignment.Center;
+                        element.HorizontalAlignment = HorizontalAlignment.Center;
 
-                element.Margin = new Thickness(12, 5, 12, 5);
-                Grid.SetColumn(element, 1);
-                Grid.SetRow(element, j);
-                grid.Children.Add(element);
+                        element.Margin = new Thickness(12, 5, 12, 5);
+                        Grid.SetColumn(element, 1);
+                        Grid.SetRow(element, j);
+                        grid.Children.Add(element);
+                    }
+                }
 
                 //Add Key Values (field names) 
                 TextBlock tb = new TextBlock

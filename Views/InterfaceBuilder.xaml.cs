@@ -93,7 +93,7 @@ namespace Dash
 
                 var fieldModel = kvp.Value;
 
-                var fieldView = fieldModel.MakeView(_keyToTemplateModel[key]);
+                var fieldView = _keyToTemplateModel[key].MakeView(fieldModel);
 
                 var editableBorder = new EditableFieldFrame(key)
                 {

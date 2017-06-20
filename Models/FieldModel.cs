@@ -56,12 +56,6 @@ namespace Dash
             OutputReferences.Remove(reference); 
         }
 
-        /// <summary>
-        /// Abstract method to return views using layout information from templates 
-        /// </summary>
-        public virtual UIElement MakeView(TemplateModel template) { return null; }
-
-
         public FieldModel Copy()
         {
             return MemberwiseClone() as FieldModel;
