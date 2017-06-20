@@ -16,7 +16,7 @@ namespace Dash.ViewModels
         {
         }
 
-        public override List<UIElement> CreateUIElements()
+        public override List<UIElement> GetUiElements()
         {
             var uiElements = base.GetUiElements();
             foreach (var uiele in uiElements)

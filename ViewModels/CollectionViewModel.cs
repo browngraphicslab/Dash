@@ -637,7 +637,7 @@ namespace Dash
                     SoloDisplaySize = CellSize;
                 }
 
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.CreateUIElements());
+                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements());
                 ViewIsEnabled = false;
                 SoloDisplayVisibility = Visibility.Visible;
             }

@@ -84,7 +84,7 @@ namespace Dash
         /// given fields.
         /// </summary>
         /// <returns>List of all UIElements generated</returns>
-        public virtual List<UIElement> CreateUIElements()
+        public virtual List<UIElement> GetUiElements()
         {
             var uiElements = new List<UIElement>();
             var layout = GetLayoutModel();

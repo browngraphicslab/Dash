@@ -12,12 +12,9 @@ using Windows.UI.Xaml.Media;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+namespace Dash {
 
-namespace Dash
-{
-
-    public sealed partial class DocumentView : UserControl
-    {
+    public sealed partial class DocumentView : UserControl {
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -25,26 +22,8 @@ namespace Dash
 
         private DocumentViewModel _vm;
 
-        public DocumentView()
-        {
+        public DocumentView() {
             this.InitializeComponent();
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            this.DataContextChanged += DocumentView_DataContextChanged;
-            manipulator = new ManipulationControls(XGrid, this); // allow documents to be moved & zoomed.
-            this.MinWidth = 200;
-            this.MinHeight = 400;
-        }
-
-     
-        /// <summary>
-        /// Updates the document's visual display to reflect changes in its code-end
-        /// data. Called when the DataContext changes. Replaces all existing elements
-        /// with the new ones.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) { 
-
             DataContextChanged += DocumentView_DataContextChanged;
 
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
@@ -56,26 +35,11 @@ namespace Dash
             MinHeight = 400;
         }
 
-        public DocumentView(DocumentViewModel documentViewModel):this()
-        {
+        public DocumentView(DocumentViewModel documentViewModel) : this() {
             DataContextChanged += DocumentView_DataContextChanged;
 
             DataContext = documentViewModel;
-        
-                xCanvas.Children.Clear();
-                List<UIElement> elements = dvm.CreateUIElements();
-                foreach (var element in elements)
-                {
-                    xCanvas.Children.Add(element);
-                }
-            }
-        }
 
-        /// <summary>
-        /// Returns a list of all of the UIElements in a given document.
-        /// </summary>
-        /// <returns>a list of the document's UIElements</returns>
-        public List<UIElement> GetUIElements()
             // reset the fields on the documetn to be those displayed by the documentViewModel
             ResetFields(documentViewModel);
         }
@@ -84,37 +48,27 @@ namespace Dash
         /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
         /// </summary>
         /// <param name="documentViewModel"></param>
-        private void ResetFields(DocumentViewModel documentViewModel)
-        {
+        private void ResetFields(DocumentViewModel documentViewModel) {
             // clear any current children (fields) and then add them over again
             xCanvas.Children.Clear();
             var elements = documentViewModel.GetUiElements();
-            foreach (var element in elements)
-            {
-                List<UIElement> elements = dvm.CreateUIElements();
-                return elements;
+            foreach (var element in elements) {
                 xCanvas.Children.Add(element);
             }
         }
 
         /// <summary>
-        /// Populates a document to include a given list of UIElements by
-        /// adding the child elements to the document's canvas. UNRELATED to
-        /// tye. Used in interface buildier.
-        /// </summary>
-        /// <param name="uiElements">UI elements to add.</param>
         /// Hacky way of adding the editable fields to the document in the interface builder
         /// </summary>
         /// <param name="uiElements"></param>
-        public void SetUIElements(List<UIElement> uiElements)
-        {
+        public void SetUIElements(List<UIElement> uiElements) {
             xCanvas.Children.Clear();
-            foreach (var element in uiElements)
-            {
+            foreach (var element in uiElements) {
                 xCanvas.Children.Add(element);
             }
         }
-        
+
+
         /// <summary>
         /// Brings up OperationWindow when DocumentView is double tapped 
         /// </summary>
@@ -123,7 +77,7 @@ namespace Dash
         private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             if (_vm != null && _vm.DoubleTapEnabled) {
                 e.Handled = true;
-                var window = new OperationWindow(1000, 800) {DocumentViewModel = _vm};
+                var window = new OperationWindow(1000, 800) { DocumentViewModel = _vm };
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
@@ -136,8 +90,7 @@ namespace Dash
         /// Called whenever a field is changed on the document
         /// </summary>
         /// <param name="fieldReference"></param>
-        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference) {
             ResetFields(_vm);
         }
 
@@ -146,8 +99,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
+        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e) {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null);
 
@@ -156,20 +108,15 @@ namespace Dash
             FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
         }
 
-protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e) {
-    base.OnManipulationCompleted(e);
-}
-
         /// <summary>
         /// The first time the local DocumentViewModel _vm can be set to the new datacontext
         /// this resets the fields otherwise does nothing
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) {
             _vm = DataContext as DocumentViewModel;
-            if (_vm != null) { 
+            if (_vm != null) {
                 ResetFields(_vm);
                 // Add any methods
                 _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
