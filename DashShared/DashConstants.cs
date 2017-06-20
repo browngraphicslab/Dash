@@ -10,7 +10,7 @@ namespace DashShared
         /// <summary>
         ///     Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
         /// </summary>
-        public const bool DEVELOP_LOCALLY = false;
+        public const bool DEVELOP_LOCALLY = true;
 
         #region DocumentDB
 
