@@ -166,6 +166,12 @@
     <Compile Include="Sources\FilePicker\FilePickerDisplay.xaml.cs">
       <DependentUpon>FilePickerDisplay.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Sources\FilePicker\PDFFilePicker.xaml.cs">
+      <DependentUpon>PDFFilePicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Sources\FilePicker\PDF\PDFViewer.xaml.cs">
+      <DependentUpon>PDFViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
@@ -280,6 +286,14 @@
     <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\FilePicker\PDFFilePicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Sources\FilePicker\PDF\PDFViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>

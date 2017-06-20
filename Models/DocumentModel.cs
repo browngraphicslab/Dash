@@ -249,7 +249,6 @@ namespace Dash
 
             var contentKey = keyController.CreateKeyAsync("content");
             fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-
             var dm = docController.CreateDocumentAsync("oneimage");
             dm.SetFields(fields);
             return dm;

@@ -11,14 +11,17 @@ namespace Dash
 {
     public class ImageTemplateModel : TemplateModel
     {
+        private bool fill;
         public ImageTemplateModel(double left = 0, double top = 0, double width = 0, double height = 0,
-            Visibility visibility = Visibility.Visible)
+            Visibility visibility = Visibility.Visible, bool fill = false)
             : base(left, top, width, height, visibility)
         {
-
-        } /// <summary>
-          /// Creates Image using layout information from template and Data 
-          /// </summary>
+            this.fill = fill;
+        }
+        
+        /// <summary>
+        /// Creates Image using layout information from template and Data 
+        /// </summary>
         public override UIElement MakeView(FieldModel fieldModel)
         {
             ImageFieldModel imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
@@ -30,6 +33,8 @@ namespace Dash
             image.Visibility = Visibility;
             image.Width = Width;
             image.Height = Height;
+            if (fill)
+                image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
             return image;
         }
     }

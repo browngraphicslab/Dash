@@ -97,6 +97,7 @@ namespace Dash
         }
         private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
             xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
+            xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)

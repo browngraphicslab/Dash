@@ -102,7 +102,7 @@ namespace Dash
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
-            fields[DocumentModel.GetFieldKeyByName("content")] = new ImageTemplateModel(5, 20, 100, 100);
+            fields[DocumentModel.GetFieldKeyByName("content")] = new ImageTemplateModel(0, 0, 196, 396, Visibility.Visible, true);
 
             Debug.Assert(docType.Type.Equals("oneimage"));
             return new LayoutModel(fields, docType);
