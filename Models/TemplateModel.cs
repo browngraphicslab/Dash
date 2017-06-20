@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Dash.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 
 namespace Dash
@@ -58,12 +61,30 @@ namespace Dash
             Width = width;
             Height = height;
             Visibility = visibility;
-        }/// <summary>
-         /// Creates TextBlock using layout information from template and Data 
-         /// </summary>
-        public virtual UIElement MakeView(FieldModel fieldModel)
+        }
+        /// <summary>
+        /// Creates a UI view of the field based on this templates display parameters
+        /// </summary>
+        protected virtual List<UIElement> MakeView(FieldModel fieldModel)
         {
             return null;
+        }
+        /// <summary>
+        /// Creates a UI view of the field based on this templates display parameters
+        /// </summary>
+        public virtual List<UIElement> MakeViewUI(FieldModel fieldModel)
+        {
+            while (fieldModel is ReferenceFieldModel)
+            {
+                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModel).DocId).Field((fieldModel as ReferenceFieldModel).FieldKey);
+            }
+            if (fieldModel is DocumentModelFieldModel)
+            {
+                var doc = (fieldModel as DocumentModelFieldModel).Data;
+                return new DocumentViewModel(doc).GetUiElements(new Rect(Left, Top, Width, Height));
+            }
+            return MakeView(fieldModel);
         }
     }
 }

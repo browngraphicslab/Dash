@@ -93,7 +93,7 @@ namespace Dash
 
                 var fieldModel = kvp.Value;
 
-                var fieldView = _keyToTemplateModel[key].MakeView(fieldModel);
+                var fieldView = _keyToTemplateModel[key].MakeViewUI(fieldModel).First(); // bcz: Fix -- need to apply to all returned elements
 
                 var editableBorder = new EditableFieldFrame(key)
                 {

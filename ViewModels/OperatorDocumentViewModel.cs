@@ -16,9 +16,9 @@ namespace Dash.ViewModels
         {
         }
 
-        public override List<UIElement> GetUiElements()
+        public override List<UIElement> GetUiElements(Rect bounds)
         {
-            var uiElements = base.GetUiElements();
+            var uiElements = base.GetUiElements(bounds);
             foreach (var uiele in uiElements)
             {
                 if (uiele is OperatorView)

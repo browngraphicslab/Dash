@@ -57,7 +57,7 @@ namespace Dash
         {
             // clear any current children (fields) and then add them over again
             xCanvas.Children.Clear();
-            var elements = documentViewModel.GetUiElements();
+            var elements = documentViewModel.GetUiElements(new Rect(0,0, Width,Height));
             foreach (var element in elements)
             {
                 xCanvas.Children.Add(element);

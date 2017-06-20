@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Dash.Models;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -69,48 +70,83 @@ namespace Dash
         }
         public DocumentModel DocumentModel { get; set; }
 
-        public virtual List<UIElement> GetUiElements()
+        public virtual List<UIElement> GetUiElements(Rect bounds)
         {
             var uiElements = new List<UIElement>();
             var layout = GetLayoutModel();
 
+            var size = new Size();
             if (layout.ShowAllFields) 
             {
-                showAllDocumentFields(uiElements);
+                size = showAllDocumentFields(uiElements, bounds);
             }
             else
             {
+                var transXf = new TranslateTransform();
+                transXf.X = bounds.Left;
+                transXf.Y = bounds.Top;
                 foreach (var lEle in layout.Fields)
-                    if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel) {
-                        var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
-                        if (uiele != null)
-                            uiElements.Add(uiele);
-                    }
-                    else if (DocumentModel.Field(lEle.Key) != null)
+                {
+                    var uiele = lEle.Value.MakeViewUI(DocumentModel.Field(lEle.Key));
+                    if (uiele != null)
                     {
-                        uiElements.Add(lEle.Value.MakeView(DocumentModel.Field(lEle.Key)));
+                        uiElements.AddRange(uiele);
+                        size = new Size(Math.Max(size.Width, lEle.Value.Left + lEle.Value.Width), Math.Max(size.Height, lEle.Value.Top+lEle.Value.Height));
                     }
+                }
+            }
+            if (bounds.Height > 0 && size.Height > 0 && bounds.Width > 0 && size.Width > 0)
+            {
+                double scaling = Math.Min(bounds.Width / size.Width, bounds.Height / size.Height);
+                var transXf = new TranslateTransform();
+                transXf.X = bounds.Left;
+                transXf.Y = bounds.Top;
+                var scaleXf = new ScaleTransform();
+                scaleXf.ScaleX = scaling;
+                scaleXf.ScaleY = scaling;
+                foreach (var ui in uiElements)
+                {
+                    var xfg = new TransformGroup();
+                    xfg.Children.Add(ui.RenderTransform);
+                    xfg.Children.Add(scaleXf);
+                    xfg.Children.Add(transXf);
+
+                    ui.RenderTransform = xfg;
+                }
             }
             return uiElements;
         }
 
-        void showAllDocumentFields(List<UIElement> uiElements)
+        Size showAllDocumentFields(List<UIElement> uiElements, Rect bounds)
         {
-            double yloc = 0;
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+
+            double yloc = bounds.Height > 0 ? 0 : bounds.Top;
             foreach (var f in DocumentModel.EnumFields())
                 if (f.Key != GetFieldKeyByName("Delegates"))
                 {
-                    if (f.Value is DocumentCollectionFieldModel)
+                    var fieldModel = f.Value;
+                    while (fieldModel is ReferenceFieldModel)
                     {
-                        uiElements.Add(new DocumentCollectionTemplateModel(0, yloc, 500, 100, Visibility.Visible).MakeView(f.Value));
+                        fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModel).DocId).Field((fieldModel as ReferenceFieldModel).FieldKey);
+                    }
+                    if (fieldModel is DocumentCollectionFieldModel)
+                    {
+                        uiElements.AddRange(new DocumentCollectionTemplateModel(bounds.Left, yloc, 500, 100, Visibility.Visible).MakeViewUI(fieldModel));
+                        yloc += 100;
+                    }
+                    else if (fieldModel is ImageFieldModel || (fieldModel is TextFieldModel && (fieldModel as TextFieldModel).Data.EndsWith(".jpg")))
+                    {
+                        uiElements.AddRange(new ImageTemplateModel(bounds.Left, yloc, 500, 500).MakeViewUI(fieldModel));
                         yloc += 500;
                     }
                     else
                     {
-                        uiElements.Add(new TextTemplateModel(0, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeView(f.Value));
+                        uiElements.AddRange(new TextTemplateModel(bounds.Left, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeViewUI(fieldModel));
                         yloc += 20;
                     }
                 }
+            return new Size(0, yloc);
         }
 
         public LayoutModel GetLayoutModel()
@@ -186,6 +222,8 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(docType)));
                 else if (docType.Type == "twoimages")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(docType)));
+                else if (docType.Type == "annotatedImage")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.annotatedImage(docType)));
                 else if (docType.Type == "itunesLite")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunesLite(docType)));
                 else if (docType.Type == "itunes")

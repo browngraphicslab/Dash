@@ -115,6 +115,18 @@ namespace Dash
         private static TextTemplateModel textEditableTemplateModel = new TextTemplateModel(5, 260, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible, true);
 
 
+        public static LayoutModel annotatedImage(DocumentType docType)
+        {
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
+            Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
+            //TODO REALLY BAD CODE
+            fields[DocumentModel.GetFieldKeyByName("Annotation1")] = new TextTemplateModel(5, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible);
+            fields[DocumentModel.GetFieldKeyByName("Image")]       = new ImageTemplateModel(5, 20, 100,  100);
+            fields[DocumentModel.GetFieldKeyByName("Annotation2")] = new TextTemplateModel(5,125, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible);
+            Debug.Assert(docType.Type.Equals("annotatedImage"));
+            return new LayoutModel(fields, docType);
+        }
         public static LayoutModel itunesLite(DocumentType docType)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -122,9 +134,9 @@ namespace Dash
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
             //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName Title")] = new TextTemplateModel(5, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true, "Collection: ");
-            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName")] = new TextTemplateModel(30, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName")] = new TextTemplateModel(80, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comtrackName Title")] = new TextTemplateModel(5, 30, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true, "Track: ");
-            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comtrackName")] = new TextTemplateModel(25, 30, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
+            fields[DocumentModel.GetFieldKeyByName("itunes.apple.comtrackName")] = new TextTemplateModel(50, 30, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
             Debug.Assert(docType.Type.Equals("itunesLite"));
             return new LayoutModel(fields, docType);
         }

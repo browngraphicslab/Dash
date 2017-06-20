@@ -42,6 +42,12 @@ namespace Dash
         public WindowTemplate()
         {
             this.DefaultStyleKey = typeof(WindowTemplate);
+            DataContextChanged += WindowTemplate_DataContextChanged;
+        }
+
+        private void WindowTemplate_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            args.Handled = true;
         }
 
         public double HeaderHeight

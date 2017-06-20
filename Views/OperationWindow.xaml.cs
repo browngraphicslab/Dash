@@ -61,7 +61,8 @@ namespace Dash
                 Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
                 foreach (var documentModelField in _documentViewModel.DocumentModel.EnumFields())
                 {
-                    fields.Add(documentModelField.Key, documentModelField.Value.Copy());
+                    if (!fields.ContainsKey(documentModelField.Key))
+                        fields.Add(documentModelField.Key, documentModelField.Value.Copy());
                 }
                 DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 _output = docEndpoint.CreateDocumentAsync(DocumentViewModel.DocumentModel.DocumentType.Type);//TODO Should this be the same as source document?
@@ -245,22 +246,23 @@ namespace Dash
                 TemplateModel template = null;
                 if (layout.Fields.ContainsKey(pair.Key))
                     template = layout.Fields[pair.Key];
-                if (template != null) { 
+                if (template != null) {
                     // TODO commented out for debugging 
                     //else
                     //    Debug.Assert(false);
+                    var elements = template.MakeViewUI(pair.Value);
+                    if (elements != null)
+                    foreach (FrameworkElement element in template.MakeViewUI(pair.Value))
+                        if (element != null)
+                        {
+                            element.VerticalAlignment = VerticalAlignment.Center;
+                            element.HorizontalAlignment = HorizontalAlignment.Center;
 
-                    FrameworkElement element = template.MakeView(pair.Value) as FrameworkElement;
-                    if (element != null)
-                    {
-                        element.VerticalAlignment = VerticalAlignment.Center;
-                        element.HorizontalAlignment = HorizontalAlignment.Center;
-
-                        element.Margin = new Thickness(12, 5, 12, 5);
-                        Grid.SetColumn(element, 1);
-                        Grid.SetRow(element, j);
-                        grid.Children.Add(element);
-                    }
+                            element.Margin = new Thickness(12, 5, 12, 5);
+                            Grid.SetColumn(element, 1);
+                            Grid.SetRow(element, j);
+                            grid.Children.Add(element);
+                        }
                 }
 
                 //Add Key Values (field names) 

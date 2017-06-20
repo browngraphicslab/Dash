@@ -619,7 +619,12 @@ namespace Dash
                     dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
                 (sender as DocumentView).DataContext = dvm;
                 var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
-                testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+                // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+                var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"));
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")));
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"));
+                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel));
                 var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
                 var center = e.GetPosition(FreeformView.MainFreeformView);
                 FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
@@ -637,7 +642,9 @@ namespace Dash
                     SoloDisplaySize = CellSize;
                 }
 
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements());
+                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
+                foreach (var s in SoloDisplayElements)
+                    s.RenderTransform = new TranslateTransform();
                 ViewIsEnabled = false;
                 SoloDisplayVisibility = Visibility.Visible;
             }

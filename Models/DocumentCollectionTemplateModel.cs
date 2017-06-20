@@ -1,6 +1,8 @@
 ﻿using Dash.Models;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -12,7 +14,7 @@ namespace Dash
         {
         }
 
-        public override UIElement MakeView(FieldModel fieldModel)
+        protected override List<UIElement> MakeView(FieldModel fieldModel)
         {
             var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
             Debug.Assert(collectionFieldModel != null);
@@ -22,8 +24,8 @@ namespace Dash
 
             Canvas.SetTop(view, Top);
             Canvas.SetLeft(view, Left);
-
-            return view;
+            
+            return new List<UIElement>(new UIElement[] { view });
         }
     }
 }
