@@ -86,7 +86,6 @@ namespace Dash
             view.DataContext = opvm;
             XFreeformView.Canvas.Children.Add(view);
             _documentViews.Add(opModel.Id, view);
-
         }
 
         /// <summary>
@@ -270,8 +269,6 @@ namespace Dash
                     _connectionLine = null;
                 }
             }
-
-            
         }
 
         private void XCanvas_PointerMoved(object sender, PointerRoutedEventArgs e)

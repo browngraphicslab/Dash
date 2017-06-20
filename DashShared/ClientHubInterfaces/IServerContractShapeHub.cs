@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace DashShared
 {
+    /// <summary>
+    /// Methods that the server shape hub must implement
+    /// </summary>
     public interface IServerContractShapeHub
     {
-        Task<Result> UpdateShapePosition(string id, double x, double y);
+        Task UpdateShapePosition(string id, double x, double y);
 
-        Task<Result> UpdateShapeSize(string id, double width, double height);
+        Task UpdateShapeSize(string id, double width, double height);
+
+        void SendNewShape(ShapeModel model);
 
     }
 }

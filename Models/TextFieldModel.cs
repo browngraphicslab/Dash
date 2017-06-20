@@ -8,6 +8,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Microsoft.Extensions.DependencyInjection;
+using Dash.Models;
 
 namespace Dash
 {
@@ -18,12 +19,20 @@ namespace Dash
     {
         public TextFieldModel() { }
 
+        /// <summary>
+        /// Create a new text field model with the passed in string as data
+        /// </summary>
+        /// <param name="data"></param>
         public TextFieldModel(string data)
         {
             Data = data;
         }
 
         private string _data;
+
+        /// <summary>
+        /// The text which is the field model contains
+        /// </summary>
         public string Data
         {
             get { return _data; }
@@ -38,44 +47,6 @@ namespace Dash
             {
                 Data = fm.Data;
             }
-        }
-
-        /// <summary>
-        /// Creates TextBlock using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            var textTemplate = template as TextTemplateModel;
-            Debug.Assert(textTemplate != null);
-            
-            // Binds Data Property of the class with the Text field in UIElement 
-            Binding binding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Data")
-            };
-
-            // Allows for edits on Prototype to be reflected on delegates 
-            var tb = textTemplate.Editable ? (FrameworkElement)new TextBox() : new TextBlock();
-            if (tb is TextBox)
-            {
-                //binding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
-                tb.SetBinding(TextBox.TextProperty, binding);
-                (tb as TextBox).TextChanged += ((s, e) => Data = (s as TextBox).Text);
-                (tb as TextBox).FontWeight   = textTemplate.FontWeight;
-                (tb as TextBox).TextWrapping = textTemplate.TextWrapping;
-            } else if(tb is TextBlock)
-            {
-                tb.SetBinding(TextBlock.TextProperty, binding);
-                (tb as TextBlock).FontWeight   = textTemplate.FontWeight;
-                (tb as TextBlock).TextWrapping = textTemplate.TextWrapping;
-            }
-
-            Canvas.SetTop(tb, textTemplate.Top);
-            Canvas.SetLeft(tb, textTemplate.Left);
-            tb.Visibility = textTemplate.Visibility;
-
-            return tb;
         }
     }
 }

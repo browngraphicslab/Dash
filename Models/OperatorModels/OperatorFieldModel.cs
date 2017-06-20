@@ -32,17 +32,6 @@ namespace Dash
         public virtual List<Key> Outputs{ get; } = new List<Key>();
 
         /// <summary>
-        /// Returns the UIElement for operator 
-        /// </summary>
-        /// <returns></returns>
-        public override UIElement MakeView(TemplateModel template)
-        {
-            OperatorView view = new OperatorView();
-            view.DataContext = this;
-            return view;
-        }
-
-        /// <summary>
         /// Abstract method to execute the operator
         /// </summary>
         /// <param name="inputReferences"></param>

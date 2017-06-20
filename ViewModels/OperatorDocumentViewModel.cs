@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Models.OperatorModels;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -22,14 +23,17 @@ namespace Dash.ViewModels
         /// <returns></returns>
         public override List<UIElement> GetUiElements()
         {
-            List<UIElement> elements = new List<UIElement>();
-            LayoutModel model = GetLayoutModel();
-            OperatorView view = DocumentModel.Field(OperatorDocumentModel.OperatorKey).MakeView(model.Fields[OperatorDocumentModel.OperatorKey]) as OperatorView;
-            Debug.Assert(view != null);
-            view.IoDragStarted += View_IODragStarted;
-            view.IoDragEnded += View_IoDragEnded;
-            elements.Add(view);
-            return elements;
+            var uiElements = base.GetUiElements();
+            foreach (var uiele in uiElements)
+            {
+                var opView = uiele as OperatorView;
+                if (opView != null)
+                {
+                    opView.IoDragStarted += View_IODragStarted;
+                    opView.IoDragEnded += View_IoDragEnded;
+                }
+            }
+            return uiElements;
         }
 
         private void View_IoDragEnded(OperatorView.IOReference ioReference)

@@ -41,7 +41,20 @@ namespace Dash
         /// </summary>
         private FrameworkElement _container;
 
+        /// <summary>
+        /// The overlay canvas used to display the thumbs
+        /// </summary>
         private Canvas _overlayCanvas;
+
+        /// <summary>
+        /// Whether or not the editable field frame is currently editing
+        /// </summary>
+        private bool _isEditing;
+
+        private readonly Color _visibleBorderColor = Colors.CornflowerBlue;
+        private readonly Color _hiddenBordercolor = Colors.Transparent;
+        private readonly Thickness _borderThickness = new Thickness(1);
+
 
         private enum ResizeHandlePositions
         {
@@ -53,6 +66,18 @@ namespace Dash
         }
 
         private Dictionary<Thumb, ResizeHandlePositions> _resizeHandleToPosition = new Dictionary<Thumb, ResizeHandlePositions>();
+
+        /// <summary>
+        /// The inner content of the window can be anything!
+        /// </summary>
+        public object EditableContent
+        {
+            get { return (object)GetValue(EditableContentProperty); }
+            set { SetValue(EditableContentProperty, value); }
+        }
+
+        public static readonly DependencyProperty EditableContentProperty = DependencyProperty.Register(
+            "EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(default(object)));
 
         public EditableFieldFrame(Key key)
         {
@@ -86,25 +111,25 @@ namespace Dash
 
         private void InstantiateResizeHandles()
         {
-            var _leftLowerResizeHandle = InstantiateThumb();
-            _overlayCanvas.Children.Add(_leftLowerResizeHandle);
-            _resizeHandleToPosition.Add(_leftLowerResizeHandle, ResizeHandlePositions.LeftLower);
+            var leftLowerResizeHandle = InstantiateThumb();
+            _overlayCanvas.Children.Add(leftLowerResizeHandle);
+            _resizeHandleToPosition.Add(leftLowerResizeHandle, ResizeHandlePositions.LeftLower);
 
-            var _leftUpperResizeHandle = InstantiateThumb();
-            _overlayCanvas.Children.Add(_leftUpperResizeHandle);
-            _resizeHandleToPosition.Add(_leftUpperResizeHandle, ResizeHandlePositions.LeftUpper);
+            var leftUpperResizeHandle = InstantiateThumb();
+            _overlayCanvas.Children.Add(leftUpperResizeHandle);
+            _resizeHandleToPosition.Add(leftUpperResizeHandle, ResizeHandlePositions.LeftUpper);
 
-            var _rightLowerResizeHandle = InstantiateThumb();
-            _overlayCanvas.Children.Add(_rightLowerResizeHandle);
-            _resizeHandleToPosition.Add(_rightLowerResizeHandle, ResizeHandlePositions.RightLower);
+            var rightLowerResizeHandle = InstantiateThumb();
+            _overlayCanvas.Children.Add(rightLowerResizeHandle);
+            _resizeHandleToPosition.Add(rightLowerResizeHandle, ResizeHandlePositions.RightLower);
 
-            var _rightUpperResizeHandle = InstantiateThumb();
-            _overlayCanvas.Children.Add(_rightUpperResizeHandle);
-            _resizeHandleToPosition.Add(_rightUpperResizeHandle, ResizeHandlePositions.RightUpper);
+            var rightUpperResizeHandle = InstantiateThumb();
+            _overlayCanvas.Children.Add(rightUpperResizeHandle);
+            _resizeHandleToPosition.Add(rightUpperResizeHandle, ResizeHandlePositions.RightUpper);
 
-            var _centerResizeHandle = InstantiateThumb();
-            _overlayCanvas.Children.Add(_centerResizeHandle);
-            _resizeHandleToPosition.Add(_centerResizeHandle, ResizeHandlePositions.Center);
+            var centerResizeHandle = InstantiateThumb();
+            _overlayCanvas.Children.Add(centerResizeHandle);
+            _resizeHandleToPosition.Add(centerResizeHandle, ResizeHandlePositions.Center);
 
         }
 
@@ -144,14 +169,24 @@ namespace Dash
 
         private void _container_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DisplayResizeHandles();
+            _isEditing = !_isEditing;
+            DisplayResizeHandles(_isEditing);
+            DisplayBorder(_isEditing);
         }
 
-        private void DisplayResizeHandles()
+        private void DisplayBorder(bool isVisible)
+        {
+            BorderBrush = _isEditing
+                ? new SolidColorBrush(_visibleBorderColor)
+                : new SolidColorBrush(_hiddenBordercolor);
+            BorderThickness = _borderThickness;
+        }
+
+        private void DisplayResizeHandles(bool isVisible)
         {
             foreach (var kvp in _resizeHandleToPosition)
             {
-                kvp.Key.Visibility = Visibility.Visible;
+                kvp.Key.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -162,7 +197,7 @@ namespace Dash
                 Height = 10,
                 Width = 10,
                 Background = new SolidColorBrush(Colors.White),
-                BorderBrush = new SolidColorBrush(Colors.CornflowerBlue),
+                BorderBrush = new SolidColorBrush(_visibleBorderColor),
                 Visibility = Visibility.Collapsed
             };
 
@@ -225,18 +260,5 @@ namespace Dash
 
             e.Handled = true;
         }
-
-        /// <summary>
-        /// The inner content of the window can be anything!
-        /// </summary>
-        public object EditableContent
-        {
-            get { return GetValue(EditableContentProperty); }
-            set { SetValue(EditableContentProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for EditableContent.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EditableContentProperty =
-            DependencyProperty.Register("EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(null));
     }
 }

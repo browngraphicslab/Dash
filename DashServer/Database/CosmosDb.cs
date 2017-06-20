@@ -71,6 +71,7 @@ namespace DashServer
                 {
                     Debug.WriteLine("  " + exception.Message);
                 }
+                // If you throw here the database did not connect
                 throw;
             }
         }

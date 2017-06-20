@@ -72,16 +72,47 @@ namespace Dash
         public virtual List<UIElement> GetUiElements()
         {
             var uiElements = new List<UIElement>();
-            LayoutModel layout = GetLayoutModel();
-            foreach (var field in DocumentModel.EnumFields())
+            var layout = GetLayoutModel();
+
+            if (layout.ShowAllFields) 
             {
-                if (layout.Fields.ContainsKey(field.Key))
-                {
-                    uiElements.Add(field.Value.MakeView(layout.Fields[field.Key]));
-                }
+                showAllDocumentFields(uiElements);
+            }
+            else
+            {
+                foreach (var lEle in layout.Fields)
+                    if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel) {
+                        var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
+                        if (uiele != null)
+                            uiElements.Add(uiele);
+                    }
+                    else if (DocumentModel.Field(lEle.Key) != null)
+                    {
+                        uiElements.Add(lEle.Value.MakeView(DocumentModel.Field(lEle.Key)));
+                    }
             }
             return uiElements;
         }
+
+        void showAllDocumentFields(List<UIElement> uiElements)
+        {
+            double yloc = 0;
+            foreach (var f in DocumentModel.EnumFields())
+                if (f.Key != GetFieldKeyByName("Delegates"))
+                {
+                    if (f.Value is DocumentCollectionFieldModel)
+                    {
+                        uiElements.Add(new DocumentCollectionTemplateModel(0, yloc, 500, 100, Visibility.Visible).MakeView(f.Value));
+                        yloc += 500;
+                    }
+                    else
+                    {
+                        uiElements.Add(new TextTemplateModel(0, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeView(f.Value));
+                        yloc += 20;
+                    }
+                }
+        }
+
         public LayoutModel GetLayoutModel()
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -141,7 +172,7 @@ namespace Dash
             if (layoutModelSource == null)
             {
                 var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                layoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
+                layoutModelSource = DefaultLayoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
             }
             var layoutKeyForDocumentType = GetFieldKeyByName(docType.Type);
             if (layoutModelSource.Field(layoutKeyForDocumentType) == null)
@@ -155,6 +186,10 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(docType)));
                 else if (docType.Type == "twoimages")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(docType)));
+                else if (docType.Type == "itunesLite")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunesLite(docType)));
+                else if (docType.Type == "itunes")
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunes(docType)));
                 else if (docType.Type == "operator")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(docType)));
                 else if (docType.Type == "example_api_object")
@@ -163,23 +198,9 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(docType)));
                 else if (docType.Type == "price_per_square_foot")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)));
-                else // if it's an unknown document type, then create a display for its known field types
-                {
-                    var fields = new Dictionary<Key, TemplateModel>();
-                    double yloc = 0;
-                    foreach (var f in docFields)
-                        if (f.Value is DocumentCollectionFieldModel)
-                        {
-                            fields.Add(f.Key, new DocumentCollectionTemplateModel(0, yloc, 500, 100, Visibility.Visible));
-                            yloc += 500;
-                        }
-                        else if (f.Value is TextFieldModel)
-                        {
-                            fields.Add(f.Key, new TextTemplateModel(0, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible));
-                            yloc += 20;
-                        }
-                    var lm = new LayoutModel(fields, docType);
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(lm));
+                else { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
+                       // this layout is created in showAllDocumentFields() 
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(new LayoutModel(true, docType)));
                 }
             }
             return new ReferenceFieldModel(layoutModelSource.Id, layoutKeyForDocumentType);

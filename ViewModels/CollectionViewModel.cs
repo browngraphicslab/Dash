@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Models;
 using Dash.StaticClasses;
+using DashShared;
 
 namespace Dash
 {
@@ -612,7 +613,17 @@ namespace Dash
             var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
             if (dvm != null)
             {
-
+                if (dvm.DocumentModel.DocumentType.Id == "itunes")
+                    dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
+                else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
+                    dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
+                (sender as DocumentView).DataContext = dvm;
+                var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
+                testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+                var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
+                var center = e.GetPosition(FreeformView.MainFreeformView);
+                FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
+                
                 if (GridViewVisibility == Visibility.Visible)
                 {
                     SoloDisplaySize = CellSize + 50;
@@ -630,6 +641,7 @@ namespace Dash
                 ViewIsEnabled = false;
                 SoloDisplayVisibility = Visibility.Visible;
             }
+            e.Handled = true;
         }
 
        

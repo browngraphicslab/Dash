@@ -30,11 +30,6 @@ namespace Dash
             DocId = docId;
             FieldKey = fieldKey;
         }
-        
-        public override UIElement MakeView(TemplateModel template)
-        {
-            throw new NotImplementedException();
-        }
 
         public override bool Equals(object obj)
         {

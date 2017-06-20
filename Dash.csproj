@@ -119,6 +119,7 @@
     <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\ImageOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
@@ -135,7 +136,6 @@
     <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\SignalrClient.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />

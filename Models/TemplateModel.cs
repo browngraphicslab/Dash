@@ -8,44 +8,48 @@ using Windows.UI.Xaml;
 
 namespace Dash
 {
-    public abstract class TemplateModel : INotifyPropertyChanged
+    public abstract class TemplateModel : ViewModelBase
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void NotifyPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        private double _left;
 
         public double Left
         {
             get { return _left; }
-            set
-            {
-                _left = value;
-
-                NotifyPropertyChanged("Left");
-            }
+            set { SetProperty(ref _left, value); }
         }
+
+        private double _top;
 
         public double Top
         {
             get { return _top; }
-            set
-            {
-                _top = value;
-
-                NotifyPropertyChanged("Top");
-            }
+            set { SetProperty(ref _top, value); }
         }
 
-        public Visibility Visibility { get; set; }
+        private Visibility _visibility;
 
-        public double Width { get; set; }
-        public double Height { get; set; }
+        public Visibility Visibility
+        {
+            get { return _visibility; }
+            set { SetProperty(ref _visibility, value); }
+        }
 
-        private double _left;
-        private double _top;
+        private double _width;
+
+        public double Width
+        {
+            get { return _width; }
+            set { SetProperty(ref _width, value); }
+        }
+
+        private double _height;
+
+        public double Height
+        {
+            get { return _height; }
+            set { SetProperty(ref _height, value); }
+        }
+
 
         public TemplateModel(double left = 0, double top = 0, double width = 0, double height = 0, Visibility visibility = Visibility.Visible)
         {
@@ -54,6 +58,12 @@ namespace Dash
             Width = width;
             Height = height;
             Visibility = visibility;
+        }/// <summary>
+         /// Creates TextBlock using layout information from template and Data 
+         /// </summary>
+        public virtual UIElement MakeView(FieldModel fieldModel)
+        {
+            return null;
         }
     }
 }

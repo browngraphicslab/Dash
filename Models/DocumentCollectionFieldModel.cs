@@ -16,6 +16,8 @@ namespace Dash
             _docs = docs;
         }
 
+        public List<DocumentModel> Documents { get { return _docs; } }
+
         public void AddDocumentModel(DocumentModel doc)
         {
             _docs.Add(doc);
@@ -26,18 +28,5 @@ namespace Dash
             return _docs;
         }
 
-        public override UIElement MakeView(TemplateModel template)
-        {
-            var collectionTemplate = template as DocumentCollectionTemplateModel;
-            Debug.Assert(collectionTemplate != null);
-            var collectionModel = new CollectionModel(new ObservableCollection<DocumentModel>(_docs));
-            var collectionViewModel = new CollectionViewModel(collectionModel);
-            var view = new CollectionView(collectionViewModel);
-
-            Canvas.SetTop(view, collectionTemplate.Top);
-            Canvas.SetLeft(view, collectionTemplate.Left);
-
-            return view;
-        }
     }
 }
