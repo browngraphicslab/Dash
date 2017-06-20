@@ -129,5 +129,15 @@ namespace Dash.Views.HomePage
         {
             xContentFrame.Navigate(typeof(DeletedPage));
         }
+
+        private void xProfileButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xContentFrame.Navigate(typeof(ProfilePage));
+        }
+
+        private void xSettingsButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xContentFrame.Navigate(typeof(SettingsPage));
+        }
     }
 }

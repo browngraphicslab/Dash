@@ -13,6 +13,37 @@
             </NavigationThemeTransition>
         </TransitionCollection>
     </Page.Transitions>
+     <Page.Resources>
+        <Style  x:Key="ButtonStyle" TargetType="Button">
+            <Setter Property="Foreground" Value="#393185"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup x:Name="CommonStates">
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="PointerOver">
+                                        <Storyboard>
+                                            <ColorAnimation Duration="0" From="#CCFFFFFF" To="MidnightBlue" Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="Content1" />
+                                        </Storyboard>
+                                    </VisualState>
+                                    <VisualState x:Name="Pressed">
+                                        <Storyboard>
+                                            <ColorAnimation Duration="0" From="#CCFFFFFF" To="MidnightBlue" Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)" Storyboard.TargetName="Content1" />
+                                        </Storyboard>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <Grid>
+                                <ContentPresenter x:Name="Content1"/>
+                            </Grid>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
     <Grid x:Name="xMainGrid" Background="White">
         <SplitView x:Name="xMainSplitView" Background="Black" DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250">
             <SplitView.PaneBackground>
@@ -20,17 +51,17 @@
             </SplitView.PaneBackground>
             <SplitView.Pane>
                 <StackPanel Orientation="Vertical">
-                    <Button x:Name="xMyDashBoardsButton" Background="Transparent" Foreground="WhiteSmoke" Margin="0,40,0,0" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Tapped="xMyDashBoardsButton_Tapped" Padding="10">
+                    <Button x:Name="xMyDashBoardsButton" Background="Transparent" Foreground="WhiteSmoke" Margin="0,50,10,10" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Tapped="xMyDashBoardsButton_Tapped" Style="{StaticResource ButtonStyle}">
                         <StackPanel x:Name="xMyDashboardsStackPanel" Orientation="Horizontal" Margin="15,0,0,0" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center">
                             <SymbolIcon Symbol="AllApps" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
-                            <TextBlock x:Name="xMyDashboardsTextBlock" Text="MY DASHBOARDS" VerticalAlignment="Center" IsHitTestVisible="False" HorizontalAlignment="Center" FontSize="12"  Margin="20,0,0,0"/>
+                            <TextBlock x:Name="xMyDashboardsTextBlock" Text="MY DASHBOARDS" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="12"  Margin="20,0,0,0"/>
                             <Button x:Name="xCollapse" FontFamily="Marlett" IsHitTestVisible="False" FontSize="{Binding ElementName=xMyDashboardsTextBlock,Path=FontSize}" Content="5" Foreground="WhiteSmoke" Margin="5,0,0,0"/>
                             <Button x:Name="xExpand" FontFamily="Marlett" IsHitTestVisible="False" FontSize="{Binding ElementName=xMyDashboardsTextBlock,Path=FontSize}" Content="6" Foreground="WhiteSmoke" Margin="5,0,0,0" Visibility="Collapsed"/>
                         </StackPanel>
                     </Button>
                     <StackPanel x:Name="xMyDashboardsSubMenu">
                         <StackPanel.Resources></StackPanel.Resources>
-                        <Button x:Name="xAllDashboardsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="5" Tapped="xAllDashboardsButton_Tapped">
+                        <Button x:Name="xAllDashboardsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Margin="10" Tapped="xAllDashboardsButton_Tapped" Style="{StaticResource ButtonStyle}">
                             <StackPanel x:Name="xAllDashboardsStackPanel" Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="55,0,0,0">
                                 <SymbolIcon Symbol="View" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
                                 <TextBlock x:Name="xAllDashboardsTextBlock" Text="All Dashboards" VerticalAlignment="Center" HorizontalAlignment="Center"
@@ -46,26 +77,26 @@
                                 </TextBlock>
                             </StackPanel>
                         </Button>-->
-                        <Button x:Name="xRecentlyViewedButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xAllDashboardsButton,Path=Padding}" Tapped="xRecentlyViewedButton_Tapped">
+                        <Button x:Name="xRecentlyViewedButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Margin="{Binding ElementName=xAllDashboardsButton,Path=Margin}" Tapped="xRecentlyViewedButton_Tapped" Style="{StaticResource ButtonStyle}">
                             <StackPanel Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="{Binding ElementName=xAllDashboardsStackPanel, Path=Margin}" >
                                 <SymbolIcon Symbol="Clock" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}" />
                                 <TextBlock Text="Recently Viewed" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding ElementName=xAllDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xAllDashboardsTextBlock, Path=Margin}"></TextBlock>
                             </StackPanel>
                         </Button>
-                        <Button x:Name="xDeletedButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xAllDashboardsButton,Path=Padding}" Tapped="xDeletedButton_Tapped">
+                        <Button x:Name="xDeletedButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Margin="{Binding ElementName=xAllDashboardsButton,Path=Margin}" Tapped="xDeletedButton_Tapped" Style="{StaticResource ButtonStyle}">
                             <StackPanel Orientation="Horizontal" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" Margin="{Binding ElementName=xAllDashboardsStackPanel, Path=Margin}">
                                 <SymbolIcon Symbol="Delete" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}" />
                                 <TextBlock Text="Deleted" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding ElementName=xAllDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xAllDashboardsTextBlock, Path=Margin}"></TextBlock>
                             </StackPanel>
                         </Button>
                     </StackPanel>
-                    <Button x:Name="xProfileButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xMyDashBoardsButton, Path=Padding}">
+                    <Button x:Name="xProfileButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Margin="{Binding ElementName=xMyDashBoardsButton, Path=Margin}" Tapped="xProfileButton_Tapped" Style="{StaticResource ButtonStyle}">
                         <StackPanel Orientation="Horizontal" Margin="{Binding ElementName=xMyDashboardsStackPanel,Path=Margin}" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center" >
                             <SymbolIcon Symbol="Contact" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
                             <TextBlock Text="PROFILE" VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="{Binding ElementName=xMyDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xMyDashboardsTextBlock,Path=Margin}"/>
                         </StackPanel>
                     </Button>
-                    <Button x:Name="xSettingsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Padding="{Binding ElementName=xMyDashBoardsButton,Path=Padding}">
+                    <Button x:Name="xSettingsButton" Background="Transparent" Foreground="WhiteSmoke" Width="{Binding ElementName=xMainSplitView, Path=OpenPaneLength}" HorizontalContentAlignment="Left" Margin="0,10,10,10" Tapped="xSettingsButton_Tapped" Style="{StaticResource ButtonStyle}">
                         <StackPanel Orientation="Horizontal" Margin="{Binding ElementName=xMyDashboardsStackPanel,Path=Margin}" Height="{Binding ElementName=xPaneTop,Path=Height}" VerticalAlignment="Center">
                             <SymbolIcon Symbol="Setting" Height="{Binding ElementName=xPaneTop,Path=Height}" Width="{Binding ElementName=xPaneTop,Path=Height}"/>
                             <TextBlock Text="SETTINGS" VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="{Binding ElementName=xMyDashboardsTextBlock, Path=FontSize}"  Margin="{Binding ElementName=xMyDashboardsTextBlock,Path=Margin}"/>

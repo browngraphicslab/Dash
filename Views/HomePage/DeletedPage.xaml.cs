@@ -36,7 +36,7 @@ namespace Dash.Views.HomePage
 
         private void xCancelButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-                xDeleteButton.Visibility = Visibility.Collapsed;
+                xClearSelectionButton.Visibility = Visibility.Collapsed;
                 if (_isListView)
                 {
                     xGridToggle.Visibility = Visibility.Visible;
@@ -97,7 +97,7 @@ namespace Dash.Views.HomePage
                 {
                     xMainGridView.SelectionMode = ListViewSelectionMode.Multiple;
                 }
-                xDeleteButton.Visibility = Visibility.Visible;
+                xClearSelectionButton.Visibility = Visibility.Visible;
                 xListToggle.Visibility = Visibility.Collapsed;
                 xGridToggle.Visibility = Visibility.Collapsed;
                 xSelectButton.Visibility = Visibility.Collapsed;
