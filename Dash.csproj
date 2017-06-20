@@ -134,7 +134,6 @@
     <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\SignalrClient.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />

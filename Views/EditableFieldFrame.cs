@@ -72,13 +72,12 @@ namespace Dash
         /// </summary>
         public object EditableContent
         {
-            get { return GetValue(EditableContentProperty); }
+            get { return (object)GetValue(EditableContentProperty); }
             set { SetValue(EditableContentProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for EditableContent.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty EditableContentProperty =
-            DependencyProperty.Register("EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(null));
+        public static readonly DependencyProperty EditableContentProperty = DependencyProperty.Register(
+            "EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(default(object)));
 
         public EditableFieldFrame(Key key)
         {
