@@ -5,10 +5,12 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Composition;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
@@ -25,6 +27,13 @@ namespace Dash.Views
         public CollectionScreen()
         {
             this.InitializeComponent();
+        }
+
+        private void xCollectionList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            xSelectCollectionMessage.Visibility = Visibility.Collapsed;
+            xCollectionProperties.Visibility = Visibility.Visible;
+            xCollectionName.Visibility = Visibility.Visible;
         }
     }
 }

@@ -135,17 +135,14 @@
     <Compile Include="Views\FreeformView.xaml.cs">
       <DependentUpon>FreeformView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\HomePage\DashboardsUserControl.xaml.cs">
-      <DependentUpon>DashboardsUserControl.xaml</DependentUpon>
+    <Compile Include="Views\HomePage\DeletedPage.xaml.cs">
+      <DependentUpon>DeletedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\HomePage\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\HomePage\ProfileUserControl.xaml.cs">
-      <DependentUpon>ProfileUserControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\HomePage\SettingsUserControl.xaml.cs">
-      <DependentUpon>SettingsUserControl.xaml</DependentUpon>
+    <Compile Include="Views\HomePage\RecentlyViewedPage.xaml.cs">
+      <DependentUpon>RecentlyViewedPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
@@ -201,7 +198,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\HomePage\DashboardsUserControl.xaml">
+    <Page Include="Views\HomePage\DeletedPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -209,11 +206,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\HomePage\ProfileUserControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\HomePage\SettingsUserControl.xaml">
+    <Page Include="Views\HomePage\RecentlyViewedPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

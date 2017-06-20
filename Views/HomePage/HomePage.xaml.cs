@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -32,7 +33,47 @@ namespace Dash.Views.HomePage
             this.Frame.Navigate(typeof(MainPage));
         }
 
-        private void xLogoutButton_Tapped(object sender, TappedRoutedEventArgs e)
+        /// <summary>
+        /// Show confirm logout dialog when user clicks on the logout button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void xLogoutButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ContentDialog dialog = new ContentDialog()
+            {
+                Title = "Confirm Logout",
+                MaxWidth = this.ActualWidth,
+                MaxHeight = this.ActualHeight,
+                PrimaryButtonText = "Yes",
+                SecondaryButtonText = "Cancel",
+                Content = new TextBlock
+                {
+                    Text = "Are you sure you want to logout?",
+                    FontSize = 12,
+                },
+            };
+            dialog.PrimaryButtonClick += Dialog_PrimaryButtonClick;
+            dialog.SecondaryButtonClick += Dialog_SecondaryButtonClick;
+            await dialog.ShowAsync();
+        }
+
+        /// <summary>
+        /// Close confirm logout dialog if user clicks on the "Cancel" button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void Dialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+        {
+            sender.Hide();
+        }
+
+        /// <summary>
+        /// Logout and return to login page if user clicks on the "Yes" button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void Dialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
         {
             this.Frame.Navigate(typeof(LoginPage));
         }
@@ -42,6 +83,11 @@ namespace Dash.Views.HomePage
             this.Frame.Navigate(typeof(MainPage));
         }
 
+        /// <summary>
+        /// Toggle between collapsing and expanding the submenu under MyDashBoards
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xMyDashBoardsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             xMyDashboardsSubMenu.Visibility = xMyDashboardsSubMenu.Visibility == Visibility.Collapsed ? Visibility.Visible: Visibility.Collapsed;
@@ -49,14 +95,39 @@ namespace Dash.Views.HomePage
             xCollapse.Visibility = xCollapse.Visibility == Visibility.Collapsed ? Visibility.Visible : Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Bring user back to previous page (disabled since user shouldn't back out to the login page without loging out)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xBackButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             this.Frame.Navigate(typeof(LoginPage));
         }
 
+        /// <summary>
+        /// Content of splitview navigates to the CollectionScreen when the AllDashboardsButton is tapped on
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xAllDashboardsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             xContentFrame.Navigate(typeof(CollectionScreen));
+        }
+
+        /// <summary>
+        /// Content of splitview navigates to the RecentlyViewedPage when the RecentlyViewedButton is tapped on
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void xRecentlyViewedButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xContentFrame.Navigate(typeof(RecentlyViewedPage));
+        }
+
+        private void xDeletedButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xContentFrame.Navigate(typeof(DeletedPage));
         }
     }
 }

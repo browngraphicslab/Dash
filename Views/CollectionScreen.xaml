@@ -23,28 +23,39 @@
             <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                 <GradientStop Color="#FFF09F61" Offset="0"/>
                 <GradientStop Color="#FF39519F"/>
-                <GradientStop Color="#FF15181C" Offset="1"/>
+                <GradientStop Color="#FF212932" Offset="1"/>
             </LinearGradientBrush>
         </Grid.Background>
-        <StackPanel Orientation="Vertical" Margin="20,20,0,0">
+        <StackPanel Orientation="Vertical" Margin="70,30,0,0">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Padding="10">
                 <StackPanel.Resources>
                     <Style TargetType="Button">
                         <Setter Property="Margin" Value="10,0,0,0"></Setter>
                     </Style>
                 </StackPanel.Resources>
-                <Button Content="NEW" Width="90" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
-                <SearchBox Margin="10,0,0,0" Width="500"></SearchBox>
-                <Button Content="MY WORKSPACES" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
-                <Button Content="OTHER WORKSPACES" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
-                <Button Content="ALL WORKSPACES" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button x:Name="xNewButton" Content="NEW" Width="90" FontWeight="Bold" Foreground="#CCFFFFFF" BorderBrush="Transparent">
+                    <Button.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#FFF09F61" Offset="0"/>
+                            <GradientStop Color="#FF39519F"/>
+                            <GradientStop Color="#FF15181C" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Button.Background>
+                </Button>
+                <SearchBox Margin="10,0,0,0" Width="450" Background="#CCFFFFFF" BorderBrush="Transparent"></SearchBox>
+                <Button Content="MY WORKSPACES" Background="{Binding ElementName=xNewButton, Path=Background}" BorderBrush="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button Content="OTHER WORKSPACES" Background="{Binding ElementName=xNewButton, Path=Background}" BorderBrush="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button Content="ALL WORKSPACES" Background="{Binding ElementName=xNewButton, Path=Background}" BorderBrush="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
+                <Button  Background="{Binding ElementName=xNewButton, Path=Background}" BorderBrush="Transparent" Foreground="#CCFFFFFF">
+                    <SymbolIcon Symbol="ViewAll"/>
+                </Button>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="20,0,20,0">
                 <StackPanel x:Name="xMainContentPanel" Orientation="Vertical" Width="850" Height="570" Margin="0,0,10,0">
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Background="#E547ABF6">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Background="{Binding ElementName=xNewButton, Path=Background}" BorderBrush="Transparent">
                         <StackPanel.Resources>
                             <Style TargetType="Button">
-                                <Setter Property="Margin" Value="10,0,0,0"></Setter>
+                                <Setter Property="Margin" Value="10,0,0,0"/>
                             </Style>
                         </StackPanel.Resources>
                         <Button x:Name="xTitleButton" Content="TITLE" HorizontalContentAlignment="Left" Width="200" Background="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
@@ -52,11 +63,16 @@
                         <Button x:Name="xDateButton" Content="DATE" HorizontalContentAlignment="Left" Width="150" Background="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF"/>
                     </StackPanel>
                     <!--<ListView x:Name="xCollectionList" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Height="{Binding ElementName=xMainContentPanel, Path=Height, Converter={StaticResource BindingLinearConverter}, ConverterParameter=-30}" Margin="0,10,0,0" Background="#D8FFFFFF">-->
-                    <ListView x:Name="xCollectionList" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Height="530" Margin="0,10,0,0" Background="#D8FFFFFF">
+                    <ListView x:Name="xCollectionList" SelectionChanged="xCollectionList_SelectionChanged" Width="{Binding ElementName=xMainContentPanel, Path=Width}" Height="530" Margin="0,10,0,0">
+                        <ListView.Background>
+                            <SolidColorBrush  Color="#CCFFFFFF" Opacity="0.1"/>
+                        </ListView.Background>
                         <StackPanel Orientation="Horizontal">
                             <StackPanel.Resources>
                                 <Style TargetType="TextBlock">
                                     <Setter Property="Margin" Value="10,0,0,0"></Setter>
+                                    <Setter Property="Foreground" Value="#CCFFFFFF"/>
+                                    <Setter Property="FontFamily" Value="Segoe UI Symbol"/>
                                 </Style>
                             </StackPanel.Resources>
                             <TextBlock x:Name="xTitleText" Text="Testing title" Width="{Binding ElementName=xTitleButton,Path=Width}" Height="40"></TextBlock>
@@ -65,26 +81,36 @@
                         </StackPanel>
                     </ListView>
                 </StackPanel>
-                <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="240" Height="{Binding ElementName=xMainContentPanel, Path=Height}"  Background="#D8FFFFFF">
+                <Grid HorizontalAlignment="Center" VerticalAlignment="Center" Width="240" Height="{Binding ElementName=xMainContentPanel, Path=Height}"  Background="{Binding ElementName=xCollectionList, Path=Background}">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
+                        <RowDefinition Height="50"/>
                         <RowDefinition/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0">
-                        <TextBlock Text="Bind Collection Name Here" Padding="10" HorizontalAlignment="Center"/>
+                    <Grid Grid.Row="0" Margin="0,25,0,0">
+                        <TextBlock x:Name="xCollectionName" Text="Bind to Collection Name Here" Visibility="Collapsed" Foreground="#CCFFFFFF" FontSize="25" TextAlignment="Center" Padding="10"  HorizontalAlignment="Center" TextWrapping="WrapWholeWords" FontFamily="Segoe UI Symbol"/>
                     </Grid>
                     <Grid Grid.Row="1">
-                        <ListView x:Name="xCollectionProperties" Visibility="Visible">
+                        <TextBlock x:Name="xSelectCollectionMessage" Text="Select collection" FontSize="20" TextWrapping="WrapWholeWords" TextAlignment="Center" Height="50" VerticalAlignment="Center" Foreground="#CCFFFFFF" FontFamily="Segoe UI Symbol"/>
+                    </Grid>
+                    <Grid Grid.Row="2" Margin="0,0,0,25">
+                        <ListView x:Name="xCollectionProperties" Visibility="Collapsed" ScrollViewer.VerticalScrollMode="Disabled" Padding="10">
+                            <ListView.Resources>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="FontSize" Value="12"></Setter>
+                                    <Setter Property="Foreground" Value="#CCFFFFFF"/>
+                                    <Setter Property="FontFamily" Value="Segoe UI Symbol"/>
+                                </Style>
+                            </ListView.Resources>
                             <TextBlock Text="Creator:"></TextBlock>
                             <TextBlock Text="Date Created:"></TextBlock>
                             <TextBlock Text="Last Edited By:"></TextBlock>
                             <TextBlock Text="Tags:"></TextBlock>
                         </ListView>
-                        <TextBlock Visibility="Collapsed" Text="Select collection" TextWrapping="WrapWholeWords" TextAlignment="Center" Height="20" VerticalAlignment="Center" FontWeight="Bold" Foreground="#CCFFFFFF"/>
                     </Grid>
                 </Grid>
             </StackPanel>
-            <Button Content="ENTER" HorizontalAlignment="Center" Background="#E547ABF6" FontWeight="Bold" Foreground="#CCFFFFFF" Margin="0,20,0,0" Width="150"/>
+            <Button Content="ENTER" HorizontalAlignment="Center" Background="{Binding ElementName=xNewButton, Path=Background}" BorderBrush="Transparent" FontWeight="Bold" Foreground="#CCFFFFFF" Margin="0,20,0,0" Width="150"/>
         </StackPanel>
     </Grid>
 </Page>

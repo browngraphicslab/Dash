@@ -34,7 +34,7 @@ namespace Dash
         {
             this.InitializeComponent();
 
-            ApplicationView.PreferredLaunchViewSize = new Size(480, 800);
+            ApplicationView.PreferredLaunchViewSize = new Size(ApplicationView.GetForCurrentView().VisibleBounds.Width, ApplicationView.GetForCurrentView().VisibleBounds.Height);
             ApplicationView.PreferredLaunchWindowingMode = ApplicationViewWindowingMode.PreferredLaunchViewSize;
 
             OverlayCanvas.OnEllipseTapped += Ellipse_Tapped;
