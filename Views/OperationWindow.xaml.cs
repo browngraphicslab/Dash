@@ -217,9 +217,11 @@ namespace Dash
 
             XCanvas.Children.Add(_connectionLine);
 
-
-            CheckLinePresence(ioReference.ReferenceFieldModel);
-            _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+            if(!ioReference.IsOutput)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+            }
         }
 
         private void CancelDrag(Pointer p)
@@ -237,6 +239,12 @@ namespace Dash
             {
                 UndoLine();
                 return;
+            }
+
+            if (!ioReference.IsOutput)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
             }
 
             if (onDoc)
@@ -259,6 +267,28 @@ namespace Dash
             }
             else
             {
+                DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+                MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                x1MultiBinding.AddBinding(view, RenderTransformProperty);
+                x1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
+                MultiBinding<double> y1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(false),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                y1MultiBinding.AddBinding(view, RenderTransformProperty);
+                y1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
+                Binding x1Binding = new Binding
+                {
+                    Source = x1MultiBinding,
+                    Path = new PropertyPath("Property")
+                };
+                Binding y1Binding = new Binding
+                {
+                    Source = y1MultiBinding,
+                    Path = new PropertyPath("Property")
+                };
+
+                _connectionLine.SetBinding(Line.X2Property, x1Binding);
+                _connectionLine.SetBinding(Line.Y2Property, y1Binding);
                 if (ioReference.IsOutput)
                 {
                     var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
@@ -390,9 +420,14 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry) (sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(_output.Id, dictEntry.Key as Key), true, e.Pointer,
+                    new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, dictEntry.Key as Key), true, e.Pointer,
                     sender as Ellipse), true);
             }
+        }
+
+        private void UIElement_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Complete();
         }
     }
 }
