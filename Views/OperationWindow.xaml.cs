@@ -57,6 +57,7 @@ namespace Dash
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
         /// </summary>
         private HashSet<uint> _currentPointers = new HashSet<uint>();
+        private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
 
         /// <summary>
         /// DocumentViewModel of document that this operation window has as input
@@ -100,6 +101,7 @@ namespace Dash
                 vm.IODragStarted += Vm_IODragStarted;
                 view.DataContext = vm;
                 XFreeformView.Canvas.Children.Add(view);
+                _documentViews.Add(opModel.Id, view);
 
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
@@ -151,24 +153,29 @@ namespace Dash
             {
                 StrokeThickness = 5,
                 Stroke = new SolidColorBrush(Colors.Black),
-                X1 = pos.X,
-                Y1 = pos.Y,
                 X2 = pos.X,
                 Y2 = pos.Y,
                 CompositeMode = ElementCompositeMode.SourceOver//TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
-            //Point pos = Util.PointTransformFromVisual(ioReference.CursorPosition, XCanvas);
+            DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+            Binding x1Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(true),
+                Source = view,
+                Path = new PropertyPath("RenderTransform"),
+                ConverterParameter = new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XFreeformView.Canvas)
+            };
+            Binding y1Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(false),
+                Source = view,
+                Path = new PropertyPath("RenderTransform"),
+                ConverterParameter = new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XFreeformView.Canvas)
+            };
 
-            /*
-            Binding x1 = new Binding {Path = new PropertyPath("RenderTransform"), Source = ioReference.Box };
-            Binding y1 = new Binding {Path = new PropertyPath("RenderTransform"), Source = ioReference.Box };
-            //x1.Converter = new ConvertRenderTransform();
-            //y1.Converter = new ConvertRenderTransform();
-            _connectionLine.SetBinding(Line.X1Property, x1);
-            _connectionLine.SetBinding(Line.Y1Property, y1);
-            // TODO attempt at binding, binding to position calculated doesn't work obviously 
-            // TODO ALSO ioReference.Ellipse has margin of 0 so???????????????????????????????????
-            //*/
+             
+            _connectionLine.SetBinding(Line.X1Property, x1Binding);
+            _connectionLine.SetBinding(Line.Y1Property, y1Binding);
 
             XFreeformView.Canvas.Children.Add(_connectionLine);
             //XCanvas.Children.Add(_connectionLine);
@@ -191,9 +198,9 @@ namespace Dash
         private void WindowTemplate_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             _currentPointers.Remove(e.Pointer.PointerId);
-            XFreeformView.Canvas.Children.Remove(_connectionLine);
+            //XFreeformView.Canvas.Children.Remove(_connectionLine);
             //XCanvas.Children.Remove(_connectionLine);
-            _lines.Remove(_connectionLine);
+            //_lines.Remove(_connectionLine);
             _connectionLine = null;
             _currReference = null;
         }

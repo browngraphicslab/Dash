@@ -97,6 +97,7 @@
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
