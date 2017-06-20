@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -405,18 +406,37 @@ namespace Dash
             Clip = new RectangleGeometry {Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height)};
         }
 
+        /// <summary>
+        /// Handles drop events onto the canvas, usually by creating a copy document of the original and
+        /// placing it into the canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">drag event arguments</param>
         private void XCanvas_Drop(object sender, DragEventArgs e) {
-            XCanvas.Background = new SolidColorBrush(Colors.Yellow);
-            Image copy = new Image();
-            Image dragged = e.DataView.Properties["image"] as Image;
-            copy.Source = dragged.Source;
-            copy.Height = dragged.Height;
-            copy.Width = dragged.Width;
-            copy.Stretch = dragged.Stretch;
+            Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
+            
+            // make document
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
+            // create fields for document
+            var fields = new Dictionary<Key, FieldModel>();
+
+            Key contentKey = keyController.CreateKeyAsync("content");
+            fields[contentKey] = new ImageFieldModel(dragged.BaseUri);
+
+            DocumentModel d = docController.CreateDocumentAsync("animage");
+            d.SetFields(fields);
+
+            d = DocumentModel.OneImage();
+            DocumentViewModel senpai = new DocumentViewModel(d);
+            // update views
+            DocumentView v = new DocumentView();
+            v.DataContext = senpai;
             Point dropPos = e.GetPosition(XCanvas);
-            copy.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
-            Dictionary<DashShared.Key, FieldViewModel> fields = new Dictionary<DashShared.Key, FieldViewModel>();
-            XCanvas.Children.Add(copy);
+            v.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
+
+            XCanvas.Children.Add(v);
         }
         
         private void XCanvas_DragOver_1(object sender, DragEventArgs e) {

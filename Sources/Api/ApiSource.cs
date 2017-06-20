@@ -93,7 +93,7 @@ namespace Dash.Sources.Api {
             
             // put document results into collection model
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var collection = docController.CreateDocumentAsync("collection");
+            var collection = docController.CreateDocumentAsync("collection"); //_example?
             collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
             DocumentViewModel cm = new DocumentViewModel(collection);
             DocumentView v = new DocumentView() { DataContext = cm };

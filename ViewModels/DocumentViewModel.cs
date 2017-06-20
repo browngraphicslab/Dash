@@ -136,6 +136,7 @@ namespace Dash
             // If the Layout field is a LayoutModel, then use it.
             if (layoutField is LayoutModelFieldModel)
             {
+
                 return new ReferenceFieldModel(doc.Id, DocumentModel.LayoutKey);
             }
 
