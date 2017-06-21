@@ -13,6 +13,7 @@ namespace DashWebServer
 {
     /// <summary>
     ///     Serves as the connector for the cosmosDb database
+    /// Based off of https://auth0.com/blog/documentdb-with-aspnetcore/
     /// </summary>
     public class CosmosDb : IDocumentRepository
     {
