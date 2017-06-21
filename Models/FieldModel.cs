@@ -16,6 +16,9 @@ namespace Dash
     {
         private ReferenceFieldModel _inputReference;
 
+        /// <summary>
+        /// Optional reference to a field that this field takes as input
+        /// </summary>
         public ReferenceFieldModel InputReference
         {
             get { return _inputReference; }
@@ -32,6 +35,10 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Event Handler that handles when the input reference is updated
+        /// </summary>
+        /// <param name="fieldReference"></param>
         private void FieldModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
             if (fieldReference.Equals(InputReference))
@@ -40,10 +47,18 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Virtual method to update the value of the FieldModel when the Data in the field the
+        /// InputReference references is updated
+        /// </summary>
+        /// <param name="fieldReference"></param>
         protected virtual void UpdateValue(ReferenceFieldModel fieldReference)
         {
         }
 
+        /// <summary>
+        /// List of references to fields that take this field as input
+        /// </summary>
         protected List<ReferenceFieldModel> OutputReferences { get; set; } = new List<ReferenceFieldModel>();
 
         public void AddOutputReference(ReferenceFieldModel reference)

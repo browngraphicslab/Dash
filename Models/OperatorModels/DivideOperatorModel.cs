@@ -24,9 +24,10 @@ namespace Dash
 
         //Output keys
         public static readonly Key QuotientKey = new Key("DA705E3D-4773-4C7D-B770-536BA321D0FA", "Quotient");
+        public static readonly Key TestKey = new Key("TestOut", "TestOut");
 
         public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
-        public override List<Key> Outputs { get; } = new List<Key> {QuotientKey};
+        public override List<Key> Outputs { get; } = new List<Key> {QuotientKey, TestKey};
 
         public DivideOperatorModel()
         {
@@ -46,6 +47,7 @@ namespace Dash
             double a = numberA.Data;
             double b = numberB.Data;
             result[QuotientKey] = new NumberFieldModel(a / b);
+            result[TestKey] = new NumberFieldModel(63);
             return result;
         }
     }

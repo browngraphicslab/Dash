@@ -12,8 +12,6 @@ namespace Dash
     {
        private FreeformModel _freeformModel;
         
-        //public static FreeformViewModel Instance { get; private set; }
-
         public delegate void ElementAddedEvent(UIElement element, float left, float top);
 
         public event ElementAddedEvent ElementAdded;

@@ -21,6 +21,10 @@ namespace Dash
             set { SetProperty(ref _data, value); }
         }
 
+        /// <summary>
+        /// Update the value of the FieldModel and send update event for the field
+        /// </summary>
+        /// <param name="fieldReference"></param>
         protected override void UpdateValue(ReferenceFieldModel fieldReference)
         {
             DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
@@ -29,18 +33,6 @@ namespace Dash
             {
                 Data = fm.Data;
             }
-
-            //    DocumentModel doc = cont.GetDocumentAsync(fieldReference.DocId);
-            //    if (doc != null)
-            //    {
-            //        if (doc.Fields.ContainsKey(fieldReference.FieldKey))
-            //        {
-            //            var fm = doc.Fields[fieldReference.FieldKey] as NumberFieldModel;
-            //            Data = fm.Data;
-            //        }
-            //    }
-            //}
         }
-        
     }
 }
