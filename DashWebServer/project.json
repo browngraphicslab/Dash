@@ -24,9 +24,6 @@
   "frameworks": {
     "netcoreapp1.0": {
       "dependencies": {
-        "DashShared": {
-          "target": "project"
-        }
       },
       "imports": [
         "dotnet5.6",
