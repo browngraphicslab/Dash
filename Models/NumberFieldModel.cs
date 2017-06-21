@@ -34,5 +34,10 @@ namespace Dash
                 Data = fm.Data;
             }
         }
+
+        public override string ToString()
+        {
+            return $"NumberFieldModel: {Data}";
+        }
     }
 }

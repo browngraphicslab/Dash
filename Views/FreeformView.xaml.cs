@@ -627,7 +627,13 @@ namespace Dash
 
         private void XCanvas_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            CancelDrag(e.Pointer);
+            if (_currReference != null)
+            {
+                DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                FieldModel fm = docEnd.GetFieldInDocument(_currReference.ReferenceFieldModel);
+                Debug.WriteLine(fm);
+                CancelDrag(e.Pointer);
+            }
         }
     }
 }
