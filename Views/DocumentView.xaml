@@ -6,18 +6,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Width="{Binding Width}"
-    Height="{Binding Height}"
     d:DesignHeight="300"
     d:DesignWidth="300"  DoubleTapped="UserControl_DoubleTapped">
 
-    <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}"  BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped" >
+    <Grid x:Name="XGrid" ManipulationMode="All"  Padding="0" Style="{StaticResource xNodeContainerGrid}" >
                 <Canvas 
             Name="xCanvas" 
             HorizontalAlignment="Stretch" 
             VerticalAlignment="Stretch"
-            ManipulationMode="All"
-            Background="{Binding BackgroundBrush}">
+            ManipulationMode="All">
                 </Canvas>
     </Grid>
 </UserControl>

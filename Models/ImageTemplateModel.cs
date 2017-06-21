@@ -15,12 +15,14 @@ namespace Dash
 {
     public class ImageTemplateModel : TemplateModel
     {
+        private bool fill;
         public ImageTemplateModel(double left = 0, double top = 0, double width = 0, double height = 0,
-            Visibility visibility = Visibility.Visible)
+            Visibility visibility = Visibility.Visible, bool fill = false)
             : base(left, top, width, height, visibility)
         {
-
-        } 
+            this.fill = fill;
+        }
+        
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
@@ -40,6 +42,8 @@ namespace Dash
             image.Visibility = Visibility;
             image.Width =  Width;
             image.Height = Height;
+            if (fill)
+                image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
             return new List<UIElement>(new UIElement[] { image });
         }
     }

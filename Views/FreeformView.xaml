@@ -10,7 +10,7 @@
     d:DesignWidth="400" SizeChanged="UserControl_SizeChanged"
     Name="XControl">
 
-    <Canvas x:Name="XCanvas" HorizontalAlignment="Stretch" Width="{Binding CanvasWidth}" Background="White" 
+    <Canvas x:Name="XCanvas" AllowDrop="True" Drop="XCanvas_Drop" DragOver="XCanvas_DragOver_1" HorizontalAlignment="Stretch" Width="{Binding CanvasWidth}" Background="White" 
             Margin="0,0,-0,-0" Height="{Binding CanvasHeight}" VerticalAlignment="Stretch" 
             ManipulationMode="All" PointerWheelChanged="UserControl_PointerWheelChanged" 
             ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 

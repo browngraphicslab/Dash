@@ -17,6 +17,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -402,5 +406,35 @@ namespace Dash
             Clip = new RectangleGeometry {Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height)};
         }
 
+        /// <summary>
+        /// Handles drop events onto the canvas, usually by creating a copy document of the original and
+        /// placing it into the canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">drag event arguments</param>
+        private void XCanvas_Drop(object sender, DragEventArgs e) {
+            Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
+            
+            // make document
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
+            // generate single-image document model
+            DocumentModel image = DocumentModel.OneImage();
+            image.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(dragged), true);
+            Key contentKey = keyController.CreateKeyAsync("content");
+            DocumentViewModel model3 = new DocumentViewModel(image);
+            DocumentView view3 = new DocumentView(model3);
+
+            // position relative to mouse
+            Point dropPos = e.GetPosition(XCanvas);
+            view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
+            
+            XCanvas.Children.Add(view3);
+        }
+        
+        private void XCanvas_DragOver_1(object sender, DragEventArgs e) {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+        }
     }
 }
