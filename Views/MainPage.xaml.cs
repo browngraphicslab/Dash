@@ -118,13 +118,13 @@ namespace Dash
             model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
 
 
-            DocumentView view1 = new DocumentView(model1);
-            DocumentView view2 = new DocumentView(model2);
-            DocumentView view3 = new DocumentView(model3);
-            DocumentView view4 = new DocumentView(model4);
-            DocumentView view5 = new DocumentView(model5);
+            //DocumentView view1 = new DocumentView(model1);
+            //DocumentView view2 = new DocumentView(model2);
+            //DocumentView view3 = new DocumentView(model3);
+            //DocumentView view4 = new DocumentView(model4);
+            //DocumentView view5 = new DocumentView(model5);
             DocumentView view6 = new DocumentView(model6);
-            DocumentView view7 = new DocumentView(model7);
+            //DocumentView view7 = new DocumentView(model7);
 
 
             //view1.Margin = new Thickness(20, 20, 0, 0);
@@ -139,11 +139,11 @@ namespace Dash
             //MyGrid.Children.Add(view2);
             //xFreeformView.Canvas.Children.Add(view1);
             //xFreeformView.Canvas.Children.Add(view2);
-            xFreeformView.Canvas.Children.Add(view3);
-            xFreeformView.Canvas.Children.Add(view4);
+            //xFreeformView.Canvas.Children.Add(view3);
+            //xFreeformView.Canvas.Children.Add(view4);
             //xFreeformView.Canvas.Children.Add(view5);
             xFreeformView.Canvas.Children.Add(view6);
-            xFreeformView.Canvas.Children.Add(view7);
+            //xFreeformView.Canvas.Children.Add(view7);
 
 
 

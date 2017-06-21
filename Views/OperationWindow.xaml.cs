@@ -60,12 +60,21 @@ namespace Dash
         private HashSet<uint> _currentPointers = new HashSet<uint>();
         private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
 
-        private void OperationWindow_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        public OperationWindow()
         {
-            OperationWindowViewModel vm = args.NewValue as OperationWindowViewModel;
-            Debug.Assert(vm != null);
-            LeftListView.ItemsSource = vm.InputDocumentCollection;
-            RightListView.ItemsSource = vm.OutputDocumentCollection;
+        }
+
+        /// <summary>
+        /// Create OperationWindow with a width and height
+        /// </summary>
+        /// <param name="width">Width of the window</param>
+        /// <param name="height">Height of the window</param>
+        public OperationWindow(int width, int height, OperationWindowViewModel viewModel)
+        {
+            this.InitializeComponent();
+            Width = width;
+            Height = height;
+            DataContext = viewModel;
 
             //Create Operator document
             var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
@@ -87,20 +96,8 @@ namespace Dash
             XFreeformView.Canvas.Children.Add(view);
             _documentViews.Add(opModel.Id, view);
 
-            NumberFieldModel nfm = new NumberFieldModel(0);
+            NumberFieldModel nfm = new NumberFieldModel(57);
             OutputDocument.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
-        }
-
-        /// <summary>
-        /// Create OperationWindow with a width and height
-        /// </summary>
-        /// <param name="width">Width of the window</param>
-        /// <param name="height">Height of the window</param>
-        public OperationWindow(int width, int height)
-        {
-            this.InitializeComponent();
-            Width = width;
-            Height = height;
         }
 
         /// <summary>

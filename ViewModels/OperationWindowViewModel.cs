@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
-    class OperationWindowViewModel
+    public class OperationWindowViewModel
     {
         public DocumentModel InputDocument;
         public DocumentModel OutputDocument;
@@ -25,6 +25,10 @@ namespace Dash
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
             foreach (var documentModelField in InputDocument.EnumFields())
             {
+                if (documentModelField.Value is DocumentModelFieldModel || documentModelField.Value is LayoutModelFieldModel)
+                {
+                    continue;
+                }
                 fields.Add(documentModelField.Key, documentModelField.Value.Copy());
                 InputDocumentCollection[documentModelField.Key] =
                     _defaultTemplateModels[documentModelField.Value.GetType()].MakeView(documentModelField.Value);
@@ -39,7 +43,8 @@ namespace Dash
         {
             {typeof(TextFieldModel), new TextTemplateModel(0, 0, FontWeights.Normal)},
             {typeof(NumberFieldModel), new TextTemplateModel(0, 0, FontWeights.Normal)},
-            {typeof(ImageFieldModel), new ImageTemplateModel()}
+            {typeof(ImageFieldModel), new ImageTemplateModel(0, 0, 100, 100)},
+            {typeof(DocumentCollectionFieldModel), new DocumentCollectionTemplateModel(0, 0, 100, 100) }
         };
 
         private void InputDocument_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -66,7 +71,10 @@ namespace Dash
             OutputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeView(model);
         }
 
-        public ObservableDictionary<Key, UIElement> InputDocumentCollection = new ObservableDictionary<Key, UIElement>();
-        public ObservableDictionary<Key, UIElement> OutputDocumentCollection = new ObservableDictionary<Key, UIElement>();
+        public ObservableDictionary<Key, UIElement> InputDocumentCollection { get; set; } =
+            new ObservableDictionary<Key, UIElement>();
+
+        public ObservableDictionary<Key, UIElement> OutputDocumentCollection { get; set; } =
+            new ObservableDictionary<Key, UIElement>();
     }
 }
