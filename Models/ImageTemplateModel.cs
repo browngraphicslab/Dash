@@ -10,6 +10,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -28,20 +29,56 @@ namespace Dash
         /// </summary>
         protected override List<UIElement> MakeView(FieldModel fieldModel)
         {
-            var imageFieldModel = fieldModel as ImageFieldModel;
-            if (imageFieldModel == null && fieldModel is TextFieldModel)
-                imageFieldModel = new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data));
+            var imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
             Debug.Assert(imageFieldModel != null);
-            Image image = new Image();
-            image.CacheMode = new BitmapCache();
+            var image = new Image();
             image.Source = imageFieldModel.Data;
-            var txf = new TranslateTransform();
-            txf.Y = Top;
-            txf.X = Left;
-            image.RenderTransform = txf;
-            image.Visibility = Visibility;
-            image.Width =  Width;
-            image.Height = Height;
+
+            // make image move left and right
+            var leftBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Left"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(Canvas.LeftProperty, leftBinding);
+
+            // make image move up and down
+            var topBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Top"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(Canvas.TopProperty, topBinding);
+
+            // make image width resize
+            var widthBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Width"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+
+            // make image height resize
+            var heightBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Height"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+
+            // make image appear and disappear
+            var visibilityBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Visibility"),
+                Mode = BindingMode.TwoWay
+            };
+            image.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+            
             if (fill)
                 image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
             return new List<UIElement>(new UIElement[] { image });

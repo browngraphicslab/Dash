@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Dash.ViewModels;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -35,9 +36,8 @@ namespace Dash {
             MinHeight = 400;
         }
 
-        public DocumentView(DocumentViewModel documentViewModel) : this() {
-            DataContextChanged += DocumentView_DataContextChanged;
-
+        public DocumentView(DocumentViewModel documentViewModel):this()
+        {
             DataContext = documentViewModel;
 
             // reset the fields on the documetn to be those displayed by the documentViewModel
@@ -48,7 +48,7 @@ namespace Dash {
         /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
         /// </summary>
         /// <param name="documentViewModel"></param>
-        private void ResetFields(DocumentViewModel documentViewModel) {
+        public void ResetFields(DocumentViewModel documentViewModel) {
             // clear any current children (fields) and then add them over again
             xCanvas.Children.Clear();
             var elements = documentViewModel.GetUiElements(new Rect(0,0, ActualWidth, ActualHeight));
@@ -75,15 +75,17 @@ namespace Dash {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
-            if (_vm != null && _vm.DoubleTapEnabled) {
+        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (_vm != null && _vm.DoubleTapEnabled)
+            {
                 e.Handled = true;
-                var window = new OperationWindow(1000, 800) { DocumentViewModel = _vm };
+                var window = new OperationWindow(1000, 800);//  new OperationWindowViewModel(_vm.DocumentModel));
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
-                FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
-
+                //FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+                FreeformView.MainFreeformView.Canvas.Children.Add(window);
             }
         }
 
@@ -91,8 +93,10 @@ namespace Dash {
         /// Called whenever a field is changed on the document
         /// </summary>
         /// <param name="fieldReference"></param>
-        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference) {
-            ResetFields(_vm);
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            //ResetFields(_vm);
+            Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
         }
 
         /// <summary>
@@ -115,14 +119,21 @@ namespace Dash {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) {
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            // if _vm has already been set return
+            if (_vm != null)
+                return;
             _vm = DataContext as DocumentViewModel;
-            if (_vm != null) {
-                ResetFields(_vm);
-                // Add any methods
-                _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-                _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
-            }
+            // if new _vm is not correct return
+            if (_vm == null)
+                return;
+
+            // otherwise layout the document according to the _vm
+            ResetFields(_vm);
+            // Add any methods
+            _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+            _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
         }
     }
 }

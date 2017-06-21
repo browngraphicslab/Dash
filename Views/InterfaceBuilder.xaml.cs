@@ -63,9 +63,9 @@ namespace Dash
             _documentModel = viewModel.DocumentModel;
             _documentView = new DocumentView(_documentViewModel);
 
-            // add the document view to the canvas in the center
-            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2 - _documentView.Width);
-            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2 - _documentView.Height);
+            // add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
+            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
+            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
             xDocumentsPane.Canvas.Children.Add(_documentView);
 
             InitializeKeyDicts();
@@ -101,16 +101,17 @@ namespace Dash
                     //Width = fieldView.Width,
                     //Height = fieldView.Height
                 };
+
                 Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Left);
                 Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Top);
-                var guideModel = new GuideLineModel();
-                var guideViewModel = new GuideLineViewModel(guideModel);
-                var guideView = new GuideLineView(guideViewModel);
-                // maybe add guideView to documentView Canvas
-                _guides.Add(guideViewModel);
+                //var guideModel = new GuideLineModel();
+                //var guideViewModel = new GuideLineViewModel(guideModel);
+                //var guideView = new GuideLineView(guideViewModel);
+                //// maybe add guideView to documentView Canvas
+                //_guides.Add(guideViewModel);
 
-                editableBorder.SizeChanged += EditableBorder_SizeChanged;
-                editableBorder.PositionChanged += EditableBorderPositionChanged;
+                editableBorder.FieldSizeChanged += EditableBorderOnFieldSizeChanged;
+                editableBorder.FieldPositionChanged += EditableBorderOnFieldPositionChanged;
                 editableElements.Add(editableBorder);
             }
 
@@ -118,7 +119,7 @@ namespace Dash
         }
 
 
-        private void EditableBorderPositionChanged(object sender, double deltaX, double deltaY)
+        private void EditableBorderOnFieldPositionChanged(object sender, double deltaX, double deltaY)
         {
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
@@ -130,7 +131,7 @@ namespace Dash
             templateModel.Top += deltaY;
         }
 
-        private void EditableBorder_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void EditableBorderOnFieldSizeChanged(object sender, double newWidth, double newHeight)
         {
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
@@ -138,8 +139,8 @@ namespace Dash
             var key = editableFieldFrame.Key;
 
             var templateModel = _keyToTemplateModel[key];
-            templateModel.Width = e.NewSize.Width;
-            templateModel.Height = e.NewSize.Height;
+            templateModel.Width = newWidth;
+            templateModel.Height = newHeight;
         }
 
 

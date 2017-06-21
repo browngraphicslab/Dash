@@ -97,6 +97,7 @@
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\ImageOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
@@ -174,6 +176,8 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
+    <Compile Include="Util\MultiBinding.cs" />
+    <Compile Include="Util\ObservableDictionary.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />

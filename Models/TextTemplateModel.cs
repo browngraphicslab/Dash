@@ -28,7 +28,7 @@ namespace Dash
         public string DefaultText { get; set; }
 
         public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible, bool editable= false, string defaultText=null)
-            : base(left, top, 0, 0, visibility)
+            : base(left, top, 200, 50, visibility)
         {
             FontWeight = weight;
             TextWrapping = wrap;
@@ -66,12 +66,51 @@ namespace Dash
                 (tb as TextBlock).FontWeight = FontWeight;
                 (tb as TextBlock).TextWrapping = TextWrapping;
             }
+            
+            // make tb move left and right
+            var leftBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Left"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(Canvas.LeftProperty, leftBinding);
 
-            var txf = new TranslateTransform();
-            txf.Y = Top;
-            txf.X = Left;
-            tb.RenderTransform = txf;
-            tb.Visibility = Visibility;
+            // make tb move up and down
+            var topBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Top"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(Canvas.TopProperty, topBinding);
+
+            // make tb width resize
+            var widthBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Width"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+
+            // make tb height resize
+            var heightBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Height"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+
+            // make tb appear and disappear
+            var visibilityBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Visibility"),
+                Mode = BindingMode.TwoWay
+            };
+            tb.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
             return new List<UIElement>(new UIElement[] { tb });
         }

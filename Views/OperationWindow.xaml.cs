@@ -124,7 +124,7 @@ namespace Dash
             }
             _currentPointers.Add(ioReference.Pointer.PointerId);
 
-            Point pos = Util.PointTransformFromVisual(ioReference.PointerPosition, XFreeformView);
+            Point pos = new Point(); //  Util.PointTransformFromVisual(ioReference.Pointer.Position, XFreeformView);
             _currReference = ioReference;
             _connectionLine = new Line
             {

@@ -38,13 +38,14 @@
                 <ControlTemplate TargetType="local:EditableFieldFrame">
                     <Grid>
                         <Border x:Name="PART_Container"
+                                VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                                BorderThickness="{TemplateBinding BorderThickness}">
 
                             <!--editable content-->
                             <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
-                                                HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
 
 
                         </Border>

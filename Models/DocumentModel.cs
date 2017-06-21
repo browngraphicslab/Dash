@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Dynamic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using Windows.Storage.Pickers;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media.Animation;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
@@ -29,7 +31,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        Dictionary<Key, FieldModel> Fields;
+        private ObservableDictionary<Key, FieldModel> Fields { get; set; }//TODO This shouldn't be public be we are binding to it right now
 
         /// <summary>
         /// The type of this document.
@@ -44,6 +46,7 @@ namespace Dash
         public delegate void FieldUpdatedEvent(ReferenceFieldModel fieldReference);
 
         public event FieldUpdatedEvent DocumentFieldUpdated;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Initializes a document with given data and type.
@@ -78,14 +81,14 @@ namespace Dash
         /// <param name="fields"></param>
         public void SetFields(IDictionary<Key,FieldModel> fields)
         {
-            Fields = new Dictionary<Key, FieldModel>();
+            Fields = new ObservableDictionary<Key, FieldModel>();
             foreach (var f in fields)
                 SetField(f.Key, f.Value, true);
         }
 
         public DocumentModel()
         {
-            Fields = new Dictionary<Key, FieldModel>();
+            Fields = new ObservableDictionary<Key, FieldModel>();
         }
 
         static public Key GetFieldKeyByName(string name)
@@ -121,11 +124,15 @@ namespace Dash
                 return (Fields[PrototypeKey] as DocumentModelFieldModel).Data;
             return null;
         }
+        
+        public IEnumerable<KeyValuePair<Key, FieldModel>> PropFields => EnumFields();
 
         public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (var field in Fields)
-                yield return field;
+            foreach (KeyValuePair<Key, FieldModel> fieldModel in Fields)
+            {
+                yield return fieldModel;
+            }
 
             if (!ignorePrototype) {
                 var prototype = GetPrototype();
@@ -176,7 +183,7 @@ namespace Dash
             var proto = force ? this : getPrototypeWithFieldKey(key);
 
             proto.Fields[key] = field;
-            notifyDelegates(new ReferenceFieldModel(Id, key));
+            proto.notifyDelegates(new ReferenceFieldModel(Id, key));
         }
 
         protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -311,6 +318,11 @@ namespace Dash
             //dm.Fields = fields;
 
             return apiSource.GetDocumentsAsync().First();
+        }
+
+        protected virtual void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            PropertyChanged?.Invoke(this, e);
         }
     }
 }

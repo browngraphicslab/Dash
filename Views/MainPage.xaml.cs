@@ -118,7 +118,6 @@ namespace Dash
             model7 = new DocumentViewModel(image2.MakeDelegate());
             model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)), false);
 
-
             DocumentView view1 = new DocumentView(model1);
             DocumentView view2 = new DocumentView(model2);
             DocumentView view4 = new DocumentView(model4);

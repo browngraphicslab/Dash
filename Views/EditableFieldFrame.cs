@@ -27,7 +27,9 @@ namespace Dash
 
 
         public delegate void PositionChangedHandler(object sender, double deltaX, double deltaY);
-        public event PositionChangedHandler PositionChanged;
+        public event PositionChangedHandler FieldPositionChanged;
+        public delegate void SizeChangedHandler(object sender, double newWidth, double newHeight);
+        public event SizeChangedHandler FieldSizeChanged;
 
 
         // variable names for accessing parts from xaml!
@@ -256,7 +258,8 @@ namespace Dash
             Width = ActualWidth + widthDelta;
             Height = ActualHeight + heightDelta;
 
-            PositionChanged?.Invoke(this, transXDelta, transYDelta);
+            FieldPositionChanged?.Invoke(this, transXDelta, transYDelta);
+            FieldSizeChanged?.Invoke(this, Width, Height);
 
             e.Handled = true;
         }
