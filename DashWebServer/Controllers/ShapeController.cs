@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Documents;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,9 +21,12 @@ namespace DashWebServer.Controllers
             _documentRepository = documentRepository;
         }
 
-        // GET: api/values
+        /// <summary>
+        /// Createa a new item on the server
+        /// </summary>
+        /// <returns>The newly created item</returns>
         [HttpGet]
-        public async Task<ShapeModel> Get()
+        public async Task<IActionResult> Get()
         {
             // generate random shapes
             var random = new Random();
@@ -36,17 +41,18 @@ namespace DashWebServer.Controllers
                 Id = Guid.NewGuid().ToString(),
             };
 
-            // add the shape model to the documentRepository
-            var model = await _documentRepository.AddItemAsync(shapeModel);
+            try
+            {
+                // add the shape model to the documentRepository
+                shapeModel= await _documentRepository.AddItemAsync(shapeModel);
+            }
+            catch (DocumentClientException e)
+            {
+                Console.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
 
-            model.X += 1;
-
-
-            var model2 = await _documentRepository.UpdateItemAsync(model);
-
-            await _documentRepository.DeleteItemAsync(model2);
-
-            return model;
+            return Ok(shapeModel);
         }
 
         // GET api/values/5
