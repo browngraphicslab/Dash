@@ -66,7 +66,7 @@
             <GridView x:Name="xMainGridView" Visibility="Visible" SelectionMode="Single" Margin="5,20,0,0" Height="550" ScrollViewer.HorizontalScrollMode="Auto" ScrollViewer.VerticalScrollMode="Auto" ScrollViewer.VerticalScrollBarVisibility="Hidden">
                 <GridView.ItemTemplate>
                     <DataTemplate>
-                        <Grid HorizontalAlignment="Left" Width="280" Height="250" Padding="5" Holding="Grid_Holding">
+                        <Grid HorizontalAlignment="Left" Width="280" Height="250" Holding="Grid_Holding">
                             <Border>
                                 <Border.Background>
                                     <!--<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
