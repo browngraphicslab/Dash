@@ -122,7 +122,7 @@ namespace Dash
             DocumentView view4 = new DocumentView(model4);
             DocumentView view5 = new DocumentView(model5);
             DocumentView view6 = new DocumentView(model6);
-            //DocumentView view7 = new DocumentView(model7);
+            DocumentView view7 = new DocumentView(model7);
 
             // makes oneimage doc model
             DocumentModel image = DocumentModel.OneImage();
@@ -132,7 +132,7 @@ namespace Dash
             xFreeformView.Canvas.Children.Add(view3);
             xFreeformView.Canvas.Children.Add(view4);
             xFreeformView.Canvas.Children.Add(view6);
-            //xFreeformView.Canvas.Children.Add(view7);
+            xFreeformView.Canvas.Children.Add(view7);
 
 
 

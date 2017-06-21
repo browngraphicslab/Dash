@@ -12,7 +12,7 @@ namespace Dash
         {
         }
 
-        public override UIElement MakeView(FieldModel fieldModel)
+        public override FrameworkElement MakeView(FieldModel fieldModel)
         {
             var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
             Debug.Assert(collectionFieldModel != null);
