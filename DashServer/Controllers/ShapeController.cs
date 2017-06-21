@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -43,8 +44,8 @@ namespace DashServer.Controllers
             try
             {
                 var model = await _documentRepository.AddItemAsync(shapeModel);
-                var hub = GlobalHost.ConnectionManager.GetHubContext<IServerContractShapeHub>(DashConstants.HubShapeName);
-                hub.Clients.All.SendNewShape(model);
+                var hub = GlobalHost.ConnectionManager.GetHubContext<IClientContractShapeHub>(DashConstants.HubShapeName);
+                hub.Clients.All.AddShape(shapeModel);
                 return Ok(model);
             }
             catch (DocumentClientException e)
