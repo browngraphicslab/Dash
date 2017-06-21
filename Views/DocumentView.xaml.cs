@@ -29,7 +29,7 @@ namespace Dash {
 
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             // add manipulation code
-            manipulator = new ManipulationControls(this.Parent as FrameworkElement, this);
+            manipulator = new ManipulationControls(this);
 
             // set bounds
             MinWidth = 200;
