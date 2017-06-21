@@ -29,7 +29,7 @@ namespace Dash {
 
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             // add manipulation code
-            manipulator = new ManipulationControls(XGrid, this);
+            manipulator = new ManipulationControls(this.Parent as FrameworkElement, this);
 
             // set bounds
             MinWidth = 200;
@@ -83,8 +83,7 @@ namespace Dash {
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
-                //FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
-                FreeformView.MainFreeformView.Canvas.Children.Add(window);
+                FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
             }
         }
 

@@ -48,10 +48,6 @@ namespace Dash
         /// </summary>
         private OperatorView.IOReference _currReference;
 
-        private List<Ellipse> _leftEllipses = new List<Ellipse>();
-
-        private List<Ellipse> _rightEllipses = new List<Ellipse>();
-
         private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>();
 
         /// <summary>
@@ -98,6 +94,17 @@ namespace Dash
 
             NumberFieldModel nfm = new NumberFieldModel(57);
             OutputDocument.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
+
+            XFreeformView.Canvas.Background = new SolidColorBrush(Colors.LightGray);
+
+            Button b = new Button
+            {
+                Content = "Create", VerticalAlignment = VerticalAlignment.Bottom,
+                Background = new SolidColorBrush(Colors.CornflowerBlue)
+            };
+            b.Tapped += B_Tapped; 
+            Grid.SetColumn(b,2);
+            XGrid.Children.Add(b);
         }
 
         /// <summary>
@@ -293,14 +300,6 @@ namespace Dash
         /// <param name="y"></param>
         private void CheckLinePresence(ReferenceFieldModel model)
         {
-            /* 
-            Line line = null;
-            foreach (Line l in _lines)
-            {
-                if (l.X1 < x + 5 && l.X1 > x - 5 && l.Y1 < y + 5 && l.Y1 > y - 5)
-                    line = l;
-            }
-            */
             if (_lineDict.ContainsKey(model))
             {
                 Line line = _lineDict[model];
@@ -332,8 +331,8 @@ namespace Dash
             FreeformView freeform = sender as FreeformView;
             Debug.Assert(freeform != null);
             MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
-            //MaxWidth = XDocumentGridLeft.ActualWidth + freeform.CanvasWidth + XDocumentGridRight.ActualWidth;
-            //MinWidth = XDocumentGridLeft.ActualWidth + XDocumentGridRight.ActualWidth + 50;
+            MaxWidth = LeftListView.ActualWidth + freeform.CanvasWidth + RightListView.ActualWidth;
+            MinWidth = LeftListView.ActualWidth + RightListView.ActualWidth + 50;
             MinHeight = HeaderHeight * 2;
         }
 
