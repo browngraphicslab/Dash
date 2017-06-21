@@ -48,7 +48,7 @@ namespace Dash {
         /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
         /// </summary>
         /// <param name="documentViewModel"></param>
-        private void ResetFields(DocumentViewModel documentViewModel) {
+        public void ResetFields(DocumentViewModel documentViewModel) {
             // clear any current children (fields) and then add them over again
             xCanvas.Children.Clear();
             var elements = documentViewModel.GetUiElements();
@@ -118,14 +118,21 @@ namespace Dash {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) {
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            // if _vm has already been set return
+            if (_vm != null)
+                return;
             _vm = DataContext as DocumentViewModel;
-            if (_vm != null) {
-                ResetFields(_vm);
-                // Add any methods
-                _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-                _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
-            }
+            // if new _vm is not correct return
+            if (_vm == null)
+                return;
+
+            // otherwise layout the document according to the _vm
+            ResetFields(_vm);
+            // Add any methods
+            _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+            _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
         }
     }
 }

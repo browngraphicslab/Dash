@@ -63,9 +63,9 @@ namespace Dash
             _documentModel = viewModel.DocumentModel;
             _documentView = new DocumentView(_documentViewModel);
 
-            // add the document view to the canvas in the center
-            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2 - _documentView.Width);
-            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2 - _documentView.Height);
+            // add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
+            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
+            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
             xDocumentsPane.Canvas.Children.Add(_documentView);
 
             InitializeKeyDicts();
@@ -103,11 +103,11 @@ namespace Dash
                 };
                 Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Left);
                 Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Top);
-                var guideModel = new GuideLineModel();
-                var guideViewModel = new GuideLineViewModel(guideModel);
-                var guideView = new GuideLineView(guideViewModel);
-                // maybe add guideView to documentView Canvas
-                _guides.Add(guideViewModel);
+                //var guideModel = new GuideLineModel();
+                //var guideViewModel = new GuideLineViewModel(guideModel);
+                //var guideView = new GuideLineView(guideViewModel);
+                //// maybe add guideView to documentView Canvas
+                //_guides.Add(guideViewModel);
 
                 editableBorder.SizeChanged += EditableBorder_SizeChanged;
                 editableBorder.PositionChanged += EditableBorderPositionChanged;
