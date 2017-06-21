@@ -27,6 +27,10 @@ namespace DashWebServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Add a reference to the document repository
+            var documentRepository = new CosmosDb();
+            services.AddSingleton<IDocumentRepository>(documentRepository);
+
             // Add framework services.
             services.AddMvc();
         }
