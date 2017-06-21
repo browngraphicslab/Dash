@@ -82,11 +82,12 @@ namespace Dash
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+            model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), false);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("newtype");
-            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
+            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(
+              new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), model4.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
             DocumentViewModel modelC = new DocumentViewModel(collection);
             DocumentView view1 = new DocumentView(modelC);
             xFreeformView.Canvas.Children.Add(view1);
@@ -115,7 +116,7 @@ namespace Dash
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
             model7 = new DocumentViewModel(image2.MakeDelegate());
-            model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
+            model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)), false);
 
 
             DocumentView view1 = new DocumentView(model1);

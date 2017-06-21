@@ -26,6 +26,7 @@ namespace Dash
         private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
+        private double _x, _y;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         public bool DoubleTapEnabled = true;
@@ -41,6 +42,18 @@ namespace Dash
             get { return _height; }
             set { SetProperty(ref _height, value); }
         }
+        public double X
+        {
+            get { return _x; }
+            set { SetProperty(ref _x, value); }
+        }
+
+        public double Y
+        {
+            get { return _y; }
+            set { SetProperty(ref _y, value); }
+        }
+
 
         public ManipulationModes ManipulationMode
         {
@@ -67,6 +80,8 @@ namespace Dash
         public DocumentViewModel(DocumentModel docModel)
         {
             DocumentModel = docModel;
+            DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+            DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
             if (docModel.DocumentType.Type == "collection_example")
             {
                 DoubleTapEnabled = false;
@@ -79,7 +94,15 @@ namespace Dash
                 BorderBrush = new SolidColorBrush(Colors.DarkGoldenrod);
             }
         }
-        
+
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            if (fieldReference.FieldKey == DocumentModel.GetFieldKeyByName("X"))
+                X = (DocumentModel.Field(DocumentModel.GetFieldKeyByName("X")) as NumberFieldModel).Data;
+            if (fieldReference.FieldKey == DocumentModel.GetFieldKeyByName("Y"))
+                Y = (DocumentModel.Field(DocumentModel.GetFieldKeyByName("Y")) as NumberFieldModel).Data;
+        }
+
         // == METHODS ==
         /// <summary>
         /// Generates a list of UIElements by making FieldViewModels of a document;s
@@ -140,7 +163,7 @@ namespace Dash
 
             double yloc = bounds.Height > 0 ? 0 : bounds.Top;
             foreach (var f in DocumentModel.EnumFields(true))
-                if (f.Key != GetFieldKeyByName("Delegates"))
+                if (f.Key != DocumentModel.DelegatesKey)
                 {
                     var fieldModel = f.Value;
                     while (fieldModel is ReferenceFieldModel)
@@ -226,31 +249,31 @@ namespace Dash
 
                 // bcz: hack to have a default layout for known types: recipes, Umpires
                 if (docType.Type == "recipes")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.Food2ForkRecipeModel(docType)), false);
                 else if (docType.Type == "Umpires")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.UmpireModel(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.UmpireModel(docType)), false);
                 else if (docType.Type == "oneimage")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OneImageModel(docType)), false);
                 else if (docType.Type == "twoimages")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(docType)), false);
                 else if (docType.Type == "annotatedImage")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.annotatedImage(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.annotatedImage(docType)), false);
                 else if (docType.Type == "itunesLite")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunesLite(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunesLite(docType)), false);
                 else if (docType.Type == "itunes")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunes(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.itunes(docType)), false);
                 else if (docType.Type == "operator")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.OperatorLayoutModel(docType)), false);
                 else if (docType.Type == "example_api_object")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleApiObject(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleApiObject(docType)), false);
                 else if (docType.Type == "collection_example")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(docType)), false);
                 else if (docType.Type == "price_per_square_foot")
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)), false);
                 else { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
                        // this layout is created in showAllDocumentFields() 
                     Debug.WriteLine("now we gere");
-                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(new LayoutModel(true, docType)));
+                    layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(new LayoutModel(true, docType)), false);
                 }
             }
 

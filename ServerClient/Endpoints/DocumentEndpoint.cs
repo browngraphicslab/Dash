@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashShared;
+using Dash.Models;
 
 namespace Dash
 {
@@ -49,6 +50,16 @@ namespace Dash
                 return model.Field(referenceFieldModel.FieldKey);
             }
             return null;
+        }
+        
+        public IEnumerable<DocumentModel> GetDelegates(string protoId)
+        {
+            foreach (var doc in _documents)
+            {
+                var docsProto = doc.Value.Field(DocumentModel.PrototypeKey) as DocumentModelFieldModel;
+                if (docsProto != null && docsProto.Data.Id == protoId)
+                    yield return doc.Value;
+            }
         }
 
         public DocumentModel GetDocumentAsync(string docId)

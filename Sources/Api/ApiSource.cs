@@ -94,7 +94,7 @@ namespace Dash.Sources.Api {
             // put document results into collection model
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("collection"); //_example?
-            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
+            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments), false);
             DocumentViewModel cm = new DocumentViewModel(collection);
             DocumentView v = new DocumentView(cm);
             testGrid.Children.Add(v);

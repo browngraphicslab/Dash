@@ -23,6 +23,8 @@ namespace Dash
     {
 
         public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
+        public static Key PrototypeKey = new Key("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
+        public static Key DelegatesKey = new Key("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "Delegates");
 
         /// <summary>
         /// A dictionary of keys to FieldModels.
@@ -57,22 +59,16 @@ namespace Dash
             DocumentType = type;
             SetFields(fields);
         }
-
-        /// <summary>
-        /// Sets the value of the field indexed by key. If key is not a valid index in the
-        /// fields, this function adds it or throws an error.
-        /// </summary>
-        /// <param name="key">key index of field to update</param>
-        /// <param name="field">FieldModel to update to</param>
-        public void SetField(Key key, FieldModel field)
+        DocumentModel getPrototypeWithFieldKey(Key key)
         {
-                Fields[key] = field;
-                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-                var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
-                if (delegates != null)
-                    foreach (var d in delegates.EnumDocuments())
-                        d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-            
+            if (Fields.ContainsKey(key))
+                return this;
+            var proto = GetPrototype();
+            if (proto != null)
+            {
+                return proto.getPrototypeWithFieldKey(key);
+            }
+            return this;
         }
 
         /// <summary>
@@ -109,20 +105,20 @@ namespace Dash
         {
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var dm = docController.CreateDocumentAsync(DocumentType);
-            dm.SetField(GetFieldKeyByName("Parent"), new DocumentModelFieldModel(this));
-            var currentDelegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+            dm.SetField(PrototypeKey, new DocumentModelFieldModel(this), true);
+            var currentDelegates = Fields.ContainsKey(DelegatesKey) ? Fields[DelegatesKey] as DocumentCollectionFieldModel : null;
             if (currentDelegates == null)
                 currentDelegates = new DocumentCollectionFieldModel(new List<DocumentModel>());
             currentDelegates.AddDocumentModel(dm);
-            SetField(GetFieldKeyByName("Delegates"), currentDelegates);
+            SetField(DelegatesKey, currentDelegates, true);
             return dm;
         }
 
         public DocumentModel GetPrototype()
         {
 
-            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
-                return (Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel).Data;
+            if (Fields.ContainsKey(PrototypeKey))
+                return (Fields[PrototypeKey] as DocumentModelFieldModel).Data;
             return null;
         }
 
@@ -149,41 +145,38 @@ namespace Dash
         {
             if (Fields.ContainsKey(key))
                 return Fields[key];
-            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+            if (Fields.ContainsKey(PrototypeKey))
             {
-                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
+                var parent = Fields[PrototypeKey] as DocumentModelFieldModel;
                 if (parent != null)
                     return parent.Data.Field(key);
             }
             return null;
         }
 
+        void notifyDelegates(ReferenceFieldModel refModel)
+        {
+            OnDocumentFieldUpdated(refModel);
+            if (refModel.FieldKey != DelegatesKey)
+            {
+                var delegates = Fields.ContainsKey(DelegatesKey) ? Fields[DelegatesKey] as DocumentCollectionFieldModel : null;
+                if (delegates != null)
+                    foreach (var d in delegates.EnumDocuments())
+                        d.notifyDelegates(refModel);
+            }
+        }
         /// <summary>
         /// sets the fieldModel for a specified key by first trying to find the field in the document, then in each prototype.
         /// if the field does not exist anywhere, it is created in this document, otherwise the found field is modified.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
-        /// <param name="force"></param>
-        /// <returns></returns>
-        public bool SetField(Key key, FieldModel value, bool force = true)
+        /// <param name="key">key index of field to update</param>
+        /// <param name="field">FieldModel to update to</param>
+        public void SetField(Key key, FieldModel field, bool force)
         {
-            if (Fields.ContainsKey(key)) {
-                Fields[key] = value;
-                return true;
-            }
-            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
-            {
-                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
-                if (parent != null && parent.Data.SetField(key, value, false))
-                    return true;
-            }
-            if (force)
-            {
-                Fields[key] = value;
-                return true;
-            }
-            return false;
+            var proto = force ? this : getPrototypeWithFieldKey(key);
+
+            proto.Fields[key] = field;
+            notifyDelegates(new ReferenceFieldModel(Id, key));
         }
 
         protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)

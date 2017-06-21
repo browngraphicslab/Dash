@@ -26,14 +26,14 @@ namespace Dash
             set
             {
                 value.DocumentID = Id;
-                SetField(OperatorKey, value);
+                SetField(OperatorKey, value, false);
             }
         }
 
         public OperatorDocumentModel(OperatorFieldModel operatorField)
         {
             // Fields = new Dictionary<Key, FieldModel>();
-            SetField(OperatorKey, operatorField);
+            SetField(OperatorKey, operatorField, false);
             OperatorField = operatorField;
             DocumentType = OperatorType;
         }
@@ -75,7 +75,7 @@ namespace Dash
             }
             foreach (var fieldModel in results)
             {
-                SetField(fieldModel.Key, fieldModel.Value);
+                SetField(fieldModel.Key, fieldModel.Value, false);
             }
         }
     }

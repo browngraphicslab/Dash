@@ -251,8 +251,8 @@ namespace Dash
         }
         private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            ((sender as DocumentView).DataContext as DocumentViewModel).DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(e.Position.X));
-            ((sender as DocumentView).DataContext as DocumentViewModel).DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(e.Position.Y));
+            ((sender as DocumentView).DataContext as DocumentViewModel).DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(e.Position.X), true);
+            ((sender as DocumentView).DataContext as DocumentViewModel).DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(e.Position.Y), true);
         }
     }
 }

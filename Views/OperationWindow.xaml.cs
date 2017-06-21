@@ -89,7 +89,7 @@ namespace Dash
                 NumberFieldModel nfm = new NumberFieldModel(0);
                 //nfm.InputReference =
                     //new ReferenceFieldModel(opModel.Id, DivideOperatorModel.QuotientKey);
-                _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
+                _output.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm, false);
                 //opModel.AddInputReference(DivideOperatorModel.BKey, new ReferenceFieldModel(_documentViewModel.DocumentModel.Id, PricePerSquareFootApi.SqftKey));
 
                 InitializeGrid(XDocumentGridRight, _output, layout, false);

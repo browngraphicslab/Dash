@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Models;
 using Dash.StaticClasses;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -621,10 +622,10 @@ namespace Dash
                 var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
                 // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
                 var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"));
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")));
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"));
-                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel));
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
+                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
                 var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
                 var center = e.GetPosition(FreeformView.MainFreeformView);
                 FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
@@ -726,30 +727,16 @@ namespace Dash
         /// <returns></returns>
         public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentModel> documents)
         {
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
             foreach (DocumentModel document in documents)
             {
-                DocumentViewModel vm = new DocumentViewModel(document);
-                viewModels.Add(vm);
+                viewModels.Add(new DocumentViewModel(document));
             }
             return viewModels;
         }
-
-        /// <summary>
-        /// Returns a collection of DocumentModels corresponding to the DocumentViewModels passed in.
-        /// </summary>
-        /// <param name="viewModels"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentModel> GetDocumentModelsFromDocumentViewModels(
-            ObservableCollection<DocumentViewModel> viewModels)
-        {
-            ObservableCollection<DocumentModel> documentModels = new ObservableCollection<DocumentModel>();
-            foreach (var vm in viewModels)
-            {
-                documentModels.Add(vm.DocumentModel);
-            }
-            return documentModels;
-        }
+        
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
