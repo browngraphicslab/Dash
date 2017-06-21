@@ -59,8 +59,18 @@ namespace DashWebServer
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
+            // Information about logging and these settings can be found here
+            // https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging
+            loggerFactory
+                .WithFilter(new FilterLoggerSettings
+                {
+                    {"Microsoft", LogLevel.Warning},
+                    {"System", LogLevel.Warning},
+                    {"DashWebServer", LogLevel.Debug}
+                })
+                .AddConsole()
+                .AddDebug()
+                .AddFile("Logs/DashWebServer-{DATE}.txt", minimumLevel: LogLevel.Information);
 
             app.UseMvcWithDefaultRoute();
 

@@ -15,7 +15,10 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
     "Microsoft.Azure.DocumentDB.Core": "1.3.2",
-    "Swashbuckle.AspNetCore": "1.0.0"
+    "Swashbuckle.AspNetCore": "1.0.0",
+    "Microsoft.Extensions.Logging.Filter": "1.0.0",
+    "Serilog": "2.5.0",
+    "Serilog.Extensions.Logging.File": "1.0.1"
   },
 
   "tools": {

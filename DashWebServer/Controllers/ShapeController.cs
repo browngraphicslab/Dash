@@ -6,6 +6,7 @@ using DashShared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Documents;
+using Microsoft.Extensions.Logging;
 
 // For more information on enabling Web API for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,10 +16,12 @@ namespace DashWebServer.Controllers
     public class ShapeController : Controller
     {
         private readonly IDocumentRepository _documentRepository;
+        private readonly ILogger<ShapeController> _logger;
 
-        public ShapeController(IDocumentRepository documentRepository)
+        public ShapeController(IDocumentRepository documentRepository, ILogger<ShapeController> logger)
         {
             _documentRepository = documentRepository;
+            _logger = logger;
         }
 
         /// <summary>
@@ -41,14 +44,24 @@ namespace DashWebServer.Controllers
                 Id = Guid.NewGuid().ToString(),
             };
 
+            _logger.LogInformation(LoggingEvents.CREATE_ITEM, "Creating item {ID}, at {RequestTime}", shapeModel.Id, DateTime.Now);
+
+
             try
             {
                 // add the shape model to the documentRepository
-                shapeModel= await _documentRepository.AddItemAsync(shapeModel);
+                shapeModel = await _documentRepository.AddItemAsync(shapeModel);
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                _logger.LogWarning(LoggingEvents.DOCUMENT_CLIENT_EXCPETION, e,
+                    "Could Not Add Shape To Document Repository", shapeModel);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(LoggingEvents.UNHANDLED_EXCEPTION, e,
+                    "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
