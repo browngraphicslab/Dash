@@ -139,7 +139,7 @@ namespace Dash
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
             double yloc = bounds.Height > 0 ? 0 : bounds.Top;
-            foreach (var f in DocumentModel.EnumFields())
+            foreach (var f in DocumentModel.EnumFields(true))
                 if (f.Key != GetFieldKeyByName("Delegates"))
                 {
                     var fieldModel = f.Value;
@@ -157,7 +157,7 @@ namespace Dash
                         uiElements.AddRange(new ImageTemplateModel(bounds.Left, yloc, 500, 500).MakeViewUI(fieldModel));
                         yloc += 500;
                     }
-                    else
+                    else if (fieldModel != null)
                     {
                         uiElements.AddRange(new TextTemplateModel(bounds.Left, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeViewUI(fieldModel));
                         yloc += 20;

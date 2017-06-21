@@ -126,15 +126,17 @@ namespace Dash
             return null;
         }
 
-        public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields()
+        public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields(bool ignorePrototype = false)
         {
             foreach (var field in Fields)
                 yield return field;
 
-            var prototype = GetPrototype();
-            if (prototype != null)
-                foreach (var field in prototype.EnumFields())
-                    yield return field;
+            if (!ignorePrototype) {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumFields())
+                        yield return field;
+            }
         }
 
 
