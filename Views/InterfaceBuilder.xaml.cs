@@ -101,6 +101,7 @@ namespace Dash
                     //Width = fieldView.Width,
                     //Height = fieldView.Height
                 };
+
                 Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Left);
                 Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Top);
                 //var guideModel = new GuideLineModel();
@@ -109,8 +110,8 @@ namespace Dash
                 //// maybe add guideView to documentView Canvas
                 //_guides.Add(guideViewModel);
 
-                editableBorder.SizeChanged += EditableBorder_SizeChanged;
-                editableBorder.PositionChanged += EditableBorderPositionChanged;
+                editableBorder.FieldSizeChanged += EditableBorderOnFieldSizeChanged;
+                editableBorder.FieldPositionChanged += EditableBorderOnFieldPositionChanged;
                 editableElements.Add(editableBorder);
             }
 
@@ -118,7 +119,7 @@ namespace Dash
         }
 
 
-        private void EditableBorderPositionChanged(object sender, double deltaX, double deltaY)
+        private void EditableBorderOnFieldPositionChanged(object sender, double deltaX, double deltaY)
         {
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
@@ -130,7 +131,7 @@ namespace Dash
             templateModel.Top += deltaY;
         }
 
-        private void EditableBorder_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void EditableBorderOnFieldSizeChanged(object sender, double newWidth, double newHeight)
         {
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
@@ -138,8 +139,8 @@ namespace Dash
             var key = editableFieldFrame.Key;
 
             var templateModel = _keyToTemplateModel[key];
-            templateModel.Width = e.NewSize.Width;
-            templateModel.Height = e.NewSize.Height;
+            templateModel.Width = newWidth;
+            templateModel.Height = newHeight;
         }
 
 
