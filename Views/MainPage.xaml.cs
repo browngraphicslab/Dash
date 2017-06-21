@@ -78,7 +78,7 @@ namespace Dash
             xFreeformView.Canvas.Children.Add(shapeView);
         }
 
-        DocumentViewModel model7, model4, model1;
+        DocumentViewModel model7, twotxtModel, model1;
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
@@ -86,7 +86,7 @@ namespace Dash
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("newtype");
-            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, model4.DocumentModel, model7.DocumentModel })));
+            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, twotxtModel.DocumentModel, model7.DocumentModel })));
             DocumentViewModel modelC = new DocumentViewModel(collection);
             DocumentView view1 = new DocumentView(modelC);
             xFreeformView.Canvas.Children.Add(view1);
@@ -105,21 +105,21 @@ namespace Dash
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             
-            DocumentModel image2 = DocumentModel.TwoImagesAndText();
+            DocumentModel twotxtDocModel = DocumentModel.TwoImagesAndText();
             DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
             model1 = new DocumentViewModel(umpire);
             DocumentViewModel model2 = new DocumentViewModel(recipe);
-            model4 = new DocumentViewModel(image2);
+            twotxtModel = new DocumentViewModel(twotxtDocModel);
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
-            model7 = new DocumentViewModel(image2.MakeDelegate());
+            model7 = new DocumentViewModel(twotxtDocModel.MakeDelegate());
             model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
 
             DocumentView view1 = new DocumentView(model1);
             DocumentView view2 = new DocumentView(model2);
-            DocumentView view4 = new DocumentView(model4);
+            DocumentView twotxtView = new DocumentView(twotxtModel);
             DocumentView view5 = new DocumentView(model5);
             DocumentView view6 = new DocumentView(model6);
             DocumentView view7 = new DocumentView(model7);
@@ -130,7 +130,7 @@ namespace Dash
             DocumentView view3 = new DocumentView(model3);
             
             xFreeformView.Canvas.Children.Add(view3);
-            xFreeformView.Canvas.Children.Add(view4);
+            xFreeformView.Canvas.Children.Add(twotxtView);
             xFreeformView.Canvas.Children.Add(view6);
             xFreeformView.Canvas.Children.Add(view7);
 

@@ -239,7 +239,7 @@ namespace Dash
             return dm;
         }
 
-        public static DocumentModel TwoImagesAndText()
+        public static DocumentModel TwoImagesAndText(string text = "These are 2 cats")
         {
             // get access to controllers, 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
@@ -253,7 +253,7 @@ namespace Dash
             var content2Key = DocumentModel.GetFieldKeyByName("content2"); // keyController.CreateKeyAsync("content2");
             fields[content2Key] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
             var textKey = DocumentModel.GetFieldKeyByName("text"); //  keyController.CreateKeyAsync("text");
-            fields[textKey] = new TextFieldModel("These are 2 cats");
+            fields[textKey] = new TextFieldModel(text);
 
             var dm = docController.CreateDocumentAsync("twoimages");
             dm.SetFields(fields);

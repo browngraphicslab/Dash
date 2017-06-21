@@ -447,8 +447,8 @@ namespace Dash
 
                         // generate single-image document model
                         var fields = new Dictionary<Key, FieldModel>();
-                        var contentKey = keyControllr.CreateKeyAsync("content");
-                        fields[contentKey] = new TextFieldModel(text);
+                        var textKey = DocumentModel.GetFieldKeyByName("text");
+                        fields[textKey] = new TextFieldModel(text);
                         var dm = docControllr.CreateDocumentAsync("textfile");
                         dm.SetFields(fields);
                         DocumentViewModel model = new DocumentViewModel(dm);
