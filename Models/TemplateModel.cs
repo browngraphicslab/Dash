@@ -61,7 +61,7 @@ namespace Dash
         }/// <summary>
          /// Creates TextBlock using layout information from template and Data 
          /// </summary>
-        public virtual UIElement MakeView(FieldModel fieldModel)
+        public virtual FrameworkElement MakeView(FieldModel fieldModel)
         {
             return null;
         }
