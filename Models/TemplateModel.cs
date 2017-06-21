@@ -58,7 +58,9 @@ namespace Dash
             Width = width;
             Height = height;
             Visibility = visibility;
-        }/// <summary>
+        }
+        
+        /// <summary>
          /// Creates TextBlock using layout information from template and Data 
          /// </summary>
         public virtual FrameworkElement MakeView(FieldModel fieldModel)

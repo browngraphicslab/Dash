@@ -111,6 +111,10 @@ namespace Dash
             return uiElements;
         }
         
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="uiElements"></param>
         void showAllDocumentFields(List<UIElement> uiElements)
         {
             double yloc = 0;
@@ -130,6 +134,10 @@ namespace Dash
                 }
         }
         
+        /// <summary>
+        /// Gets the layoutmodel associated with a given DocumentViewModel
+        /// </summary>
+        /// <returns></returns>
         public LayoutModel GetLayoutModel()
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -141,12 +149,22 @@ namespace Dash
             return refField.Data;
         }
 
+        /// <summary>
+        /// Sets the layoutModel of the DocumentView to a given LayoutModel
+        /// </summary>
+        /// <param name="layoutModel"></param>
         public void SetLayoutModel(LayoutModel layoutModel)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             var layoutModelRef = GetLayoutModelReferenceForDoc(DocumentModel);
         }
 
+        /// <summary>
+        /// Give a string representation of a key, returns the Dash.Key representation
+        /// of that string as found via GetKeyAsync()
+        /// </summary>
+        /// <param name="name">string value of the key</param>
+        /// <returns></returns>
         static Key GetFieldKeyByName(string name)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -157,7 +175,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// find the layoutModel to use to display this document and return it as referenceField to where the layoutModel is stored.
+        /// Find the layoutModel to use to display this document and return it as referenceField to where the layoutModel is stored.
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
@@ -176,6 +194,13 @@ namespace Dash
             return getLayoutModelReferenceForDocumentType(doc.DocumentType, settingsDocument);
         }
 
+        /// <summary>
+        /// Given a documentType, finds the corresponding LayoutModel and sets that model to the
+        /// value of a given type's key in layoutModelSource's fields.
+        /// </summary>
+        /// <param name="docType"></param>
+        /// <param name="layoutModelSource"></param>
+        /// <returns></returns>
         static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType,DocumentModel layoutModelSource)
         {
             //effectively, this sets defaultlayoutmodelsource if it hasnt been instantiated yet to a new doc each time
