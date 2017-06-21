@@ -15,7 +15,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="Auto"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <ListView x:Name="InputListView" Grid.Column="0">
+        <ListView x:Name="InputListView" Grid.Column="0" SelectionMode="None">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -24,13 +24,13 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="1"></TextBlock>
-                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="0" 
-                                 PointerExited="InputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
+                        <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="0" 
+                                 PointerExited="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2">
+        <ListView x:Name="OutputListView" Grid.Column="2" SelectionMode="None">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -39,8 +39,8 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="0"></TextBlock>
-                        <Ellipse Width="10" Height="10" Fill="Black" Grid.Column="1" 
-                                 PointerExited="OutputEllipse_OnPointerExited" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
+                        <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="1" 
+                                 PointerExited="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
                     </Grid>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

@@ -15,7 +15,6 @@
             ManipulationMode="All" PointerWheelChanged="UserControl_PointerWheelChanged" 
             ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
             ManipulationDelta="UserControl_ManipulationDelta">
-
         <InkCanvas x:Name="XInkCanvas" HorizontalAlignment="Left" Height="{Binding CanvasHeight}" VerticalAlignment="Top" Width="{Binding CanvasWidth}" />
     </Canvas>
 </UserControl>
