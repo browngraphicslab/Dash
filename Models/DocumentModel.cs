@@ -58,27 +58,40 @@ namespace Dash
             SetFields(fields);
         }
 
+        /// <summary>
+        /// Sets the value of the field indexed by key. If key is not a valid index in the
+        /// fields, this function adds it or throws an error.
+        /// </summary>
+        /// <param name="key">key index of field to update</param>
+        /// <param name="field">FieldModel to update to</param>
         public void SetField(Key key, FieldModel field)
         {
-            Fields[key] = field;
-            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-            var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
-            if (delegates != null)
-                foreach (var d in delegates.EnumDocuments())
-                    d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+                Fields[key] = field;
+                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+                var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+                if (delegates != null)
+                    foreach (var d in delegates.EnumDocuments())
+                        d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+            
         }
 
+        /// <summary>
+        /// Sets all of the document's fields to a given Dictionary of Key FieldModel
+        /// pairs. Overwrites existing fields.
+        /// </summary>
+        /// <param name="fields"></param>
         public void SetFields(IDictionary<Key,FieldModel> fields)
         {
             Fields = new Dictionary<Key, FieldModel>();
             foreach (var f in fields)
-                SetField(f.Key, f.Value);
+                SetField(f.Key, f.Value, true);
         }
 
         public DocumentModel()
         {
             Fields = new Dictionary<Key, FieldModel>();
         }
+
         static public Key GetFieldKeyByName(string name)
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -236,7 +249,6 @@ namespace Dash
 
             var contentKey = keyController.CreateKeyAsync("content");
             fields[contentKey] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-
             var dm = docController.CreateDocumentAsync("oneimage");
             dm.SetFields(fields);
             return dm;

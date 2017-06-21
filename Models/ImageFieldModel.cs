@@ -26,6 +26,9 @@ namespace Dash
         {
             Data = new BitmapImage(image);
         }
+        public ImageFieldModel(Image image) {
+            Data = (BitmapImage)image.Source;
+        }
 
         protected override void UpdateValue(ReferenceFieldModel fieldReference)
         {

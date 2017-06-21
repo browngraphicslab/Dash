@@ -91,19 +91,14 @@ namespace Dash.Sources.Api {
             //testGrid.Children.Add(testView);
             //LayoutModel.DefaultLayoutModel(testDocument);
 
-
-
-            Debug.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-
             // put document results into collection model
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var collection = docController.CreateDocumentAsync("collection");
+            var collection = docController.CreateDocumentAsync("collection"); //_example?
             collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
             DocumentViewModel cm = new DocumentViewModel(collection);
             DocumentView v = new DocumentView(cm);
             testGrid.Children.Add(v);
-
-
+            
             return true;
         }
 
@@ -322,6 +317,7 @@ namespace Dash.Sources.Api {
                     }
                     responseAsDocuments.Add(new DocumentModel(toAdd, apiDocType)); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
+
 
                 // at this point resultAsDocuments contains a list of all JSON results formatted
                 // as documents! They all have the same type, indexed by api URL you could store 

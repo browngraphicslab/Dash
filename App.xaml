@@ -31,6 +31,10 @@
     - Be nice to your fellow programmers. Throw in a comment saying what the style does if
     it's not obvious frm the name. 
     
+    MANIPULATION NODES
+    - Add this code to every UI child element (within a given node) who you don't want the
+    user to be able to move its parent node while clicking it
+    <Property="ManipulationMode" Value="Scale"></Setter>
     
     -->
     <Application.Resources>
@@ -41,6 +45,8 @@
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
             <Setter Property="BorderBrush" Value="#FF474747"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderThickness" Value="2"/>
@@ -48,6 +54,8 @@
 
         <!-- gray border on combobox -->
         <Style TargetType="ComboBox">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
             <Setter Property="BorderBrush" Value="#FF474747"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderThickness" Value="2"/>
@@ -55,6 +63,8 @@
 
         <!-- blue (default) button with white text -->
         <Style TargetType="Button">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter> 
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
             <Setter Property="Foreground" Value="White" />
@@ -94,6 +104,8 @@
 
         <!-- green accent button -->
         <Style TargetType="Button" x:Name="xAccentButtonStyle">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
             <Setter Property="Foreground" Value="White" />

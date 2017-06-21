@@ -12,12 +12,9 @@ using Windows.UI.Xaml.Media;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
+namespace Dash {
 
-namespace Dash
-{
-
-    public sealed partial class DocumentView : UserControl
-    {
+    public sealed partial class DocumentView : UserControl {
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -25,8 +22,7 @@ namespace Dash
 
         private DocumentViewModel _vm;
 
-        public DocumentView()
-        {
+        public DocumentView() {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
 
@@ -39,8 +35,7 @@ namespace Dash
             MinHeight = 400;
         }
 
-        public DocumentView(DocumentViewModel documentViewModel):this()
-        {
+        public DocumentView(DocumentViewModel documentViewModel) : this() {
             DataContextChanged += DocumentView_DataContextChanged;
 
             DataContext = documentViewModel;
@@ -53,13 +48,11 @@ namespace Dash
         /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
         /// </summary>
         /// <param name="documentViewModel"></param>
-        private void ResetFields(DocumentViewModel documentViewModel)
-        {
+        private void ResetFields(DocumentViewModel documentViewModel) {
             // clear any current children (fields) and then add them over again
             xCanvas.Children.Clear();
             var elements = documentViewModel.GetUiElements();
-            foreach (var element in elements)
-            {
+            foreach (var element in elements) {
                 xCanvas.Children.Add(element);
             }
         }
@@ -68,11 +61,9 @@ namespace Dash
         /// Hacky way of adding the editable fields to the document in the interface builder
         /// </summary>
         /// <param name="uiElements"></param>
-        public void SetUIElements(List<UIElement> uiElements)
-        {
+        public void SetUIElements(List<UIElement> uiElements) {
             xCanvas.Children.Clear();
-            foreach (var element in uiElements)
-            {
+            foreach (var element in uiElements) {
                 xCanvas.Children.Add(element);
             }
         }
@@ -86,7 +77,7 @@ namespace Dash
         private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             if (_vm != null && _vm.DoubleTapEnabled) {
                 e.Handled = true;
-                var window = new OperationWindow(1000, 800) {DocumentViewModel = _vm};
+                var window = new OperationWindow(1000, 800) { DocumentViewModel = _vm };
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
@@ -99,8 +90,7 @@ namespace Dash
         /// Called whenever a field is changed on the document
         /// </summary>
         /// <param name="fieldReference"></param>
-        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference) {
             ResetFields(_vm);
         }
 
@@ -109,8 +99,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
+        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e) {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null);
 
@@ -125,10 +114,9 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
-        {
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) {
             _vm = DataContext as DocumentViewModel;
-            if (_vm != null) { 
+            if (_vm != null) {
                 ResetFields(_vm);
                 // Add any methods
                 _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;

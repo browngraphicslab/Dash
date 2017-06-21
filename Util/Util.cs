@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
+    // TODO: name this to something more descriptive
     public static class Util
     {
         /// <summary>
@@ -42,13 +43,13 @@ namespace Dash
         /// Create TranslateTransform to translate "totranslate" by "delta" amount relative to canvas space  
         /// </summary>
         /// <returns></returns>
-        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate)
+        public static TranslateTransform TranslateInCanvasSpace(Point delta, UIElement toTranslate, double elemScale = 1.0)
         {
             Point p = DeltaTransformFromVisual(delta, toTranslate);
             return new TranslateTransform
             {
-                X = p.X,
-                Y = p.Y
+                X = p.X * elemScale,
+                Y = p.Y * elemScale
             };
         }
     }
