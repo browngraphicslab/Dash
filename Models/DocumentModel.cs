@@ -29,7 +29,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        private ObservableDictionary<Key, FieldModel> Fields { get; set; }//TODO This shouldn't be public be we are binding to it right now
+        private ObservableDictionary<Key, FieldModel> Fields { get; set; }
 
         /// <summary>
         /// The type of this document.

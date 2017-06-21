@@ -71,7 +71,6 @@ namespace Dash
         static public LayoutModel Food2ForkRecipeModel(DocumentType docType)
         {
             var fields = new Dictionary<Key, TemplateModel>();
-            //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("publisher")]  = new TextTemplateModel(10, 10,  FontWeights.Normal, TextWrapping.Wrap,   Visibility.Visible);
             fields[DocumentModel.GetFieldKeyByName("source_url")] = new TextTemplateModel(10, 250, FontWeights.Normal, TextWrapping.NoWrap, Visibility.Visible);
             fields[DocumentModel.GetFieldKeyByName("title")]      = new TextTemplateModel(30, 115, FontWeights.Bold,   TextWrapping.Wrap,   Visibility.Visible);
@@ -89,7 +88,6 @@ namespace Dash
         public static LayoutModel UmpireModel(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
-            //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("name")]       = new TextTemplateModel(10, 10, FontWeights.Bold, TextWrapping.Wrap);
             fields[DocumentModel.GetFieldKeyByName("experience")] = new TextTemplateModel(10, 250, FontWeights.Normal);
 
@@ -101,7 +99,6 @@ namespace Dash
         public static LayoutModel OneImageModel(DocumentType docType)
         {
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
-            //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")] = new ImageTemplateModel(0, 0, 196, 396, Visibility.Visible, true);
 
             Debug.Assert(docType.Type.Equals("oneimage"));
@@ -120,7 +117,6 @@ namespace Dash
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
-            //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName Title")] = new TextTemplateModel(5, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true, "Collection: ");
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName")] = new TextTemplateModel(30, 0, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true);
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comtrackName Title")] = new TextTemplateModel(5, 30, FontWeights.Bold, TextWrapping.NoWrap, Visibility.Visible, true, "Track: ");
@@ -134,7 +130,6 @@ namespace Dash
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
-            //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comcollectionName")] = new TextTemplateModel(5, 0, FontWeights.Bold);
             fields[DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")] = new ImageTemplateModel(5, 20, 100, 100);
             Debug.Assert(docType.Type.Equals("itunes"));
@@ -146,7 +141,6 @@ namespace Dash
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
             
             Dictionary<Key, TemplateModel> fields = new Dictionary<Key, TemplateModel>();
-            //TODO REALLY BAD CODE
             fields[DocumentModel.GetFieldKeyByName("content")] = contentImageTemplateModel;
             fields[DocumentModel.GetFieldKeyByName("content2")] = content2ImageTemplateModel;
             fields[DocumentModel.GetFieldKeyByName("text")] = editable ? textEditableTemplateModel : textTemplateModel;

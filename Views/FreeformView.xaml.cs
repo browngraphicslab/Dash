@@ -20,6 +20,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Shapes;
+using Dash.ViewModels;
 using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -104,6 +106,8 @@ namespace Dash
             this.InitializeComponent();
             XCanvas.DataContext = this;
 
+            //new ManipulationControls(this);//TODO This should work for the most part
+
             ViewModel = new FreeformViewModel();
             ViewModel.ElementAdded += VmElementAdded;
 
@@ -125,6 +129,168 @@ namespace Dash
             Canvas.SetLeft(element, left);
             Canvas.SetTop(element, top);
         }
+
+
+        #region Operator connection stuff
+
+        /// <summary>
+        /// Line to create and display connection lines between OperationView fields and Document fields 
+        /// </summary>
+        private Line _connectionLine;
+
+        /// <summary>
+        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
+        /// </summary>
+        private OperatorView.IOReference _currReference;
+
+        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>();
+
+        /// <summary>
+        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
+        /// </summary>
+        private HashSet<uint> _currentPointers = new HashSet<uint>();
+        private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
+
+        public void StartDrag(OperatorView.IOReference ioReference)
+        {
+            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            {
+                return;
+            }
+            _currentPointers.Add(ioReference.Pointer.PointerId);
+
+            _currReference = ioReference;
+
+            _connectionLine = new Line
+            {
+                StrokeThickness = 10,
+                Stroke = new SolidColorBrush(Colors.Black),
+                IsHitTestVisible = false,
+                //Clip = new RectangleGeometry { Rect = new Rect(LeftListView.ActualWidth, 0, XFreeformView.ActualWidth, XFreeformView.ActualHeight) },
+                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+            };
+
+            DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+
+            Binding x1Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(true),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                Source = view,
+                Path = new PropertyPath("RenderTransform")
+            };
+            Binding y1Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(false),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                Source = view,
+                Path = new PropertyPath("RenderTransform")
+            };
+            _connectionLine.SetBinding(Line.X1Property, x1Binding);
+            _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+
+            XCanvas.Children.Add(_connectionLine);
+
+            if (!ioReference.IsOutput)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+            }
+        }
+
+        public void CancelDrag(Pointer p)
+        {
+            _currentPointers.Remove(p.PointerId);
+            UndoLine();
+        }
+
+        public void AddOperatorView(OperatorDocumentViewModel viewModel, DocumentView operatorView, float left, float right)
+        {
+            viewModel.IODragStarted += StartDrag;
+            viewModel.IODragEnded += EndDrag;
+            ViewModel.AddElement(operatorView, left, right);
+            _documentViews[viewModel.DocumentModel.Id] = operatorView;
+        }
+
+        public void EndDrag(OperatorView.IOReference ioReference)
+        {
+            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            if (_connectionLine == null) return;
+
+            if (_currReference.IsOutput == ioReference.IsOutput)
+            {
+                UndoLine();
+                return;
+            }
+
+            if (!ioReference.IsOutput)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+            }
+
+            DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+            Binding x2Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(true),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                Source = view,
+                Path = new PropertyPath("RenderTransform")
+            };
+            Binding y2Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(false),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                Source = view,
+                Path = new PropertyPath("RenderTransform")
+            };
+            _connectionLine.SetBinding(Line.X2Property, x2Binding);
+            _connectionLine.SetBinding(Line.Y2Property, y2Binding);
+            if (ioReference.IsOutput)//TODO Fix this
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                docCont.GetFieldInDocument(_currReference.ReferenceFieldModel).InputReference = ioReference.ReferenceFieldModel;
+                _connectionLine = null;
+            }
+            else
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                Debug.Assert(opDoc != null);
+                opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
+                    _currReference.ReferenceFieldModel);
+                _connectionLine = null;
+            }
+        }
+
+        /// <summary>
+        /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        private void CheckLinePresence(ReferenceFieldModel model)
+        {
+            if (_lineDict.ContainsKey(model))
+            {
+                Line line = _lineDict[model];
+                XCanvas.Children.Remove(line);
+                _lineDict.Remove(model);
+            }
+        }
+
+        private void UndoLine()
+        {
+            XCanvas.Children.Remove(_connectionLine);
+            //_lineDict. //TODO lol figure this out later 
+            _connectionLine = null;
+            _currReference = null;
+        }
+
+        #endregion
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -149,7 +315,7 @@ namespace Dash
                 ScaleX = delta.Scale,
                 ScaleY = delta.Scale
             };
-            
+
             //Clamp the zoom
             CanvasScale *= delta.Scale;
             if (CanvasScale > MaxScale)
@@ -336,7 +502,7 @@ namespace Dash
                 scaleTransform.ScaleX = scaleAmount;
                 outOfBounds = true;
             }
-            else if(topLeft.Y < 0)
+            else if (topLeft.Y < 0)
             {
                 scaleTransform.CenterY = 0;
                 outOfBounds = true;
@@ -403,7 +569,7 @@ namespace Dash
                 XCanvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             }
 
-            Clip = new RectangleGeometry {Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height)};
+            Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
         }
 
         /// <summary>
@@ -412,9 +578,10 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private void XCanvas_Drop(object sender, DragEventArgs e) {
+        private void XCanvas_Drop(object sender, DragEventArgs e)
+        {
             Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
-            
+
             // make document
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -429,12 +596,23 @@ namespace Dash
             // position relative to mouse
             Point dropPos = e.GetPosition(XCanvas);
             view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
-            
+
             XCanvas.Children.Add(view3);
         }
-        
-        private void XCanvas_DragOver_1(object sender, DragEventArgs e) {
+
+        private void XCanvas_DragOver_1(object sender, DragEventArgs e)
+        {
             e.AcceptedOperation = DataPackageOperation.Copy;
+        }
+
+        private void XCanvas_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (_connectionLine != null)
+            {
+                Point pos = e.GetCurrentPoint(XCanvas).Position;
+                _connectionLine.X2 = pos.X;
+                _connectionLine.Y2 = pos.Y;
+            }
         }
     }
 }

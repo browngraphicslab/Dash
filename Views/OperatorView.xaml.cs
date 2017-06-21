@@ -65,8 +65,8 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            InputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Inputs;
-            OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;
+            InputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Inputs;//TODO Make these binding in XAML
+            OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;//TODO Make these binding in XAML
         }
 
         /// <summary>

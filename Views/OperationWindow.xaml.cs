@@ -74,11 +74,8 @@ namespace Dash
 
             //Create Operator document
             var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            OperatorDocumentModel opModel = new OperatorDocumentModel(new DivideOperatorModel())
-            {
-                Id = docEndpoint.GetDocumentId(),
-                OperatorField = new DivideOperatorModel()
-            };
+            OperatorDocumentModel opModel =
+                new OperatorDocumentModel(new DivideOperatorModel(), docEndpoint.GetDocumentId());
             docEndpoint.UpdateDocumentAsync(opModel);
             DocumentView view = new DocumentView
             {

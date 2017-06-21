@@ -17,9 +17,8 @@ namespace Dash
         /// Dictionary that maps Field input name to the ReferenceFieldModel that it is set to
         /// </summary>
 
-        // TODO make this protected 
-      //  protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
-        public Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+        protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+
         public OperatorFieldModel OperatorField
         {
             get { return Field(OperatorKey) as OperatorFieldModel; }
@@ -30,9 +29,10 @@ namespace Dash
             }
         }
 
-        public OperatorDocumentModel(OperatorFieldModel operatorField)
+        public OperatorDocumentModel(OperatorFieldModel operatorField, string documentID)
         {
             // Fields = new Dictionary<Key, FieldModel>();
+            Id = documentID;
             SetField(OperatorKey, operatorField);
             OperatorField = operatorField;
             DocumentType = OperatorType;
