@@ -412,8 +412,28 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private void XCanvas_Drop(object sender, DragEventArgs e) {
-            Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
+        private async void XCanvas_Drop(object sender, DragEventArgs e) {
+            Image dragged = new Image();
+            if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
+                var items = await e.DataView.GetStorageItemsAsync();
+
+                if (items.Any()) {
+                    var storageFile = items[0] as StorageFile;
+                    var contentType = storageFile.ContentType;
+
+                    StorageFolder folder = ApplicationData.Current.LocalFolder;
+
+                    if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg") {
+                        StorageFile newFile = await storageFile.CopyAsync(folder, storageFile.Name, NameCollisionOption.GenerateUniqueName);
+                        var bitmapImg = new BitmapImage();
+                        bitmapImg.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
+                        dragged.Source = bitmapImg;
+                    }
+                }
+            }
+
+            if (e.DataView.Properties["image"] != null)
+                dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
             
             // make document
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
