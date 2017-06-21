@@ -149,9 +149,9 @@ namespace Dash
             DocumentViewModel model3 = new DocumentViewModel(image);
             DocumentView view3 = new DocumentView(model3);
             
-            xFreeformView.Canvas.Children.Add(view3);
-            xFreeformView.Canvas.Children.Add(view4);
-            xFreeformView.Canvas.Children.Add(view6);
+            xFreeformView.ViewModel.AddElement(view3, 10, 10);
+            xFreeformView.ViewModel.AddElement(view4, 30, 30);
+            xFreeformView.ViewModel.AddElement(view6, 50, 50);
             //xFreeformView.Canvas.Children.Add(view7);
 
 

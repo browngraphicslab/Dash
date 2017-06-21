@@ -126,8 +126,18 @@ namespace Dash
         private void VmElementAdded(UIElement element, float left, float top)
         {
             XCanvas.Children.Add(element);
-            Canvas.SetLeft(element, left);
-            Canvas.SetTop(element, top);
+            if (element is DocumentView)//TODO Clean this up
+            {
+                var view = element as DocumentView;
+                var vm = view.DataContext as DocumentViewModel;
+                _documentViews[vm.DocumentModel.Id] = view;
+                vm.IODragStarted += StartDrag;
+                vm.IODragEnded += EndDrag;
+            }
+            element.RenderTransform = new TranslateTransform
+            {
+                X = left, Y = top
+            };
         }
 
 
@@ -613,6 +623,11 @@ namespace Dash
                 _connectionLine.X2 = pos.X;
                 _connectionLine.Y2 = pos.Y;
             }
+        }
+
+        private void XCanvas_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            CancelDrag(e.Pointer);
         }
     }
 }

@@ -15,6 +15,9 @@ using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Dash.Models;
 using System.Diagnostics;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {
@@ -79,6 +82,8 @@ namespace Dash
             }
         }
 
+        public Visibility EditModeVisibility { get; set; } = Visibility.Visible;
+
         // == METHODS ==
         /// <summary>
         /// Generates a list of UIElements by making FieldViewModels of a document;s
@@ -93,7 +98,7 @@ namespace Dash
 
             if (layout.ShowAllFields) 
             {
-                showAllDocumentFields(uiElements);
+                ShowAllDocumentFields(uiElements);
             }
             else
             {
@@ -101,21 +106,92 @@ namespace Dash
                     if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel) {
                         var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
                         if (uiele != null)
+                        {
                             uiElements.Add(uiele);
+                            
+                            uiElements.Add(MakeEllipse(lEle.Key, lEle.Value));
+                        }
                     }
                     else if (DocumentModel.Field(lEle.Key) != null)
                     {
-                        uiElements.Add(lEle.Value.MakeView(DocumentModel.Field(lEle.Key)));
+                        var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
+                        uiElements.Add(uiele);
+                        
+                        uiElements.Add(MakeEllipse(lEle.Key, lEle.Value));
                     }
             }
             return uiElements;
         }
-        
-        void showAllDocumentFields(List<UIElement> uiElements)
+
+        private Ellipse MakeEllipse(Key fieldKey, TemplateModel template)
+        {
+            Ellipse el = new Ellipse
+            {
+                Width = 20,
+                Height = 20,
+                Fill = new SolidColorBrush(Colors.Black)
+            };
+            el.DataContext = new ReferenceFieldModel(DocumentModel.Id, fieldKey);
+            Binding visibilityBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("EditModeVisibility")
+            };
+            el.SetBinding(Ellipse.VisibilityProperty, visibilityBinding);
+            Binding canvasTopBinding = new Binding
+            {
+                Source = template,
+                Path = new PropertyPath("Top")
+            };
+            el.SetBinding(Canvas.TopProperty, canvasTopBinding);
+            Binding canvasLeftBinding = new Binding
+            {
+                Source = template,
+                Path = new PropertyPath("Left")
+            };
+            el.SetBinding(Canvas.LeftProperty, canvasLeftBinding);
+
+            el.PointerExited += El_PointerExited;
+            el.PointerReleased += El_PointerReleased;
+
+            el.ManipulationMode = ManipulationModes.All;
+            el.ManipulationStarted += (sender, args) => args.Complete();
+
+            return el;
+        }
+
+        public event OperatorView.IODragEventHandler IODragStarted;
+        public event OperatorView.IODragEventHandler IODragEnded;
+
+        protected virtual void OnIoDragStarted(OperatorView.IOReference ioreference)
+        {
+            IODragStarted?.Invoke(ioreference);
+        }
+
+        protected virtual void OnIoDragEnded(OperatorView.IOReference ioreference)
+        {
+            IODragEnded?.Invoke(ioreference);
+        }
+
+        private void El_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            IODragEnded?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel, true, e.Pointer, sender as Ellipse));
+        }
+
+        private void El_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as Ellipse).Properties.IsLeftButtonPressed)
+            {
+                IODragStarted?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel,
+                    true, e.Pointer, sender as Ellipse));
+            }
+        }
+
+        void ShowAllDocumentFields(List<UIElement> uiElements)
         {
             double yloc = 0;
             foreach (var f in DocumentModel.EnumFields())
-                if (f.Key != GetFieldKeyByName("Delegates"))
+                if (!f.Key.Equals(GetFieldKeyByName("Delegates")))
                 {
                     if (f.Value is DocumentCollectionFieldModel)
                     {
