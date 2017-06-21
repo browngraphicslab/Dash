@@ -27,7 +27,7 @@ namespace Dash
 
         public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible, bool editable= false, string defaultText=null)
             : base(left, top, 0, 0, visibility)
-        {
+        { 
             FontWeight = weight;
             TextWrapping = wrap;
             Editable = editable;

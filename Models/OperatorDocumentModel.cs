@@ -18,7 +18,7 @@ namespace Dash
         /// </summary>
 
         // TODO make this protected 
-      //  protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+        // protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
         public Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
         public OperatorFieldModel OperatorField
         {
