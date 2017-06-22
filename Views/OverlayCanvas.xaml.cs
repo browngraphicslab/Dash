@@ -98,10 +98,20 @@ namespace Dash
             arcPath.StrokeThickness = 1;
             arcPath.Data = pthGeometry;
 
-            int off = 100;
-                BezierLine b = new BezierLine();
-                b.update(new Point(400,400), new Point(300,300));
-                XContainer.Children.Add(b);
+            double x = 300, y = 300;
+            double w = 200, h = 100;
+            BezierLine b = new BezierLine();
+            b.update(new Point(x, y), new Point(x + w, x + h));
+            XContainer.Children.Add(b);
+            BezierLine b2 = new BezierLine();
+            b2.update(new Point(x, y), new Point(x - w, x + h));
+            XContainer.Children.Add(b2);
+            BezierLine b3 = new BezierLine();
+            b3.update(new Point(x, y), new Point(x - w, x - h));
+            XContainer.Children.Add(b3);
+            BezierLine b4 = new BezierLine();
+            b4.update(new Point(x, y), new Point(x + w, x - h));
+            XContainer.Children.Add(b4);
         }
 
         private void AddDocumentsTapped(object sender, TappedRoutedEventArgs e)

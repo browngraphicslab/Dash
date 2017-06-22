@@ -78,26 +78,58 @@ namespace Dash {
             bzSeg.Point2 = new Point(startPoint.X, halfway.Y);
             bzSeg.Point3 = halfway;
 
-            // generate first half of bezier curve
+            // generate second half of bezier curve
+            Point displayEndpoint = new Windows.Foundation.Point(X2, Y2);
             BezierSegment bzSeg2 = new BezierSegment();
             bzSeg2.Point1 = halfway;
             bzSeg2.Point2 = new Point(endPoint.X, halfway.Y);
             bzSeg2.Point3 = endPoint;
 
+            //This code will make arrows that correspond to STRAIGHT line segments.
+            double dx = (endPoint.X - endPoint.X);
+            double dy = (halfway.Y - endPoint.Y); // change these to just be X1, X2, etc. for angled arrows
 
+            // get direction and normalize arrow size
+            Point A = new Point(dx, dy);
+            double length = Math.Sqrt(A.X * A.X + A.Y * A.Y);
+            dx = A.X / length;
+            dy = A.Y / length;
+        
+            // get arrow head endpoints
+            const double cos = 0.866;
+            const double sin = 0.500;
+            Point end1 = new Point(
+                (endPoint.X + (dx * cos + dy * -sin)),
+                (endPoint.Y + (dx * sin + dy * cos)));
+            Point end2 = new Point(
+                (endPoint.X + (dx * cos + dy * sin)),
+                (endPoint.Y + (dx * -sin + dy * cos)));
+
+            // create arrow line segments
+            PolyLineSegment arrow1 = new PolyLineSegment();
+            arrow1.Points.Add(end1);
+            arrow1.Points.Add(endPoint);
+            PolyLineSegment arrow2 = new PolyLineSegment();
+            arrow2.Points.Add(end2);
+            arrow2.Points.Add(endPoint);
+            
+            // put all the paths together
             PathSegmentCollection myPathSegmentCollection = new PathSegmentCollection();
             myPathSegmentCollection.Add(bzSeg);
             myPathSegmentCollection.Add(bzSeg2);
+            myPathSegmentCollection.Add(arrow1);
+            myPathSegmentCollection.Add(arrow2);
 
             pthFigure.Segments = myPathSegmentCollection;
 
+            // create and return the new path w/ geometries applied
             PathFigureCollection pthFigureCollection = new PathFigureCollection();
             pthFigureCollection.Add(pthFigure);
 
             PathGeometry pthGeometry = new PathGeometry();
             pthGeometry.Figures = pthFigureCollection;
             
-            this.Stroke = new SolidColorBrush(Windows.UI.Colors.Black);
+            this.Stroke = new SolidColorBrush(Windows.UI.Colors.Blue);
             this.StrokeThickness = 2;
             this.Data = pthGeometry;
         }
