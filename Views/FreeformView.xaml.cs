@@ -95,8 +95,6 @@ namespace Dash
             }
         }
 
-        public static FreeformView MainFreeformView { get; private set; }
-
         public FreeformViewModel ViewModel { get; private set; }
 
         public FreeformView()
@@ -112,10 +110,6 @@ namespace Dash
             // set screen in middle of canvas 
             //CanvasTransform = new TranslateTransform { X = -XCanvas.Width / 2, Y = -XCanvas.Height / 2 };
 
-            if (MainFreeformView == null)
-            {
-                MainFreeformView = this;
-            }
         }
 
 

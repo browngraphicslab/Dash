@@ -61,7 +61,7 @@ namespace Dash
         #region Private & Backing variables
         
 
-        private double _cellSize = 150;
+        private double _cellSize = 400;
         private double _outerGridWidth;
         private double _outerGridHeight;
         private double _containerGridHeight;
@@ -276,7 +276,13 @@ namespace Dash
             SetInitialValues();
             AddViewModels(MakeViewModels(_collectionModel.Documents));
             SetDimensions();
+            _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
             
+        }
+
+        private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            AddDocuments(_collectionModel.Documents);
         }
 
         /// <summary>
@@ -298,7 +304,7 @@ namespace Dash
             ProportionalDraggerFill = new SolidColorBrush(Color.FromArgb(255, 139, 139, 139));
             ProportionalDraggerStroke = new SolidColorBrush(Colors.Transparent);
 
-            CellSize = 150;
+            CellSize = 400;
             ListViewVisibility = Visibility.Collapsed;
             GridViewVisibility = Visibility.Visible;
             FilterViewVisibility = Visibility.Collapsed;
@@ -627,10 +633,11 @@ namespace Dash
                 annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
                 annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
                 testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
-                var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
-                var center = e.GetPosition(FreeformView.MainFreeformView);
-                FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
-                
+                // var DocView2 = new DocumentView(new DocumentViewModel());
+                // var center = e.GetPosition(FreeformView.MainFreeformView);
+                MainPage.Instance.DisplayDocument(testPrototypedoc);
+                //FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
+
                 if (GridViewVisibility == Visibility.Visible)
                 {
                     SoloDisplaySize = CellSize + 50;
@@ -669,8 +676,8 @@ namespace Dash
         {
             foreach (DocumentModel document in documents)
             {
-                if(!_collectionModel.Documents.Contains(document))
-                _collectionModel.Documents.Add(document);
+                if (!_collectionModel.Documents.Contains(document))
+                    _collectionModel.Documents.Add(document);
             }
             AddViewModels(MakeViewModels(documents));
         }
@@ -697,12 +704,19 @@ namespace Dash
         {
             foreach (DocumentViewModel viewModel in viewModels)
             {
-                //viewModel.DefaultViewVisibility = Visibility.Collapsed;
-                //viewModel.ListViewVisibility = Visibility.Visible;
-                viewModel.ManipulationMode = ManipulationModes.System;
-                viewModel.DoubleTapEnabled = false;
-                //viewModel.CanMoveControl = false;
-                DocumentViewModels.Add(viewModel);
+                bool found = false;
+                foreach (var vm in DocumentViewModels)
+                    if (vm.DocumentModel.Id == viewModel.DocumentModel.Id)
+                        found = true;
+                if (!found)
+                {
+                    //viewModel.DefaultViewVisibility = Visibility.Collapsed;
+                    //viewModel.ListViewVisibility = Visibility.Visible;
+                    viewModel.ManipulationMode = ManipulationModes.System;
+                    viewModel.DoubleTapEnabled = false;
+                    //viewModel.CanMoveControl = false;
+                    DocumentViewModels.Add(viewModel);
+                }
             }
             ScaleDocumentsToFitCell();
             DataBindingSource = DocumentViewModels;

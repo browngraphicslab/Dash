@@ -33,6 +33,7 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        static public MainPage Instance;
         public MainPage()
         {
             this.InitializeComponent();
@@ -43,6 +44,17 @@ namespace Dash
             xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
             xOverlayCanvas.OnAddImageTapped += AddImage;
             xOverlayCanvas.OnAddShapeTapped += AddShape;
+
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+
+            DocumentModel docCollection = docController.CreateDocumentAsync("newtype");
+            docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {  }), false);
+            MainDocView.DataContext = new DocumentViewModel(docCollection);
+            MainDocView.Width = MyGrid.ActualWidth;
+            MainDocView.Height = MyGrid.ActualHeight;
+            MainDocView.Manipulator.TurnOff();
+
+            Instance = this;
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)
@@ -75,70 +87,74 @@ namespace Dash
             var shapeView = new ShapeView(shapeVM);
 
 
-            xFreeformView.Canvas.Children.Add(shapeView);
+           //  xFreeformView.Canvas.Children.Add(shapeView);
+        }
+        public DocumentModel MainDocument {
+            get
+            {
+                return (MainDocView.DataContext as DocumentViewModel).DocumentModel;
+            }
         }
 
-        DocumentViewModel model7, model4, model1;
+        public void DisplayDocument(DocumentModel docModel, Point? where = null)
+        {
+            var children = MainDocument.Field(DocumentModel.GetFieldKeyByName("children")) as DocumentCollectionFieldModel;
+            if (children != null) { 
+                children.AddDocumentModel(docModel);
+                if (where.HasValue)
+                {
+                    docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
+                    docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
+                }
+            }
+        }
+
         DocumentModel docCollection = null;
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), false);
+            DocumentModel image2 = DocumentModel.TwoImagesAndText();
+            DocumentModel image2Del = image2.MakeDelegate();
+            DocumentModel umpireDoc = DocumentModel.UmpireDocumentModel();
+            image2Del.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(image2Del.DocumentType, true)), true);
+            image2Del.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             if (docCollection == null) {
                 docCollection = docController.CreateDocumentAsync("newtype");
-                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(
-                  new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), model4.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
+                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { umpireDoc, image2Del, image2 }), false);
             }
-            DocumentViewModel modelC = new DocumentViewModel(docCollection);
-            DocumentView view1 = new DocumentView(modelC);
-            xFreeformView.Canvas.Children.Add(view1);
+            DisplayDocument(docCollection);
         }
 
         private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
-            xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
+            // xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
         }
+
         private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
-            xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
+           // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
+           // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
-            
-            DocumentModel image2 = DocumentModel.TwoImagesAndText();
-            DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
-
-            model1 = new DocumentViewModel(umpire);
-            DocumentViewModel model2 = new DocumentViewModel(recipe);
-            model4 = new DocumentViewModel(image2);
-            DocumentViewModel model5 = new DocumentViewModel(collection);
-            DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
-            model7 = new DocumentViewModel(image2.MakeDelegate());
-            model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)), false);
-
-            DocumentView view1 = new DocumentView(model1);
-            DocumentView view2 = new DocumentView(model2);
-            DocumentView view4 = new DocumentView(model4);
-            DocumentView view5 = new DocumentView(model5);
-            DocumentView view6 = new DocumentView(model6);
-            DocumentView view7 = new DocumentView(model7);
-
-            // makes oneimage doc model
+            DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel image = DocumentModel.OneImage();
-            DocumentViewModel model3 = new DocumentViewModel(image);
-            DocumentView view3 = new DocumentView(model3);
-            
-            xFreeformView.Canvas.Children.Add(view3);
-            xFreeformView.Canvas.Children.Add(view4);
-            xFreeformView.Canvas.Children.Add(view6);
-            xFreeformView.Canvas.Children.Add(view7);
+           
+            DisplayDocument(recipe);
+            DisplayDocument(pricePerSqFt);
+            DisplayDocument(image);
+        }
 
-
-
+        private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var child = xFreeFormView.Child as FrameworkElement;
+            if (child != null)
+            {
+                child.Width = e.NewSize.Width;
+                child.Height = e.NewSize.Height;
+            }
         }
     }
 }

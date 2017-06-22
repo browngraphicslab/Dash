@@ -14,18 +14,21 @@
     <Grid>
         <Grid x:Name="Grid" Height="{Binding OuterGridHeight}" Width="{Binding  OuterGridWidth}" BorderThickness="1" Background="Transparent" >
             <Grid x:Name="DocumentViewContainerGrid" HorizontalAlignment="Left" Height="{Binding ContainerGridHeight}" BorderThickness="1" Margin="0,22,0,22" VerticalAlignment="Center" Width="{Binding  ContainerGridWidth}" Background="White" BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}">
-
-                <Grid Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" 
+                 <Grid Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" 
                       Visibility="{Binding GridViewVisibility}">
-                    <GridView x:Name="GridView" x:FieldModifier="public" Width ="{Binding Path=ContainerGridWidth}" 
-                              Height="{Binding Path=ContainerGridHeight}"  Padding="5"
-                              SelectionMode="{Binding ItemSelectionMode}" ItemsSource="{Binding DataBindingSource}"
+                    <ItemsControl x:Name="GridView" x:FieldModifier="public" Width ="{Binding Path=ContainerGridWidth}" 
+                              Height="{Binding Path=ContainerGridHeight}"  Padding="5"  ItemsSource="{Binding DataBindingSource}"
                               IsEnabled="{Binding ViewIsEnabled}"
                               >
-                        <GridView.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Grid ></Grid>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                    <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped"  ManipulationCompleted="DocumentView_ManipulationCompleted">
+                                    <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta"  >
                                         <dash:DocumentView.RenderTransform>
                                             <TranslateTransform X="{Binding X}" Y="{Binding Y}">
                                                 
@@ -35,8 +38,8 @@
                                 </Border>
 
                             </DataTemplate>
-                        </GridView.ItemTemplate>
-                    </GridView>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </Grid>
 
                 <Grid Visibility="{Binding ListViewVisibility}">

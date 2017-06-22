@@ -193,7 +193,8 @@ namespace Dash
         {
             DocumentViewModel viewModel = new DocumentViewModel(_output);
             DocumentView view = new DocumentView(viewModel);
-            FreeformView.MainFreeformView.Canvas.Children.Add(view);
+            MainPage.Instance.DisplayDocument(_output);
+            // FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
 
         /// <summary>

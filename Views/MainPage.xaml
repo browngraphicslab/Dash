@@ -8,8 +8,12 @@
     xmlns:views="using:Dash"
     mc:Ignorable="d">
 
-    <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <local:FreeformView x:Name="xFreeformView" Width="Auto" Height="Auto" CanvasWidth="20000" CanvasHeight="20000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:FreeformView >
+    <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" SizeChanged="MyGrid_SizeChanged" >
+        <Viewbox x:Name="xFreeFormView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+            <views:DocumentView x:Name="MainDocView"></views:DocumentView>
+        </Viewbox>
+                
+                <!--local:FreeformView x:Name="xFreeformView" Width="Auto" Height="Auto" CanvasWidth="20000" CanvasHeight="20000" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></ -->
         <local:OverlayCanvas x:Name="xOverlayCanvas"></local:OverlayCanvas>
     </Grid>
 </Page>

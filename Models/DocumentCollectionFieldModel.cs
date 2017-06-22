@@ -9,14 +9,15 @@ namespace Dash
 {
     public class DocumentCollectionFieldModel : FieldModel
     {
-        private List<DocumentModel> _docs;
+        private ObservableCollection<DocumentModel> _docs = new ObservableCollection<DocumentModel>();
 
-        public DocumentCollectionFieldModel(List<DocumentModel> docs)
+        public DocumentCollectionFieldModel(IEnumerable<DocumentModel> docs)
         {
-            _docs = docs;
+            foreach (var d in docs)
+                _docs.Add(d);
         }
 
-        public List<DocumentModel> Documents { get { return _docs; } }
+        public ObservableCollection<DocumentModel> Documents { get { return _docs; } }
 
         public void AddDocumentModel(DocumentModel doc)
         {

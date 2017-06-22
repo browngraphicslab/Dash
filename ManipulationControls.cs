@@ -36,6 +36,12 @@ namespace Dash {
             this.handleControl = handleControl;
         }
 
+        public void TurnOff()
+        {
+            handleControl.ManipulationDelta -= ManipulateDeltaaMoveAndScale;
+            element.ManipulationDelta       -= ManipulateDeltaScale;
+        }
+
         // == METHODS ==
 
         /// <summary>

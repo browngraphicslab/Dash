@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml;
+﻿using Windows.Foundation;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
@@ -40,7 +41,7 @@ namespace Dash
             //CancelSoloDisplayButton.Tapped += ViewModel.CancelSoloDisplayButton_Tapped;
 
             HListView.SelectionChanged += ViewModel.SelectionChanged;
-            GridView.SelectionChanged += ViewModel.SelectionChanged;
+            // GridView.SelectionChanged += ViewModel.SelectionChanged;
             
 
             DraggerButton.Holding += ViewModel.DraggerButtonHolding;
@@ -251,11 +252,25 @@ namespace Dash
             ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldEquals;
             fieldContainsOrEuqals_Tapped(sender, e);
         }
-        private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+       
+
+
+
+        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var cvm = DataContext as CollectionViewModel;
-            cvm.MoveDocument((sender as DocumentView).DataContext as DocumentViewModel, e.Position);
-            // bcz: ugh -- this breaks the translatetransform bindings so this collection won't update when the underlying document changes anymore
+            (sender as DocumentView).Manipulator.TurnOff();
+
         }
+
+        private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var cvm = DataContext as CollectionViewModel;
+            var dv  = (sender as DocumentView);
+            var dvm = dv.DataContext as DocumentViewModel;
+            cvm.MoveDocument(dvm, dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y)));
+            e.Handled = true;
+        }
+       
     }
 }

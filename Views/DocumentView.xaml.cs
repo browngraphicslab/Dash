@@ -23,6 +23,9 @@ namespace Dash {
 
         private DocumentViewModel _vm;
 
+
+        public ManipulationControls Manipulator {  get { return manipulator; } }
+
         public DocumentView() {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
@@ -84,8 +87,9 @@ namespace Dash {
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
+                throw new Exception("Operation Window needs to be a document to be added to the MainPage");
                 //FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
-                FreeformView.MainFreeformView.Canvas.Children.Add(window);
+               // MainPage.Instance.MainDocument.Children.Add(window);
             }
         }
 
@@ -110,7 +114,8 @@ namespace Dash {
 
             var interfaceBuilder = new InterfaceBuilder(dvm);
             var center = RenderTransform.TransformPoint(e.GetPosition(this));
-            FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
+            throw new Exception("interface builder needs to be a document to be added to the MainPage");
+            // FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
         }
 
         /// <summary>

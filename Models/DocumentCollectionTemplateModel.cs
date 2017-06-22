@@ -18,7 +18,7 @@ namespace Dash
         { 
             var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
             Debug.Assert(collectionFieldModel != null);
-            var collectionModel = new CollectionModel(new ObservableCollection<DocumentModel>(collectionFieldModel.Documents), context);
+            var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = new CollectionView(collectionViewModel);
 
