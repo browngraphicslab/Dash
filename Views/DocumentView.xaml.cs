@@ -88,16 +88,6 @@ namespace Dash {
         }
 
         /// <summary>
-        /// Called whenever a field is changed on the document
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            //ResetFields(_vm);
-            Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
-        }
-
-        /// <summary>
         /// Right tapping to bring up the interface builder
         /// </summary>
         /// <param name="sender"></param>
@@ -122,8 +112,6 @@ namespace Dash {
             if (_vm != null) {
                 ResetFields(_vm);
                 // Add any methods
-                //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-                //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
             }
         }
     }

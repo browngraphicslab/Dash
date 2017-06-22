@@ -50,21 +50,11 @@ namespace Dash
             //}
             InputReferences[fieldKey] = reference;
             docEndpoint.GetFieldInDocument(reference).FieldUpdated += OperatorDocumentModel_FieldUpdated;
-            //docEndpoint.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
             Execute();
         }
 
         private void OperatorDocumentModel_FieldUpdated(FieldModel model)
         {
-            Execute();
-        }
-
-        private void OperatorDocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            if (!InputReferences.ContainsValue(fieldReference))
-            {
-                return;
-            }
             Execute();
         }
 

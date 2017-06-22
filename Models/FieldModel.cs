@@ -35,20 +35,7 @@ namespace Dash
                 _inputReference = value;
                 DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 cont.GetFieldInDocument(value).FieldUpdated += UpdateValue;
-                //cont.GetDocumentAsync(value.DocId).DocumentFieldUpdated += FieldModel_DocumentFieldUpdated;
                 UpdateValue(cont.GetFieldInDocument(value));
-            }
-        }
-
-        /// <summary>
-        /// Event Handler that handles when the input reference is updated
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        private void FieldModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            if (fieldReference.Equals(InputReference))
-            {
-                UpdateValue(fieldReference);
             }
         }
 

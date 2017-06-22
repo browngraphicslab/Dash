@@ -21,7 +21,6 @@ namespace Dash
         public OperationWindowViewModel(DocumentModel inputDocument)
         {
             InputDocument = inputDocument;
-            //inputDocument.DocumentFieldUpdated += InputDocument_DocumentFieldUpdated;
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
             foreach (var documentModelField in InputDocument.EnumFields())
             {
@@ -35,7 +34,6 @@ namespace Dash
             }
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             OutputDocument = docEndpoint.CreateDocumentAsync(InputDocument.DocumentType.Type);//TODO Should this be the same as source document?
-            //OutputDocument.DocumentFieldUpdated += OutputDocument_DocumentFieldUpdated;
             OutputDocument.SetFields(fields);
         }
 

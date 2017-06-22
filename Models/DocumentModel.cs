@@ -41,9 +41,6 @@ namespace Dash
         //}
 
 
-        public delegate void FieldUpdatedEvent(ReferenceFieldModel fieldReference);
-
-        //public event FieldUpdatedEvent DocumentFieldUpdated;
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -91,7 +88,6 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             Field(fieldKey).InputReference = reference;
-            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, fieldKey));
         }
 
         /// <summary>
@@ -165,11 +161,11 @@ namespace Dash
         {
             if (force || Fields.ContainsKey(key)) {
                 Fields[key] = value;
-                OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
-                var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
-                if (delegates != null)
-                    foreach (var d in delegates.EnumDocuments())
-                        d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+                //OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+                //var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+                //if (delegates != null)
+                    //foreach (var d in delegates.EnumDocuments())
+                        //d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
                 return true;
             }
             if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
@@ -179,11 +175,6 @@ namespace Dash
                     return true;
             }
             return false;
-        }
-
-        protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            //DocumentFieldUpdated?.Invoke(fieldReference);
         }
 
         // Hard coded document models 
