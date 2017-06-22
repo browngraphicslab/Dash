@@ -412,25 +412,78 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private void XCanvas_Drop(object sender, DragEventArgs e) {
-            Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
+        private async void XCanvas_Drop(object sender, DragEventArgs e) {
+            Image dragged = new Image();
+            string type = "";
+
+            // load items dragged from solution explorer
+            if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
+                var items = await e.DataView.GetStorageItemsAsync();
+
+                if (items.Any()) {
+                    var storageFile = items[0] as StorageFile;
+                    var contentType = storageFile.ContentType;
+
+                    StorageFolder folder = ApplicationData.Current.LocalFolder;
+
+                    // parse images dropped in
+                    if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg") {
+                        StorageFile newFile = await storageFile.CopyAsync(folder, storageFile.Name, NameCollisionOption.GenerateUniqueName);
+                        var bitmapImg = new BitmapImage();
+                        bitmapImg.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
+                        dragged.Source = bitmapImg;
+                        type = "image";
+                    }
+
+                    // parse text files dropped in
+                    if (contentType == "text/plain") {
+                        StorageFile newFile = await storageFile.CopyAsync(folder, storageFile.Name, NameCollisionOption.GenerateUniqueName);
+                        string text = await FileIO.ReadTextAsync(newFile);
+                        type = "text";
+
+
+                        var docControllr = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                        var keyControllr = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+
+                        // generate single-image document model
+                        var fields = new Dictionary<Key, FieldModel>();
+                        var textKey = DocumentModel.GetFieldKeyByName("text");
+                        fields[textKey] = new TextFieldModel(text);
+                        var dm = docControllr.CreateDocumentAsync("textfile");
+                        dm.SetFields(fields);
+                        DocumentViewModel model = new DocumentViewModel(dm);
+                        DocumentView view = new DocumentView(model);
+
+                        // position relative to mouse
+                        Point dPos = e.GetPosition(XCanvas);
+                        view.Margin = new Thickness(dPos.X, dPos.Y, 0, 0);
+                        XCanvas.Children.Add(view);
+
+                        return;
+                    }
+
+                }
+            }
+
+            if (e.DataView.Properties["image"] != null)
+                dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
             
             // make document
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
-
-            // generate single-image document model
-            DocumentModel image = DocumentModel.OneImage();
-            image.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(dragged), true);
-            Key contentKey = keyController.CreateKeyAsync("content");
-            DocumentViewModel model3 = new DocumentViewModel(image);
-            DocumentView view3 = new DocumentView(model3);
-
-            // position relative to mouse
-            Point dropPos = e.GetPosition(XCanvas);
-            view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
             
-            XCanvas.Children.Add(view3);
+                // generate single-image document model
+                DocumentModel image = DocumentModel.OneImage();
+                image.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(dragged), true);
+                DocumentViewModel model3 = new DocumentViewModel(image);
+                DocumentView view3 = new DocumentView(model3);
+
+                // position relative to mouse
+                Point dropPos = e.GetPosition(XCanvas);
+                view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
+
+                XCanvas.Children.Add(view3);
+
+            
         }
         
         private void XCanvas_DragOver_1(object sender, DragEventArgs e) {

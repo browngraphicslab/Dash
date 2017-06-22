@@ -62,6 +62,7 @@ namespace Dash
             Height = height;
             Visibility = visibility;
         }
+
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>

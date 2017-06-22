@@ -178,7 +178,8 @@ namespace Dash
         /// </summary>
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
-        public void SetField(Key key, FieldModel field, bool force)
+        /// <param name="force">add the field even if key does not exist</param>
+        public void SetField(Key key, FieldModel field, bool force = true)
         {
             var proto = force ? this : getPrototypeWithFieldKey(key);
 
@@ -256,7 +257,7 @@ namespace Dash
             return dm;
         }
 
-        public static DocumentModel TwoImagesAndText()
+        public static DocumentModel TwoImagesAndText(string text = "These are 2 cats")
         {
             // get access to controllers, 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
@@ -270,7 +271,7 @@ namespace Dash
             var content2Key = DocumentModel.GetFieldKeyByName("content2"); // keyController.CreateKeyAsync("content2");
             fields[content2Key] = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
             var textKey = DocumentModel.GetFieldKeyByName("text"); //  keyController.CreateKeyAsync("text");
-            fields[textKey] = new TextFieldModel("These are 2 cats");
+            fields[textKey] = new TextFieldModel(text);
 
             var dm = docController.CreateDocumentAsync("twoimages");
             dm.SetFields(fields);

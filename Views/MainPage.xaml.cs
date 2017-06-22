@@ -77,21 +77,24 @@ namespace Dash
 
             xFreeformView.Canvas.Children.Add(shapeView);
         }
-
-        DocumentViewModel model7, model4, model1;
+        
+        DocumentViewModel model7, twotxtModel, model1;
         DocumentModel docCollection = null;
+
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), false);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var collection = docController.CreateDocumentAsync("newtype");
+            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, twotxtModel.DocumentModel, model7.DocumentModel })));
             if (docCollection == null) {
                 docCollection = docController.CreateDocumentAsync("newtype");
                 docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(
-                  new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), model4.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
+                  new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), twotxtModel.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
             }
-            DocumentViewModel modelC = new DocumentViewModel(docCollection);
-            DocumentView view1 = new DocumentView(modelC);
+            DocumentViewModel model = new DocumentViewModel(docCollection);
+            DocumentView view1 = new DocumentView(model);
             xFreeformView.Canvas.Children.Add(view1);
         }
 
@@ -108,21 +111,22 @@ namespace Dash
             DocumentModel umpire = DocumentModel.UmpireDocumentModel();
             DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             
-            DocumentModel image2 = DocumentModel.TwoImagesAndText();
+            DocumentModel twotxtDocModel = DocumentModel.TwoImagesAndText();
             DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
 
             model1 = new DocumentViewModel(umpire);
             DocumentViewModel model2 = new DocumentViewModel(recipe);
-            model4 = new DocumentViewModel(image2);
+            twotxtModel = new DocumentViewModel(twotxtDocModel);
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
-            model7 = new DocumentViewModel(image2.MakeDelegate());
-            model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)), false);
+
+            model7 = new DocumentViewModel(twotxtDocModel.MakeDelegate());
+            model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
 
             DocumentView view1 = new DocumentView(model1);
             DocumentView view2 = new DocumentView(model2);
-            DocumentView view4 = new DocumentView(model4);
+            DocumentView twotxtView = new DocumentView(twotxtModel);
             DocumentView view5 = new DocumentView(model5);
             DocumentView view6 = new DocumentView(model6);
             DocumentView view7 = new DocumentView(model7);
@@ -133,12 +137,11 @@ namespace Dash
             DocumentView view3 = new DocumentView(model3);
             
             xFreeformView.Canvas.Children.Add(view3);
-            xFreeformView.Canvas.Children.Add(view4);
+            xFreeformView.Canvas.Children.Add(twotxtView);
             xFreeformView.Canvas.Children.Add(view6);
             xFreeformView.Canvas.Children.Add(view7);
 
-
-
+            
         }
     }
 }

@@ -7,8 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
-    d:DesignHeight="400"
-    d:DesignWidth="400"
+    d:DesignHeight="385.753"
+    d:DesignWidth="704.658"
     ManipulationStarted="Grid_OnManipulationStarted">
 
     <Grid>
@@ -28,7 +28,7 @@
                                     <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped"  ManipulationCompleted="DocumentView_ManipulationCompleted">
                                         <dash:DocumentView.RenderTransform>
                                             <TranslateTransform X="{Binding X}" Y="{Binding Y}">
-                                                
+
                                             </TranslateTransform>
                                         </dash:DocumentView.RenderTransform>
                                     </dash:DocumentView>
@@ -65,7 +65,7 @@
                 </Grid>
 
             </Grid>
-            
+
             <Grid Visibility="{Binding SoloDisplayVisibility}">
                 <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid.Background>
@@ -87,10 +87,10 @@
                             </ListView.ItemsPanel>
                         </ListView>
                     </Grid>
-                    
+
                 </Grid>
             </Grid>
-            
+
             <Grid x:Name="FilterGrid" Visibility="{Binding FilterViewVisibility}">
                 <StackPanel Orientation="Vertical" Width="605" Height="305" Style="{StaticResource xNodeContainerStackPanel}">
                     <Button x:Name="xFilterExit" Content="X" HorizontalAlignment="Right" Height="30" Style="{StaticResource xBlueTextButtonStyle}"/>
@@ -152,7 +152,7 @@
                          Margin="30" />
                 </StackPanel>
             </Grid>
-            
+
 
             <!--<Button x:Name="CancelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="62" Height="29" Content="Cancel" Background="{x:Null}" Foreground="{StaticResource ButtonTextBrush}" BorderBrush="{x:Null}" Padding="0" Margin="0,0,10,0"  />-->
 
