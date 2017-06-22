@@ -1,0 +1,36 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using DashShared;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace Dash.Models.OperatorModels.Set
+{
+    class UnionOperatorModel : OperatorFieldModel
+    {
+        //Input keys
+        public static readonly Key AKey = new Key("178123E8-4E64-44D9-8F05-509B2F097B7D", "Input A");
+        public static readonly Key BKey = new Key("0B9C67F7-3FB7-400A-B016-F12C048325BA", "Input B");
+
+        //Output keys
+        public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
+
+        public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
+
+        public override List<Key> Outputs { get; } = new List<Key> {UnionKey};
+
+        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        {
+            DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            DocumentCollectionFieldModel setA = docEnd.GetFieldInDocument(inputReferences[AKey]) as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel setB = docEnd.GetFieldInDocument(inputReferences[BKey]) as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel union = new DocumentCollectionFieldModel(setA.Documents.Union(setB.Documents).ToList());
+            return new Dictionary<Key, FieldModel>
+            {
+                {UnionKey, union}
+            };
+        }
+    }
+}
