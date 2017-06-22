@@ -14,11 +14,11 @@ namespace Dash
         {
         }
         
-        protected override List<UIElement> MakeView(FieldModel fieldModel)
+        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
         { 
             var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
             Debug.Assert(collectionFieldModel != null);
-            var collectionModel = new CollectionModel(new ObservableCollection<DocumentModel>(collectionFieldModel.Documents));
+            var collectionModel = new CollectionModel(new ObservableCollection<DocumentModel>(collectionFieldModel.Documents), context);
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = new CollectionView(collectionViewModel);
 

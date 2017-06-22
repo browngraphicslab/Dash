@@ -250,9 +250,9 @@ namespace Dash
                     // TODO commented out for debugging 
                     //else
                     //    Debug.Assert(false);
-                    var elements = template.MakeViewUI(pair.Value);
+                    var elements = template.MakeViewUI(pair.Value, doc);
                     if (elements != null)
-                    foreach (FrameworkElement element in template.MakeViewUI(pair.Value))
+                    foreach (FrameworkElement element in template.MakeViewUI(pair.Value, doc))
                         if (element != null)
                         {
                             element.VerticalAlignment = VerticalAlignment.Center;

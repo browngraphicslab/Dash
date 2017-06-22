@@ -12,6 +12,7 @@ using Dash.Models;
 using Dash.StaticClasses;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -721,6 +722,12 @@ namespace Dash
         }
 
         /// <summary>
+        /// The collection creates delegates for each document it displays so that it can associate display-specific
+        /// information on the documents.  This allows different collection views to save different views of the same
+        /// document collection.
+        /// </summary>
+        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+        /// <summary>
         /// Constructs standard DocumentViewModels from the passed in DocumentModels
         /// </summary>
         /// <param name="documents"></param>
@@ -732,11 +739,26 @@ namespace Dash
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
             foreach (DocumentModel document in documents)
             {
-                viewModels.Add(new DocumentViewModel(document));
+                var documentDisplayDelegate = DocumentToDelegateMap.ContainsKey(document.Id) ? DocumentToDelegateMap[document.Id] : null;
+                if (documentDisplayDelegate == null) {
+                    foreach (var deleg in docController.GetDelegates(document.Id))
+                    {
+                        var field = deleg.Field(DocumentModel.GetFieldKeyByName("CollectionDelegate")) as TextFieldModel;
+                        if (field != null && field.Data == _collectionModel.Context.Id)
+                            documentDisplayDelegate = deleg;
+                    }
+                    if (documentDisplayDelegate == null)
+                    {
+                        documentDisplayDelegate = document.MakeDelegate();
+                        documentDisplayDelegate.SetField(DocumentModel.GetFieldKeyByName("CollectionDelegate"), new TextFieldModel(_collectionModel.Context.Id), true);
+                     }
+                    DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
+                }
+                viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
             }
             return viewModels;
         }
-        
+
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
@@ -881,5 +903,10 @@ namespace Dash
             DataBindingSource = DocumentViewModels;
             _filtered = false;
         }
+        public void MoveDocument(DocumentViewModel docViewModel, Point where)
+        {
+            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(where.X), true);
+            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(where.Y), true);
+         }
     }
 }

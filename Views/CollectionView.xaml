@@ -25,7 +25,13 @@
                         <GridView.ItemTemplate>
                             <DataTemplate>
                                 <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                    <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped"  ManipulationCompleted="DocumentView_ManipulationCompleted"   />
+                                    <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped"  ManipulationCompleted="DocumentView_ManipulationCompleted">
+                                        <dash:DocumentView.RenderTransform>
+                                            <TranslateTransform X="{Binding X}" Y="{Binding Y}">
+                                                
+                                            </TranslateTransform>
+                                        </dash:DocumentView.RenderTransform>
+                                    </dash:DocumentView>
                                 </Border>
 
                             </DataTemplate>

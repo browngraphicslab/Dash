@@ -93,6 +93,12 @@ namespace Dash
                 BackgroundBrush = new SolidColorBrush(Colors.White);
                 BorderBrush = new SolidColorBrush(Colors.DarkGoldenrod);
             }
+            if (docModel.Field(DocumentModel.GetFieldKeyByName("X")) != null &&
+                docModel.Field(DocumentModel.GetFieldKeyByName("Y")) != null)
+            {
+                X = (docModel.Field(DocumentModel.GetFieldKeyByName("X")) as NumberFieldModel).Data;
+                Y = (docModel.Field(DocumentModel.GetFieldKeyByName("Y")) as NumberFieldModel).Data;
+            }
         }
 
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -127,7 +133,7 @@ namespace Dash
                 transXf.Y = bounds.Top;
                 foreach (var lEle in layout.Fields)
                 {
-                    var uiele = lEle.Value.MakeViewUI(DocumentModel.Field(lEle.Key));
+                    var uiele = lEle.Value.MakeViewUI(DocumentModel.Field(lEle.Key), DocumentModel);
                     if (uiele != null)
                     {
                         uiElements.AddRange(uiele);
@@ -172,17 +178,17 @@ namespace Dash
                     }
                     if (fieldModel is DocumentCollectionFieldModel)
                     {
-                        uiElements.AddRange(new DocumentCollectionTemplateModel(bounds.Left, yloc, 500, 100, Visibility.Visible).MakeViewUI(fieldModel));
+                        uiElements.AddRange(new DocumentCollectionTemplateModel(bounds.Left, yloc, 500, 100, Visibility.Visible).MakeViewUI(fieldModel, DocumentModel));
                         yloc += 100;
                     }
                     else if (fieldModel is ImageFieldModel || (fieldModel is TextFieldModel && (fieldModel as TextFieldModel).Data.EndsWith(".jpg")))
                     {
-                        uiElements.AddRange(new ImageTemplateModel(bounds.Left, yloc, 500, 500).MakeViewUI(fieldModel));
+                        uiElements.AddRange(new ImageTemplateModel(bounds.Left, yloc, 500, 500).MakeViewUI(fieldModel, DocumentModel));
                         yloc += 500;
                     }
                     else if (fieldModel != null)
                     {
-                        uiElements.AddRange(new TextTemplateModel(bounds.Left, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeViewUI(fieldModel));
+                        uiElements.AddRange(new TextTemplateModel(bounds.Left, yloc, FontWeights.Bold, TextWrapping.Wrap, Visibility.Visible).MakeViewUI(fieldModel, DocumentModel));
                         yloc += 20;
                     }
                 }

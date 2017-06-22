@@ -79,16 +79,18 @@ namespace Dash
         }
 
         DocumentViewModel model7, model4, model1;
-
+        DocumentModel docCollection = null;
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), false);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var collection = docController.CreateDocumentAsync("newtype");
-            collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(
-              new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), model4.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
-            DocumentViewModel modelC = new DocumentViewModel(collection);
+            if (docCollection == null) {
+                docCollection = docController.CreateDocumentAsync("newtype");
+                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(
+                  new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), model4.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
+            }
+            DocumentViewModel modelC = new DocumentViewModel(docCollection);
             DocumentView view1 = new DocumentView(modelC);
             xFreeformView.Canvas.Children.Add(view1);
         }

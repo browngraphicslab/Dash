@@ -39,7 +39,7 @@ namespace Dash
         /// <summary>
          /// Creates TextBlock using layout information from template and Data 
          /// </summary>
-        protected override List<UIElement> MakeView(FieldModel fieldModel)
+        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
         {
             if (fieldModel == null && DefaultText == null)
                 return null;

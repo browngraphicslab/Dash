@@ -65,14 +65,14 @@ namespace Dash
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        protected virtual List<UIElement> MakeView(FieldModel fieldModel)
+        protected virtual List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
         {
             return null;
         }
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        public virtual List<UIElement> MakeViewUI(FieldModel fieldModel)
+        public virtual List<UIElement> MakeViewUI(FieldModel fieldModel, DocumentModel context)
         {
             while (fieldModel is ReferenceFieldModel)
             {
@@ -84,7 +84,7 @@ namespace Dash
                 var doc = (fieldModel as DocumentModelFieldModel).Data;
                 return new DocumentViewModel(doc).GetUiElements(new Rect(Left, Top, Width, Height));
             }
-            return MakeView(fieldModel);
+            return MakeView(fieldModel, context);
         }
     }
 }

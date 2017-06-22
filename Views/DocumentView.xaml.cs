@@ -95,8 +95,8 @@ namespace Dash {
         /// <param name="fieldReference"></param>
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
-            //ResetFields(_vm);
-            Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
+            // ResetFields(_vm);
+           // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
         }
 
         /// <summary>

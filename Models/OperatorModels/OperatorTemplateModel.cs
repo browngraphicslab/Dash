@@ -18,7 +18,7 @@ namespace Dash.Models.OperatorModels
         } /// <summary>
             /// Creates Image using layout information from template and Data 
             /// </summary>
-        protected override List<UIElement> MakeView(FieldModel fieldModel)
+        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
         { 
             if (fieldModel is OperatorFieldModel)
             {
