@@ -142,7 +142,10 @@ namespace Dash
 
 
         #region Operator connection stuff
-
+        /// <summary>
+        /// Helper class to detect cycles 
+        /// </summary>
+        private Graph _graph = new Graph(); 
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
         /// </summary>
@@ -182,6 +185,7 @@ namespace Dash
                 IsHitTestVisible = false,
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+
 
             DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
 
@@ -232,6 +236,15 @@ namespace Dash
 
         public void EndDrag(OperatorView.IOReference ioReference)
         {
+            _graph.AddEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+            if (_graph.IsCyclic())
+            {
+                _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+                CancelDrag(ioReference.Pointer);
+                Debug.WriteLine("Cycle detected");
+                return;
+            }
+
             _currentPointers.Remove(ioReference.Pointer.PointerId);
             if (_connectionLine == null) return;
 
@@ -266,6 +279,7 @@ namespace Dash
             };
             _connectionLine.SetBinding(Line.X2Property, x2Binding);
             _connectionLine.SetBinding(Line.Y2Property, y2Binding);
+
             if (ioReference.IsOutput)
             {
                 var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();

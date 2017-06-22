@@ -96,42 +96,45 @@ namespace Dash
             var uiElements = new List<UIElement>();
             var layout = GetLayoutModel();
 
-            if (layout.ShowAllFields) 
+            if (layout.ShowAllFields)
             {
                 ShowAllDocumentFields(uiElements);
             }
             else
             {
                 foreach (var lEle in layout.Fields)
-                    if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel) {
+                    if (lEle.Value is TextTemplateModel || lEle.Value is DocumentCollectionTemplateModel || lEle.Value is ImageTemplateModel)
+                    {
                         var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
                         if (uiele != null)
                         {
                             uiElements.Add(uiele);
-                            uiele.DataContext = new ReferenceFieldModel(DocumentModel.Id, lEle.Key);
-                            uiele.ManipulationMode = ManipulationModes.All;
-                            uiele.ManipulationStarted += (sender, args) => args.Complete();
-
-                            uiele.PointerPressed += Element_PointerPressed;
-                            uiele.PointerReleased += Element_PointerReleased;
                             
+                            SetUpFrameworkElement(uiele, lEle.Key);
                         }
                     }
                     else if (DocumentModel.Field(lEle.Key) != null)
                     {
                         var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
                         uiElements.Add(uiele);
-                        uiele.DataContext = new ReferenceFieldModel(DocumentModel.Id, lEle.Key);
-                        uiele.ManipulationMode = ManipulationModes.All;
-                        uiele.ManipulationStarted += (sender, args) => args.Complete();
-
-                        uiele.PointerPressed += Element_PointerPressed;
-                        uiele.PointerReleased += Element_PointerReleased;
+                        SetUpFrameworkElement(uiele, lEle.Key);
                     }
             }
             return uiElements;
         }
 
+        private void SetUpFrameworkElement(FrameworkElement element, Key key)
+        {
+            element.DataContext = new ReferenceFieldModel(DocumentModel.Id, key);
+            element.ManipulationMode = ManipulationModes.All;
+            element.ManipulationStarted += (sender, args) => args.Complete();
+
+            if (!(DocumentModel is OperatorDocumentModel))//TODO Change data model to avoid having to do this check?
+            {
+                element.PointerPressed += Element_PointerPressed;
+                element.PointerReleased += Element_PointerReleased;
+            }
+        }
         /* 
         private Ellipse MakeEllipse(Key fieldKey, TemplateModel template, bool isOutput)
         {
@@ -241,7 +244,7 @@ namespace Dash
                     }
                 }
         }
-        
+
         public LayoutModel GetLayoutModel()
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -288,7 +291,7 @@ namespace Dash
             return getLayoutModelReferenceForDocumentType(doc.DocumentType, settingsDocument);
         }
 
-        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType,DocumentModel layoutModelSource)
+        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType, DocumentModel layoutModelSource)
         {
             //effectively, this sets defaultlayoutmodelsource if it hasnt been instantiated yet to a new doc each time
             if (layoutModelSource == null)
@@ -297,7 +300,8 @@ namespace Dash
                 layoutModelSource = DefaultLayoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
             }
             var layoutKeyForDocumentType = GetFieldKeyByName(docType.Type);
-            if (layoutModelSource.Field(layoutKeyForDocumentType) == null) {
+            if (layoutModelSource.Field(layoutKeyForDocumentType) == null)
+            {
                 Debug.WriteLine("Using default layout model");
 
                 // bcz: hack to have a default layout for known types: recipes, Umpires
@@ -321,8 +325,9 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(docType)));
                 else if (docType.Type == "price_per_square_foot")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)));
-                else { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
-                       // this layout is created in showAllDocumentFields() 
+                else
+                { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
+                  // this layout is created in showAllDocumentFields() 
                     Debug.WriteLine("now we gere");
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(new LayoutModel(true, docType)));
                 }
