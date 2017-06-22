@@ -17,12 +17,12 @@ namespace Dash.Models.OperatorModels
         } /// <summary>
             /// Creates Image using layout information from template and Data 
             /// </summary>
-        public override UIElement MakeView(FieldModel fieldModel)
+        public override FrameworkElement MakeView(FieldModel fieldModel)
         {
             if (fieldModel is OperatorFieldModel)
             {
                 OperatorView view = new OperatorView();
-                view.DataContext = fieldModel;
+                //view.DataContext = fieldModel;
                 return view;
             }
             return null;

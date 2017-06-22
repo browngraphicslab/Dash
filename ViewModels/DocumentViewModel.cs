@@ -108,23 +108,31 @@ namespace Dash
                         if (uiele != null)
                         {
                             uiElements.Add(uiele);
+                            uiele.DataContext = new ReferenceFieldModel(DocumentModel.Id, lEle.Key);
+                            uiele.ManipulationMode = ManipulationModes.All;
+                            uiele.ManipulationStarted += (sender, args) => args.Complete();
+
+                            uiele.PointerPressed += Element_PointerPressed;
+                            uiele.PointerReleased += Element_PointerReleased;
                             
-                            uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, true));
-                            uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, false));
                         }
                     }
                     else if (DocumentModel.Field(lEle.Key) != null)
                     {
                         var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
                         uiElements.Add(uiele);
-                        
-                        uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, true));
-                        uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, false));
+                        uiele.DataContext = new ReferenceFieldModel(DocumentModel.Id, lEle.Key);
+                        uiele.ManipulationMode = ManipulationModes.All;
+                        uiele.ManipulationStarted += (sender, args) => args.Complete();
+
+                        uiele.PointerPressed += Element_PointerPressed;
+                        uiele.PointerReleased += Element_PointerReleased;
                     }
             }
             return uiElements;
         }
 
+        /* 
         private Ellipse MakeEllipse(Key fieldKey, TemplateModel template, bool isOutput)
         {
             Ellipse el = new Ellipse
@@ -186,6 +194,7 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
+        */
 
         public event OperatorView.IODragEventHandler IODragStarted;
         public event OperatorView.IODragEventHandler IODragEnded;
@@ -200,31 +209,17 @@ namespace Dash
             IODragEnded?.Invoke(ioreference);
         }
 
-        private void Output_El_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void Element_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            IODragEnded?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel, true, e.Pointer, sender as Ellipse));
+            IODragEnded?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false, e.Pointer, sender as FrameworkElement));
         }
 
-        private void Output_El_PointerExited(object sender, PointerRoutedEventArgs e)
+        private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(sender as Ellipse).Properties.IsLeftButtonPressed)
+            if (e.GetCurrentPoint(sender as FrameworkElement).Properties.IsLeftButtonPressed)
             {
-                IODragStarted?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel,
-                    true, e.Pointer, sender as Ellipse));
-            }
-        }
-
-        private void Input_El_PointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            IODragEnded?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel, false, e.Pointer, sender as Ellipse));
-        }
-
-        private void Input_El_PointerExited(object sender, PointerRoutedEventArgs e)
-        {
-            if (e.GetCurrentPoint(sender as Ellipse).Properties.IsLeftButtonPressed)
-            {
-                IODragStarted?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel,
-                    false, e.Pointer, sender as Ellipse));
+                IODragStarted?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel,
+                    true, e.Pointer, sender as FrameworkElement));
             }
         }
 

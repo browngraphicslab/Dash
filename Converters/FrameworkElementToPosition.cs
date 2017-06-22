@@ -25,7 +25,7 @@ namespace Dash
             FrameworkElement element = kv.Key;
             FrameworkElement toElement = kv.Value;
             Point p = element.TransformToVisual(toElement)
-                .TransformPoint(new Point(element.Width / 2, element.Height / 2));
+                .TransformPoint(new Point(element.ActualWidth / 2, element.ActualHeight / 2));
            // Debug.WriteLine($"{(element.DataContext as Key).Name}: {(element.RenderTransform as MatrixTransform).Matrix}, {(toElement.RenderTransform as MatrixTransform).Matrix}, {(element.TransformToVisual(toElement) as MatrixTransform).Matrix}");
             return _useX ? p.X : p.Y;
         }

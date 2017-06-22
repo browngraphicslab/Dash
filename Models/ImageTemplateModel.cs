@@ -22,7 +22,7 @@ namespace Dash
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
-        public override UIElement MakeView(FieldModel fieldModel)
+        public override FrameworkElement MakeView(FieldModel fieldModel)
         {
             ImageFieldModel imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
             Debug.Assert(imageFieldModel != null);

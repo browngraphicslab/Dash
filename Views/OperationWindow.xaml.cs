@@ -140,11 +140,11 @@ namespace Dash
             {
                 DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
                 MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true),
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas));
                 x1MultiBinding.AddBinding(view, RenderTransformProperty);
                 x1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
                 MultiBinding<double> y1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(false),
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas));
                 y1MultiBinding.AddBinding(view, RenderTransformProperty);
                 y1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
                 Binding x1Binding = new Binding
@@ -167,7 +167,7 @@ namespace Dash
                 {
                     Converter = new FrameworkElementToPosition(true),
                     ConverterParameter =
-                        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas),
                     Source = XCanvas,
                     Path = new PropertyPath("RenderTransform")
                 };
@@ -175,7 +175,7 @@ namespace Dash
                 {
                     Converter = new FrameworkElementToPosition(false),
                     ConverterParameter =
-                        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas),
                     Source = XCanvas,
                     Path = new PropertyPath("RenderTransform")
                 };
@@ -237,11 +237,11 @@ namespace Dash
             {
                 DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
                 MultiBinding<double> x1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(true),
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas));
                 x1MultiBinding.AddBinding(view, RenderTransformProperty);
                 x1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
                 MultiBinding<double> y1MultiBinding = new MultiBinding<double>(new FrameworkElementToPosition(false),
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas));
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas));
                 y1MultiBinding.AddBinding(view, RenderTransformProperty);
                 y1MultiBinding.AddBinding(XFreeformView.Canvas, RenderTransformProperty);
                 Binding x1Binding = new Binding

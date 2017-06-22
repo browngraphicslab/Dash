@@ -189,7 +189,7 @@ namespace Dash
             {
                 Converter = new FrameworkElementToPosition(true),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas),
                 Source = view,
                 Path = new PropertyPath("RenderTransform")
             };
@@ -197,7 +197,7 @@ namespace Dash
             {
                 Converter = new FrameworkElementToPosition(false),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas),
                 Source = view,
                 Path = new PropertyPath("RenderTransform")
             };
@@ -252,7 +252,7 @@ namespace Dash
             {
                 Converter = new FrameworkElementToPosition(true),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas),
                 Source = view,
                 Path = new PropertyPath("RenderTransform")
             };
@@ -260,7 +260,7 @@ namespace Dash
             {
                 Converter = new FrameworkElementToPosition(false),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.Ellipse, XCanvas),
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, XCanvas),
                 Source = view,
                 Path = new PropertyPath("RenderTransform")
             };
