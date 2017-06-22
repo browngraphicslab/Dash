@@ -1,7 +1,9 @@
 ﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -248,6 +250,12 @@ namespace Dash
         {
             ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldEquals;
             fieldContainsOrEuqals_Tapped(sender, e);
+        }
+        private void DocumentView_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            var cvm = DataContext as CollectionViewModel;
+            cvm.MoveDocument((sender as DocumentView).DataContext as DocumentViewModel, e.Position);
+            // bcz: ugh -- this breaks the translatetransform bindings so this collection won't update when the underlying document changes anymore
         }
     }
 }

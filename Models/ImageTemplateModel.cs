@@ -1,11 +1,15 @@
-﻿using System;
+﻿using Dash.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Data;
 
 namespace Dash
@@ -23,7 +27,7 @@ namespace Dash
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
-        public override FrameworkElement MakeView(FieldModel fieldModel)
+        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
         {
             var imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
             Debug.Assert(imageFieldModel != null);
@@ -74,10 +78,10 @@ namespace Dash
                 Mode = BindingMode.TwoWay
             };
             image.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
-
+            
             if (fill)
                 image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
-            return image;
+            return new List<UIElement>(new UIElement[] { image });
         }
     }
 }

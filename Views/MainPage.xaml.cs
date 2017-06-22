@@ -77,18 +77,24 @@ namespace Dash
 
             xFreeformView.Canvas.Children.Add(shapeView);
         }
-
+        
         DocumentViewModel model7, twotxtModel, model1;
+        DocumentModel docCollection = null;
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+            model7.DocumentModel.GetPrototype().SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), false);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("newtype");
             collection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel, twotxtModel.DocumentModel, model7.DocumentModel })));
-            DocumentViewModel modelC = new DocumentViewModel(collection);
-            DocumentView view1 = new DocumentView(modelC);
+            if (docCollection == null) {
+                docCollection = docController.CreateDocumentAsync("newtype");
+                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(
+                  new List<DocumentModel>(new DocumentModel[] { model1.DocumentModel.MakeDelegate(), twotxtModel.DocumentModel.MakeDelegate(), model7.DocumentModel.MakeDelegate() })), false);
+            }
+            DocumentViewModel model = new DocumentViewModel(docCollection);
+            DocumentView view1 = new DocumentView(model);
             xFreeformView.Canvas.Children.Add(view1);
         }
 
@@ -114,6 +120,7 @@ namespace Dash
             twotxtModel = new DocumentViewModel(twotxtDocModel);
             DocumentViewModel model5 = new DocumentViewModel(collection);
             DocumentViewModel model6 = new DocumentViewModel(pricePerSqFt);
+
             model7 = new DocumentViewModel(twotxtDocModel.MakeDelegate());
             model7.DocumentModel.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(model7.DocumentModel.DocumentType, true)));
 

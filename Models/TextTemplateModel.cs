@@ -12,6 +12,8 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Controls;
 using Dash.Models;
 using System.Diagnostics;
+using Windows.Foundation;
+using Windows.UI.Xaml.Media;
 
 namespace Dash {
     public class TextTemplateModel : TemplateModel {
@@ -32,24 +34,24 @@ namespace Dash {
         }
 
         /// <summary>
-        /// Creates TextBlock using layout information from template and Data 
-        /// </summary>
-        public override FrameworkElement MakeView(FieldModel fieldModel) {
+         /// Creates TextBlock using layout information from template and Data 
+         /// </summary>
+        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        {
             if (fieldModel == null && DefaultText == null)
                 return null;
-            if (fieldModel is ImageFieldModel)
-                return new ImageTemplateModel(Left, Top, Width, Height, Visibility).MakeView(fieldModel);
-            var textFieldModel = fieldModel as TextFieldModel;
 
             Binding binding = new Binding {
                 Source = fieldModel,
                 Path = new PropertyPath("Data")
             };
 
-            var tb = Editable && textFieldModel != null ? (FrameworkElement)new TextBox() : new TextBlock();
-            if (tb is TextBox) {
+
+            var tb = Editable && fieldModel is TextFieldModel ? (FrameworkElement)new TextBox() : new TextBlock();
+            if (tb is TextBox)
+            {
                 tb.SetBinding(TextBox.TextProperty, binding);
-                (tb as TextBox).TextChanged += ((s, e) => textFieldModel.Data = (s as TextBox).Text);
+                (tb as TextBox).TextChanged += ((s, e) => (fieldModel as TextFieldModel).Data = (s as TextBox).Text);
                 (tb as TextBox).FontWeight = FontWeight;
                 (tb as TextBox).TextWrapping = TextWrapping;
             } else {
@@ -59,7 +61,7 @@ namespace Dash {
                 (tb as TextBlock).FontWeight = FontWeight;
                 (tb as TextBlock).TextWrapping = TextWrapping;
             }
-
+            
             // make tb move left and right
             var leftBinding = new Binding {
                 Source = this,
@@ -104,7 +106,7 @@ namespace Dash {
             };
             tb.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
-            return tb;
+            return new List<UIElement>(new UIElement[] { tb });
         }
     }
 }

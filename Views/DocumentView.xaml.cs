@@ -51,8 +51,9 @@ namespace Dash {
         public void ResetFields(DocumentViewModel documentViewModel) {
             // clear any current children (fields) and then add them over again
             xCanvas.Children.Clear();
-            var elements = documentViewModel.GetUiElements();
-            foreach (var element in elements) {
+            var elements = documentViewModel.GetUiElements(new Rect(0,0, ActualWidth, ActualHeight));
+            foreach (var element in elements)
+            {
                 xCanvas.Children.Add(element);
             }
         }
@@ -79,7 +80,7 @@ namespace Dash {
             if (_vm != null && _vm.DoubleTapEnabled)
             {
                 e.Handled = true;
-                var window = new OperationWindow(1000, 800, new OperationWindowViewModel(_vm.DocumentModel));
+                var window = new OperationWindow(1000, 800);//  new OperationWindowViewModel(_vm.DocumentModel));
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
@@ -94,8 +95,8 @@ namespace Dash {
         /// <param name="fieldReference"></param>
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
-            //ResetFields(_vm);
-            Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
+            // ResetFields(_vm);
+           // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
         }
 
         /// <summary>

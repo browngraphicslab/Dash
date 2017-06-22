@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 
 namespace Dash.Models.OperatorModels
@@ -17,13 +18,13 @@ namespace Dash.Models.OperatorModels
         } /// <summary>
             /// Creates Image using layout information from template and Data 
             /// </summary>
-        public override FrameworkElement MakeView(FieldModel fieldModel)
-        {
+        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        { 
             if (fieldModel is OperatorFieldModel)
             {
                 OperatorView view = new OperatorView();
                 view.DataContext = fieldModel;
-                return view;
+                 return new List<UIElement>(new UIElement[] { view });
             }
             return null;
         }

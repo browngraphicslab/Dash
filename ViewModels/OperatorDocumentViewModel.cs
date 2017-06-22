@@ -15,15 +15,15 @@ namespace Dash.ViewModels
         public OperatorDocumentViewModel(OperatorDocumentModel document) : base(document)
         {
         }
-
+        
         /// <summary>
         /// Overrides DocumentViewModel.GetUiElements to just return the operators view
         /// and listens to the operator view's IO event
         /// </summary>
         /// <returns></returns>
-        public override List<UIElement> GetUiElements()
+        public override List<UIElement> GetUiElements(Rect bounds)
         {
-            var uiElements = base.GetUiElements();
+            var uiElements = base.GetUiElements(bounds);
             foreach (var uiele in uiElements)
             {
                 var opView = uiele as OperatorView;

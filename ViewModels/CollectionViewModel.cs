@@ -11,6 +11,8 @@ using Windows.UI.Xaml.Media;
 using Dash.Models;
 using Dash.StaticClasses;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -619,7 +621,12 @@ namespace Dash
                     dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
                 (sender as DocumentView).DataContext = dvm;
                 var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
-                testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+                // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+                var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
+                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
+                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
                 var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
                 var center = e.GetPosition(FreeformView.MainFreeformView);
                 FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
@@ -637,7 +644,9 @@ namespace Dash
                     SoloDisplaySize = CellSize;
                 }
 
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements());
+                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
+                foreach (var s in SoloDisplayElements)
+                    s.RenderTransform = new TranslateTransform();
                 ViewIsEnabled = false;
                 SoloDisplayVisibility = Visibility.Visible;
             }
@@ -713,36 +722,43 @@ namespace Dash
         }
 
         /// <summary>
+        /// The collection creates delegates for each document it displays so that it can associate display-specific
+        /// information on the documents.  This allows different collection views to save different views of the same
+        /// document collection.
+        /// </summary>
+        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+        /// <summary>
         /// Constructs standard DocumentViewModels from the passed in DocumentModels
         /// </summary>
         /// <param name="documents"></param>
         /// <returns></returns>
         public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentModel> documents)
         {
+            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
             foreach (DocumentModel document in documents)
             {
-                DocumentViewModel vm = new DocumentViewModel(document);
-                viewModels.Add(vm);
+                var documentDisplayDelegate = DocumentToDelegateMap.ContainsKey(document.Id) ? DocumentToDelegateMap[document.Id] : null;
+                if (documentDisplayDelegate == null) {
+                    foreach (var deleg in docController.GetDelegates(document.Id))
+                    {
+                        var field = deleg.Field(DocumentModel.GetFieldKeyByName("CollectionDelegate")) as TextFieldModel;
+                        if (field != null && field.Data == _collectionModel.Context.Id)
+                            documentDisplayDelegate = deleg;
+                    }
+                    if (documentDisplayDelegate == null)
+                    {
+                        documentDisplayDelegate = document.MakeDelegate();
+                        documentDisplayDelegate.SetField(DocumentModel.GetFieldKeyByName("CollectionDelegate"), new TextFieldModel(_collectionModel.Context.Id), true);
+                     }
+                    DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
+                }
+                viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
             }
             return viewModels;
         }
 
-        /// <summary>
-        /// Returns a collection of DocumentModels corresponding to the DocumentViewModels passed in.
-        /// </summary>
-        /// <param name="viewModels"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentModel> GetDocumentModelsFromDocumentViewModels(
-            ObservableCollection<DocumentViewModel> viewModels)
-        {
-            ObservableCollection<DocumentModel> documentModels = new ObservableCollection<DocumentModel>();
-            foreach (var vm in viewModels)
-            {
-                documentModels.Add(vm.DocumentModel);
-            }
-            return documentModels;
-        }
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
@@ -887,5 +903,10 @@ namespace Dash
             DataBindingSource = DocumentViewModels;
             _filtered = false;
         }
+        public void MoveDocument(DocumentViewModel docViewModel, Point where)
+        {
+            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(where.X), true);
+            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(where.Y), true);
+         }
     }
 }

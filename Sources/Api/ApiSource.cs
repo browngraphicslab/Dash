@@ -94,7 +94,7 @@ namespace Dash.Sources.Api {
             // put document results into collection model
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var collection = docController.CreateDocumentAsync("collection"); //_example?
-            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments));
+            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments), false);
             DocumentViewModel cm = new DocumentViewModel(collection);
             DocumentView v = new DocumentView(cm);
             testGrid.Children.Add(v);
@@ -301,6 +301,7 @@ namespace Dash.Sources.Api {
             responseAsDocuments = new List<DocumentModel>();
             var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
+                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
@@ -315,7 +316,9 @@ namespace Dash.Sources.Api {
                         //       concerns: rabbit hole-ing?
                         toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                     }
-                    responseAsDocuments.Add(new DocumentModel(toAdd, apiDocType)); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                    var newDoc = docController.CreateDocumentAsync(apiDocType);
+                    newDoc.SetFields(toAdd);
+                    responseAsDocuments.Add(newDoc); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
 
