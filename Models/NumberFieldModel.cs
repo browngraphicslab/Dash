@@ -18,17 +18,20 @@ namespace Dash
         public double Data
         {
             get { return _data; }
-            set { SetProperty(ref _data, value); }
+            set
+            {
+                SetProperty(ref _data, value); 
+                OnFieldUpdated();
+            }
         }
 
         /// <summary>
         /// Update the value of the FieldModel and send update event for the field
         /// </summary>
         /// <param name="fieldReference"></param>
-        protected override void UpdateValue(ReferenceFieldModel fieldReference)
+        protected override void UpdateValue(FieldModel model)
         {
-            DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            NumberFieldModel fm = cont.GetFieldInDocument(fieldReference) as NumberFieldModel;
+            NumberFieldModel fm = model as NumberFieldModel;
             if (fm != null)
             {
                 Data = fm.Data;

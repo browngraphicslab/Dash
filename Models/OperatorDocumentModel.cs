@@ -49,7 +49,13 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             InputReferences[fieldKey] = reference;
-            docEndpoint.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
+            docEndpoint.GetFieldInDocument(reference).FieldUpdated += OperatorDocumentModel_FieldUpdated;
+            //docEndpoint.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
+            Execute();
+        }
+
+        private void OperatorDocumentModel_FieldUpdated(FieldModel model)
+        {
             Execute();
         }
 

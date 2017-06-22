@@ -19,7 +19,11 @@ namespace Dash
         public BitmapImage Data
         {
             get { return _data; }
-            set { SetProperty(ref _data, value); }
+            set
+            {
+                SetProperty(ref _data, value);
+                OnFieldUpdated();
+            }
         }
 
         public ImageFieldModel(Uri image)
@@ -30,10 +34,9 @@ namespace Dash
             Data = (BitmapImage)image.Source;
         }
 
-        protected override void UpdateValue(ReferenceFieldModel fieldReference)
+        protected override void UpdateValue(FieldModel model)
         {
-            var documentEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            ImageFieldModel fm = documentEndpoint.GetFieldInDocument(fieldReference) as ImageFieldModel;
+            ImageFieldModel fm = model as ImageFieldModel;
             if (fm != null)
             {
                 Data = fm.Data;

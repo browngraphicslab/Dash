@@ -36,13 +36,16 @@ namespace Dash
         public string Data
         {
             get { return _data; }
-            set { SetProperty(ref _data, value); }
+            set
+            {
+                SetProperty(ref _data, value);
+                OnFieldUpdated();
+            }
         }
 
-        protected override void UpdateValue(ReferenceFieldModel fieldReference)
+        protected override void UpdateValue(FieldModel model)
         {
-            var documentEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            TextFieldModel fm = documentEndpoint.GetFieldInDocument(fieldReference) as TextFieldModel;
+            TextFieldModel fm = model as TextFieldModel;
             if (fm != null)
             {
                 Data = fm.Data;

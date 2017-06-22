@@ -43,7 +43,7 @@ namespace Dash
 
         public delegate void FieldUpdatedEvent(ReferenceFieldModel fieldReference);
 
-        public event FieldUpdatedEvent DocumentFieldUpdated;
+        //public event FieldUpdatedEvent DocumentFieldUpdated;
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Dash
 
         protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
         {
-            DocumentFieldUpdated?.Invoke(fieldReference);
+            //DocumentFieldUpdated?.Invoke(fieldReference);
         }
 
         // Hard coded document models 

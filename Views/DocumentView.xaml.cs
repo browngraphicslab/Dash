@@ -122,8 +122,8 @@ namespace Dash {
             if (_vm != null) {
                 ResetFields(_vm);
                 // Add any methods
-                _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-                _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+                //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+                //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
             }
         }
     }
