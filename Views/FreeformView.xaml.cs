@@ -180,7 +180,6 @@ namespace Dash
                 StrokeThickness = 10,
                 Stroke = new SolidColorBrush(Colors.Black),
                 IsHitTestVisible = false,
-                //Clip = new RectangleGeometry { Rect = new Rect(LeftListView.ActualWidth, 0, XFreeformView.ActualWidth, XFreeformView.ActualHeight) },
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
@@ -204,6 +203,9 @@ namespace Dash
             };
             _connectionLine.SetBinding(Line.X1Property, x1Binding);
             _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+
+            _connectionLine.X2 = _connectionLine.X1;
+            _connectionLine.Y2 = _connectionLine.Y1;
 
             XCanvas.Children.Add(_connectionLine);
 

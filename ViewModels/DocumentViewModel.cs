@@ -159,12 +159,12 @@ namespace Dash
 
             if (isOutput)
             {
-                el.PointerExited += Output_El_PointerExited;
+                el.PointerPressed += Output_El_PointerExited;
                 el.PointerReleased += Output_El_PointerReleased;
             }
             else
             {
-                el.PointerExited += Input_El_PointerExited;
+                el.PointerPressed += Input_El_PointerExited;
                 el.PointerReleased += Input_El_PointerReleased;
             }
             el.ManipulationMode = ManipulationModes.All;
