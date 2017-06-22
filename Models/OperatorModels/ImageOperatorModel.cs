@@ -17,6 +17,10 @@ namespace Dash
         //Output keys
         public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
+        public override List<Key> Inputs { get; } = new List<Key> {URIKey};
+
+        public override List<Key> Outputs { get; } = new List<Key> {ImageKey};
+
         public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
         {
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();

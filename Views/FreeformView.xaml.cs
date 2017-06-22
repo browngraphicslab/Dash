@@ -264,7 +264,7 @@ namespace Dash
             };
             _connectionLine.SetBinding(Line.X2Property, x2Binding);
             _connectionLine.SetBinding(Line.Y2Property, y2Binding);
-            if (ioReference.IsOutput)//TODO Fix this
+            if (ioReference.IsOutput)
             {
                 var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);

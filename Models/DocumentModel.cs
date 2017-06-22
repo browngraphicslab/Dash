@@ -91,6 +91,7 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             Field(fieldKey).InputReference = reference;
+            OnDocumentFieldUpdated(new ReferenceFieldModel(Id, fieldKey));
         }
 
         /// <summary>

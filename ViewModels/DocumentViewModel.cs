@@ -151,12 +151,10 @@ namespace Dash
             Binding canvasLeftBinding = new Binding
             {
                 Source = template,
-                Path = new PropertyPath("Left")
+                Path = new PropertyPath("Left"),
+                Converter = new CanvasLeftConverter(),
+                ConverterParameter = isOutput ? 60.0 : -20.0
             };
-            if (isOutput)
-            {
-                canvasLeftBinding.Converter = new CanvasLeftConverter();
-            }
             el.SetBinding(Canvas.LeftProperty, canvasLeftBinding);
 
             if (isOutput)
@@ -179,7 +177,8 @@ namespace Dash
             public object Convert(object value, Type targetType, object parameter, string language)
             {
                 double left = (double)value;
-                return left + 40;
+                double offset = (double) parameter;
+                return left + offset;
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
