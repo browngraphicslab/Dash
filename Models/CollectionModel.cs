@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Input;
 
 namespace Dash.Models
 {
+    /// <summary>
+    /// Models a co
+    /// </summary>
     public class CollectionModel
     {
         public ObservableCollection<DocumentModel> Documents;
