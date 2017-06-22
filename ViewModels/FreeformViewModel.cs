@@ -12,7 +12,7 @@ namespace Dash
     {
         private FreeformModel _freeformModel;
 
-        private bool _isEditorMode = true;
+        private bool _isEditorMode = false;
 
         public bool IsEditorMode
         {

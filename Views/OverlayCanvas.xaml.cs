@@ -65,8 +65,8 @@ namespace Dash
 
         private void EditorButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            EditButton.Content = FreeformView.MainFreeformView.ViewModel.IsEditorMode ? "STOP" : "EDIT";
             OnToggleEditMode?.Invoke(sender, e);
+            EditButton.Content = FreeformView.MainFreeformView.ViewModel.IsEditorMode ? "STOP" : "EDIT";
         }
     }
 }
