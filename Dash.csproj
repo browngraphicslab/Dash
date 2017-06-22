@@ -115,12 +115,14 @@
     <Compile Include="Models\LayoutModelFieldModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
-    <Compile Include="Models\OperatorModels\AddOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\DivideOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\ImageOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\MultiplyOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
-    <Compile Include="Models\OperatorModels\SubtractFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Set\UnionOperatorModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
@@ -175,6 +177,7 @@
     </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
+    <Compile Include="Util\Graph.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />

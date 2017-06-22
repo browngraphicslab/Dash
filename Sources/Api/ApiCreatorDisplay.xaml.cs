@@ -26,7 +26,7 @@ namespace Dash.Sources.Api {
         public ApiCreatorDisplay() {
             this.InitializeComponent();
 
-            manipulator = new ManipulationControls(xGrid, this);
+            manipulator = new ManipulationControls(this);
         }
 
         // == API FUNCTIONALITY ==

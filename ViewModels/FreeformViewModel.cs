@@ -8,10 +8,18 @@ using Windows.UI.Xaml;
 
 namespace Dash
 {
-    public class FreeformViewModel
+    public class FreeformViewModel : ViewModelBase
     {
-       private FreeformModel _freeformModel;
-        
+        private FreeformModel _freeformModel;
+
+        private bool _isEditorMode = false;
+
+        public bool IsEditorMode
+        {
+            get { return _isEditorMode; }
+            set { SetProperty(ref _isEditorMode, value); }
+        }
+
         public delegate void ElementAddedEvent(UIElement element, float left, float top);
 
         public event ElementAddedEvent ElementAdded;

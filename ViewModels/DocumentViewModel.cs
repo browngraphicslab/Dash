@@ -16,6 +16,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Dash.Models;
 using Windows.Foundation;
 using System.Diagnostics;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {
@@ -80,8 +83,8 @@ namespace Dash
         public DocumentViewModel(DocumentModel docModel)
         {
             DocumentModel = docModel;
-            DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-            DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+            //DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+            //DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
             if (docModel.DocumentType.Type == "collection_example")
             {
                 DoubleTapEnabled = false;
@@ -116,13 +119,13 @@ namespace Dash
         /// </summary>
         /// TODO: rename this to create ui elements
         /// <returns>List of all UIElements generated</returns>
-        public virtual List<UIElement> GetUiElements(Rect bounds)
+        public virtual List<FrameworkElement> GetUiElements(Rect bounds)
         {
-            var uiElements = new List<UIElement>();
+            var uiElements = new List<FrameworkElement>();
             var layout = GetLayoutModel();
 
             var size = new Size();
-            if (layout.ShowAllFields) 
+            if (layout.ShowAllFields)
             {
                 size = showAllDocumentFields(uiElements, bounds);
             }
@@ -138,6 +141,7 @@ namespace Dash
                     {
                         uiElements.AddRange(uiele);
                         size = new Size(Math.Max(size.Width, lEle.Value.Left + lEle.Value.Width), Math.Max(size.Height, lEle.Value.Top+lEle.Value.Height));
+                        SetUpFrameworkElement(uiele.FirstOrDefault(), lEle.Key);
                     }
                 }
             }
@@ -163,7 +167,7 @@ namespace Dash
             return uiElements;
         }
 
-        Size showAllDocumentFields(List<UIElement> uiElements, Rect bounds)
+        Size showAllDocumentFields(List<FrameworkElement> uiElements, Rect bounds)
         {
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
@@ -194,7 +198,134 @@ namespace Dash
                 }
             return new Size(0, yloc);
         }
-        
+
+        private void SetUpFrameworkElement(FrameworkElement element, Key key)
+        {
+            element.DataContext = new ReferenceFieldModel(DocumentModel.Id, key);
+
+            //Binding manipulationBinding = new Binding
+            //{
+            //    Source = FreeformView.MainFreeformView.ViewModel, 
+            //    Path = new PropertyPath("IsEditorMode"),
+            //    Converter = new ManipulationConverter()
+            //};
+            //element.SetBinding(UIElement.ManipulationModeProperty, manipulationBinding);
+            //element.ManipulationMode = ManipulationModes.All;
+
+            element.ManipulationStarted += (sender, args) => args.Complete();
+
+            if (!(DocumentModel is OperatorDocumentModel))//TODO Change data model to avoid having to do this check?
+            {
+                element.PointerPressed += Element_PointerPressed;
+                element.PointerReleased += Element_PointerReleased;
+            }
+        }
+
+        private class ManipulationConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                bool isEditorMode = (bool) value; 
+                return isEditorMode ? ManipulationModes.All : ManipulationModes.System; 
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /* 
+        private Ellipse MakeEllipse(Key fieldKey, TemplateModel template, bool isOutput)
+        {
+            Ellipse el = new Ellipse
+            {
+                Width = 20,
+                Height = 20,
+                Fill = isOutput ? new SolidColorBrush(Colors.Black) : new SolidColorBrush(Colors.Red),
+                DataContext = new ReferenceFieldModel(DocumentModel.Id, fieldKey)
+            };
+
+
+            Binding visibilityBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("EditModeVisibility")
+            };
+            el.SetBinding(Ellipse.VisibilityProperty, visibilityBinding);
+            Binding canvasTopBinding = new Binding
+            {
+                Source = template,
+                Path = new PropertyPath("Top")
+            };
+            el.SetBinding(Canvas.TopProperty, canvasTopBinding);
+            Binding canvasLeftBinding = new Binding
+            {
+                Source = template,
+                Path = new PropertyPath("Left"),
+                Converter = new CanvasLeftConverter(),
+                ConverterParameter = isOutput ? 60.0 : -20.0
+            };
+            el.SetBinding(Canvas.LeftProperty, canvasLeftBinding);
+
+            if (isOutput)
+            {
+                el.PointerPressed += Output_El_PointerExited;
+                el.PointerReleased += Output_El_PointerReleased;
+            }
+            else
+            {
+                el.PointerPressed += Input_El_PointerExited;
+                el.PointerReleased += Input_El_PointerReleased;
+            }
+            el.ManipulationMode = ManipulationModes.All;
+            el.ManipulationStarted += (sender, args) => args.Complete();
+            return el;
+        }
+
+        private class CanvasLeftConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                double left = (double)value;
+                double offset = (double) parameter;
+                return left + offset;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        */
+
+        public event OperatorView.IODragEventHandler IODragStarted;
+        public event OperatorView.IODragEventHandler IODragEnded;
+
+        protected virtual void OnIoDragStarted(OperatorView.IOReference ioreference)
+        {
+            IODragStarted?.Invoke(ioreference);
+        }
+
+        protected virtual void OnIoDragEnded(OperatorView.IOReference ioreference)
+        {
+            IODragEnded?.Invoke(ioreference);
+        }
+
+        private void Element_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            IODragEnded?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false, e.Pointer, sender as FrameworkElement));
+        }
+
+        private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as FrameworkElement).Properties.IsLeftButtonPressed)
+            {
+                IODragStarted?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel,
+                    true, e.Pointer, sender as FrameworkElement));
+            }
+        }
+
         public LayoutModel GetLayoutModel()
         {
             var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
@@ -241,7 +372,7 @@ namespace Dash
             return getLayoutModelReferenceForDocumentType(doc.DocumentType, settingsDocument);
         }
 
-        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType,DocumentModel layoutModelSource)
+        static ReferenceFieldModel getLayoutModelReferenceForDocumentType(DocumentType docType, DocumentModel layoutModelSource)
         {
             //effectively, this sets defaultlayoutmodelsource if it hasnt been instantiated yet to a new doc each time
             if (layoutModelSource == null)
@@ -250,7 +381,8 @@ namespace Dash
                 layoutModelSource = DefaultLayoutModelSource = docController.CreateDocumentAsync("DefaultLayoutModelSource");
             }
             var layoutKeyForDocumentType = GetFieldKeyByName(docType.Type);
-            if (layoutModelSource.Field(layoutKeyForDocumentType) == null) {
+            if (layoutModelSource.Field(layoutKeyForDocumentType) == null)
+            {
                 Debug.WriteLine("Using default layout model");
 
                 // bcz: hack to have a default layout for known types: recipes, Umpires

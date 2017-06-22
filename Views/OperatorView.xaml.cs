@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -47,14 +48,14 @@ namespace Dash
 
             public Pointer Pointer { get; set; }
 
-            public Ellipse Ellipse { get; set; }
+            public FrameworkElement FrameworkElement { get; set; }
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Pointer pointer, Ellipse e)
+            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, Pointer pointer, FrameworkElement e)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
                 Pointer = pointer;
-                Ellipse = e;
+                FrameworkElement = e;
             }
         }
 
@@ -65,8 +66,11 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            InputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Inputs;
-            OutputListView.ItemsSource = (args.NewValue as OperatorFieldModel).Outputs;
+            DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            var reference = DataContext as ReferenceFieldModel;
+            var opFM = docEnd.GetFieldInDocument(reference) as OperatorFieldModel;
+            InputListView.ItemsSource = opFM.Inputs;//TODO Make these binding in XAML
+            OutputListView.ItemsSource = opFM.Outputs;//TODO Make these binding in XAML
         }
 
         /// <summary>
@@ -77,7 +81,7 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                string docId = (DataContext as OperatorFieldModel).DocumentID;
+                string docId = (DataContext as ReferenceFieldModel).DocId;
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e.Pointer, el);
@@ -93,7 +97,7 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                string docId = (DataContext as OperatorFieldModel).DocumentID;
+                string docId = (DataContext as ReferenceFieldModel).DocId;
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e.Pointer, el);
@@ -122,7 +126,7 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as OperatorFieldModel).DocumentID;
+            string docId = (DataContext as ReferenceFieldModel).DocId;
             Ellipse el = sender as Ellipse;
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e.Pointer, el);
@@ -131,7 +135,7 @@ namespace Dash
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as OperatorFieldModel).DocumentID;
+            string docId = (DataContext as ReferenceFieldModel).DocId;
             Ellipse el = sender as Ellipse;
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e.Pointer, el);

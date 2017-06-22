@@ -24,12 +24,12 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public virtual List<Key> Inputs { get; } = new List<Key>();
+        public abstract List<Key> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public virtual List<Key> Outputs{ get; } = new List<Key>();
+        public abstract List<Key> Outputs { get; }
 
         /// <summary>
         /// Abstract method to execute the operator

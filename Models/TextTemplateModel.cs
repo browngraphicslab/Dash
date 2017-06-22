@@ -39,7 +39,7 @@ namespace Dash
         /// <summary>
          /// Creates TextBlock using layout information from template and Data 
          /// </summary>
-        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
         {
             if (fieldModel == null && DefaultText == null)
                 return null;
@@ -112,7 +112,7 @@ namespace Dash
             };
             tb.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
-            return new List<UIElement>(new UIElement[] { tb });
+            return new List<FrameworkElement> { tb };
         }
     }
 }

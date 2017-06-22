@@ -12,16 +12,26 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
+
+
 namespace Dash
 {
-    public class MultiplyOperatorModel : OperatorFieldModel
+    public class DivideOperatorModel : OperatorFieldModel
     {
         //Input keys
-        public static readonly Key AKey = new Key("5E849AB0-C402-42D7-B0DD-0FE801D95092", "Input A");
-        public static readonly Key BKey = new Key("D1E0F1AD-009B-4357-A045-E7661D05DC7D", "Input B");
+        public static readonly Key AKey = new Key("AAC1631C-9DC3-48FC-984A-EE0D80C9A397", "A");
+        public static readonly Key BKey = new Key("A757D709-8D83-44C9-B047-D5DB6420F51F", "B");
 
         //Output keys
-        public static readonly Key ProductKey = new Key("DED1EE8E-D0CF-4BB6-B8BA-D3393FBB8C0C", "Product");
+        public static readonly Key QuotientKey = new Key("DA705E3D-4773-4C7D-B770-536BA321D0FA", "Quotient");
+        public static readonly Key RemainderKey = new Key("32208EDB-B673-4957-A0AB-3704A15A1686", "Remainder");
+
+        public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
+        public override List<Key> Outputs { get; } = new List<Key> {QuotientKey, RemainderKey};
+
+        public DivideOperatorModel()
+        {
+        }
 
         public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
         {
@@ -36,7 +46,8 @@ namespace Dash
 
             double a = numberA.Data;
             double b = numberB.Data;
-            result[ProductKey] = new NumberFieldModel(a * b);
+            result[QuotientKey] = new NumberFieldModel(a / b);
+            result[RemainderKey] = new NumberFieldModel(a % b);
             return result;
         }
     }

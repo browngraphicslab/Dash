@@ -14,6 +14,10 @@ namespace Dash
     /// </summary>
     public abstract class FieldModel : ViewModelBase //TODO Should ViewModelBase be named something else or should FieldModel have a ViewModel
     {
+        public delegate void FieldUpdatedEvent(FieldModel model);
+
+        public event FieldUpdatedEvent FieldUpdated;
+
         private ReferenceFieldModel _inputReference;
 
         /// <summary>
@@ -30,20 +34,8 @@ namespace Dash
                 }
                 _inputReference = value;
                 DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                cont.GetDocumentAsync(value.DocId).DocumentFieldUpdated += FieldModel_DocumentFieldUpdated;
-                UpdateValue(value);
-            }
-        }
-
-        /// <summary>
-        /// Event Handler that handles when the input reference is updated
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        private void FieldModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            if (fieldReference.Equals(InputReference))
-            {
-                UpdateValue(fieldReference);
+                cont.GetFieldInDocument(value).FieldUpdated += UpdateValue;
+                UpdateValue(cont.GetFieldInDocument(value));
             }
         }
 
@@ -52,7 +44,7 @@ namespace Dash
         /// InputReference references is updated
         /// </summary>
         /// <param name="fieldReference"></param>
-        protected virtual void UpdateValue(ReferenceFieldModel fieldReference)
+        protected virtual void UpdateValue(FieldModel model)
         {
         }
 
@@ -74,6 +66,11 @@ namespace Dash
         public FieldModel Copy()
         {
             return MemberwiseClone() as FieldModel;
+        }
+
+        protected virtual void OnFieldUpdated()
+        {
+            FieldUpdated?.Invoke(this);
         }
     }
 }

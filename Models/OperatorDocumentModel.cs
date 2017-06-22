@@ -17,9 +17,8 @@ namespace Dash
         /// Dictionary that maps Field input name to the ReferenceFieldModel that it is set to
         /// </summary>
 
-        // TODO make this protected 
-      //  protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
-        public Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+        protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
+
         public OperatorFieldModel OperatorField
         {
             get { return Field(OperatorKey) as OperatorFieldModel; }
@@ -30,15 +29,16 @@ namespace Dash
             }
         }
 
-        public OperatorDocumentModel(OperatorFieldModel operatorField)
+        public OperatorDocumentModel(OperatorFieldModel operatorField, string documentID)
         {
             // Fields = new Dictionary<Key, FieldModel>();
+            Id = documentID;
             SetField(OperatorKey, operatorField, false);
             OperatorField = operatorField;
             DocumentType = OperatorType;
         }
 
-        public void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
+        public override void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
         {
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
@@ -49,16 +49,12 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             InputReferences[fieldKey] = reference;
-            docEndpoint.GetDocumentAsync(reference.DocId).DocumentFieldUpdated += OperatorDocumentModel_DocumentFieldUpdated;
+            docEndpoint.GetFieldInDocument(reference).FieldUpdated += OperatorDocumentModel_FieldUpdated;
             Execute();
         }
 
-        private void OperatorDocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        private void OperatorDocumentModel_FieldUpdated(FieldModel model)
         {
-            if (!InputReferences.ContainsValue(fieldReference))
-            {
-                return;
-            }
             Execute();
         }
 

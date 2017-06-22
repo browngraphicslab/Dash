@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Dash.ViewModels;
 using DashShared;
 
 
@@ -33,7 +34,9 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page
     {
+
         static public MainPage Instance;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -44,6 +47,8 @@ namespace Dash
             xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
             xOverlayCanvas.OnAddImageTapped += AddImage;
             xOverlayCanvas.OnAddShapeTapped += AddShape;
+            xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
+            xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
@@ -55,6 +60,28 @@ namespace Dash
             MainDocView.Manipulator.TurnOff();
 
             Instance = this;
+        }
+
+        private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            //xFreeformView.ToggleEditMode();
+        }
+
+        private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            //Create Operator document
+            var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            OperatorDocumentModel opModel =
+                new OperatorDocumentModel(new DivideOperatorModel(), docEndpoint.GetDocumentId());
+            docEndpoint.UpdateDocumentAsync(opModel);
+            DocumentView view = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+            view.DataContext = opvm;
+            //xFreeformView.AddOperatorView(opvm, view, 50, 50);
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)

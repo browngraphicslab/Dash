@@ -69,11 +69,7 @@ namespace Dash
                 _output.SetFields(fields);
 
                 //DivideOperatorModel divide = new DivideOperatorModel();
-                var opModel = new OperatorDocumentModel(new DivideOperatorModel())
-                {
-                    Id = docEndpoint.GetDocumentId(),
-                    OperatorField = new DivideOperatorModel()
-                };
+                var opModel = new OperatorDocumentModel(new DivideOperatorModel(), docEndpoint.GetDocumentId());
                 docEndpoint.UpdateDocumentAsync(opModel);
                 var vm = new OperatorDocumentViewModel(opModel);
                 var view = new DocumentView(vm)

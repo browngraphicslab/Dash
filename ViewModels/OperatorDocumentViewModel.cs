@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash.ViewModels
 {
@@ -21,7 +22,7 @@ namespace Dash.ViewModels
         /// and listens to the operator view's IO event
         /// </summary>
         /// <returns></returns>
-        public override List<UIElement> GetUiElements(Rect bounds)
+        public override List<FrameworkElement> GetUiElements(Rect bounds)
         {
             var uiElements = base.GetUiElements(bounds);
             foreach (var uiele in uiElements)

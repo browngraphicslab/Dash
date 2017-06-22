@@ -14,7 +14,7 @@ namespace Dash
         {
         }
         
-        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
         { 
             var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
             Debug.Assert(collectionFieldModel != null);
@@ -25,7 +25,7 @@ namespace Dash
             Canvas.SetTop(view, Top);
             Canvas.SetLeft(view, Left);
             
-            return new List<UIElement>(new UIElement[] { view });
+            return new List<FrameworkElement> { view };
         }
     }
 }

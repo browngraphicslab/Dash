@@ -32,7 +32,7 @@ namespace Dash {
 
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             // add manipulation code
-            manipulator = new ManipulationControls(XGrid, this);
+            manipulator = new ManipulationControls(this);
 
             // set bounds
             MinWidth = 200;
@@ -137,8 +137,8 @@ namespace Dash {
             // otherwise layout the document according to the _vm
             ResetFields(_vm);
             // Add any methods
-            _vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-            _vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+            //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+            //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
         }
     }
 }

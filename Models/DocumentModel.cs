@@ -31,7 +31,7 @@ namespace Dash
         /// <summary>
         /// A dictionary of keys to FieldModels.
         /// </summary>
-        private ObservableDictionary<Key, FieldModel> Fields { get; set; }//TODO This shouldn't be public be we are binding to it right now
+        private ObservableDictionary<Key, FieldModel> Fields { get; set; }
 
         /// <summary>
         /// The type of this document.
@@ -43,9 +43,6 @@ namespace Dash
         //}
 
 
-        public delegate void FieldUpdatedEvent(ReferenceFieldModel fieldReference);
-
-        public event FieldUpdatedEvent DocumentFieldUpdated;
         public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
@@ -98,6 +95,17 @@ namespace Dash
             if (key == null)
                 key = keyController.CreateKeyAsync(name);
             return key;
+        }
+
+        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
+        {
+            //TODO Remove existing output references and add new output reference
+            //if (InputReferences.ContainsKey(fieldKey))
+            //{
+            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
+            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
+            //}
+            Field(fieldKey).InputReference = reference;
         }
 
         /// <summary>
@@ -163,15 +171,16 @@ namespace Dash
 
         void notifyDelegates(ReferenceFieldModel refModel)
         {
-            OnDocumentFieldUpdated(refModel);
-            if (refModel.FieldKey != DelegatesKey)
-            {
-                var delegates = Fields.ContainsKey(DelegatesKey) ? Fields[DelegatesKey] as DocumentCollectionFieldModel : null;
-                if (delegates != null)
-                    foreach (var d in delegates.EnumDocuments())
-                        d.notifyDelegates(refModel);
-            }
+            //OnDocumentFieldUpdated(refModel);
+            //if (refModel.FieldKey != DelegatesKey)
+            //{
+            //    var delegates = Fields.ContainsKey(DelegatesKey) ? Fields[DelegatesKey] as DocumentCollectionFieldModel : null;
+            //    if (delegates != null)
+            //        foreach (var d in delegates.EnumDocuments())
+            //            d.notifyDelegates(refModel);
+            //}
         }
+
         /// <summary>
         /// sets the fieldModel for a specified key by first trying to find the field in the document, then in each prototype.
         /// if the field does not exist anywhere, it is created in this document, otherwise the found field is modified.
@@ -184,11 +193,24 @@ namespace Dash
 
             proto.Fields[key] = field;
             proto.notifyDelegates(new ReferenceFieldModel(Id, key));
-        }
-
-        protected virtual void OnDocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            DocumentFieldUpdated?.Invoke(fieldReference);
+//=======
+//            if (force || Fields.ContainsKey(key)) {
+//                Fields[key] = value;
+//                //OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+//                //var delegates = Field(GetFieldKeyByName("Delegates")) as DocumentCollectionFieldModel;
+//                //if (delegates != null)
+//                    //foreach (var d in delegates.EnumDocuments())
+//                        //d.OnDocumentFieldUpdated(new ReferenceFieldModel(Id, key));
+//                return true;
+//            }
+//            if (Fields.ContainsKey(GetFieldKeyByName("Parent")))
+//            {
+//                var parent = Fields[GetFieldKeyByName("Parent")] as DocumentModelFieldModel;
+//                if (parent != null && parent.Data.SetField(key, value, false))
+//                    return true;
+//            }
+//            return false;
+//>>>>>>> origin/Operation4
         }
 
         // Hard coded document models 

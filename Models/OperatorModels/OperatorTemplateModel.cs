@@ -15,16 +15,16 @@ namespace Dash.Models.OperatorModels
             : base(left, top, width, height, visibility)
         {
 
-        } /// <summary>
-            /// Creates Image using layout information from template and Data 
-            /// </summary>
-        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        } 
+        /// <summary>
+        /// Creates Image using layout information from template and Data 
+        /// </summary>
+        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
         { 
             if (fieldModel is OperatorFieldModel)
             {
                 OperatorView view = new OperatorView();
-                view.DataContext = fieldModel;
-                 return new List<UIElement>(new UIElement[] { view });
+                 return new List<FrameworkElement> { view };
             }
             return null;
         }

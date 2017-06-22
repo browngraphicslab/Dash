@@ -62,17 +62,21 @@ namespace Dash
             Height = height;
             Visibility = visibility;
         }
+
+
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        protected virtual List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected virtual List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
         {
             return null;
         }
+
+
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        public virtual List<UIElement> MakeViewUI(FieldModel fieldModel, DocumentModel context)
+        public virtual List<FrameworkElement> MakeViewUI(FieldModel fieldModel, DocumentModel context)
         {
             while (fieldModel is ReferenceFieldModel)
             {

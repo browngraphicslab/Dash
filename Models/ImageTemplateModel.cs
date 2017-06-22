@@ -27,7 +27,7 @@ namespace Dash
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
-        protected override List<UIElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
         {
             var imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
             Debug.Assert(imageFieldModel != null);
@@ -81,7 +81,7 @@ namespace Dash
             
             if (fill)
                 image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
-            return new List<UIElement>(new UIElement[] { image });
+            return new List<FrameworkElement> { image };
         }
     }
 }
