@@ -39,9 +39,7 @@ namespace Dash
             foreach (var edge in _edges)
             {
                 if (IsCyclicUtil(edge.Key, ref visited, ref recStack))
-                {
                     return true;
-                }
             }
 
             return false; 

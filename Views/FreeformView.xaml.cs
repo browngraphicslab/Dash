@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -77,6 +78,7 @@ namespace Dash
         //    typeof(FreeformView),
         //    new PropertyMetadata(null)
         //);
+
 
         public Canvas Canvas => XCanvas;
 
@@ -168,8 +170,25 @@ namespace Dash
         /// </summary>
         private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
 
+        private class VisibilityConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                bool isEditorMode = (bool)value;
+                return isEditorMode ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
         public void StartDrag(OperatorView.IOReference ioReference)
         {
+            if (!ViewModel.IsEditorMode)
+            {
+                return;
+            }
             if (_currentPointers.Contains(ioReference.Pointer.PointerId))
             {
                 return;
@@ -186,6 +205,13 @@ namespace Dash
                 CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
+            Binding visibilityBinding = new Binding
+            {
+                Source = ViewModel,
+                Path = new PropertyPath("IsEditorMode"),
+                Converter = new VisibilityConverter()
+            };
+            _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
             DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
 
@@ -236,6 +262,10 @@ namespace Dash
 
         public void EndDrag(OperatorView.IOReference ioReference)
         {
+            if (!ViewModel.IsEditorMode)
+            {
+                return;
+            }
             _graph.AddEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
             if (_graph.IsCyclic())
             {
@@ -657,6 +687,11 @@ namespace Dash
                 //FreeformView.MainFreeformView.Canvas.Children.Add(view);
 
             }
+        }
+
+        public void ToggleEditMode()
+        {
+            ViewModel.IsEditorMode = !ViewModel.IsEditorMode;
         }
     }
 }

@@ -34,6 +34,7 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page
     {
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -45,6 +46,12 @@ namespace Dash
             xOverlayCanvas.OnAddImageTapped += AddImage;
             xOverlayCanvas.OnAddShapeTapped += AddShape;
             xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
+            xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
+        }
+
+        private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            xFreeformView.ToggleEditMode();
         }
 
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -153,8 +160,6 @@ namespace Dash
             xFreeformView.ViewModel.AddElement(view4, 30, 30);
             xFreeformView.ViewModel.AddElement(view6, 50, 50);
             //xFreeformView.Canvas.Children.Add(view7);
-
-
 
         }
     }

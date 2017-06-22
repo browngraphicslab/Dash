@@ -82,8 +82,6 @@ namespace Dash
             }
         }
 
-        public Visibility EditModeVisibility { get; set; } = Visibility.Visible;
-
         // == METHODS ==
         /// <summary>
         /// Generates a list of UIElements by making FieldViewModels of a document;s
@@ -109,7 +107,6 @@ namespace Dash
                         if (uiele != null)
                         {
                             uiElements.Add(uiele);
-                            
                             SetUpFrameworkElement(uiele, lEle.Key);
                         }
                     }
@@ -126,7 +123,16 @@ namespace Dash
         private void SetUpFrameworkElement(FrameworkElement element, Key key)
         {
             element.DataContext = new ReferenceFieldModel(DocumentModel.Id, key);
-            element.ManipulationMode = ManipulationModes.All;
+
+            Binding manipulationBinding = new Binding
+            {
+                Source = FreeformView.MainFreeformView.ViewModel, 
+                Path = new PropertyPath("IsEditorMode"),
+                Converter = new ManipulationConverter()
+            };
+            element.SetBinding(UIElement.ManipulationModeProperty, manipulationBinding);
+            //element.ManipulationMode = ManipulationModes.All;
+
             element.ManipulationStarted += (sender, args) => args.Complete();
 
             if (!(DocumentModel is OperatorDocumentModel))//TODO Change data model to avoid having to do this check?
@@ -135,6 +141,21 @@ namespace Dash
                 element.PointerReleased += Element_PointerReleased;
             }
         }
+
+        private class ManipulationConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                bool isEditorMode = (bool) value; 
+                return isEditorMode ? ManipulationModes.All : ManipulationModes.System; 
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         /* 
         private Ellipse MakeEllipse(Key fieldKey, TemplateModel template, bool isOutput)
         {

@@ -25,7 +25,7 @@ namespace Dash
         public static OverlayCanvas Instance = null;
 
 
-        public TappedEventHandler OnAddDocumentsTapped, OnAddCollectionTapped, OnAddAPICreatorTapped, OnAddImageTapped, OnAddShapeTapped, OnOperatorAdd;
+        public TappedEventHandler OnAddDocumentsTapped, OnAddCollectionTapped, OnAddAPICreatorTapped, OnAddImageTapped, OnAddShapeTapped, OnOperatorAdd, OnToggleEditMode;
                 
         public OverlayCanvas()
         {
@@ -58,9 +58,15 @@ namespace Dash
             OnAddAPICreatorTapped?.Invoke(sender, e);
         }
 
-        private void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void AddOperator_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             OnOperatorAdd?.Invoke(sender, e);
+        }
+
+        private void EditorButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            EditButton.Content = FreeformView.MainFreeformView.ViewModel.IsEditorMode ? "STOP" : "EDIT";
+            OnToggleEditMode?.Invoke(sender, e);
         }
     }
 }

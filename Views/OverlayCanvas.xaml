@@ -21,7 +21,8 @@
                 <Button  Tapped="AddDocumentsTapped" Height="54" HorizontalAlignment="Stretch" BorderThickness="2" Margin="0,0,0,5" BorderBrush="White" FontSize="14">+DOC</Button>
                 <Button  Tapped="AddCollectionTapped"  Height="54" HorizontalAlignment="Stretch"  BorderThickness="2" BorderBrush="White" FontSize="14">+COL</Button>
                 <Button  Tapped="AddShapeTapped"  Height="54" HorizontalAlignment="Stretch"  BorderThickness="2" BorderBrush="White" FontSize="14">+SHAPE</Button>
-                <Button Tapped="UIElement_OnTapped" Height="54" HorizontalAlignment="Stretch" BorderThickness="2" BorderBrush="White" FontSize="14">+OP</Button>
+                <Button Tapped="AddOperator_OnTapped" Height="54" HorizontalAlignment="Stretch" BorderThickness="2" BorderBrush="White" FontSize="14">+OP</Button>
+                <Button x:Name="EditButton" Tapped="EditorButton_OnTapped" Height="54" HorizontalAlignment="Stretch" BorderThickness="2" BorderBrush="White" FontSize="14">STOP</Button>
             </StackPanel>
         </Grid>
         <!--filepicker:FilePickerDisplay HorizontalAlignment="Right" VerticalAlignment="Center" Canvas.Left="838" Canvas.Top="392"></>
