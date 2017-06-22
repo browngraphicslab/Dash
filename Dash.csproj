@@ -175,6 +175,7 @@
       <DependentUpon>PDFViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Source.cs" />
+    <Compile Include="Util\BezierLine.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />

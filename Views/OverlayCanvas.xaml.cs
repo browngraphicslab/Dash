@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
@@ -16,6 +15,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -35,7 +35,7 @@ namespace Dash
             Debug.Assert(Instance == null);
             Instance = this;
 
-            // test server to API
+            // -- test server to API
 
             // set uop server XAML object
             ServerXAML.UIElement test = new ServerXAML.UIElement();
@@ -64,6 +64,44 @@ namespace Dash
             // the server XAML maps the 100 width and height and visibility
             // into the new element!
             XContainer.Children.Add(g);
+
+
+
+
+            // -- test beizer curve
+            PathFigure pthFigure = new PathFigure();
+            pthFigure.StartPoint = new Point(10, 100);
+
+            Point Point1 = new Point(100, 0);
+            Point Point2 = new Point(200, 200);
+            Point Point3 = new Point(300, 100);
+
+            BezierSegment bzSeg = new BezierSegment();
+            bzSeg.Point1 = Point1;
+            bzSeg.Point2 = Point2;
+            bzSeg.Point3 = Point3;
+
+
+            PathSegmentCollection myPathSegmentCollection = new PathSegmentCollection();
+            myPathSegmentCollection.Add(bzSeg);
+
+            pthFigure.Segments = myPathSegmentCollection;
+
+            PathFigureCollection pthFigureCollection = new PathFigureCollection();
+            pthFigureCollection.Add(pthFigure);
+
+            PathGeometry pthGeometry = new PathGeometry();
+            pthGeometry.Figures = pthFigureCollection;
+
+            Path arcPath = new Path();
+            arcPath.Stroke = new SolidColorBrush(Windows.UI.Colors.Black);
+            arcPath.StrokeThickness = 1;
+            arcPath.Data = pthGeometry;
+
+            int off = 100;
+                BezierLine b = new BezierLine();
+                b.update(new Point(400,400), new Point(300,300));
+                XContainer.Children.Add(b);
         }
 
         private void AddDocumentsTapped(object sender, TappedRoutedEventArgs e)

@@ -141,8 +141,7 @@ namespace Dash
             xFreeformView.Canvas.Children.Add(view6);
             xFreeformView.Canvas.Children.Add(view7);
 
-
-
+            
         }
     }
 }
