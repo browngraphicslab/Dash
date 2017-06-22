@@ -109,7 +109,8 @@ namespace Dash
                         {
                             uiElements.Add(uiele);
                             
-                            uiElements.Add(MakeEllipse(lEle.Key, lEle.Value));
+                            uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, true));
+                            uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, false));
                         }
                     }
                     else if (DocumentModel.Field(lEle.Key) != null)
@@ -117,21 +118,24 @@ namespace Dash
                         var uiele = lEle.Value.MakeView(DocumentModel.Field(lEle.Key));
                         uiElements.Add(uiele);
                         
-                        uiElements.Add(MakeEllipse(lEle.Key, lEle.Value));
+                        uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, true));
+                        uiElements.Add(MakeEllipse(lEle.Key, lEle.Value, false));
                     }
             }
             return uiElements;
         }
 
-        private Ellipse MakeEllipse(Key fieldKey, TemplateModel template)
+        private Ellipse MakeEllipse(Key fieldKey, TemplateModel template, bool isOutput)
         {
             Ellipse el = new Ellipse
             {
                 Width = 20,
                 Height = 20,
-                Fill = new SolidColorBrush(Colors.Black)
+                Fill = isOutput ? new SolidColorBrush(Colors.Black) : new SolidColorBrush(Colors.Red),
+                DataContext = new ReferenceFieldModel(DocumentModel.Id, fieldKey)
             };
-            el.DataContext = new ReferenceFieldModel(DocumentModel.Id, fieldKey);
+
+
             Binding visibilityBinding = new Binding
             {
                 Source = this,
@@ -149,15 +153,39 @@ namespace Dash
                 Source = template,
                 Path = new PropertyPath("Left")
             };
+            if (isOutput)
+            {
+                canvasLeftBinding.Converter = new CanvasLeftConverter();
+            }
             el.SetBinding(Canvas.LeftProperty, canvasLeftBinding);
 
-            el.PointerExited += El_PointerExited;
-            el.PointerReleased += El_PointerReleased;
-
+            if (isOutput)
+            {
+                el.PointerExited += Output_El_PointerExited;
+                el.PointerReleased += Output_El_PointerReleased;
+            }
+            else
+            {
+                el.PointerExited += Input_El_PointerExited;
+                el.PointerReleased += Input_El_PointerReleased;
+            }
             el.ManipulationMode = ManipulationModes.All;
             el.ManipulationStarted += (sender, args) => args.Complete();
-
             return el;
+        }
+
+        private class CanvasLeftConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                double left = (double)value;
+                return left + 40;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         public event OperatorView.IODragEventHandler IODragStarted;
@@ -173,17 +201,31 @@ namespace Dash
             IODragEnded?.Invoke(ioreference);
         }
 
-        private void El_PointerReleased(object sender, PointerRoutedEventArgs e)
+        private void Output_El_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
             IODragEnded?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel, true, e.Pointer, sender as Ellipse));
         }
 
-        private void El_PointerExited(object sender, PointerRoutedEventArgs e)
+        private void Output_El_PointerExited(object sender, PointerRoutedEventArgs e)
         {
             if (e.GetCurrentPoint(sender as Ellipse).Properties.IsLeftButtonPressed)
             {
                 IODragStarted?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel,
                     true, e.Pointer, sender as Ellipse));
+            }
+        }
+
+        private void Input_El_PointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            IODragEnded?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel, false, e.Pointer, sender as Ellipse));
+        }
+
+        private void Input_El_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (e.GetCurrentPoint(sender as Ellipse).Properties.IsLeftButtonPressed)
+            {
+                IODragStarted?.Invoke(new OperatorView.IOReference((sender as Ellipse).DataContext as ReferenceFieldModel,
+                    false, e.Pointer, sender as Ellipse));
             }
         }
 

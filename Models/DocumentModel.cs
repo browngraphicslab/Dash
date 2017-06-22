@@ -82,6 +82,17 @@ namespace Dash
             return key;
         }
 
+        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
+        {
+            //TODO Remove existing output references and add new output reference
+            //if (InputReferences.ContainsKey(fieldKey))
+            //{
+            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
+            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
+            //}
+            Field(fieldKey).InputReference = reference;
+        }
+
         /// <summary>
         /// Creates a delegate (child) of the given document that inherits all the fields of the prototype (parent)
         /// </summary>

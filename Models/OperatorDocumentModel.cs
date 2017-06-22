@@ -38,7 +38,7 @@ namespace Dash
             DocumentType = OperatorType;
         }
 
-        public void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
+        public override void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
         {
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 

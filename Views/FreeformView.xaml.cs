@@ -159,6 +159,10 @@ namespace Dash
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
         /// </summary>
         private HashSet<uint> _currentPointers = new HashSet<uint>();
+
+        /// <summary>
+        /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
+        /// </summary>
         private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
 
         public void StartDrag(OperatorView.IOReference ioReference)
@@ -263,16 +267,13 @@ namespace Dash
             if (ioReference.IsOutput)//TODO Fix this
             {
                 var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetFieldInDocument(_currReference.ReferenceFieldModel).InputReference = ioReference.ReferenceFieldModel;
+                docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
                 _connectionLine = null;
             }
             else
             {
                 var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
-                Debug.Assert(opDoc != null);
-                opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
-                    _currReference.ReferenceFieldModel);
+                docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
                 _connectionLine = null;
             }
         }
@@ -633,6 +634,12 @@ namespace Dash
                 FieldModel fm = docEnd.GetFieldInDocument(_currReference.ReferenceFieldModel);
                 Debug.WriteLine(fm);
                 CancelDrag(e.Pointer);
+
+                //DocumentView view = new DocumentView();
+                //DocumentViewModel viewModel = new DocumentViewModel();
+                //view.DataContext = viewModel;
+                //FreeformView.MainFreeformView.Canvas.Children.Add(view);
+
             }
         }
     }
