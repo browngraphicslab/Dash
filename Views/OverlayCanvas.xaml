@@ -11,7 +11,7 @@
     d:DesignHeight="720"
     d:DesignWidth="1280">
 
-    <Grid>
+    <Grid x:Name="XContainer">
         <Grid x:Name="xToolbar" Width="83" Background="{StaticResource WindowsBlue}" Padding="10,10" HorizontalAlignment="Left" VerticalAlignment="Center">
             <StackPanel VerticalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" Foreground="white">SOURCES</TextBlock>
