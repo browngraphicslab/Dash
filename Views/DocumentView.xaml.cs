@@ -166,7 +166,8 @@ namespace Dash
         /// <param name="e"></param>
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Resize(e.Delta.Translation.X, e.Delta.Translation.Y);
+            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            Resize(p.X, p.Y);
             e.Handled = true;
         }
 

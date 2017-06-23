@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI.Composition;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -17,7 +18,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
 
-        public float CanvasScale { get; set; } = 1;
+        public double CanvasScale { get; set; } = 1;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
@@ -336,7 +337,6 @@ namespace Dash
             Point bottomRight = inverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
             Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
             Point preBottomRight = renderInverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
-            Debug.WriteLine(bottomRight);
 
             //Check if the panning or zooming puts the view out of bounds of the canvas
             //Nullify scale or translate components accordingly
@@ -408,111 +408,111 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            //e.Handled = true;
-            ////Get mousepoint in canvas space 
-            //PointerPoint point = e.GetCurrentPoint(XCanvas);
-            //double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
-            //    Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
-            //scale = Math.Max(Math.Min(scale, 1.7f), 0.4f);
-            //CanvasScale *= (float)scale;
-            //Debug.Assert(XCanvas.RenderTransform != null);
-            //Point canvasPos = XCanvas.RenderTransform.TransformPoint(point.Position);
+            Canvas canvas = GridView.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+            e.Handled = true;
+            //Get mousepoint in canvas space 
+            PointerPoint point = e.GetCurrentPoint(canvas);
+            double scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
+                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
+            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+            CanvasScale *= (float)scaleAmount;
+            Debug.Assert(canvas.RenderTransform != null);
+            Point p = point.Position;
+            Debug.WriteLine(p);
+            //Create initial ScaleTransform 
+            ScaleTransform scale = new ScaleTransform
+            {
+                CenterX = p.X,
+                CenterY = p.Y,
+                ScaleX = scaleAmount,
+                ScaleY = scaleAmount
+            };
 
-            ////Create initial ScaleTransform 
-            //ScaleTransform scaleTransform = new ScaleTransform
-            //{
-            //    CenterX = canvasPos.X,
-            //    CenterY = canvasPos.Y,
-            //    ScaleX = scale,
-            //    ScaleY = scale
-            //};
+            //Clamp scale
+            if (CanvasScale > MaxScale)
+            {
+                CanvasScale = MaxScale;
+                scale.ScaleX = MaxScale / CanvasScale;
+                scale.ScaleY = MaxScale / CanvasScale;
+            }
+            if (CanvasScale < MinScale)
+            {
+                CanvasScale = MinScale;
+                scale.ScaleX = MinScale / CanvasScale;
+                scale.ScaleY = MinScale / CanvasScale;
+            }
 
-            ////Clamp scale
-            //if (CanvasScale > MaxScale)
-            //{
-            //    CanvasScale = MaxScale;
-            //    scaleTransform.ScaleX = 1;
-            //    scaleTransform.ScaleY = 1;
-            //}
-            //if (CanvasScale < MinScale)
-            //{
-            //    CanvasScale = MinScale;
-            //    scaleTransform.ScaleX = 1;
-            //    scaleTransform.ScaleY = 1;
-            //}
+            //Create initial composite transform
+            TransformGroup composite = new TransformGroup();
+            composite.Children.Add(scale);
+            composite.Children.Add(canvas.RenderTransform);
 
-            ////Create initial composite transform
-            //TransformGroup composite = new TransformGroup();
-            //composite.Children.Add(CanvasTransform);
-            //composite.Children.Add(scaleTransform);
+            GeneralTransform inverse = composite.Inverse;
+            Debug.Assert(inverse != null);
+            GeneralTransform renderInverse = canvas.RenderTransform.Inverse;
+            Debug.Assert(inverse != null);
+            Debug.Assert(renderInverse != null);
+            Point topLeft = inverse.TransformPoint(new Point(0, 0));
+            Point bottomRight = inverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
+            Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
+            Point preBottomRight = renderInverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
 
-            //GeneralTransform inverse = composite.Inverse;
-            //Debug.Assert(inverse != null);
-            //GeneralTransform renderInverse = XCanvas.RenderTransform.Inverse;
-            //Debug.Assert(inverse != null);
-            //Debug.Assert(renderInverse != null);
-            //Point topLeft = inverse.TransformPoint(new Point(0, 0));
-            //Point bottomRight = inverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
-            //Point preBottomRight = renderInverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
+            //Check if the zooming puts the view out of bounds of the canvas
+            //Nullify scale or translate components accordingly 
+            bool outOfBounds = false;
+            //Create a canvas space translation to correct the translation if necessary
+            TranslateTransform fixTranslate = new TranslateTransform();
+            if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
+            {
+                fixTranslate.X = 0;
+                scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
+                scale.ScaleY = scaleAmount;
+                scale.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.X < Bounds.Left)
+            {
+                fixTranslate.X = preTopLeft.X;
+                scale.CenterX = Bounds.Left;
+                outOfBounds = true;
+            }
+            else if (bottomRight.X > Bounds.Right)
+            {
+                fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
+                scale.CenterX = Bounds.Right;
+                outOfBounds = true;
+            }
+            if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
+            {
+                fixTranslate.Y = 0;
+                scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
+                scale.ScaleX = scaleAmount;
+                scale.ScaleY = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.Y < Bounds.Top)
+            {
+                fixTranslate.Y = preTopLeft.Y;
+                scale.CenterY = Bounds.Top;
+                outOfBounds = true;
+            }
+            else if (bottomRight.Y > Bounds.Bottom)
+            {
+                fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
+                scale.CenterY = Bounds.Bottom;
+                outOfBounds = true;
+            }
 
-            ////Create a canvas space translation to correct the translation if necessary
-            //TranslateTransform translate = new TranslateTransform
-            //{
-            //    X = 0,
-            //    Y = 0
-            //};
-
-            ////Check if the zooming puts the view out of bounds of the canvas
-            ////Nullify scale or translate components accordingly 
-            //bool outOfBounds = false;
-            //if (topLeft.X < 0 && bottomRight.X > XCanvas.ActualWidth)
-            //{
-            //    translate.X = 0;
-            //    double scaleAmount = (bottomRight.X - topLeft.X) / CanvasWidth;
-            //    scaleTransform.ScaleY = scaleAmount;
-            //    scaleTransform.ScaleX = scaleAmount;
-            //    outOfBounds = true;
-            //}
-            //else if (topLeft.X < 0)
-            //{
-            //    scaleTransform.CenterX = 0;
-            //    outOfBounds = true;
-            //}
-            //else if (bottomRight.X >= XCanvas.ActualWidth)
-            //{
-            //    translate.X = preBottomRight.X - XCanvas.ActualWidth;
-            //    scaleTransform.CenterX = ParentElement.ActualWidth;
-            //    outOfBounds = true;
-            //}
-            //if (topLeft.Y < 0 && bottomRight.Y > XCanvas.ActualHeight)
-            //{
-            //    translate.Y = 0;
-            //    double scaleAmount = (bottomRight.Y - topLeft.Y) / CanvasHeight;
-            //    scaleTransform.ScaleY = scaleAmount;
-            //    scaleTransform.ScaleX = scaleAmount;
-            //    outOfBounds = true;
-            //}
-            //else if (topLeft.Y < 0)
-            //{
-            //    scaleTransform.CenterY = 0;
-            //    outOfBounds = true;
-            //}
-            //else if (bottomRight.Y >= XCanvas.ActualHeight)
-            //{
-            //    translate.Y = preBottomRight.Y - XCanvas.ActualHeight;
-            //    scaleTransform.CenterY = ParentElement.ActualHeight;
-            //    outOfBounds = true;
-            //}
-
-            ////If the view was out of bounds recalculate the composite matrix
-            //if (outOfBounds)
-            //{
-            //    composite = new TransformGroup();
-            //    composite.Children.Add(translate);
-            //    composite.Children.Add(CanvasTransform);
-            //    composite.Children.Add(scaleTransform);
-            //}
-            //CanvasTransform = new MatrixTransform { Matrix = composite.Value };
+            //If the view was out of bounds recalculate the composite matrix
+            if (outOfBounds)
+            {
+                composite = new TransformGroup();
+                composite.Children.Add(fixTranslate);
+                composite.Children.Add(scale);
+                composite.Children.Add(canvas.RenderTransform);
+            }
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
         /// <summary>
