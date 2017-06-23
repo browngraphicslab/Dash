@@ -9,7 +9,7 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" SizeChanged="MyGrid_SizeChanged" >
-        <Viewbox x:Name="xFreeFormView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+        <Viewbox x:Name="xViewBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <views:DocumentView x:Name="MainDocView"></views:DocumentView>
         </Viewbox>
                 

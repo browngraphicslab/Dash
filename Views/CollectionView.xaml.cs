@@ -65,11 +65,6 @@ namespace Dash
             
             xSearchFieldBox.TextChanged += ViewModel.xSearchFieldBox_TextChanged;
 
-
-
-
-
-
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -259,7 +254,7 @@ namespace Dash
         private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var cvm = DataContext as CollectionViewModel;
-            (sender as DocumentView).Manipulator.TurnOff();
+            //(sender as DocumentView).Manipulator.TurnOff();
 
         }
 

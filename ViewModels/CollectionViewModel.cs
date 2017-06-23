@@ -13,6 +13,7 @@ using Dash.StaticClasses;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
+using Dash.ViewModels;
 
 namespace Dash
 {
@@ -768,7 +769,7 @@ namespace Dash
                      }
                     DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
                 }
-                viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
+                viewModels.Add(documentDisplayDelegate.DocumentType == OperatorDocumentModel.OperatorType ? new OperatorDocumentViewModel(documentDisplayDelegate as OperatorDocumentModel) : new DocumentViewModel(documentDisplayDelegate));
             }
             return viewModels;
         }

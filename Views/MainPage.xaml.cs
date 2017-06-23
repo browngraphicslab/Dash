@@ -57,7 +57,10 @@ namespace Dash
             MainDocView.DataContext = new DocumentViewModel(docCollection);
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
-            MainDocView.Manipulator.TurnOff();
+
+            MainDocView.ManipulationMode = ManipulationModes.None;
+            MainDocView.Manipulator.RemoveAllButHandle();
+            //MainDocView.Manipulator.TurnOff();
 
             Instance = this;
         }
@@ -81,6 +84,9 @@ namespace Dash
             };
             OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
             view.DataContext = opvm;
+
+
+            DisplayDocument(opModel);
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
         }
 
@@ -168,15 +174,16 @@ namespace Dash
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
             DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel image = DocumentModel.OneImage();
-           
+
             DisplayDocument(recipe);
             DisplayDocument(pricePerSqFt);
             DisplayDocument(image);
         }
 
+
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var child = xFreeFormView.Child as FrameworkElement;
+            var child = xViewBox.Child as FrameworkElement;
             if (child != null)
             {
                 child.Width = e.NewSize.Width;

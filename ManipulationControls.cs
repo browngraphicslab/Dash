@@ -23,6 +23,7 @@ namespace Dash {
         private float _documentScale = 1.0f;
         private const float MinScale = 0.5f;
         private const float MaxScale = 2.0f;
+        private bool _disabled;
         private FrameworkElement _element;
 
         /// <summary>
@@ -31,24 +32,42 @@ namespace Dash {
         /// </summary>
         /// <param name="element">The element to add manipulation to</param>
         public ManipulationControls(FrameworkElement element) {
+            _element = element;
             element.ManipulationDelta += ManipulateDeltaMoveAndScale;
             element.ManipulationMode = ManipulationModes.All;
-            this._element = element;
-            this._element.ManipulationMode = ManipulationModes.Scale;
-            this._element.ManipulationDelta += ManipulateDeltaScale;
+            //element.ManipulationMode = ManipulationModes.Scale;
+            //element.ManipulationDelta += ManipulateDeltaScale;
         }
 
-        public void TurnOff()
-        {
-            FrameworkElement handleControl = _element.Parent as FrameworkElement;
+        //public void TurnOff()
+        //{
+        //    FrameworkElement handleControl = _element.Parent as FrameworkElement;
 
-            if (handleControl != null)
-                handleControl.ManipulationDelta -= ManipulateDeltaMoveAndScale;
-            _element.ManipulationDelta       -= ManipulateDeltaScale;
+        //    if (handleControl != null)
+        //        handleControl.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+        //    _element.ManipulationDelta       -= ManipulateDeltaScale;
+        //}
+
+        public void AddAllAndHandle()
+        {
+            if (!_disabled) return;
+            _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta -= EmptyManipulationDelta;
+        }
+
+        public void RemoveAllButHandle()
+        {
+            if (_disabled) return;
+            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta += EmptyManipulationDelta;
         }
 
         // == METHODS ==
 
+        public void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>

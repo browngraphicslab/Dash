@@ -13,8 +13,8 @@
 
     <Grid>
         <Grid x:Name="Grid" Height="{Binding OuterGridHeight}" Width="{Binding  OuterGridWidth}" BorderThickness="1" Background="Transparent" >
-            <Grid x:Name="DocumentViewContainerGrid" HorizontalAlignment="Left" Height="{Binding ContainerGridHeight}" BorderThickness="1" Margin="0,22,0,22" VerticalAlignment="Center" Width="{Binding  ContainerGridWidth}" Background="White" BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}">
-                 <Grid Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" 
+            <Grid x:Name="DocumentViewContainerGrid" HorizontalAlignment="Stretch" Height="{Binding ContainerGridHeight}" BorderThickness="1" Margin="0,22,0,22" VerticalAlignment="Stretch" Width="{Binding  ContainerGridWidth}" Background="White" BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}">
+                <Grid Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" 
                       Visibility="{Binding GridViewVisibility}">
                     <ItemsControl x:Name="GridView" x:FieldModifier="public" Width ="{Binding Path=ContainerGridWidth}" 
                               Height="{Binding Path=ContainerGridHeight}"  Padding="5"  ItemsSource="{Binding DataBindingSource}"
@@ -31,7 +31,6 @@
                                     <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta"  >
                                         <dash:DocumentView.RenderTransform>
                                             <TranslateTransform X="{Binding X}" Y="{Binding Y}">
-                                                
                                             </TranslateTransform>
                                         </dash:DocumentView.RenderTransform>
                                     </dash:DocumentView>
@@ -68,7 +67,7 @@
                 </Grid>
 
             </Grid>
-            
+
             <Grid Visibility="{Binding SoloDisplayVisibility}">
                 <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid.Background>
@@ -90,10 +89,10 @@
                             </ListView.ItemsPanel>
                         </ListView>
                     </Grid>
-                    
+
                 </Grid>
             </Grid>
-            
+
             <Grid x:Name="FilterGrid" Visibility="{Binding FilterViewVisibility}">
                 <StackPanel Orientation="Vertical" Width="605" Height="305" Style="{StaticResource xNodeContainerStackPanel}">
                     <Button x:Name="xFilterExit" Content="X" HorizontalAlignment="Right" Height="30" Style="{StaticResource xBlueTextButtonStyle}"/>
@@ -155,7 +154,7 @@
                          Margin="30" />
                 </StackPanel>
             </Grid>
-            
+
 
             <!--<Button x:Name="CancelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="62" Height="29" Content="Cancel" Background="{x:Null}" Foreground="{StaticResource ButtonTextBrush}" BorderBrush="{x:Null}" Padding="0" Margin="0,0,10,0"  />-->
 
