@@ -43,18 +43,18 @@ namespace Dash
             };
         }
 
-        public override void Execute(IDictionary<Key, FieldModel> fields)
+        public override void Execute(DocumentModel doc)
         {
-            NumberFieldModel numberA = fields[AKey] as NumberFieldModel;
+            NumberFieldModel numberA = doc.Field(AKey) as NumberFieldModel;
             Debug.Assert(numberA != null, "Input is not a number");
 
-            NumberFieldModel numberB = fields[BKey] as NumberFieldModel;
+            NumberFieldModel numberB = doc.Field(BKey) as NumberFieldModel;
             Debug.Assert(numberB != null, "Input is not a number");
 
             double a = numberA.Data;
             double b = numberB.Data;
 
-            (fields[SumKey] as NumberFieldModel).Data = a + b;
+            (doc.Field(SumKey) as NumberFieldModel).Data = a + b;
         }
     }
 }

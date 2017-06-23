@@ -58,6 +58,8 @@ namespace Dash
         public string FieldBoxText;
         public string SearchBoxText;
 
+        public bool IsEditorMode { get; set; } = true;
+
 
         #region Private & Backing variables
         
@@ -621,7 +623,7 @@ namespace Dash
                      }
                     DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
                 }
-                viewModels.Add(documentDisplayDelegate.DocumentType == OperatorDocumentModel.OperatorType ? new OperatorDocumentViewModel(documentDisplayDelegate as OperatorDocumentModel) : new DocumentViewModel(documentDisplayDelegate));
+                viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
             }
             return viewModels;
         }

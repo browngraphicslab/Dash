@@ -29,6 +29,9 @@ namespace Dash
         public bool ProportionalScaling;
         public ManipulationControls Manipulator { get { return manipulator; } }
 
+        public event OperatorView.IODragEventHandler IODragStarted;
+        public event OperatorView.IODragEventHandler IODragEnded;
+
         public DocumentView()
         {
             this.InitializeComponent();
@@ -232,7 +235,7 @@ namespace Dash
             if (_vm != null && _vm.DoubleTapEnabled)
             {
                 e.Handled = true;
-                var window = new OperationWindow(1000, 800);//  new OperationWindowViewModel(_vm.DocumentModel));
+                var window = new OperationWindow(1000, 800, new OperationWindowViewModel(_vm.DocumentModel));
 
                 var center = RenderTransform.TransformPoint(e.GetPosition(this));
 
@@ -286,6 +289,8 @@ namespace Dash
 
             // otherwise layout the document according to the _vm
             ResetFields(_vm);
+            _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);
+            _vm.IODragEnded += reference => IODragEnded?.Invoke(reference);
             // Add any methods
             //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
             //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;

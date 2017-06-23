@@ -38,12 +38,12 @@ namespace Dash
             };
         }
 
-        public override void Execute(IDictionary<Key, FieldModel> fields)
+        public override void Execute(DocumentModel doc)
         {
-            TextFieldModel uri = fields[URIKey] as TextFieldModel;
+            TextFieldModel uri = doc.Field(URIKey) as TextFieldModel;
             Debug.Assert(uri != null, "Input is not a string");
 
-            (fields[ImageKey] as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
+            (doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
     }
 }

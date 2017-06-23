@@ -36,12 +36,12 @@ namespace Dash.Models.OperatorModels.Set
             };
         }
 
-        public override void Execute(IDictionary<Key, FieldModel> fields)
+        public override void Execute(DocumentModel doc)
         {
-            DocumentCollectionFieldModel setA = fields[AKey] as DocumentCollectionFieldModel;
-            DocumentCollectionFieldModel setB = fields[BKey] as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel setA = doc.Field(AKey) as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel setB = doc.Field(BKey) as DocumentCollectionFieldModel;
             
-            (fields[IntersectionKey] as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
+            (doc.Field(IntersectionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
         }
     }
 }

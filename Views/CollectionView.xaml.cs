@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Composition;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -10,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Extensions.DependencyInjection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -560,6 +563,266 @@ namespace Dash
             }
 
             Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
+        }
+
+        #region Operator connection stuff
+        /// <summary>
+        /// Helper class to detect cycles 
+        /// </summary>
+        private Graph _graph = new Graph();
+        /// <summary>
+        /// Line to create and display connection lines between OperationView fields and Document fields 
+        /// </summary>
+        private Line _connectionLine;
+
+        /// <summary>
+        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
+        /// </summary>
+        private OperatorView.IOReference _currReference;
+
+        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>();
+
+        /// <summary>
+        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
+        /// </summary>
+        private HashSet<uint> _currentPointers = new HashSet<uint>();
+
+        /// <summary>
+        /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
+        /// </summary>
+        //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
+
+        private class VisibilityConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                bool isEditorMode = (bool)value;
+                return isEditorMode ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        public void StartDrag(OperatorView.IOReference ioReference)
+        {
+            if (!ViewModel.IsEditorMode)
+            {
+                return;
+            }
+            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            {
+                return;
+            }
+            _currentPointers.Add(ioReference.Pointer.PointerId);
+
+            _currReference = ioReference;
+
+            _connectionLine = new Line
+            {
+                StrokeThickness = 10,
+                Stroke = new SolidColorBrush(Colors.Black),
+                IsHitTestVisible = false,
+                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+            };
+
+            Binding visibilityBinding = new Binding
+            {
+                Source = ViewModel,
+                Path = new PropertyPath("IsEditorMode"),
+                Converter = new VisibilityConverter()
+            };
+            _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+
+            //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+
+            //Binding x1Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(true),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+            //    Source = view,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //Binding y1Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(false),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+            //    Source = view,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
+            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
+            Binding x1Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(true),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+                Source = this,
+                Path = new PropertyPath("RenderTransform")
+            };
+            Binding y1Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(false),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+                Source = this,
+                Path = new PropertyPath("RenderTransform")
+            };
+            _connectionLine.SetBinding(Line.X1Property, x1Binding);
+            _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+
+            _connectionLine.X2 = _connectionLine.X1;
+            _connectionLine.Y2 = _connectionLine.Y1;
+
+            FreeformGrid.Children.Add(_connectionLine);
+
+            if (!ioReference.IsOutput)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+            }
+        }
+
+        public void CancelDrag(Pointer p)
+        {
+            _currentPointers.Remove(p.PointerId);
+            UndoLine();
+        }
+
+        public void EndDrag(OperatorView.IOReference ioReference)
+        {
+            if (!ViewModel.IsEditorMode)
+            {
+                return;
+            }
+            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            if (_connectionLine == null) return;
+
+            if (_currReference.IsOutput == ioReference.IsOutput)
+            {
+                UndoLine();
+                return;
+            }
+            _graph.AddEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);//TODO Detect cycles with operators internal edges as well
+            if (_graph.IsCyclic())
+            {
+                _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+                CancelDrag(ioReference.Pointer);
+                Debug.WriteLine("Cycle detected");
+                return;
+            }
+
+            if (!ioReference.IsOutput)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+            }
+
+            //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
+            //Binding x2Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(true),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+            //    Source = view,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //Binding y2Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(false),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+            //    Source = view,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
+            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
+            Binding x2Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(true),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+                Source = this,
+                Path = new PropertyPath("RenderTransform")
+            };
+            Binding y2Binding = new Binding
+            {
+                Converter = new FrameworkElementToPosition(false),
+                ConverterParameter =
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
+                Source = this,
+                Path = new PropertyPath("RenderTransform")
+            };
+            _connectionLine.SetBinding(Line.X2Property, x2Binding);
+            _connectionLine.SetBinding(Line.Y2Property, y2Binding);
+
+            if (ioReference.IsOutput)
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+                _connectionLine = null;
+            }
+            else
+            {
+                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+                _connectionLine = null;
+            }
+        }
+
+        /// <summary>
+        /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        private void CheckLinePresence(ReferenceFieldModel model)
+        {
+            if (_lineDict.ContainsKey(model))
+            {
+                Line line = _lineDict[model];
+                FreeformGrid.Children.Remove(line);
+                _lineDict.Remove(model);
+            }
+        }
+
+        private void UndoLine()
+        {
+            FreeformGrid.Children.Remove(_connectionLine);
+            //_lineDict. //TODO lol figure this out later 
+            _connectionLine = null;
+            _currReference = null;
+        }
+
+        #endregion
+
+        private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            if (_connectionLine != null)
+            {
+                Point pos = e.GetCurrentPoint(FreeformGrid).Position;
+                _connectionLine.X2 = pos.X;
+                _connectionLine.Y2 = pos.Y;
+            }
+        }
+
+        private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            if (_currReference != null)
+            {
+                DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                FieldModel fm = docEnd.GetFieldInDocument(_currReference.ReferenceFieldModel);
+                Debug.WriteLine(fm);
+                CancelDrag(e.Pointer);
+
+                //DocumentView view = new DocumentView();
+                //DocumentViewModel viewModel = new DocumentViewModel();
+                //view.DataContext = viewModel;
+                //FreeformView.MainFreeformView.Canvas.Children.Add(view);
+
+            }
         }
     }
 }

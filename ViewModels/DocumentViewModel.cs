@@ -140,7 +140,7 @@ namespace Dash
                     if (uiele != null)
                     {
                         uiElements.AddRange(uiele);
-                        size = new Size(Math.Max(size.Width, lEle.Value.Pos.X + lEle.Value.Width), Math.Max(size.Height, lEle.Value.Pos.Y+lEle.Value.Height));
+                        size = new Size(Math.Max(size.Width, lEle.Value.Pos.X + lEle.Value.Width), Math.Max(size.Height, lEle.Value.Pos.Y + lEle.Value.Height));
                         SetUpFrameworkElement(uiele.FirstOrDefault(), lEle.Key);
                     }
                 }
@@ -210,23 +210,20 @@ namespace Dash
             //    Converter = new ManipulationConverter()
             //};
             //element.SetBinding(UIElement.ManipulationModeProperty, manipulationBinding);
-            //element.ManipulationMode = ManipulationModes.All;
+            element.ManipulationMode = ManipulationModes.All;
 
             element.ManipulationStarted += (sender, args) => args.Complete();
 
-            if (!(DocumentModel is OperatorDocumentModel))//TODO Change data model to avoid having to do this check?
-            {
-                element.PointerPressed += Element_PointerPressed;
-                element.PointerReleased += Element_PointerReleased;
-            }
+            element.PointerPressed += Element_PointerPressed;
+            element.PointerReleased += Element_PointerReleased;
         }
 
         private class ManipulationConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, string language)
             {
-                bool isEditorMode = (bool) value; 
-                return isEditorMode ? ManipulationModes.All : ManipulationModes.System; 
+                bool isEditorMode = (bool)value;
+                return isEditorMode ? ManipulationModes.All : ManipulationModes.System;
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -408,8 +405,9 @@ namespace Dash
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.ExampleCollectionModel(docType)), false);
                 else if (docType.Type == "price_per_square_foot")
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(LayoutModel.PricePerSquareFootApiObject(docType)), false);
-                else { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
-                       // this layout is created in showAllDocumentFields() 
+                else
+                { // if it's an unknown document type, then create a LayoutModel that displays all of its fields.  
+                  // this layout is created in showAllDocumentFields() 
                     Debug.WriteLine("now we gere");
                     layoutModelSource.SetField(layoutKeyForDocumentType, new LayoutModelFieldModel(new LayoutModel(true, docType)), false);
                 }
