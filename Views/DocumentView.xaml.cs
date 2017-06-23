@@ -40,7 +40,7 @@ namespace Dash
 
             // set bounds
             MinWidth = 200;
-            MinHeight = 400;
+            MinHeight = 200;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
@@ -183,7 +183,7 @@ namespace Dash
                 ProportionalScaling = false;
             }
         }
-        public DocumentView(DocumentViewModel documentViewModel) : this()
+        public DocumentView(DocumentViewModel documentViewModel)
         {
             DataContext = documentViewModel;
 
@@ -202,7 +202,8 @@ namespace Dash
             var elements = documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
             foreach (var element in elements)
             {
-                XGrid.Children.Add(element);
+                //if (!(element is TextBlock))
+                    XGrid.Children.Add(element);
             }
         }
 
@@ -287,6 +288,23 @@ namespace Dash
             // Add any methods
             //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
             //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+        }
+
+        private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            //e.Handled = true;
+
+            //var parent = OuterGrid.Parent as Grid;
+            //Debug.WriteLine(OuterGrid.Parent);
+            //if (parent == null) return;
+            //var maxZ = int.MinValue;
+            //foreach (var child in parent.Children)
+            //{
+            //    var childZ = (int)child.GetValue(Canvas.ZIndexProperty);
+            //    if (childZ > maxZ)
+            //        maxZ = childZ;
+            //}
+            //OuterGrid.SetValue(Canvas.ZIndexProperty, maxZ + 1);
         }
     }
 }

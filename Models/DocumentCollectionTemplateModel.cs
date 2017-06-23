@@ -26,7 +26,7 @@ namespace Dash
             var translateBinding = new Binding
             {
                 Source = this,
-                Path = new PropertyPath("PositionPoint"),
+                Path = new PropertyPath("Pos"),
                 Mode = BindingMode.TwoWay,
                 Converter = new PositionConverter()
             };

@@ -62,6 +62,8 @@ namespace Dash
             MainDocView.Manipulator.RemoveAllButHandle();
             //MainDocView.Manipulator.TurnOff();
 
+            MainDocView.DraggerButton.Visibility = Visibility.Collapsed; 
+
             Instance = this;
         }
 

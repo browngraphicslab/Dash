@@ -12,8 +12,18 @@
     ManipulationStarted="Grid_OnManipulationStarted">
 
     <Grid>
-        <Grid x:Name="Grid" BorderThickness="1" Background="Transparent" >
-            <Grid x:Name="DocumentViewContainerGrid" HorizontalAlignment="Stretch" BorderThickness="1" Margin="0,22,0,22" VerticalAlignment="Stretch" Background="White" BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}">
+        <Grid x:Name="Grid" BorderThickness="1" Background="Transparent">
+            <Grid x:Name="DocumentViewContainerGrid"  
+                  HorizontalAlignment="Stretch" 
+                  BorderThickness="1" 
+                  Margin="0,22,0,22" 
+                  VerticalAlignment="Stretch" 
+                  Background="White" 
+                  BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}"
+                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="ClipRect"/>
+                </Grid.Clip>
                 <Grid Visibility="{Binding GridViewVisibility}">
                     <ItemsControl x:Name="GridView" x:FieldModifier="public" Padding="5"  ItemsSource="{Binding DataBindingSource}"
                               IsEnabled="{Binding ViewIsEnabled}">
@@ -24,7 +34,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta"  >
+                                <dash:DocumentView Width="400" Height="400" DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta"  >
                                     <dash:DocumentView.RenderTransform>
                                         <TranslateTransform X="{Binding X}" Y="{Binding Y}">
                                         </TranslateTransform>
@@ -162,20 +172,23 @@
                 </Button.Flyout>
             </Button>
 
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="SelectButton" Content ="Select" VerticalAlignment="Bottom" Height="21" 
+                        Width="38" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding SelectButtonMargin}" />
+                <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="21" 
+                        Width="51" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding DeleteButtonMargin}">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
+                            <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
+                            <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+            </StackPanel>
             <Button x:Name="CloseButton" Content ="Close" HorizontalAlignment="Right" VerticalAlignment="Top" Height="21" 
                 Width="34" Style="{StaticResource xBlueTextButtonStyle}"/>
-            <Button x:Name="SelectButton" Content ="Select" VerticalAlignment="Bottom" Height="21" 
-                Width="38" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding SelectButtonMargin}" />
-            <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="21" 
-                Width="51" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding DeleteButtonMargin}">
-                <Button.Flyout>
-                    <MenuFlyout Placement="Bottom">
-                        <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
-                        <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
-                        <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
+
 
         </Grid>
         
@@ -183,4 +196,6 @@
     </Grid>
 
 </UserControl>
+
+
 

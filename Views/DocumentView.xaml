@@ -7,11 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="300">
+    d:DesignWidth="300"
+    >
 
-    <Grid>
+    <Grid x:Name="OuterGrid" PointerPressed="DocumentView_OnPointerPressed">
         <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}" BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped"></Grid>
-        <Button x:Name="DraggerButton" Width="20"
+        <Button x:Name="DraggerButton" x:FieldModifier="public" Width="20"
                 Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" ManipulationMode="All">
             <Button.Template>
                 <ControlTemplate TargetType="Button">

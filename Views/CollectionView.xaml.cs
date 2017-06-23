@@ -1,10 +1,12 @@
-﻿using Windows.Foundation;
+﻿using System;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -263,6 +265,10 @@ namespace Dash
             cvm.MoveDocument(dvm, dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y)));
             e.Handled = true;
         }
-       
+
+        private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+        }
     }
 }
