@@ -154,7 +154,7 @@ namespace Dash
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             if (docCollection == null) {
                 docCollection = docController.CreateDocumentAsync("newtype");
-                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { umpireDoc, image2Del, image2 }), false);
+                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {image2, image2Del, umpireDoc}), false);
             }
             DisplayDocument(docCollection);
         }

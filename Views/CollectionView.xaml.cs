@@ -26,7 +26,6 @@ namespace Dash
             this.InitializeComponent();
             DataContext = ViewModel = vm;
             SetEventHandlers();
-
         }
 
         private void SetEventHandlers()
@@ -44,9 +43,7 @@ namespace Dash
             // GridView.SelectionChanged += ViewModel.SelectionChanged;
             
 
-            DraggerButton.Holding += ViewModel.DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += ViewModel.Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += ViewModel.Dragger_ManipulationCompleted;
+            
 
             Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
 
@@ -70,7 +67,7 @@ namespace Dash
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             var canvas = Parent as Canvas;
-            canvas.Children.Remove(this);
+            canvas?.Children.Remove(this);
         }
 
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)

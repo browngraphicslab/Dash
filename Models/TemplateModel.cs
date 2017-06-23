@@ -8,25 +8,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
     public abstract class TemplateModel : ViewModelBase
     {
-        private double _left;
+        
 
-        public double Left
+        public Point _point;
+        public Point Pos
         {
-            get { return _left; }
-            set { SetProperty(ref _left, value); }
-        }
-
-        private double _top;
-
-        public double Top
-        {
-            get { return _top; }
-            set { SetProperty(ref _top, value); }
+            get { return _point; }
+            set { SetProperty(ref _point, value); }
         }
 
         private Visibility _visibility;
@@ -56,8 +51,7 @@ namespace Dash
 
         public TemplateModel(double left = 0, double top = 0, double width = 0, double height = 0, Visibility visibility = Visibility.Visible)
         {
-            Left = left;
-            Top = top;
+            Pos = new Point {X = left, Y = top};
             Width = width;
             Height = height;
             Visibility = visibility;
@@ -86,9 +80,28 @@ namespace Dash
             if (fieldModel is DocumentModelFieldModel)
             {
                 var doc = (fieldModel as DocumentModelFieldModel).Data;
-                return new DocumentViewModel(doc).GetUiElements(new Rect(Left, Top, Width, Height));
+                return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
             }
             return MakeView(fieldModel, context);
+        }
+
+
+        protected class PositionConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                Point p = (Point)value;
+                return new TranslateTransform
+                {
+                    X = p.X,
+                    Y = p.Y
+                };
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

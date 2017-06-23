@@ -12,30 +12,24 @@
     ManipulationStarted="Grid_OnManipulationStarted">
 
     <Grid>
-        <Grid x:Name="Grid" Height="{Binding OuterGridHeight}" Width="{Binding  OuterGridWidth}" BorderThickness="1" Background="Transparent" >
-            <Grid x:Name="DocumentViewContainerGrid" HorizontalAlignment="Stretch" Height="{Binding ContainerGridHeight}" BorderThickness="1" Margin="0,22,0,22" VerticalAlignment="Stretch" Width="{Binding  ContainerGridWidth}" Background="White" BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}">
-                <Grid Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" 
-                      Visibility="{Binding GridViewVisibility}">
-                    <ItemsControl x:Name="GridView" x:FieldModifier="public" Width ="{Binding Path=ContainerGridWidth}" 
-                              Height="{Binding Path=ContainerGridHeight}"  Padding="5"  ItemsSource="{Binding DataBindingSource}"
-                              IsEnabled="{Binding ViewIsEnabled}"
-                              >
+        <Grid x:Name="Grid" BorderThickness="1" Background="Transparent" >
+            <Grid x:Name="DocumentViewContainerGrid" HorizontalAlignment="Stretch" BorderThickness="1" Margin="0,22,0,22" VerticalAlignment="Stretch" Background="White" BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}">
+                <Grid Visibility="{Binding GridViewVisibility}">
+                    <ItemsControl x:Name="GridView" x:FieldModifier="public" Padding="5"  ItemsSource="{Binding DataBindingSource}"
+                              IsEnabled="{Binding ViewIsEnabled}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Grid ></Grid>
+                                <Canvas></Canvas>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                    <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta"  >
-                                        <dash:DocumentView.RenderTransform>
-                                            <TranslateTransform X="{Binding X}" Y="{Binding Y}">
-                                            </TranslateTransform>
-                                        </dash:DocumentView.RenderTransform>
-                                    </dash:DocumentView>
-                                </Border>
-
+                                <dash:DocumentView DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta"  >
+                                    <dash:DocumentView.RenderTransform>
+                                        <TranslateTransform X="{Binding X}" Y="{Binding Y}">
+                                        </TranslateTransform>
+                                    </dash:DocumentView.RenderTransform>
+                                </dash:DocumentView>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
@@ -170,9 +164,9 @@
 
             <Button x:Name="CloseButton" Content ="Close" HorizontalAlignment="Right" VerticalAlignment="Top" Height="21" 
                 Width="34" Style="{StaticResource xBlueTextButtonStyle}"/>
-            <Button x:Name="SelectButton" Content ="Select" VerticalAlignment="Top" Height="21" 
+            <Button x:Name="SelectButton" Content ="Select" VerticalAlignment="Bottom" Height="21" 
                 Width="38" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding SelectButtonMargin}" />
-            <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Top" Height="21" 
+            <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="21" 
                 Width="51" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding DeleteButtonMargin}">
                 <Button.Flyout>
                     <MenuFlyout Placement="Bottom">
@@ -184,20 +178,7 @@
             </Button>
 
         </Grid>
-        <Button x:Name="DraggerButton" Width="20"
-        Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" ManipulationMode="All">
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <Ellipse Fill="#DE0074FF" StrokeThickness="3" Stroke="{Binding DraggerStroke}">
-
-                        </Ellipse>
-                        <ContentPresenter HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                    </Grid>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
+        
 
     </Grid>
 

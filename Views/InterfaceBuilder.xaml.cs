@@ -81,7 +81,7 @@ namespace Dash
 
         private void ApplyEditable()
         {
-            List<UIElement> editableElements = new List<UIElement>();
+            List<FrameworkElement> editableElements = new List<FrameworkElement>();
 
             foreach (var kvp in _keyToFieldModel)
             {
@@ -102,8 +102,8 @@ namespace Dash
                     //Height = fieldView.Height
                 };
 
-                Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Left);
-                Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Top);
+                Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Pos.X);
+                Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Pos.Y);
                 //var guideModel = new GuideLineModel();
                 //var guideViewModel = new GuideLineViewModel(guideModel);
                 //var guideView = new GuideLineView(guideViewModel);
@@ -127,8 +127,8 @@ namespace Dash
             var key = editableFieldFrame.Key;
 
             var templateModel = _keyToTemplateModel[key];
-            templateModel.Left += deltaX;
-            templateModel.Top += deltaY;
+            templateModel.Pos = new Point(templateModel.Pos.X + deltaX,
+                templateModel.Pos.Y + deltaY);
         }
 
         private void EditableBorderOnFieldSizeChanged(object sender, double newWidth, double newHeight)

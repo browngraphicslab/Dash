@@ -140,7 +140,7 @@ namespace Dash
                     if (uiele != null)
                     {
                         uiElements.AddRange(uiele);
-                        size = new Size(Math.Max(size.Width, lEle.Value.Left + lEle.Value.Width), Math.Max(size.Height, lEle.Value.Top+lEle.Value.Height));
+                        size = new Size(Math.Max(size.Width, lEle.Value.Pos.X + lEle.Value.Width), Math.Max(size.Height, lEle.Value.Pos.Y+lEle.Value.Height));
                         SetUpFrameworkElement(uiele.FirstOrDefault(), lEle.Key);
                     }
                 }

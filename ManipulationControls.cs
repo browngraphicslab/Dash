@@ -103,7 +103,7 @@ namespace Dash {
             };
             
             // set up translation transform
-            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
+            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, _element);
             
             //Clamp the scale factor 
             float newScale = _documentScale * e.Delta.Scale;
