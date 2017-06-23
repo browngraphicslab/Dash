@@ -3,76 +3,43 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Text;
+using Dash.Models;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
-    public class OperatorDocumentModel : DocumentModel
+    public static class OperatorDocumentModel
     {
         public static Key OperatorKey = new Key("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");
         public static DocumentType OperatorType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
 
-        /// <summary>
-        /// Dictionary that maps Field input name to the ReferenceFieldModel that it is set to
-        /// </summary>
-
-        protected Dictionary<Key, ReferenceFieldModel> InputReferences { get; set; } = new Dictionary<Key, ReferenceFieldModel>();
-
-        public OperatorFieldModel OperatorField
+        public static DocumentModel CreateOperatorDocumentModel(OperatorFieldModel operatorField)
         {
-            get { return Field(OperatorKey) as OperatorFieldModel; }
-            set
+            List<Key> inputKeys = operatorField.InputKeys;
+            List<Key> outputKeys = operatorField.OutputKeys;
+            List<FieldModel> inputs = operatorField.GetNewInputFields();
+            List<FieldModel> outputs = operatorField.GetNewOutputFields();
+            DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            DocumentModel doc = docEnd.CreateDocumentAsync(OperatorType);
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>(5);
+            fields[OperatorKey] = operatorField;
+            LayoutModel layout = new LayoutModel(false, OperatorType);
+            layout.Fields = new Dictionary<Key, TemplateModel>();
+            for (int i = 0; i < inputKeys.Count; ++i)
             {
-                value.DocumentID = Id;
-                SetField(OperatorKey, value);
+                fields[inputKeys[i]] = inputs[i];
+                layout.Fields[inputKeys[i]] = new TextTemplateModel(0, i * 30, FontWeights.Normal);
             }
-        }
-
-        public OperatorDocumentModel(OperatorFieldModel operatorField, string documentID)
-        {
-            // Fields = new Dictionary<Key, FieldModel>();
-            Id = documentID;
-            SetField(OperatorKey, operatorField);
-            OperatorField = operatorField;
-            DocumentType = OperatorType;
-        }
-
-        public override void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
-        {
-            DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-
-            //TODO Remove existing output references and add new output reference
-            //if (InputReferences.ContainsKey(fieldKey))
-            //{
-            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
-            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
-            //}
-            InputReferences[fieldKey] = reference;
-            docEndpoint.GetFieldInDocument(reference).FieldUpdated += OperatorDocumentModel_FieldUpdated;
-            Execute();
-        }
-
-        private void OperatorDocumentModel_FieldUpdated(FieldModel model)
-        {
-            Execute();
-        }
-
-        private void Execute()
-        {
-            Dictionary<Key, FieldModel> results;
-            try
+            for (int i = 0; i < outputKeys.Count; ++i)
             {
-                results = OperatorField.Execute(InputReferences);
+                fields[outputKeys[i]] = outputs[i];
+                layout.Fields[outputKeys[i]] = new TextTemplateModel(40, i * 30, FontWeights.Normal);
             }
-            catch (KeyNotFoundException e)
-            {
-                return;
-            }
-            foreach (var fieldModel in results)
-            {
-                SetField(fieldModel.Key, fieldModel.Value);
-            }
+            fields[DocumentModel.LayoutKey] = new LayoutModelFieldModel(layout);
+            doc.SetFields(fields);
+            return doc;
         }
     }
 }

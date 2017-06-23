@@ -252,7 +252,7 @@ namespace Dash
             UndoLine();
         }
 
-        public void AddOperatorView(OperatorDocumentViewModel viewModel, DocumentView operatorView, float left, float right)
+        public void AddOperatorView(DocumentViewModel viewModel, DocumentView operatorView, float left, float right)
         {
             viewModel.IODragStarted += StartDrag;
             viewModel.IODragEnded += EndDrag;

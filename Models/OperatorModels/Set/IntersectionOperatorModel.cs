@@ -17,15 +17,30 @@ namespace Dash.Models.OperatorModels.Set
         //Output keys
         public static readonly Key IntersectionKey = new Key("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
 
-        public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
+        public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
 
-        public override List<Key> Outputs { get; } = new List<Key> {IntersectionKey};
+        public override List<Key> OutputKeys { get; } = new List<Key> {IntersectionKey};
+        public override List<FieldModel> GetNewInputFields()
+        {
+            return new List<FieldModel>
+            {
+                new DocumentCollectionFieldModel(new List<DocumentModel>()), new DocumentCollectionFieldModel(new List<DocumentModel>())
+            };
+        }
 
-        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        public override List<FieldModel> GetNewOutputFields()
+        {
+            return new List<FieldModel>
+            {
+                new DocumentCollectionFieldModel(new List<DocumentModel>())
+            };
+        }
+
+        public override Dictionary<Key, FieldModel> Execute(IDictionary<Key, FieldModel> fields)
         {
             DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            DocumentCollectionFieldModel setA = docEnd.GetFieldInDocument(inputReferences[AKey]) as DocumentCollectionFieldModel;
-            DocumentCollectionFieldModel setB = docEnd.GetFieldInDocument(inputReferences[BKey]) as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel setA = fields[AKey] as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel setB = fields[BKey] as DocumentCollectionFieldModel;
             DocumentCollectionFieldModel intersection = new DocumentCollectionFieldModel(setA.Documents.Intersect(setB.Documents).ToList());
             return new Dictionary<Key, FieldModel>
             {

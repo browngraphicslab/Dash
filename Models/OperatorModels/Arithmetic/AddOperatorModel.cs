@@ -23,19 +23,34 @@ namespace Dash
         //Output keys
         public static readonly Key SumKey = new Key("E1AFCF61-5AAF-4CDD-9C06-17EBFB4EF82A", "Sum");
 
-        public override List<Key> Inputs { get; } = new List<Key> { AKey, BKey };
+        public override List<Key> InputKeys { get; } = new List<Key> { AKey, BKey };
 
-        public override List<Key> Outputs { get; } = new List<Key> { SumKey };
+        public override List<Key> OutputKeys { get; } = new List<Key> { SumKey };
 
-        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        public override List<FieldModel> GetNewInputFields()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            return new List<FieldModel>
+            {
+                new NumberFieldModel(), new NumberFieldModel()
+            };
+        }
+
+        public override List<FieldModel> GetNewOutputFields()
+        {
+            return new List<FieldModel>
+            {
+                new NumberFieldModel()
+            };
+        }
+
+        public override Dictionary<Key, FieldModel> Execute(IDictionary<Key, FieldModel> fields)
+        {
             Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
 
-            NumberFieldModel numberA = docController.GetFieldInDocument(inputReferences[AKey]) as NumberFieldModel;
+            NumberFieldModel numberA = fields[AKey] as NumberFieldModel;
             Debug.Assert(numberA != null, "Input is not a number");
 
-            NumberFieldModel numberB = docController.GetFieldInDocument(inputReferences[BKey]) as NumberFieldModel;
+            NumberFieldModel numberB = fields[BKey] as NumberFieldModel;
             Debug.Assert(numberB != null, "Input is not a number");
 
             double a = numberA.Data;

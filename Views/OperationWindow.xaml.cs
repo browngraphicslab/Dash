@@ -74,15 +74,15 @@ namespace Dash
 
             //Create Operator document
             var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            OperatorDocumentModel opModel =
-                new OperatorDocumentModel(new DivideOperatorModel(), docEndpoint.GetDocumentId());
+            DocumentModel opModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
             docEndpoint.UpdateDocumentAsync(opModel);
             DocumentView view = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+            DocumentViewModel opvm = new DocumentViewModel(opModel);
             opvm.IODragStarted += Vm_IODragStarted;
             opvm.IODragEnded += Vm_IODragEnded;
             view.DataContext = opvm;
@@ -220,7 +220,7 @@ namespace Dash
                 if (ioReference.IsOutput)
                 {
                     var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId);
                     Debug.Assert(opDoc != null);
                     opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
                         ioReference.ReferenceFieldModel);
@@ -266,7 +266,7 @@ namespace Dash
                 else
                 {
                     var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId) as OperatorDocumentModel;
+                    var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId);
                     Debug.Assert(opDoc != null);
                     opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
                         _currReference.ReferenceFieldModel);

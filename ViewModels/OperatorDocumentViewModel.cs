@@ -13,9 +13,9 @@ namespace Dash.ViewModels
 {
     public class OperatorDocumentViewModel : DocumentViewModel
     {
-        public OperatorDocumentViewModel(OperatorDocumentModel document) : base(document)
-        {
-        }
+        //public OperatorDocumentViewModel(OperatorDocumentModel document) : base(document)
+        //{
+        //}
 
         /// <summary>
         /// Overrides DocumentViewModel.GetUiElements to just return the operators view

@@ -17,16 +17,31 @@ namespace Dash
         //Output keys
         public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
-        public override List<Key> Inputs { get; } = new List<Key> {URIKey};
+        public override List<Key> InputKeys { get; } = new List<Key> {URIKey};
 
-        public override List<Key> Outputs { get; } = new List<Key> {ImageKey};
+        public override List<Key> OutputKeys { get; } = new List<Key> {ImageKey};
 
-        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        public override List<FieldModel> GetNewInputFields()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            return new List<FieldModel>
+            {
+                new TextFieldModel()
+            };
+        }
+
+        public override List<FieldModel> GetNewOutputFields()
+        {
+            return new List<FieldModel>
+            {
+                new ImageFieldModel(new Uri(""))//TODO ImageFieldModel should have a default constructor
+            };
+        }
+
+        public override Dictionary<Key, FieldModel> Execute(IDictionary<Key, FieldModel> fields)
+        {
             Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
 
-            TextFieldModel uri = docController.GetFieldInDocument(inputReferences[URIKey]) as TextFieldModel;
+            TextFieldModel uri = fields[URIKey] as TextFieldModel;
             Debug.Assert(uri != null, "Input is not a string");
 
             result[ImageKey] = new ImageFieldModel(new Uri(uri.Data));
