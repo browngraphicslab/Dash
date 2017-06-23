@@ -17,20 +17,32 @@ namespace Dash.Models.OperatorModels.Set
         //Output keys
         public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
-        public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
+        public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
 
-        public override List<Key> Outputs { get; } = new List<Key> {UnionKey};
+        public override List<Key> OutputKeys { get; } = new List<Key> {UnionKey};
 
-        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        public override List<FieldModel> GetNewInputFields()
         {
-            DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            DocumentCollectionFieldModel setA = docEnd.GetFieldInDocument(inputReferences[AKey]) as DocumentCollectionFieldModel;
-            DocumentCollectionFieldModel setB = docEnd.GetFieldInDocument(inputReferences[BKey]) as DocumentCollectionFieldModel;
-            DocumentCollectionFieldModel union = new DocumentCollectionFieldModel(setA.Documents.Union(setB.Documents).ToList());
-            return new Dictionary<Key, FieldModel>
+            return new List<FieldModel>
             {
-                {UnionKey, union}
+                new DocumentCollectionFieldModel(new List<DocumentModel>()), new DocumentCollectionFieldModel(new List<DocumentModel>())
             };
+        }
+
+        public override List<FieldModel> GetNewOutputFields()
+        {
+            return new List<FieldModel>
+            {
+                new DocumentCollectionFieldModel(new List<DocumentModel>())
+            };
+        }
+
+        public override void Execute(IDictionary<Key, FieldModel> fields)
+        {
+            DocumentCollectionFieldModel setA = fields[AKey] as DocumentCollectionFieldModel;
+            DocumentCollectionFieldModel setB = fields[BKey] as DocumentCollectionFieldModel;
+            //DocumentCollectionFieldModel union = new DocumentCollectionFieldModel(setA.Documents.Union(setB.Documents).ToList());
+            (fields[UnionKey] as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Union(setB.Documents).ToList());
         }
     }
 }

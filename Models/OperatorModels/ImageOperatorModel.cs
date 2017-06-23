@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,20 +18,32 @@ namespace Dash
         //Output keys
         public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
-        public override List<Key> Inputs { get; } = new List<Key> {URIKey};
+        public override List<Key> InputKeys { get; } = new List<Key> {URIKey};
 
-        public override List<Key> Outputs { get; } = new List<Key> {ImageKey};
+        public override List<Key> OutputKeys { get; } = new List<Key> {ImageKey};
 
-        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        public override List<FieldModel> GetNewInputFields()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
+            return new List<FieldModel>
+            {
+                new TextFieldModel()
+            };
+        }
 
-            TextFieldModel uri = docController.GetFieldInDocument(inputReferences[URIKey]) as TextFieldModel;
+        public override List<FieldModel> GetNewOutputFields()
+        {
+            return new List<FieldModel>
+            {
+                new ImageFieldModel(new Uri(""))//TODO ImageFieldModel should have a default constructor
+            };
+        }
+
+        public override void Execute(IDictionary<Key, FieldModel> fields)
+        {
+            TextFieldModel uri = fields[URIKey] as TextFieldModel;
             Debug.Assert(uri != null, "Input is not a string");
 
-            result[ImageKey] = new ImageFieldModel(new Uri(uri.Data));
-            return result;
+            (fields[ImageKey] as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
     }
 }

@@ -69,8 +69,8 @@ namespace Dash
             DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var reference = DataContext as ReferenceFieldModel;
             var opFM = docEnd.GetFieldInDocument(reference) as OperatorFieldModel;
-            InputListView.ItemsSource = opFM.Inputs;//TODO Make these binding in XAML
-            OutputListView.ItemsSource = opFM.Outputs;//TODO Make these binding in XAML
+            InputListView.ItemsSource = opFM.InputKeys;//TODO Make these binding in XAML
+            OutputListView.ItemsSource = opFM.OutputKeys;//TODO Make these binding in XAML
         }
 
         /// <summary>
