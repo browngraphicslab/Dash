@@ -20,7 +20,7 @@
                   VerticalAlignment="Stretch" 
                   Background="White" 
                   BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}"
-                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
+                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged" ManipulationMode="All" ManipulationDelta="UserControl_ManipulationDelta" ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect"/>
                 </Grid.Clip>

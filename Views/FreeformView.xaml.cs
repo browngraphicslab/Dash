@@ -359,6 +359,7 @@ namespace Dash
                 Y = delta.Translation.Y
             };
 
+
             ScaleTransform scale = new ScaleTransform
             {
                 CenterX = e.Position.X,

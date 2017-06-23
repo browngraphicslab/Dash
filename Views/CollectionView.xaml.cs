@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -14,7 +16,12 @@ namespace Dash
 {
     public sealed partial class CollectionView : UserControl
     {
-      
+
+        public float CanvasScale { get; set; } = 1;
+        public const float MaxScale = 10;
+        public const float MinScale = 0.5f;
+        public Rect Bounds = new Rect(0, 0, 5000, 5000);
+
         public CollectionViewModel ViewModel;
         private bool _isHasFieldPreviouslySelected;
         public Grid OuterGrid
@@ -132,7 +139,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void fieldContainsOrEuqals_Tapped(object sender, TappedRoutedEventArgs e)
+        private void fieldContainsOrEquals_Tapped(object sender, TappedRoutedEventArgs e)
         {
             // expand only if the grid that the xFieldBox is located in is collapsed
             if (xFieldBoxColumn.Width == 0)
@@ -238,13 +245,13 @@ namespace Dash
         private void fieldContains_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldContains;
-            fieldContainsOrEuqals_Tapped(sender, e);
+            fieldContainsOrEquals_Tapped(sender, e);
         }
 
         private void fieldEquals_Tapped(object sender, TappedRoutedEventArgs e)
         {
             ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldEquals;
-            fieldContainsOrEuqals_Tapped(sender, e);
+            fieldContainsOrEquals_Tapped(sender, e);
         }
        
 
@@ -269,6 +276,290 @@ namespace Dash
         private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+        }
+
+        /// <summary>
+        /// Pans and zooms upon touch manipulation 
+        /// </summary>
+        private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Canvas canvas = GridView.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+            e.Handled = true;
+            ManipulationDelta delta = e.Delta;
+
+            //Create initial translate and scale transforms
+            //Translate is in screen space, scale is in canvas space
+            TranslateTransform translate = new TranslateTransform
+            {
+                X = delta.Translation.X,
+                Y = delta.Translation.Y
+            };
+
+            Point p = Util.PointTransformFromVisual(e.Position, canvas);
+            ScaleTransform scale = new ScaleTransform
+            {
+                CenterX = p.X,
+                CenterY = p.Y,
+                ScaleX = delta.Scale,
+                ScaleY = delta.Scale
+            };
+
+            //Clamp the zoom
+            CanvasScale *= delta.Scale;
+            if (CanvasScale > MaxScale)
+            {
+                CanvasScale = MaxScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+            if (CanvasScale < MinScale)
+            {
+                CanvasScale = MinScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+
+            //Create initial composite transform
+            TransformGroup composite = new TransformGroup();
+            composite.Children.Add(scale);
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+
+            //Get top left and bottom right screen space points in canvas space
+            GeneralTransform inverse = composite.Inverse;
+            Debug.Assert(inverse != null);
+            Debug.Assert(canvas.RenderTransform != null);
+            GeneralTransform renderInverse = canvas.RenderTransform.Inverse;
+            Debug.Assert(renderInverse != null);
+            Point topLeft = inverse.TransformPoint(new Point(0, 0));
+            Point bottomRight = inverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
+            Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
+            Point preBottomRight = renderInverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
+            Debug.WriteLine(bottomRight);
+
+            //Check if the panning or zooming puts the view out of bounds of the canvas
+            //Nullify scale or translate components accordingly
+            bool outOfBounds = false;
+            //Create a canvas space translation to correct the translation if necessary
+            TranslateTransform fixTranslate = new TranslateTransform();
+            if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
+            {
+                translate.X = 0;
+                fixTranslate.X = 0;
+                double scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
+                scale.ScaleY = scaleAmount;
+                scale.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.X < Bounds.Left)
+            {
+                translate.X = 0;
+                fixTranslate.X = preTopLeft.X;
+                scale.CenterX = Bounds.Left;
+                outOfBounds = true;
+            }
+            else if (bottomRight.X > Bounds.Right)
+            {
+                translate.X = 0;
+                fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
+                scale.CenterX = Bounds.Right;
+                outOfBounds = true;
+            }
+            if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = 0;
+                double scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
+                scale.ScaleX = scaleAmount;
+                scale.ScaleY = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.Y < Bounds.Top)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = preTopLeft.Y;
+                scale.CenterY = Bounds.Top;
+                outOfBounds = true;
+            }
+            else if (bottomRight.Y > Bounds.Bottom)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
+                scale.CenterY = Bounds.Bottom;
+                outOfBounds = true;
+            }
+
+            //If the view was out of bounds recalculate the composite matrix
+            if (outOfBounds)
+            {
+                composite = new TransformGroup();
+                composite.Children.Add(fixTranslate);
+                composite.Children.Add(scale);
+                composite.Children.Add(canvas.RenderTransform);
+                composite.Children.Add(translate);
+            }
+
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        }
+
+        /// <summary>
+        /// Zooms upon mousewheel interaction 
+        /// </summary>
+        private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            //e.Handled = true;
+            ////Get mousepoint in canvas space 
+            //PointerPoint point = e.GetCurrentPoint(XCanvas);
+            //double scale = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
+            //    Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
+            //scale = Math.Max(Math.Min(scale, 1.7f), 0.4f);
+            //CanvasScale *= (float)scale;
+            //Debug.Assert(XCanvas.RenderTransform != null);
+            //Point canvasPos = XCanvas.RenderTransform.TransformPoint(point.Position);
+
+            ////Create initial ScaleTransform 
+            //ScaleTransform scaleTransform = new ScaleTransform
+            //{
+            //    CenterX = canvasPos.X,
+            //    CenterY = canvasPos.Y,
+            //    ScaleX = scale,
+            //    ScaleY = scale
+            //};
+
+            ////Clamp scale
+            //if (CanvasScale > MaxScale)
+            //{
+            //    CanvasScale = MaxScale;
+            //    scaleTransform.ScaleX = 1;
+            //    scaleTransform.ScaleY = 1;
+            //}
+            //if (CanvasScale < MinScale)
+            //{
+            //    CanvasScale = MinScale;
+            //    scaleTransform.ScaleX = 1;
+            //    scaleTransform.ScaleY = 1;
+            //}
+
+            ////Create initial composite transform
+            //TransformGroup composite = new TransformGroup();
+            //composite.Children.Add(CanvasTransform);
+            //composite.Children.Add(scaleTransform);
+
+            //GeneralTransform inverse = composite.Inverse;
+            //Debug.Assert(inverse != null);
+            //GeneralTransform renderInverse = XCanvas.RenderTransform.Inverse;
+            //Debug.Assert(inverse != null);
+            //Debug.Assert(renderInverse != null);
+            //Point topLeft = inverse.TransformPoint(new Point(0, 0));
+            //Point bottomRight = inverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
+            //Point preBottomRight = renderInverse.TransformPoint(new Point(ParentElement.ActualWidth, ParentElement.ActualHeight));
+
+            ////Create a canvas space translation to correct the translation if necessary
+            //TranslateTransform translate = new TranslateTransform
+            //{
+            //    X = 0,
+            //    Y = 0
+            //};
+
+            ////Check if the zooming puts the view out of bounds of the canvas
+            ////Nullify scale or translate components accordingly 
+            //bool outOfBounds = false;
+            //if (topLeft.X < 0 && bottomRight.X > XCanvas.ActualWidth)
+            //{
+            //    translate.X = 0;
+            //    double scaleAmount = (bottomRight.X - topLeft.X) / CanvasWidth;
+            //    scaleTransform.ScaleY = scaleAmount;
+            //    scaleTransform.ScaleX = scaleAmount;
+            //    outOfBounds = true;
+            //}
+            //else if (topLeft.X < 0)
+            //{
+            //    scaleTransform.CenterX = 0;
+            //    outOfBounds = true;
+            //}
+            //else if (bottomRight.X >= XCanvas.ActualWidth)
+            //{
+            //    translate.X = preBottomRight.X - XCanvas.ActualWidth;
+            //    scaleTransform.CenterX = ParentElement.ActualWidth;
+            //    outOfBounds = true;
+            //}
+            //if (topLeft.Y < 0 && bottomRight.Y > XCanvas.ActualHeight)
+            //{
+            //    translate.Y = 0;
+            //    double scaleAmount = (bottomRight.Y - topLeft.Y) / CanvasHeight;
+            //    scaleTransform.ScaleY = scaleAmount;
+            //    scaleTransform.ScaleX = scaleAmount;
+            //    outOfBounds = true;
+            //}
+            //else if (topLeft.Y < 0)
+            //{
+            //    scaleTransform.CenterY = 0;
+            //    outOfBounds = true;
+            //}
+            //else if (bottomRight.Y >= XCanvas.ActualHeight)
+            //{
+            //    translate.Y = preBottomRight.Y - XCanvas.ActualHeight;
+            //    scaleTransform.CenterY = ParentElement.ActualHeight;
+            //    outOfBounds = true;
+            //}
+
+            ////If the view was out of bounds recalculate the composite matrix
+            //if (outOfBounds)
+            //{
+            //    composite = new TransformGroup();
+            //    composite.Children.Add(translate);
+            //    composite.Children.Add(CanvasTransform);
+            //    composite.Children.Add(scaleTransform);
+            //}
+            //CanvasTransform = new MatrixTransform { Matrix = composite.Value };
+        }
+
+        /// <summary>
+        /// Make translation inertia slow down faster
+        /// </summary>
+        private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
+        {
+            e.TranslationBehavior.DesiredDeceleration = 0.01;
+        }
+
+        /// <summary>
+        /// Make sure the canvas is still in bounds after resize
+        /// </summary>
+        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            TranslateTransform translate = new TranslateTransform();
+
+            //Calculate bottomRight corner of screen in canvas space before and after resize 
+            Debug.Assert(DocumentViewContainerGrid.RenderTransform != null);
+            Debug.Assert(DocumentViewContainerGrid.RenderTransform.Inverse != null);
+            Point oldBottomRight =
+                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
+            Point bottomRight =
+                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
+
+            //Check if new bottom right is out of bounds
+            bool outOfBounds = false;
+            if (bottomRight.X > Grid.ActualWidth - 1)
+            {
+                translate.X = -(oldBottomRight.X - bottomRight.X);
+                outOfBounds = true;
+            }
+            if (bottomRight.Y > Grid.ActualHeight - 1)
+            {
+                translate.Y = -(oldBottomRight.Y - bottomRight.Y);
+                outOfBounds = true;
+            }
+            //If it is out of bounds, translate so that is is in bounds
+            if (outOfBounds)
+            {
+                TransformGroup composite = new TransformGroup();
+                composite.Children.Add(translate);
+                composite.Children.Add(DocumentViewContainerGrid.RenderTransform);
+                DocumentViewContainerGrid.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            }
+
+            Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
         }
     }
 }
