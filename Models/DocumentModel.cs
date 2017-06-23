@@ -108,16 +108,16 @@ namespace Dash
             Dictionary<Key, FieldModel> results;
             try
             {
-                results = opField.Execute(Fields);
+                opField.Execute(Fields);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
             }
             catch (KeyNotFoundException e)
             {
                 return;
             }
-            foreach (var fieldModel in results)
-            {
-                SetField(fieldModel.Key, fieldModel.Value);
-            }
+            //foreach (var fieldModel in results)
+            //{
+            //    SetField(fieldModel.Key, fieldModel.Value);
+            //}
         }
 
         /// <summary>

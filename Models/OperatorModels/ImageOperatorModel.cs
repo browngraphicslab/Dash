@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,15 +38,12 @@ namespace Dash
             };
         }
 
-        public override Dictionary<Key, FieldModel> Execute(IDictionary<Key, FieldModel> fields)
+        public override void Execute(IDictionary<Key, FieldModel> fields)
         {
-            Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
-
             TextFieldModel uri = fields[URIKey] as TextFieldModel;
             Debug.Assert(uri != null, "Input is not a string");
 
-            result[ImageKey] = new ImageFieldModel(new Uri(uri.Data));
-            return result;
+            (fields[ImageKey] as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
     }
 }

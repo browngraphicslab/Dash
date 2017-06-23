@@ -30,12 +30,12 @@ namespace Dash
             for (int i = 0; i < inputKeys.Count; ++i)
             {
                 fields[inputKeys[i]] = inputs[i];
-                layout.Fields[inputKeys[i]] = new TextTemplateModel(0, i * 30, FontWeights.Normal);
+                layout.Fields[inputKeys[i]] = new TextTemplateModel(15, i * 30, FontWeights.Normal);
             }
             for (int i = 0; i < outputKeys.Count; ++i)
             {
                 fields[outputKeys[i]] = outputs[i];
-                layout.Fields[outputKeys[i]] = new TextTemplateModel(40, i * 30, FontWeights.Normal);
+                layout.Fields[outputKeys[i]] = new TextTemplateModel(15, (inputKeys.Count + i) * 30 + 40, FontWeights.Normal);
             }
             fields[DocumentModel.LayoutKey] = new LayoutModelFieldModel(layout);
             doc.SetFields(fields);

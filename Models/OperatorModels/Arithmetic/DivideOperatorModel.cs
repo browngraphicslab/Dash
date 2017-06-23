@@ -49,10 +49,8 @@ namespace Dash
         {
         }
 
-        public override Dictionary<Key, FieldModel> Execute(IDictionary<Key, FieldModel> fields)
+        public override void Execute(IDictionary<Key, FieldModel> fields)
         {
-            Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
-
             NumberFieldModel numberA = fields[AKey] as NumberFieldModel;
             Debug.Assert(numberA != null, "Input is not a number");
 
@@ -61,9 +59,8 @@ namespace Dash
 
             double a = numberA.Data;
             double b = numberB.Data;
-            result[QuotientKey] = new NumberFieldModel(a / b);
-            result[RemainderKey] = new NumberFieldModel(a % b);
-            return result;
+            (fields[QuotientKey] as NumberFieldModel).Data = a / b;
+            (fields[RemainderKey] as NumberFieldModel).Data = a % b;
         }
     }
 }

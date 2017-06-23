@@ -40,6 +40,6 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <returns></returns>
-        public abstract Dictionary<Key, FieldModel> Execute(IDictionary<Key, FieldModel> fields);
+        public abstract void Execute(IDictionary<Key, FieldModel> fields);
     }
 }
