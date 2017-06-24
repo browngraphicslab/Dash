@@ -116,5 +116,13 @@ namespace DashShared
         public const string ResourceName = "DashApp";
 
         #endregion
+
+        public static class KeyStore
+        {
+            public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
+            public static Key PrototypeKey = new Key("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
+            public static Key DelegatesKey = new Key("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "Delegates");
+        }
+
     }
 }

@@ -1,23 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-
-namespace Dash.Models
+﻿namespace Dash
 {
-    class DocumentModelFieldModel : FieldModel
+    /// <summary>
+    ///     A field model used to represent a Document
+    /// </summary>
+    public class DocumentModelFieldModel : FieldModel
     {
-        private DocumentModel _data;
+        /// <summary>
+        ///     The DocumentModel which this field is encapsulating
+        /// </summary>
+        public DocumentModel Data;
+
+        /// <summary>
+        ///     Creates a new field model which represents a document
+        /// </summary>
+        /// <param name="data"></param>
         public DocumentModelFieldModel(DocumentModel data)
         {
             Data = data;
-        }
-        public DocumentModel Data
-        {
-            get { return _data; }
-            set { SetProperty(ref _data, value); }
         }
     }
 }

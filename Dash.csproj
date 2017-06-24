@@ -96,8 +96,20 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
+    <Compile Include="Controllers\IController.cs" />
+    <Compile Include="Controllers\DocumentCollectionFieldModelController.cs" />
+    <Compile Include="Controllers\DocumentController.cs" />
+    <Compile Include="Controllers\DocumentFieldModelController.cs" />
+    <Compile Include="Controllers\FieldModelController.cs" />
+    <Compile Include="Controllers\ImageFieldModelController.cs" />
     <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="Controllers\TextFieldModelController.cs" />
+    <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
+    <Compile Include="Converters\SafeDataToXamlConverter.cs" />
+    <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
+    <Compile Include="Converters\UriToBitmapImageConverter.cs" />
+    <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />

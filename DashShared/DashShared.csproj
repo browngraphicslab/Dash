@@ -39,6 +39,7 @@
     <Compile Include="ClientHubInterfaces\IClientContractShapeHub.cs" />
     <Compile Include="ClientHubInterfaces\IServerContractShapeHub.cs" />
     <Compile Include="DashConstants.cs" />
+    <Compile Include="DashUI\DashUI.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AuthenticationTokenModel.cs" />
