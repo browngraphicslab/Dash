@@ -26,29 +26,41 @@ namespace Dash
         public static readonly Key QuotientKey = new Key("DA705E3D-4773-4C7D-B770-536BA321D0FA", "Quotient");
         public static readonly Key RemainderKey = new Key("32208EDB-B673-4957-A0AB-3704A15A1686", "Remainder");
 
-        public override List<Key> Inputs { get; } = new List<Key> {AKey, BKey};
-        public override List<Key> Outputs { get; } = new List<Key> {QuotientKey, RemainderKey};
+        public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
+        public override List<Key> OutputKeys { get; } = new List<Key> {QuotientKey, RemainderKey};
+
+        public override List<FieldModel> GetNewInputFields()
+        {
+            return new List<FieldModel>
+            {
+                new NumberFieldModel(), new NumberFieldModel()
+            };
+        }
+
+        public override List<FieldModel> GetNewOutputFields()
+        {
+            return new List<FieldModel>
+            {
+                new NumberFieldModel(), new NumberFieldModel()
+            };
+        }
 
         public DivideOperatorModel()
         {
         }
 
-        public override Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences)
+        public override void Execute(DocumentModel doc)
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            Dictionary<Key, FieldModel> result = new Dictionary<Key, FieldModel>(1);
-
-            NumberFieldModel numberA = docController.GetFieldInDocument(inputReferences[AKey]) as NumberFieldModel;
+            NumberFieldModel numberA = doc.Field(AKey) as NumberFieldModel;
             Debug.Assert(numberA != null, "Input is not a number");
 
-            NumberFieldModel numberB = docController.GetFieldInDocument(inputReferences[BKey]) as NumberFieldModel;
+            NumberFieldModel numberB = doc.Field(BKey) as NumberFieldModel;
             Debug.Assert(numberB != null, "Input is not a number");
 
             double a = numberA.Data;
             double b = numberB.Data;
-            result[QuotientKey] = new NumberFieldModel(a / b);
-            result[RemainderKey] = new NumberFieldModel(a % b);
-            return result;
+            (doc.Field(QuotientKey) as NumberFieldModel).Data = a / b;
+            (doc.Field(RemainderKey) as NumberFieldModel).Data = a % b;
         }
     }
 }

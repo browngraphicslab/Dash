@@ -105,7 +105,37 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
+            DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            docEnd.GetFieldInDocument(reference).FieldUpdated += OnFieldUpdated;
             Field(fieldKey).InputReference = reference;
+            Execute();
+        }
+
+        private void OnFieldUpdated(FieldModel model)
+        {
+            Execute();
+        }
+
+        private void Execute()
+        {
+            OperatorFieldModel opField = Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
+            if (opField == null)
+            {
+                return;
+            }
+            Dictionary<Key, FieldModel> results;
+            try
+            {
+                opField.Execute(this);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
+            }
+            catch (KeyNotFoundException e)
+            {
+                return;
+            }
+            //foreach (var fieldModel in results)
+            //{
+            //    SetField(fieldModel.Key, fieldModel.Value);
+            //}
         }
 
         /// <summary>

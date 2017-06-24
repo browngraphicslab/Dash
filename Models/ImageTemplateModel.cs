@@ -34,23 +34,14 @@ namespace Dash
             var image = new Image();
             image.Source = imageFieldModel.Data;
 
-            // make image move left and right
-            var leftBinding = new Binding
+            var translateBinding = new Binding
             {
                 Source = this,
-                Path = new PropertyPath("Left"),
-                Mode = BindingMode.TwoWay
+                Path = new PropertyPath("Pos"),
+                Mode = BindingMode.TwoWay,
+                Converter = new PositionConverter()
             };
-            image.SetBinding(Canvas.LeftProperty, leftBinding);
-
-            // make image move up and down
-            var topBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Top"),
-                Mode = BindingMode.TwoWay
-            };
-            image.SetBinding(Canvas.TopProperty, topBinding);
+            image.SetBinding(UIElement.RenderTransformProperty, translateBinding);
 
             // make image width resize
             var widthBinding = new Binding
@@ -78,6 +69,9 @@ namespace Dash
                 Mode = BindingMode.TwoWay
             };
             image.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+
+            image.HorizontalAlignment = HorizontalAlignment.Left;
+            image.VerticalAlignment = VerticalAlignment.Top;
             
             if (fill)
                 image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;

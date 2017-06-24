@@ -24,18 +24,22 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract List<Key> Inputs { get; }
+        public abstract List<Key> InputKeys { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract List<Key> Outputs { get; }
+        public abstract List<Key> OutputKeys { get; }
+
+        //TODO This makes overriding operators not possible, should this be done differently?
+        public abstract List<FieldModel> GetNewInputFields();
+        public abstract List<FieldModel> GetNewOutputFields();
 
         /// <summary>
         /// Abstract method to execute the operator
         /// </summary>
-        /// <param name="inputReferences"></param>
+        /// <param name="fields"></param>
         /// <returns></returns>
-        public abstract Dictionary<Key, FieldModel> Execute(Dictionary<Key, ReferenceFieldModel> inputReferences);
+        public abstract void Execute(DocumentModel doc);
     }
 }

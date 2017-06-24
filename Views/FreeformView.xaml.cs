@@ -246,7 +246,7 @@ namespace Dash
             UndoLine();
         }
 
-        public void AddOperatorView(OperatorDocumentViewModel viewModel, DocumentView operatorView, float left, float right)
+        public void AddOperatorView(DocumentViewModel viewModel, DocumentView operatorView, float left, float right)
         {
             viewModel.IODragStarted += StartDrag;
             viewModel.IODragEnded += EndDrag;
@@ -358,6 +358,7 @@ namespace Dash
                 X = delta.Translation.X,
                 Y = delta.Translation.Y
             };
+
 
             ScaleTransform scale = new ScaleTransform
             {

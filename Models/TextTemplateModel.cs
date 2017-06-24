@@ -66,24 +66,17 @@ namespace Dash
                 (tb as TextBlock).FontWeight = FontWeight;
                 (tb as TextBlock).TextWrapping = TextWrapping;
             }
-            
-            // make tb move left and right
-            var leftBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Left"),
-                Mode = BindingMode.TwoWay
-            };
-            tb.SetBinding(Canvas.LeftProperty, leftBinding);
 
-            // make tb move up and down
-            var topBinding = new Binding
+            // set position of text 
+            var translateBinding = new Binding
             {
                 Source = this,
-                Path = new PropertyPath("Top"),
-                Mode = BindingMode.TwoWay
+                Path = new PropertyPath("Pos"),
+                Mode = BindingMode.TwoWay,
+                Converter = new PositionConverter()
             };
-            tb.SetBinding(Canvas.TopProperty, topBinding);
+            tb.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+            
 
             // make tb width resize
             var widthBinding = new Binding
@@ -92,6 +85,7 @@ namespace Dash
                 Path = new PropertyPath("Width"),
                 Mode = BindingMode.TwoWay
             };
+
             tb.SetBinding(FrameworkElement.WidthProperty, widthBinding);
 
             // make tb height resize
@@ -111,6 +105,8 @@ namespace Dash
                 Mode = BindingMode.TwoWay
             };
             tb.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+            tb.HorizontalAlignment = HorizontalAlignment.Left;
+            tb.VerticalAlignment = VerticalAlignment.Top;
 
             return new List<FrameworkElement> { tb };
         }
