@@ -38,7 +38,5 @@ namespace Dash
             Debug.Assert(documents != null);
             Data = documents;
         }
-
-
     }
 }

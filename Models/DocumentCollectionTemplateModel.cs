@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -22,9 +23,15 @@ namespace Dash
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = new CollectionView(collectionViewModel);
 
-            Canvas.SetTop(view, Top);
-            Canvas.SetLeft(view, Left);
-            
+            var translateBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Pos"),
+                Mode = BindingMode.TwoWay,
+                Converter = new PositionConverter()
+            };
+            view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+
             return new List<FrameworkElement> { view };
         }
     }

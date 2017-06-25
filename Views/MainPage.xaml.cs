@@ -57,7 +57,12 @@ namespace Dash
             MainDocView.DataContext = new DocumentViewModel(docCollection);
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
-            MainDocView.Manipulator.TurnOff();
+
+            MainDocView.ManipulationMode = ManipulationModes.None;
+            MainDocView.Manipulator.RemoveAllButHandle();
+            //MainDocView.Manipulator.TurnOff();
+
+            MainDocView.DraggerButton.Visibility = Visibility.Collapsed; 
 
             Instance = this;
         }
@@ -71,16 +76,20 @@ namespace Dash
         {
             //Create Operator document
             var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            OperatorDocumentModel opModel =
-                new OperatorDocumentModel(new DivideOperatorModel(), docEndpoint.GetDocumentId());
+            DocumentModel opModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
             docEndpoint.UpdateDocumentAsync(opModel);
             DocumentView view = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+            DocumentViewModel opvm = new DocumentViewModel(opModel);
+            //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
             view.DataContext = opvm;
+
+
+            DisplayDocument(opModel);
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
         }
 
@@ -148,7 +157,7 @@ namespace Dash
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             if (docCollection == null) {
                 docCollection = docController.CreateDocumentAsync("newtype");
-                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { umpireDoc, image2Del, image2 }), false);
+                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {image2, image2Del, umpireDoc}), false);
             }
             DisplayDocument(docCollection);
         }
@@ -168,15 +177,16 @@ namespace Dash
             DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
             DocumentModel collection = await DocumentModel.CollectionExample();
             DocumentModel image = DocumentModel.OneImage();
-           
+
             DisplayDocument(recipe);
             DisplayDocument(pricePerSqFt);
             DisplayDocument(image);
         }
 
+
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var child = xFreeFormView.Child as FrameworkElement;
+            var child = xViewBox.Child as FrameworkElement;
             if (child != null)
             {
                 child.Width = e.NewSize.Width;
