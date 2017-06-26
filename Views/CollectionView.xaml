@@ -20,22 +20,38 @@
                   VerticalAlignment="Stretch" 
                   Background="White" 
                   BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}"
-                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged" ManipulationMode="All" PointerWheelChanged="UserControl_PointerWheelChanged"
-                  ManipulationDelta="UserControl_ManipulationDelta" ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" PointerMoved="FreeformGrid_OnPointerMoved" PointerReleased="FreeformGrid_OnPointerReleased">
+                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
+                  ManipulationMode="All" 
+                  PointerWheelChanged="UserControl_PointerWheelChanged"
+                  ManipulationDelta="UserControl_ManipulationDelta" 
+                  ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
+                  PointerMoved="FreeformGrid_OnPointerMoved" 
+                  PointerReleased="FreeformGrid_OnPointerReleased">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect"/>
                 </Grid.Clip>
                 <Grid x:Name="FreeformGrid" Visibility="{Binding GridViewVisibility}">
-                    <ItemsControl x:Name="GridView" x:FieldModifier="public" Padding="5"  ItemsSource="{Binding DataBindingSource}"
-                              IsEnabled="{Binding ViewIsEnabled}">
+                    <ItemsControl x:Name="GridView" 
+                                  x:FieldModifier="public" 
+                                  Padding="5" 
+                                  ItemsSource="{Binding DataBindingSource}"
+                                  IsEnabled="{Binding ViewIsEnabled}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <Canvas></Canvas>
+                                <Canvas x:Name="CollectionCanvas" x:FieldModifier="public"></Canvas>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <dash:DocumentView Width="400" Height="400" DataContext="{Binding}" DoubleTapped="UIElement_OnDoubleTapped" ManipulationStarted="DocumentView_ManipulationStarted" ManipulationDelta="DocumentView_ManipulationDelta" IODragStarted="StartDrag" IODragEnded="EndDrag" >
+                                <dash:DocumentView 
+                                    Width="400" 
+                                    Height="400" 
+                                    DataContext="{Binding}" 
+                                    DoubleTapped="UIElement_OnDoubleTapped" 
+                                    ManipulationStarted="DocumentView_ManipulationStarted" 
+                                    ManipulationDelta="DocumentView_ManipulationDelta" 
+                                    IODragStarted="StartDrag" 
+                                    IODragEnded="EndDrag">
                                     <dash:DocumentView.RenderTransform>
                                         <TranslateTransform X="{Binding X}" Y="{Binding Y}">
                                         </TranslateTransform>
@@ -70,7 +86,6 @@
                         </ListView.ItemTemplate>
                     </ListView>
                 </Grid>
-
             </Grid>
 
             <Grid Visibility="{Binding SoloDisplayVisibility}">

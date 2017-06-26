@@ -25,6 +25,7 @@ namespace Dash
         /// </summary>
         private ManipulationControls manipulator;
         private DocumentViewModel _vm;
+        
 
         public bool ProportionalScaling;
         public ManipulationControls Manipulator { get { return manipulator; } }
@@ -298,19 +299,21 @@ namespace Dash
 
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            //e.Handled = true;
+            var parent = this.GetFirstAncestorOfType<Canvas>();
+            if (parent == null) return;
+            var maxZ = int.MinValue;
+            foreach (var child in parent.GetDescendantsOfType<ContentPresenter>())
+            {
+                var childZ = Canvas.GetZIndex(child);
+                if (childZ > maxZ && child.GetFirstDescendantOfType<DocumentView>() != this)
+                    maxZ = childZ;
+            }
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
+        }
 
-            //var parent = OuterGrid.Parent as Grid;
-            //Debug.WriteLine(OuterGrid.Parent);
-            //if (parent == null) return;
-            //var maxZ = int.MinValue;
-            //foreach (var child in parent.Children)
-            //{
-            //    var childZ = (int)child.GetValue(Canvas.ZIndexProperty);
-            //    if (childZ > maxZ)
-            //        maxZ = childZ;
-            //}
-            //OuterGrid.SetValue(Canvas.ZIndexProperty, maxZ + 1);
+        private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
         }
     }
 }

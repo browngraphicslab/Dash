@@ -776,6 +776,6 @@ namespace Dash
         {
             docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(where.X), true);
             docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(where.Y), true);
-         }
+        }
     }
 }

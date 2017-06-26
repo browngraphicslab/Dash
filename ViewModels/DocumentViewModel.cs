@@ -57,6 +57,7 @@ namespace Dash
             set { SetProperty(ref _y, value); }
         }
 
+        public CollectionView ParentCollection { get; set; }
 
         public ManipulationModes ManipulationMode
         {
