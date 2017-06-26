@@ -39,7 +39,7 @@ namespace Dash
         /// <summary>
          /// Creates TextBlock using layout information from template and Data 
          /// </summary>
-        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected override List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
             if (fieldModel == null && DefaultText == null)
                 return null;
@@ -50,11 +50,11 @@ namespace Dash
                 Path = new PropertyPath("Data")
             };
 
-            var tb = Editable && fieldModel is TextFieldModel ? (FrameworkElement)new TextBox() : new TextBlock();
+            var tb = Editable && fieldModel is TextFieldModelController ? (FrameworkElement)new TextBox() : new TextBlock();
             if (tb is TextBox)
             {
                 tb.SetBinding(TextBox.TextProperty, binding);
-                (tb as TextBox).TextChanged += ((s, e) => (fieldModel as TextFieldModel).Data = (s as TextBox).Text);
+                (tb as TextBox).TextChanged += ((s, e) => (fieldModel as TextFieldModelController).Data = (s as TextBox).Text);
                 (tb as TextBox).FontWeight = FontWeight;
                 (tb as TextBox).TextWrapping = TextWrapping;
             }

@@ -21,7 +21,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-using Dash.ServerClient.Requests;
 using Dash.ViewModels;
 using DashShared;
 
@@ -142,18 +141,18 @@ namespace Dash
 
         public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
 
-        public void DisplayDocument(DocumentModel docModel, Point? where = null)
+        public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
-            var children = MainDocument.Fields[DashConstants.KeyStore.CollectionDocumentsListFieldKey] as DocumentCollectionFieldModelController;
-            throw new NotImplementedException("have to get displaying documents to work");
-            //if (children != null) { 
-            //    children.AddDocumentModel(docModel);
-            //    if (where.HasValue)
-            //    {
-            //        docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
-            //        docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
-            //    }
-            //}
+            var children = MainDocument.GetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey) as DocumentCollectionFieldModelController;
+            if (children != null)
+            {
+                children.AddDocument(docModel);
+                //if (where.HasValue)
+                //{
+                //    docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
+                //    docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
+                //}
+            }
         }
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -188,16 +187,31 @@ namespace Dash
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            throw new NotImplementedException();
 
-            //DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
-            //DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
-            //DocumentModel collection = await DocumentModel.CollectionExample();
-            //DocumentModel image = DocumentModel.OneImage();
+            var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
+            var fields = new Dictionary<Key, FieldModel> {[DashConstants.KeyStore.ImageFieldKey] = imModel};
+            var newImageDocumentRequestArgs = new CreateNewDocumentRequestArgs(fields, DashConstants.DocumentTypeStore.OneImageDocumentType);
+            var newImageDocumentRequest = new CreateNewDocumentRequest(newImageDocumentRequestArgs);
+            var oneImageDocumentController = newImageDocumentRequest.GetReturnedDocumentController();
 
-            //DisplayDocument(recipe);
-            //DisplayDocument(pricePerSqFt);
-            //DisplayDocument(image);
+            fields = new Dictionary<Key, FieldModel>
+            {
+                [DocumentController.DataKey] =
+                new ReferenceFieldModel(oneImageDocumentController.GetId(), DashConstants.KeyStore.ImageFieldKey),
+                [DashConstants.KeyStore.WidthFieldKey] =
+                new NumberFieldModel(500),
+                [DashConstants.KeyStore.HeightFieldKey] = 
+                new NumberFieldModel(500)
+            };
+
+            var imRequestArgs = new CreateNewDocumentRequestArgs(fields, DashConstants.DocumentTypeStore.ImageBoxDocumentType);
+            var imRequest = new CreateNewDocumentRequest(imRequestArgs);
+            var im = imRequest.GetReturnedDocumentModel();
+
+            var imfc = new DocumentFieldModelController(new DocumentModelFieldModel(im));
+            ContentController.AddController(imfc);
+            oneImageDocumentController.SetField(DashConstants.KeyStore.LayoutKey, imfc, false);
+            DisplayDocument(oneImageDocumentController);
         }
 
 

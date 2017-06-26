@@ -115,7 +115,7 @@ namespace Dash
         /// <returns>List of all UIElements generated</returns>
         public virtual List<FrameworkElement> GetUiElements(Rect bounds)
         {
-            throw new NotImplementedException();
+            return DocumentController.MakeViewUI();
             //var uiElements = new List<FrameworkElement>();
             //var layout = GetLayoutModel();
 

@@ -27,6 +27,10 @@ namespace Dash
             {
                 return new ImageFieldModelController(model as ImageFieldModel);
             }
+            if (model is ReferenceFieldModel)
+            {
+                return new ReferenceFieldModelController(model as ReferenceFieldModel);
+            }
 
             throw new ArgumentException("We do not have a conversion yet for the passed in model");
         }

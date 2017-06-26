@@ -149,6 +149,11 @@
     <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="ServerClient\Requests\CreateNewDocumentRequest.cs" />
+    <Compile Include="ServerClient\Requests\FieldModelControllerFactory.cs" />
+    <Compile Include="ServerClient\Requests\Request.cs" />
+    <Compile Include="ServerClient\Requests\RequestArgs\RequestArgs.cs" />
+    <Compile Include="ServerClient\Requests\RequestArgs\CreateNewDocumentRequestArgs.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />

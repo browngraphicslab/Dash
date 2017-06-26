@@ -42,5 +42,10 @@ namespace Dash
         {
             return ContentController.GetController<DocumentController>(_newDocumentId);
         }
+
+        public DocumentModel GetReturnedDocumentModel()
+        {
+            return ContentController.GetModel<DocumentModel>(_newDocumentId);
+        }
     }
 }

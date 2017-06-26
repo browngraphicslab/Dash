@@ -18,7 +18,7 @@
         public DocumentModelFieldModel DocumentModelFieldModel { get; }
 
         /// <summary>
-        ///     A wrapper for <see cref="DocumentModelFieldModel.Data" />. Change this to propogate changes
+        ///     A wrapper for <see cref="DocumentModelFieldModel.Data" />. Change this to propagate changes
         ///     to the server
         /// </summary>
         public DocumentController Data

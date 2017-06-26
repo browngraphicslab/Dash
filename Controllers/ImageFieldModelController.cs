@@ -53,4 +53,24 @@ namespace Dash
             }
         }
     }
+
+
+    public class ReferenceFieldModelController : FieldModelController
+    {
+        /// <summary>
+        ///     Create a new <see cref="ReferenceFieldModelController"/> associated with the passed in <see cref="ReferenceFieldModel" />
+        /// </summary>
+        /// <param name="referenceFieldModel">The model which this controller will be operating over</param>
+        public ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel)
+        {
+            ReferenceFieldModel = referenceFieldModel;
+        }
+
+        /// <summary>
+        ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceFieldModelController" />,
+        ///     You should only set values on the controller, never directly on the model!
+        /// </summary>
+        public ReferenceFieldModel ReferenceFieldModel { get; }
+        
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ObservableCollection<DocumentController> Documents;
+        public List<DocumentController> Documents;
 
         /// <summary>
         ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
@@ -25,10 +26,10 @@ namespace Dash
             DocumentCollectionFieldModel = documentCollectionFieldModel;
             var documentControllers =
                 ContentController.GetControllers<DocumentController>(documentCollectionFieldModel.Data);
-            Documents = new ObservableCollection<DocumentController>(documentControllers);
+            Documents = new List<DocumentController>(documentControllers);
 
             // Add Events
-            Documents.CollectionChanged += DocumentsCollectionChanged;
+
         }
 
         /// <summary>
@@ -38,35 +39,13 @@ namespace Dash
         /// </summary>
         public DocumentCollectionFieldModel DocumentCollectionFieldModel { get; }
 
-        /// <summary>
-        /// Called whenver the Data in <see cref="Documents"/> changes
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void DocumentsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        public void AddDocument(DocumentController docController)
         {
-            //// we could fine tune this
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Add:
-            //        break;
-            //    case NotifyCollectionChangedAction.Move:
-            //        break;
-            //    case NotifyCollectionChangedAction.Remove:
-            //        break;
-            //    case NotifyCollectionChangedAction.Replace:
-            //        break;
-            //    case NotifyCollectionChangedAction.Reset:
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-            var freshList = sender as ObservableCollection<DocumentController>;
-            Debug.Assert(freshList != null);
-            DocumentCollectionFieldModel.Data = freshList.Select(documentController => documentController.GetId());
 
-            // Update Local
-            // Update Server
+            Documents.Add(docController);
+            DocumentCollectionFieldModel.Data = Documents.Select((d) => d.GetId());
+
+            OnDataUpdated();
         }
     }
 }
