@@ -106,8 +106,8 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            docEnd.GetFieldInDocument(reference).FieldUpdated += OnFieldUpdated;
             Field(fieldKey).InputReference = reference;
+            docEnd.GetFieldInDocument(reference).FieldUpdated += OnFieldUpdated;
             Execute();
         }
 

@@ -236,7 +236,7 @@
     <Compile Include="Views\WindowView.xaml.cs">
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VisualTreeHelperExtensions.cs" />
+    <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
