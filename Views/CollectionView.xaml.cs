@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.Foundation.Collections;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -43,6 +44,7 @@ namespace Dash
 
         private void SetEventHandlers()
         {
+            GridView.Items.VectorChanged += ItemsControl_ItemsChanged;
             GridOption.Tapped += ViewModel.GridViewButton_Tapped;
             ListOption.Tapped += ViewModel.ListViewButton_Tapped;
             CloseButton.Tapped += CloseButton_Tapped;
@@ -75,6 +77,12 @@ namespace Dash
             
             xSearchFieldBox.TextChanged += ViewModel.xSearchFieldBox_TextChanged;
 
+        }
+
+        private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
+        {
+            foreach(var item in GridView.Items)
+                (item as DocumentViewModel).ParentCollection = this;
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -257,10 +265,7 @@ namespace Dash
             ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldEquals;
             fieldContainsOrEquals_Tapped(sender, e);
         }
-       
-
-
-
+      
         private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var cvm = DataContext as CollectionViewModel;
