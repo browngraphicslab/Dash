@@ -54,29 +54,31 @@ namespace Dash
         {
             this.InitializeComponent();
 
-            // set width and height to avoid Width = NaN ...
-            Width = 500;
-            Height = 500;
+            throw new NotImplementedException();
+            //// set width and height to avoid Width = NaN ...
+            //Width = 500;
+            //Height = 500;
 
-            // set the view model, document model and view variables
-            _documentViewModel = viewModel;
-            _documentModel = viewModel.DocumentModel;
-            _documentView = new DocumentView(_documentViewModel);
+            //// set the view model, document model and view variables
+            //_documentViewModel = viewModel;
+            //_documentModel = viewModel.DocumentModel;
+            //_documentView = new DocumentView(_documentViewModel);
 
-            // add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
-            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
-            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
-            xDocumentsPane.Canvas.Children.Add(_documentView);
+            //// add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
+            //Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
+            //Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
+            //xDocumentsPane.Canvas.Children.Add(_documentView);
 
-            InitializeKeyDicts();
+            //InitializeKeyDicts();
 
-            ApplyEditable();
+            //ApplyEditable();
         }
 
         private void InitializeKeyDicts()
         {
-            _keyToTemplateModel = _documentViewModel.GetLayoutModel().Fields;
-            _keyToFieldModel = _documentModel.EnumFields().ToDictionary(x => x.Key, x => x.Value);
+            throw new NotImplementedException();
+            //_keyToTemplateModel = _documentViewModel.GetLayoutModel().Fields;
+            //_keyToFieldModel = _documentModel.EnumFields().ToDictionary(x => x.Key, x => x.Value);
         }
 
         private void ApplyEditable()

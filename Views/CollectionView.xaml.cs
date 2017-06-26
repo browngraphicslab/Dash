@@ -759,18 +759,20 @@ namespace Dash
             _connectionLine.SetBinding(Line.X2Property, x2Binding);
             _connectionLine.SetBinding(Line.Y2Property, y2Binding);
 
-            if (ioReference.IsOutput)
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
-                _connectionLine = null;
-            }
-            else
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
-                _connectionLine = null;
-            }
+            throw new NotImplementedException();
+
+            //if (ioReference.IsOutput)
+            //{
+            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+            //    _connectionLine = null;
+            //}
+            //else
+            //{
+            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+            //    _connectionLine = null;
+            //}
         }
 
         /// <summary>

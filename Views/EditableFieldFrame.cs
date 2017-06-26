@@ -188,7 +188,7 @@ namespace Dash
         {
             foreach (var kvp in _resizeHandleToPosition)
             {
-                kvp.Key.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                kvp.Key.Visibility = isVisible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
             }
         }
 
@@ -200,7 +200,7 @@ namespace Dash
                 Width = 10,
                 Background = new SolidColorBrush(Colors.White),
                 BorderBrush = new SolidColorBrush(_visibleBorderColor),
-                Visibility = Visibility.Collapsed
+                Visibility = Windows.UI.Xaml.Visibility.Collapsed
             };
 
             thumb.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;

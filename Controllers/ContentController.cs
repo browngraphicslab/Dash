@@ -105,5 +105,10 @@ namespace Dash
 
             return successfulControllers;
         }
+
+        public static IEnumerable<TControllerType> GetControllersOrCreateThem<TControllerType>(IEnumerable<string> controllerIds) where TControllerType : class, IController
+        {
+            throw new NotImplementedException();
+        }
     }
 }

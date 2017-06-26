@@ -49,21 +49,33 @@ namespace Dash
             xOverlayCanvas.OnAddShapeTapped += AddShape;
             xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
             xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
+            
+            // create the collection document model
+            var collectionDocumentModel = new DocumentModel(new Dictionary<Key, FieldModel>(), DashConstants.DocumentTypeStore.CollectionDocumentType);
+            var collectionDocumentController = new DocumentController(collectionDocumentModel);
+            ContentController.AddController(collectionDocumentController);
 
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            // create the list of documents in the collection
+            var documentCollectionFieldModelController = new DocumentCollectionFieldModelController(new DocumentCollectionFieldModel(new List<DocumentModel>()));
+            ContentController.AddController(documentCollectionFieldModelController);
+            collectionDocumentController.SetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey, 
+                documentCollectionFieldModelController,
+                true);
 
-            DocumentModel docCollection = docController.CreateDocumentAsync("newtype");
-            docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {  }), false);
-            MainDocView.DataContext = new DocumentViewModel(docCollection);
+            // set the main view's datacontext to be the collection
+            MainDocView.DataContext = new DocumentViewModel(collectionDocumentController);
+            
+            // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
 
+            // TODO someone who understands this explain what it does
             MainDocView.ManipulationMode = ManipulationModes.None;
             MainDocView.Manipulator.RemoveAllButHandle();
-            //MainDocView.Manipulator.TurnOff();
+            MainDocView.DraggerButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed; 
 
-            MainDocView.DraggerButton.Visibility = Visibility.Collapsed; 
-
+            // Set the instance to be itself, there should only ever be one MainView
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
         }
 
@@ -74,23 +86,24 @@ namespace Dash
 
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            //Create Operator document
-            var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            DocumentModel opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
-            docEndpoint.UpdateDocumentAsync(opModel);
-            DocumentView view = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            DocumentViewModel opvm = new DocumentViewModel(opModel);
-            //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-            view.DataContext = opvm;
+            throw new NotImplementedException();
+            ////Create Operator document
+            //var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //DocumentModel opModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
+            //docEndpoint.UpdateDocumentAsync(opModel);
+            //DocumentView view = new DocumentView
+            //{
+            //    Width = 200,
+            //    Height = 200
+            //};
+            //DocumentViewModel opvm = new DocumentViewModel(opModel);
+            ////OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+            //view.DataContext = opvm;
 
 
-            DisplayDocument(opModel);
-            //xFreeformView.AddOperatorView(opvm, view, 50, 50);
+            //DisplayDocument(opModel);
+            ////xFreeformView.AddOperatorView(opvm, view, 50, 50);
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)
@@ -116,71 +129,77 @@ namespace Dash
                 return;
             }
 
-            var shapeController = new ShapeController(shapeModel);
-            ContentController.AddShapeController(shapeController);
+            throw new NotImplementedException();
+            //var shapeController = new ShapeController(shapeModel);
+            //throw new NotImplementedException("The shape controller has not been updated to work with controllers");
+            ////ContentController.AddShapeController(shapeController);
 
-            var shapeVM = new ShapeViewModel(shapeController);
-            var shapeView = new ShapeView(shapeVM);
+            //var shapeVM = new ShapeViewModel(shapeController);
+            //var shapeView = new ShapeView(shapeVM);
 
 
            //  xFreeformView.Canvas.Children.Add(shapeView);
         }
-        public DocumentModel MainDocument {
-            get
-            {
-                return (MainDocView.DataContext as DocumentViewModel).DocumentModel;
-            }
-        }
+
+
+        public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
 
         public void DisplayDocument(DocumentModel docModel, Point? where = null)
         {
-            var children = MainDocument.Field(DocumentModel.GetFieldKeyByName("children")) as DocumentCollectionFieldModel;
-            if (children != null) { 
-                children.AddDocumentModel(docModel);
-                if (where.HasValue)
-                {
-                    docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
-                    docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
-                }
-            }
+            var children = MainDocument.Fields[DashConstants.KeyStore.CollectionDocumentsListFieldKey] as DocumentCollectionFieldModelController;
+            throw new NotImplementedException("have to get displaying documents to work");
+            //if (children != null) { 
+            //    children.AddDocumentModel(docModel);
+            //    if (where.HasValue)
+            //    {
+            //        docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
+            //        docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
+            //    }
+            //}
         }
 
-        DocumentModel docCollection = null;
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            DocumentModel image2 = DocumentModel.TwoImagesAndText();
-            DocumentModel image2Del = image2.MakeDelegate();
-            DocumentModel umpireDoc = DocumentModel.UmpireDocumentModel();
-            image2Del.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(image2Del.DocumentType, true)), true);
-            image2Del.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
+            throw new NotImplementedException();
+            //DocumentModel image2 = DocumentModel.TwoImagesAndText();
+            //DocumentModel image2Del = image2.MakeDelegate();
+            //DocumentModel umpireDoc = DocumentModel.UmpireDocumentModel();
+            //image2Del.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(image2Del.DocumentType, true)), true);
+            //image2Del.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
 
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            if (docCollection == null) {
-                docCollection = docController.CreateDocumentAsync("newtype");
-                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {image2, image2Del, umpireDoc}), false);
-            }
-            DisplayDocument(docCollection);
+            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //if (docCollection == null) {
+            //    docCollection = docController.CreateDocumentAsync("newtype");
+            //    docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {image2, image2Del, umpireDoc}), false);
+            //}
+            //DisplayDocument(docCollection);
         }
 
         private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+            throw new NotImplementedException();
+
             // xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
         }
 
         private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
-           // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-           // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
+            throw new NotImplementedException();
+
+            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
+            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
-            DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
-            DocumentModel collection = await DocumentModel.CollectionExample();
-            DocumentModel image = DocumentModel.OneImage();
+            throw new NotImplementedException();
 
-            DisplayDocument(recipe);
-            DisplayDocument(pricePerSqFt);
-            DisplayDocument(image);
+            //DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
+            //DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
+            //DocumentModel collection = await DocumentModel.CollectionExample();
+            //DocumentModel image = DocumentModel.OneImage();
+
+            //DisplayDocument(recipe);
+            //DisplayDocument(pricePerSqFt);
+            //DisplayDocument(image);
         }
 
 

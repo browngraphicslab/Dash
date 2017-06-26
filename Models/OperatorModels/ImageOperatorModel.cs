@@ -24,10 +24,12 @@ namespace Dash
 
         public override List<FieldModel> GetNewInputFields()
         {
-            return new List<FieldModel>
-            {
-                new TextFieldModel()
-            };
+            throw new NotImplementedException();
+
+            //return new List<FieldModel>
+            //{
+            //    new TextFieldModel()
+            //};
         }
 
         public override List<FieldModel> GetNewOutputFields()
@@ -40,10 +42,12 @@ namespace Dash
 
         public override void Execute(DocumentModel doc)
         {
-            TextFieldModel uri = doc.Field(URIKey) as TextFieldModel;
-            Debug.Assert(uri != null, "Input is not a string");
+            throw new NotImplementedException();
 
-            (doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
+            //TextFieldModel uri = doc.Field(URIKey) as TextFieldModel;
+            //Debug.Assert(uri != null, "Input is not a string");
+
+            //(doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
     }
 }

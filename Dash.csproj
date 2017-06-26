@@ -102,7 +102,7 @@
     <Compile Include="Controllers\DocumentFieldModelController.cs" />
     <Compile Include="Controllers\FieldModelController.cs" />
     <Compile Include="Controllers\ImageFieldModelController.cs" />
-    <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
@@ -116,7 +116,6 @@
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
     <Compile Include="Models\DocumentModelFieldModel.cs" />
-    <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
@@ -156,7 +155,6 @@
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxy.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxyOneWay.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
-    <Compile Include="ServerClient\SignalRHubProxies\ShapeProxy.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -204,7 +202,6 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
-    <Compile Include="ViewModels\ShapeViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\CollectionView.xaml.cs">
@@ -240,9 +237,6 @@
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Views\ShapeView.xaml.cs">
-      <DependentUpon>ShapeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
@@ -360,9 +354,6 @@
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ShapeView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\WindowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -379,6 +370,9 @@
       <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
       <Name>DashShared</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ServerClient\SignalRHubProxies\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

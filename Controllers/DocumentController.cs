@@ -157,16 +157,17 @@ namespace Dash
         /// <summary>
         ///     returns the <see cref="FieldModelController" /> for the specified <see cref="Key" /> by looking first in this
         ///     <see cref="DocumentController" />
-        ///     and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />
+        ///     and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />. If the
+        ///     key is not found then it returns null.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
         public FieldModelController GetField(Key key)
         {
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
-            var firstProtoWithKeyOrThis = GetPrototypeWithFieldKey(key);
+            var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
 
-            return firstProtoWithKeyOrThis?.Fields[key];
+            return firstProtoWithKeyOrNull?.Fields[key];
         }
 
         /// <summary>

@@ -72,17 +72,19 @@ namespace Dash
         /// </summary>
         public virtual List<FrameworkElement> MakeViewUI(FieldModel fieldModel, DocumentModel context)
         {
-            while (fieldModel is ReferenceFieldModel)
-            {
-                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModel).DocId).Field((fieldModel as ReferenceFieldModel).FieldKey);
-            }
-            if (fieldModel is DocumentModelFieldModel)
-            {
-                var doc = (fieldModel as DocumentModelFieldModel).Data;
-                return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
-            }
-            return MakeView(fieldModel, context);
+            throw new NotImplementedException();
+
+            //while (fieldModel is ReferenceFieldModel)
+            //{
+            //    var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModel).DocId).Field((fieldModel as ReferenceFieldModel).FieldKey);
+            //}
+            //if (fieldModel is DocumentModelFieldModel)
+            //{
+            //    var doc = (fieldModel as DocumentModelFieldModel).Data;
+            //    return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
+            //}
+            //return MakeView(fieldModel, context);
         }
 
 

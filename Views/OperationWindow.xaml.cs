@@ -82,12 +82,14 @@ namespace Dash
                 Width = 200,
                 Height = 200
             };
-            DocumentViewModel opvm = new DocumentViewModel(opModel);
-            opvm.IODragStarted += Vm_IODragStarted;
-            opvm.IODragEnded += Vm_IODragEnded;
-            view.DataContext = opvm;
-            XFreeformView.Canvas.Children.Add(view);
-            _documentViews.Add(opModel.Id, view);
+            throw new NotImplementedException();
+
+            //DocumentViewModel opvm = new DocumentViewModel(opModel);
+            //opvm.IODragStarted += Vm_IODragStarted;
+            //opvm.IODragEnded += Vm_IODragEnded;
+            //view.DataContext = opvm;
+            //XFreeformView.Canvas.Children.Add(view);
+            //_documentViews.Add(opModel.Id, view);
 
             NumberFieldModel nfm = new NumberFieldModel(57);
             //OutputDocument.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
@@ -218,21 +220,22 @@ namespace Dash
 
             if (onDoc)
             {
-                if (ioReference.IsOutput)
-                {
-                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId);
-                    Debug.Assert(opDoc != null);
-                    opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
-                        ioReference.ReferenceFieldModel);
-                    _connectionLine = null;
-                }
-                else
-                {
-                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
-                    _connectionLine = null;
-                }
+                throw new NotImplementedException();
+                //if (ioReference.IsOutput)
+                //{
+                //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                //    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId);
+                //    Debug.Assert(opDoc != null);
+                //    opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                //        ioReference.ReferenceFieldModel);
+                //    _connectionLine = null;
+                //}
+                //else
+                //{
+                //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                //    docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
+                //    _connectionLine = null;
+                //}
             }
             else
             {
@@ -266,12 +269,14 @@ namespace Dash
                 }
                 else
                 {
-                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId);
-                    Debug.Assert(opDoc != null);
-                    opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
-                        _currReference.ReferenceFieldModel);
-                    _connectionLine = null;
+                    throw new NotImplementedException();
+
+                    //var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                    //var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId);
+                    //Debug.Assert(opDoc != null);
+                    //opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
+                    //    _currReference.ReferenceFieldModel);
+                    //_connectionLine = null;
                 }
             }
         }
@@ -313,9 +318,11 @@ namespace Dash
         /// <param name="e"></param>
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DocumentView view = new DocumentView();
-            DocumentViewModel viewModel = new DocumentViewModel(OutputDocument);
-            view.DataContext = viewModel;
+            throw new NotImplementedException();
+
+            //DocumentView view = new DocumentView();
+            //DocumentViewModel viewModel = new DocumentViewModel(OutputDocument);
+            //view.DataContext = viewModel;
             //FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
 

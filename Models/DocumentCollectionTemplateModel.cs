@@ -1,4 +1,5 @@
-﻿using Dash.Models;
+﻿using System;
+using Dash.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -16,23 +17,25 @@ namespace Dash
         }
         
         protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
-        { 
-            var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
-            Debug.Assert(collectionFieldModel != null);
-            var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
-            var collectionViewModel = new CollectionViewModel(collectionModel);
-            var view = new CollectionView(collectionViewModel);
+        {
+            throw new NotImplementedException();
 
-            var translateBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Pos"),
-                Mode = BindingMode.TwoWay,
-                Converter = new PositionConverter()
-            };
-            view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+            //var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
+            //Debug.Assert(collectionFieldModel != null);
+            //var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
+            //var collectionViewModel = new CollectionViewModel(collectionModel);
+            //var view = new CollectionView(collectionViewModel);
 
-            return new List<FrameworkElement> { view };
+            //var translateBinding = new Binding
+            //{
+            //    Source = this,
+            //    Path = new PropertyPath("Pos"),
+            //    Mode = BindingMode.TwoWay,
+            //    Converter = new PositionConverter()
+            //};
+            //view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+
+            //return new List<FrameworkElement> { view };
         }
     }
 }

@@ -14,6 +14,7 @@ using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
 using Dash.ViewModels;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
@@ -472,46 +473,48 @@ namespace Dash
         /// <param name="e"></param>
         public void DocumentView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                if (dvm.DocumentModel.DocumentType.Id == "itunes")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
-                else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
-                (sender as DocumentView).DataContext = dvm;
-                var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
-                // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
-                var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
-                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
-                // var DocView2 = new DocumentView(new DocumentViewModel());
-                // var center = e.GetPosition(FreeformView.MainFreeformView);
-                MainPage.Instance.DisplayDocument(testPrototypedoc);
-                //FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
 
-                if (GridViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize + 50;
-                    if (OuterGridHeight < CellSize + 125) OuterGridHeight = CellSize + 125;
-                    if (OuterGridWidth < CellSize + 125) OuterGridWidth = CellSize + 125;
-                    //Resize();
-                    //SetDimensions();
-                }
-                else if (ListViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize;
-                }
+            throw new NotImplementedException();
+            //var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
+            //if (dvm != null)
+            //{
+            //    if (dvm.DocumentModel.DocumentType.Id == "itunes")
+            //        dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
+            //    else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
+            //        dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
+            //    (sender as DocumentView).DataContext = dvm;
+            //    var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
+            //    // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+            //    var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
+            //    annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
+            //    annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
+            //    annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
+            //    testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
+            //    // var DocView2 = new DocumentView(new DocumentViewModel());
+            //    // var center = e.GetPosition(FreeformView.MainFreeformView);
+            //    MainPage.Instance.DisplayDocument(testPrototypedoc);
+            //    //FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
 
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
-                foreach (var s in SoloDisplayElements)
-                    s.RenderTransform = new TranslateTransform();
-                ViewIsEnabled = false;
-                SoloDisplayVisibility = Visibility.Visible;
-            }
-            e.Handled = true;
+            //    if (GridViewVisibility == Visibility.Visible)
+            //    {
+            //        SoloDisplaySize = CellSize + 50;
+            //        if (OuterGridHeight < CellSize + 125) OuterGridHeight = CellSize + 125;
+            //        if (OuterGridWidth < CellSize + 125) OuterGridWidth = CellSize + 125;
+            //        //Resize();
+            //        //SetDimensions();
+            //    }
+            //    else if (ListViewVisibility == Visibility.Visible)
+            //    {
+            //        SoloDisplaySize = CellSize;
+            //    }
+
+            //    SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
+            //    foreach (var s in SoloDisplayElements)
+            //        s.RenderTransform = new TranslateTransform();
+            //    ViewIsEnabled = false;
+            //    SoloDisplayVisibility = Visibility.Visible;
+            //}
+            //e.Handled = true;
         }
 
        
@@ -557,24 +560,25 @@ namespace Dash
         /// <param name="viewModels"></param>
         private void AddViewModels(ObservableCollection<DocumentViewModel> viewModels)
         {
-            foreach (DocumentViewModel viewModel in viewModels)
-            {
-                bool found = false;
-                foreach (var vm in DocumentViewModels)
-                    if (vm.DocumentModel.Id == viewModel.DocumentModel.Id)
-                        found = true;
-                if (!found)
-                {
-                    //viewModel.DefaultViewVisibility = Visibility.Collapsed;
-                    //viewModel.ListViewVisibility = Visibility.Visible;
-                    viewModel.ManipulationMode = ManipulationModes.System;
-                    viewModel.DoubleTapEnabled = false;
-                    //viewModel.CanMoveControl = false;
-                    DocumentViewModels.Add(viewModel);
-                }
-            }
-            //ScaleDocumentsToFitCell();
-            DataBindingSource = DocumentViewModels;
+            throw new NotImplementedException();
+            //foreach (DocumentViewModel viewModel in viewModels)
+            //{
+            //    bool found = false;
+            //    foreach (var vm in DocumentViewModels)
+            //        if (vm.DocumentModel.Id == viewModel.DocumentModel.Id)
+            //            found = true;
+            //    if (!found)
+            //    {
+            //        //viewModel.DefaultViewVisibility = Visibility.Collapsed;
+            //        //viewModel.ListViewVisibility = Visibility.Visible;
+            //        viewModel.ManipulationMode = ManipulationModes.System;
+            //        viewModel.DoubleTapEnabled = false;
+            //        //viewModel.CanMoveControl = false;
+            //        DocumentViewModels.Add(viewModel);
+            //    }
+            //}
+            ////ScaleDocumentsToFitCell();
+            //DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -603,29 +607,30 @@ namespace Dash
         /// <returns></returns>
         public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentModel> documents)
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            throw new NotImplementedException();
+            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
-            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (DocumentModel document in documents)
-            {
-                var documentDisplayDelegate = DocumentToDelegateMap.ContainsKey(document.Id) ? DocumentToDelegateMap[document.Id] : null;
-                if (documentDisplayDelegate == null) {
-                    foreach (var deleg in docController.GetDelegates(document.Id))
-                    {
-                        var field = deleg.Field(DocumentModel.GetFieldKeyByName("CollectionDelegate")) as TextFieldModel;
-                        if (field != null && field.Data == _collectionModel.Context.Id)
-                            documentDisplayDelegate = deleg;
-                    }
-                    if (documentDisplayDelegate == null)
-                    {
-                        documentDisplayDelegate = document.MakeDelegate();
-                        documentDisplayDelegate.SetField(DocumentModel.GetFieldKeyByName("CollectionDelegate"), new TextFieldModel(_collectionModel.Context.Id), true);
-                     }
-                    DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
-                }
-                viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
-            }
-            return viewModels;
+            //ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
+            //foreach (DocumentModel document in documents)
+            //{
+            //    var documentDisplayDelegate = DocumentToDelegateMap.ContainsKey(document.Id) ? DocumentToDelegateMap[document.Id] : null;
+            //    if (documentDisplayDelegate == null) {
+            //        foreach (var deleg in docController.GetDelegates(document.Id))
+            //        {
+            //            var field = deleg.Field(DocumentModel.GetFieldKeyByName("CollectionDelegate")) as TextFieldModel;
+            //            if (field != null && field.Data == _collectionModel.Context.Id)
+            //                documentDisplayDelegate = deleg;
+            //        }
+            //        if (documentDisplayDelegate == null)
+            //        {
+            //            documentDisplayDelegate = document.MakeDelegate();
+            //            documentDisplayDelegate.SetField(DocumentModel.GetFieldKeyByName("CollectionDelegate"), new TextFieldModel(_collectionModel.Context.Id), true);
+            //         }
+            //        DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
+            //    }
+            //    viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
+            //}
+            //return viewModels;
         }
 
 
@@ -634,15 +639,16 @@ namespace Dash
         /// </summary>
         public void RemoveDefunctViewModels()
         {
-            ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
-            foreach (DocumentViewModel vm in DocumentViewModels)
-            {
-                if (!_collectionModel.Documents.Contains(vm.DocumentModel))
-                {
-                    toRemove.Add(vm);
-                }
-            }
-            RemoveViewModels(toRemove);
+            throw new NotImplementedException();
+            //ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
+            //foreach (DocumentViewModel vm in DocumentViewModels)
+            //{
+            //    if (!_collectionModel.Documents.Contains(vm.DocumentModel))
+            //    {
+            //        toRemove.Add(vm);
+            //    }
+            //}
+            //RemoveViewModels(toRemove);
         }
 
         #endregion
@@ -679,35 +685,36 @@ namespace Dash
 
         public void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            FilterModel filterModel = null;
+            throw new NotImplementedException();
+            //FilterModel filterModel = null;
 
-            // generate FilterModels accordingly
-            if (CollectionFilterMode == FilterMode.HasField)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
-            }
-            else if (CollectionFilterMode == FilterMode.FieldContains)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
-            }
-            else if (CollectionFilterMode == FilterMode.FieldEquals)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
-            }
+            //// generate FilterModels accordingly
+            //if (CollectionFilterMode == FilterMode.HasField)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
+            //}
+            //else if (CollectionFilterMode == FilterMode.FieldContains)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
+            //}
+            //else if (CollectionFilterMode == FilterMode.FieldEquals)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
+            //}
 
-            var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
+            //var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
 
             
-            ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (var dvm in DocumentViewModels)
-            {
-                if (list.Contains(dvm.DocumentModel))
-                {
-                    ViewModels.Add(dvm);
-                }
-            }
-            DataBindingSource = ViewModels;
-            _filtered = true;
+            //ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
+            //foreach (var dvm in DocumentViewModels)
+            //{
+            //    if (list.Contains(dvm.DocumentModel))
+            //    {
+            //        ViewModels.Add(dvm);
+            //    }
+            //}
+            //DataBindingSource = ViewModels;
+            //_filtered = true;
         }
 
         public void FilterFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -774,8 +781,9 @@ namespace Dash
         }
         public void MoveDocument(DocumentViewModel docViewModel, Point where)
         {
-            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(where.X), true);
-            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(where.Y), true);
+            throw new NotImplementedException();
+            //docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(where.X), true);
+            //docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(where.Y), true);
          }
     }
 }
