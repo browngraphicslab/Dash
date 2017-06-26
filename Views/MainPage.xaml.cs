@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Dash.ServerClient.Requests;
 using Dash.ViewModels;
 using DashShared;
 
@@ -49,18 +50,15 @@ namespace Dash
             xOverlayCanvas.OnAddShapeTapped += AddShape;
             xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
             xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
-            
-            // create the collection document model
-            var collectionDocumentModel = new DocumentModel(new Dictionary<Key, FieldModel>(), DashConstants.DocumentTypeStore.CollectionDocumentType);
-            var collectionDocumentController = new DocumentController(collectionDocumentModel);
-            ContentController.AddController(collectionDocumentController);
 
-            // create the list of documents in the collection
-            var documentCollectionFieldModelController = new DocumentCollectionFieldModelController(new DocumentCollectionFieldModel(new List<DocumentModel>()));
-            ContentController.AddController(documentCollectionFieldModelController);
-            collectionDocumentController.SetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey, 
-                documentCollectionFieldModelController,
-                true);
+            // create the collection document model using a request
+            var documentsField = new Dictionary<Key, FieldModel>
+            {
+                [DashConstants.KeyStore.CollectionDocumentsListFieldKey] = new DocumentCollectionFieldModel(new List<DocumentModel>())       
+            };
+            var newCollectionDocumentRequestArgs = new CreateNewDocumentRequestArgs(documentsField, DashConstants.DocumentTypeStore.CollectionDocumentType);
+            var newCollectionDocumentRequest = new CreateNewDocumentRequest(newCollectionDocumentRequestArgs);
+            var collectionDocumentController = newCollectionDocumentRequest.GetReturnedDocumentController();
 
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(collectionDocumentController);
