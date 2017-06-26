@@ -26,6 +26,8 @@ namespace Dash
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
+        private Canvas FreeformCanvas => GridView.ItemsPanelRoot as Canvas;
+
         public CollectionViewModel ViewModel;
         private bool _isHasFieldPreviouslySelected;
         public Grid OuterGrid
@@ -637,47 +639,47 @@ namespace Dash
 
             //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
 
-            //Binding x1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
-            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
             Binding x1Binding = new Binding
             {
                 Converter = new FrameworkElementToPosition(true),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+                Source = ioReference.ContainerView,
                 Path = new PropertyPath("RenderTransform")
             };
             Binding y1Binding = new Binding
             {
                 Converter = new FrameworkElementToPosition(false),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+                Source = ioReference.ContainerView,
                 Path = new PropertyPath("RenderTransform")
             };
             _connectionLine.SetBinding(Line.X1Property, x1Binding);
             _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+            //Binding x1Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(true),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = this,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //Binding y1Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(false),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = this,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
+            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
 
             _connectionLine.X2 = _connectionLine.X1;
             _connectionLine.Y2 = _connectionLine.Y1;
 
-            FreeformGrid.Children.Add(_connectionLine);
+            FreeformCanvas.Children.Add(_connectionLine);
 
             if (!ioReference.IsOutput)
             {
@@ -722,42 +724,42 @@ namespace Dash
             }
 
             //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
-            //Binding x2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
-            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
             Binding x2Binding = new Binding
             {
                 Converter = new FrameworkElementToPosition(true),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+                Source = ioReference.ContainerView,
                 Path = new PropertyPath("RenderTransform")
             };
             Binding y2Binding = new Binding
             {
                 Converter = new FrameworkElementToPosition(false),
                 ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
+                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+                Source = ioReference.ContainerView,
                 Path = new PropertyPath("RenderTransform")
             };
             _connectionLine.SetBinding(Line.X2Property, x2Binding);
             _connectionLine.SetBinding(Line.Y2Property, y2Binding);
+            //Binding x2Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(true),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = this,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //Binding y2Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(false),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = this,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
+            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
 
             if (ioReference.IsOutput)
             {
@@ -783,14 +785,14 @@ namespace Dash
             if (_lineDict.ContainsKey(model))
             {
                 Line line = _lineDict[model];
-                FreeformGrid.Children.Remove(line);
+                FreeformCanvas.Children.Remove(line);
                 _lineDict.Remove(model);
             }
         }
 
         private void UndoLine()
         {
-            FreeformGrid.Children.Remove(_connectionLine);
+            FreeformCanvas.Children.Remove(_connectionLine);
             //_lineDict. //TODO lol figure this out later 
             _connectionLine = null;
             _currReference = null;
@@ -802,7 +804,7 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
-                Point pos = e.GetCurrentPoint(FreeformGrid).Position;
+                Point pos = e.GetCurrentPoint(FreeformCanvas).Position;
                 _connectionLine.X2 = pos.X;
                 _connectionLine.Y2 = pos.Y;
             }

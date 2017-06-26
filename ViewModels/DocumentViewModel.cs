@@ -210,6 +210,7 @@ namespace Dash
             //    Converter = new ManipulationConverter()
             //};
             //element.SetBinding(UIElement.ManipulationModeProperty, manipulationBinding);
+
             element.ManipulationMode = ManipulationModes.All;
 
             element.ManipulationStarted += (sender, args) => args.Complete();
@@ -311,7 +312,9 @@ namespace Dash
 
         private void Element_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            IODragEnded?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false, e.Pointer, sender as FrameworkElement));
+            IODragEnded?.Invoke(
+                new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false,
+                    e.Pointer, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
         }
 
         private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -319,7 +322,7 @@ namespace Dash
             if (e.GetCurrentPoint(sender as FrameworkElement).Properties.IsLeftButtonPressed)
             {
                 IODragStarted?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel,
-                    true, e.Pointer, sender as FrameworkElement));
+                    true, e.Pointer, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
             }
         }
 

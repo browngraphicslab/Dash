@@ -340,7 +340,7 @@ namespace Dash
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
                 new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
-                sender as Ellipse), true);
+                sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -349,7 +349,7 @@ namespace Dash
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
                 new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
-                sender as Ellipse), true);
+                sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
         }
 
         private void UndoLine()
@@ -368,7 +368,7 @@ namespace Dash
                 var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
                     new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
-                    sender as Ellipse), true);
+                    sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
             }
         }
 
@@ -380,7 +380,7 @@ namespace Dash
                 var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
                     new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
-                    sender as Ellipse), true);
+                    sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
             }
         }
 
