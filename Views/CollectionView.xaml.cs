@@ -59,17 +59,13 @@ namespace Dash
             HListView.SelectionChanged += ViewModel.SelectionChanged;
             // GridView.SelectionChanged += ViewModel.SelectionChanged;
             
-
-            
-
             Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
 
             SingleDocDisplayGrid.Tapped += ViewModel.SingleDocDisplayGrid_Tapped;
 
             xFilterExit.Tapped += ViewModel.FilterExit_Tapped;
             xFilterButton.Tapped += ViewModel.FilterButton_Tapped;
-
-
+            
             xSearchBox.TextCompositionEnded += ViewModel.SearchBox_TextEntered;
             xSearchBox.TextChanged += ViewModel.xSearchBox_TextChanged;
 
@@ -81,10 +77,47 @@ namespace Dash
 
         }
 
-        private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
+        private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             foreach(var item in GridView.Items)
                 (item as DocumentViewModel).ParentCollection = this;
+
+            if (e.CollectionChange == CollectionChange.ItemInserted)
+            {
+                var docVM = sender[(int) e.Index] as DocumentViewModel;
+                Debug.Assert(docVM != null);
+                OperatorFieldModel ofm = docVM.DocumentModel.Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
+                if (ofm != null)
+                {
+                    foreach (var inputKey in ofm.InputKeys)
+                    {
+                        foreach (var outputKey in ofm.OutputKeys)
+                        {
+                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
+                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
+                            _graph.AddEdge(irfm,orfm);
+                        }
+                    }
+                }
+            }
+            else if (e.CollectionChange == CollectionChange.ItemRemoved)
+            {
+                var docVM = sender[(int)e.Index] as DocumentViewModel;
+                Debug.Assert(docVM != null);
+                OperatorFieldModel ofm = docVM.DocumentModel.Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
+                if (ofm != null)
+                {
+                    foreach (var inputKey in ofm.InputKeys)
+                    {
+                        foreach (var outputKey in ofm.OutputKeys)
+                        {
+                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
+                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
+                            _graph.RemoveEdge(irfm, orfm);
+                        }
+                    }
+                }
+            }
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
@@ -642,8 +675,6 @@ namespace Dash
             };
             _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
-            //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
-
             Binding x1Binding = new Binding
             {
                 Converter = new FrameworkElementToPosition(true),
@@ -662,24 +693,6 @@ namespace Dash
             };
             _connectionLine.SetBinding(Line.X1Property, x1Binding);
             _connectionLine.SetBinding(Line.Y1Property, y1Binding);
-            //Binding x1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = this,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = this,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
-            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
 
             _connectionLine.X2 = _connectionLine.X1;
             _connectionLine.Y2 = _connectionLine.Y1;
@@ -728,7 +741,6 @@ namespace Dash
                 _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
             }
 
-            //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
             Binding x2Binding = new Binding
             {
                 Converter = new FrameworkElementToPosition(true),
@@ -747,24 +759,6 @@ namespace Dash
             };
             _connectionLine.SetBinding(Line.X2Property, x2Binding);
             _connectionLine.SetBinding(Line.Y2Property, y2Binding);
-            //Binding x2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = this,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = this,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
-            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
 
             if (ioReference.IsOutput)
             {
