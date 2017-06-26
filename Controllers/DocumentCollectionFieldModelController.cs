@@ -64,7 +64,6 @@ namespace Dash
             var freshList = sender as ObservableCollection<DocumentController>;
             Debug.Assert(freshList != null);
             DocumentCollectionFieldModel.Data = freshList.Select(documentController => documentController.GetId());
-
             // Update Local
             // Update Server
         }

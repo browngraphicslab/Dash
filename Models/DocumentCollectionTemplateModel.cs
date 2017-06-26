@@ -16,26 +16,24 @@ namespace Dash
         {
         }
         
-        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected override List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
-            throw new NotImplementedException();
+            var collectionFieldModel = fieldModel as DocumentCollectionFieldModelController;
+            Debug.Assert(collectionFieldModel != null);
+            var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
+            var collectionViewModel = new CollectionViewModel(collectionModel);
+            var view = new CollectionView(collectionViewModel);
 
-            //var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
-            //Debug.Assert(collectionFieldModel != null);
-            //var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
-            //var collectionViewModel = new CollectionViewModel(collectionModel);
-            //var view = new CollectionView(collectionViewModel);
+            var translateBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Pos"),
+                Mode = BindingMode.TwoWay,
+                Converter = new PositionConverter()
+            };
+            view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
 
-            //var translateBinding = new Binding
-            //{
-            //    Source = this,
-            //    Path = new PropertyPath("Pos"),
-            //    Mode = BindingMode.TwoWay,
-            //    Converter = new PositionConverter()
-            //};
-            //view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
-
-            //return new List<FrameworkElement> { view };
+            return new List<FrameworkElement> { view };
         }
     }
 }

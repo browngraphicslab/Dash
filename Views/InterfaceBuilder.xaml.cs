@@ -48,7 +48,7 @@ namespace Dash
         /// <summary>
         /// dictionary of keys to field models for the field models on the document which is being edited
         /// </summary>
-        private Dictionary<Key, FieldModel> _keyToFieldModel = new Dictionary<Key, FieldModel>();
+        private Dictionary<Key, FieldModelController> _keyToFieldModel = new Dictionary<Key, FieldModelController>();
 
         public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
         {

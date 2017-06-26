@@ -119,6 +119,8 @@ namespace DashShared
 
         public static class KeyStore
         {
+            public static Key ImageFieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField");
+
             public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
             public static Key PrototypeKey = new Key("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
             public static Key DelegatesKey = new Key("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "Delegates");
@@ -132,6 +134,10 @@ namespace DashShared
             public static DocumentType OperatorDocumentType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
 
             public static DocumentType CollectionDocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "CollectionDocument");
+
+            public static DocumentType OneImageDocumentType = new DocumentType("FC8EF5EB-1A0B-433C-85B6-6929B974A4B7", "One Image");
+
+            public static DocumentType ImageBoxDocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
         }
 
 

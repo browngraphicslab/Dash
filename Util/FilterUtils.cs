@@ -19,7 +19,7 @@ namespace Dash.StaticClasses
         /// <param name="collection"></param>
         /// <param name="filter"></param>
         /// <returns></returns>
-        public static List<DocumentModel> Filter(List<DocumentModel> collection, FilterModel filter)
+        public static List<DocumentController> Filter(List<DocumentController> collection, FilterModel filter)
         {
             switch (filter.Type)
             {
@@ -41,7 +41,7 @@ namespace Dash.StaticClasses
         /// <param name="collection"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        public static ImmutableHashSet<string> GetKeySuggestions(List<DocumentModel> collection, string text)
+        public static ImmutableHashSet<string> GetKeySuggestions(List<DocumentController> collection, string text)
         {
             var collectionKeys = new HashSet<string>();
             foreach (var doc in collection)
@@ -64,9 +64,9 @@ namespace Dash.StaticClasses
         /// <param name="collection"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        private static List<DocumentModel> CheckContainsKey(List<DocumentModel> collection, string keyName)
+        private static List<DocumentController> CheckContainsKey(List<DocumentController> collection, string keyName)
         {
-            var containsKeyDocuments = new List<DocumentModel>();
+            var containsKeyDocuments = new List<DocumentController>();
             // loop through all documents in the collection to find the ones with the specified field
             foreach (var document in collection)
             {
@@ -81,7 +81,7 @@ namespace Dash.StaticClasses
             return containsKeyDocuments;
         }
 
-        private static IEnumerable<Key> GetKeys(DocumentModel doc)
+        private static IEnumerable<Key> GetKeys(DocumentController doc)
         {
             throw new NotImplementedException();
 
@@ -127,7 +127,7 @@ namespace Dash.StaticClasses
         /// <param name="key"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        private static List<DocumentModel> CheckValueContains(List<DocumentModel> collection, string keyName, string value)
+        private static List<DocumentController> CheckValueContains(List<DocumentController> collection, string keyName, string value)
         {
             throw new NotImplementedException();
 
@@ -174,7 +174,7 @@ namespace Dash.StaticClasses
         /// <param name="key"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private static List<DocumentModel> CheckValueEquals(List<DocumentModel> collection, string keyName, string value)
+        private static List<DocumentController> CheckValueEquals(List<DocumentController> collection, string keyName, string value)
         {
             throw new NotImplementedException();
 

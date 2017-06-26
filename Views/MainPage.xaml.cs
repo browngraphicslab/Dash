@@ -55,6 +55,7 @@ namespace Dash
             var collectionDocumentController = new DocumentController(collectionDocumentModel);
             ContentController.AddController(collectionDocumentController);
 
+
             // create the list of documents in the collection
             var documentCollectionFieldModelController = new DocumentCollectionFieldModelController(new DocumentCollectionFieldModel(new List<DocumentModel>()));
             ContentController.AddController(documentCollectionFieldModelController);
@@ -144,18 +145,18 @@ namespace Dash
 
         public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
 
-        public void DisplayDocument(DocumentModel docModel, Point? where = null)
+        public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
-            var children = MainDocument.Fields[DashConstants.KeyStore.CollectionDocumentsListFieldKey] as DocumentCollectionFieldModelController;
-            throw new NotImplementedException("have to get displaying documents to work");
-            //if (children != null) { 
-            //    children.AddDocumentModel(docModel);
-            //    if (where.HasValue)
-            //    {
-            //        docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
-            //        docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
-            //    }
-            //}
+            var children = MainDocument.GetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey) as DocumentCollectionFieldModelController;
+            if (children != null)
+            {
+                children.Documents.Add(docModel);
+                //if (where.HasValue)
+                //{
+                //    docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
+                //    docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
+                //}
+            }
         }
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -190,13 +191,24 @@ namespace Dash
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            throw new NotImplementedException();
-
             //DocumentModel recipe = DocumentModel.Food2ForkRecipeDocumentModel();
             //DocumentModel pricePerSqFt = await DocumentModel.PricePerSquareFootExample();
             //DocumentModel collection = await DocumentModel.CollectionExample();
             //DocumentModel image = DocumentModel.OneImage();
+            var fields = new Dictionary<Key, FieldModel>();
+            var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
+            ContentController.AddController(new ImageFieldModelController(imModel));
+            fields[DashConstants.KeyStore.ImageFieldKey] = imModel;
+            var oneImageDocumentModel = new DocumentModel(fields, DashConstants.DocumentTypeStore.OneImageDocumentType);
+            var oneImageDocumentController = new DocumentController(oneImageDocumentModel);
+            ContentController.AddController(oneImageDocumentController);
+            
+            var ifields = new Dictionary<Key, FieldModel>();
+            ifields[DocumentController.DataKey] = new ReferenceFieldModel(oneImageDocumentController.GetId(), DashConstants.KeyStore.ImageFieldKey);
+            var im = new DocumentModel(ifields, DashConstants.DocumentTypeStore.ImageBoxDocumentType);
 
+            oneImageDocumentController.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(new DocumentModelFieldModel(im)), false);
+            DisplayDocument(oneImageDocumentController);
             //DisplayDocument(recipe);
             //DisplayDocument(pricePerSqFt);
             //DisplayDocument(image);

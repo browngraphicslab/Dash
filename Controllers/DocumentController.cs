@@ -3,6 +3,8 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -16,8 +18,6 @@ namespace Dash
 
         public DocumentController(DocumentModel documentModel)
         {
-            DocumentModel = documentModel;
-
             // Initialize Local Variables
             DocumentModel = documentModel;
             // get the field controllers associated with the FieldModel id's stored in the document Model
@@ -249,5 +249,103 @@ namespace Dash
                         yield return field;
             }
         }
-    }
+
+        static public Key DataKey = new Key("Data");
+        static public Key FontWeightKey = new Key("FontWeight");
+        public List<FrameworkElement> MakeViewUI()
+        {
+            var uieles = new List<FrameworkElement>();
+
+            if (DocumentType == new DocumentType("TextBox", "TextBox"))
+            {
+                var fw = GetField(FontWeightKey);
+                var fontWeight = fw is TextFieldModelController ? ((fw as TextFieldModelController).Data == "Bold" ? Windows.UI.Text.FontWeights.Bold : Windows.UI.Text.FontWeights.Normal) : Windows.UI.Text.FontWeights.Normal;
+                var data = GetField(DataKey) ?? null;
+                if (data != null)
+                    uieles.AddRange(new TextTemplateModel(0, 0, fontWeight, Windows.UI.Xaml.TextWrapping.NoWrap, Windows.UI.Xaml.Visibility.Visible).MakeViewUI(data, this));
+            }
+            if (DocumentType == new DocumentType("ImageBox", "ImageBox"))
+            {
+                var data = GetField(DataKey) ?? null;
+                if (data != null)
+                    uieles.AddRange(new ImageTemplateModel(0, 0).MakeViewUI(data, this));
+            }
+            if (DocumentType == new DocumentType("CollectionView", "CollectionView"))
+            {
+                var data = GetField(DataKey) ?? null;
+                if (data != null)
+                    uieles.AddRange(new DocumentCollectionTemplateModel(0, 0).MakeViewUI(data, this));
+            }
+            if (DocumentType == new DocumentType("StackView", "StackView"))
+            {
+                foreach (var f in EnumFields())
+                    //if (f.Value is DocumentModelFieldModelController)
+                    //{
+                    //    var fieldDoc = (f.Value as DocumentModelFieldModel).Data;
+                    //    var tt = new TranslateTransform();
+                    //    tt.Y = fieldDoc.DocumentType == new DocumentType("ImageBox", "ImageBox") ? 500 : 20;
+                    //    var fieldEles = fieldDoc.MakeViewUI();
+                    //    if (fieldEles != null)
+                    //        foreach (var ele in fieldEles)
+                    //        {
+                    //            var tg = new TransformGroup();
+                    //            tg.Children.Add(ele.RenderTransform);
+                    //            tg.Children.Add(tt);
+
+                    //            ele.RenderTransform = tg;
+                    //            uieles.Add(ele);
+                    //        }
+                    //}
+                    //else 
+                    if (f.Value is DocumentCollectionFieldModelController)
+                    {
+                        var fieldDocs = (f.Value as DocumentCollectionFieldModelController).Documents;
+                        foreach (var fdoc in fieldDocs)
+                        {
+                            var ues = fdoc.MakeViewUI();
+                            if (ues != null)
+                                foreach (var ele in ues)
+                                {
+                                    var tt = new TranslateTransform();
+                                    tt.Y = ele.Height;
+                                    var tg = new TransformGroup();
+                                    tg.Children.Add(ele.RenderTransform);
+                                    tg.Children.Add(tt);
+
+                                    ele.RenderTransform = tg;
+                                    uieles.Add(ele);
+                                }
+                        }
+                    }
+            }
+            else
+            {
+                foreach (var f in EnumFields())
+                    if (f.Value is DocumentFieldModelController)
+                    {
+                        var fieldDoc = (f.Value as DocumentFieldModelController).Data;
+                        var fieldEles = fieldDoc.MakeViewUI();
+                        if (fieldEles != null)
+                            foreach (var ele in fieldEles)
+                            {
+                                uieles.Add(ele);
+                            }
+                    }
+                    else if (f.Value is DocumentCollectionFieldModelController)
+                    {
+                        var fieldDocs = (f.Value as DocumentCollectionFieldModelController).Documents;
+                        foreach (var fdoc in fieldDocs)
+                        {
+                            var ues = fdoc.MakeViewUI();
+                            if (ues != null)
+                                foreach (var ele in ues)
+                                {
+                                    uieles.Add(ele);
+                                }
+                        }
+                    }
+            }
+            return uieles;
+        }
+        }
 }

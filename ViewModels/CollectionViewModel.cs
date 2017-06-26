@@ -530,9 +530,9 @@ namespace Dash
         /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
         /// </summary>
         /// <param name="documents"></param>
-        public void AddDocuments(ObservableCollection<DocumentModel> documents)
+        public void AddDocuments(ObservableCollection<DocumentController> documents)
         {
-            foreach (DocumentModel document in documents)
+            foreach (var document in documents)
             {
                 if (!_collectionModel.Documents.Contains(document))
                     _collectionModel.Documents.Add(document);
@@ -545,9 +545,9 @@ namespace Dash
         /// that no longer reference DocumentModels in the Collection.
         /// </summary>
         /// <param name="documents"></param>
-        public void RemoveDocuments(ObservableCollection<DocumentModel> documents)
+        public void RemoveDocuments(ObservableCollection<DocumentController> documents)
         { 
-            foreach (DocumentModel document in documents)
+            foreach (var document in documents)
             {
                 if(_collectionModel.Documents.Contains(document)) _collectionModel.Documents.Remove(document);
             }
@@ -605,7 +605,7 @@ namespace Dash
         /// </summary>
         /// <param name="documents"></param>
         /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentModel> documents)
+        public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentController> documents)
         {
             throw new NotImplementedException();
             //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
@@ -724,7 +724,7 @@ namespace Dash
                 if (sender.Text.Length > 0)
                 {
                     FieldBoxText = sender.Text;
-                    sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentModel>(_collectionModel.Documents), sender.Text.ToLower());
+                    sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(_collectionModel.Documents), sender.Text.ToLower());
                 }
                 else
                 {

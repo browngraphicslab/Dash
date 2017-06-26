@@ -58,7 +58,7 @@ namespace Dash
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             FieldModel model = docEndpoint.GetFieldInDocument(fieldReference);
             DocumentModel docModel = docEndpoint.GetDocumentAsync(fieldReference.DocId);
-            InputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
+         //   InputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
         }
 
         private void OutputDocument_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -71,7 +71,7 @@ namespace Dash
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             FieldModel model = docEndpoint.GetFieldInDocument(fieldReference);
             DocumentModel docModel = docEndpoint.GetDocumentAsync(fieldReference.DocId);
-            OutputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
+          //  OutputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
         }
 
         public ObservableDictionary<Key, UIElement> InputDocumentCollection { get; set; } =
