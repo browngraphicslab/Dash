@@ -121,11 +121,11 @@ namespace Dash
 
         private void StartDrag(OperatorView.IOReference ioReference, bool fromDoc)
         {
-            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.Pointer.PointerId);
+            _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
 
@@ -201,7 +201,7 @@ namespace Dash
 
         private void EndDrag(OperatorView.IOReference ioReference, bool onDoc)
         {
-            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
             if (_currReference.IsOutput == ioReference.IsOutput)
@@ -339,7 +339,7 @@ namespace Dash
             e.Handled = true;
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
-                new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
+                new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e,
                 sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
         }
 
@@ -348,7 +348,7 @@ namespace Dash
             e.Handled = true;
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
-                new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
+                new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e,
                 sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
         }
 
@@ -367,7 +367,7 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
+                    new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e,
                     sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
             }
         }
@@ -379,7 +379,7 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
+                    new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e,
                     sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
             }
         }

@@ -18,9 +18,11 @@
         <Grid x:Name="XGrid" 
               ManipulationMode="{Binding ManipulationMode}" 
               BorderBrush="{Binding BorderBrush}" 
+              BorderThickness ="5"
+              CornerRadius="5"
               Padding="0" 
-              Style="{StaticResource xNodeContainerGrid}" 
-              RightTapped="Grid_RightTapped"></Grid>
+              Style="{StaticResource xNodeContainerGrid}"             
+              RightTapped="Grid_RightTapped" Background="#BFFFFFFF"></Grid>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public" 
                 Width="20"
@@ -31,7 +33,7 @@
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
-                        <Ellipse Fill="#DE0074FF" StrokeThickness="3" Stroke="#DE0074FF" />
+                        <Ellipse Fill="#DE0074FF" StrokeThickness="1" Stroke="#DE0074FF" />
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"/>
                     </Grid>

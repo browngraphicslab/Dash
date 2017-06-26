@@ -309,7 +309,7 @@ namespace Dash
                 if (childZ > maxZ && child.GetFirstDescendantOfType<DocumentView>() != this)
                     maxZ = childZ;
             }
-            //Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)

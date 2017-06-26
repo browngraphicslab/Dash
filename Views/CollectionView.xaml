@@ -12,21 +12,21 @@
     ManipulationStarted="Grid_OnManipulationStarted">
 
     <Grid>
-        <Grid x:Name="Grid" BorderThickness="1" Background="Transparent">
+        <Grid x:Name="Grid" BorderThickness="0" Background="#3F000000">
             <Grid x:Name="DocumentViewContainerGrid"  
                   HorizontalAlignment="Stretch" 
-                  BorderThickness="1" 
+                  BorderThickness="0" 
                   Margin="0,22,0,22" 
-                  VerticalAlignment="Stretch" 
-                  Background="White" 
-                  BorderBrush="{ThemeResource ButtonBorderBrushPointerOver}"
+                  VerticalAlignment="Stretch"  
+                  BorderBrush="WhiteSmoke"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
                   ManipulationMode="All" 
                   PointerWheelChanged="UserControl_PointerWheelChanged"
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
                   PointerMoved="FreeformGrid_OnPointerMoved" 
-                  PointerReleased="FreeformGrid_OnPointerReleased">
+                  PointerReleased="FreeformGrid_OnPointerReleased"
+                  Background="#3F343434">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect"/>
                 </Grid.Clip>
@@ -179,7 +179,7 @@
             <!--<Button x:Name="CancelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="62" Height="29" Content="Cancel" Background="{x:Null}" Foreground="{StaticResource ButtonTextBrush}" BorderBrush="{x:Null}" Padding="0" Margin="0,0,10,0"  />-->
 
             <Button x:Name="DisplayButton" HorizontalAlignment="Left" VerticalAlignment="Top" Height="21" Width="51" 
-                Style="{StaticResource xBlueTextButtonStyle}" Margin="0,0,0,0" Content="Display" >
+                Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke" Margin="0,0,0,0" Content="Display" >
                 <Button.Flyout>
                     <MenuFlyout >
                         <MenuFlyoutItem x:Name="GridOption" Text="Grid"/>
@@ -190,9 +190,9 @@
 
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="SelectButton" Content ="Select" VerticalAlignment="Bottom" Height="21" 
-                        Width="38" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding SelectButtonMargin}" />
+                        Width="38" Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke" Margin="{Binding SelectButtonMargin}" />
                 <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="21" 
-                        Width="51" Style="{StaticResource xBlueTextButtonStyle}" Margin="{Binding DeleteButtonMargin}">
+                        Width="51" Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke" Margin="{Binding DeleteButtonMargin}">
                     <Button.Flyout>
                         <MenuFlyout Placement="Bottom">
                             <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
@@ -203,7 +203,7 @@
                 </Button>
             </StackPanel>
             <Button x:Name="CloseButton" Content ="Close" HorizontalAlignment="Right" VerticalAlignment="Top" Height="21" 
-                Width="34" Style="{StaticResource xBlueTextButtonStyle}"/>
+                Width="34" Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke"/>
 
 
         </Grid>

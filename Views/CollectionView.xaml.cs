@@ -666,13 +666,25 @@ namespace Dash
                 var pos2 = Element2?.TransformToVisual(ToElement)
                                .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
 
-                _figure.StartPoint = pos1;
-                _bezier.Point1 = new Point(pos1.X + 150, pos1.Y);
-                _bezier.Point2 = new Point(pos2.X - 150, pos2.Y);
-                _bezier.Point3 = pos2;
+                double offset = Math.Abs((pos1.X - pos2.X) / 3);
+                if (pos1.X < pos2.X)
+                {
+                    _figure.StartPoint = new Point(pos1.X + Element1.ActualWidth / 2, pos1.Y);
+                    _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
+                    _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
+                    _bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                }
+                else
+                {
+                    _figure.StartPoint = new Point(pos1.X - Element1.ActualWidth / 2, pos1.Y);
+                    _bezier.Point1 = new Point(pos1.X - offset, pos1.Y);
+                    _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
+                    _bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                }
 
                 return _col;
             }
+            
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
             {
@@ -699,11 +711,11 @@ namespace Dash
             {
                 return;
             }
-            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.Pointer.PointerId);
+            _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
 
@@ -716,14 +728,16 @@ namespace Dash
             //};
             _connectionLine = new Path
             {
-                StrokeThickness = 10,
-                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 5,
+                Stroke = new SolidColorBrush(Colors.Orange),
                 IsHitTestVisible = false,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+            Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, FreeformCanvas);
+            _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(FreeformCanvas).Position;
             _lineBinding =
                 new MultiBinding<PathFigureCollection>(_converter, null);
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
@@ -787,7 +801,7 @@ namespace Dash
             {
                 return;
             }
-            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
             if (_currReference.IsOutput == ioReference.IsOutput)
@@ -799,7 +813,7 @@ namespace Dash
             if (_graph.IsCyclic())
             {
                 _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
-                CancelDrag(ioReference.Pointer);
+                CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
             }

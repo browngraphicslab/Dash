@@ -183,11 +183,11 @@ namespace Dash
             {
                 return;
             }
-            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.Pointer.PointerId);
+            _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
 
@@ -264,12 +264,12 @@ namespace Dash
             if (_graph.IsCyclic())
             {
                 _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
-                CancelDrag(ioReference.Pointer);
+                CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
             }
 
-            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
             if (_currReference.IsOutput == ioReference.IsOutput)

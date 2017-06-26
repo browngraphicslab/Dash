@@ -94,8 +94,8 @@ namespace Dash
             }
             else
             {
-                BackgroundBrush = new SolidColorBrush(Colors.White);
-                BorderBrush = new SolidColorBrush(Colors.DarkGoldenrod);
+                BackgroundBrush = new SolidColorBrush(Colors.WhiteSmoke);
+                BorderBrush = new SolidColorBrush(Colors.LightGray);
             }
             if (docModel.Field(DocumentModel.GetFieldKeyByName("X")) != null &&
                 docModel.Field(DocumentModel.GetFieldKeyByName("Y")) != null)
@@ -315,7 +315,7 @@ namespace Dash
         {
             IODragEnded?.Invoke(
                 new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false,
-                    e.Pointer, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
+                    e, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
         }
 
         private void Element_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -323,7 +323,7 @@ namespace Dash
             if (e.GetCurrentPoint(sender as FrameworkElement).Properties.IsLeftButtonPressed)
             {
                 IODragStarted?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel,
-                    true, e.Pointer, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
+                    true, e, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
             }
         }
 
