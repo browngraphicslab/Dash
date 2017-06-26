@@ -5,6 +5,8 @@ using System.Linq;
 using DashShared;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Controls;
+using static Dash.MainPage;
 
 namespace Dash
 {
@@ -250,73 +252,25 @@ namespace Dash
             }
         }
 
-        static public Key DataKey = new Key("Data");
-        static public Key FontWeightKey = new Key("FontWeight");
         public List<FrameworkElement> MakeViewUI()
         {
             var uieles = new List<FrameworkElement>();
 
-            if (DocumentType == new DocumentType("TextBox", "TextBox"))
+            if (DocumentType == TextingBox.DocumentType)
             {
-                var fw = GetField(FontWeightKey);
-                var fontWeight = fw is TextFieldModelController ? ((fw as TextFieldModelController).Data == "Bold" ? Windows.UI.Text.FontWeights.Bold : Windows.UI.Text.FontWeights.Normal) : Windows.UI.Text.FontWeights.Normal;
-                var data = GetField(DataKey) ?? null;
-                if (data != null)
-                    uieles.AddRange(new TextTemplateModel(0, 0, fontWeight, Windows.UI.Xaml.TextWrapping.NoWrap, Windows.UI.Xaml.Visibility.Visible).MakeViewUI(data, this));
+                uieles.AddRange(TextingBox.MakeView(this));
             }
-            if (DocumentType == DashConstants.DocumentTypeStore.ImageBoxDocumentType)
+            else if (DocumentType == ImageBox.DocumentType)
             {
-                var data = GetField(DataKey) ?? null;
-                if (data != null)
-                    uieles.AddRange(new ImageTemplateModel(0, 0).MakeViewUI(data, this));
+                uieles.AddRange(ImageBox.MakeView(this));
             }
-            if (DocumentType == DashConstants.DocumentTypeStore.CollectionDocumentType)
+            else if (DocumentType == StackingPanel.DocumentType)
             {
-                var data = GetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey) ?? null;
-                if (data != null)
-                    uieles.AddRange(new DocumentCollectionTemplateModel(0, 0).MakeViewUI(data, this));
+                uieles.AddRange(StackingPanel.MakeView(this));
             }
-            if (DocumentType == new DocumentType("StackView", "StackView"))
+            else if (DocumentType == GenericCollection.DocumentType)
             {
-                foreach (var f in EnumFields())
-                    //if (f.Value is DocumentModelFieldModelController)
-                    //{
-                    //    var fieldDoc = (f.Value as DocumentModelFieldModel).Data;
-                    //    var tt = new TranslateTransform();
-                    //    tt.Y = fieldDoc.DocumentType == new DocumentType("ImageBox", "ImageBox") ? 500 : 20;
-                    //    var fieldEles = fieldDoc.MakeViewUI();
-                    //    if (fieldEles != null)
-                    //        foreach (var ele in fieldEles)
-                    //        {
-                    //            var tg = new TransformGroup();
-                    //            tg.Children.Add(ele.RenderTransform);
-                    //            tg.Children.Add(tt);
-
-                    //            ele.RenderTransform = tg;
-                    //            uieles.Add(ele);
-                    //        }
-                    //}
-                    //else 
-                    if (f.Value is DocumentCollectionFieldModelController)
-                    {
-                        var fieldDocs = (f.Value as DocumentCollectionFieldModelController).Documents;
-                        foreach (var fdoc in fieldDocs)
-                        {
-                            var ues = fdoc.MakeViewUI();
-                            if (ues != null)
-                                foreach (var ele in ues)
-                                {
-                                    var tt = new TranslateTransform();
-                                    tt.Y = ele.Height;
-                                    var tg = new TransformGroup();
-                                    tg.Children.Add(ele.RenderTransform);
-                                    tg.Children.Add(tt);
-
-                                    ele.RenderTransform = tg;
-                                    uieles.Add(ele);
-                                }
-                        }
-                    }
+                uieles.AddRange(GenericCollection.MakeView(this));
             }
             else // FreeFormCollectionDocumentType
             {
