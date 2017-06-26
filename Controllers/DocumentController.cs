@@ -264,15 +264,15 @@ namespace Dash
                 if (data != null)
                     uieles.AddRange(new TextTemplateModel(0, 0, fontWeight, Windows.UI.Xaml.TextWrapping.NoWrap, Windows.UI.Xaml.Visibility.Visible).MakeViewUI(data, this));
             }
-            if (DocumentType == new DocumentType("ImageBox", "ImageBox"))
+            if (DocumentType == DashConstants.DocumentTypeStore.ImageBoxDocumentType)
             {
                 var data = GetField(DataKey) ?? null;
                 if (data != null)
                     uieles.AddRange(new ImageTemplateModel(0, 0).MakeViewUI(data, this));
             }
-            if (DocumentType == new DocumentType("CollectionView", "CollectionView"))
+            if (DocumentType == DashConstants.DocumentTypeStore.CollectionDocumentType)
             {
-                var data = GetField(DataKey) ?? null;
+                var data = GetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey) ?? null;
                 if (data != null)
                     uieles.AddRange(new DocumentCollectionTemplateModel(0, 0).MakeViewUI(data, this));
             }
@@ -318,7 +318,7 @@ namespace Dash
                         }
                     }
             }
-            else
+            else // FreeFormCollectionDocumentType
             {
                 foreach (var f in EnumFields())
                     if (f.Value is DocumentFieldModelController)

@@ -271,15 +271,22 @@ namespace Dash
             _collectionModel = model;
 
             SetInitialValues();
-            AddViewModels(MakeViewModels(_collectionModel.Documents));
+            AddViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
             //SetDimensions();
-            _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
-            
+           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
+            controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
+           // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
+        }
+
+        private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+           //  AddDocuments(_collectionModel.Documents.Data);
+            AddViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
 
         private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            AddDocuments(_collectionModel.Documents);
+           // AddDocuments(_collectionModel.Documents);
         }
 
         /// <summary>
@@ -530,14 +537,15 @@ namespace Dash
         /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
         /// </summary>
         /// <param name="documents"></param>
-        public void AddDocuments(ObservableCollection<DocumentController> documents)
+        public void AddDocuments(List<DocumentController> documents)
         {
+            var docList = new List<string>(_collectionModel.DocumentCollectionFieldModel.Data);
             foreach (var document in documents)
             {
-                if (!_collectionModel.Documents.Contains(document))
-                    _collectionModel.Documents.Add(document);
+                if (!docList.Contains(document.GetId()))
+                    docList.Add(document.GetId());
             }
-            AddViewModels(MakeViewModels(documents));
+            AddViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
         }
 
         /// <summary>
@@ -549,7 +557,8 @@ namespace Dash
         { 
             foreach (var document in documents)
             {
-                if(_collectionModel.Documents.Contains(document)) _collectionModel.Documents.Remove(document);
+                if (new List<string>(_collectionModel.DocumentCollectionFieldModel.Data).Contains(document.GetId()))
+                    ;//_collectionModel.DocumentCollectionFieldModel.Remove(document);
             }
             RemoveDefunctViewModels();
         }
@@ -560,25 +569,24 @@ namespace Dash
         /// <param name="viewModels"></param>
         private void AddViewModels(ObservableCollection<DocumentViewModel> viewModels)
         {
-            throw new NotImplementedException();
-            //foreach (DocumentViewModel viewModel in viewModels)
-            //{
-            //    bool found = false;
-            //    foreach (var vm in DocumentViewModels)
-            //        if (vm.DocumentModel.Id == viewModel.DocumentModel.Id)
-            //            found = true;
-            //    if (!found)
-            //    {
-            //        //viewModel.DefaultViewVisibility = Visibility.Collapsed;
-            //        //viewModel.ListViewVisibility = Visibility.Visible;
-            //        viewModel.ManipulationMode = ManipulationModes.System;
-            //        viewModel.DoubleTapEnabled = false;
-            //        //viewModel.CanMoveControl = false;
-            //        DocumentViewModels.Add(viewModel);
-            //    }
-            //}
-            ////ScaleDocumentsToFitCell();
-            //DataBindingSource = DocumentViewModels;
+            foreach (var viewModel in viewModels)
+            {
+                bool found = false;
+                foreach (var vm in DocumentViewModels)
+                    if (vm.DocumentController.GetId() == viewModel.DocumentController.GetId())
+                        found = true;
+                if (!found)
+                {
+                    //viewModel.DefaultViewVisibility = Visibility.Collapsed;
+                    //viewModel.ListViewVisibility = Visibility.Visible;
+                    viewModel.ManipulationMode = ManipulationModes.System;
+                    viewModel.DoubleTapEnabled = false;
+                    //viewModel.CanMoveControl = false;
+                    DocumentViewModels.Add(viewModel);
+                }
+            }
+            //ScaleDocumentsToFitCell();
+            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -605,32 +613,14 @@ namespace Dash
         /// </summary>
         /// <param name="documents"></param>
         /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentController> documents)
+        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
         {
-            throw new NotImplementedException();
-            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-
-            //ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            //foreach (DocumentModel document in documents)
-            //{
-            //    var documentDisplayDelegate = DocumentToDelegateMap.ContainsKey(document.Id) ? DocumentToDelegateMap[document.Id] : null;
-            //    if (documentDisplayDelegate == null) {
-            //        foreach (var deleg in docController.GetDelegates(document.Id))
-            //        {
-            //            var field = deleg.Field(DocumentModel.GetFieldKeyByName("CollectionDelegate")) as TextFieldModel;
-            //            if (field != null && field.Data == _collectionModel.Context.Id)
-            //                documentDisplayDelegate = deleg;
-            //        }
-            //        if (documentDisplayDelegate == null)
-            //        {
-            //            documentDisplayDelegate = document.MakeDelegate();
-            //            documentDisplayDelegate.SetField(DocumentModel.GetFieldKeyByName("CollectionDelegate"), new TextFieldModel(_collectionModel.Context.Id), true);
-            //         }
-            //        DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
-            //    }
-            //    viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
-            //}
-            //return viewModels;
+            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
+            foreach (var document in documents.Data)
+            {
+                viewModels.Add(new DocumentViewModel(ContentController.GetController(document) as DocumentController));
+            }
+            return viewModels;
         }
 
 
@@ -724,7 +714,9 @@ namespace Dash
                 if (sender.Text.Length > 0)
                 {
                     FieldBoxText = sender.Text;
-                    sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(_collectionModel.Documents), sender.Text.ToLower());
+                    throw new Exception();
+                    //sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(
+                    //    _collectionModel.DocumentCollectionFieldModel.Data), sender.Text.ToLower());
                 }
                 else
                 {

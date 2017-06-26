@@ -18,9 +18,9 @@ namespace Dash
         
         protected override List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
-            var collectionFieldModel = fieldModel as DocumentCollectionFieldModelController;
-            Debug.Assert(collectionFieldModel != null);
-            var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
+            var collectionFieldModelController = fieldModel as DocumentCollectionFieldModelController;
+            Debug.Assert(collectionFieldModelController != null);
+            var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, context);
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = new CollectionView(collectionViewModel);
 

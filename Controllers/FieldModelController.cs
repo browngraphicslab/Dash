@@ -17,6 +17,8 @@ namespace Dash
         ///     on the fieldModel!
         /// </summary>
         public FieldModel FieldModel { get; set; }
+        public delegate void FieldModelUpdated(FieldModelController sender);
+        public event FieldModelUpdated FieldModelUpdatedEvent;
 
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
@@ -34,6 +36,12 @@ namespace Dash
                     // update server
                 }
             }
+        }
+
+
+        public void OnDataUpdated()
+        {
+            FieldModelUpdatedEvent?.Invoke(this);
         }
 
         /// <summary>

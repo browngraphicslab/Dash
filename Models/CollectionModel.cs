@@ -12,12 +12,12 @@ namespace Dash.Models
 {
     public class CollectionModel
     {
-        public ObservableCollection<DocumentController> Documents;
+        public DocumentCollectionFieldModel DocumentCollectionFieldModel;
         public DocumentController Context;
 
-        public CollectionModel(ObservableCollection<DocumentController> documents, DocumentController context)
+        public CollectionModel(DocumentCollectionFieldModel docCollectionFieldModel, DocumentController context)
         {
-            Documents = documents;
+            DocumentCollectionFieldModel = docCollectionFieldModel;
             Context = context;
         }
 

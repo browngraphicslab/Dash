@@ -11,6 +11,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Data;
+using DashShared;
 
 namespace Dash
 {
@@ -18,7 +19,7 @@ namespace Dash
     {
         private bool fill;
         public ImageTemplateModel(double left = 0, double top = 0, double width = 0, double height = 0,
-            Visibility visibility = Visibility.Visible, bool fill = false)
+            Windows.UI.Xaml.Visibility visibility = Windows.UI.Xaml.Visibility.Visible, bool fill = false)
             : base(left, top, width, height, visibility)
         {
             this.fill = fill;
@@ -33,6 +34,9 @@ namespace Dash
             Debug.Assert(imageFieldModel != null);
             var image = new Image();
             image.Source = imageFieldModel.Data;
+            Width = context.GetField(DashConstants.KeyStore.WidthFieldKey) != null ? (context.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : 0;
+            Height = context.GetField(DashConstants.KeyStore.HeightFieldKey) != null ? (context.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController).Data : 0;
+
 
             var translateBinding = new Binding
             {

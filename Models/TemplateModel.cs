@@ -72,11 +72,11 @@ namespace Dash
         /// </summary>
         public virtual List<FrameworkElement> MakeViewUI(FieldModelController fieldModel, DocumentController context)
         {
-            //while (fieldModel is ReferenceFieldModelController)
-            //{
-            //    var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //    fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModelController).DocId).Field((fieldModel as ReferenceFieldModelController).FieldKey);
-            //}
+            while (fieldModel is ReferenceFieldModelController)
+            {
+                var rfm = (fieldModel as ReferenceFieldModelController).FieldModel as ReferenceFieldModel;
+                fieldModel = (ContentController.GetController(rfm.DocId) as DocumentController).GetField(rfm.FieldKey);
+            }
             if (fieldModel is DocumentFieldModelController)
             {
                 var doc = (fieldModel as DocumentFieldModelController).Data;

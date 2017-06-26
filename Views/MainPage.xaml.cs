@@ -150,7 +150,7 @@ namespace Dash
             var children = MainDocument.GetField(DashConstants.KeyStore.CollectionDocumentsListFieldKey) as DocumentCollectionFieldModelController;
             if (children != null)
             {
-                children.Documents.Add(docModel);
+                children.AddDocument(docModel);
                 //if (where.HasValue)
                 //{
                 //    docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
@@ -203,11 +203,25 @@ namespace Dash
             var oneImageDocumentController = new DocumentController(oneImageDocumentModel);
             ContentController.AddController(oneImageDocumentController);
             
-            var ifields = new Dictionary<Key, FieldModel>();
-            ifields[DocumentController.DataKey] = new ReferenceFieldModel(oneImageDocumentController.GetId(), DashConstants.KeyStore.ImageFieldKey);
-            var im = new DocumentModel(ifields, DashConstants.DocumentTypeStore.ImageBoxDocumentType);
+            var im = new DocumentModel(new Dictionary<Key,FieldModel>(), DashConstants.DocumentTypeStore.ImageBoxDocumentType);
+            var imfc = new DocumentFieldModelController(new DocumentModelFieldModel(im));
+            ContentController.AddController(imfc);
+            var imc = new DocumentController(im);
+            ContentController.AddController(imc);
+            var refFieldModel = new ReferenceFieldModel(oneImageDocumentController.GetId(), DashConstants.KeyStore.ImageFieldKey);
+            var rfmc = new ReferenceFieldModelController(refFieldModel);
+            ContentController.AddController(rfmc);
+            imc.SetField(DocumentController.DataKey, rfmc, true);
+            var widthFieldModel = new NumberFieldModel(500);
+            var wfmc = new NumberFieldModelController(widthFieldModel);
+            ContentController.AddController(wfmc);
+            var heightFieldModel = new NumberFieldModel(500);
+            var hfmc = new NumberFieldModelController(heightFieldModel);
+            ContentController.AddController(hfmc);
+            imc.SetField(DashConstants.KeyStore.WidthFieldKey, wfmc, true);
+            imc.SetField(DashConstants.KeyStore.HeightFieldKey, hfmc, true);
 
-            oneImageDocumentController.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(new DocumentModelFieldModel(im)), false);
+            oneImageDocumentController.SetField(DashConstants.KeyStore.LayoutKey, imfc, false);
             DisplayDocument(oneImageDocumentController);
             //DisplayDocument(recipe);
             //DisplayDocument(pricePerSqFt);

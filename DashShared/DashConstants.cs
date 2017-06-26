@@ -127,6 +127,8 @@ namespace DashShared
             public static Key CollectionDocumentsListFieldKey = new Key("A2CF442D-6E24-45E0-BEE1-7A449AF587DD", "CollectionField");
             public static Key XPositionFieldKey = new Key("CC6B105F-D73C-4076-973F-FAF2A4CA6218", "XPositionFieldKey");
             public static Key YPositionFieldKey = new Key("EF7CCB37-3512-463B-915A-EB8078702F14", "YPositionFieldKey");
+            public static Key WidthFieldKey = new Key("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "WidthFieldKey");
+            public static Key HeightFieldKey = new Key("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "HeightFieldKey");
         }
 
         public static class DocumentTypeStore
@@ -138,6 +140,7 @@ namespace DashShared
             public static DocumentType OneImageDocumentType = new DocumentType("FC8EF5EB-1A0B-433C-85B6-6929B974A4B7", "One Image");
 
             public static DocumentType ImageBoxDocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
+            public static DocumentType FreeFormCollectionDocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Free Form Collection");
         }
 
 
