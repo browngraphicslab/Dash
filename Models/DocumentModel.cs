@@ -123,7 +123,6 @@ namespace Dash
             {
                 return;
             }
-            Dictionary<Key, FieldModel> results;
             try
             {
                 opField.Execute(this);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates

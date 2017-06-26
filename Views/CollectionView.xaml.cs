@@ -613,14 +613,17 @@ namespace Dash
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
         /// </summary>
-        private Line _connectionLine;
+        private Path _connectionLine;
+
+        private MultiBinding<PathFigureCollection> _lineBinding;
+        private BezierConverter _converter;
 
         /// <summary>
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
         private OperatorView.IOReference _currReference;
 
-        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>();
+        private Dictionary<ReferenceFieldModel, Path> _lineDict = new Dictionary<ReferenceFieldModel, Path>();
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -631,6 +634,51 @@ namespace Dash
         /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
         /// </summary>
         //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
+
+        private class BezierConverter : IValueConverter
+        {
+            public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
+            {
+                Element1 = element1;
+                Element2 = element2;
+                ToElement = toElement;
+                _figure = new PathFigure();
+                _bezier = new BezierSegment();
+                _figure.Segments.Add(_bezier);
+                _col.Add(_figure);
+            }
+
+            public FrameworkElement Element1 { get; set; }
+            public FrameworkElement Element2 { get; set; }
+
+            public FrameworkElement ToElement { get; set; }
+
+            public Point Pos2 { get; set; }
+
+            private PathFigureCollection _col = new PathFigureCollection();
+            private PathFigure _figure;
+            private BezierSegment _bezier;
+
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                var pos1 = Element1.TransformToVisual(ToElement)
+                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
+                var pos2 = Element2?.TransformToVisual(ToElement)
+                               .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+
+                _figure.StartPoint = pos1;
+                _bezier.Point1 = new Point(pos1.X + 150, pos1.Y);
+                _bezier.Point2 = new Point(pos2.X - 150, pos2.Y);
+                _bezier.Point3 = pos2;
+
+                return _col;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         private class VisibilityConverter : IValueConverter
         {
@@ -659,13 +707,34 @@ namespace Dash
 
             _currReference = ioReference;
 
-            _connectionLine = new Line
+            //_connectionLine = new Line
+            //{
+            //    StrokeThickness = 10,
+            //    Stroke = new SolidColorBrush(Colors.Black),
+            //    IsHitTestVisible = false,
+            //    CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+            //};
+            _connectionLine = new Path
             {
                 StrokeThickness = 10,
                 Stroke = new SolidColorBrush(Colors.Black),
                 IsHitTestVisible = false,
-                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                CompositeMode =
+                    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+            _converter = new BezierConverter(ioReference.FrameworkElement, null, FreeformCanvas);
+            _lineBinding =
+                new MultiBinding<PathFigureCollection>(_converter, null);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+            Binding lineBinding = new Binding
+            {
+                Source = _lineBinding,
+                Path = new PropertyPath("Property")
+            };
+            PathGeometry pathGeo = new PathGeometry();
+            BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
+            _connectionLine.Data = pathGeo;
 
             Binding visibilityBinding = new Binding
             {
@@ -675,27 +744,27 @@ namespace Dash
             };
             _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
-            Binding x1Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(true),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-                Source = ioReference.ContainerView,
-                Path = new PropertyPath("RenderTransform")
-            };
-            Binding y1Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(false),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-                Source = ioReference.ContainerView,
-                Path = new PropertyPath("RenderTransform")
-            };
-            _connectionLine.SetBinding(Line.X1Property, x1Binding);
-            _connectionLine.SetBinding(Line.Y1Property, y1Binding);
+            //Binding x1Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(true),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = ioReference.ContainerView,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //Binding y1Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(false),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = ioReference.ContainerView,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
+            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
 
-            _connectionLine.X2 = _connectionLine.X1;
-            _connectionLine.Y2 = _connectionLine.Y1;
+            //_connectionLine.X2 = _connectionLine.X1;
+            //_connectionLine.Y2 = _connectionLine.Y1;
 
             FreeformCanvas.Children.Add(_connectionLine);
 
@@ -741,24 +810,26 @@ namespace Dash
                 _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
             }
 
-            Binding x2Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(true),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-                Source = ioReference.ContainerView,
-                Path = new PropertyPath("RenderTransform")
-            };
-            Binding y2Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(false),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-                Source = ioReference.ContainerView,
-                Path = new PropertyPath("RenderTransform")
-            };
-            _connectionLine.SetBinding(Line.X2Property, x2Binding);
-            _connectionLine.SetBinding(Line.Y2Property, y2Binding);
+            //Binding x2Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(true),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = ioReference.ContainerView,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //Binding y2Binding = new Binding
+            //{
+            //    Converter = new FrameworkElementToPosition(false),
+            //    ConverterParameter =
+            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
+            //    Source = ioReference.ContainerView,
+            //    Path = new PropertyPath("RenderTransform")
+            //};
+            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
+            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
+            _converter.Element2 = ioReference.FrameworkElement;
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
 
             if (ioReference.IsOutput)
             {
@@ -783,7 +854,7 @@ namespace Dash
         {
             if (_lineDict.ContainsKey(model))
             {
-                Line line = _lineDict[model];
+                Path line = _lineDict[model];
                 FreeformCanvas.Children.Remove(line);
                 _lineDict.Remove(model);
             }
@@ -804,8 +875,8 @@ namespace Dash
             if (_connectionLine != null)
             {
                 Point pos = e.GetCurrentPoint(FreeformCanvas).Position;
-                _connectionLine.X2 = pos.X;
-                _connectionLine.Y2 = pos.Y;
+                _converter.Pos2 = pos;
+                _lineBinding.ForceUpdate();
             }
         }
 
