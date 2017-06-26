@@ -231,5 +231,23 @@ namespace Dash
 
             return currentDelegates;
         }
+
+        public IEnumerable<KeyValuePair<Key, FieldModelController>> PropFields => EnumFields();
+
+        public IEnumerable<KeyValuePair<Key, FieldModelController>> EnumFields(bool ignorePrototype = false)
+        {
+            foreach (KeyValuePair<Key, FieldModelController> fieldModelController in Fields)
+            {
+                yield return fieldModelController;
+            }
+
+            if (!ignorePrototype)
+            {
+                var prototype = GetPrototype();
+                if (prototype != null)
+                    foreach (var field in prototype.EnumFields())
+                        yield return field;
+            }
+        }
     }
 }
