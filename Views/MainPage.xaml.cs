@@ -184,7 +184,9 @@ namespace Dash
             public DocumentController Document { get; set; }
             public void SetLayoutForDocument(DocumentModel layoutDoc)
             {
-                var layoutController = new DocumentFieldModelController(new DocumentModelFieldModel(layoutDoc));
+                var documentFieldModel = new DocumentModelFieldModel(layoutDoc);
+                var layoutController = new DocumentFieldModelController(documentFieldModel);
+                ContentController.AddModel(documentFieldModel);
                 ContentController.AddController(layoutController);
                 Document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
             }
