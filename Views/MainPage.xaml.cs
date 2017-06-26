@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Models.OperatorModels.Set;
 using Dash.ViewModels;
 using DashShared;
 
@@ -88,9 +89,34 @@ namespace Dash
             //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
             view.DataContext = opvm;
 
-
             DisplayDocument(opModel);
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
+
+            // add union operator for testing 
+            DocumentModel unionOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorModel());
+            docEndpoint.UpdateDocumentAsync(unionOpModel);
+            DocumentView unionView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel unionOpvm = new DocumentViewModel(unionOpModel);
+            unionView.DataContext = unionOpvm;
+            DisplayDocument(unionOpModel);
+
+            // add image url -> image operator for testing
+            DocumentModel imgOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorModel());
+            docEndpoint.UpdateDocumentAsync(imgOpModel);
+            DocumentView imgOpView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel imgOpvm = new DocumentViewModel(imgOpModel);
+            imgOpView.DataContext = imgOpvm;
+            DisplayDocument(imgOpModel);
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)

@@ -26,7 +26,7 @@ namespace Dash
         {
             return new List<FieldModel>
             {
-                new TextFieldModel()
+                new TextFieldModel("Uri")
             };
         }
 
@@ -34,7 +34,7 @@ namespace Dash
         {
             return new List<FieldModel>
             {
-                new ImageFieldModel(new Uri(""))//TODO ImageFieldModel should have a default constructor
+                new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))
             };
         }
 

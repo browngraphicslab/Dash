@@ -281,9 +281,10 @@ namespace Dash
             var sourceKey = keyController.CreateKeyAsync("source_url");
             fields[sourceKey] = new TextFieldModel("httpthisisaurl.com");
             var titleKey = keyController.CreateKeyAsync("title");
-            fields[titleKey] = new TextFieldModel("good food");
+            fields[titleKey] = new TextFieldModel("https://www.cesarsway.com/sites/newcesarsway/files/styles/large_article_preview/public/Common-dog-behaviors-explained.jpg");
             var f2fKey = keyController.CreateKeyAsync("f2f_url");
-            fields[f2fKey] = new TextFieldModel("f2furl.com");
+            fields[f2fKey] = new TextFieldModel("ms-appx://Dash/Assets/cat2.jpeg");
+            //fields[f2fKey] = new TextFieldModel("https://www.cesarsway.com/sites/newcesarsway/files/styles/large_article_preview/public/Common-dog-behaviors-explained.jpg");
 
             // create the type //TODO this is not going to work in the real world
             var dm = docController.CreateDocumentAsync("recipes");

@@ -26,6 +26,10 @@ namespace Dash
             }
         }
 
+        public ImageFieldModel()
+        {
+        }
+
         public ImageFieldModel(Uri image)
         {
             Data = new BitmapImage(image);

@@ -32,7 +32,12 @@ namespace Dash
             var imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
             Debug.Assert(imageFieldModel != null);
             var image = new Image();
-            image.Source = imageFieldModel.Data;
+            Binding binding = new Binding
+            {
+                Source = imageFieldModel,
+                Path = new PropertyPath("Data")
+            };
+            image.SetBinding(Image.SourceProperty, binding);
 
             var translateBinding = new Binding
             {
@@ -74,7 +79,7 @@ namespace Dash
             image.VerticalAlignment = VerticalAlignment.Top;
             
             if (fill)
-                image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
+                image.Stretch = Stretch.UniformToFill;
             return new List<FrameworkElement> { image };
         }
     }
