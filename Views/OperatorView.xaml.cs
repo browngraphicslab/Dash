@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Controllers;
 using Dash.ViewModels;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,9 +70,8 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             var reference = DataContext as ReferenceFieldModel;
-            var opFM = docEnd.GetFieldInDocument(reference) as OperatorFieldModel;
+            var opFM = (ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey) as OperatorFieldModelController).OperatorFieldModel;
             InputListView.ItemsSource = opFM.InputKeys;//TODO Make these binding in XAML
             OutputListView.ItemsSource = opFM.OutputKeys;//TODO Make these binding in XAML
         }
@@ -88,7 +88,9 @@ namespace Dash
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
-                OnIoDragStarted(ioRef);
+                CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+                view.StartDrag(ioRef);
+                //OnIoDragStarted(ioRef);
             }
         }
 
@@ -104,7 +106,9 @@ namespace Dash
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-                OnIoDragStarted(ioRef);
+                CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+                view.StartDrag(ioRef);
+                //OnIoDragStarted(ioRef);
             }
         }
 
@@ -133,7 +137,9 @@ namespace Dash
             Ellipse el = sender as Ellipse;
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            OnIoDragEnded(ioRef);
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view.EndDrag(ioRef);
+            //OnIoDragEnded(ioRef);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -142,7 +148,9 @@ namespace Dash
             Ellipse el = sender as Ellipse;
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            OnIoDragEnded(ioRef);
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view.EndDrag(ioRef);
+            //OnIoDragEnded(ioRef);
         }
     }
 }

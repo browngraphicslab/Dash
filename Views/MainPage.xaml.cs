@@ -84,51 +84,47 @@ namespace Dash
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
-
-            throw new NotImplementedException();
-            ////Create Operator document
-            //var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //DocumentModel opModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
-            //docEndpoint.UpdateDocumentAsync(opModel);
-            //DocumentView view = new DocumentView
-            //{
-            //    Width = 200,
-            //    Height = 200
-            //};
-            //DocumentViewModel opvm = new DocumentViewModel(opModel);
-            ////OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-            //view.DataContext = opvm;
+            //Create Operator document
+            var opModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
+            DocumentView view = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel opvm = new DocumentViewModel(opModel);
+            //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+            view.DataContext = opvm;
 
 
-            //DisplayDocument(opModel);
-            ////xFreeformView.AddOperatorView(opvm, view, 50, 50);
+            DisplayDocument(opModel);
+            //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
             //DocumentModel unionOpModel =
             //    OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorModel());
+            //var unionOpCont = new DocumentController(unionOpModel);
             //docEndpoint.UpdateDocumentAsync(unionOpModel);
             //DocumentView unionView = new DocumentView
             //{
             //    Width = 200,
             //    Height = 200
             //};
-            //DocumentViewModel unionOpvm = new DocumentViewModel(unionOpModel);
+            //DocumentViewModel unionOpvm = new DocumentViewModel(unionOpCont);
             //unionView.DataContext = unionOpvm;
-            //DisplayDocument(unionOpModel);
+            //DisplayDocument(unionOpCont);
 
-            //// add image url -> image operator for testing
-            //DocumentModel imgOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorModel());
-            //docEndpoint.UpdateDocumentAsync(imgOpModel);
-            //DocumentView imgOpView = new DocumentView
-            //{
-            //    Width = 200,
-            //    Height = 200
-            //};
-            //DocumentViewModel imgOpvm = new DocumentViewModel(imgOpModel);
-            //imgOpView.DataContext = imgOpvm;
-            //DisplayDocument(imgOpModel);
+            // add image url -> image operator for testing
+            DocumentController imgOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorModel());
+            DocumentView imgOpView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel imgOpvm = new DocumentViewModel(imgOpModel);
+            imgOpView.DataContext = imgOpvm;
+            DisplayDocument(imgOpModel);
         }
 
         private async void AddShape(object sender, TappedRoutedEventArgs e)
@@ -227,6 +223,33 @@ namespace Dash
             public virtual List<FrameworkElement> makeView(DocumentController docController)
             {
                 return new List<FrameworkElement>();
+            }
+        }
+
+        public class OperatorBox : CourtesyDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("53FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
+
+            public OperatorBox(ReferenceFieldModel refToOp)
+            {
+                // create a layout for the image
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                    [DashConstants.KeyStore.DataKey] = refToOp
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
+                return OperatorBox.MakeView(docController);
+            }
+            public static List<FrameworkElement> MakeView(DocumentController docController)
+            {
+                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
+                ReferenceFieldModel rfm = (data as ReferenceFieldModelController).ReferenceFieldModel;
+                OperatorView opView = new OperatorView {DataContext = rfm};
+                return new List<FrameworkElement> {opView};
             }
         }
 

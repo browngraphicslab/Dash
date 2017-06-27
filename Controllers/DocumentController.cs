@@ -234,6 +234,17 @@ namespace Dash
             return currentDelegates;
         }
 
+        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
+        {
+            //TODO Remove existing output references and add new output reference
+            //if (InputReferences.ContainsKey(fieldKey))
+            //{
+            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
+            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
+            //}
+            GetField(fieldKey).InputReference = reference;
+        }
+
         public IEnumerable<KeyValuePair<Key, FieldModelController>> PropFields => EnumFields();
 
         public IEnumerable<KeyValuePair<Key, FieldModelController>> EnumFields(bool ignorePrototype = false)
@@ -258,11 +269,11 @@ namespace Dash
             sp.Margin = new Thickness(10, 0, 0, 0);
             foreach (var f in EnumFields())
             {
-                if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController)
+                if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
                 {
                     var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
-                    var label  = new TextBlock()  { Text = f.Key.Name + ": " };
-                    var dBox   = new DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var label = new TextBlock() { Text = f.Key.Name + ": " };
+                    var dBox = new DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
                     foreach (var ele in dBox.MakeViewUI())
@@ -310,6 +321,10 @@ namespace Dash
             else if (DocumentType == GenericCollection.DocumentType)
             {
                 uieles.AddRange(GenericCollection.MakeView(this));
+            }
+            else if (DocumentType == OperatorBox.DocumentType)
+            {
+                uieles.AddRange(OperatorBox.MakeView(this));
             }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {

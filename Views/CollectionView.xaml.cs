@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -86,7 +87,7 @@ namespace Dash
             {
                 var docVM = sender[(int) e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                //throw new NotImplementedException();
+                //throw new NotImplementedException(); // TODO implement adding the edges once you have operators 
                 //OperatorFieldModel ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
                 //if (ofm != null)
                 //{
@@ -842,20 +843,16 @@ namespace Dash
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
 
-            throw new NotImplementedException();
-
-            //if (ioReference.IsOutput)
-            //{
-            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //    docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
-            //    _connectionLine = null;
-            //}
-            //else
-            //{
-            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //    docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
-            //    _connectionLine = null;
-            //}
+            if (ioReference.IsOutput)
+            {
+                ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+                _connectionLine = null;
+            }
+            else
+            {
+                ContentController.GetController<DocumentController>(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+                _connectionLine = null;
+            }
         }
 
         /// <summary>
@@ -897,9 +894,6 @@ namespace Dash
         {
             if (_currReference != null)
             {
-                DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                FieldModel fm = docEnd.GetFieldInDocument(_currReference.ReferenceFieldModel);
-                Debug.WriteLine(fm);
                 CancelDrag(e.Pointer);
 
                 //DocumentView view = new DocumentView();

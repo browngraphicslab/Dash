@@ -67,16 +67,7 @@ namespace Dash
             Map.Add(Id, this);
         }
 
-        //public virtual void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
-        //{
-        //    //TODO Remove existing output references and add new output reference
-        //    //if (InputReferences.ContainsKey(fieldKey))
-        //    //{
-        //    //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
-        //    //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
-        //    //}
-        //    Field(fieldKey).InputReference = reference;
-        //}
+        
 
 
 

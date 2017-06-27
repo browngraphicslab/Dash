@@ -1,4 +1,5 @@
 ﻿using System;
+using Dash.Controllers;
 
 namespace Dash
 {
@@ -31,7 +32,10 @@ namespace Dash
             {
                 return new ReferenceFieldModelController(model as ReferenceFieldModel);
             }
-
+            if (model is OperatorFieldModel)
+            {
+                return new OperatorFieldModelController(model as OperatorFieldModel); 
+            }
             throw new ArgumentException("We do not have a conversion yet for the passed in model");
         }
 
