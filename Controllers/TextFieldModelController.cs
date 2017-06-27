@@ -24,10 +24,10 @@
             {
                 if (SetProperty(ref TextFieldModel.Data, value))
                 {
-                    OnDataUpdated();
                     // update local
                     // update server
                 }
+                OnDataUpdated();
             }
         }
 

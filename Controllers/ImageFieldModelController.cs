@@ -30,10 +30,10 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, value))
                 {
-                    OnDataUpdated();
                     // update local
                     // update server    
                 }
+                OnDataUpdated();
             }
         }
 
@@ -78,6 +78,6 @@ namespace Dash
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel { get; }
-        
+
     }
 }
