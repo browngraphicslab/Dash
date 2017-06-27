@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -122,8 +123,8 @@ namespace Dash.Views
             border.Child = grid;
             _mainMenu = new RadialMenu();
             grid.Children.Add(_mainMenu);
-            IsVisible = false;
             _mainMenu.TogglePie();
+            _mainMenu.Visibility = Visibility.Collapsed;
 
             SetDefaultMenuStyle();
         }
