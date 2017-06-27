@@ -52,24 +52,26 @@ namespace Dash
 
         public List<DocumentModel> GetDocumentsAsync()
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var outputDocs = new List<DocumentModel>();
+            throw new NotImplementedException();
 
-            foreach (var doc in _documents)
-            {
-                var fields = new Dictionary<Key, FieldModel>();
-                fields[PriceKey] = new NumberFieldModel(doc.price);
-                fields[SqftKey] = new NumberFieldModel(doc.sqft);
-                fields[TestKey] = new NumberFieldModel(doc.test);
-                fields[Test2Key] = new NumberFieldModel(doc.test);
+            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //var outputDocs = new List<DocumentModel>();
 
-                var newDoc = docController.CreateDocumentAsync(DocumentType);
-                newDoc.SetFields(fields);
+            //foreach (var doc in _documents)
+            //{
+            //    var fields = new Dictionary<Key, FieldModel>();
+            //    fields[PriceKey] = new NumberFieldModel(doc.price);
+            //    fields[SqftKey] = new NumberFieldModel(doc.sqft);
+            //    fields[TestKey] = new NumberFieldModel(doc.test);
+            //    fields[Test2Key] = new NumberFieldModel(doc.test);
 
-                outputDocs.Add(newDoc);
-            }
+            //    var newDoc = docController.CreateDocumentAsync(DocumentType);
+            //    newDoc.SetFields(fields);
 
-            return outputDocs;
+            //    outputDocs.Add(newDoc);
+            //}
+
+            //return outputDocs;
         }
     }
 }

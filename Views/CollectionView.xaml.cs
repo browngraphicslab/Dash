@@ -86,37 +86,39 @@ namespace Dash
             {
                 var docVM = sender[(int) e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModel ofm = docVM.DocumentModel.Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
-                if (ofm != null)
-                {
-                    foreach (var inputKey in ofm.InputKeys)
-                    {
-                        foreach (var outputKey in ofm.OutputKeys)
-                        {
-                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
-                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
-                            _graph.AddEdge(irfm,orfm);
-                        }
-                    }
-                }
+                //throw new NotImplementedException();
+                //OperatorFieldModel ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
+                //if (ofm != null)
+                //{
+                //    foreach (var inputKey in ofm.InputKeys)
+                //    {
+                //        foreach (var outputKey in ofm.OutputKeys)
+                //        {
+                //            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
+                //            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
+                //            _graph.AddEdge(irfm,orfm);
+                //        }
+                //    }
+                //}
             }
             else if (e.CollectionChange == CollectionChange.ItemRemoved)
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModel ofm = docVM.DocumentModel.Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
-                if (ofm != null)
-                {
-                    foreach (var inputKey in ofm.InputKeys)
-                    {
-                        foreach (var outputKey in ofm.OutputKeys)
-                        {
-                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
-                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
-                            _graph.RemoveEdge(irfm, orfm);
-                        }
-                    }
-                }
+                throw new NotImplementedException();
+                //OperatorFieldModel ofm = docVM.DocumentModel.Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
+                //if (ofm != null)
+                //{
+                //    foreach (var inputKey in ofm.InputKeys)
+                //    {
+                //        foreach (var outputKey in ofm.OutputKeys)
+                //        {
+                //            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
+                //            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
+                //            _graph.RemoveEdge(irfm, orfm);
+                //        }
+                //    }
+                //}
             }
         }
 
@@ -840,18 +842,20 @@ namespace Dash
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
 
-            if (ioReference.IsOutput)
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
-                _connectionLine = null;
-            }
-            else
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
-                _connectionLine = null;
-            }
+            throw new NotImplementedException();
+
+            //if (ioReference.IsOutput)
+            //{
+            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+            //    _connectionLine = null;
+            //}
+            //else
+            //{
+            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+            //    _connectionLine = null;
+            //}
         }
 
         /// <summary>

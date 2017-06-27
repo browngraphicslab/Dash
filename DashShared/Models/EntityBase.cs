@@ -8,8 +8,26 @@ using Newtonsoft.Json;
 
 namespace DashShared
 {
+    /// <summary>
+    /// the base class for anything that is stored in the Database, with few exceptions every model
+    /// should inherit from this class.
+    /// </summary>
     public abstract class EntityBase
     {
+        /// <summary>
+        /// Creates a new instance of <see cref="EntityBase"/> which can be stored in the database since
+        /// it has a unique id. By default <paramref name="AutomaticallyGenerateNewId"/> is true and the
+        /// class will generate it's own unique id.
+        /// </summary>
+        /// <param name="AutomaticallyGenerateNewId"></param>
+        protected EntityBase(bool AutomaticallyGenerateNewId = true)
+        {
+            if (AutomaticallyGenerateNewId)
+            {
+                Id = Util.GenerateNewId();
+            }
+        }
+
         /// <summary>
         /// Object unique identifier
         /// </summary>

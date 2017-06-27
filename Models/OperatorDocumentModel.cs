@@ -30,7 +30,7 @@ namespace Dash
             for (int i = 0; i < inputKeys.Count; ++i)
             {
                 fields[inputKeys[i]] = inputs[i];
-                layout.Fields[inputKeys[i]] = new TextTemplateModel(15, i * 30, FontWeights.Normal);
+                layout.Fields[inputKeys[i]] = new TextTemplateModel(15, i * 30, Windows.UI.Text.FontWeights.Normal);
             }
             for (int i = 0; i < outputKeys.Count; ++i)
             {
@@ -38,14 +38,17 @@ namespace Dash
                 Type t = outputs[i].GetType();
                 if(t == typeof(TextFieldModel))
                 {
-                   layout.Fields[outputKeys[i]] = new TextTemplateModel(15, (inputKeys.Count + i) * 30 + 40, FontWeights.Normal);
+                   layout.Fields[outputKeys[i]] = new TextTemplateModel(15, (inputKeys.Count + i) * 30 + 40, Windows.UI.Text.FontWeights.Normal);
                 } else if(t == typeof(ImageFieldModel))
                 {
                     layout.Fields[outputKeys[i]] = new ImageTemplateModel(15, (inputKeys.Count + i) * 30 + 40, 300, 300);
                 }
             }
-            fields[DocumentModel.LayoutKey] = new LayoutModelFieldModel(layout);
-            doc.SetFields(fields);
+            throw new NotImplementedException();
+            //fields[DocumentModel.LayoutKey] = new LayoutModelFieldModel(layout);
+            //doc.SetFields(fields);
+
+
             return doc;
         }
     }

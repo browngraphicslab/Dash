@@ -17,11 +17,6 @@ namespace Dash
     public abstract class OperatorFieldModel : FieldModel
     {
         /// <summary>
-        /// ID of the OperatorDocument that this OperatorFieldModel is in (Used for events)
-        /// </summary>
-        public string DocumentID { get; set; } //TODO probably remove this along with code in setter in OperatorDocumentModel
-
-        /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
         public abstract List<Key> InputKeys { get; }

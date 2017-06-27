@@ -1,72 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
+﻿using System.Collections.Generic;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
     /// <summary>
-    /// Base data class for documents; holds data and displays it as UIElement 
+    ///     Base data class for documents. If a document is a spread sheet, a field is a cell, and a fieldModel wraps
+    ///     the data which is stored in a cell
     /// </summary>
-    public abstract class FieldModel : ViewModelBase //TODO Should ViewModelBase be named something else or should FieldModel have a ViewModel
+    public abstract class FieldModel : EntityBase
     {
-        public delegate void FieldUpdatedEvent(FieldModel model);
+        public FieldModel()
+        {
+            // Initialize Local Variables
+            OutputReferences = new List<ReferenceFieldModel>();
 
-        public event FieldUpdatedEvent FieldUpdated;
+            // Add Any Events
+        }
 
-        private ReferenceFieldModel _inputReference;
 
         /// <summary>
-        /// Optional reference to a field that this field takes as input
+        ///     Optional reference to a separate <see cref="FieldModel" /> that this <see cref="FieldModel" /> takes as input
         /// </summary>
-        public ReferenceFieldModel InputReference
-        {
-            get { return _inputReference; }
-            set
-            {
-                _inputReference = value;
-                DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                cont.GetFieldInDocument(value).FieldUpdated += UpdateValue;
-                UpdateValue(cont.GetFieldInDocument(value));
-            }
-        }
+        public ReferenceFieldModel InputReference;
 
         /// <summary>
-        /// Virtual method to update the value of the FieldModel when the Data in the field the
-        /// InputReference references is updated
+        ///     List of references to fields that take this field as input
         /// </summary>
-        /// <param name="fieldReference"></param>
-        protected virtual void UpdateValue(FieldModel model)
-        {
-        }
-
-        /// <summary>
-        /// List of references to fields that take this field as input
-        /// </summary>
-        protected List<ReferenceFieldModel> OutputReferences { get; set; } = new List<ReferenceFieldModel>();
-
-        public void AddOutputReference(ReferenceFieldModel reference)
-        {
-            OutputReferences.Add(reference);
-        }
-
-        public void RemoveOutputReference(ReferenceFieldModel reference)
-        {
-            OutputReferences.Remove(reference); 
-        }
-
-        public FieldModel Copy()
-        {
-            return MemberwiseClone() as FieldModel;
-        }
-
-        protected virtual void OnFieldUpdated()
-        {
-            FieldUpdated?.Invoke(this);
-        }
+        public List<ReferenceFieldModel> OutputReferences;
     }
 }

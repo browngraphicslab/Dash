@@ -206,11 +206,16 @@ namespace Dash
             // clear any current children (fields) and then add them over again
             XGrid.Children.Clear();
             var elements = documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
-            foreach (var element in elements)
+            if (elements.Count == 0)
             {
-                //if (!(element is TextBlock))
-                    XGrid.Children.Add(element);
-            }
+                var panel = documentViewModel.DocumentController.MakeAllViewUI();
+                XGrid.Children.Add(panel);
+            } else
+                foreach (var element in elements)
+                {
+                    //if (!(element is TextBlock))
+                        XGrid.Children.Add(element);
+                }
         }
 
         /// <summary>
@@ -225,9 +230,6 @@ namespace Dash
                 XGrid.Children.Add(element);
             }
         }
-
-        
-      
 
         /// <summary>
         /// Called whenever a field is changed on the document

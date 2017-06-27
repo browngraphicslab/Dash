@@ -39,22 +39,11 @@ namespace Dash
             serviceCollection.AddSingleton<KeyEndpoint, KeyEndpoint>(); //TODO change to transient
 
             // Examples to be removed
-            serviceCollection.AddSingleton<ExampleApiSource, ExampleApiSource>(); //TODO remove this its an example
             serviceCollection.AddSingleton<PricePerSquareFootApi, PricePerSquareFootApi>(); //TODO remove this its an example
 
 
             // view model services, these are here because they rely on access to server controllers in their constructors
             serviceCollection.AddTransient<LoginViewModel>();
-
-
-            //signalr services
-
-            // create a connection to the hub
-            var hubConnection = new HubConnection(DashConstants.ServerBaseUrl + DashConstants.SignalrBaseUrl, false);
-
-            // add any proxies here
-            var shapeProxy = new ShapeProxy(hubConnection);
-            serviceCollection.AddSingleton<ShapeProxy>(shapeProxy);
 
             // initialize the connection to the hub, no more proxies can be added after this line
             //hubConnection.Start().Wait();

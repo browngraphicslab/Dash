@@ -91,14 +91,16 @@ namespace Dash.Sources.Api {
             //testGrid.Children.Add(testView);
             //LayoutModel.DefaultLayoutModel(testDocument);
 
+            throw new NotImplementedException();
+
             // put document results into collection model
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var collection = docController.CreateDocumentAsync("collection"); //_example?
-            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments), false);
-            DocumentViewModel cm = new DocumentViewModel(collection);
-            DocumentView v = new DocumentView(cm);
-            testGrid.Children.Add(v);
-            
+            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //var collection = docController.CreateDocumentAsync("collection"); //_example?
+            //collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments), false);
+            //DocumentViewModel cm = new DocumentViewModel(collection);
+            //DocumentView v = new DocumentView(cm);
+            //testGrid.Children.Add(v);
+
             return true;
         }
 
@@ -316,9 +318,11 @@ namespace Dash.Sources.Api {
                         //       concerns: rabbit hole-ing?
                         toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                     }
-                    var newDoc = docController.CreateDocumentAsync(apiDocType);
-                    newDoc.SetFields(toAdd);
-                    responseAsDocuments.Add(newDoc); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                    throw new NotImplementedException();
+
+                    //var newDoc = docController.CreateDocumentAsync(apiDocType);
+                    //newDoc.SetFields(toAdd);
+                    //responseAsDocuments.Add(newDoc); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
 

@@ -18,7 +18,9 @@ namespace Dash.Models
         public LayoutModel Data
         {
             get { return _data; }
-            set { SetProperty(ref _data, value); }
+            set { //SetProperty(ref _data, value);
+                throw new NotImplementedException();
+            }
         }
     }
 }

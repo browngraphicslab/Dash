@@ -51,16 +51,18 @@ namespace Dash
 
         public override void Execute(DocumentModel doc)
         {
-            NumberFieldModel numberA = doc.Field(AKey) as NumberFieldModel;
-            Debug.Assert(numberA != null, "Input is not a number");
+            throw new NotImplementedException();
 
-            NumberFieldModel numberB = doc.Field(BKey) as NumberFieldModel;
-            Debug.Assert(numberB != null, "Input is not a number");
+            //NumberFieldModel numberA = doc.Field(AKey) as NumberFieldModel;
+            //Debug.Assert(numberA != null, "Input is not a number");
 
-            double a = numberA.Data;
-            double b = numberB.Data;
-            (doc.Field(QuotientKey) as NumberFieldModel).Data = a / b;
-            (doc.Field(RemainderKey) as NumberFieldModel).Data = a % b;
+            //NumberFieldModel numberB = doc.Field(BKey) as NumberFieldModel;
+            //Debug.Assert(numberB != null, "Input is not a number");
+
+            //double a = numberA.Data;
+            //double b = numberB.Data;
+            //(doc.Field(QuotientKey) as NumberFieldModel).Data = a / b;
+            //(doc.Field(RemainderKey) as NumberFieldModel).Data = a % b;
         }
     }
 }

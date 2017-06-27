@@ -38,10 +38,12 @@ namespace Dash.Models.OperatorModels.Set
 
         public override void Execute(DocumentModel doc)
         {
-            DocumentCollectionFieldModel setA = doc.Field(AKey) as DocumentCollectionFieldModel;
-            DocumentCollectionFieldModel setB = doc.Field(BKey) as DocumentCollectionFieldModel;
-            
-            (doc.Field(IntersectionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
+            throw new NotImplementedException();
+
+            //DocumentCollectionFieldModel setA = doc.Field(AKey) as DocumentCollectionFieldModel;
+            //DocumentCollectionFieldModel setB = doc.Field(BKey) as DocumentCollectionFieldModel;
+
+            //(doc.Field(IntersectionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
         }
     }
 }

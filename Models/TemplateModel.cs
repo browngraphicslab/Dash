@@ -61,7 +61,7 @@ namespace Dash
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        protected virtual List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected virtual List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
             return null;
         }
@@ -70,16 +70,16 @@ namespace Dash
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        public virtual List<FrameworkElement> MakeViewUI(FieldModel fieldModel, DocumentModel context)
+        public virtual List<FrameworkElement> MakeViewUI(FieldModelController fieldModel, DocumentController context)
         {
-            while (fieldModel is ReferenceFieldModel)
+            while (fieldModel is ReferenceFieldModelController)
             {
-                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModel).DocId).Field((fieldModel as ReferenceFieldModel).FieldKey);
+                var rfm = (fieldModel as ReferenceFieldModelController).FieldModel as ReferenceFieldModel;
+                fieldModel = (ContentController.GetController(rfm.DocId) as DocumentController).GetField(rfm.FieldKey);
             }
-            if (fieldModel is DocumentModelFieldModel)
+            if (fieldModel is DocumentFieldModelController)
             {
-                var doc = (fieldModel as DocumentModelFieldModel).Data;
+                var doc = (fieldModel as DocumentFieldModelController).Data;
                 return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
             }
             return MakeView(fieldModel, context);

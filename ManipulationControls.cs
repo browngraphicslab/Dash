@@ -35,18 +35,7 @@ namespace Dash {
             _element = element;
             element.ManipulationDelta += ManipulateDeltaMoveAndScale;
             element.ManipulationMode = ManipulationModes.All;
-            //element.ManipulationMode = ManipulationModes.Scale;
-            //element.ManipulationDelta += ManipulateDeltaScale;
         }
-
-        //public void TurnOff()
-        //{
-        //    FrameworkElement handleControl = _element.Parent as FrameworkElement;
-
-        //    if (handleControl != null)
-        //        handleControl.ManipulationDelta -= ManipulateDeltaMoveAndScale;
-        //    _element.ManipulationDelta       -= ManipulateDeltaScale;
-        //}
 
         public void AddAllAndHandle()
         {
@@ -68,6 +57,7 @@ namespace Dash {
         {
             e.Handled = true;
         }
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>

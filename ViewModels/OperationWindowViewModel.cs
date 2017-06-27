@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Controls;
 using Dash.Models;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using FontWeights = Windows.UI.Text.FontWeights;
 
 namespace Dash
 {
@@ -20,21 +21,23 @@ namespace Dash
 
         public OperationWindowViewModel(DocumentModel inputDocument)
         {
-            InputDocument = inputDocument;
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-            foreach (var documentModelField in InputDocument.EnumFields())
-            {
-                if (documentModelField.Value is DocumentModelFieldModel || documentModelField.Value is LayoutModelFieldModel)
-                {
-                    continue;
-                }
-                fields.Add(documentModelField.Key, documentModelField.Value.Copy());
-                InputDocumentCollection[documentModelField.Key] =
-                    _defaultTemplateModels[documentModelField.Value.GetType()].MakeViewUI(documentModelField.Value, inputDocument).First();
-            }
-            DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            OutputDocument = docEndpoint.CreateDocumentAsync(InputDocument.DocumentType.Type);//TODO Should this be the same as source document?
-            OutputDocument.SetFields(fields);
+            throw new NotImplementedException();
+
+            //InputDocument = inputDocument;
+            //Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
+            //foreach (var documentModelField in InputDocument.EnumFields())
+            //{
+            //    if (documentModelField.Value is DocumentModelFieldModel || documentModelField.Value is LayoutModelFieldModel)
+            //    {
+            //        continue;
+            //    }
+            //    fields.Add(documentModelField.Key, documentModelField.Value.Copy());
+            //    InputDocumentCollection[documentModelField.Key] =
+            //        _defaultTemplateModels[documentModelField.Value.GetType()].MakeViewUI(documentModelField.Value, inputDocument).First();
+            //}
+            //DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //OutputDocument = docEndpoint.CreateDocumentAsync(InputDocument.DocumentType.Type);//TODO Should this be the same as source document?
+            //OutputDocument.SetFields(fields);
         }
 
         private Dictionary<Type, TemplateModel> _defaultTemplateModels = new Dictionary<Type, TemplateModel>
@@ -55,7 +58,7 @@ namespace Dash
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             FieldModel model = docEndpoint.GetFieldInDocument(fieldReference);
             DocumentModel docModel = docEndpoint.GetDocumentAsync(fieldReference.DocId);
-            InputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
+         //   InputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
         }
 
         private void OutputDocument_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
@@ -68,7 +71,7 @@ namespace Dash
             DocumentEndpoint docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
             FieldModel model = docEndpoint.GetFieldInDocument(fieldReference);
             DocumentModel docModel = docEndpoint.GetDocumentAsync(fieldReference.DocId);
-            OutputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
+          //  OutputDocumentCollection[fieldReference.FieldKey] = _defaultTemplateModels[model.GetType()].MakeViewUI(model, docModel).First();
         }
 
         public ObservableDictionary<Key, UIElement> InputDocumentCollection { get; set; } =

@@ -1,4 +1,5 @@
-﻿using Dash.Models;
+﻿using System;
+using Dash.Models;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -17,11 +18,11 @@ namespace Dash
         {
         }
         
-        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
-        { 
-            var collectionFieldModel = fieldModel as DocumentCollectionFieldModel;
-            Debug.Assert(collectionFieldModel != null);
-            var collectionModel = new CollectionModel(collectionFieldModel.Documents, context);
+        protected override List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
+        {
+            var collectionFieldModelController = fieldModel as DocumentCollectionFieldModelController;
+            Debug.Assert(collectionFieldModelController != null);
+            var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, context);
             var collectionViewModel = new CollectionViewModel(collectionModel);
             var view = new CollectionView(collectionViewModel);
 
