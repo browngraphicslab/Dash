@@ -25,7 +25,14 @@ namespace Dash
 
         public TappedEventHandler OnEllipseTapped;
         public TappedEventHandler OnEllipseTapped2;
-        
+
+        public DoubleTappedEventHandler OnDoubleTapped;
+
+        public UIElementCollection Children
+        {
+            get { return XCanvas.Children; }
+        }
+
         public OverlayCanvas()
         {
             this.InitializeComponent();
@@ -43,6 +50,11 @@ namespace Dash
         {
             OnEllipseTapped2.Invoke(sender, e);
             Debug.WriteLine("Ellipse tapped");
+        }
+
+        private void Canvas_Double_Tapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            OnDoubleTapped.Invoke(sender,e);
         }
 
     }

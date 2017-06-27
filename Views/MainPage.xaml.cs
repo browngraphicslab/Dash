@@ -18,6 +18,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Models;
+using Dash.ViewModels;
+using Dash.Views;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -35,6 +38,8 @@ namespace Dash
 
             OverlayCanvas.OnEllipseTapped += Ellipse_Tapped;
             OverlayCanvas.OnEllipseTapped2 += EllipseTapped2;
+
+            var radialmenu = new RadialMenuView(OverlayCanvas);
         }
 
         private void EllipseTapped2(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -84,8 +89,7 @@ namespace Dash
             //FreeformView.Canvas.Children.Add(view2);
             FreeformView.Canvas.Children.Add(view3);
             FreeformView.Canvas.Children.Add(view4);
-
-
         }
+
     }
 }
