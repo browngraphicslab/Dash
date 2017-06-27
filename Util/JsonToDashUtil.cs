@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using DashShared;
@@ -17,7 +18,8 @@ namespace Dash
         {
             //ParseYoutube();
             //ParseCustomer();
-            ParseArrayOfNestedDocument();
+            //ParseArrayOfNestedDocument();
+            NestedArrayOfDocuments();
         }
 
         public static async Task ParseYoutube()
@@ -25,7 +27,7 @@ namespace Dash
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            ParseJson(jtoken, true);
+            ParseJson(jtoken, null, true);
         }
 
         public static async Task ParseArrayOfNestedDocument()
@@ -34,7 +36,20 @@ namespace Dash
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            var documentModel = ParseJson(jtoken, true);
+            var documentModel = ParseJson(jtoken, null, true);
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+
+            var documentController = ContentController.GetController(documentModel.Id);
+        }
+
+        public static async Task NestedArrayOfDocuments()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/nestedArraysOfDocumentsJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            var jtoken = JToken.Parse(jsonString);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var documentModel = ParseJson(jtoken, null, true);
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
 
@@ -46,35 +61,26 @@ namespace Dash
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            var documentModel = ParseJson(jtoken, true);
+            var documentModel = ParseJson(jtoken, null, true);
             var documentController = ContentController.GetController(documentModel.Id);
         }
 
-        public static void ParseString()
+        public static EntityBase ParseJson(JToken jToken, DocumentSchema parentSchema, bool isRoot, bool isChildOfArray = false)
         {
-            var jsonString = @"{
-                                  ""data"": {
-                                    ""id"": ""42"",
-                                    ""type"": ""people""
-                                  }
-                                    }";
-            ParseJson(jsonString, true);
-
-        }
-
-        public static EntityBase ParseJson(JToken jToken, bool isRoot, bool isChildOfArray = false)
-        {
+            DocumentSchema schema;
 
             // deal with object
             if (jToken.Type == JTokenType.Object)
             {
                 var myObj = jToken as JObject;
 
+                schema = isRoot ? new DocumentSchema(jToken.Path) : parentSchema.GetSchemaIfExistsElseCreateOne(jToken);
+
                 var fields = new Dictionary<Key, FieldModel>();
-                foreach (var sub_obj in myObj) // Parse the rest of the JSON recursively as fields of this document
+                foreach (var subObj in myObj) // Parse the rest of the JSON recursively as fields of this document
                 {
-                    var key = new Key(DashShared.Util.GenerateNewId(), sub_obj.Key);
-                    var fieldModel = ParseJson(sub_obj.Value, false) as FieldModel;
+                    var key = schema.GetKeyIfExistsElseCreateOne(subObj.Key);
+                    var fieldModel = ParseJson(subObj.Value, schema, false) as FieldModel;
                     fields[key] = fieldModel;
                 }
                 var documentType = new DocumentType(DashShared.Util.GenerateNewId(), "Root Document");
@@ -91,7 +97,7 @@ namespace Dash
             }
 
             // deal with array
-            else if (jToken.Type == JTokenType.Array)
+            if (jToken.Type == JTokenType.Array)
             {
                 // forseeable issues here, 
                 // 1. If we happen upon an array of values "text", "number", etc... we have no way of dealing with that
@@ -100,9 +106,12 @@ namespace Dash
                 //      there might be a cleaner way.
                 var myArray = jToken as JArray;
                 var documentModels = new List<DocumentModel>();
+
+                parentSchema = isRoot ? new DocumentSchema(jToken.Path) : parentSchema;
+
                 foreach (var item in myArray)
                 {
-                    var dm = ParseJson(item, false, true) as DocumentModel;
+                    var dm = ParseJson(item, parentSchema, false, true) as DocumentModel;
                     if (dm == null)
                         throw new NotImplementedException("We have no way of creating lists of anything other than documents at the moment!");
                     documentModels.Add(dm);
@@ -125,47 +134,103 @@ namespace Dash
             }
 
             // deal with value
-            else
+            try
             {
-                try
+                var myValue = jToken as JValue;
+                var type = myValue.Type;
+                switch (type)
                 {
-                    var myValue = jToken as JValue;
-                    var type = myValue.Type;
-                    switch (type)
-                    {
-                        case JTokenType.Object: // A Json Object is defined by {}
-                        case JTokenType.Array: // A Json Array is defined by []
-                        case JTokenType.Property: // A Json Property is a (Key, JToken) pair and can only be found in Json Objects
-                            throw new NotImplementedException("We should have dealt with this earlier");
-                        case JTokenType.Constructor:
-                        case JTokenType.Comment:
-                        case JTokenType.Null:
-                        case JTokenType.Raw:
-                        case JTokenType.Undefined:
-                        case JTokenType.Bytes:
-                        case JTokenType.None:
-                            throw new NotImplementedException();
-                        case JTokenType.Integer:
-                        case JTokenType.Float:
-                            return new NumberFieldModel(jToken.ToObject<double>());
-                        case JTokenType.String:
-                        case JTokenType.Boolean:
-                        case JTokenType.Date:
-                        case JTokenType.Uri:
-                        case JTokenType.Guid:
-                        case JTokenType.TimeSpan:
-                            return new TextFieldModel(jToken.ToObject<string>());
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                catch (InvalidCastException e)
-                {
-                    Console.WriteLine(e);
-                    throw;
+                    case JTokenType.Object: // A Json Object is defined by {}
+                    case JTokenType.Array: // A Json Array is defined by []
+                    case JTokenType.Property: // A Json Property is a (Key, JToken) pair and can only be found in Json Objects
+                        throw new NotImplementedException("We should have dealt with this earlier");
+                    case JTokenType.Constructor:
+                    case JTokenType.Comment:
+                    case JTokenType.Null:
+                    case JTokenType.Raw:
+                    case JTokenType.Undefined:
+                    case JTokenType.Bytes:
+                    case JTokenType.None:
+                        throw new NotImplementedException();
+                    case JTokenType.Integer:
+                    case JTokenType.Float:
+                        return new NumberFieldModel(jToken.ToObject<double>());
+                    case JTokenType.String:
+                    case JTokenType.Boolean:
+                    case JTokenType.Date:
+                    case JTokenType.Uri:
+                    case JTokenType.Guid:
+                    case JTokenType.TimeSpan:
+                        return new TextFieldModel(jToken.ToObject<string>());
+                    default:
+                        throw new ArgumentOutOfRangeException();
                 }
             }
-            
+            catch (InvalidCastException e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+        }
+    }
+
+    public class DocumentSchema
+    {
+        public List<DocumentSchema> NestedDocumentSchemas { get; set; }
+
+        public List<Key> DocumentKeys { get; set; }
+
+        public DocumentType DocumentType { get; set; }
+
+        public DocumentSchema(string path)
+        {
+            NestedDocumentSchemas = new List<DocumentSchema>();
+            DocumentKeys = new List<Key>();
+            DocumentType = new DocumentType(DashShared.Util.GenerateNewId(), ConvertPathToUniqueName(path));
+        }
+
+        private string ConvertPathToUniqueName(string path)
+        {
+            return Regex.Replace(path, @"\[\d+?\]", "");
+        }
+
+        public Key GetKeyIfExistsElseCreateOne(string keyName)
+        {
+            // try to get the current key from the list of document keys
+            var currentKey = DocumentKeys.FirstOrDefault(key => key.Name == keyName);
+
+            // if the current key is null then create one and add it to the list
+            if (currentKey == null)
+            {
+                currentKey = new Key(DashShared.Util.GenerateNewId(), keyName);
+                DocumentKeys.Add(currentKey);
+            }
+
+            // return the current key
+            return currentKey;
+        }
+
+        public DocumentSchema GetSchemaIfExistsElseCreateOne(JToken jToken)
+        {
+            var uniquePath = ConvertPathToUniqueName(jToken.Path);
+            var currentSchema = NestedDocumentSchemas.FirstOrDefault(schema => schema.DocumentType.Type == uniquePath);
+            if (currentSchema == null)
+            {
+                Debug.Assert(ShouldWeGenerateSchema(jToken));
+                currentSchema = new DocumentSchema(uniquePath);
+                NestedDocumentSchemas.Add(currentSchema);
+            }
+            return currentSchema;
+        }
+
+        private static bool ShouldWeGenerateSchema(JToken jToken)
+        {
+            // either the path ends with [0] indicating that we are at the first document in an array
+            // or the JToken is an object and we only have one instance of it so the path does not end
+            // with brackets with a number inside i.e. [123]
+            return jToken.Path.EndsWith("[0]") ||
+                   (jToken.Type == JTokenType.Object && !Regex.IsMatch(jToken.Path, @"\[\d+\]$"));
         }
     }
 }

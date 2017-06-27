@@ -264,6 +264,7 @@
     <Content Include="Assets\grid.gif" />
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
+    <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
     <Content Include="Assets\youtubeJson.txt" />
