@@ -32,7 +32,9 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    UpdateValue(InputReference);
+                    UpdateValue(ContentController.GetController<DocumentController>(value.DocId).GetField(value.FieldKey));
+                    ContentController.GetController<DocumentController>(value.DocId).GetField(value.FieldKey)
+                        .FieldModelUpdatedEvent += UpdateValue;
                     // update server
                 }
             }
@@ -55,7 +57,7 @@ namespace Dash
         ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
         /// </summary>
         /// <param name="fieldReference"></param>
-        protected virtual void UpdateValue(ReferenceFieldModel fieldReference)
+        protected virtual void UpdateValue(FieldModelController fieldModel)
         {
         }
 

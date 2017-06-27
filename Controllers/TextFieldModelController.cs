@@ -24,10 +24,16 @@
             {
                 if (SetProperty(ref TextFieldModel.Data, value))
                 {
+                    OnDataUpdated();
                     // update local
                     // update server
                 }
             }
+        }
+
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            Data = (fieldModel as TextFieldModelController).Data;
         }
     }
 }

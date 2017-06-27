@@ -16,7 +16,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
-using Dash.Controllers;
 using Dash.ViewModels;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -71,9 +70,15 @@ namespace Dash
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var reference = DataContext as ReferenceFieldModel;
+            /* 
             var opFM = (ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey) as OperatorFieldModelController).OperatorFieldModel;
             InputListView.ItemsSource = opFM.InputKeys;//TODO Make these binding in XAML
             OutputListView.ItemsSource = opFM.OutputKeys;//TODO Make these binding in XAML
+            */
+            var opCont = ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey) as OperatorFieldModelController;
+            Debug.Assert(opCont != null);
+            InputListView.ItemsSource = opCont.InputKeys;
+            OutputListView.ItemsSource = opCont.OutputKeys;
         }
 
         /// <summary>

@@ -67,6 +67,7 @@ namespace Dash
         /// <param name="height">Height of the window</param>
         public OperationWindow(int width, int height, OperationWindowViewModel viewModel)
         {
+            throw new NotImplementedException();
             this.InitializeComponent();
             Width = width;
             Height = height;
@@ -74,15 +75,14 @@ namespace Dash
 
             //Create Operator document
             var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            DocumentModel opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel()).DocumentModel;
-            docEndpoint.UpdateDocumentAsync(opModel);
+            //DocumentModel opModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel()).DocumentModel;
+            //docEndpoint.UpdateDocumentAsync(opModel);
             DocumentView view = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            throw new NotImplementedException();
 
             //DocumentViewModel opvm = new DocumentViewModel(opModel);
             //opvm.IODragStarted += Vm_IODragStarted;

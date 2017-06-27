@@ -84,9 +84,10 @@ namespace Dash
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
+            
             //Create Operator document
             var opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
+                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
             DocumentView view = new DocumentView
             {
                 Width = 200,
@@ -96,8 +97,9 @@ namespace Dash
             //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
             view.DataContext = opvm;
 
-
             DisplayDocument(opModel);
+
+         
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
@@ -116,7 +118,7 @@ namespace Dash
 
             // add image url -> image operator for testing
             DocumentController imgOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorModel());
+                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
             DocumentView imgOpView = new DocumentView
             {
                 Width = 200,
@@ -258,6 +260,7 @@ namespace Dash
             public static Key PrefixKey = new Key("AC1B4A0C-CFBF-43B3-B7F1-D7FC9E5BEEBE", "Text Prefix");
             public static Key FontWeightKey = new Key("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
             public static DocumentType DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
+
             public TextingBox(ReferenceFieldModel refToText)
             {
                 // create a layout for the image
@@ -278,7 +281,27 @@ namespace Dash
                
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
-                    return new TextTemplateModel(0,0,fontWeight).MakeViewUI(data, docController);
+                {
+                    var uiElements = new TextTemplateModel(0, 0, fontWeight).MakeViewUI(data, docController);
+
+                    var reference = data as ReferenceFieldModelController;
+                    Debug.Assert(reference != null);
+                    var tb = uiElements[0];
+                    tb.DataContext = reference.ReferenceFieldModel;
+                    tb.ManipulationMode = ManipulationModes.All;
+                    tb.ManipulationStarted += (sender, args) => args.Complete();
+                    tb.PointerPressed += delegate(object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    return uiElements; 
+                }
                 return new List<FrameworkElement>();
             }
         }
@@ -300,7 +323,27 @@ namespace Dash
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
-                    return new ImageTemplateModel(0, 0).MakeViewUI(data, docController);
+                {
+                    var uiElements = new ImageTemplateModel(0, 0).MakeViewUI(data, docController);
+
+                    var reference = data as ReferenceFieldModelController;
+                    Debug.Assert(reference != null);
+                    var tb = uiElements[0];
+                    tb.DataContext = reference.ReferenceFieldModel;
+                    tb.ManipulationMode = ManipulationModes.All;
+                    tb.ManipulationStarted += (sender, args) => args.Complete();
+                    tb.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    return uiElements;
+                }
                 return new List<FrameworkElement>();
             }
             public override List<FrameworkElement> makeView(DocumentController docController)
@@ -393,13 +436,14 @@ namespace Dash
             public TwoImages()
             {
                 // create a document with two images
-                var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
+                var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+                var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
                 var tModel = new TextFieldModel("Hello World!");
                 var fields = new Dictionary<Key, FieldModel>
                 {
                     [TextFieldKey] = tModel,
                     [Image1FieldKey] = imModel,
-                    [Image2FieldKey] = imModel
+                    [Image2FieldKey] = imModel2
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
 
@@ -414,9 +458,39 @@ namespace Dash
             
         }
 
+        public class Numbers : CourtesyDocument
+        {
+            public static DocumentType NumbersType = new DocumentType("8FC422AB-015E-4B72-A28B-16271808C888", "Numbers"); 
+            public static Key Number1FieldKey = new Key("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
+            public static Key Number2FieldKey = new Key("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
+            public static Key Number3FieldKey = new Key("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
+
+            public Numbers()
+            {
+                // create a document with two images
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                    [Number1FieldKey] = new NumberFieldModel(789),
+                    [Number2FieldKey] = new NumberFieldModel(23),
+                    [Number3FieldKey] = new NumberFieldModel(8)
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NumbersType)).GetReturnedDocumentController();
+
+                var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey)).Document;
+                var imBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number2FieldKey)).Document;
+                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey)).Document;
+
+                var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
+
+                //SetLayoutForDocument(stackPan.DocumentModel);
+            }
+
+        }
+
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages().Document);
+            DisplayDocument(new Numbers().Document);
         }
 
 

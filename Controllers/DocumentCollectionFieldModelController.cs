@@ -41,7 +41,6 @@ namespace Dash
 
         public void AddDocument(DocumentController docController)
         {
-
             Documents.Add(docController);
             DocumentCollectionFieldModel.Data = Documents.Select((d) => d.GetId());
 

@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash.Models.OperatorModels.Set
 {
+    /* 
     class IntersectionOperatorModel : OperatorFieldModel
     {
         //Input keys
@@ -46,4 +47,5 @@ namespace Dash.Models.OperatorModels.Set
             //(doc.Field(IntersectionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
         }
     }
+    */ 
 }

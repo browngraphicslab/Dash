@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dash.Models.OperatorModels.Set
+namespace Dash
 {
-    class UnionOperatorModel : OperatorFieldModel
+    
+    class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
         public static readonly Key AKey = new Key("178123E8-4E64-44D9-8F05-509B2F097B7D", "Input A");
@@ -37,7 +38,7 @@ namespace Dash.Models.OperatorModels.Set
             };
         }
 
-        public override void Execute(DocumentModel doc)
+        public override void Execute(DocumentController doc)
         {
             throw new NotImplementedException();
 
@@ -46,5 +47,11 @@ namespace Dash.Models.OperatorModels.Set
             ////DocumentCollectionFieldModel union = new DocumentCollectionFieldModel(setA.Documents.Union(setB.Documents).ToList());
             //(doc.Field(UnionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Union(setB.Documents).ToList());
         }
+
+        public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
+            OperatorFieldModel = operatorFieldModel;
+        }
     }
+    
 }

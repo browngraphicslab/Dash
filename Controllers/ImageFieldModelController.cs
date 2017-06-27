@@ -30,10 +30,16 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, value))
                 {
+                    OnDataUpdated();
                     // update local
                     // update server    
                 }
             }
+        }
+
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            Data = (fieldModel as ImageFieldModelController).Data;
         }
 
         /// <summary>
@@ -47,6 +53,7 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
                 {
+                    OnDataUpdated();
                     // update local
                     // update server
                 }

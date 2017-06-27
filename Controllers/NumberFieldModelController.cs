@@ -23,6 +23,11 @@ namespace Dash
         /// </summary>
         public NumberFieldModel NumberFieldModel { get; }
 
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            Data = (fieldModel as NumberFieldModelController).Data;
+        }
+
         public double Data
         {
             get { return NumberFieldModel.Data; }
@@ -30,6 +35,7 @@ namespace Dash
             {
                 if (SetProperty(ref NumberFieldModel.Data, value))
                 {
+                    OnDataUpdated();
                     // update local
                     // update server
                 }

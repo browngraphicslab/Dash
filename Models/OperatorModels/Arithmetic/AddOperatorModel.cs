@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
+    /* 
     public class AddOperatorModel : OperatorFieldModel
     {
         //Input keys
@@ -59,4 +60,5 @@ namespace Dash
             //(doc.Field(SumKey) as NumberFieldModel).Data = a + b;
         }
     }
+    */ 
 }
