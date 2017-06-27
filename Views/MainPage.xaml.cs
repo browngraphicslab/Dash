@@ -310,58 +310,18 @@ namespace Dash
                 var stack = new StackPanel();
                 stack.Orientation = Orientation.Horizontal;
 
-                foreach (var f in docController.EnumFields())
-                {
-                    if (f.Value is DocumentCollectionFieldModelController)
+                var stackFieldData = docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+           
+                if (stackFieldData != null)
+                    foreach (var stackDoc in stackFieldData.Documents)
                     {
-                        var fieldDocs = (f.Value as DocumentCollectionFieldModelController).Documents;
-                        foreach (var fdoc in fieldDocs)
+                        foreach (var ele in stackDoc.MakeViewUI().Where((e) => e!= null))
                         {
-                            var ues = fdoc.MakeViewUI();
-                            if (ues != null)
-                                foreach (var ele in ues)
-                                {
-                                    if (double.IsNaN(ele.Width))
-                                        ele.MaxWidth = 300;
-                                    stack.Children.Add(ele);
-                                }
+                            if (double.IsNaN(ele.Width))
+                                ele.MaxWidth = 300;
+                            stack.Children.Add(ele);
                         }
                     }
-                    else if (f.Value is DocumentFieldModelController)
-                    {
-                        var layoutDocController =
-                            ContentController.GetController((f.Value as DocumentFieldModelController).DocumentModelFieldModel.Data.Id) as DocumentController;
-                        if (docController != null)
-                        {
-                            var ues = layoutDocController.MakeViewUI();
-                            if (ues != null)
-                                foreach (var ele in ues)
-                                {
-                                    stack.Children.Add(ele);
-                                }
-                        }
-                    }
-                    else if (f.Value is ImageFieldModelController)
-                    {
-                        var imBox = new ImageBox(new ReferenceFieldModel(docController.GetId(), f.Key)).Document;
-                        var ues = imBox.MakeViewUI();
-                        if (ues != null)
-                            foreach (var ele in ues)
-                            {
-                                stack.Children.Add(ele);
-                            }
-                    }
-                    else if (f.Value is TextFieldModelController)
-                    {
-                        var imBox = new TextingBox(new ReferenceFieldModel(docController.GetId(), f.Key)).Document;
-                        var ues = imBox.MakeViewUI();
-                        if (ues != null)
-                            foreach (var ele in ues)
-                            {
-                                stack.Children.Add(ele);
-                            }
-                    }
-                }
                 return new List<FrameworkElement>(new FrameworkElement[] { stack });
             }
         }
@@ -393,7 +353,7 @@ namespace Dash
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
-                // SetLayoutForDocument(stackPan.DocumentModel);
+                SetLayoutForDocument(stackPan.DocumentModel);
             }
             
         }
