@@ -127,12 +127,6 @@ namespace Dash
                 .GetFirstAncestorOfType<ContentPresenter>());
         }
 
-        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            ViewModel.DocumentView_OnDoubleTapped(sender, e);
-            e.Handled = true;
-        }
-
         private void SoloDocument_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
