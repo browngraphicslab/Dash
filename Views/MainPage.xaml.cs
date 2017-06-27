@@ -41,8 +41,6 @@ namespace Dash
         {
             this.InitializeComponent();
 
-            JsonToDashUtil.RunTests();
-
             // adds items from the overlay canvas onto the freeform canvas
             xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
             xOverlayCanvas.OnAddCollectionTapped += AddCollection;
@@ -70,6 +68,9 @@ namespace Dash
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
+
+            var jsonDoc = JsonToDashUtil.RunTests();
+            DisplayDocument(jsonDoc);
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -183,18 +184,23 @@ namespace Dash
 
         public class CourtesyDocument
         {
-            public DocumentController Document { get; set; }
+            public virtual DocumentController Document { get; set; }
             public void SetLayoutForDocument(DocumentModel layoutDoc)
             {
                 var layoutController = new DocumentFieldModelController(new DocumentModelFieldModel(layoutDoc));
                 ContentController.AddController(layoutController);
                 Document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
             }
+            public virtual List<FrameworkElement> makeView(DocumentController docController)
+            {
+                return new List<FrameworkElement>();
+            }
         }
 
         public class TextingBox : CourtesyDocument
         {
-            public static Key FontWeightKey = new Key("FontWeight");
+            public static Key PrefixKey = new Key("AC1B4A0C-CFBF-43B3-B7F1-D7FC9E5BEEBE", "Text Prefix");
+            public static Key FontWeightKey = new Key("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
             public static DocumentType DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
             public TextingBox(ReferenceFieldModel refToText)
             {
@@ -204,6 +210,10 @@ namespace Dash
                     [DashConstants.KeyStore.DataKey] = refToText
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
+                return TextingBox.MakeView(docController);
             }
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
@@ -225,8 +235,8 @@ namespace Dash
                 var fields = new Dictionary<Key, FieldModel>
                 {
                     [DashConstants.KeyStore.DataKey] = refToImage,
-                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(500),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(500)
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(double.NaN),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(double.NaN)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
@@ -237,29 +247,40 @@ namespace Dash
                     return new ImageTemplateModel(0, 0).MakeViewUI(data, docController);
                 return new List<FrameworkElement>();
             }
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
+                return ImageBox.MakeView(docController);
+            }
+        }
+
+        public class DataBox: CourtesyDocument
+        {
+            CourtesyDocument _doc;
+            public DataBox(ReferenceFieldModel refToImage, bool isImage)
+            {
+                _doc = isImage ? (CourtesyDocument)new ImageBox(refToImage) : new TextingBox(refToImage);
+            }
+            public override DocumentController Document { get { return _doc.Document; } set { _doc.Document = value; } }
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
+                return _doc.makeView(docController);
+            }
         }
 
         public class GenericCollection : CourtesyDocument {
             public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
+
+            void Initialize(FieldModel fieldModel)
+            {
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                    [DashConstants.KeyStore.DataKey] = fieldModel
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+            public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
+            public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
           
-            public GenericCollection(ReferenceFieldModel refToCollection)
-            {
-                // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = refToCollection
-                };
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-            }
-            public GenericCollection(DocumentCollectionFieldModel docCollection)
-            {
-                // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = docCollection
-                };
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-            }
             static public List<FrameworkElement> MakeView(DocumentController docController)
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
@@ -287,6 +308,7 @@ namespace Dash
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
                 var stack = new StackPanel();
+                stack.Orientation = Orientation.Horizontal;
 
                 foreach (var f in docController.EnumFields())
                 {
@@ -299,6 +321,8 @@ namespace Dash
                             if (ues != null)
                                 foreach (var ele in ues)
                                 {
+                                    if (double.IsNaN(ele.Width))
+                                        ele.MaxWidth = 300;
                                     stack.Children.Add(ele);
                                 }
                         }
@@ -316,6 +340,26 @@ namespace Dash
                                     stack.Children.Add(ele);
                                 }
                         }
+                    }
+                    else if (f.Value is ImageFieldModelController)
+                    {
+                        var imBox = new ImageBox(new ReferenceFieldModel(docController.GetId(), f.Key)).Document;
+                        var ues = imBox.MakeViewUI();
+                        if (ues != null)
+                            foreach (var ele in ues)
+                            {
+                                stack.Children.Add(ele);
+                            }
+                    }
+                    else if (f.Value is TextFieldModelController)
+                    {
+                        var imBox = new TextingBox(new ReferenceFieldModel(docController.GetId(), f.Key)).Document;
+                        var ues = imBox.MakeViewUI();
+                        if (ues != null)
+                            foreach (var ele in ues)
+                            {
+                                stack.Children.Add(ele);
+                            }
                     }
                 }
                 return new List<FrameworkElement>(new FrameworkElement[] { stack });
@@ -349,7 +393,7 @@ namespace Dash
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
-                SetLayoutForDocument(stackPan.DocumentModel);
+                // SetLayoutForDocument(stackPan.DocumentModel);
             }
             
         }

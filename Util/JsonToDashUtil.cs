@@ -13,11 +13,14 @@ namespace Dash
 {
     public class JsonToDashUtil
     {
-        public static void RunTests()
+        static DocumentController JsonDocument = null;
+        public static DocumentController RunTests()
         {
             //ParseYoutube();
             //ParseCustomer();
-            ParseArrayOfNestedDocument();
+            var task = ParseArrayOfNestedDocument();
+            task.Wait();
+            return JsonDocument;
         }
 
         public static async Task ParseYoutube()
@@ -25,7 +28,8 @@ namespace Dash
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            ParseJson(jtoken, true);
+            var documentModel = ParseJson(jtoken, true);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static async Task ParseArrayOfNestedDocument()
@@ -38,7 +42,7 @@ namespace Dash
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
 
-            var documentController = ContentController.GetController(documentModel.Id);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static async Task ParseCustomer()
@@ -47,7 +51,7 @@ namespace Dash
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
             var documentModel = ParseJson(jtoken, true);
-            var documentController = ContentController.GetController(documentModel.Id);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static void ParseString()
