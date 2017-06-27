@@ -208,6 +208,9 @@
     <Compile Include="Views\GuideLineView.xaml.cs">
       <DependentUpon>GuideLineView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\InkPalette.xaml.cs">
+      <DependentUpon>InkPalette.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
     </Compile>
@@ -320,6 +323,10 @@
     <Page Include="Views\GuideLineView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InkPalette.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder.xaml">
       <SubType>Designer</SubType>

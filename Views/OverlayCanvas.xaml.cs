@@ -24,6 +24,7 @@ namespace Dash
     {
         public static OverlayCanvas Instance = null;
 
+        public Canvas Canvas => xCanvas;
 
         public TappedEventHandler OnAddDocumentsTapped, OnAddCollectionTapped, OnAddAPICreatorTapped, OnAddImageTapped, OnAddShapeTapped, OnOperatorAdd, OnToggleEditMode;
                 

@@ -133,6 +133,13 @@
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
 
+        <Style TargetType="Grid" x:Name="xBlueBorderGridStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#DE0074FF"/>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="BorderThickness" Value="1"></Setter>
+        </Style>
+
 
         <!-- SAMPLE NODE HERE-->
 

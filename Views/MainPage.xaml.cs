@@ -22,6 +22,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
+using Dash.Views;
 using DashShared;
 
 
@@ -54,17 +55,31 @@ namespace Dash
 
             DocumentModel docCollection = docController.CreateDocumentAsync("newtype");
             docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {  }), false);
-            MainDocView.DataContext = new DocumentViewModel(docCollection);
-            MainDocView.Width = MyGrid.ActualWidth;
-            MainDocView.Height = MyGrid.ActualHeight;
+            //MainDocView.DataContext = new DocumentViewModel(docCollection);
+            //MainDocView.Width = MyGrid.ActualWidth;
+            //MainDocView.Height = MyGrid.ActualHeight;
 
-            MainDocView.ManipulationMode = ManipulationModes.None;
-            MainDocView.Manipulator.RemoveAllButHandle();
-            //MainDocView.Manipulator.TurnOff();
+            //MainDocView.ManipulationMode = ManipulationModes.None;
+            //MainDocView.Manipulator.RemoveAllButHandle();
+            ////MainDocView.Manipulator.TurnOff();
 
-            MainDocView.DraggerButton.Visibility = Visibility.Collapsed; 
+            //MainDocView.DraggerButton.Visibility = Visibility.Collapsed; 
+            InkPalette palette = new InkPalette(this);
+            xOverlayCanvas.Canvas.Children.Add(palette);
+
+
+            xInkCanvas.InkPresenter.InputDeviceTypes =
+                CoreInputDeviceTypes.Mouse |
+                CoreInputDeviceTypes.Pen;
 
             Instance = this;
+        }
+
+        public void ChangeInkColor(Color color)
+        {
+            InkDrawingAttributes ink = new InkDrawingAttributes();
+            ink.Color = color;
+            xInkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(ink);
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -128,7 +143,8 @@ namespace Dash
         public DocumentModel MainDocument {
             get
             {
-                return (MainDocView.DataContext as DocumentViewModel).DocumentModel;
+                //return (MainDocView.DataContext as DocumentViewModel).DocumentModel;
+                return null;
             }
         }
 
@@ -186,12 +202,12 @@ namespace Dash
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var child = xViewBox.Child as FrameworkElement;
-            if (child != null)
-            {
-                child.Width = e.NewSize.Width;
-                child.Height = e.NewSize.Height;
-            }
+            //var child = xViewBox.Child as FrameworkElement;
+            //if (child != null)
+            //{
+            //    child.Width = e.NewSize.Width;
+            //    child.Height = e.NewSize.Height;
+            //}
         }
     }
 }

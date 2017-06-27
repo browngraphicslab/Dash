@@ -9,9 +9,12 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" SizeChanged="MyGrid_SizeChanged" >
-        <Viewbox x:Name="xViewBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <views:DocumentView x:Name="MainDocView"></views:DocumentView>
-        </Viewbox>
+        <local:FreeformView VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                 </InkCanvas> 
+       </local:FreeformView>
+           
+            <!--<views:DocumentView x:Name="MainDocView"></views:DocumentView>-->
         <local:OverlayCanvas x:Name="xOverlayCanvas"></local:OverlayCanvas>
     </Grid>
 </Page>

@@ -27,5 +27,6 @@
         </Grid>
         <!--filepicker:FilePickerDisplay HorizontalAlignment="Right" VerticalAlignment="Center" Canvas.Left="838" Canvas.Top="392"></>
         <api:ApiCreatorDisplay Canvas.Left="786" Canvas.Top="24"/-->
+        <Canvas x:Name="xCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
     </Grid>
 </UserControl>

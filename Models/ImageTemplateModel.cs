@@ -23,52 +23,59 @@ namespace Dash
         {
             this.fill = fill;
         }
-        
+
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
-        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        public override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context,
+            bool bindings = true)
         {
-            var imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
+            var imageFieldModel = fieldModel is TextFieldModel
+                ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data))
+                : fieldModel as ImageFieldModel;
             Debug.Assert(imageFieldModel != null);
             var image = new Image();
             image.Source = imageFieldModel.Data;
-
-            var translateBinding = new Binding
+            if (bindings)
             {
-                Source = this,
-                Path = new PropertyPath("Pos"),
-                Mode = BindingMode.TwoWay,
-                Converter = new PositionConverter()
-            };
-            image.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+                var translateBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Pos"),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new PositionConverter()
+                };
+                image.SetBinding(UIElement.RenderTransformProperty, translateBinding);
 
-            // make image width resize
-            var widthBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Width"),
-                Mode = BindingMode.TwoWay
-            };
-            image.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+                // make image width resize
+                var widthBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Width"),
+                    Mode = BindingMode.TwoWay
+                };
+                image.SetBinding(FrameworkElement.WidthProperty, widthBinding);
 
-            // make image height resize
-            var heightBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Height"),
-                Mode = BindingMode.TwoWay
-            };
-            image.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+                // make image height resize
+                var heightBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Height"),
+                    Mode = BindingMode.TwoWay
+                };
+                image.SetBinding(FrameworkElement.HeightProperty, heightBinding);
 
-            // make image appear and disappear
-            var visibilityBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Visibility"),
-                Mode = BindingMode.TwoWay
-            };
-            image.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+                // make image appear and disappear
+                var visibilityBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Visibility"),
+                    Mode = BindingMode.TwoWay
+                };
+                image.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+            }
+
+            
 
             image.HorizontalAlignment = HorizontalAlignment.Left;
             image.VerticalAlignment = VerticalAlignment.Top;

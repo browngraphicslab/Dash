@@ -7,19 +7,50 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="700">
 
     <local:WindowTemplate.InnerContent>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="200"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <local:FreeformView x:Name="xDocumentsPane" Width="Auto" Height="Auto" CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
+
+            <local:FreeformView x:Name="xDocumentsPane" Width="Auto" Height="Auto" Grid.Column="1"  CanvasWidth="1000" CanvasHeight="1000" Background="Yellow" 
                                 HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XDocumentsPane_OnSizeChanged">
             </local:FreeformView>
-            <Grid x:Name="xSettingsPane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="1" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
+            <Grid x:Name="xSettingsPane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Settings Menu</TextBlock>
+            </Grid>
+            <Grid x:Name="xKeyValuePane" Width="200" Height="Auto" HorizontalAlignment="Left" Grid.Column="0" Background="AliceBlue">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                    <ColumnDefinition Width="100"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <ListView x:Name="xKeyList" Grid.Column="0" Width="100" Height="Auto">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="100" Height="75">
+                                <TextBlock Text="{Binding}" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center"></TextBlock>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Height" Value="75"/>
+                            <Setter Property="Width" Value="100"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
+                <ListView x:Name="xValueList" CanDragItems="True"  Grid.Column="1" Width="100" Height="Auto" SelectionMode="Single" IsItemClickEnabled="True" ItemClick="xValueList_ItemClick" DragItemsStarting="xValueList_DragItemsStarting" DragItemsCompleted="xValueList_DragItemsCompleted">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Height" Value="75"/>
+                            <Setter Property="Width" Value="100"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
             </Grid>
         </Grid>
     </local:WindowTemplate.InnerContent>

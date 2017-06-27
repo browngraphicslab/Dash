@@ -61,7 +61,7 @@ namespace Dash
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        protected virtual List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        public virtual List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context, bool bindings=true)
         {
             return null;
         }
@@ -100,7 +100,8 @@ namespace Dash
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
             {
-                throw new NotImplementedException();
+                return null;
+                //throw new NotImplementedException();
             }
         }
     }

@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -50,6 +52,9 @@ namespace Dash
         /// </summary>
         private Dictionary<Key, FieldModel> _keyToFieldModel = new Dictionary<Key, FieldModel>();
 
+        private bool _dragEntered;
+        private List<Key> _dragKeys;
+
         public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
         {
             this.InitializeComponent();
@@ -61,16 +66,50 @@ namespace Dash
             // set the view model, document model and view variables
             _documentViewModel = viewModel;
             _documentModel = viewModel.DocumentModel;
-            _documentView = new DocumentView(_documentViewModel);
+            _documentView = new DocumentView()
+            {
+                DataContext = _documentViewModel,
+            };
 
             // add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
-            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
-            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
+            Canvas.SetLeft(_documentView, ActualWidth / 2);
+            Canvas.SetTop(_documentView, ActualHeight / 2);
             xDocumentsPane.Canvas.Children.Add(_documentView);
 
+            _documentView.DragLeave += DocumentViewOnDragLeave;
+            _documentView.DragOver += DocumentViewOnDragOver;
+
             InitializeKeyDicts();
+            InitializeKeyValuePane();
 
             ApplyEditable();
+        }
+
+        private void DocumentViewOnDragLeave(object sender, DragEventArgs dragEventArgs)
+        {
+            _dragEntered = false;
+        }
+
+        private void DocumentViewOnDragOver(object sender, DragEventArgs dragEventArgs)
+        {
+            _dragEntered = true;
+        }
+
+        private void InitializeKeyValuePane()
+        {
+            ObservableCollection<string> keys = new ObservableCollection<string>();
+            ObservableCollection<UIElement> values = new ObservableCollection<UIElement>();
+            var Keys = _documentViewModel.GetLayoutModel().Fields.Keys;
+            foreach (Key key in Keys)
+            {
+                keys.Add(key.Name);
+                UIElement value =
+                    _documentViewModel.GetLayoutModel().Fields[key].MakeView(_documentModel.Field(key), _documentModel, false)
+                        [0];
+                values.Add(value);
+            }
+            xValueList.ItemsSource = values;
+            xKeyList.ItemsSource = keys;
         }
 
         private void InitializeKeyDicts()
@@ -154,15 +193,54 @@ namespace Dash
             FreeformView freeform = sender as FreeformView;
             Debug.Assert(freeform != null);
             this.MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
-            this.MaxWidth = xSettingsPane.ActualWidth + freeform.CanvasWidth;
+            this.MaxWidth = xSettingsPane.ActualWidth + xKeyValuePane.ActualWidth + freeform.CanvasWidth;
             
-            this.MinWidth = xSettingsPane.ActualWidth + 50;
+            this.MinWidth = xSettingsPane.ActualWidth + xKeyValuePane.ActualWidth + 50;
             this.MinHeight = HeaderHeight * 2;
         }
 
         private void ApplyEditableOnTapped(object sender, TappedRoutedEventArgs e)
         {
             ApplyEditable();
+        }
+
+        private void xValueList_ItemClick(object sender, ItemClickEventArgs e)
+        {
+
+        }
+
+        private void xValueList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            e.Data.RequestedOperation = DataPackageOperation.Copy;
+            _dragKeys = new List<Key>();
+            foreach (object item in e.Items)
+            {
+                var lItem = item as UIElement;
+                if (xValueList.Items != null)
+                {
+                    var index = xValueList.Items.IndexOf(lItem);
+                    Key key = _documentViewModel.GetLayoutModel().Fields.Keys.ToList()[index];
+                    _dragKeys.Add(key);
+                }
+            }
+            e.Data.Properties.Add(new KeyValuePair<string, object>("keys", _dragKeys));
+        }
+
+        private void xValueList_DragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            if (_dragEntered)
+            {
+                foreach (Key key in _dragKeys)
+                {
+                }
+            }
+            _dragKeys = new List<Key>();
+        }
+
+
+        private void AddTemplate(Key key)
+        {
+            
         }
     }
 }

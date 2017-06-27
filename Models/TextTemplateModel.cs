@@ -39,21 +39,24 @@ namespace Dash
         /// <summary>
          /// Creates TextBlock using layout information from template and Data 
          /// </summary>
-        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        public override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context, bool bindings=true)
         {
             if (fieldModel == null && DefaultText == null)
                 return null;
 
             Binding binding = new Binding
-            {
-                Source = fieldModel,
-                Path = new PropertyPath("Data")
-            };
+                    {
+                        Source = fieldModel,
+                        Path = new PropertyPath("Data")
+                    };
 
             var tb = Editable && fieldModel is TextFieldModel ? (FrameworkElement)new TextBox() : new TextBlock();
             if (tb is TextBox)
             {
+                
                 tb.SetBinding(TextBox.TextProperty, binding);
+                
+                
                 (tb as TextBox).TextChanged += ((s, e) => (fieldModel as TextFieldModel).Data = (s as TextBox).Text);
                 (tb as TextBox).FontWeight = FontWeight;
                 (tb as TextBox).TextWrapping = TextWrapping;
@@ -62,49 +65,56 @@ namespace Dash
             {
                 if (fieldModel == null)
                     (tb as TextBlock).Text = DefaultText;
-                else tb.SetBinding(TextBlock.TextProperty, binding);
+                
+                tb.SetBinding(TextBlock.TextProperty, binding);
+                
                 (tb as TextBlock).FontWeight = FontWeight;
                 (tb as TextBlock).TextWrapping = TextWrapping;
             }
 
-            // set position of text 
-            var translateBinding = new Binding
+            if (bindings)
             {
-                Source = this,
-                Path = new PropertyPath("Pos"),
-                Mode = BindingMode.TwoWay,
-                Converter = new PositionConverter()
-            };
-            tb.SetBinding(UIElement.RenderTransformProperty, translateBinding);
-            
 
-            // make tb width resize
-            var widthBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Width"),
-                Mode = BindingMode.TwoWay
-            };
+                // set position of text 
+                var translateBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Pos"),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new PositionConverter()
+                };
+                tb.SetBinding(UIElement.RenderTransformProperty, translateBinding);
 
-            tb.SetBinding(FrameworkElement.WidthProperty, widthBinding);
 
-            // make tb height resize
-            var heightBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Height"),
-                Mode = BindingMode.TwoWay
-            };
-            tb.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+                // make tb width resize
+                var widthBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Width"),
+                    Mode = BindingMode.TwoWay
+                };
 
-            // make tb appear and disappear
-            var visibilityBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Visibility"),
-                Mode = BindingMode.TwoWay
-            };
-            tb.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+                tb.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+
+                // make tb height resize
+                var heightBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Height"),
+                    Mode = BindingMode.TwoWay
+                };
+                tb.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+
+                // make tb appear and disappear
+                var visibilityBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath("Visibility"),
+                    Mode = BindingMode.TwoWay
+                };
+                tb.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
+            }
+
             tb.HorizontalAlignment = HorizontalAlignment.Left;
             tb.VerticalAlignment = VerticalAlignment.Top;
 
