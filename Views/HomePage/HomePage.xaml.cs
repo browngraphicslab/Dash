@@ -112,7 +112,7 @@ namespace Dash.Views.HomePage
         /// <param name="e"></param>
         private void xAllDashboardsButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xContentFrame.Navigate(typeof(CollectionScreen));
+            xContentFrame.Navigate(typeof(Views.HomePage.AllDashboardsPage));
         }
 
         /// <summary>

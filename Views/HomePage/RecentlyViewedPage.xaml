@@ -88,10 +88,8 @@
                             </Border>
                             <StackPanel VerticalAlignment="Bottom">
                                 <StackPanel.Background>
-                                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0" Opacity="0.5">
-                                        <GradientStop Color="#FF2C3B69" Offset="0"/>
-                                        <GradientStop Color="Black" Offset="1"/>
-                                    </LinearGradientBrush>
+                                    <SolidColorBrush Opacity="0.5" Color="CornflowerBlue">
+                                    </SolidColorBrush>
                                 </StackPanel.Background>
                                 <TextBlock Text="Bind to title here" Foreground="{StaticResource ListViewItemOverlayForegroundThemeBrush}" Style="{StaticResource TitleTextBlockStyle}" FontSize="18" Margin="15,5,15,5"/>
                                 <TextBlock Text="Bind to date modified here" Foreground="{StaticResource ListViewItemOverlaySecondaryForegroundThemeBrush}" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="NoWrap" Margin="15,0,15,0"/>

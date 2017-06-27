@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="Dash.Views.HomePage.DeletedPage"
+    x:Class="Dash.Views.HomePage.AllDashboardsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash.Views.HomePage"
@@ -34,7 +34,7 @@
                     <Setter Property="Margin" Value="10"/>
                 </Style>
             </StackPanel.Resources>
-            <TextBlock Text="RECENTLY DELETED" FontSize="25"/>
+            <TextBlock Text="ALL DASHBOARDS" FontSize="25"/>
             <TextBlock Text="Sort by:" FontSize="12"/>
             <StackPanel Orientation="Horizontal" Margin="0,-5,0,0">
                 <StackPanel.Resources>
@@ -42,50 +42,6 @@
                         <Setter Property="Foreground" Value="#CCFFFFFF"/>
                         <Setter Property="FontFamily" Value="Segoe UI Symbol"/>
                     </Style>
-                    <!--<Storyboard x:Name="xListViewMultipleSelectionButtonsAnimation" Completed="xMultipleSelectionButtonsAnimation_Completed">
-                        <FadeOutThemeAnimation TargetName="xSelectButton"/>
-                        <FadeOutThemeAnimation TargetName="xGridToggle"/>
-                        <FadeInThemeAnimation TargetName="xClearSelectionButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xRestoreButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xSelectAllButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xCancelButton" BeginTime="0:0:0.5"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xGridViewMultipleSelectionButtonsAnimation" Completed="xMultipleSelectionButtonsAnimation_Completed">
-                        <FadeOutThemeAnimation TargetName="xSelectButton"/>
-                        <FadeOutThemeAnimation TargetName="xListToggle"/>
-                        <FadeInThemeAnimation TargetName="xClearSelectionButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xRestoreButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xSelectAllButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xCancelButton" BeginTime="0:0:0.5"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xListViewSingleSelectionButtonsAnimation" Completed="xSingleSelectionButtonsAnimation_Completed">
-                        <FadeInThemeAnimation TargetName="xSelectButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xGridToggle" BeginTime="0:0:0.5"/>
-                        <FadeOutThemeAnimation TargetName="xClearSelectionButton"/>
-                        <FadeOutThemeAnimation TargetName="xRestoreButton"/>
-                        <FadeOutThemeAnimation TargetName="xSelectAllButton"/>
-                        <FadeOutThemeAnimation TargetName="xCancelButton"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xGridViewSingleSelectionButtonsAnimation" Completed="xSingleSelectionButtonsAnimation_Completed">
-                        <FadeInThemeAnimation TargetName="xSelectButton" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xListToggle" BeginTime="0:0:0.5"/>
-                        <FadeOutThemeAnimation TargetName="xClearSelectionButton"/>
-                        <FadeOutThemeAnimation TargetName="xRestoreButton"/>
-                        <FadeOutThemeAnimation TargetName="xSelectAllButton"/>
-                        <FadeOutThemeAnimation TargetName="xCancelButton"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xListViewButtonAnimation" Completed="xListViewButtonAnimation_Completed">
-                        <FadeOutThemeAnimation TargetName="xListToggle"/>
-                        <FadeOutThemeAnimation TargetName="xMainListView"/>
-                        <FadeInThemeAnimation TargetName="xGridToggle" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xMainGridView" BeginTime="0:0:0.5"/>
-                    </Storyboard>
-                    <Storyboard x:Name="xGridViewButtonAnimation" Completed="xGridViewButtonAnimation_Completed">
-                        <FadeOutThemeAnimation TargetName="xGridToggle"/>
-                        <FadeOutThemeAnimation TargetName="xMainGridView"/>
-                        <FadeInThemeAnimation TargetName="xListToggle" BeginTime="0:0:0.5"/>
-                        <FadeInThemeAnimation TargetName="xMainListView" BeginTime="0:0:0.5"/>
-                    </Storyboard>-->
                 </StackPanel.Resources>
                 <ComboBox SelectedIndex="0" HorizontalAlignment="Left" Width="120" Height="30" BorderBrush="#CCFFFFFF" FontSize="12">
                     <ComboBoxItem x:Name="xDateModifiedItem" Content="Date modified" Tapped="xDateModifiedItem_Tapped"/>
@@ -98,8 +54,10 @@
                 <Button x:Name="xGridToggle" Height="30" Foreground="#CCFFFFFF" Margin="880,0,0,0" Visibility="Collapsed" Tapped="xGridToggle_Tapped">
                     <SymbolIcon Symbol="SelectAll"/>
                 </Button>
-                <Button x:Name="xClearSelectionButton" Height="30" Foreground="#CCFFFFFF" Margin="595,0,0,0" Visibility="Collapsed">Clear selected items</Button>
-                <Button x:Name="xRestoreButton" Height="30" Foreground="#CCFFFFFF" Margin="10,0,0,0" Visibility="Collapsed">Restore</Button>
+                <Button x:Name="xDeleteButton" Height="30" Foreground="#CCFFFFFF" Margin="710,0,0,0" Visibility="Collapsed">
+                    <SymbolIcon Symbol="Delete" VerticalAlignment="Stretch"/>
+                </Button>
+                <Button x:Name="xAddToButton" Height="30" Foreground="#CCFFFFFF" Margin="10,0,0,0" Visibility="Collapsed">Add to</Button>
                 <Button x:Name="xSelectAllButton" Height="30" Foreground="#CCFFFFFF" Margin="10,0,0,0" Visibility="Collapsed" Tapped="xSelectAllButton_Tapped">Select all</Button>
                 <Button x:Name="xSelectButton" Height="30" Foreground="#CCFFFFFF" Margin="10,0,0,0" Visibility="Visible" Tapped="xSelectButton_Tapped">Select</Button>
                 <Button x:Name="xCancelButton" Height="30" Foreground="#CCFFFFFF" Margin="10,0,0,0" Visibility="Collapsed" Tapped="xCancelButton_Tapped">Cancel</Button>
@@ -140,6 +98,22 @@
                         </Grid>
                     </DataTemplate>
                 </GridView.ItemTemplate>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
+                <Rectangle/>
                 <Rectangle/>
                 <Rectangle/>
                 <Rectangle/>
@@ -232,3 +206,4 @@
         </StackPanel>
     </Grid>
 </Page>
+
