@@ -41,6 +41,8 @@ namespace Dash
         {
             this.InitializeComponent();
 
+            JsonToDashUtil.RunTests();
+
             // adds items from the overlay canvas onto the freeform canvas
             xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
             xOverlayCanvas.OnAddCollectionTapped += AddCollection;
