@@ -257,6 +257,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\a.txt" />
+    <Content Include="Assets\ArrayOfNestedDocumentJson.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
     <Content Include="Assets\customerJson.txt" />

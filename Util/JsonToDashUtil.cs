@@ -11,12 +11,13 @@ using Newtonsoft.Json.Linq;
 
 namespace Dash
 {
-    public static class JsonToDashUtil
+    public class JsonToDashUtil
     {
         public static void RunTests()
         {
             //ParseYoutube();
-            ParseCustomer();
+            //ParseCustomer();
+            ParseArrayOfNestedDocument();
         }
 
         public static async Task ParseYoutube()
@@ -25,6 +26,19 @@ namespace Dash
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
             ParseJson(jtoken, true);
+        }
+
+        public static async Task ParseArrayOfNestedDocument()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            var jtoken = JToken.Parse(jsonString);
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            var documentModel = ParseJson(jtoken, true);
+            watch.Stop();
+            var elapsedMs = watch.ElapsedMilliseconds;
+
+            var documentController = ContentController.GetController(documentModel.Id);
         }
 
         public static async Task ParseCustomer()
@@ -48,7 +62,7 @@ namespace Dash
 
         }
 
-        public static EntityBase ParseJson(JToken jToken, bool isRoot, bool parentIsArray = false)
+        public static EntityBase ParseJson(JToken jToken, bool isRoot, bool isChildOfArray = false)
         {
 
             // deal with object
@@ -67,7 +81,7 @@ namespace Dash
                 var newDocumentRequestArgs = new CreateNewDocumentRequestArgs(fields, documentType);
                 var newDocumentRequest = new CreateNewDocumentRequest(newDocumentRequestArgs);
 
-                if (isRoot) // if we're the root object we should create a new document containing the rest of json as Fields
+                if (isRoot || isChildOfArray) // if we're the root object or the child of an array we should create a new document containing the rest of json as Fields
                 {
                     return newDocumentRequest.GetReturnedDocumentModel();
                 }
@@ -79,17 +93,35 @@ namespace Dash
             // deal with array
             else if (jToken.Type == JTokenType.Array)
             {
-                throw new NotImplementedException();
                 // forseeable issues here, 
                 // 1. If we happen upon an array of values "text", "number", etc... we have no way of dealing with that
                 // 2. If we happen upon an array of objects, then we need ParseJson to return those objects as DocumentModels,
                 //      but ParseJson only returns the root as a DocumentModel. We can solve this with another parameter, but
                 //      there might be a cleaner way.
                 var myArray = jToken as JArray;
+                var documentModels = new List<DocumentModel>();
                 foreach (var item in myArray)
                 {
-                    ParseJson(item, false);
+                    var dm = ParseJson(item, false, true) as DocumentModel;
+                    if (dm == null)
+                        throw new NotImplementedException("We have no way of creating lists of anything other than documents at the moment!");
+                    documentModels.Add(dm);
                 }
+                var documentCollectionFieldModel = new DocumentCollectionFieldModel(documentModels);
+
+                if (isRoot) // if the root is an array, we have to wrap it in a Document which can display the documentCollectionFieldModel as a field
+                {
+                    var documentType = new DocumentType(DashShared.Util.GenerateNewId(), "Root Document");
+                    var fields = new Dictionary<Key, FieldModel>
+                    {
+                        [DashConstants.KeyStore.DataKey] = documentCollectionFieldModel
+                    };
+                    var newDocumentRequestArgs = new CreateNewDocumentRequestArgs(fields, documentType);
+                    var newDocumentRequest = new CreateNewDocumentRequest(newDocumentRequestArgs);
+                    return newDocumentRequest.GetReturnedDocumentModel();
+                }
+                // if the array is not the root we can just return the new DocumentCollectionFieldModel
+                return documentCollectionFieldModel;
             }
 
             // deal with value
@@ -135,19 +167,5 @@ namespace Dash
             }
             
         }
-
-        // recursively yield all children of json
-        private static IEnumerable<JToken> AllChildren(JToken json)
-        {
-            foreach (var c in json.Children())
-            {
-                yield return c;
-                foreach (var cc in AllChildren(c))
-                {
-                    yield return cc;
-                }
-            }
-        }
-
     }
 }
