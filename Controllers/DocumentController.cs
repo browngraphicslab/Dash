@@ -252,6 +252,45 @@ namespace Dash
             }
         }
 
+        public FrameworkElement MakeAllViewUI()
+        {
+            var sp = new StackPanel();
+            sp.Margin = new Thickness(10, 0, 0, 0);
+            foreach (var f in EnumFields())
+            {
+                if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController)
+                {
+                    var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
+                    var label  = new TextBlock()  { Text = f.Key.Name + ": " };
+                    var dBox   = new DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+
+                    hstack.Children.Add(label);
+                    foreach (var ele in dBox.MakeViewUI())
+                    {
+                        ele.MaxWidth = 200;
+                        hstack.Children.Add(ele);
+                    }
+                    sp.Children.Add(hstack);
+                }
+                else if (f.Value is DocumentFieldModelController)
+                {
+                    var fieldDoc = (f.Value as DocumentFieldModelController).Data;
+                    var docEles = fieldDoc.MakeAllViewUI();
+                    if (docEles != null)
+                        sp.Children.Add(docEles);
+                }
+                else if (f.Value is DocumentCollectionFieldModelController)
+                {
+                    foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).Documents)
+                    {
+                        var docEles = fieldDoc.MakeAllViewUI();
+                        if (docEles != null)
+                            sp.Children.Add(docEles);
+                    }
+                }
+            }
+            return sp;
+        }
         public List<FrameworkElement> MakeViewUI()
         {
             var uieles = new List<FrameworkElement>();
@@ -272,34 +311,29 @@ namespace Dash
             {
                 uieles.AddRange(GenericCollection.MakeView(this));
             }
-            else // FreeFormCollectionDocumentType
+            else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
                 foreach (var f in EnumFields())
+                {
                     if (f.Value is DocumentFieldModelController)
                     {
                         var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                        var fieldEles = fieldDoc.MakeViewUI();
-                        if (fieldEles != null)
-                            foreach (var ele in fieldEles)
-                            {
-                                uieles.Add(ele);
-                            }
+                        var docEles = fieldDoc.MakeViewUI();
+                        if (docEles != null)
+                            uieles.AddRange(docEles);
                     }
                     else if (f.Value is DocumentCollectionFieldModelController)
                     {
-                        var fieldDocs = (f.Value as DocumentCollectionFieldModelController).Documents;
-                        foreach (var fdoc in fieldDocs)
+                        foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).Documents)
                         {
-                            var ues = fdoc.MakeViewUI();
-                            if (ues != null)
-                                foreach (var ele in ues)
-                                {
-                                    uieles.Add(ele);
-                                }
+                            var docEles = fieldDoc.MakeViewUI();
+                            if (docEles != null)
+                                uieles.AddRange(docEles);
                         }
                     }
+                }
             }
             return uieles;
         }
-        }
+    }
 }

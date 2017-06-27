@@ -14,12 +14,15 @@ namespace Dash
 {
     public class JsonToDashUtil
     {
-        public static void RunTests()
+        static DocumentController JsonDocument = null;
+        public static DocumentController RunTests()
         {
             //ParseYoutube();
             //ParseCustomer();
             //ParseArrayOfNestedDocument();
-            NestedArrayOfDocuments();
+            var task = ParseArrayOfNestedDocument();
+            task.Wait();
+            return JsonDocument;
         }
 
         public static async Task ParseYoutube()
@@ -27,7 +30,8 @@ namespace Dash
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            ParseJson(jtoken, null, true);
+            var documentModel = ParseJson(jtoken, null, true);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static async Task ParseArrayOfNestedDocument()
@@ -40,7 +44,7 @@ namespace Dash
             watch.Stop();
             var elapsedMs = watch.ElapsedMilliseconds;
 
-            var documentController = ContentController.GetController(documentModel.Id);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static async Task NestedArrayOfDocuments()
@@ -48,12 +52,8 @@ namespace Dash
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/nestedArraysOfDocumentsJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            var watch = System.Diagnostics.Stopwatch.StartNew();
             var documentModel = ParseJson(jtoken, null, true);
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
-
-            var documentController = ContentController.GetController(documentModel.Id);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static async Task ParseCustomer()
