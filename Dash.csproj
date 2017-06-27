@@ -89,6 +89,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="ClassDiagram1.cd" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -258,6 +259,7 @@
     <Content Include="Assets\a.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
+    <Content Include="Assets\customerJson.txt" />
     <Content Include="Assets\grid.gif" />
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />

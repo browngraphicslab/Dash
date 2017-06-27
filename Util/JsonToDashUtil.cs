@@ -15,15 +15,25 @@ namespace Dash
     {
         public static void RunTests()
         {
-            Example();
+            //ParseYoutube();
+            ParseCustomer();
         }
 
-        public static async Task Example()
+        public static async Task ParseYoutube()
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            ParseJson(jtoken);
+            ParseJson(jtoken, true);
+        }
+
+        public static async Task ParseCustomer()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            var jtoken = JToken.Parse(jsonString);
+            var documentModel = ParseJson(jtoken, true);
+            var documentController = ContentController.GetController(documentModel.Id);
         }
 
         public static void ParseString()
@@ -34,29 +44,51 @@ namespace Dash
                                     ""type"": ""people""
                                   }
                                     }";
-            ParseJson(jsonString);
+            ParseJson(jsonString, true);
+
         }
 
-        public static void ParseJson(JToken jToken)
+        public static EntityBase ParseJson(JToken jToken, bool isRoot, bool parentIsArray = false)
         {
 
             // deal with object
             if (jToken.Type == JTokenType.Object)
             {
                 var myObj = jToken as JObject;
-                foreach (var sub_obj in myObj)
+
+                var fields = new Dictionary<Key, FieldModel>();
+                foreach (var sub_obj in myObj) // Parse the rest of the JSON recursively as fields of this document
                 {
-                    ParseJson(sub_obj.Value);
+                    var key = new Key(DashShared.Util.GenerateNewId(), sub_obj.Key);
+                    var fieldModel = ParseJson(sub_obj.Value, false) as FieldModel;
+                    fields[key] = fieldModel;
                 }
+                var documentType = new DocumentType(DashShared.Util.GenerateNewId(), "Root Document");
+                var newDocumentRequestArgs = new CreateNewDocumentRequestArgs(fields, documentType);
+                var newDocumentRequest = new CreateNewDocumentRequest(newDocumentRequestArgs);
+
+                if (isRoot) // if we're the root object we should create a new document containing the rest of json as Fields
+                {
+                    return newDocumentRequest.GetReturnedDocumentModel();
+                }
+
+                // since we are not the root we should create a new document field model with the rest of json as fields
+                return new DocumentModelFieldModel(newDocumentRequest.GetReturnedDocumentModel());
             }
 
             // deal with array
             else if (jToken.Type == JTokenType.Array)
             {
+                throw new NotImplementedException();
+                // forseeable issues here, 
+                // 1. If we happen upon an array of values "text", "number", etc... we have no way of dealing with that
+                // 2. If we happen upon an array of objects, then we need ParseJson to return those objects as DocumentModels,
+                //      but ParseJson only returns the root as a DocumentModel. We can solve this with another parameter, but
+                //      there might be a cleaner way.
                 var myArray = jToken as JArray;
                 foreach (var item in myArray)
                 {
-                    ParseJson(item);
+                    ParseJson(item, false);
                 }
             }
 
@@ -69,42 +101,28 @@ namespace Dash
                     var type = myValue.Type;
                     switch (type)
                     {
-                        case JTokenType.None:
-                            break;
-                        case JTokenType.Object:
-                            break;
-                        case JTokenType.Array:
-                            break;
+                        case JTokenType.Object: // A Json Object is defined by {}
+                        case JTokenType.Array: // A Json Array is defined by []
+                        case JTokenType.Property: // A Json Property is a (Key, JToken) pair and can only be found in Json Objects
+                            throw new NotImplementedException("We should have dealt with this earlier");
                         case JTokenType.Constructor:
-                            break;
-                        case JTokenType.Property:
-                            break;
                         case JTokenType.Comment:
-                            break;
-                        case JTokenType.Integer:
-                            break;
-                        case JTokenType.Float:
-                            break;
-                        case JTokenType.String:
-                            break;
-                        case JTokenType.Boolean:
-                            break;
                         case JTokenType.Null:
-                            break;
-                        case JTokenType.Undefined:
-                            break;
-                        case JTokenType.Date:
-                            break;
                         case JTokenType.Raw:
-                            break;
+                        case JTokenType.Undefined:
                         case JTokenType.Bytes:
-                            break;
-                        case JTokenType.Guid:
-                            break;
+                        case JTokenType.None:
+                            throw new NotImplementedException();
+                        case JTokenType.Integer:
+                        case JTokenType.Float:
+                            return new NumberFieldModel(jToken.ToObject<double>());
+                        case JTokenType.String:
+                        case JTokenType.Boolean:
+                        case JTokenType.Date:
                         case JTokenType.Uri:
-                            break;
+                        case JTokenType.Guid:
                         case JTokenType.TimeSpan:
-                            break;
+                            return new TextFieldModel(jToken.ToObject<string>());
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
