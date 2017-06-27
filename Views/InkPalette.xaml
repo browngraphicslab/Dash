@@ -1,0 +1,46 @@
+﻿<UserControl
+    x:Class="Dash.Views.InkPalette"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Width="180.71" Height="220.473">
+
+
+    <Grid x:Name="xContainerGrid" Margin="10" BorderBrush="#FF4F4F4F" BorderThickness="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
+            <RowDefinition Height="75"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid HorizontalAlignment="Stretch" Height="Auto" 
+              VerticalAlignment="Stretch" Width="Auto"
+              Grid.Row="0">
+            <ScrollViewer x:Name="XScrollViewer"
+                      VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="Auto"
+                      IsDeferredScrollingEnabled="False" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="XStackPanel" Orientation="Horizontal" x:FieldModifier="public"></StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <TextBlock x:Name="textBlock" HorizontalAlignment="Center"  TextWrapping="Wrap" Text="Opacity" VerticalAlignment="Top" Width="54"/>
+            <Slider x:Name="xOpacitySlider" HorizontalAlignment="Center" VerticalAlignment="Bottom" Width="142" ValueChanged="xOpacitySlider_ValueChanged"/>
+        </Grid>
+
+        <Grid Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid HorizontalAlignment="Center">
+                <Rectangle x:Name="xExampleRect" HorizontalAlignment="Left" Height="55" Stroke="#DE707070" StrokeThickness="1" VerticalAlignment="Center" Width="46" Margin="10,10,0,10"/>
+                
+                <RadioButton x:Name="PenButton" Content="Pen" HorizontalAlignment="Left" Margin="61,4,-22,0" VerticalAlignment="Top" Width="54" RenderTransformOrigin="0.517,0.007" Height="28" Checked="PenButton_Checked"/>
+                <RadioButton x:Name="PencilButton" Content="Pencil" HorizontalAlignment="Left" Margin="61,28,-22,0" VerticalAlignment="Top" Width="54" RenderTransformOrigin="0.517,0.007" Height="28" Checked="PencilButton_Checked"/>
+            </Grid>
+            
+        </Grid>
+
+        <Rectangle x:Name="xResizer" Fill="#DE0074FF" HorizontalAlignment="Right" Height="19" Stroke="#DE0074FF" StrokeThickness="3" VerticalAlignment="Bottom" Width="19" ManipulationDelta="xResizer_ManipulationDelta" ManipulationMode="All" Margin="0,0,1,1" Grid.Row="2"/>
+
+    </Grid>
+</UserControl>

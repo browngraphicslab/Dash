@@ -8,15 +8,21 @@ using Windows.UI.Xaml;
 
 namespace Dash
 {
-    public class FreeformViewModel
+    public class FreeformViewModel : ViewModelBase
     {
-       private FreeformModel _freeformModel;
-        
-        //public static FreeformViewModel Instance { get; private set; }
+        private FreeformModel _freeformModel;
+
+        private bool _isEditorMode = false;
+
+        public bool IsEditorMode
+        {
+            get { return _isEditorMode; }
+            set { SetProperty(ref _isEditorMode, value); }
+        }
 
         public delegate void ElementAddedEvent(UIElement element, float left, float top);
 
-        public event ElementAddedEvent OnElementAdded;
+        public event ElementAddedEvent ElementAdded;
 
         public FreeformViewModel()
         {
@@ -28,7 +34,7 @@ namespace Dash
 
         public void AddElement(UIElement element, float left, float top)
         {
-            OnElementAdded?.Invoke(element, left, top);
+            ElementAdded?.Invoke(element, left, top);
         }
 
     }

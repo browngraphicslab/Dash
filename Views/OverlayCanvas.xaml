@@ -3,13 +3,15 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
+    xmlns:filepicker="using:Dash.Sources.FilePicker"
+    xmlns:api="using:Dash.Sources.Api"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignHeight="720"
+    d:DesignWidth="1280">
 
-    <Canvas x:Name="XCanvas" DoubleTapped="Canvas_Double_Tapped" IsDoubleTapEnabled="True" Background="Transparent">
+    <Canvas x:Name="XCanvas" DoubleTapped="Canvas_Double_Tapped" IsDoubleTapEnabled="True">
         <Ellipse Fill="#FFF4F4F5" Height="70" Stroke="Black" Width="101" Tapped="Ellipse_Tapped" Canvas.Left="284" Canvas.Top="10"/>
         <Ellipse Fill="#FFF4F4F5" Height="100" Canvas.Left="285" Stroke="Black" Canvas.Top="127" Width="100" Tapped="Ellipse_Tapped_1"/>
         <!--<local:WindowTemplate>

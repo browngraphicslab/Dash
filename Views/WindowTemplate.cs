@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Documents;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.StaticClasses;
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -43,6 +42,12 @@ namespace Dash
         public WindowTemplate()
         {
             this.DefaultStyleKey = typeof(WindowTemplate);
+            DataContextChanged += WindowTemplate_DataContextChanged;
+        }
+
+        private void WindowTemplate_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            args.Handled = true;
         }
 
         public double HeaderHeight

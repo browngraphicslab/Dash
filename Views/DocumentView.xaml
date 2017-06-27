@@ -6,16 +6,23 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="330"
-    d:DesignWidth="255" ManipulationMode="All" DoubleTapped="UserControl_DoubleTapped">
+    d:DesignHeight="300"
+    d:DesignWidth="300"
+    >
 
-    <Grid x:Name="XGrid" BorderBrush="Aquamarine" BorderThickness="2" Background="PapayaWhip" RightTapped="Grid_RightTapped" ManipulationDelta="Grid_ManipulationDelta" >
-        <Canvas 
-            Name="xCanvas" 
-            HorizontalAlignment="Stretch" 
-            VerticalAlignment="Stretch" 
-            Background="AliceBlue" ManipulationMode="All">
-        </Canvas>
-        
+    <Grid x:Name="OuterGrid" PointerPressed="DocumentView_OnPointerPressed">
+        <Grid x:Name="XGrid" ManipulationMode="{Binding ManipulationMode}" BorderBrush="{Binding BorderBrush}" Padding="0" Style="{StaticResource xNodeContainerGrid}" RightTapped="Grid_RightTapped"></Grid>
+        <Button x:Name="DraggerButton" x:FieldModifier="public" Width="20"
+                Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" ManipulationMode="All">
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse Fill="#DE0074FF" StrokeThickness="3" Stroke="#DE0074FF" />
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
     </Grid>
 </UserControl>

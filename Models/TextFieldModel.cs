@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
+using Microsoft.Extensions.DependencyInjection;
+using Dash.Models;
 
 namespace Dash
 {
@@ -16,31 +19,37 @@ namespace Dash
     {
         public TextFieldModel() { }
 
+        /// <summary>
+        /// Create a new text field model with the passed in string as data
+        /// </summary>
+        /// <param name="data"></param>
         public TextFieldModel(string data)
         {
             Data = data;
         }
 
-        public string Data { get; set; }
+        private string _data;
 
         /// <summary>
-        /// Creates TextBlock using layout information from template and Data 
+        /// The text which is the field model contains
         /// </summary>
-        public override UIElement MakeView(TemplateModel template)
+        public string Data
         {
-            TextTemplateModel textTemplate = template as TextTemplateModel;
-            Debug.Assert(textTemplate != null);
-        //    TextViewModel vm = new TextViewModel(this, template);
-            TextBlock tb = new TextBlock
+            get { return _data; }
+            set
             {
-                Text = Data
-            };
-            Canvas.SetTop(tb, textTemplate.Top);
-            Canvas.SetLeft(tb, textTemplate.Left);
-            tb.FontWeight = textTemplate.FontWeight;
-            tb.TextWrapping = textTemplate.TextWrapping;
-            tb.Visibility = textTemplate.Visibility;
-            return tb;
+                SetProperty(ref _data, value);
+                OnFieldUpdated();
+            }
+        }
+
+        protected override void UpdateValue(FieldModel model)
+        {
+            TextFieldModel fm = model as TextFieldModel;
+            if (fm != null)
+            {
+                Data = fm.Data;
+            }
         }
     }
 }

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Models;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
@@ -15,27 +14,33 @@ namespace Dash
     /// </summary>
     class ImageFieldModel : FieldModel
     {
-        public BitmapImage Data { get; set; }
-        
+        public BitmapImage _data; 
+
+        public BitmapImage Data
+        {
+            get { return _data; }
+            set
+            {
+                SetProperty(ref _data, value);
+                OnFieldUpdated();
+            }
+        }
+
         public ImageFieldModel(Uri image)
         {
             Data = new BitmapImage(image);
         }
+        public ImageFieldModel(Image image) {
+            Data = (BitmapImage)image.Source;
+        }
 
-        /// <summary>
-        /// Creates Image using layout information from template and Data 
-        /// </summary>
-        public override UIElement MakeView(TemplateModel template)
+        protected override void UpdateValue(FieldModel model)
         {
-            ImageTemplateModel imageTemplate = template as ImageTemplateModel;
-            Image image = new Image();
-            image.Source = Data;
-            Canvas.SetTop(image, imageTemplate.Top);
-            Canvas.SetLeft(image, imageTemplate.Left);
-            image.Visibility = imageTemplate.Visibility;
-            image.Width = imageTemplate.Width;
-            image.Height = imageTemplate.Height;
-            return image;
+            ImageFieldModel fm = model as ImageFieldModel;
+            if (fm != null)
+            {
+                Data = fm.Data;
+            }
         }
     }
 }

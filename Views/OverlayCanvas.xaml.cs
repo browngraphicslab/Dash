@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Microsoft.Extensions.DependencyInjection;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,6 +34,7 @@ namespace Dash
             get { return XCanvas.Children; }
         }
 
+
         public OverlayCanvas()
         {
             this.InitializeComponent();
@@ -41,21 +43,25 @@ namespace Dash
             Instance = this;
         }
 
-        private void Ellipse_Tapped(object sender, TappedRoutedEventArgs e)
+        private void AddDocumentsTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnEllipseTapped.Invoke(sender, e);
+            OnAddDocumentsTapped?.Invoke(sender, e);
         }
 
-        private void Ellipse_Tapped_1(object sender, TappedRoutedEventArgs e)
+        private void AddCollectionTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnEllipseTapped2.Invoke(sender, e);
-            Debug.WriteLine("Ellipse tapped");
+            OnAddCollectionTapped?.Invoke(sender, e);
         }
 
+        private void AddShapeTapped(object sender, TappedRoutedEventArgs e)
+        {
+            OnAddShapeTapped?.Invoke(sender, e);
+        }
         private void Canvas_Double_Tapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             OnDoubleTapped.Invoke(sender,e);
         }
+
 
     }
 }

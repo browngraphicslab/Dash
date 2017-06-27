@@ -1,0 +1,207 @@
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Globalization;
+using System.Linq;
+using Dash.Models;
+using DashShared;
+
+namespace Dash.StaticClasses
+{
+    /// <summary>
+    /// Provides a series of utility functions for filtering documents.
+    /// </summary>
+    public static class FilterUtils
+    {
+        /// <summary>
+        /// Takes in a list of DocumentModels and a FilterModel and returns a filtered list of DocumentModels
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="filter"></param>
+        /// <returns></returns>
+        public static List<DocumentModel> Filter(List<DocumentModel> collection, FilterModel filter)
+        {
+            switch (filter.Type)
+            {
+                case FilterModel.FilterType.containsKey:
+                    return CheckContainsKey(collection, filter.KeyName);
+                case FilterModel.FilterType.valueContains:
+                    //                    return CheckValueContains(collection, filter.Key, filter.Values);
+                    return CheckValueContains(collection, filter.KeyName, filter.Value);
+                case FilterModel.FilterType.valueEquals:
+                    return CheckValueEquals(collection, filter.KeyName, filter.Value);
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of keys in the collection that contain the specified text (to create autosuggestions)
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static ImmutableHashSet<string> GetKeySuggestions(List<DocumentModel> collection, string text)
+        {
+            var collectionKeys = new HashSet<string>();
+            foreach (var doc in collection)
+            {
+                var keyNames = new HashSet<string>();
+                foreach (var key in GetKeys(doc))
+                {
+                    var keyName = key.Name;
+                    keyNames.Add(keyName);
+                }
+                collectionKeys.UnionWith(keyNames);
+            }
+            return collectionKeys.Where(k => k.ToLower().Contains(text)).ToImmutableHashSet();
+        }
+
+        /// <summary>
+        /// Takes in a list of DocumentModels and a key and returns a list of DocumentModels whose dictionary
+        /// contains the specified key
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private static List<DocumentModel> CheckContainsKey(List<DocumentModel> collection, string keyName)
+        {
+            var containsKeyDocuments = new List<DocumentModel>();
+            // loop through all documents in the collection to find the ones with the specified field
+            foreach (var document in collection)
+            {
+                foreach (var docKey in GetKeys(document))
+                {
+                    if (docKey.Name.Equals(keyName))
+                    {
+                        containsKeyDocuments.Add(document);
+                    }
+                }
+            }
+            return containsKeyDocuments;
+        }
+
+        private static IEnumerable<Key> GetKeys(DocumentModel doc)
+        {
+            foreach (var item in doc.EnumFields())
+                yield return item.Key;
+        }
+
+        //        /// <summary>
+        //        /// multiple values
+        //        /// Takes in a list of DocumentModels, a key, and an array of values, and returns a list of DocumentsModels whose dictionary
+        //        /// contains a specified value at the specified key
+        //        /// </summary>
+        //        /// <param name="collection"></param>
+        //        /// <param name="key"></param>
+        //        /// <param name="values"></param>
+        //        /// <returns></returns>
+        //        private static List<DocumentModel> CheckValueContains(List<DocumentModel> collection, string key, string[] values)
+        //        {
+        //            // use hashset to prevent duplicates
+        //            var valueContainsDocuments = new HashSet<DocumentModel>();
+        //
+        //            // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
+        //            foreach (var document in CheckContainsKey(collection, key))
+        //            {
+        //                // loop through all search values
+        //                foreach (var value in values)
+        //                {
+        //                    // add any documents whose dictionary contains the specified value at the specified key to the hashset of documents
+        //                    if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(document.Fields[key].Key, value, CompareOptions.IgnoreCase) >= 0)
+        //                    {
+        //                        valueContainsDocuments.Add(document);
+        //                    }
+        //                }
+        //            }
+        //            return valueContainsDocuments.ToList();
+        //        }
+
+        /// <summary>
+        /// Takes in a list of DocumentModels, a key, and a value, and returns a list of DocumentsModels whose dictionary
+        /// contains a specified value at the specified key
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="key"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        private static List<DocumentModel> CheckValueContains(List<DocumentModel> collection, string keyName, string value)
+        {
+            // use hashset to prevent duplicates
+            var valueContainsDocuments = new HashSet<DocumentModel>();
+
+            // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
+            foreach (var document in CheckContainsKey(collection, keyName))
+            {
+                var key = new Key();
+                foreach (var docKey in GetKeys(document))
+                {
+                    if (docKey.Name.Equals(keyName))
+                    {
+                        key = docKey;
+                    }
+                }
+                string data = "";
+                if (document.Field(key) is TextFieldModel)
+                {
+                    var text = document.Field(key) as TextFieldModel;
+                    data = text.Data;
+                } else if (document.Field(key) is ImageFieldModel)
+                {
+                    var image = document.Field(key) as ImageFieldModel;
+                    data = image.Data.UriSource.AbsoluteUri;
+                }
+                if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(data, value, CompareOptions.IgnoreCase) >= 0)
+                    {
+                        valueContainsDocuments.Add(document);
+                    }
+                
+                    // add any documents whose dictionary contains the specified value at the specified key to the hashset of documents
+                    
+            }
+            return valueContainsDocuments.ToList();
+        }
+
+        /// <summary>
+        /// Takes in a list of DocumentModels, a key, and a value, and returns a list of DocumentsModels whose dictionary
+        /// contains only the specified value at the specified key
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        private static List<DocumentModel> CheckValueEquals(List<DocumentModel> collection, string keyName, string value)
+        {
+            var valueEqualsDocuments = new List<DocumentModel>();
+
+            // loop through documents that have the specified field
+            foreach (var document in CheckContainsKey(collection, keyName))
+            {
+                var key = new Key();
+                foreach (var docKey in GetKeys(document))
+                {
+                    if (docKey.Name == keyName)
+                    {
+                        key = docKey;
+                        break;
+                    }
+                }
+                string data = "";
+                if (document.Field(key) is TextFieldModel)
+                {
+                    var text = document.Field(key) as TextFieldModel;
+                    data = text.Data;
+                }
+                else if (document.Field(key) is ImageFieldModel)
+                {
+                    var image = document.Field(key) as ImageFieldModel;
+                    data = image.Data.UriSource.AbsoluteUri;
+                }
+                if (data.Equals(value.ToLower()))
+                {
+                    valueEqualsDocuments.Add(document);
+                }
+            }
+            return valueEqualsDocuments;
+        }
+    }
+}

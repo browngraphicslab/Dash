@@ -7,10 +7,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:WindowTemplate">
-                    <Grid x:Name="PART_Container"
-                          Background="{TemplateBinding Background}"
-                          BorderBrush="{TemplateBinding BorderBrush}"
-                          BorderThickness="{TemplateBinding BorderThickness}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <Grid x:Name="PART_Container" BorderBrush="Black" BorderThickness="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="45"/>
                             <RowDefinition Height="*"/>
@@ -30,6 +27,31 @@
                         <Rectangle x:Name="PART_Resizer" Width="45" Height="45" Fill="DarkGray"
                                    VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1"/>
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style TargetType="local:EditableFieldFrame">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:EditableFieldFrame">
+                    <Grid>
+                        <Border x:Name="PART_Container"
+                                VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+
+                            <!--editable content-->
+                            <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
+                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+
+
+                        </Border>
+                        <Canvas x:Name="PART_OverlayCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Canvas>
+                    </Grid>
+
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

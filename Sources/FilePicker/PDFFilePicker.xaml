@@ -1,0 +1,32 @@
+﻿<UserControl
+    x:Class="Dash.Sources.FilePicker.PDFFilePicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Sources.FilePicker"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    xmlns:pdf="using:Dash.Sources.FilePicker.PDF"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid Width="400" x:Name="xGrid" Height="300"  Style="{StaticResource xNodeContainerGrid}" ManipulationMode="All">
+
+        <TextBlock Style="{StaticResource xTitleStyle}" Text="PDF File Picker"/>
+        <Grid Margin="0,35,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Button x:Name="xFilePickBtn" Tapped="xFilePickBtn_Tapped" Content="Choose File" Grid.Row ="0" Grid.Column="0" HorizontalAlignment="Center"/>
+            <TextBlock x:Name="xResultTB" Text="File chosen: None" Grid.Row="0" HorizontalAlignment="Left" Grid.Column="1" Margin="5,0,0,0" VerticalAlignment="Center"/>
+            <Border BorderBrush="Black" BorderThickness="1" Grid.ColumnSpan="2" Margin="0,10" Grid.Row="1" >
+                <pdf:PDFViewer x:Name="pdfDisplay" AutoLoad="True"  VerticalAlignment="Stretch" HorizontalAlignment="Stretch" IsZoomEnabled="true"></pdf:PDFViewer>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

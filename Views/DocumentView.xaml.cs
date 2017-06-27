@@ -4,223 +4,226 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
+using Windows.UI;
+using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
-using Dash.StaticClasses;
+using Dash.ViewModels;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
-
 namespace Dash
 {
-    //[ContentProperty("InnerContent")]
+
     public sealed partial class DocumentView : UserControl
     {
-        Dictionary<string, TextBlock> textElementViews = new Dictionary<string, TextBlock>();
+        /// <summary>
+        /// Contains methods which allow the document to be moved around a free form canvas
+        /// </summary>
+        private ManipulationControls manipulator;
+        private DocumentViewModel _vm;
 
-        private float _documentScale = 1.0f;
-        public const float MinScale = 0.5f;
-        public const float MaxScale = 2.0f;
+        public bool ProportionalScaling;
+        public ManipulationControls Manipulator { get { return manipulator; } }
+
+        public event OperatorView.IODragEventHandler IODragStarted;
+        public event OperatorView.IODragEventHandler IODragEnded;
 
         public DocumentView()
         {
             this.InitializeComponent();
+            DataContextChanged += DocumentView_DataContextChanged;
+
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            this.DataContextChanged += DocumentView_DataContextChanged;
+            // add manipulation code
+            manipulator = new ManipulationControls(this);
 
-            // TODO remove this later 
-            this.RenderTransform = new TranslateTransform { X = 200, Y = 200 };
-            this.Width = 200;
-            this.Height = 400;
+            // set bounds
+            MinWidth = 200;
+            MinHeight = 200;
+
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
         }
 
-        //public static readonly DependencyProperty InnerContentProperty = DependencyProperty.Register("InnerContent", typeof(object), typeof(DocumentView), new PropertyMetadata(null));
-
-        //public object InnerContent
-        //{
-        //    get { return (object) GetValue(InnerContentProperty); }
-        //    set { SetValue(InnerContentProperty, value);}
-        //}
-
-        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        /// <summary>
+        /// Resizes the CollectionView according to the increments in width and height. 
+        /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
+        /// the Grid must change size to accomodate the height of the ListView.
+        /// </summary>
+        /// <param name="dx"></param>
+        /// <param name="dy"></param>
+        public void Resize(double dx = 0, double dy = 0)
         {
-            var dvm = DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                xCanvas.Children.Clear();
-                List<UIElement> elements = dvm.GetUIElements();
-                foreach (var element in elements)
-                {
-                    xCanvas.Children.Add(element);
-                }
-            }
-        }
-
-        private void elementModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            ReLayout();
-        }
-
-        public void ReLayout()
-        {
-            //var dvm = DataContext as DocumentViewModel;
-            //if (dvm != null)
+            Width = ActualWidth + dx;
+            Height = ActualHeight + dy;
+            ////Changes width if permissible within size constraints.
+            //if (OuterGridWidth + dx > CellSize || dx > 0)
             //{
-            //    var lm = dvm.DocumentViewModelSource.DocumentLayoutModel(dvm.DocumentModel);
-            //    foreach (var item in dvm.DocumentModel.Fields)
+            //    OuterGridWidth += dx;
+            //    if (ProportionalScaling && DisplayingItems())
             //    {
-            //        var elementKey   = item.Key;
-            //        var elementModel = lm.Fields[elementKey];
-            //        var content      = item.Value;
+            //        var scaleFactor = OuterGridWidth / (OuterGridWidth - dx);
+            //        CellSize = CellSize * scaleFactor;
+            //        ScaleDocumentsToFitCell();
 
-            //        if (!textElementViews.ContainsKey(elementKey))
+            //        //Takes care of proportional height resizing if proportional dragger is used
+            //        if (ListViewVisibility == Visibility.Visible)
             //        {
-            //            xCanvas.Children.Add(new TextBlock());
-            //            textElementViews.Add(elementKey, xCanvas.Children.Last() as TextBlock);
+            //            OuterGridHeight = CellSize + 44;
+
             //        }
-            //        var tb = textElementViews[elementKey];
-            //        tb.FontSize = 16;
-            //        tb.Width = 200;
-            //        tb.TextWrapping = elementModel.TextWrapping;
-            //        tb.FontWeight = elementModel.FontWeight;
-            //        tb.Text = content == null ? "" : content.ToString();
-            //        tb.Name = "x" + elementKey;
-            //        tb.HorizontalAlignment = HorizontalAlignment.Center;
-            //        tb.VerticalAlignment = VerticalAlignment.Center;
-            //        Canvas.SetLeft(tb, elementModel.Left);
-            //        Canvas.SetTop(tb,  elementModel.Top);
-            //        tb.Visibility = elementModel.Visibility;
-            //        elementModel.PropertyChanged -= elementModel_PropertyChanged;
-            //        elementModel.PropertyChanged += elementModel_PropertyChanged;
+            //        else if (GridViewVisibility == Visibility.Visible)
+            //        {
+            //            var aspectRatio = OuterGridHeight / OuterGridWidth;
+            //            OuterGridHeight += dx * aspectRatio;
+            //        }
             //    }
             //}
-        }
 
-        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            //   var viewEditor = new ViewEditor();
-            //   FreeFormViewModel.MainFreeformView.AddToView(viewEditor, Constants.ViewEditorInitialLeft, Constants.ViewEditorInitialTop);
-            //   viewEditor.SetCurrentlyDisplayedDocument(DataContext as DocumentViewModel);
-        }
-
-        protected override void OnManipulationCompleted(ManipulationCompletedRoutedEventArgs e)
-        {
-            //if ((Window.Current.Content as Frame).Content is FreeFormView)
+            ////Changes height if permissible within size constraints; makes the height of the Grid track the height of the ListView if the ListView is showing and proportional scaling is allowed.
+            //if ((OuterGridHeight + dy > CellSize + 50 || dy > 0) && (!ProportionalScaling || !DisplayingItems()))
             //{
-            //    var gt = TransformToVisual(Window.Current.Content);
-            //    // Use that to convert the generated Point into the page's coords
-            //    Point pagePoint = gt.TransformPoint(e.Position);
-
-            //    foreach (var cgv in ((((Window.Current.Content as Frame).Content as FreeFormView).Content as Canvas).Children.Where((c) => c is CollectionGridView).Select((x) => (CollectionGridView)x)))
-            //        if (VisualTreeHelper.FindElementsInHostCoordinates(pagePoint, cgv).Count() > 0)
-            //        {
-            //            var cgvModel = (cgv as CollectionGridView).DataContext as CollectionGridViewModel;
-            //            if (!cgvModel.Documents.Contains(DataContext as DocumentViewModel))
-            //            {
-            //                cgvModel.AddDocument((DataContext as DocumentViewModel).DocumentModel);
-            //            }
-            //        }
+            //    if (DisplayingItems() && ListViewVisibility == Visibility.Visible)
+            //    {
+            //        OuterGridHeight = CellSize + 44;
+            //    }
+            //    else
+            //    {
+            //        OuterGridHeight += dy;
+            //    }
             //}
-            base.OnManipulationCompleted(e);
+
+            //SetDimensions();
         }
 
-        private void Grid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        ///// <summary>
+        ///// Sets the sizes and/or locations of all of the components of the CollectionView correspoding to the size of the Grid.
+        ///// </summary>
+        //public void SetDimensions()
+        //{
+        //    ContainerGridHeight = OuterGridHeight - 45;
+        //    ContainerGridWidth = OuterGridWidth - 2;
+
+        //    DraggerMargin = new Thickness(OuterGridWidth - 62, OuterGridHeight - 20, 0, 0);
+        //    ProportionalDraggerMargin = new Thickness(OuterGridWidth - 22, OuterGridHeight - 20, 0, 0);
+        //    CloseButtonMargin = new Thickness(OuterGridWidth - 34, 0, 0, 0);
+
+        //    SelectButtonMargin = new Thickness(0, OuterGridHeight - 23, 0, 0);
+
+        //    BottomBarMargin = new Thickness(0, OuterGridHeight - 21, 0, 0);
+
+        //    DeleteButtonMargin = new Thickness(42, OuterGridHeight - 23, 0, 0);
+        //}
+
+
+        /// <summary>
+        /// Resizes all of the documents to fit the CellSize, mainting their aspect ratios.
+        /// </summary>
+        //private void ScaleDocumentsToFitCell()
+        //{
+        //    foreach (var dvm in DocumentViewModels)
+        //    {
+        //        var aspectRatio = dvm.Width / dvm.Height;
+        //        if (dvm.Width > dvm.Height)
+        //        {
+        //            //dvm.Width = CellSize;
+        //            //dvm.Height = CellSize / aspectRatio;
+        //        }
+        //        else
+        //        {
+        //            //dvm.Height = CellSize;
+        //            //dvm.Width = CellSize * aspectRatio;
+        //        }
+        //    }
+
+        //}
+
+
+        /// <summary>
+        /// Called when the user holds the dragger button, or finishes holding it; 
+        /// if the button is held down, initiates the proportional resizing mode.
+        /// </summary>
+        /// <param name="sender">DraggerButton in the DocumentView class</param>
+        /// <param name="e"></param>
+        public void DraggerButtonHolding(object sender, HoldingRoutedEventArgs e)
         {
-            e.Handled = true;
-
-            //Create initial composite transform 
-            TransformGroup group = new TransformGroup();
-
-            ScaleTransform scale = new ScaleTransform
+            if (e.HoldingState == HoldingState.Started)
             {
-                CenterX = e.Position.X,
-                CenterY = e.Position.Y,
-                ScaleX = e.Delta.Scale,
-                ScaleY = e.Delta.Scale
-            };
-
-            //Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            //TranslateTransform translate = new TranslateTransform
-            //{
-            //    X = p.X,
-            //    Y = p.Y
-            //};
-            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, this);
-
-
-            //Clamp the scale factor 
-            float newScale = _documentScale * e.Delta.Scale;
-            if (newScale > MaxScale)
-            {
-                scale.ScaleX = MaxScale / _documentScale;
-                scale.ScaleY = MaxScale / _documentScale;
-                _documentScale = MaxScale;
+                ProportionalScaling = true;
             }
-            else if (newScale < MinScale)
+            else if (e.HoldingState == HoldingState.Completed)
             {
-                scale.ScaleX = MinScale / _documentScale;
-                scale.ScaleY = MinScale / _documentScale;
-                _documentScale = MinScale;
+                ProportionalScaling = false;
             }
-            else
-            {
-                _documentScale = newScale;
-            }
-
-            group.Children.Add(scale);
-            group.Children.Add(this.RenderTransform);
-            group.Children.Add(translate);
-
-            //Get top left and bottom right points of documents in canvas space
-            Point p1 = group.TransformPoint(new Point(0, 0));
-            Point p2 = group.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
-            Debug.Assert(this.RenderTransform != null);
-            Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
-            Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
-
-            //Check if translating or scaling the document puts the view out of bounds of the canvas
-            //Nullify scale or translate components accordingly
-            bool outOfBounds = false;
-            if (p1.X < 0)
-            {
-                outOfBounds = true;
-                translate.X = -oldP1.X;
-                scale.CenterX = 0;
-            }
-            
-            else if (p2.X > FreeformView.MainFreeformView.Canvas.ActualWidth)
-            {
-                outOfBounds = true;
-                translate.X = FreeformView.MainFreeformView.Canvas.ActualWidth - oldP2.X;
-                scale.CenterX = XGrid.ActualWidth;
-            }
-            if (p1.Y < 0)
-            {
-                outOfBounds = true;
-                translate.Y = -oldP1.Y;
-                scale.CenterY = 0;
-            }
-            else if (p2.Y > FreeformView.MainFreeformView.Canvas.ActualHeight)
-            {
-                outOfBounds = true;
-                translate.Y = FreeformView.MainFreeformView.Canvas.ActualHeight - oldP2.Y;
-                scale.CenterY = XGrid.ActualHeight;
-            }
-
-            //If the view was out of bounds recalculate the composite matrix
-            if (outOfBounds)
-            {
-                group = new TransformGroup();
-                group.Children.Add(scale);
-                group.Children.Add(this.RenderTransform);
-                group.Children.Add(translate);
-            }
-
-            this.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
+
+        /// <summary>
+        /// Resizes the control based on the user's dragging the DraggerButton.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
+            Resize(p.X, p.Y);
+            e.Handled = true;
+        }
+
+        /// <summary>
+        /// If the user was resizing proportionally, ends the proportional resizing and 
+        /// changes the DraggerButton back to its normal appearance.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void Dragger_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            if (ProportionalScaling)
+            {
+                ProportionalScaling = false;
+            }
+        }
+        public DocumentView(DocumentViewModel documentViewModel)
+        {
+            DataContext = documentViewModel;
+
+            // reset the fields on the documetn to be those displayed by the documentViewModel
+            ResetFields(documentViewModel);
+        }
+
+        /// <summary>
+        /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
+        /// </summary>
+        /// <param name="documentViewModel"></param>
+        public void ResetFields(DocumentViewModel documentViewModel)
+        {
+            // clear any current children (fields) and then add them over again
+            XGrid.Children.Clear();
+            var elements = documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
+            foreach (var element in elements)
+            {
+                //if (!(element is TextBlock))
+                    XGrid.Children.Add(element);
+            }
+        }
+
+        /// <summary>
+        /// Hacky way of adding the editable fields to the document in the interface builder
+        /// </summary>
+        /// <param name="uiElements"></param>
+        public void SetUIElements(List<FrameworkElement> uiElements)
+        {
+            XGrid.Children.Clear();
+            foreach (var element in uiElements)
+            {
+                XGrid.Children.Add(element);
+            }
+        }
+
 
         /// <summary>
         /// Brings up OperationWindow when DocumentView is double tapped 
@@ -229,23 +232,88 @@ namespace Dash
         /// <param name="e"></param>
         private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            OperationWindow window = new OperationWindow(1000, 800);
-
-            var dvm = DataContext as DocumentViewModel;
-            if (dvm != null)
+            if (_vm != null && _vm.DoubleTapEnabled)
             {
-                window.DocumentViewModel = dvm;
+                e.Handled = true;
+                var window = new OperationWindow(1000, 800, new OperationWindowViewModel(_vm.DocumentModel));
+
+                var center = RenderTransform.TransformPoint(e.GetPosition(this));
+
+                throw new Exception("Operation Window needs to be a document to be added to the MainPage");
+                //FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+                // MainPage.Instance.MainDocument.Children.Add(window);
             }
-            Point center = RenderTransform.TransformPoint(e.GetPosition(this));
+        }
 
-            FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
+        /// <summary>
+        /// Called whenever a field is changed on the document
+        /// </summary>
+        /// <param name="fieldReference"></param>
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            // ResetFields(_vm);
+            // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
+        }
 
-            ////Get top left and bottom right points of documents in canvas space
-            //Point p1 = this.RenderTransform.TransformPoint(new Point(0, 0));
-            //Point p2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
-            //Debug.Assert(this.RenderTransform != null);
-            //Point oldP1 = this.RenderTransform.TransformPoint(new Point(0, 0));
-            //Point oldP2 = this.RenderTransform.TransformPoint(new Point(XGrid.ActualWidth, XGrid.ActualHeight));
+        /// <summary>
+        /// Right tapping to bring up the interface builder
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var dvm = DataContext as DocumentViewModel;
+            Debug.Assert(dvm != null);
+
+            var interfaceBuilder = new InterfaceBuilder(dvm);
+            var center = RenderTransform.TransformPoint(e.GetPosition(this));
+            OverlayCanvas.Instance.Canvas.Children.Add(interfaceBuilder);
+
+            e.Handled = true;
+            //throw new Exception("interface builder needs to be a document to be added to the MainPage");
+            // FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
+        }
+
+        /// <summary>
+        /// The first time the local DocumentViewModel _vm can be set to the new datacontext
+        /// this resets the fields otherwise does nothing
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            // if _vm has already been set return
+            if (_vm != null)
+                return;
+            _vm = DataContext as DocumentViewModel;
+            // if new _vm is not correct return
+            if (_vm == null)
+                return;
+
+            // otherwise layout the document according to the _vm
+            ResetFields(_vm);
+            _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);
+            _vm.IODragEnded += reference => IODragEnded?.Invoke(reference);
+            // Add any methods
+            //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
+            //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+        }
+
+        private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            //e.Handled = true;
+
+            //var parent = OuterGrid.Parent as Grid;
+            //Debug.WriteLine(OuterGrid.Parent);
+            //if (parent == null) return;
+            //var maxZ = int.MinValue;
+            //foreach (var child in parent.Children)
+            //{
+            //    var childZ = (int)child.GetValue(Canvas.ZIndexProperty);
+            //    if (childZ > maxZ)
+            //        maxZ = childZ;
+            //}
+            //OuterGrid.SetValue(Canvas.ZIndexProperty, maxZ + 1);
         }
     }
 }

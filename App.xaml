@@ -5,4 +5,146 @@
     xmlns:local="using:Dash"
     RequestedTheme="Light">
 
+    <!-- Application-wide XAML stylesheet-->
+
+    <!-- 
+    HOW TO STYLE YOUR NODES
+    1. All nodes should be contained in a grid or similar structure which has
+    the xNodeContainerType property applied. i.e.:
+    
+    <Grid Style="{StaticResource xNodeContainerGrid}">
+    </Grid>
+    
+    2. For nodes with a title, create a title textblock as follows:
+    <TextBlock Style="{StaticResource xTitleStyle}">
+    
+    3. Create the insides of the nodes. Some additional styles are reccomended:
+    <Button Style="{StaticResource xAccentButtonStyle}": displays buttons in accent color
+    
+    ADD AS YOU GO
+    - If you're styling more than a few elements manually, you probably want to
+    create a XAML style for it and apply it. If you think your style will be useful
+    to others, add it to the GLOBAL section. Otherwise, create a section that entails
+    the category of your styles (i.e. COLLECTION VIEW STYLES). For small, one-off styles,
+    just toss them in the MISC category.
+    
+    - Be nice to your fellow programmers. Throw in a comment saying what the style does if
+    it's not obvious frm the name. 
+    
+    MANIPULATION NODES
+    - Add this code to every UI child element (within a given node) who you don't want the
+    user to be able to move its parent node while clicking it
+    <Property="ManipulationMode" Value="Scale"></Setter>
+    
+    -->
+    <Application.Resources>
+        <!-- COLORS -->
+        <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
+
+        <!-- DEFAULT STYLES-->
+        <!-- gray border on textboxes -->
+        <Style TargetType="TextBox">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
+            <Setter Property="BorderBrush" Value="#FF474747"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <!-- gray border on combobox -->
+        <Style TargetType="ComboBox">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
+            <Setter Property="BorderBrush" Value="#FF474747"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <!-- blue (default) button with white text -->
+        <Style TargetType="Button">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter> 
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0,0,0,0"/>
+        </Style>
+
+
+        <!-- GLOBAL STYLES -->
+        <!-- border & padding on node-containing elements-->
+        <Style TargetType="Grid" x:Name="xNodeContainerGrid">
+            <Setter Property="BorderBrush" Value="#FF0078D7"/>
+            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style TargetType="StackPanel" x:Name="xNodeContainerStackPanel">
+            <Setter Property="BorderBrush" Value="#FF0078D7"/>
+            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+        <Style TargetType="UserControl" x:Name="xNodeContainerUserControl">
+            <Setter Property="BorderBrush" Value="#FF0078D7"/>
+            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <!-- app Titles -->
+        <Style TargetType="TextBlock" x:Name="xTitleStyle">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+        <!-- green accent button -->
+        <Style TargetType="Button" x:Name="xAccentButtonStyle">
+            <!-- prevents node from moving while mouse is over UI element-->
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Background" Value="{StaticResource AccentGreen}"/>
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0,0,0,0"/>
+        </Style>
+
+        <!-- NODE SPECIFIC STYLES -->
+        <!-- Collection View -->
+
+        <Style TargetType="Button" x:Name="xBlueTextButtonStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Name="xBlueTextBoxStyle">
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
+
+        <Style TargetType="FlyoutPresenter" x:Name="xFlyoutPresenterStyle">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="#DE0074FF"/>
+        </Style>
+
+        <Style TargetType="Grid" x:Name="xBlueBorderGridStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#DE0074FF"/>
+            <Setter Property="Padding" Value="0"></Setter>
+            <Setter Property="BorderThickness" Value="1"></Setter>
+        </Style>
+
+
+        <!-- SAMPLE NODE HERE-->
+
+        <!-- MISC. STYLES-->
+
+    </Application.Resources>
 </Application>
+
