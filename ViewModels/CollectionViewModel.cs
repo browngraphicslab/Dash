@@ -473,46 +473,46 @@ namespace Dash
         /// <param name="e"></param>
         public void DocumentView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                if (dvm.DocumentModel.DocumentType.Id == "itunes")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
-                else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
-                (sender as DocumentView).DataContext = dvm;
-                var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
-                // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
-                var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
-                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
-                // var DocView2 = new DocumentView(new DocumentViewModel());
-                // var center = e.GetPosition(FreeformView.MainFreeformView);
-                MainPage.Instance.DisplayDocument(testPrototypedoc);
-                //FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
+            //var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
+            //if (dvm != null)
+            //{
+            //    if (dvm.DocumentModel.DocumentType.Id == "itunes")
+            //        dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
+            //    else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
+            //        dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
+            //    (sender as DocumentView).DataContext = dvm;
+            //    var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
+            //    // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
+            //    var annotatedImageModel = new DocumentModel(new Dictionary<Key, FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
+            //    annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
+            //    annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
+            //    annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
+            //    testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
+            //    // var DocView2 = new DocumentView(new DocumentViewModel());
+            //    // var center = e.GetPosition(FreeformView.MainFreeformView);
+            //    MainPage.Instance.DisplayDocument(testPrototypedoc);
+            //    //FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
 
-                if (GridViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize + 50;
-                    if (OuterGridHeight < CellSize + 125) OuterGridHeight = CellSize + 125;
-                    if (OuterGridWidth < CellSize + 125) OuterGridWidth = CellSize + 125;
-                    //Resize();
-                    //SetDimensions();
-                }
-                else if (ListViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize;
-                }
+            //    if (GridViewVisibility == Visibility.Visible)
+            //    {
+            //        SoloDisplaySize = CellSize + 50;
+            //        if (OuterGridHeight < CellSize + 125) OuterGridHeight = CellSize + 125;
+            //        if (OuterGridWidth < CellSize + 125) OuterGridWidth = CellSize + 125;
+            //        //Resize();
+            //        //SetDimensions();
+            //    }
+            //    else if (ListViewVisibility == Visibility.Visible)
+            //    {
+            //        SoloDisplaySize = CellSize;
+            //    }
 
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
-                foreach (var s in SoloDisplayElements)
-                    s.RenderTransform = new TranslateTransform();
-                ViewIsEnabled = false;
-                SoloDisplayVisibility = Visibility.Visible;
-            }
-            e.Handled = true;
+            //    SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
+            //    foreach (var s in SoloDisplayElements)
+            //        s.RenderTransform = new TranslateTransform();
+            //    ViewIsEnabled = false;
+            //    SoloDisplayVisibility = Visibility.Visible;
+            //}
+            //e.Handled = true;
         }
 
        

@@ -226,26 +226,8 @@ namespace Dash
             }
         }
 
-
-        /// <summary>
-        /// Brings up OperationWindow when DocumentView is double tapped 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (_vm != null && _vm.DoubleTapEnabled)
-            {
-                e.Handled = true;
-                var window = new OperationWindow(1000, 800, new OperationWindowViewModel(_vm.DocumentModel));
-
-                var center = RenderTransform.TransformPoint(e.GetPosition(this));
-
-                throw new Exception("Operation Window needs to be a document to be added to the MainPage");
-                //FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
-                // MainPage.Instance.MainDocument.Children.Add(window);
-            }
-        }
+        
+      
 
         /// <summary>
         /// Called whenever a field is changed on the document

@@ -122,8 +122,9 @@ namespace Dash
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var canvas = Parent as Canvas;
-            canvas?.Children.Remove(this);
+            var contentPresentor = this.GetFirstAncestorOfType<ContentPresenter>();
+            (VisualTreeHelper.GetParent(contentPresentor) as Canvas)?.Children.Remove(this
+                .GetFirstAncestorOfType<ContentPresenter>());
         }
 
         private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
