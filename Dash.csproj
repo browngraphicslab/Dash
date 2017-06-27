@@ -89,6 +89,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="ClassDiagram1.cd" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -193,6 +194,7 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
+    <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
@@ -255,13 +257,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\a.txt" />
+    <Content Include="Assets\ArrayOfNestedDocumentJson.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
+    <Content Include="Assets\customerJson.txt" />
     <Content Include="Assets\grid.gif" />
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
+    <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />

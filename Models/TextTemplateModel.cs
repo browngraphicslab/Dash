@@ -28,7 +28,7 @@ namespace Dash
         public string DefaultText { get; set; }
 
         public TextTemplateModel(double left, double top, FontWeight weight, TextWrapping wrap = TextWrapping.NoWrap, Visibility visibility = Visibility.Visible, bool editable= false, string defaultText=null)
-            : base(left, top, 200, 50, visibility)
+            : base(left, top, double.NaN, double.NaN, visibility)
         {
             FontWeight = weight;
             TextWrapping = wrap;
