@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -27,13 +28,18 @@ namespace Dash.Views
         private MainPage _page;
 
         private Rectangle _selectedRectangle;
-        private double _opacity;
+        private double _opacity = 100;
+        private Color _color;
+        private bool _pencil;
+        private bool _pen;
 
         public InkPalette(MainPage page)
         {
             this.InitializeComponent();
             _page = page;
             InitializeColors();
+            xOpacitySlider.Value = 100;
+            PencilButton.IsChecked = true;
         }
 
 
@@ -67,6 +73,7 @@ namespace Dash.Views
         {
             Rectangle rect = new Rectangle();
             rect.Width = 5;
+            rect.VerticalAlignment = VerticalAlignment.Stretch;
             rect.Height = 50;
             rect.Fill = new SolidColorBrush(color);
             rect.Tapped += RectOnTapped;
@@ -85,18 +92,74 @@ namespace Dash.Views
                 _selectedRectangle = rect;
             }
             xExampleRect.Fill = _selectedRectangle.Fill;
-            _page.ChangeInkColor(rect?.Fill is SolidColorBrush ? ((SolidColorBrush) rect.Fill).Color : new Color());
+            _color = rect.Fill is SolidColorBrush ? ((SolidColorBrush) rect.Fill).Color : new Color();
+            SetInkColor(_color, _opacity);
         }
 
         private void xOpacitySlider_ValueChanged(object sender, RangeBaseValueChangedEventArgs e)
         {
-            _opacity = e.NewValue;
+            _opacity = e.NewValue/100;
             foreach (UIElement item in XStackPanel.Children)
             {
                 var rect = item as Rectangle;
                 if (rect?.Fill != null) rect.Fill.Opacity = _opacity;
             }
-            _page.ChangeInkColor(_selectedRectangle?.Fill is SolidColorBrush ? ((SolidColorBrush)_selectedRectangle.Fill).Color : new Color());
+            SetInkColor(_color, _opacity);
+        }
+
+
+        private void PenButton_Checked(object sender, RoutedEventArgs e)
+        {
+            _pencil = false;
+            _pen = true;
+            xOpacitySlider.Value = 100;
+            xOpacitySlider.IsEnabled = false;
+            SetInkColor(_color, _opacity);
+        }
+
+        private void PencilButton_Checked(object sender, RoutedEventArgs e)
+        {
+            _pencil = true;
+            _pen = false;
+            xOpacitySlider.IsEnabled = true;
+            SetInkColor(_color, _opacity);
+        }
+
+        private void xResizer_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (Height >= 220.473 || e.Delta.Translation.Y > 0)
+            {
+                Height += e.Delta.Translation.Y;
+            }
+            if (Width < 630 && (Width >= 180.71 || e.Delta.Translation.X > 0))
+            {
+                Width += e.Delta.Translation.X;
+            }
+        }
+
+        public void SetInkColor(Color color, double opacity)
+        {
+            if (_pencil)
+            {
+                InkDrawingAttributes pencilAttributes = InkDrawingAttributes.CreateForPencil();
+                pencilAttributes.Color = color;
+                pencilAttributes.Size = new Windows.Foundation.Size(2, 2);
+                pencilAttributes.PencilProperties.Opacity = opacity;
+                _page.SetInkColor(pencilAttributes);
+            }
+            if (_pen)
+            {
+                InkDrawingAttributes penAttributes = new InkDrawingAttributes();
+                Color penColor = color;
+                penColor.A = (byte) (opacity*255);
+                penAttributes.Color = color;
+                _page.SetInkColor(penAttributes);
+            }
+            
+
+            // Update InkPresenter with the pencil attributes.
+
+            
         }
     }
 }

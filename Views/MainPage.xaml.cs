@@ -72,15 +72,17 @@ namespace Dash
                 CoreInputDeviceTypes.Mouse |
                 CoreInputDeviceTypes.Pen;
 
+            InkDrawingAttributes ink = new InkDrawingAttributes();
+            ink.DrawAsHighlighter = false;
+
             Instance = this;
         }
 
-        public void ChangeInkColor(Color color)
+        public void SetInkColor(InkDrawingAttributes ink)
         {
-            InkDrawingAttributes ink = new InkDrawingAttributes();
-            ink.Color = color;
             xInkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(ink);
         }
+
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
