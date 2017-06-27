@@ -19,7 +19,8 @@ namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-        
+       
+
         private CollectionModel _collectionModel;
 
 

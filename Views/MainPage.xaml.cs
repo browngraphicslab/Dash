@@ -54,7 +54,7 @@ namespace Dash
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
 
             DocumentModel docCollection = docController.CreateDocumentAsync("newtype");
-            docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {  }), false);
+            docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { }), false);
             MainDocView.DataContext = new DocumentViewModel(docCollection);
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
@@ -63,7 +63,7 @@ namespace Dash
             MainDocView.Manipulator.RemoveAllButHandle();
             //MainDocView.Manipulator.TurnOff();
 
-            MainDocView.DraggerButton.Visibility = Visibility.Collapsed; 
+            MainDocView.DraggerButton.Visibility = Visibility.Collapsed;
 
             Instance = this;
         }
@@ -149,9 +149,10 @@ namespace Dash
             var shapeView = new ShapeView(shapeVM);
 
 
-           //  xFreeformView.Canvas.Children.Add(shapeView);
+            //  xFreeformView.Canvas.Children.Add(shapeView);
         }
-        public DocumentModel MainDocument {
+        public DocumentModel MainDocument
+        {
             get
             {
                 return (MainDocView.DataContext as DocumentViewModel).DocumentModel;
@@ -161,7 +162,8 @@ namespace Dash
         public void DisplayDocument(DocumentModel docModel, Point? where = null)
         {
             var children = MainDocument.Field(DocumentModel.GetFieldKeyByName("children")) as DocumentCollectionFieldModel;
-            if (children != null) { 
+            if (children != null)
+            {
                 children.AddDocumentModel(docModel);
                 if (where.HasValue)
                 {
@@ -171,7 +173,7 @@ namespace Dash
             }
         }
 
-        DocumentModel docCollection = null;
+        //DocumentModel docCollection = null;
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             DocumentModel image2 = DocumentModel.TwoImagesAndText();
@@ -181,20 +183,20 @@ namespace Dash
             image2Del.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
 
             var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            if (docCollection == null) {
-                docCollection = docController.CreateDocumentAsync("newtype");
-                docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {image2, image2Del, umpireDoc}), false);
-            }
+            DocumentModel docCollection = docController.CreateDocumentAsync("newtype");
+            docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { image2, image2Del, umpireDoc }), false);
             DisplayDocument(docCollection);
         }
 
-        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
             // xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
         }
 
-        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
-           // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-           // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
+        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
+            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)

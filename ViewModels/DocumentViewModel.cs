@@ -183,7 +183,10 @@ namespace Dash
                     }
                     if (fieldModel is DocumentCollectionFieldModel)
                     {
-                        uiElements.AddRange(new DocumentCollectionTemplateModel(bounds.Left, yloc, 500, 100, Visibility.Visible).MakeViewUI(fieldModel, DocumentModel));
+                        List<FrameworkElement> collectionlist;
+                        uiElements.AddRange(collectionlist = new DocumentCollectionTemplateModel(bounds.Left, yloc, 500, 100, Visibility.Visible).MakeViewUI(fieldModel, DocumentModel));
+                        var collection = collectionlist[0] as CollectionView;
+                        if (collection != null) SetUpFrameworkElement(collection.ConnectionEllipse, f.Key);
                         yloc += 100;
                     }
                     else if (fieldModel is ImageFieldModel || (fieldModel is TextFieldModel && (fieldModel as TextFieldModel).Data.EndsWith(".jpg")))
@@ -313,8 +316,7 @@ namespace Dash
 
         private void Element_PointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            IODragEnded?.Invoke(
-                new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false,
+            IODragEnded?.Invoke(new OperatorView.IOReference((sender as FrameworkElement).DataContext as ReferenceFieldModel, false,
                     e, sender as FrameworkElement, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()));
         }
 
