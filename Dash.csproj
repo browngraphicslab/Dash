@@ -129,7 +129,7 @@
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModelController.cs" />
     <Compile Include="Models\OperatorModels\ImageOperatorFieldModelController.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />

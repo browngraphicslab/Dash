@@ -32,9 +32,10 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    UpdateValue(ContentController.GetController<DocumentController>(value.DocId).GetField(value.FieldKey));
-                    ContentController.GetController<DocumentController>(value.DocId).GetField(value.FieldKey)
-                        .FieldModelUpdatedEvent += UpdateValue;
+                    var cont = ContentController.GetController<DocumentController>(value.DocId).GetField(value.FieldKey);
+                    cont.FieldModelUpdatedEvent += UpdateValue;
+                    UpdateValue(cont);
+
                     // update server
                 }
             }
