@@ -355,7 +355,7 @@ namespace Dash
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
-                SetLayoutForDocument(stackPan.DocumentModel);
+                //SetLayoutForDocument(stackPan.DocumentModel);
             }
             
         }
