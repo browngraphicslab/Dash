@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls;
 using Dash.Models;
 using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
 namespace Dash

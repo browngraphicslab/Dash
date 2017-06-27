@@ -33,7 +33,6 @@ namespace Dash
         /// <summary>
         /// Abstract method to execute the operator
         /// </summary>
-        /// <param name="fields"></param>
         /// <returns></returns>
         public abstract void Execute(DocumentModel doc);
     }

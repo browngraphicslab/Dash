@@ -182,7 +182,6 @@ namespace Dash
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            throw new NotImplementedException();
             //DocumentModel image2 = DocumentModel.TwoImagesAndText();
             //DocumentModel image2Del = image2.MakeDelegate();
             //DocumentModel umpireDoc = DocumentModel.UmpireDocumentModel();
@@ -190,9 +189,10 @@ namespace Dash
             //image2Del.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
 
             //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //if (docCollection == null) {
+            //if (docCollection == null)
+            //{
             //    docCollection = docController.CreateDocumentAsync("newtype");
-            //    docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] {image2, image2Del, umpireDoc}), false);
+            //    docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { image2, image2Del, umpireDoc }), false);
             //}
             //DisplayDocument(docCollection);
         }

@@ -716,14 +716,7 @@ namespace Dash
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
-
-            //_connectionLine = new Line
-            //{
-            //    StrokeThickness = 10,
-            //    Stroke = new SolidColorBrush(Colors.Black),
-            //    IsHitTestVisible = false,
-            //    CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
-            //};
+            
             _connectionLine = new Path
             {
                 StrokeThickness = 5,
@@ -755,29 +748,7 @@ namespace Dash
                 Converter = new VisibilityConverter()
             };
             _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
-
-            //Binding x1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = ioReference.ContainerView,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = ioReference.ContainerView,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
-            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
-
-            //_connectionLine.X2 = _connectionLine.X1;
-            //_connectionLine.Y2 = _connectionLine.Y1;
-
+            
             FreeformCanvas.Children.Add(_connectionLine);
 
             if (!ioReference.IsOutput)
@@ -822,24 +793,6 @@ namespace Dash
                 _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
             }
 
-            //Binding x2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = ioReference.ContainerView,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformCanvas),
-            //    Source = ioReference.ContainerView,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
-            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
 
@@ -873,7 +826,6 @@ namespace Dash
         private void UndoLine()
         {
             FreeformCanvas.Children.Remove(_connectionLine);
-            //_lineDict. //TODO lol figure this out later 
             _connectionLine = null;
             _currReference = null;
         }
