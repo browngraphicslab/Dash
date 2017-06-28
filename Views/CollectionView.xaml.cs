@@ -58,7 +58,10 @@ namespace Dash
         private void SetEventHandlers()
         {
             GridView.Items.VectorChanged += ItemsControl_ItemsChanged;
+            //ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
             GridOption.Tapped += ViewModel.GridViewButton_Tapped;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption.Tapped +=
+                ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped;
             ListOption.Tapped += ViewModel.ListViewButton_Tapped;
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
@@ -68,6 +71,7 @@ namespace Dash
             //CancelSoloDisplayButton.Tapped += ViewModel.CancelSoloDisplayButton_Tapped;
 
             HListView.SelectionChanged += ViewModel.SelectionChanged;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControl.SelectionChanged += ViewModel.SelectionChanged;
             // GridView.SelectionChanged += ViewModel.SelectionChanged;
             
             Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
@@ -88,11 +92,17 @@ namespace Dash
 
         }
 
+        private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            //TODO implement itemschanged event in here
+            throw new NotImplementedException();
+        }
+
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             if (e.CollectionChange == CollectionChange.ItemInserted)
             {
-                var docVM = sender[(int) e.Index] as DocumentViewModel;
+                var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
                 OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
                 if (ofm != null)
@@ -108,24 +118,24 @@ namespace Dash
                     }
                 }
             }
-            else if (e.CollectionChange == CollectionChange.ItemRemoved)
-            {
-                 var docVM = sender[(int)e.Index] as DocumentViewModel;
-                Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-                if (ofm != null)
-                {
-                    foreach (var inputKey in ofm.InputKeys)
-                    {
-                        foreach (var outputKey in ofm.OutputKeys)
-                        {
-                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                            _graph.RemoveEdge(irfm, orfm);
-                        }
-                    }
-                }
-            }
+            //else if (e.CollectionChange == CollectionChange.ItemRemoved)
+            //{
+            //    var docVM = sender[(int)e.Index] as DocumentViewModel;
+            //    Debug.Assert(docVM != null);
+            //    OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            //    if (ofm != null)
+            //    {
+            //        foreach (var inputKey in ofm.InputKeys)
+            //        {
+            //            foreach (var outputKey in ofm.OutputKeys)
+            //            {
+            //                ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+            //                ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+            //                _graph.RemoveEdge(irfm, orfm);
+            //            }
+            //        }
+            //    }
+            //}
         }
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -37,7 +38,6 @@ namespace Dash
             set
             {
                 SetProperty(ref _dataBindingSource, value); 
-                Debug.WriteLine("changed: " + value.Count);
             }
         }
 
@@ -87,6 +87,7 @@ namespace Dash
         private ListViewSelectionMode _itemSelectionMode;
 
         private Visibility _gridViewVisibility;
+        private Visibility _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility;
         private Visibility _listViewVisibility;
         private Visibility _controlsVisibility;
         private Visibility _filterViewVisibility;
@@ -109,8 +110,6 @@ namespace Dash
         #endregion
 
         #region Size Variables
-
-
 
         /// <summary>
         /// The size of each cell in the GridView.
@@ -178,7 +177,12 @@ namespace Dash
             get { return _gridViewVisibility; }
             set { SetProperty(ref _gridViewVisibility, value); }
         }
-        
+
+        public Visibility GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility
+        {
+            get { return _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility; }
+            set { SetProperty(ref _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility, value); }
+        }
 
         public Visibility ListViewVisibility
         {
@@ -310,6 +314,7 @@ namespace Dash
 
             CellSize = 400;
             ListViewVisibility = Visibility.Collapsed;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             GridViewVisibility = Visibility.Visible;
             FilterViewVisibility = Visibility.Collapsed;
 
@@ -363,20 +368,20 @@ namespace Dash
         /// <param name="e"></param>
         public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DataBindingSource = null;
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 ListViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 GridViewVisibility = Visibility.Visible;
             }
             else
             {
                 ListViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 GridViewVisibility = Visibility.Visible;
             }
-            
         }
 
         /// <summary>
@@ -386,23 +391,40 @@ namespace Dash
         /// <param name="e"></param>
         public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DataBindingSource = null;
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 ListViewVisibility = Visibility.Visible;
             }
             else
             {
                 GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 ListViewVisibility = Visibility.Visible;
-            }
-
-                       
+            }                    
             OuterGridHeight = CellSize + 44;
             //SetDimensions();
+        }
+
+        public void GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_filtered)
+            {
+                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
+                ListViewVisibility = Visibility.Collapsed;
+                GridViewVisibility = Visibility.Collapsed;
+                DataBindingSource = filteredDocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+            }
+            else
+            {
+                ListViewVisibility = Visibility.Collapsed;               
+                GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+            }
         }
 
         /// <summary>
@@ -581,6 +603,7 @@ namespace Dash
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+
         /// <summary>
         /// Constructs standard DocumentViewModels from the passed in DocumentModels
         /// </summary>
