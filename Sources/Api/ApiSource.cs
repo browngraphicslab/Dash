@@ -79,7 +79,7 @@ namespace Dash.Sources.Api {
                 return false;
             
 
-            MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
+            //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
             return true;
         }
