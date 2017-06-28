@@ -233,5 +233,101 @@ namespace Dash
         }
 
         #endregion
+
+        #region FieldModels
+
+        /// <summary>
+        /// Follows a <see cref="ReferenceFieldModel"/> to the first field that it references, and returns that reference as the passed in type. On error
+        /// this returns null
+        /// </summary>
+        public static TFieldModelType DereferenceFieldModel<TFieldModelType>(ReferenceFieldModel reference) where TFieldModelType : FieldModel
+        {
+            var firstReference = DereferenceFieldModel(reference);
+            Debug.Assert(firstReference != null, "The passed in reference does not exist");
+            var typeSafeFirstReference = firstReference as TFieldModelType;
+            Debug.Assert(typeSafeFirstReference != null, "The passed in reference is not of the passed in type");
+            return typeSafeFirstReference;
+        }
+
+        /// <summary>
+        /// Follows a <see cref="ReferenceFieldModel"/> to the first field that it references, and returns that reference as the passed in type. On error
+        /// this returns null
+        /// </summary>
+        public static FieldModel DereferenceFieldModel(ReferenceFieldModel reference)
+        {
+            DocumentModel docModel = null;
+            string fieldModelId = null;
+            FieldModel fieldModel = null;
+
+            // check if the document exists
+            if (_models.ContainsKey(reference.DocId))
+            {
+                // get the document model
+                docModel = _models[reference.DocId] as DocumentModel;
+                Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache.");
+
+                // get the field model id from the document model
+                fieldModelId = docModel.Fields[reference.FieldKey];
+            }
+            else
+            {
+                // TODO try and get the document model from the server
+            }
+
+            Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache or on the server.");
+
+            // check if the field model exists
+            if (_models.ContainsKey(fieldModelId))
+            {
+                // get the field model from the local cache
+                fieldModel = _models[fieldModelId] as FieldModel;
+
+                Debug.Assert(fieldModel != null, "The field Model referenced by your ReferenceFieldModel does not exist in the local cache");
+
+            }
+            else
+            {
+                // TODO try and get the field model from the server
+            }
+
+            Debug.Assert(fieldModel != null, "The field Model referenced by your ReferenceFieldModel does not exist in the local cache or on the server.");
+
+            return fieldModel;
+        }
+
+
+        /// <summary>
+        /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
+        /// </summary>
+        public static FieldModel DereferenceToRootFieldModel(ReferenceFieldModel reference)
+        {
+            FieldModel possibleFieldModel = reference;
+            while (possibleFieldModel is ReferenceFieldModel)
+            {
+                possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);
+            }
+
+            Debug.Assert(possibleFieldModel != null, "The chain of references ended in a null field");
+
+            return possibleFieldModel;
+        }
+
+        /// <summary>
+        /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
+        /// </summary>
+        public static TFieldModelType DereferenceToRootFieldModel<TFieldModelType>(ReferenceFieldModel reference) where TFieldModelType : FieldModel
+        {
+            FieldModel possibleFieldModel = reference;
+            while (possibleFieldModel is ReferenceFieldModel)
+            {
+                possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);
+            }
+
+            Debug.Assert(possibleFieldModel != null, "The chain of references ended in a null field");
+            Debug.Assert(possibleFieldModel is TFieldModelType, "The chain of references ends in a field model which is not of the desired type");
+            return possibleFieldModel as TFieldModelType;
+        }
+
+        #endregion
     }
 }
