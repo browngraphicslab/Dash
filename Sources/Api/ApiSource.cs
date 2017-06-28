@@ -303,8 +303,12 @@ namespace Dash.Sources.Api {
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
 
+                int max = 10, i = 0; // this limits the # of results returned
                 // loop through all instantiated objects, making 
                 foreach (JObject result in resultObjects) {
+                    if (i > max)
+                        break;
+                    i++;
                     Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                     foreach (JProperty property in result.Properties()) {
                         //Debug.WriteLine(property.Name + ": " + property.Value);

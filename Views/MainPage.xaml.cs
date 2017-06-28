@@ -25,6 +25,9 @@ using Dash.Models.OperatorModels.Set;
 using Dash.ViewModels;
 using DashShared;
 using Dash.Sources.Api;
+using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage;
+using Windows.UI.Xaml.Media.Imaging;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -681,6 +684,64 @@ namespace Dash
                 child.Width = e.NewSize.Width;
                 child.Height = e.NewSize.Height;
             }
+        }
+
+        // FILE DRAG AND DROP
+
+        /// <summary>
+        /// Handles drop events onto the canvas, usually by creating a copy document of the original and
+        /// placing it into the canvas.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e">drag event arguments</param>
+        private async void XCanvas_Drop(object sender, DragEventArgs e) {
+            Image dragged = new Image();
+            string url = "";
+            
+            // load items dragged from solution explorer
+            if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
+                var items = await e.DataView.GetStorageItemsAsync();
+
+                if (items.Any()) {
+                    var storageFile = items[0] as StorageFile;
+                    var contentType = storageFile.ContentType;
+
+                    StorageFolder folder = ApplicationData.Current.LocalFolder;
+
+                    // parse images dropped in
+                    if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg") {
+                        StorageFile newFile = await storageFile.CopyAsync(folder, storageFile.Name, NameCollisionOption.GenerateUniqueName);
+                        url = newFile.Path;
+                        BitmapImage bitmapImg = new BitmapImage();
+
+                        bitmapImg.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
+                        dragged.Source = bitmapImg;
+                    }
+
+                    // parse text files dropped in
+                    if (contentType == "text/plain") {
+                        // TODO: TEXT FILES
+                        return;
+                    }
+                }
+            }
+
+            if (e.DataView.Properties["image"] != null)
+                dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
+
+            // make document
+            // generate single-image document model
+            ImageFieldModel m = new ImageFieldModel(new Uri(url));
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel> {
+                [new Key("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
+            };
+
+            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("dragimage", "dragimage"))).GetReturnedDocumentController();
+            DisplayDocument(col);
+        }
+
+        private void XCanvas_DragOver_1(object sender, DragEventArgs e) {
+            e.AcceptedOperation = DataPackageOperation.Copy;
         }
     }
 }
