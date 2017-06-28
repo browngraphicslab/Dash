@@ -82,6 +82,7 @@ namespace Dash
             //xFreeformView.ToggleEditMode();
         }
 
+
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
@@ -185,8 +186,8 @@ namespace Dash
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            var twoImages = new TwoImages().Document;
-            var twoImages2 = new TwoImages().Document;
+            var twoImages = new TwoImages(false).Document;
+            var twoImages2 = new TwoImages(false).Document;
             var numbers = new Numbers().Document;
 
             Key childKey = new Key("children", "children");
@@ -285,6 +286,7 @@ namespace Dash
                     [DashConstants.KeyStore.DataKey] = refToText
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+                SetLayoutForDocument(Document.DocumentModel);
             }
             public override List<FrameworkElement> makeView(DocumentController docController)
             {
@@ -334,6 +336,8 @@ namespace Dash
                     [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(double.NaN)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+
+                SetLayoutForDocument(Document.DocumentModel);
             }
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
@@ -393,6 +397,8 @@ namespace Dash
                     [DashConstants.KeyStore.DataKey] = fieldModel
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+                
+                SetLayoutForDocument(Document.DocumentModel);
             }
             public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
             public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
@@ -401,11 +407,15 @@ namespace Dash
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
-                    return new DocumentCollectionTemplateModel(0, 0).MakeViewUI(data, docController);
+                {
+                    var w = docController.GetField(DashConstants.KeyStore.WidthFieldKey) != null ?
+                        (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
+                    var h = double.NaN;
+                    return new DocumentCollectionTemplateModel(0, 0, w, h).MakeViewUI(data, docController);
+                }
                 return new List<FrameworkElement>();
             }
         }
-
 
         public class StackingPanel : CourtesyDocument
         {
@@ -433,7 +443,7 @@ namespace Dash
                     {
                         foreach (var ele in stackDoc.MakeViewUI().Where((e) => e != null))
                         {
-                            if (double.IsNaN(ele.Width))
+                            if (double.IsNaN(ele.Width) && (ele is Image || ele is TextBlock || ele is TextBox))
                                 ele.MaxWidth = 300;
                             stack.Children.Add(ele);
                         }
@@ -450,15 +460,15 @@ namespace Dash
             public static Key Image2FieldKey = new Key("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
             public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
 
-            public TwoImages()
+            public TwoImages(bool displayFieldsAsDocuments)
             {
                 // create a document with two images
-                var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+                var imModel  = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
                 var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-                var tModel = new TextFieldModel("Hello World!");
-                var fields = new Dictionary<Key, FieldModel>
+                var tModel   = new TextFieldModel("Hello World!");
+                var fields   = new Dictionary<Key, FieldModel>
                 {
-                    [TextFieldKey] = tModel,
+                    [TextFieldKey]   = tModel,
                     [Image1FieldKey] = imModel,
                     [Image2FieldKey] = imModel2
                 };
@@ -468,11 +478,52 @@ namespace Dash
                 var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
                 var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
 
-                var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
+                if (displayFieldsAsDocuments)
+                {
+                    var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel } );
+                    var documentFieldModelController = new DocumentCollectionFieldModelController(documentFieldModel);
+                    ContentController.AddModel(documentFieldModel);
+                    ContentController.AddController(documentFieldModelController);
+                    Document.SetField(DashConstants.KeyStore.DataKey, documentFieldModelController, true);
 
-                //SetLayoutForDocument(stackPan.DocumentModel);
+                    var genericCollection = new GenericCollection(documentFieldModel).Document;
+                    genericCollection.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(new NumberFieldModel(800)), true);
+
+                    SetLayoutForDocument(genericCollection.DocumentModel);
+                } else
+                {
+                    var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
+
+                    SetLayoutForDocument(stackPan.DocumentModel);
+                }
             }
 
+        }
+        public class NestedDocExample : CourtesyDocument
+        {
+            public static DocumentType NestedDocExampleType = new DocumentType("700FAEE4-5520-4E5E-9AED-3C8C5C1BE58B", "Nested Doc Example");
+            public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            public static Key TwoImagesKey = new Key("4E5C2B62-905D-4952-891D-24AADE14CA80", "TowImagesField");
+
+            public NestedDocExample(bool displayFieldsAsDocuments)
+            {
+                // create a document with two images
+                var twoModel = new DocumentModelFieldModel(new TwoImages(displayFieldsAsDocuments).Document.DocumentModel);
+                var tModel   = new TextFieldModel("Nesting");
+                var fields   = new Dictionary<Key, FieldModel>
+                {
+                    [TextFieldKey] = tModel,
+                    [TwoImagesKey] = twoModel
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NestedDocExampleType)).GetReturnedDocumentController();
+
+                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
+                var imBox1 = twoModel.Data;
+
+                var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1 }).Document;
+
+                SetLayoutForDocument(stackPan.DocumentModel);
+            }
         }
 
         public class Numbers : CourtesyDocument
@@ -506,8 +557,10 @@ namespace Dash
 
         private async void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            DisplayDocument(new TwoImages().Document);
-            DisplayDocument(new Numbers().Document);
+            //DisplayDocument(new TwoImages().Document);
+            //DisplayDocument(new Numbers().Document);
+            DisplayDocument(new NestedDocExample(true).Document);
+            DisplayDocument(new NestedDocExample(false).Document);
         }
 
 

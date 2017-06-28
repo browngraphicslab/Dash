@@ -42,7 +42,14 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
+            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
+            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
+        }
+
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            DataContext = ViewModel;
         }
 
         private void SetEventHandlers()
