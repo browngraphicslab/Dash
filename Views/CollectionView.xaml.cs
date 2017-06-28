@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection.Metadata;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -913,6 +915,50 @@ namespace Dash
             OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             view?.EndDrag(ioRef);
+        }
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+            ItemsCarrier carrier = ItemsCarrier.GetInstance();
+            carrier.Source = this;
+            foreach(var item in e.Items)
+                carrier.Payload.Add(item as DocumentViewModel);            
+        }
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            //throw new NotImplementedException();
+        }
+
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            var controllers = ItemsCarrier.GetInstance().Payload.Select(viewModel => viewModel.DocumentController).ToList();
+            ViewModel.AddDocuments(controllers);
+        }
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("hi");
+            e.AcceptedOperation |= DataPackageOperation.Move;
+        }
+
+        private class ItemsCarrier
+        {
+            private static ItemsCarrier carrier = new ItemsCarrier();
+            public List<DocumentViewModel> Payload;
+            public CollectionView Source;
+            private ItemsCarrier()
+            {
+                Payload = new List<DocumentViewModel>();
+            }
+
+            public static ItemsCarrier GetInstance()
+            {
+                return carrier;
+            }
         }
     }
 }

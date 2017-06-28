@@ -744,7 +744,8 @@ namespace Dash
             DisplayDocument(col);
         }
 
-        private void XCanvas_DragOver_1(object sender, DragEventArgs e) {
+        private void XCanvas_DragOver_1(object sender, DragEventArgs e)
+        {
             e.AcceptedOperation = DataPackageOperation.Copy;
         }
     }

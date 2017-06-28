@@ -65,7 +65,14 @@
                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
                           SelectionMode="{Binding ItemSelectionMode}"
                           ItemsSource="{Binding DataBindingSource}"
-                          IsEnabled="{Binding ViewIsEnabled}">
+                          IsEnabled="{Binding ViewIsEnabled}"
+                          CanDragItems="True"
+                          CanReorderItems="True"
+                          AllowDrop="True"
+                          DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
+                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted"
+                          Drop="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop"
+                          DragOver="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver">
                     <GridView.ItemTemplate>
                         <DataTemplate>
                             <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
@@ -75,6 +82,7 @@
                     </GridView.ItemTemplate>
                 </GridView>
             </Grid>
+
             <Grid Visibility="{Binding ListViewVisibility}">
                 <ListView x:Name="HListView" x:FieldModifier="public" FlowDirection="LeftToRight" HorizontalAlignment="Stretch" 
                               VerticalAlignment="Stretch" 
@@ -84,7 +92,10 @@
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               SelectionMode="{Binding ItemSelectionMode}"
                               ItemsSource="{Binding DataBindingSource}"
-                              IsEnabled="{Binding ViewIsEnabled}">
+                              IsEnabled="{Binding ViewIsEnabled}"
+                              CanDragItems="True"
+                              CanReorderItems="True"
+                              AllowDrop="True">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
@@ -229,14 +240,14 @@
                     FontSize="14" 
                     FontFamily="Rockwell"/>
         </StackPanel>
-        
+
         <Button x:Name="CloseButton" 
                 Content ="Close" 
                 HorizontalAlignment="Right" 
                 VerticalAlignment="Top" 
                 Background="{StaticResource AccentGreen}" 
                 Foreground="WhiteSmoke"/>
-        
+
         <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
                  Width="20" 
