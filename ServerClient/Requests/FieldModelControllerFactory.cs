@@ -1,5 +1,6 @@
 ﻿using System;
 using Dash.Controllers;
+using Dash.Models;
 
 namespace Dash
 {

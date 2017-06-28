@@ -87,9 +87,10 @@ namespace Dash.Sources.Api {
             }
 
             // instantiate new APISource
+            MainPage.Instance.DisplayDocument(null);
             ApiSource newApi = new ApiSource(requestType, xApiURLTB.Text, headers, parameters,
                 authParameters, authHeaders, xAuthControl.AuthURL, xAuthControl.Secret,
-                xAuthControl.Key, (Canvas)this.Parent);
+                xAuthControl.Key, ( Canvas)this.Parent);
             Canvas parent = (Canvas)this.Parent;
             parent.Children.Add(newApi.createAPISourceDisplay());
 

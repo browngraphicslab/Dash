@@ -39,6 +39,10 @@ namespace Dash
         /// </summary>
         public DocumentCollectionFieldModel DocumentCollectionFieldModel { get; }
 
+        /// <summary>
+        /// Adds a single document to the collection.
+        /// </summary>
+        /// <param name="docController"></param>
         public void AddDocument(DocumentController docController)
         {
 
