@@ -71,19 +71,15 @@ namespace Dash
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        public virtual List<FrameworkElement> MakeViewUI(FieldModelController fieldModel, DocumentController context)
+        public virtual List<FrameworkElement> MakeViewUI(FieldModelController fieldModelController, DocumentController context)
         {
-            while (fieldModel is ReferenceFieldModelController)
+            fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);
+            if (fieldModelController is DocumentFieldModelController)
             {
-                var rfm = (fieldModel as ReferenceFieldModelController).FieldModel as ReferenceFieldModel;
-                fieldModel = (ContentController.GetController(rfm.DocId) as DocumentController).GetField(rfm.FieldKey);
-            }
-            if (fieldModel is DocumentFieldModelController)
-            {
-                var doc = (fieldModel as DocumentFieldModelController).Data;
+                var doc = (fieldModelController as DocumentFieldModelController).Data;
                 return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
             }
-            return MakeView(fieldModel, context);
+            return MakeView(fieldModelController, context);
         }
 
 

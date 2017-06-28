@@ -736,6 +736,8 @@ namespace Dash
             _lineBinding =
                 new MultiBinding<PathFigureCollection>(_converter, null);
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
             Binding lineBinding = new Binding
             {
                 Source = _lineBinding,
@@ -782,10 +784,26 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            _graph.AddEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);//TODO Detect cycles with operators internal edges as well
+            if (_currReference.IsOutput)
+            {
+                _graph.AddEdge(_currReference.ReferenceFieldModel,
+                    ioReference.ReferenceFieldModel);
+            }
+            else
+            {
+                _graph.AddEdge(ioReference.ReferenceFieldModel,
+                    _currReference.ReferenceFieldModel); 
+            }
             if (_graph.IsCyclic())
             {
-                _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+                if (_currReference.IsOutput)
+                {
+                    _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+                }
+                else
+                {
+                    _graph.RemoveEdge(ioReference.ReferenceFieldModel, _currReference.ReferenceFieldModel);
+                }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
@@ -799,6 +817,8 @@ namespace Dash
 
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
 
             if (ioReference.IsOutput)
             {

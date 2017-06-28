@@ -192,6 +192,7 @@ namespace Dash
         }
         public DocumentView(DocumentViewModel documentViewModel)
         {
+            InitializeComponent();
             DataContext = documentViewModel;
 
             // reset the fields on the documetn to be those displayed by the documentViewModel

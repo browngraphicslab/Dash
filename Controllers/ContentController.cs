@@ -299,9 +299,18 @@ namespace Dash
         /// <summary>
         /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
         /// </summary>
-        public static FieldModel DereferenceToRootFieldModel(ReferenceFieldModel reference)
+        public static FieldModelController DereferenceToRootFieldModel(FieldModelController reference)
         {
-            FieldModel possibleFieldModel = reference;
+            var dereferencedFieldModel = DereferenceToRootFieldModel(reference.FieldModel);
+            return ContentController.GetController<FieldModelController>(dereferencedFieldModel.Id);
+        }
+
+        /// <summary>
+        /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
+        /// </summary>
+        public static FieldModel DereferenceToRootFieldModel(FieldModel reference)
+        {
+            var possibleFieldModel = reference;
             while (possibleFieldModel is ReferenceFieldModel)
             {
                 possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);
@@ -315,9 +324,9 @@ namespace Dash
         /// <summary>
         /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
         /// </summary>
-        public static TFieldModelType DereferenceToRootFieldModel<TFieldModelType>(ReferenceFieldModel reference) where TFieldModelType : FieldModel
+        public static TFieldModelType DereferenceToRootFieldModel<TFieldModelType>(FieldModel reference) where TFieldModelType : FieldModel
         {
-            FieldModel possibleFieldModel = reference;
+            var possibleFieldModel = reference;
             while (possibleFieldModel is ReferenceFieldModel)
             {
                 possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);

@@ -76,8 +76,8 @@ namespace Dash
             Instance = this;
 
             //TODO this seriously slows down the document 
-            //var jsonDoc = JsonToDashUtil.RunTests();
-            //DisplayDocument(jsonDoc);
+            var jsonDoc = JsonToDashUtil.RunTests();
+            DisplayDocument(jsonDoc);
 
         }
 
@@ -553,8 +553,6 @@ namespace Dash
                     {
                         foreach (var ele in stackDoc.MakeViewUI().Where((e) => e != null))
                         {
-                            if (double.IsNaN(ele.Width) && (ele is Image || ele is TextBlock || ele is TextBox))
-                                ele.MaxWidth = 300;
                             stack.Children.Add(ele);
                         }
                     }
@@ -589,7 +587,9 @@ namespace Dash
                 var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey)).Document;
                 var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
                 var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
-                
+                imBox1.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(new NumberFieldModel(100)), true);
+                imBox2.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(new NumberFieldModel(100)), true);
+
                 if (displayFieldsAsDocuments)
                 {
                     var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel } );
@@ -614,25 +614,29 @@ namespace Dash
         public class NestedDocExample : CourtesyDocument
         {
             public static DocumentType NestedDocExampleType = new DocumentType("700FAEE4-5520-4E5E-9AED-3C8C5C1BE58B", "Nested Doc Example");
-            public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
-            public static Key TwoImagesKey = new Key("4E5C2B62-905D-4952-891D-24AADE14CA80", "TowImagesField");
+            public static Key TextFieldKey  = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            public static Key TextField2Key = new Key("B53F1453-4C52-4302-96A3-A6B40DA7D587", "TextField2");
+            public static Key TwoImagesKey  = new Key("4E5C2B62-905D-4952-891D-24AADE14CA80", "TowImagesField");
 
             public NestedDocExample(bool displayFieldsAsDocuments)
             {
                 // create a document with two images
                 var twoModel = new DocumentModelFieldModel(new TwoImages(displayFieldsAsDocuments).Document.DocumentModel);
                 var tModel   = new TextFieldModel("Nesting");
+                var tModel2 = new TextFieldModel("More Nesting");
                 var fields   = new Dictionary<Key, FieldModel>
                 {
-                    [TextFieldKey] = tModel,
-                    [TwoImagesKey] = twoModel
+                    [TextFieldKey]  = tModel,
+                    [TwoImagesKey]  = twoModel,
+                    [TextField2Key] = tModel2
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NestedDocExampleType)).GetReturnedDocumentController();
 
                 var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
                 var imBox1 = twoModel.Data;
+                var tBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextField2Key)).Document;
 
-                var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1 }).Document;
+                var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1, tBox2.DocumentModel }).Document;
 
                 SetLayoutForDocument(stackPan.DocumentModel);
             }
@@ -669,8 +673,8 @@ namespace Dash
         
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            //DisplayDocument(new TwoImages().Document);
-            //DisplayDocument(new Numbers().Document);
+            DisplayDocument(new TwoImages(false).Document);
+            DisplayDocument(new Numbers().Document);
             DisplayDocument(new NestedDocExample(true).Document);
             DisplayDocument(new NestedDocExample(false).Document);
         }
