@@ -33,7 +33,8 @@
 
         protected override void UpdateValue(FieldModelController fieldModel)
         {
-            Data = (fieldModel as TextFieldModelController).Data;
+                Data = (fieldModel as TextFieldModelController).Data;
+            
         }
     }
 }

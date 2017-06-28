@@ -3,16 +3,24 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using DashShared;
 
 namespace Dash
 {
     public class DocumentCollectionFieldModelController : FieldModelController
     {
         /// <summary>
+        /// Key for collection data
+        /// TODO This might be better in a different class
+        /// </summary>
+        public static Key CollectionKey = new Key("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+
+
+        /// <summary>
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public List<DocumentController> Documents;
+        private List<DocumentController> _documents;
 
         /// <summary>
         ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
@@ -26,7 +34,7 @@ namespace Dash
             DocumentCollectionFieldModel = documentCollectionFieldModel;
             var documentControllers =
                 ContentController.GetControllers<DocumentController>(documentCollectionFieldModel.Data);
-            Documents = new List<DocumentController>(documentControllers);
+            _documents = new List<DocumentController>(documentControllers);
 
             // Add Events
 
@@ -39,12 +47,35 @@ namespace Dash
         /// </summary>
         public DocumentCollectionFieldModel DocumentCollectionFieldModel { get; }
 
+        /// <summary>
+        /// Adds a single document to the collection.
+        /// </summary>
+        /// <param name="docController"></param>
         public void AddDocument(DocumentController docController)
         {
-            Documents.Add(docController);
-            DocumentCollectionFieldModel.Data = Documents.Select((d) => d.GetId());
+            _documents.Add(docController);
+            DocumentCollectionFieldModel.Data = _documents.Select((d) => d.GetId());
 
             OnDataUpdated();
+        }
+
+        public void SetDocuments(List<DocumentController> docControllers)
+        {
+            _documents = docControllers;
+            Debug.WriteLine(_documents.Count);
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+
+            OnDataUpdated();
+        }
+
+        public List<DocumentController> GetDocuments()
+        {
+            return _documents;
+        }
+
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
         }
     }
 }

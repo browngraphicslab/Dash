@@ -1,4 +1,5 @@
 ﻿using System;
+using Dash.Models.OperatorModels.Set;
 
 namespace Dash
 {
@@ -40,9 +41,11 @@ namespace Dash
                         return new DivideOperatorFieldModelController(model as OperatorFieldModel);
                     case "ImageToUri":
                         return new ImageOperatorFieldModelController(model as OperatorFieldModel);
+                    case "Intersection":
+                        return new IntersectionOperatorModelController(model as OperatorFieldModel);
                     case "Union":
                         return new UnionOperatorFieldModelController(model as OperatorFieldModel);
-                    // TODO add shit to this 
+                        // TODO add shit to this 
                 }
                 //return new OperatorFieldModelController(model as OperatorFieldModel); 
             }
