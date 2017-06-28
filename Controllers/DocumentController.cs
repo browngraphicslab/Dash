@@ -359,9 +359,16 @@ namespace Dash
             else if (DocumentType == OperatorBox.DocumentType)
             {
                 uieles.AddRange(OperatorBox.MakeView(this));
-            } else if (DocumentType == ApiSourceCreatorDoc.DocumentType) {
+            } 
+            else if (DocumentType == ApiSourceCreatorDoc.DocumentType) 
+            {
                 uieles.AddRange(ApiSourceCreatorDoc.MakeView(this));
-            } else // if document is not a known UI View, then see if it contains any documents with known UI views
+            } 
+            else if (DocumentType == ApiSourceDoc.DocumentType) 
+            {
+                uieles.AddRange(ApiSourceDoc.MakeView(this));
+            }
+            else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
                 foreach (var f in EnumFields())
                 {

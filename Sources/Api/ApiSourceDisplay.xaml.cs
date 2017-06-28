@@ -22,7 +22,7 @@ namespace Dash.Sources.Api {
         // == CONSTRUCTORS ==
         public ApiSourceDisplay() {
             this.InitializeComponent();
-            new ManipulationControls(this);
+            //new ManipulationControls(this);
         }
 
         // == MEMBERS ==

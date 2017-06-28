@@ -85,8 +85,6 @@ namespace Dash
 
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-
-
             //Create Operator document
             var opModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
@@ -294,8 +292,7 @@ namespace Dash
         /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
         /// </summary>
         public class ApiSourceCreatorDoc : CourtesyDocument {
-            public static DocumentType DocumentType = new DocumentType("66FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
-            public static Key ApiFieldKey = new Key("927F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Api");
+            public static DocumentType DocumentType = new DocumentType("APIC9C82-F32C-4704-AF6B-E55AC805C84F", "Api Source Creator");
 
             public ApiSourceCreatorDoc() {
                 // create a layout for the image
@@ -311,8 +308,33 @@ namespace Dash
                 return new List<FrameworkElement>() { new ApiCreatorDisplay() };
             }
         }
-        
-        
+
+
+        /// <summary>
+        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
+        /// </summary>
+        public class ApiSourceDoc : CourtesyDocument {
+            public static DocumentType DocumentType = new DocumentType("66FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
+            public static Key ApiFieldKey = new Key("927F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Api");
+            private static ApiSourceDisplay source;
+
+            public ApiSourceDoc(ApiSourceDisplay source) {
+                // create a layout for the image
+                ApiSourceDoc.source = source;
+                var fields = new Dictionary<Key, FieldModel> {
+            };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+
+            public override List<FrameworkElement> makeView(DocumentController docController) {
+                return new List<FrameworkElement>() { source };
+            }
+
+            public static List<FrameworkElement> MakeView(DocumentController docController) {
+                return new List<FrameworkElement>() { ApiSourceDoc.source };
+            }
+        }
+
         /// <summary>
         /// A generic document type containing a single text element.
         /// </summary>
@@ -364,30 +386,6 @@ namespace Dash
                     return uiElements;
                 }
                 return new List<FrameworkElement>();
-            }
-        }
-
-        /// <summary>
-        /// A generic document type containing a single text element.
-        /// </summary>
-        public class ApiBox : CourtesyDocument {
-            public static DocumentType DocumentType = new DocumentType("APID19B4-7DEC-42C0-B1AB-365B28D8EA42", "Api Box");
-
-            public ApiBox(ReferenceFieldModel refToText) {
-                // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel> {
-                    [DashConstants.KeyStore.DataKey] = refToText
-                };
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-            }
-            public override List<FrameworkElement> makeView(DocumentController docController) {
-                return TextingBox.MakeView(docController);
-            }
-            public static List<FrameworkElement> MakeView(DocumentController docController) {
-                var api = new ApiCreatorDisplay();
-                api.Width = 300;
-                api.Height = 300;
-                return new List<FrameworkElement>() {api };
             }
         }
 
@@ -584,8 +582,7 @@ namespace Dash
             }
 
         }
-
-
+        
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages().Document);
