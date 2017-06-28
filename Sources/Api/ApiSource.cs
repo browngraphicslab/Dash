@@ -91,7 +91,8 @@ namespace Dash.Sources.Api {
             //testGrid.Children.Add(testView);
             //LayoutModel.DefaultLayoutModel(testDocument);
 
-            throw new NotImplementedException();
+
+            //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
             // put document results into collection model
             //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
