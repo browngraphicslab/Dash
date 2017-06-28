@@ -6,20 +6,22 @@ using System.Threading.Tasks;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Dash.Models.OperatorModels.Set
+namespace Dash
 {
-    class IntersectionOperatorModel : OperatorFieldModel
+    
+    class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
         public static readonly Key AKey = new Key("178123E8-4E64-44D9-8F05-509B2F097B7D", "Input A");
         public static readonly Key BKey = new Key("0B9C67F7-3FB7-400A-B016-F12C048325BA", "Input B");
 
         //Output keys
-        public static readonly Key IntersectionKey = new Key("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
+        public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
         public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
 
-        public override List<Key> OutputKeys { get; } = new List<Key> {IntersectionKey};
+        public override List<Key> OutputKeys { get; } = new List<Key> {UnionKey};
+
         public override List<FieldModel> GetNewInputFields()
         {
             return new List<FieldModel>
@@ -36,14 +38,20 @@ namespace Dash.Models.OperatorModels.Set
             };
         }
 
-        public override void Execute(DocumentModel doc)
+        public override void Execute(DocumentController doc)
         {
             throw new NotImplementedException();
 
             //DocumentCollectionFieldModel setA = doc.Field(AKey) as DocumentCollectionFieldModel;
             //DocumentCollectionFieldModel setB = doc.Field(BKey) as DocumentCollectionFieldModel;
+            ////DocumentCollectionFieldModel union = new DocumentCollectionFieldModel(setA.Documents.Union(setB.Documents).ToList());
+            //(doc.Field(UnionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Union(setB.Documents).ToList());
+        }
 
-            //(doc.Field(IntersectionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
+        public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
+            OperatorFieldModel = operatorFieldModel;
         }
     }
+    
 }

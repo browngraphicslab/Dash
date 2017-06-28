@@ -27,7 +27,13 @@
                     // update local
                     // update server
                 }
+                OnDataUpdated();
             }
+        }
+
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            Data = (fieldModel as TextFieldModelController).Data;
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Dash
             xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
-            var collectionDocumentController  = new GenericCollection(new DocumentCollectionFieldModel(new List<DocumentModel>())).Document;
+            var collectionDocumentController = new GenericCollection(new DocumentCollectionFieldModel(new List<DocumentModel>())).Document;
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(collectionDocumentController);
 
@@ -66,15 +66,16 @@ namespace Dash
             MainDocView.Manipulator.RemoveAllButHandle();
 
             MainDocView.DraggerButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
+            MainDocView.OuterGrid.BorderThickness = new Thickness(0);
+            
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            /* //TODO this seriously slows down the document 
+            //TODO this seriously slows down the document 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
-            */ 
+
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -85,9 +86,10 @@ namespace Dash
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
 
+
             //Create Operator document
             var opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
+                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
             DocumentView view = new DocumentView
             {
                 Width = 200,
@@ -97,27 +99,26 @@ namespace Dash
             //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
             view.DataContext = opvm;
 
-
             DisplayDocument(opModel);
+
+
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
-            //DocumentModel unionOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorModel());
-            //var unionOpCont = new DocumentController(unionOpModel);
-            //docEndpoint.UpdateDocumentAsync(unionOpModel);
-            //DocumentView unionView = new DocumentView
-            //{
-            //    Width = 200,
-            //    Height = 200
-            //};
-            //DocumentViewModel unionOpvm = new DocumentViewModel(unionOpCont);
-            //unionView.DataContext = unionOpvm;
-            //DisplayDocument(unionOpCont);
+            DocumentController intersectOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
+            DocumentView intersectView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel intersectOpvm = new DocumentViewModel(intersectOpModel);
+            intersectView.DataContext = intersectOpvm;
+            DisplayDocument(intersectOpModel);
 
             // add image url -> image operator for testing
             DocumentController imgOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorModel());
+                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
             DocumentView imgOpView = new DocumentView
             {
                 Width = 200,
@@ -188,27 +189,55 @@ namespace Dash
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            //DocumentModel image2 = DocumentModel.TwoImagesAndText();
-            //DocumentModel image2Del = image2.MakeDelegate();
-            //DocumentModel umpireDoc = DocumentModel.UmpireDocumentModel();
-            //image2Del.SetField(DocumentModel.LayoutKey, new LayoutModelFieldModel(LayoutModel.TwoImagesAndTextModel(image2Del.DocumentType, true)), true);
-            //image2Del.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
+            var twoImages = new TwoImages().Document;
+            var twoImages2 = new TwoImages().Document;
+            var numbers = new Numbers().Document;
 
-            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //if (docCollection == null)
-            //{
-            //    docCollection = docController.CreateDocumentAsync("newtype");
-            //    docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { image2, image2Del, umpireDoc }), false);
-            //}
-            //DisplayDocument(docCollection);
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            {
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, twoImages2.DocumentModel, numbers.DocumentModel}) }
+            };
+
+            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
+            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
+            var layoutController = new DocumentFieldModelController(documentFieldModel);
+            ContentController.AddModel(documentFieldModel);
+            ContentController.AddController(layoutController);
+            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            DisplayDocument(col);
+            AddAnotherLol();
+
         }
 
         private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
             DisplayDocument(new ApiSourceCreatorDoc().Document);
-            // xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
         }
 
-        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+        private void AddAnotherLol()
+        {
+            // collection no.2
+            var twoImages = new TwoImages().Document;
+            var numbers = new Numbers().Document;
+
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            {
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, numbers.DocumentModel}) }
+            };
+
+            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
+            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
+            var layoutController = new DocumentFieldModelController(documentFieldModel);
+            ContentController.AddModel(documentFieldModel);
+            ContentController.AddController(layoutController);
+            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            DisplayDocument(col);
+        }
+        
+
+        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
             throw new NotImplementedException();
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
@@ -256,8 +285,8 @@ namespace Dash
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 ReferenceFieldModel rfm = (data as ReferenceFieldModelController).ReferenceFieldModel;
-                OperatorView opView = new OperatorView {DataContext = rfm};
-                return new List<FrameworkElement> {opView};
+                OperatorView opView = new OperatorView { DataContext = rfm };
+                return new List<FrameworkElement> { opView };
             }
         }
         
@@ -310,10 +339,30 @@ namespace Dash
             {
                 var fw = docController.GetField(FontWeightKey);
                 var fontWeight = fw is TextFieldModelController ? ((fw as TextFieldModelController).Data == "Bold" ? Windows.UI.Text.FontWeights.Bold : Windows.UI.Text.FontWeights.Normal) : Windows.UI.Text.FontWeights.Normal;
-               
+
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
-                    return new TextTemplateModel(0,0,fontWeight).MakeViewUI(data, docController);
+                {
+                    var uiElements = new TextTemplateModel(0, 0, fontWeight).MakeViewUI(data, docController);
+
+                    var reference = data as ReferenceFieldModelController;
+                    Debug.Assert(reference != null);
+                    var tb = uiElements[0];
+                    tb.DataContext = reference.ReferenceFieldModel;
+                    tb.ManipulationMode = ManipulationModes.All;
+                    tb.ManipulationStarted += (sender, args) => args.Complete();
+                    tb.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    return uiElements;
+                }
                 return new List<FrameworkElement>();
             }
         }
@@ -363,7 +412,27 @@ namespace Dash
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
-                    return new ImageTemplateModel(0, 0).MakeViewUI(data, docController);
+                {
+                    var uiElements = new ImageTemplateModel(0, 0).MakeViewUI(data, docController);
+
+                    var reference = data as ReferenceFieldModelController;
+                    Debug.Assert(reference != null);
+                    var tb = uiElements[0];
+                    tb.DataContext = reference.ReferenceFieldModel;
+                    tb.ManipulationMode = ManipulationModes.All;
+                    tb.ManipulationStarted += (sender, args) => args.Complete();
+                    tb.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+                    {
+                        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                    };
+                    return uiElements;
+                }
                 return new List<FrameworkElement>();
             }
             public override List<FrameworkElement> makeView(DocumentController docController)
@@ -371,7 +440,7 @@ namespace Dash
                 return ImageBox.MakeView(docController);
             }
         }
-
+        
         /// <summary>
         /// A generic data wrappe document display type used to display images or text fields.
         /// </summary>
@@ -391,9 +460,9 @@ namespace Dash
                 return _doc.makeView(docController);
             }
         }
-
-
-        public class GenericCollection : CourtesyDocument {
+        
+        public class GenericCollection : CourtesyDocument
+        {
             public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
 
             void Initialize(FieldModel fieldModel)
@@ -406,7 +475,7 @@ namespace Dash
             }
             public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
             public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
-          
+
             static public List<FrameworkElement> MakeView(DocumentController docController)
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
@@ -418,6 +487,7 @@ namespace Dash
         
         public class StackingPanel : CourtesyDocument {
             public static DocumentType StackPanelDocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
+
 
             static public DocumentType DocumentType { get { return StackPanelDocumentType;  } }
 
@@ -436,11 +506,11 @@ namespace Dash
                 stack.Orientation = Orientation.Horizontal;
 
                 var stackFieldData = docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
-           
+
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.Documents)
                     {
-                        foreach (var ele in stackDoc.MakeViewUI().Where((e) => e!= null))
+                        foreach (var ele in stackDoc.MakeViewUI().Where((e) => e != null))
                         {
                             if (double.IsNaN(ele.Width))
                                 ele.MaxWidth = 300;
@@ -462,13 +532,14 @@ namespace Dash
             public TwoImages()
             {
                 // create a document with two images
-                var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
+                var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+                var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
                 var tModel = new TextFieldModel("Hello World!");
                 var fields = new Dictionary<Key, FieldModel>
                 {
                     [TextFieldKey] = tModel,
                     [Image1FieldKey] = imModel,
-                    [Image2FieldKey] = imModel
+                    [Image2FieldKey] = imModel2
                 };
 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
@@ -476,19 +547,49 @@ namespace Dash
                 /*
                 var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey)).Document;
                 var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
-                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
+                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
                 */
                 //SetLayoutForDocument(stackPan.DocumentModel);
             }
-            
+
+        }
+
+        public class Numbers : CourtesyDocument
+        {
+            public static DocumentType NumbersType = new DocumentType("8FC422AB-015E-4B72-A28B-16271808C888", "Numbers");
+            public static Key Number1FieldKey = new Key("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
+            public static Key Number2FieldKey = new Key("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
+            public static Key Number3FieldKey = new Key("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
+
+            public Numbers()
+            {
+                // create a document with two images
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                    [Number1FieldKey] = new NumberFieldModel(789),
+                    [Number2FieldKey] = new NumberFieldModel(23),
+                    [Number3FieldKey] = new NumberFieldModel(8)
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NumbersType)).GetReturnedDocumentController();
+
+                var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey)).Document;
+                var imBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number2FieldKey)).Document;
+                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey)).Document;
+
+                var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
+
+                //SetLayoutForDocument(stackPan.DocumentModel);
+            }
+
         }
 
 
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages().Document);
+            DisplayDocument(new Numbers().Document);
         }
 
 

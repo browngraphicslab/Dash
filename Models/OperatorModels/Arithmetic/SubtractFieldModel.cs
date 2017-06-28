@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
+    /*
     public class SubtractFieldModel : OperatorFieldModel
     {
         //Input keys
@@ -58,4 +59,5 @@ namespace Dash
             //(doc.Field(DifferenceKey) as NumberFieldModel).Data = a - b;
         }
     }
+    */
 }

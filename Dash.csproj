@@ -89,7 +89,6 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
-    <None Include="ClassDiagram1.cd" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -129,13 +128,13 @@
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\ImageOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModelController.cs" />
+    <Compile Include="Models\OperatorModels\ImageOperatorFieldModelController.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
-    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Set\UnionOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModelController.cs" />
+    <Compile Include="Models\OperatorModels\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
@@ -268,6 +267,7 @@
     <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\ppsqft.txt" />
+    <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\Workspace_image.PNG" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />

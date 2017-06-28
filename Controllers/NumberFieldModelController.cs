@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +24,11 @@ namespace Dash
         /// </summary>
         public NumberFieldModel NumberFieldModel { get; }
 
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            Data = (fieldModel as NumberFieldModelController).Data;
+        }
+
         public double Data
         {
             get { return NumberFieldModel.Data; }
@@ -33,6 +39,7 @@ namespace Dash
                     // update local
                     // update server
                 }
+                OnDataUpdated();
             }
         }
     }

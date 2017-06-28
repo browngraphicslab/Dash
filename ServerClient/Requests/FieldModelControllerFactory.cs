@@ -1,6 +1,5 @@
 ﻿using System;
-using Dash.Controllers;
-using Dash.Models;
+using Dash.Models.OperatorModels.Set;
 
 namespace Dash
 {
@@ -35,7 +34,18 @@ namespace Dash
             }
             if (model is OperatorFieldModel)
             {
-                return new OperatorFieldModelController(model as OperatorFieldModel); 
+                var opFM = model as OperatorFieldModel;
+                switch (opFM.Type)
+                {
+                    case "Divide":
+                        return new DivideOperatorFieldModelController(model as OperatorFieldModel);
+                    case "ImageToUri":
+                        return new ImageOperatorFieldModelController(model as OperatorFieldModel);
+                    case "Intersection":
+                        return new IntersectionOperatorModelController(model as OperatorFieldModel);
+                    // TODO add shit to this 
+                }
+                //return new OperatorFieldModelController(model as OperatorFieldModel); 
             }
             throw new ArgumentException("We do not have a conversion yet for the passed in model");
         }

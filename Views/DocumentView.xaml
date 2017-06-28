@@ -10,26 +10,41 @@
     d:DesignWidth="300"
     PointerPressed="DocumentView_OnPointerPressed">
 
-    <Grid x:Name="OuterGrid" 
-          SizeChanged="OuterGrid_SizeChanged">
+    <Grid x:Name="OuterGrid"
+          x:FieldModifier="public"
+            SizeChanged="OuterGrid_SizeChanged"
+            BorderBrush="{Binding BorderBrush}"
+            BorderThickness="5">
         <Grid.Clip>
-            <RectangleGeometry x:Name="ClipRect"/>
+            <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
         </Grid.Clip>
-        <Grid x:Name="XGrid" 
-              ManipulationMode="{Binding ManipulationMode}" 
-              BorderBrush="{Binding BorderBrush}" 
-              BorderThickness ="5"
-              CornerRadius="5"
-              Padding="0" 
-              Style="{StaticResource xNodeContainerGrid}"             
-              RightTapped="Grid_RightTapped" Background="#BFFFFFFF"></Grid>
-        <Button x:Name="DraggerButton" 
-                x:FieldModifier="public" 
-                Width="20"
-                Height="20" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Bottom" 
-                ManipulationMode="All">
+        <Grid x:Name="XGrid"
+                ManipulationMode="{Binding ManipulationMode}"
+                Padding="0"
+                RightTapped="Grid_RightTapped"
+                Background="#BFFFFFFF"/>
+        <Button x:Name="DraggerButton"
+                x:FieldModifier="public"
+                Width="35"
+                Height="35"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY"
+                >
+            <Button.Template>
+                <ControlTemplate TargetType="Button">
+                    <Grid>
+                        <Ellipse Fill="#DE0074FF" StrokeThickness="1" Stroke="#DE0074FF" />
+                        <ContentPresenter HorizontalAlignment="Center"
+                                            VerticalAlignment="Center" />
+                    </Grid>
+                </ControlTemplate>
+            </Button.Template>
+        </Button>
+        <Button x:Name="xEditButton" 
+                Width="35"
+                Height="35"
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,50,0" Tapped="XEditButton_OnTapped">
+            <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" />
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>

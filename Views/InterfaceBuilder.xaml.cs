@@ -53,8 +53,10 @@ namespace Dash
         public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
         {
             this.InitializeComponent();
+            Width = width;
+            Height = height;
 
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             //// set width and height to avoid Width = NaN ...
             //Width = 500;
             //Height = 500;

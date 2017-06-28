@@ -109,6 +109,9 @@ namespace Dash
             tb.HorizontalAlignment = HorizontalAlignment.Left;
             tb.VerticalAlignment = VerticalAlignment.Top;
 
+
+            
+
             return new List<FrameworkElement> { tb };
         }
     }

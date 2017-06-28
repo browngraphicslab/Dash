@@ -33,7 +33,13 @@ namespace Dash
                     // update local
                     // update server    
                 }
+                OnDataUpdated();
             }
+        }
+
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            Data = (fieldModel as ImageFieldModelController).Data;
         }
 
         /// <summary>
@@ -47,6 +53,7 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
                 {
+                    OnDataUpdated();
                     // update local
                     // update server
                 }
@@ -71,6 +78,6 @@ namespace Dash
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel { get; }
-        
+
     }
 }

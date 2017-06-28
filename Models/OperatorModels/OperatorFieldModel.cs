@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
+    /* 
     public abstract class OperatorFieldModel : FieldModel
     {
         /// <summary>
@@ -35,5 +36,19 @@ namespace Dash
         /// </summary>
         /// <returns></returns>
         public abstract void Execute(DocumentModel doc);
+    }
+    */
+
+    public class OperatorFieldModel : FieldModel
+    {
+        /// <summary>
+        /// Type of operator it is; to be used by the server to determine what controller to use for operations 
+        /// </summary>
+        public string Type { get; set; }
+
+        public OperatorFieldModel(string type)
+        {
+            Type = type; 
+        }
     }
 }

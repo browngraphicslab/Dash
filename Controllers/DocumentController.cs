@@ -243,6 +243,34 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             GetField(fieldKey).InputReference = reference;
+            ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;
+            Execute();
+        }
+
+        private void DocumentController_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            Execute();
+        }
+
+        private void Execute()
+        {
+            OperatorFieldModelController opField = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            if (opField == null)
+            {
+                return;
+            }
+            try
+            {
+                opField.Execute(this);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
+            }
+            catch (KeyNotFoundException e)
+            {
+                return;
+            }
+            //foreach (var fieldModel in results)
+            //{
+            //    SetField(fieldModel.Key, fieldModel.Value);
+            //}
         }
 
         public IEnumerable<KeyValuePair<Key, FieldModelController>> PropFields => EnumFields();
