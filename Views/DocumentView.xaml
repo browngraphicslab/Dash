@@ -7,6 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
+    Background="{StaticResource TranslucentWhite}"
     d:DesignWidth="300"
     PointerPressed="DocumentView_OnPointerPressed">
 
@@ -46,7 +47,7 @@
         <Button x:Name="xEditButton" 
                 Width="35"
                 Height="35"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,50,0" Tapped="XEditButton_OnTapped">
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,40,0" Tapped="XEditButton_OnTapped">
             <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" />
             <Button.Template>
                 <ControlTemplate TargetType="Button">

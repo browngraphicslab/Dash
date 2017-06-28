@@ -7,9 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
+    Background="{StaticResource TranslucentWhite}"
     ManipulationStarted="Grid_OnManipulationStarted">
 
-    <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}">
+    <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}" Background="{StaticResource CollectionViewBackground}">
         <Grid x:Name="DocumentViewContainerGrid"  
                   HorizontalAlignment="Stretch" 
                   Margin="0,30,0,30" 
@@ -17,6 +18,7 @@
                   BorderBrush="LightGray"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
                   ManipulationMode="All" 
+                  Background="{StaticResource CollectionViewBackground}"
                   PointerWheelChanged="UserControl_PointerWheelChanged"
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
