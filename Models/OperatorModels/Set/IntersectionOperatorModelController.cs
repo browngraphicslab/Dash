@@ -29,9 +29,10 @@ namespace Dash.Models.OperatorModels.Set
         public override void Execute(DocumentController doc)
         {
             DocumentCollectionFieldModelController setA = doc.GetField(AKey) as DocumentCollectionFieldModelController;
+            
             DocumentCollectionFieldModelController setB = doc.GetField(BKey) as DocumentCollectionFieldModelController;
 
-            (doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).Documents = (setA.Documents.Intersect(setB.Documents).ToList());
+            (doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
 
         public override List<FieldModel> GetNewInputFields()

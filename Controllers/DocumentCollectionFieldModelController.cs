@@ -20,7 +20,7 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public List<DocumentController> Documents;
+        private List<DocumentController> _documents;
 
         /// <summary>
         ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
@@ -34,7 +34,7 @@ namespace Dash
             DocumentCollectionFieldModel = documentCollectionFieldModel;
             var documentControllers =
                 ContentController.GetControllers<DocumentController>(documentCollectionFieldModel.Data);
-            Documents = new List<DocumentController>(documentControllers);
+            _documents = new List<DocumentController>(documentControllers);
 
             // Add Events
 
@@ -49,10 +49,29 @@ namespace Dash
 
         public void AddDocument(DocumentController docController)
         {
-            Documents.Add(docController);
-            DocumentCollectionFieldModel.Data = Documents.Select((d) => d.GetId());
+            _documents.Add(docController);
+            DocumentCollectionFieldModel.Data = _documents.Select((d) => d.GetId());
 
             OnDataUpdated();
+        }
+
+        public void SetDocuments(List<DocumentController> docControllers)
+        {
+            _documents = docControllers;
+            Debug.WriteLine(_documents.Count);
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+
+            OnDataUpdated();
+        }
+
+        public List<DocumentController> GetDocuments()
+        {
+            return _documents;
+        }
+
+        protected override void UpdateValue(FieldModelController fieldModel)
+        {
+            SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
         }
     }
 }

@@ -72,8 +72,8 @@ namespace Dash
             Instance = this;
 
             //TODO this seriously slows down the document 
-            var jsonDoc = JsonToDashUtil.RunTests();
-            DisplayDocument(jsonDoc);
+            //var jsonDoc = JsonToDashUtil.RunTests();
+            //DisplayDocument(jsonDoc);
 
         }
 
@@ -114,6 +114,17 @@ namespace Dash
             DocumentViewModel intersectOpvm = new DocumentViewModel(intersectOpModel);
             intersectView.DataContext = intersectOpvm;
             DisplayDocument(intersectOpModel);
+
+            DocumentController unionOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
+            DocumentView unionView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel unionOpvm = new DocumentViewModel(unionOpModel);
+            unionView.DataContext = unionOpvm;
+            DisplayDocument(unionOpModel);
 
             // add image url -> image operator for testing
             DocumentController imgOpModel =
@@ -200,7 +211,21 @@ namespace Dash
             ContentController.AddController(layoutController);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
-            AddAnotherLol();
+
+            //AddAnotherLol();
+            Dictionary<Key, FieldModel> fields2 = new Dictionary<Key, FieldModel>
+            {
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {numbers.DocumentModel}) }
+            };
+
+            var col2 = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields2, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
+            var layoutDoc2 = new GenericCollection(new ReferenceFieldModel(col2.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var documentFieldModel2 = new DocumentModelFieldModel(layoutDoc2.DocumentModel);
+            var layoutController2 = new DocumentFieldModelController(documentFieldModel2);
+            ContentController.AddModel(documentFieldModel2);
+            ContentController.AddController(layoutController2);
+            col2.SetField(DashConstants.KeyStore.LayoutKey, layoutController2, true);
+            DisplayDocument(col2);
 
         }
 
@@ -441,7 +466,7 @@ namespace Dash
                 var stackFieldData = docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
 
                 if (stackFieldData != null)
-                    foreach (var stackDoc in stackFieldData.Documents)
+                    foreach (var stackDoc in stackFieldData.GetDocuments())
                     {
                         foreach (var ele in stackDoc.MakeViewUI().Where((e) => e != null))
                         {
