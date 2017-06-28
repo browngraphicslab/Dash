@@ -300,5 +300,11 @@ namespace Dash
         {
             ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
         }
+
+        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var position = e.GetPosition(OverlayCanvas.Instance);
+            OverlayCanvas.Instance.OpenInterfaceBuilder(_vm, position);
+        }
     }
 }

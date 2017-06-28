@@ -18,9 +18,9 @@ namespace Dash
         public static DocumentController RunTests()
         {
             //ParseYoutube();
-            //ParseCustomer();
-            //ParseArrayOfNestedDocument();
-            var task = ParseArrayOfNestedDocument();
+            //var task = ParseCustomer();
+            var task = RenderableJson();
+            //var task = ParseArrayOfNestedDocument();
             task.Wait();
             return JsonDocument;
         }
@@ -56,13 +56,22 @@ namespace Dash
             JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
+        public static async Task RenderableJson()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/renderableJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            var jtoken = JToken.Parse(jsonString);
+            var documentModel = ParseJson(jtoken, null, true);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+        }
+
         public static async Task ParseCustomer()
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
             var documentModel = ParseJson(jtoken, null, true);
-            var documentController = ContentController.GetController(documentModel.Id);
+            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
         public static EntityBase ParseJson(JToken jToken, DocumentSchema parentSchema, bool isRoot, bool isChildOfArray = false)
