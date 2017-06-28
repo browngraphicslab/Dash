@@ -3,11 +3,19 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using DashShared;
 
 namespace Dash
 {
     public class DocumentCollectionFieldModelController : FieldModelController
     {
+        /// <summary>
+        /// Key for collection data
+        /// TODO This might be better in a different class
+        /// </summary>
+        public static Key CollectionKey = new Key("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client

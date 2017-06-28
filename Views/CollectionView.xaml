@@ -7,8 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
-    d:DesignHeight="400"
-    d:DesignWidth="400"
     ManipulationStarted="Grid_OnManipulationStarted">
 
     <Grid x:Name="Grid" BorderThickness="0" Background="#F339519F">
@@ -209,7 +207,10 @@
                  Fill="Goldenrod" 
                  HorizontalAlignment="Right" 
                  StrokeThickness="2" 
-                 Stroke="DarkGoldenrod" />
+                 Stroke="DarkGoldenrod"
+                 ManipulationMode="All"
+                 ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
+                 PointerPressed="ConnectionEllipse_OnPointerPressed"/>
     </Grid>
 </UserControl>
 

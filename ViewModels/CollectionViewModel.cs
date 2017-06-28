@@ -24,6 +24,7 @@ namespace Dash
 
         private CollectionModel _collectionModel;
 
+        public DocumentView ParentDocument { get; set; }
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels
         {

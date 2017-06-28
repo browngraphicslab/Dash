@@ -134,7 +134,7 @@
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
-    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModelController.cs" />
     <Compile Include="Models\OperatorModels\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />

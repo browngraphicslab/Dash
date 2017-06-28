@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 
-namespace Dash.Models
+namespace Dash
 {
     public class CollectionModel
     {

@@ -104,18 +104,16 @@ namespace Dash
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
-            //DocumentModel unionOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorModel());
-            //var unionOpCont = new DocumentController(unionOpModel);
-            //docEndpoint.UpdateDocumentAsync(unionOpModel);
-            //DocumentView unionView = new DocumentView
-            //{
-            //    Width = 200,
-            //    Height = 200
-            //};
-            //DocumentViewModel unionOpvm = new DocumentViewModel(unionOpCont);
-            //unionView.DataContext = unionOpvm;
-            //DisplayDocument(unionOpCont);
+            DocumentController intersectOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
+            DocumentView intersectView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            DocumentViewModel intersectOpvm = new DocumentViewModel(intersectOpModel);
+            intersectView.DataContext = intersectOpvm;
+            DisplayDocument(intersectOpModel);
 
             // add image url -> image operator for testing
             DocumentController imgOpModel =
@@ -189,28 +187,42 @@ namespace Dash
             var twoImages2 = new TwoImages().Document;
             var numbers = new Numbers().Document;
 
-            Key childKey = new Key("children", "children");
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
             {
-                {childKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, twoImages2.DocumentModel, numbers.DocumentModel}) }
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, twoImages2.DocumentModel, numbers.DocumentModel}) }
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), childKey)).Document;
+            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
             var layoutController = new DocumentFieldModelController(documentFieldModel);
             ContentController.AddModel(documentFieldModel);
             ContentController.AddController(layoutController);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
+            AddAnotherLol();
 
-            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //if (docCollection == null)
-            //{
-            //    docCollection = docController.CreateDocumentAsync("newtype");
-            //    docCollection.SetField(DocumentModel.GetFieldKeyByName("children"), new DocumentCollectionFieldModel(new DocumentModel[] { image2, image2Del, umpireDoc }), false);
-            //}
-            //DisplayDocument(docCollection);
+        }
+
+        private void AddAnotherLol()
+        {
+            // collection no.2
+            var twoImages = new TwoImages().Document;
+            var numbers = new Numbers().Document;
+
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            {
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, numbers.DocumentModel}) }
+            };
+
+            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
+            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
+            var layoutController = new DocumentFieldModelController(documentFieldModel);
+            ContentController.AddModel(documentFieldModel);
+            ContentController.AddController(layoutController);
+            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            DisplayDocument(col);
         }
 
         private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
