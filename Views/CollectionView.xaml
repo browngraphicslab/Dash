@@ -209,7 +209,8 @@
                  Stroke="DarkGoldenrod"
                  ManipulationMode="All"
                  ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
-                 PointerPressed="ConnectionEllipse_OnPointerPressed"/>
+                 PointerPressed="ConnectionEllipse_OnPointerPressed"
+                 PointerReleased="ConnectionEllipse_OnPointerReleased"/>
     </Grid>
 </UserControl>
 

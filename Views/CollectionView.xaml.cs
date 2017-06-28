@@ -461,7 +461,6 @@ namespace Dash
             CanvasScale *= (float)scaleAmount;
             Debug.Assert(canvas.RenderTransform != null);
             Point p = point.Position;
-            Debug.WriteLine(p);
             //Create initial ScaleTransform 
             ScaleTransform scale = new ScaleTransform
             {
@@ -870,6 +869,16 @@ namespace Dash
             OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             view?.StartDrag(ioRef);
+        }
+
+        private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view?.EndDrag(ioRef);
         }
     }
 }

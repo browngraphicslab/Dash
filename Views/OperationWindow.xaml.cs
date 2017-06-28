@@ -32,7 +32,9 @@ namespace Dash
     /// <summary>
     /// Window that allows users to create their own Key,Value pairs 
     /// </summary>
-    public sealed partial class OperationWindow : WindowTemplate
+    public sealed partial class 
+        
+        OperationWindow : WindowTemplate
     {
         private DocumentModel InputDocument => (DataContext as OperationWindowViewModel).InputDocument;
         private DocumentModel OutputDocument => (DataContext as OperationWindowViewModel).OutputDocument;

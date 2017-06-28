@@ -40,12 +40,10 @@ namespace Dash
 
         public override void Execute(DocumentController doc)
         {
-            throw new NotImplementedException();
+            DocumentCollectionFieldModelController setA = doc.GetField(AKey) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setB = doc.GetField(BKey) as DocumentCollectionFieldModelController;
 
-            //DocumentCollectionFieldModel setA = doc.Field(AKey) as DocumentCollectionFieldModel;
-            //DocumentCollectionFieldModel setB = doc.Field(BKey) as DocumentCollectionFieldModel;
-            ////DocumentCollectionFieldModel union = new DocumentCollectionFieldModel(setA.Documents.Union(setB.Documents).ToList());
-            //(doc.Field(UnionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Union(setB.Documents).ToList());
+            (doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Union(setB.GetDocuments()).ToList());
         }
 
         public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)

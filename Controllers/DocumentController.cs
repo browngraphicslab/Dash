@@ -207,7 +207,7 @@ namespace Dash
 
             // add the delegate to our delegates field
             var currentDelegates = GetDelegates();
-            currentDelegates.Documents.Add(delegateController);
+            currentDelegates.GetDocuments().Add(delegateController);
 
             // return the now fully populated delegate
             return delegateController;
@@ -325,7 +325,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).Documents)
+                    foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
                         var docEles = fieldDoc.MakeAllViewUI();
                         if (docEles != null)
@@ -381,7 +381,7 @@ namespace Dash
                     }
                     else if (f.Value is DocumentCollectionFieldModelController)
                     {
-                        foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).Documents)
+                        foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                         {
                             var docEles = fieldDoc.MakeViewUI();
                             if (docEles != null)
