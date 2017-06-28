@@ -15,6 +15,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation.Collections;
+using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -42,7 +44,15 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
+            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
+            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
+            Loaded += (s, e) => ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+        }
+
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            DataContext = ViewModel;
         }
 
         private void SetEventHandlers()
@@ -87,39 +97,37 @@ namespace Dash
             {
                 var docVM = sender[(int) e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                //throw new NotImplementedException(); // TODO implement adding the edges once you have operators 
-                //OperatorFieldModel ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
-                //if (ofm != null)
-                //{
-                //    foreach (var inputKey in ofm.InputKeys)
-                //    {
-                //        foreach (var outputKey in ofm.OutputKeys)
-                //        {
-                //            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
-                //            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
-                //            _graph.AddEdge(irfm,orfm);
-                //        }
-                //    }
-                //}
+                OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                if (ofm != null)
+                {
+                    foreach (var inputKey in ofm.InputKeys)
+                    {
+                        foreach (var outputKey in ofm.OutputKeys)
+                        {
+                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                            _graph.AddEdge(irfm, orfm);
+                        }
+                    }
+                }
             }
             else if (e.CollectionChange == CollectionChange.ItemRemoved)
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                throw new NotImplementedException();
-                //OperatorFieldModel ofm = docVM.DocumentModel.Field(OperatorDocumentModel.OperatorKey) as OperatorFieldModel;
-                //if (ofm != null)
-                //{
-                //    foreach (var inputKey in ofm.InputKeys)
-                //    {
-                //        foreach (var outputKey in ofm.OutputKeys)
-                //        {
-                //            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentModel.Id, inputKey);
-                //            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentModel.Id, outputKey);
-                //            _graph.RemoveEdge(irfm, orfm);
-                //        }
-                //    }
-                //}
+                OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                if (ofm != null)
+                {
+                    foreach (var inputKey in ofm.InputKeys)
+                    {
+                        foreach (var outputKey in ofm.OutputKeys)
+                        {
+                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                            _graph.RemoveEdge(irfm, orfm);
+                        }
+                    }
+                }
             }
         }
 
@@ -460,7 +468,6 @@ namespace Dash
             CanvasScale *= (float)scaleAmount;
             Debug.Assert(canvas.RenderTransform != null);
             Point p = point.Position;
-            Debug.WriteLine(p);
             //Create initial ScaleTransform 
             ScaleTransform scale = new ScaleTransform
             {
@@ -854,6 +861,31 @@ namespace Dash
                 //FreeformView.MainFreeformView.Canvas.Children.Add(view);
 
             }
+        }
+
+        private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Complete();
+        }
+
+        private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view?.StartDrag(ioRef);
+        }
+
+        private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view?.EndDrag(ioRef);
         }
     }
 }

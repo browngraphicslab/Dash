@@ -24,12 +24,9 @@ namespace Dash
 
         private CollectionModel _collectionModel;
 
+        public CollectionModel CollectionModel { get { return _collectionModel; } }
 
-        public ObservableCollection<DocumentViewModel> DocumentViewModels
-        {
-            get { return _documentViewModels; }
-            set { SetProperty(ref _documentViewModels, value); }
-        }
+        public DocumentView ParentDocument { get; set; }
 
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
@@ -37,7 +34,11 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> DataBindingSource
         {
             get { return _dataBindingSource; }
-            set { SetProperty(ref _dataBindingSource, value); }
+            set
+            {
+                SetProperty(ref _dataBindingSource, value); 
+                Debug.WriteLine("changed: " + value.Count);
+            }
         }
 
         public ObservableCollection<UIElement> SoloDisplayElements
@@ -93,7 +94,6 @@ namespace Dash
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
 
-        private ObservableCollection<DocumentViewModel> _documentViewModels;
         private ObservableCollection<DocumentViewModel> _dataBindingSource;
 
         private DocumentViewModel _soloDisplayDocument;
@@ -272,7 +272,7 @@ namespace Dash
             _collectionModel = model;
 
             SetInitialValues();
-            AddViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
+            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
             //SetDimensions();
            var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
             controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
@@ -281,8 +281,8 @@ namespace Dash
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
         {
-           //  AddDocuments(_collectionModel.Documents.Data);
-            AddViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
+            //AddDocuments(_collectionModel.Documents.Data);
+            UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
 
         private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -314,7 +314,7 @@ namespace Dash
             FilterViewVisibility = Visibility.Collapsed;
 
             _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            DataBindingSource = new ObservableCollection<DocumentViewModel>();
 
             ViewIsEnabled = true;
             SoloDisplayVisibility = Visibility.Collapsed;
@@ -352,9 +352,8 @@ namespace Dash
             _selectedItems.Clear();
             foreach (var vm in itemsToDelete)
             {
-                DocumentViewModels.Remove(vm);
+                DataBindingSource.Remove(vm);
             }
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -375,7 +374,6 @@ namespace Dash
             else
             {
                 ListViewVisibility = Visibility.Collapsed;
-                DataBindingSource = DocumentViewModels;
                 GridViewVisibility = Visibility.Visible;
             }
             
@@ -399,7 +397,6 @@ namespace Dash
             else
             {
                 GridViewVisibility = Visibility.Collapsed;
-                DataBindingSource = DocumentViewModels;
                 ListViewVisibility = Visibility.Visible;
             }
 
@@ -488,7 +485,7 @@ namespace Dash
                 if (!docList.Contains(document.GetId()))
                     docList.Add(document.GetId());
             }
-            AddViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
+            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
         }
 
         /// <summary>
@@ -506,6 +503,40 @@ namespace Dash
             RemoveDefunctViewModels();
         }
 
+        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
+        {
+            foreach (var viewModel in col)
+            {
+                if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void UpdateViewModels(ObservableCollection<DocumentViewModel> viewModels)
+        {
+            foreach (var viewModel in viewModels)
+            {
+                if (ViewModelContains(DataBindingSource, viewModel))
+                {
+                    continue;
+                }
+                viewModel.ManipulationMode = ManipulationModes.System;
+                viewModel.DoubleTapEnabled = false;
+                DataBindingSource.Add(viewModel);
+            }
+            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
+            {
+                if (ViewModelContains(viewModels, DataBindingSource[i]))
+                {
+                    continue;
+                }
+                DataBindingSource.RemoveAt(i);
+            }
+        }
+
         /// <summary>
         /// Adds a collection of DocumentViewModels to the Collection, and thus displays their corresponding views.
         /// </summary>
@@ -515,21 +546,21 @@ namespace Dash
             foreach (var viewModel in viewModels)
             {
                 bool found = false;
-                foreach (var vm in DocumentViewModels)
+                foreach (var vm in DataBindingSource)
                     if (vm.DocumentController.GetId() == viewModel.DocumentController.GetId())
                         found = true;
                 if (!found)
                 {
                     //viewModel.DefaultViewVisibility = Visibility.Collapsed;
                     //viewModel.ListViewVisibility = Visibility.Visible;
+                    Debug.WriteLine($"{viewModel.ManipulationMode}, {ManipulationModes.None}");
                     viewModel.ManipulationMode = ManipulationModes.System;
                     viewModel.DoubleTapEnabled = false;
                     //viewModel.CanMoveControl = false;
-                    DocumentViewModels.Add(viewModel);
+                    DataBindingSource.Add(viewModel);
                 }
             }
             //ScaleDocumentsToFitCell();
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -540,9 +571,8 @@ namespace Dash
         {
             foreach (DocumentViewModel viewModel in viewModels)
             {
-                if (DocumentViewModels.Contains(viewModel)) DocumentViewModels.Remove(viewModel);
+                DataBindingSource.Remove(viewModel);
             }
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -711,7 +741,6 @@ namespace Dash
         public void ClearFilter_Tapped(object sender, TappedRoutedEventArgs e)
         {
             FilterViewVisibility = Visibility.Collapsed;
-            DataBindingSource = DocumentViewModels;
             _filtered = false;
         }
         public void MoveDocument(DocumentViewModel docViewModel, Point where)

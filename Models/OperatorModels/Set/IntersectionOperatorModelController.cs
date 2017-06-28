@@ -8,8 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash.Models.OperatorModels.Set
 {
-    /* 
-    class IntersectionOperatorModel : OperatorFieldModel
+    class IntersectionOperatorModelController : OperatorFieldModelController
+
     {
         //Input keys
         public static readonly Key AKey = new Key("178123E8-4E64-44D9-8F05-509B2F097B7D", "Input A");
@@ -21,6 +21,20 @@ namespace Dash.Models.OperatorModels.Set
         public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
 
         public override List<Key> OutputKeys { get; } = new List<Key> {IntersectionKey};
+
+        public IntersectionOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
+        }
+
+        public override void Execute(DocumentController doc)
+        {
+            DocumentCollectionFieldModelController setA = doc.GetField(AKey) as DocumentCollectionFieldModelController;
+            
+            DocumentCollectionFieldModelController setB = doc.GetField(BKey) as DocumentCollectionFieldModelController;
+
+            (doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
+        }
+
         public override List<FieldModel> GetNewInputFields()
         {
             return new List<FieldModel>
@@ -37,15 +51,6 @@ namespace Dash.Models.OperatorModels.Set
             };
         }
 
-        public override void Execute(DocumentModel doc)
-        {
-            throw new NotImplementedException();
-
-            //DocumentCollectionFieldModel setA = doc.Field(AKey) as DocumentCollectionFieldModel;
-            //DocumentCollectionFieldModel setB = doc.Field(BKey) as DocumentCollectionFieldModel;
-
-            //(doc.Field(IntersectionKey) as DocumentCollectionFieldModel).SetDocuments(setA.Documents.Intersect(setB.Documents).ToList());
-        }
+        
     }
-    */ 
 }

@@ -7,17 +7,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
-    d:DesignHeight="400"
-    d:DesignWidth="400"
+    Background="{StaticResource TranslucentWhite}"
     ManipulationStarted="Grid_OnManipulationStarted">
 
-    <Grid x:Name="Grid" BorderThickness="0" Background="#F339519F">
+    <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}">
         <Grid x:Name="DocumentViewContainerGrid"  
                   HorizontalAlignment="Stretch" 
-                  BorderThickness="0" 
                   Margin="0,30,0,30" 
                   VerticalAlignment="Stretch"  
-                  BorderBrush="WhiteSmoke"
+                  BorderBrush="LightGray"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
                   ManipulationMode="All" 
                   PointerWheelChanged="UserControl_PointerWheelChanged"
@@ -25,7 +23,7 @@
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
                   PointerMoved="FreeformGrid_OnPointerMoved" 
                   PointerReleased="FreeformGrid_OnPointerReleased"
-                  Background="#3F343434">
+                  Style="{StaticResource xNodeContainerGrid}">
             <Grid.Clip>
                 <RectangleGeometry x:Name="ClipRect"/>
             </Grid.Clip>
@@ -176,8 +174,8 @@
 
         <!--<Button x:Name="CancelButton" HorizontalAlignment="Right" VerticalAlignment="Top" Width="62" Height="29" Content="Cancel" Background="{x:Null}" Foreground="{StaticResource ButtonTextBrush}" BorderBrush="{x:Null}" Padding="0" Margin="0,0,10,0"  />-->
 
-        <Button x:Name="DisplayButton" HorizontalAlignment="Left" VerticalAlignment="Top" Height="30" Width="60" 
-                Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke" Margin="0,0,0,0" Content="Display" FontSize="14" FontFamily="Rockwell">
+        <Button x:Name="DisplayButton" HorizontalAlignment="Left" VerticalAlignment="Top"  
+                 Foreground="WhiteSmoke" Margin="0,0,0,0" Content="Display" FontSize="14" FontFamily="Rockwell">
             <Button.Flyout>
                 <MenuFlyout >
                     <MenuFlyoutItem x:Name="GridOption" Text="Grid"/>
@@ -200,8 +198,7 @@
             <Button x:Name="SelectButton" Content ="Select" VerticalAlignment="Bottom" Height="30" 
                         Width="60" Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke" Margin="{Binding SelectButtonMargin}" FontSize="14" FontFamily="Rockwell"/>
         </StackPanel>
-        <Button x:Name="CloseButton" Content ="Close" HorizontalAlignment="Right" VerticalAlignment="Top" Height="30" 
-                Width="50" Style="{StaticResource xBlueTextButtonStyle}" Foreground="WhiteSmoke" FontSize="14" FontFamily="Rockwell"/>
+        <Button x:Name="CloseButton" Content ="Close" HorizontalAlignment="Right" VerticalAlignment="Top" Background="{StaticResource AccentGreen}" Foreground="WhiteSmoke"/>
         <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
                  Width="20" 
@@ -209,7 +206,11 @@
                  Fill="Goldenrod" 
                  HorizontalAlignment="Right" 
                  StrokeThickness="2" 
-                 Stroke="DarkGoldenrod" />
+                 Stroke="DarkGoldenrod"
+                 ManipulationMode="All"
+                 ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
+                 PointerPressed="ConnectionEllipse_OnPointerPressed"
+                 PointerReleased="ConnectionEllipse_OnPointerReleased"/>
     </Grid>
 </UserControl>
 
