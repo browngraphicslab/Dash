@@ -85,7 +85,7 @@ namespace Dash
         {
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
-            BorderBrush = new SolidColorBrush(Colors.DarkGoldenrod);
+            BorderBrush = new SolidColorBrush(Color.FromArgb(50,34,34,34));
 
             // set the X and Y position if the fields for those positions exist
             var xPositionFieldModelController = DocumentController.GetField(DashConstants.KeyStore.XPositionFieldKey);

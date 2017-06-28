@@ -65,7 +65,8 @@ namespace Dash
             MainDocView.Manipulator.RemoveAllButHandle();
 
             MainDocView.DraggerButton.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
+            MainDocView.OuterGrid.BorderThickness = new Thickness(0);
+            
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
