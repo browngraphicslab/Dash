@@ -7,7 +7,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    Background="{StaticResource TranslucentWhite}"
     d:DesignWidth="300"
     PointerPressed="DocumentView_OnPointerPressed">
 
