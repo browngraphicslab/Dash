@@ -391,11 +391,7 @@ namespace Dash
                 var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey) as FieldModelController;
                 if (fieldModelController != null)
                 {
-                    while (fieldModelController is ReferenceFieldModelController)
-                    {
-                        var refFM = (fieldModelController as ReferenceFieldModelController).ReferenceFieldModel;
-                        fieldModelController = ContentController.GetController<DocumentController>(refFM.DocId).GetField(refFM.FieldKey);
-                    }
+                    fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);
                     if (fieldModelController is DocumentFieldModelController)
                     {
                         var fieldDoc = (fieldModelController as DocumentFieldModelController).Data;
