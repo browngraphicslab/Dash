@@ -71,10 +71,10 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            /* //TODO this seriously slows down the document 
+            //TODO this seriously slows down the document 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
-            */
+
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
