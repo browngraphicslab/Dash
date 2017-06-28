@@ -90,9 +90,6 @@ namespace Dash
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
-            foreach(var item in GridView.Items)
-                (item as DocumentViewModel).ParentCollection = this;
-
             if (e.CollectionChange == CollectionChange.ItemInserted)
             {
                 var docVM = sender[(int) e.Index] as DocumentViewModel;
@@ -113,7 +110,7 @@ namespace Dash
             }
             else if (e.CollectionChange == CollectionChange.ItemRemoved)
             {
-                var docVM = sender[(int)e.Index] as DocumentViewModel;
+                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
                 OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
                 if (ofm != null)

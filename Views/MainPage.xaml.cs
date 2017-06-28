@@ -221,7 +221,7 @@ namespace Dash
             /*
             Dictionary<Key, FieldModel> fields2 = new Dictionary<Key, FieldModel>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {numbers.DocumentModel}) }
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {new Numbers().Document.DocumentModel}) }
             };
 
             var col2 = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields2, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
@@ -289,6 +289,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Given a reference to an operator field model, constructs a document type that displays that operator.
+        /// </summary>
         public class OperatorBox : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("53FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");

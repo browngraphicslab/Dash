@@ -27,9 +27,9 @@
         </Image>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
-                Width="25"
+                Width="40"
                 Background="Transparent"
-                Height="25"
+                Height="40"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY"
                 >
