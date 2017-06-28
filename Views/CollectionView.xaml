@@ -18,6 +18,7 @@
                   VerticalAlignment="Stretch"  
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
                   ManipulationMode="All" 
+                  Background="{StaticResource CollectionViewBackground}"
                   PointerWheelChanged="UserControl_PointerWheelChanged"
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
