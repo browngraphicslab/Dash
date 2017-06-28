@@ -65,6 +65,25 @@ namespace Dash
             return DocumentModel.Id;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == this)
+            {
+                return true;
+            }
+            DocumentController controller = obj as DocumentController;
+            if (controller == null)
+            {
+                return false;
+            }
+            return GetId().Equals(controller.GetId());
+        }
+
+        public override int GetHashCode()
+        {
+            return GetId().GetHashCode();
+        }
+
         /// <summary>
         ///     Called whenver the Data in <see cref="Fields" /> changes
         /// </summary>
