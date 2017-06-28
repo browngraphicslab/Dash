@@ -293,40 +293,13 @@ namespace Dash
                     {
                         manipulator.RemoveAllButHandle();
                     }
-                } else if (eventArgs.PropertyName == "IsDetailedUserInterfaceVisible")
-                {
-                    if (_vm.IsDetailedUserInterfaceVisible)
-                    {
-                        xEditButton.Visibility = Visibility.Visible;
-                        DraggerButton.Visibility = Visibility.Visible;
-                    }
-                    else
-                    {
-                        xEditButton.Visibility = Visibility.Collapsed;
-                        DraggerButton.Visibility = Visibility.Collapsed;
-                    }
                 }
             };
 
             if (_vm.IsMoveable) manipulator.AddAllAndHandle();
             else manipulator.RemoveAllButHandle();
 
-            if (_vm.IsDetailedUserInterfaceVisible)
-            {
-                xEditButton.Visibility = Visibility.Visible;
-                DraggerButton.Visibility = Visibility.Visible;
-            }
-            else
-            {
-                xEditButton.Visibility = Visibility.Collapsed;
-                DraggerButton.Visibility = Visibility.Collapsed;
-            }
-
             #endregion
-
-            // Add any methods
-            //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-            //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
         }
 
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)

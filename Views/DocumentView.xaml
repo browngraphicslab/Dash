@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    PointerPressed="DocumentView_OnPointerPressed">
+    PointerPressed="DocumentView_OnPointerPressed" d:DataContext="{d:DesignInstance local:DocumentViewModel }">
 
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
@@ -29,6 +29,7 @@
                 Height="35"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY"
+                Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 >
             <Button.Template>
                 <ControlTemplate TargetType="Button">
@@ -43,7 +44,7 @@
         <Button x:Name="xEditButton" 
                 Width="35"
                 Height="35"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,50,0" Tapped="XEditButton_OnTapped">
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,50,0" Tapped="XEditButton_OnTapped" Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" />
             <Button.Template>
                 <ControlTemplate TargetType="Button">

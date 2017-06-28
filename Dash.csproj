@@ -105,6 +105,7 @@
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
+    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
