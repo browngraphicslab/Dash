@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
+using static Dash.MainPage;
 
 namespace Dash.Sources.Api {
     /// <summary>
@@ -76,31 +77,9 @@ namespace Dash.Sources.Api {
         public bool addResponseDocumentsToCanvas() {
             if (responseAsDocuments.Count == 0)
                 return false;
+            
 
-            // add document to given canvas
-            //DocumentModel testDocument = responseAsDocuments[0];
-
-            ////set layout
-            //testDocument.DocumentType = DocumentType.DefaultType;
-
-            //// this part generates a defaultlayoutmodel that shows key/value string text pairs
-            //DocumentViewModel testModel = new DocumentViewModel(testDocument);
-            //testModel.SetLayoutModel(LayoutModel.DefaultLayoutModel(testDocument)); // TODO: simplify this in dvm constructor
-            //DocumentView testView = new DocumentView();
-            //testView.DataContext = testModel;
-            //testGrid.Children.Add(testView);
-            //LayoutModel.DefaultLayoutModel(testDocument);
-
-
-            //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
-
-            // put document results into collection model
-            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            //var collection = docController.CreateDocumentAsync("collection"); //_example?
-            //collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments), false);
-            //DocumentViewModel cm = new DocumentViewModel(collection);
-            //DocumentView v = new DocumentView(cm);
-            //testGrid.Children.Add(v);
+            MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
             return true;
         }
