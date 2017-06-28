@@ -8,7 +8,7 @@
     xmlns:views="using:Dash"
     mc:Ignorable="d">
 
-    <Grid x:Name="MyGrid" Background="White" SizeChanged="MyGrid_SizeChanged" >
+    <Grid x:Name="MyGrid" Background="Transparent" SizeChanged="MyGrid_SizeChanged" >
         <Viewbox x:Name="xViewBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
             <views:DocumentView x:Name="MainDocView"></views:DocumentView>
         </Viewbox>

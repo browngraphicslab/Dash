@@ -14,7 +14,7 @@
           x:FieldModifier="public"
             SizeChanged="OuterGrid_SizeChanged"
             BorderBrush="{Binding BorderBrush}"
-            BorderThickness="5">
+            BorderThickness="0">
         <Grid.Clip>
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
         </Grid.Clip>
