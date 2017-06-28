@@ -217,10 +217,11 @@ namespace Dash
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
 
-            //AddAnotherLol();
+            AddAnotherLol();
+            /*
             Dictionary<Key, FieldModel> fields2 = new Dictionary<Key, FieldModel>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {numbers.DocumentModel}) }
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {new Numbers().Document.DocumentModel}) }
             };
 
             var col2 = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields2, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
@@ -231,6 +232,7 @@ namespace Dash
             ContentController.AddController(layoutController2);
             col2.SetField(DashConstants.KeyStore.LayoutKey, layoutController2, true);
             DisplayDocument(col2);
+            */
 
         }
 
@@ -241,12 +243,12 @@ namespace Dash
         private void AddAnotherLol()
         {
             // collection no.2
-            var twoImages = new TwoImages(false).Document;
             var numbers = new Numbers().Document;
+            var twoImages2 = new TwoImages(false).Document;
 
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, numbers.DocumentModel}) }
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] { twoImages2.DocumentModel, numbers.DocumentModel}) }
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,7 +44,18 @@ namespace Dash
             DocumentCollectionFieldModelController setA = doc.GetField(AKey) as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = doc.GetField(BKey) as DocumentCollectionFieldModelController;
 
-            (doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Union(setB.GetDocuments()).ToList());
+            // Union by comparing all fields 
+            List<DocumentController> bigSet = setA.GetDocuments();
+            bigSet.AddRange(setB.GetDocuments());
+            HashSet<DocumentController> result = new HashSet<DocumentController>(bigSet);
+            HashSet<DocumentController> same = Util.GetIntersection(setA, setB); 
+            result.ExceptWith(same); 
+            (doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            Debug.WriteLine("union count :" + result.Count);
+
+            // Union by Document ID 
+            //(doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Union(setB.GetDocuments()).ToList());
+
         }
 
         public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
