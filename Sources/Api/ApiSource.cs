@@ -77,10 +77,25 @@ namespace Dash.Sources.Api {
         public bool addResponseDocumentsToCanvas() {
             if (responseAsDocuments.Count == 0)
                 return false;
-            
+
 
             //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
+            // make collection view
+            
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            {
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(responseAsDocuments) }
+            };
+
+            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
+            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
+            var layoutController = new DocumentFieldModelController(documentFieldModel);
+            ContentController.AddModel(documentFieldModel);
+            ContentController.AddController(layoutController);
+            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            MainPage.Instance.DisplayDocument(col);
             return true;
         }
 
@@ -288,8 +303,12 @@ namespace Dash.Sources.Api {
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
 
+                int max = 10, i = 0; // this limits the # of results returned
                 // loop through all instantiated objects, making 
                 foreach (JObject result in resultObjects) {
+                    if (i > max)
+                        break;
+                    i++;
                     Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                     foreach (JProperty property in result.Properties()) {
                         //Debug.WriteLine(property.Name + ": " + property.Value);
@@ -298,11 +317,9 @@ namespace Dash.Sources.Api {
                         //       concerns: rabbit hole-ing?
                         toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                     }
-                    throw new NotImplementedException();
 
-                    //var newDoc = docController.CreateDocumentAsync(apiDocType);
-                    //newDoc.SetFields(toAdd);
-                    //responseAsDocuments.Add(newDoc); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                    DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
+                    responseAsDocuments.Add(Document.DocumentModel); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
 
