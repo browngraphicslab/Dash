@@ -59,7 +59,8 @@ namespace Dash
 
 
         /// <summary>
-        /// Creates a UI view of the field based on this templates display parameters
+        /// Creates a UI view of the field based on this templates display parameters. This gets overriden by children
+        /// of this class.
         /// </summary>
         protected virtual List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {

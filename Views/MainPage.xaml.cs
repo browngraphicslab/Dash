@@ -24,6 +24,7 @@ using Windows.UI.Xaml.Shapes;
 using Dash.Models.OperatorModels.Set;
 using Dash.ViewModels;
 using DashShared;
+using Dash.Sources.Api;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -60,7 +61,7 @@ namespace Dash
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
 
-            // TODO someone who understands this explain what it does
+            // TODO: someone who understands this explain what it does
             MainDocView.ManipulationMode = ManipulationModes.None;
             MainDocView.Manipulator.RemoveAllButHandle();
 
@@ -84,8 +85,6 @@ namespace Dash
 
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-
-
             //Create Operator document
             var opModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
@@ -177,6 +176,11 @@ namespace Dash
 
         public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
 
+        /// <summary>
+        /// Adds new documents to the MainView document. New documents are added as children of the Main document.
+        /// </summary>
+        /// <param name="docModel"></param>
+        /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
             var children = MainDocument.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
@@ -229,6 +233,10 @@ namespace Dash
 
         }
 
+        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+            DisplayDocument(new ApiSourceCreatorDoc().Document);
+        }
+
         private void AddAnotherLol()
         {
             // collection no.2
@@ -249,13 +257,7 @@ namespace Dash
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
         }
-
-        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            throw new NotImplementedException();
-
-            // xFreeformView.Canvas.Children.Add(new Sources.Api.ApiCreatorDisplay());
-        }
+        
 
         private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
@@ -264,6 +266,9 @@ namespace Dash
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
+        /// <summary>
+        /// This class provides base functionality for creating and displaying new documents.
+        /// </summary>
         public class CourtesyDocument
         {
             public virtual DocumentController Document { get; set; }
@@ -307,7 +312,57 @@ namespace Dash
                 return new List<FrameworkElement> { opView };
             }
         }
+        
+        /// <summary>
+        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
+        /// </summary>
+        public class ApiSourceCreatorDoc : CourtesyDocument {
+            public static DocumentType DocumentType = new DocumentType("APIC9C82-F32C-4704-AF6B-E55AC805C84F", "Api Source Creator");
 
+            public ApiSourceCreatorDoc() {
+                // create a layout for the image
+                var fields = new Dictionary<Key, FieldModel> {
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+
+            public override List<FrameworkElement> makeView(DocumentController docController) {
+                return TextingBox.MakeView(docController);
+            }
+            public static List<FrameworkElement> MakeView(DocumentController docController) {
+                return new List<FrameworkElement>() { new ApiCreatorDisplay() };
+            }
+        }
+
+
+        /// <summary>
+        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
+        /// </summary>
+        public class ApiSourceDoc : CourtesyDocument {
+            public static DocumentType DocumentType = new DocumentType("66FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
+            public static Key ApiFieldKey = new Key("927F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Api");
+            private static ApiSourceDisplay source;
+
+            public ApiSourceDoc(ApiSourceDisplay source) {
+                // create a layout for the image
+                ApiSourceDoc.source = source;
+                var fields = new Dictionary<Key, FieldModel> {
+            };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+
+            public override List<FrameworkElement> makeView(DocumentController docController) {
+                return new List<FrameworkElement>() { source };
+            }
+
+            public static List<FrameworkElement> MakeView(DocumentController docController) {
+                return new List<FrameworkElement>() { ApiSourceDoc.source };
+            }
+        }
+
+        /// <summary>
+        /// A generic document type containing a single text element.
+        /// </summary>
         public class TextingBox : CourtesyDocument
         {
             public static Key PrefixKey = new Key("AC1B4A0C-CFBF-43B3-B7F1-D7FC9E5BEEBE", "Text Prefix");
@@ -358,6 +413,10 @@ namespace Dash
                 return new List<FrameworkElement>();
             }
         }
+
+        /// <summary>
+        /// A generic document type containing a single image.
+        /// </summary>
         public class ImageBox : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
@@ -404,13 +463,19 @@ namespace Dash
                 return ImageBox.MakeView(docController);
             }
         }
-
-        public class DataBox : CourtesyDocument
+        
+        /// <summary>
+        /// A generic data wrappe document display type used to display images or text fields.
+        /// </summary>
+        public class DataBox: CourtesyDocument
         {
             CourtesyDocument _doc;
-            public DataBox(ReferenceFieldModel refToImage, bool isImage)
+            public DataBox(ReferenceFieldModel refToField, bool isImage)
             {
-                _doc = isImage ? (CourtesyDocument)new ImageBox(refToImage) : new TextingBox(refToImage);
+                if (isImage)
+                    _doc = new ImageBox(refToField);
+                else
+                    _doc = new TextingBox(refToField);
             }
             public override DocumentController Document { get { return _doc.Document; } set { _doc.Document = value; } }
             public override List<FrameworkElement> makeView(DocumentController docController)
@@ -418,7 +483,7 @@ namespace Dash
                 return _doc.makeView(docController);
             }
         }
-
+        
         public class GenericCollection : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
@@ -442,13 +507,13 @@ namespace Dash
                 return new List<FrameworkElement>();
             }
         }
-
-
-        public class StackingPanel : CourtesyDocument
-        {
+        
+        public class StackingPanel : CourtesyDocument {
             public static DocumentType StackPanelDocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
 
-            static public DocumentType DocumentType { get { return StackPanelDocumentType; } }
+
+            static public DocumentType DocumentType { get { return StackPanelDocumentType;  } }
+
             public StackingPanel(IEnumerable<DocumentModel> docs)
             {
                 var fields = new Dictionary<Key, FieldModel>
@@ -499,14 +564,16 @@ namespace Dash
                     [Image1FieldKey] = imModel,
                     [Image2FieldKey] = imModel2
                 };
+
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
 
+                /*
                 var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey)).Document;
                 var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
                 var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
-
+                */
                 //SetLayoutForDocument(stackPan.DocumentModel);
             }
 
@@ -540,8 +607,8 @@ namespace Dash
             }
 
         }
-
-        private async void AddDocuments(object sender, TappedRoutedEventArgs e)
+        
+        private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages().Document);
             DisplayDocument(new Numbers().Document);

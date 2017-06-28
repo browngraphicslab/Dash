@@ -14,7 +14,7 @@
           x:FieldModifier="public"
             SizeChanged="OuterGrid_SizeChanged"
             BorderBrush="{Binding BorderBrush}"
-            BorderThickness="5">
+            BorderThickness="0">
         <Grid.Clip>
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
         </Grid.Clip>
@@ -22,20 +22,23 @@
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
                 RightTapped="Grid_RightTapped"
-                Background="#BFFFFFFF"/>
-        <Button x:Name="DraggerButton"
+               Style="{StaticResource xNodeContainerGrid}"/>
+        <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        </Image>
+        <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
-                Width="35"
-                Height="35"
+                Width="25"
+                Background="Transparent"
+                Height="25"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY"
                 >
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Grid>
-                        <Ellipse Fill="#DE0074FF" StrokeThickness="1" Stroke="#DE0074FF" />
+                        <Ellipse Fill="Transparent" />
                         <ContentPresenter HorizontalAlignment="Center"
-                                            VerticalAlignment="Center" />
+                                          VerticalAlignment="Center"/>
                     </Grid>
                 </ControlTemplate>
             </Button.Template>

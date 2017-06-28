@@ -291,6 +291,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
+        /// string key of the field and value is the rendered UI element representing the value.
+        /// </summary>
+        /// <returns></returns>
         public FrameworkElement MakeAllViewUI()
         {
             var sp = new StackPanel();
@@ -330,6 +335,7 @@ namespace Dash
             }
             return sp;
         }
+
         public List<FrameworkElement> MakeViewUI()
         {
             var uieles = new List<FrameworkElement>();
@@ -353,6 +359,14 @@ namespace Dash
             else if (DocumentType == OperatorBox.DocumentType)
             {
                 uieles.AddRange(OperatorBox.MakeView(this));
+            } 
+            else if (DocumentType == ApiSourceCreatorDoc.DocumentType) 
+            {
+                uieles.AddRange(ApiSourceCreatorDoc.MakeView(this));
+            } 
+            else if (DocumentType == ApiSourceDoc.DocumentType) 
+            {
+                uieles.AddRange(ApiSourceDoc.MakeView(this));
             }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
