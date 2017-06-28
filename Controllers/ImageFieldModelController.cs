@@ -71,6 +71,13 @@ namespace Dash
         public ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel)
         {
             ReferenceFieldModel = referenceFieldModel;
+            var fmc = (ContentController.GetController(referenceFieldModel.DocId) as DocumentController).GetField(referenceFieldModel.FieldKey);
+            fmc.FieldModelUpdatedEvent += Fmc_FieldModelUpdatedEvent;
+        }
+
+        private void Fmc_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            OnDataUpdated();
         }
 
         /// <summary>

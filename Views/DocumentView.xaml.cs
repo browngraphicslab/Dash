@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
+using DashShared;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -205,7 +206,8 @@ namespace Dash
         {
             // clear any current children (fields) and then add them over again
             XGrid.Children.Clear();
-            var elements = documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
+            var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            var elements = layout != null ? layout.Data.MakeViewUI() : new List<FrameworkElement>();
             if (elements.Count == 0)
             {
                 var panel = documentViewModel.DocumentController.MakeAllViewUI();
@@ -213,8 +215,7 @@ namespace Dash
             } else
                 foreach (var element in elements)
                 {
-                    //if (!(element is TextBlock))
-                        XGrid.Children.Add(element);
+                    XGrid.Children.Add(element);
                 }
         }
 

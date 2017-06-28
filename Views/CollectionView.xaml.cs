@@ -43,9 +43,16 @@ namespace Dash
         public CollectionView(CollectionViewModel vm)
         {
             this.InitializeComponent();
-            DataContext = ViewModel = vm;          
+            DataContext = ViewModel = vm;
+            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
+            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
             Loaded += (s, e) => ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+        }
+
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            DataContext = ViewModel;
         }
 
         private void SetEventHandlers()

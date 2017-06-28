@@ -24,6 +24,8 @@ namespace Dash
 
         private CollectionModel _collectionModel;
 
+        public CollectionModel CollectionModel { get { return _collectionModel; } }
+
         public DocumentView ParentDocument { get; set; }
 
         /// <summary>

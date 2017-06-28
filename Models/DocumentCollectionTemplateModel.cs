@@ -34,6 +34,8 @@ namespace Dash
                 Converter = new PositionConverter()
             };
             view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+            if (Width > 0)
+                view.Width = Width;
 
             return new List<FrameworkElement> { view };
         }
