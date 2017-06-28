@@ -6,7 +6,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:WindowTemplate">
-                    <Grid x:Name="PART_Container" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                    <Grid x:Name="PART_Container" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="White">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="30"/>
                             <RowDefinition Height="*"/>

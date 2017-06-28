@@ -31,9 +31,9 @@ namespace Dash
         private DocumentViewModel _documentViewModel;
 
         /// <summary>
-        /// the document model of the document which is being edited
+        /// the document controller of the document which is being edited
         /// </summary>
-        private DocumentModel _documentModel;
+        private DocumentController _documentController;
 
         /// <summary>
         /// The document view of the document which is being edited
@@ -50,37 +50,21 @@ namespace Dash
         /// </summary>
         private Dictionary<Key, FieldModelController> _keyToFieldModel = new Dictionary<Key, FieldModelController>();
 
-        public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
+        public InterfaceBuilder(DocumentViewModel viewModel,int width=800, int height=500)
         {
             this.InitializeComponent();
             Width = width;
             Height = height;
 
-            //throw new NotImplementedException();
-            //// set width and height to avoid Width = NaN ...
-            //Width = 500;
-            //Height = 500;
-
-            //// set the view model, document model and view variables
-            //_documentViewModel = viewModel;
-            //_documentModel = viewModel.DocumentModel;
-            //_documentView = new DocumentView(_documentViewModel);
-
-            //// add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
-            //Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
-            //Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
-            //xDocumentsPane.Canvas.Children.Add(_documentView);
-
-            //InitializeKeyDicts();
+            // set the view model, document model and view variables
+            _documentViewModel = new DocumentViewModel(viewModel.DocumentController);
+            _documentViewModel.IsDetailedUserInterfaceVisible = false;
+            _documentViewModel.IsMoveable = false;
+            _documentController = viewModel.DocumentController;
+            _documentView = new DocumentView(_documentViewModel);
+            xDocumentHolder.Children.Add(_documentView);
 
             //ApplyEditable();
-        }
-
-        private void InitializeKeyDicts()
-        {
-            throw new NotImplementedException();
-            //_keyToTemplateModel = _documentViewModel.GetLayoutModel().Fields;
-            //_keyToFieldModel = _documentModel.EnumFields().ToDictionary(x => x.Key, x => x.Value);
         }
 
         private void ApplyEditable()
