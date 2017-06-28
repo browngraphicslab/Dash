@@ -65,6 +65,25 @@ namespace Dash
             return DocumentModel.Id;
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == this)
+            {
+                return true;
+            }
+            DocumentController controller = obj as DocumentController;
+            if (controller == null)
+            {
+                return false;
+            }
+            return GetId().Equals(controller.GetId());
+        }
+
+        public override int GetHashCode()
+        {
+            return GetId().GetHashCode();
+        }
+
         /// <summary>
         ///     Called whenver the Data in <see cref="Fields" /> changes
         /// </summary>
@@ -370,18 +389,24 @@ namespace Dash
             }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
-                foreach (var f in EnumFields())
+                var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey) as FieldModelController;
+                if (fieldModelController != null)
                 {
-                    if (f.Value is DocumentFieldModelController)
+                    while (fieldModelController is ReferenceFieldModelController)
                     {
-                        var fieldDoc = (f.Value as DocumentFieldModelController).Data;
+                        var refFM = (fieldModelController as ReferenceFieldModelController).ReferenceFieldModel;
+                        fieldModelController = ContentController.GetController<DocumentController>(refFM.DocId).GetField(refFM.FieldKey);
+                    }
+                    if (fieldModelController is DocumentFieldModelController)
+                    {
+                        var fieldDoc = (fieldModelController as DocumentFieldModelController).Data;
                         var docEles = fieldDoc.MakeViewUI();
                         if (docEles != null)
                             uieles.AddRange(docEles);
                     }
-                    else if (f.Value is DocumentCollectionFieldModelController)
+                    else if (fieldModelController is DocumentCollectionFieldModelController)
                     {
-                        foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
+                        foreach (var fieldDoc in (fieldModelController as DocumentCollectionFieldModelController).GetDocuments())
                         {
                             var docEles = fieldDoc.MakeViewUI();
                             if (docEles != null)

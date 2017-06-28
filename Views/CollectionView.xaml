@@ -10,21 +10,20 @@
     Background="{StaticResource TranslucentWhite}"
     ManipulationStarted="Grid_OnManipulationStarted">
 
-    <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}" Background="{StaticResource CollectionViewBackground}">
+    <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}">
         <Grid x:Name="DocumentViewContainerGrid"  
                   HorizontalAlignment="Stretch" 
-                  BorderThickness="0" 
                   Margin="0,30,0,30" 
                   VerticalAlignment="Stretch"  
+                  BorderBrush="LightGray"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
                   ManipulationMode="All" 
-                  Background="{StaticResource CollectionViewBackground}"
                   PointerWheelChanged="UserControl_PointerWheelChanged"
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
                   PointerMoved="FreeformGrid_OnPointerMoved" 
                   PointerReleased="FreeformGrid_OnPointerReleased"
-                  >
+                  Style="{StaticResource xNodeContainerGrid}">
             <Grid.Clip>
                 <RectangleGeometry x:Name="ClipRect"/>
             </Grid.Clip>

@@ -1,4 +1,4 @@
-﻿ <Application
+﻿<Application
     x:Class="Dash.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -79,7 +79,7 @@
         <Style TargetType="Grid" x:Name="xNodeContainerGrid">
             <Setter Property="BorderBrush" Value="#FF0078D7"/>
             <Setter Property="Padding" Value="20,10,20,20"/>
-            <Setter Property="Background" Value="{StaticResource TranslucentWhite}"/>
+            <Setter Property="Background" Value="#AAFFFFFF"/>
             <Setter Property="BorderThickness" Value="2" />
         </Style>
         <Style TargetType="StackPanel" x:Name="xNodeContainerStackPanel">
