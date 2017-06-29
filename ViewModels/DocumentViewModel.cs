@@ -76,6 +76,22 @@ namespace Dash
             set { SetProperty(ref _borderBrush, value); }
         }
 
+        private bool _isDetailedUserInterfaceVisible = true;
+
+        public bool IsDetailedUserInterfaceVisible
+        {
+            get { return _isDetailedUserInterfaceVisible; }
+            set { SetProperty(ref _isDetailedUserInterfaceVisible, value); }
+        }
+
+        private bool _isMoveable = true;
+
+        public bool IsMoveable
+        {
+            get { return _isMoveable; }
+            set { SetProperty(ref _isMoveable, value); }
+        }
+
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 

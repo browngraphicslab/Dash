@@ -31,9 +31,10 @@ namespace Dash
         private DocumentViewModel _documentViewModel;
 
         /// <summary>
-        /// the document model of the document which is being edited
+        /// the document controller of the document which is being edited. This contains the fields for all the data
+        /// that is going to be displayed
         /// </summary>
-        private DocumentModel _documentModel;
+        private DocumentController _documentController;
 
         /// <summary>
         /// The document view of the document which is being edited
@@ -41,78 +42,63 @@ namespace Dash
         private DocumentView _documentView;
 
         /// <summary>
-        /// dictionary of keys to template models for the template models on the document which is being edited
+        /// The document controller of the layout document for the document which is being edited. The fields in this
+        /// document are courtesy documents used to display data from fields in the _documentController
         /// </summary>
-        private Dictionary<Key, TemplateModel> _keyToTemplateModel = new Dictionary<Key, TemplateModel>();
+        private DocumentCollectionFieldModelController _layoutDocumentCollection;
 
-        /// <summary>
-        /// dictionary of keys to field models for the field models on the document which is being edited
-        /// </summary>
-        private Dictionary<Key, FieldModelController> _keyToFieldModel = new Dictionary<Key, FieldModelController>();
-
-        public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
+        public InterfaceBuilder(DocumentViewModel viewModel,int width=800, int height=500)
         {
             this.InitializeComponent();
             Width = width;
             Height = height;
 
-            //throw new NotImplementedException();
-            //// set width and height to avoid Width = NaN ...
-            //Width = 500;
-            //Height = 500;
+            // set the view model, document model and view variables
+            _documentViewModel = new DocumentViewModel(viewModel.DocumentController) // create a new documentViewModel because  the view in the editor is different from the view in the workspace
+            {
+                IsDetailedUserInterfaceVisible = false,
+                IsMoveable = false
+            };
+            _documentController = viewModel.DocumentController;
 
-            //// set the view model, document model and view variables
-            //_documentViewModel = viewModel;
-            //_documentModel = viewModel.DocumentModel;
-            //_documentView = new DocumentView(_documentViewModel);
+            // get the layout field on the document being displayed
+            var layoutField = viewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            // get the layout document controller from the layout field
+            var layoutDocumentController = layoutField?.Data;
+            // get the documentCollectionFieldModelController from the layout document controller
+            _layoutDocumentCollection = layoutDocumentController?.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+            if (_layoutDocumentCollection == null)
+            {
+                throw new NotImplementedException("we can't edit views without a layout yet");
+            }
 
-            //// add the document view to the canvas in the center //TODO THIS IS NOT ACTUALLY CENTERED BECAUSE _documentView.Width WAS NaN
-            //Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2);
-            //Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2);
-            //xDocumentsPane.Canvas.Children.Add(_documentView);
 
-            //InitializeKeyDicts();
+            _documentView = new DocumentView(_documentViewModel);
+            xDocumentHolder.Children.Add(_documentView);
 
-            //ApplyEditable();
-        }
-
-        private void InitializeKeyDicts()
-        {
-            throw new NotImplementedException();
-            //_keyToTemplateModel = _documentViewModel.GetLayoutModel().Fields;
-            //_keyToFieldModel = _documentModel.EnumFields().ToDictionary(x => x.Key, x => x.Value);
+            ApplyEditable();
         }
 
         private void ApplyEditable()
         {
             List<FrameworkElement> editableElements = new List<FrameworkElement>();
 
-            foreach (var kvp in _keyToFieldModel)
+            // iterate over all the documents which define views
+            foreach (var layoutDocument in _layoutDocumentCollection.GetDocuments())
             {
-                var key = kvp.Key;
+                // get the controller for the data field that the layout document is parameterizing a view for
+                var referenceToData = layoutDocument.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                Debug.Assert(referenceToData != null, "The layout document customarily defines the data key as a reference to the data field that it is defining a layout for");
 
-                // if there is no template model for the key don't try to display it
-                if (!_keyToTemplateModel.ContainsKey(key))
-                    continue;
+                // use the layout document to generate a UI
+                var fieldView = layoutDocument.MakeViewUI();
 
-                var fieldModel = kvp.Value;
-
-                var fieldView = _keyToTemplateModel[key].MakeViewUI(fieldModel, null).First(); // bcz: Fix -- need to apply to all returned elements
-
-                var editableBorder = new EditableFieldFrame(key)
+                var editableBorder = new EditableFieldFrame(layoutDocument.GetId())
                 {
-                    EditableContent = fieldView,
-                    //Width = fieldView.Width,
-                    //Height = fieldView.Height
+                    EditableContent = fieldView.FirstOrDefault(),
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Top
                 };
-
-                Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Pos.X);
-                Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Pos.Y);
-                //var guideModel = new GuideLineModel();
-                //var guideViewModel = new GuideLineViewModel(guideModel);
-                //var guideView = new GuideLineView(guideViewModel);
-                //// maybe add guideView to documentView Canvas
-                //_guides.Add(guideViewModel);
 
                 editableBorder.FieldSizeChanged += EditableBorderOnFieldSizeChanged;
                 editableBorder.FieldPositionChanged += EditableBorderOnFieldPositionChanged;
@@ -128,11 +114,19 @@ namespace Dash
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
 
-            var key = editableFieldFrame.Key;
+            var layoutDocumentId = editableFieldFrame.DocumentId;
 
-            var templateModel = _keyToTemplateModel[key];
-            templateModel.Pos = new Point(templateModel.Pos.X + deltaX,
-                templateModel.Pos.Y + deltaY);
+            var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
+            Debug.Assert(editedLayoutDocument != null);
+            var translateController =
+                editedLayoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+            Debug.Assert(translateController != null);
+
+            var p = translateController.Data;
+            var newTranslation = new Point(p.X + deltaX, p.Y + deltaY);
+            translateController.Data = newTranslation;
+
+            editableFieldFrame.ApplyContentTranslationToFrame(newTranslation);
         }
 
         private void EditableBorderOnFieldSizeChanged(object sender, double newWidth, double newHeight)
@@ -140,11 +134,18 @@ namespace Dash
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
 
-            var key = editableFieldFrame.Key;
+            var layoutDocumentId = editableFieldFrame.DocumentId;
 
-            var templateModel = _keyToTemplateModel[key];
-            templateModel.Width = newWidth;
-            templateModel.Height = newHeight;
+            var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
+            Debug.Assert(editedLayoutDocument != null);
+            var widthFieldController =
+                editedLayoutDocument.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+            var heightFieldController =
+                editedLayoutDocument.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+            Debug.Assert(widthFieldController != null && heightFieldController != null);
+
+            heightFieldController.Data = newHeight;
+            widthFieldController.Data = newWidth;
         }
 
 

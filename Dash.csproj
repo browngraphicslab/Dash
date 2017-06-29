@@ -104,9 +104,12 @@
     <Compile Include="Controllers\ImageFieldModelController.cs" />
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
+    <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
+    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
+    <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
     <Compile Include="Converters\SafeDataToXamlConverter.cs" />
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
@@ -136,6 +139,7 @@
     <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
     <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModelController.cs" />
     <Compile Include="Models\OperatorModels\Set\UnionOperatorFieldModelController.cs" />
+    <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />

@@ -255,6 +255,7 @@ namespace Dash
         /// </summary>
         public static FieldModel DereferenceFieldModel(ReferenceFieldModel reference)
         {
+            Debug.Assert(reference != null);
             DocumentModel docModel = null;
             string fieldModelId = null;
             FieldModel fieldModel = null;
@@ -299,18 +300,10 @@ namespace Dash
         /// <summary>
         /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
         /// </summary>
-        public static FieldModelController DereferenceToRootFieldModel(FieldModelController reference)
-        {
-            var dereferencedFieldModel = DereferenceToRootFieldModel(reference.FieldModel);
-            return ContentController.GetController<FieldModelController>(dereferencedFieldModel.Id);
-        }
-
-        /// <summary>
-        /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
-        /// </summary>
         public static FieldModel DereferenceToRootFieldModel(FieldModel reference)
         {
-            var possibleFieldModel = reference;
+            Debug.Assert(reference != null);
+            FieldModel possibleFieldModel = reference;
             while (possibleFieldModel is ReferenceFieldModel)
             {
                 possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);
@@ -326,16 +319,34 @@ namespace Dash
         /// </summary>
         public static TFieldModelType DereferenceToRootFieldModel<TFieldModelType>(FieldModel reference) where TFieldModelType : FieldModel
         {
-            var possibleFieldModel = reference;
-            while (possibleFieldModel is ReferenceFieldModel)
-            {
-                possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);
-            }
+            var possibleFieldModel = DereferenceToRootFieldModel(reference);
 
             Debug.Assert(possibleFieldModel != null, "The chain of references ended in a null field");
             Debug.Assert(possibleFieldModel is TFieldModelType, "The chain of references ends in a field model which is not of the desired type");
             return possibleFieldModel as TFieldModelType;
         }
+
+        /// <summary>
+        /// Follows a <see cref="FieldModelController"/>/<see cref="FieldModelController"/> or chain of <see cref="ReferenceFieldModelController"/> to the "root" item, which is a <see cref="FieldModelController"/>
+        /// </summary>
+        public static FieldModelController DereferenceToRootFieldModel(FieldModelController reference)
+        {
+            var dereferencedFieldModel = DereferenceToRootFieldModel(reference.FieldModel);
+            var derefrencedFieldModelController = GetController<FieldModelController>(dereferencedFieldModel.Id);
+            return derefrencedFieldModelController;
+        }
+
+
+        /// <summary>
+        /// Follows a <see cref="ReferenceFieldModelController"/>/<see cref="FieldModelController"/> or chain of <see cref="ReferenceFieldModelController"/> to the "root" item, which is a <see cref="TFieldModelControllerType"/>
+        /// </summary>
+        public static TFieldModelControllerType DereferenceToRootFieldModel<TFieldModelControllerType>(FieldModelController reference) where TFieldModelControllerType : FieldModelController
+        {
+            var rootFieldModelController = DereferenceToRootFieldModel(reference);
+            Debug.Assert(rootFieldModelController is TFieldModelControllerType, "The chain of references ends in a field model controller which is not of the desired type");
+            return rootFieldModelController as TFieldModelControllerType;
+        }
+
 
         #endregion
     }

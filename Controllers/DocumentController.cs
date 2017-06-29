@@ -17,7 +17,7 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ObservableDictionary<Key, FieldModelController> Fields;
+        public Dictionary<Key, FieldModelController> Fields;
 
         public DocumentController(DocumentModel documentModel)
         {
@@ -28,11 +28,10 @@ namespace Dash
                 ContentController.GetControllers<FieldModelController>(documentModel.Fields.Values);
             // put the field controllers in an observable dictionary
             Fields =
-                new ObservableDictionary<Key, FieldModelController>(documentModel.Fields.ToDictionary(kvp => kvp.Key,
+                new Dictionary<Key, FieldModelController>(documentModel.Fields.ToDictionary(kvp => kvp.Key,
                     kvp => fieldControllers.First(controller => controller.GetId() == kvp.Value)));
 
             // Add Events
-            Fields.CollectionChanged += FieldsOnCollectionChanged;
         }
 
         /// <summary>
@@ -83,37 +82,6 @@ namespace Dash
         public override int GetHashCode()
         {
             return GetId().GetHashCode();
-        }
-
-        /// <summary>
-        ///     Called whenver the Data in <see cref="Fields" /> changes
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void FieldsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            //// we could fine tune this
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Add:
-            //        break;
-            //    case NotifyCollectionChangedAction.Move:
-            //        break;
-            //    case NotifyCollectionChangedAction.Remove:
-            //        break;
-            //    case NotifyCollectionChangedAction.Replace:
-            //        break;
-            //    case NotifyCollectionChangedAction.Reset:
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-            var freshList = sender as ObservableDictionary<Key, FieldModelController>;
-            Debug.Assert(freshList != null);
-            DocumentModel.Fields = freshList.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.GetId());
-
-            // Update Local
-            // Update Server
         }
 
         /// <summary>
@@ -386,10 +354,13 @@ namespace Dash
             else if (DocumentType == ApiSourceDoc.DocumentType) 
             {
                 uieles.AddRange(ApiSourceDoc.MakeView(this));
+            } else if (DocumentType == FreeformDocument.DocumentType)
+            {
+                uieles.AddRange(FreeformDocument.MakeView(this));
             }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
-                var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey) as FieldModelController;
+                var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey);
                 if (fieldModelController != null)
                 {
                     fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);

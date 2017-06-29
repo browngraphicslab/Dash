@@ -71,7 +71,7 @@ namespace Dash
 
         public void OpenInterfaceBuilder(DocumentViewModel vm, Point position)
         {
-            var interfaceBuilder = new InterfaceBuilder(vm, 100, 100)
+            var interfaceBuilder = new InterfaceBuilder(vm)
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top
