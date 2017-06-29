@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -262,6 +263,16 @@ namespace Dash
             FieldSizeChanged?.Invoke(this, Width, Height);
 
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Whenever content is translated the editable field frame has to apply that translation to itself.
+        /// </summary>
+        /// <param name="translation"></param>
+        public void ApplyContentTranslationToFrame(Point translation)
+        {
+            _overlayCanvas.RenderTransform =
+                PointToTranslateTransformConverter.Instance.ConvertDataToXaml(translation);
         }
     }
 }

@@ -125,8 +125,8 @@ namespace Dash
             var p = translateController.Data;
             var newTranslation = new Point(p.X + deltaX, p.Y + deltaY);
             translateController.Data = newTranslation;
-            
-            editableFieldFrame.Margin = new Thickness(newTranslation.X, newTranslation.Y, 0, 0);
+
+            editableFieldFrame.ApplyContentTranslationToFrame(newTranslation);
         }
 
         private void EditableBorderOnFieldSizeChanged(object sender, double newWidth, double newHeight)

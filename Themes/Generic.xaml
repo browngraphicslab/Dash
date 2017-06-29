@@ -39,9 +39,8 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:EditableFieldFrame">
-                    <Grid>
+                    <Grid Width="Auto" Height="Auto">
                         <Border x:Name="PART_Container"
-                                VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}">
@@ -52,7 +51,7 @@
 
 
                         </Border>
-                        <Canvas x:Name="PART_OverlayCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Canvas>
+                        <Canvas x:Name="PART_OverlayCanvas"></Canvas>
                     </Grid>
 
                 </ControlTemplate>
