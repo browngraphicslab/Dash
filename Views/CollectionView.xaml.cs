@@ -19,6 +19,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation.Collections;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.Storage;
+using Windows.UI.Xaml.Media.Imaging;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -41,6 +43,8 @@ namespace Dash
             get { return Grid; }
             set { Grid = value; }
         }
+
+        public bool KeepItemsOnMove { get; set; } = true;
 
         public CollectionView(CollectionViewModel vm)
         {
@@ -919,46 +923,47 @@ namespace Dash
 
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = this;
             foreach(var item in e.Items)
-                carrier.Payload.Add(item as DocumentViewModel);            
+                carrier.Payload.Add((item as DocumentViewModel).DocumentController);
+            e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            //throw new NotImplementedException();
+            if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
+                ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
+            Debug.WriteLine(args.DropResult);
+            KeepItemsOnMove = true;
+            ItemsCarrier.GetInstance().Payload.Clear();
+            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
         }
 
 
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop(object sender, DragEventArgs e)
         {
-            e.AcceptedOperation = DataPackageOperation.Move;
-            var controllers = ItemsCarrier.GetInstance().Payload.Select(viewModel => viewModel.DocumentController).ToList();
-            ViewModel.AddDocuments(controllers);
+            e.Handled = true;
+            ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
+            ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
         }
 
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("hi");
-            e.AcceptedOperation |= DataPackageOperation.Move;
+            e.Handled = true;
+            e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        private class ItemsCarrier
+        private void ChangeDocuments(List<DocumentController> docControllers, bool add)
         {
-            private static ItemsCarrier carrier = new ItemsCarrier();
-            public List<DocumentViewModel> Payload;
-            public CollectionView Source;
-            private ItemsCarrier()
-            {
-                Payload = new List<DocumentViewModel>();
-            }
-
-            public static ItemsCarrier GetInstance()
-            {
-                return carrier;
-            }
+            var parentDoc = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.DocumentController;
+            var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController;
+            Debug.WriteLine(controller == null);
+            if (controller != null)
+                foreach (var item in docControllers)
+                    if (add) controller.AddDocument(item);
+                    else controller.RemoveDocument(item);
         }
     }
 }

@@ -67,7 +67,7 @@ namespace Dash
         #region Private & Backing variables
         
 
-        private double _cellSize = 400;
+        private double _cellSize = 300;
         private double _outerGridWidth;
         private double _outerGridHeight;
         private double _containerGridHeight;
@@ -312,7 +312,7 @@ namespace Dash
             ProportionalDraggerFill = new SolidColorBrush(Color.FromArgb(255, 139, 139, 139));
             ProportionalDraggerStroke = new SolidColorBrush(Colors.Transparent);
 
-            CellSize = 400;
+            CellSize = 300;
             ListViewVisibility = Visibility.Collapsed;
             GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             GridViewVisibility = Visibility.Visible;

@@ -189,26 +189,18 @@ namespace Dash
         {
             var children = MainDocument.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
             if (children != null)
-            {
                 children.AddDocument(docModel);
-
-                //if (where.HasValue)
-                //{
-                //    docModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(((Point)where).X), false);
-                //    docModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(((Point)where).Y), false);
-                //}
-            }
         }
 
         private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             var twoImages = new TwoImages(false).Document;
             var twoImages2 = new TwoImages(false).Document;
-            var numbers = new Numbers().Document;
+            var numbers = new Numbers(1,1,1).Document;
 
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {twoImages.DocumentModel, twoImages2.DocumentModel, numbers.DocumentModel}) }
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {numbers.DocumentModel}) }
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
@@ -221,22 +213,6 @@ namespace Dash
             DisplayDocument(col);
 
             AddAnotherLol();
-            /*
-            Dictionary<Key, FieldModel> fields2 = new Dictionary<Key, FieldModel>
-            {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {new Numbers().Document.DocumentModel}) }
-            };
-
-            var col2 = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields2, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc2 = new GenericCollection(new ReferenceFieldModel(col2.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var documentFieldModel2 = new DocumentModelFieldModel(layoutDoc2.DocumentModel);
-            var layoutController2 = new DocumentFieldModelController(documentFieldModel2);
-            ContentController.AddModel(documentFieldModel2);
-            ContentController.AddController(layoutController2);
-            col2.SetField(DashConstants.KeyStore.LayoutKey, layoutController2, true);
-            DisplayDocument(col2);
-            */
-
         }
 
         private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
@@ -246,12 +222,23 @@ namespace Dash
         private void AddAnotherLol()
         {
             // collection no.2
-            var numbers = new Numbers().Document;
+            var numbers = new Numbers(2,2,2).Document;
+            var numbers2 = new Numbers(3,3,3).Document;
             var twoImages2 = new TwoImages(false).Document;
 
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] { twoImages2.DocumentModel, numbers.DocumentModel}) }
+                {
+                    DocumentCollectionFieldModelController.CollectionKey,
+                    new DocumentCollectionFieldModel(
+                                                        new DocumentModel[] 
+                                                        {
+                                                            
+                                                            numbers.DocumentModel,
+                                                            numbers2.DocumentModel
+                                                        }
+                                                    )
+                }
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
@@ -649,14 +636,14 @@ namespace Dash
             public static Key Number2FieldKey = new Key("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
             public static Key Number3FieldKey = new Key("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
 
-            public Numbers()
+            public Numbers(int num1, int num2, int num3)
             {
                 // create a document with two images
                 var fields = new Dictionary<Key, FieldModel>
                 {
-                    [Number1FieldKey] = new NumberFieldModel(789),
-                    [Number2FieldKey] = new NumberFieldModel(23),
-                    [Number3FieldKey] = new NumberFieldModel(8)
+                    [Number1FieldKey] = new NumberFieldModel(num1),
+                    [Number2FieldKey] = new NumberFieldModel(num2),
+                    [Number3FieldKey] = new NumberFieldModel(num3)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NumbersType)).GetReturnedDocumentController();
 
@@ -665,8 +652,6 @@ namespace Dash
                 var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey)).Document;
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
-
-                //SetLayoutForDocument(stackPan.DocumentModel);
             }
 
         }
@@ -674,9 +659,9 @@ namespace Dash
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages(false).Document);
-            DisplayDocument(new Numbers().Document);
-            DisplayDocument(new NestedDocExample(true).Document);
-            DisplayDocument(new NestedDocExample(false).Document);
+            DisplayDocument(new Numbers(234,234,234).Document);
+            //DisplayDocument(new NestedDocExample(true).Document);
+            //DisplayDocument(new NestedDocExample(false).Document);
         }
 
 
@@ -698,22 +683,26 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private async void XCanvas_Drop(object sender, DragEventArgs e) {
+        private async void XCanvas_Drop(object sender, DragEventArgs e)
+        {
             Image dragged = new Image();
             string url = "";
-            
+
             // load items dragged from solution explorer
-            if (e.DataView.Contains(StandardDataFormats.StorageItems)) {
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
                 var items = await e.DataView.GetStorageItemsAsync();
 
-                if (items.Any()) {
+                if (items.Any())
+                {
                     var storageFile = items[0] as StorageFile;
                     var contentType = storageFile.ContentType;
 
                     StorageFolder folder = ApplicationData.Current.LocalFolder;
 
                     // parse images dropped in
-                    if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg") {
+                    if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg")
+                    {
                         StorageFile newFile = await storageFile.CopyAsync(folder, storageFile.Name, NameCollisionOption.GenerateUniqueName);
                         url = newFile.Path;
                         BitmapImage bitmapImg = new BitmapImage();
@@ -723,7 +712,8 @@ namespace Dash
                     }
 
                     // parse text files dropped in
-                    if (contentType == "text/plain") {
+                    if (contentType == "text/plain")
+                    {
                         // TODO: TEXT FILES
                         return;
                     }
@@ -736,7 +726,8 @@ namespace Dash
             // make document
             // generate single-image document model
             ImageFieldModel m = new ImageFieldModel(new Uri(url));
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel> {
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            {
                 [new Key("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
             };
 
@@ -744,7 +735,7 @@ namespace Dash
             DisplayDocument(col);
         }
 
-        private void XCanvas_DragOver_1(object sender, DragEventArgs e)
+        public void XCanvas_DragOver_1(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Copy;
         }

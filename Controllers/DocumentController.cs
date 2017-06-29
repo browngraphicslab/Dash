@@ -12,6 +12,7 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        public int debugint;
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
