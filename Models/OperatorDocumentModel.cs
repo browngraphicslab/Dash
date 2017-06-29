@@ -37,7 +37,7 @@ namespace Dash
                 .GetReturnedDocumentController();
             ContentController.GetController(doc.GetId());
 
-            var layoutDoc = new MainPage.OperatorBox(new ReferenceFieldModel(doc.GetId(), OperatorKey)).Document.DocumentModel;
+            var layoutDoc = new CourtesyDocuments.OperatorBox(new ReferenceFieldModel(doc.GetId(), OperatorKey)).Document.DocumentModel;
             var documentFieldModel = new DocumentModelFieldModel(layoutDoc);
             var layoutController = new DocumentFieldModelController(documentFieldModel);
             ContentController.AddModel(documentFieldModel);

@@ -105,6 +105,7 @@
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
     <Compile Include="Controllers\PointFieldModelController.cs" />
+    <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
@@ -196,6 +197,7 @@
       <DependentUpon>PDFViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Source.cs" />
+    <Compile Include="Util\CourtesyDocuments.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
     <Compile Include="Util\JsonToDashUtil.cs" />

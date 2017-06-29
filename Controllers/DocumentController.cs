@@ -292,7 +292,7 @@ namespace Dash
                 {
                     var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
                     var label = new TextBlock() { Text = f.Key.Name + ": " };
-                    var dBox = new DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var dBox = new CourtesyDocuments.DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
                     foreach (var ele in dBox.MakeViewUI())
@@ -326,36 +326,36 @@ namespace Dash
         {
             var uieles = new List<FrameworkElement>();
 
-            if (DocumentType == TextingBox.DocumentType)
+            if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
             {
-                uieles.AddRange(TextingBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.TextingBox.MakeView(this));
             }
-            else if (DocumentType == ImageBox.DocumentType)
+            else if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
             {
-                uieles.AddRange(ImageBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.ImageBox.MakeView(this));
             }
-            else if (DocumentType == StackingPanel.DocumentType)
+            else if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
-                uieles.AddRange(StackingPanel.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.StackingPanel.MakeView(this));
             }
-            else if (DocumentType == GenericCollection.DocumentType)
+            else if (DocumentType == CourtesyDocuments.GenericCollection.DocumentType)
             {
-                uieles.AddRange(GenericCollection.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.GenericCollection.MakeView(this));
             }
-            else if (DocumentType == OperatorBox.DocumentType)
+            else if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
-                uieles.AddRange(OperatorBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.OperatorBox.MakeView(this));
             } 
-            else if (DocumentType == ApiSourceCreatorDoc.DocumentType) 
+            else if (DocumentType == CourtesyDocuments.ApiSourceCreatorDoc.DocumentType) 
             {
-                uieles.AddRange(ApiSourceCreatorDoc.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.ApiSourceCreatorDoc.MakeView(this));
             } 
-            else if (DocumentType == ApiSourceDoc.DocumentType) 
+            else if (DocumentType == CourtesyDocuments.ApiSourceDoc.DocumentType) 
             {
-                uieles.AddRange(ApiSourceDoc.MakeView(this));
-            } else if (DocumentType == FreeformDocument.DocumentType)
+                uieles.AddRange(CourtesyDocuments.ApiSourceDoc.MakeView(this));
+            } else if (DocumentType == CourtesyDocuments.FreeformDocument.DocumentType)
             {
-                uieles.AddRange(FreeformDocument.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.FreeformDocument.MakeView(this));
             }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {

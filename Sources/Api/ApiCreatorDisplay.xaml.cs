@@ -91,7 +91,7 @@ namespace Dash.Sources.Api {
             ApiSource newApi = new ApiSource(requestType, xApiURLTB.Text, headers, parameters,
                 authParameters, authHeaders, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
-            MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
+            MainPage.Instance.DisplayDocument(new CourtesyDocuments.ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
         }
     }
