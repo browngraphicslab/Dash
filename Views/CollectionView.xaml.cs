@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -96,8 +97,58 @@ namespace Dash
 
         private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            //TODO implement itemschanged event in here
-            throw new NotImplementedException();
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                foreach (var eNewItem in e.NewItems)
+                {
+                    var docVM = eNewItem as DocumentViewModel;
+                    Debug.Assert(docVM != null);
+                    OperatorFieldModelController ofm =
+                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                            OperatorFieldModelController;
+                    if (ofm != null)
+                    {
+                        foreach (var inputKey in ofm.InputKeys)
+                        {
+                            foreach (var outputKey in ofm.OutputKeys)
+                            {
+                                ReferenceFieldModel irfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                                ReferenceFieldModel orfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
+                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (var eOldItem in e.OldItems)
+                {
+                    var docVM = eOldItem as DocumentViewModel;
+                    Debug.Assert(docVM != null);
+                    OperatorFieldModelController ofm =
+                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                            OperatorFieldModelController;
+                    if (ofm != null)
+                    {
+                        foreach (var inputKey in ofm.InputKeys)
+                        {
+                            foreach (var outputKey in ofm.OutputKeys)
+                            {
+                                ReferenceFieldModel irfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                                ReferenceFieldModel orfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                                _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
+                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
@@ -115,7 +166,7 @@ namespace Dash
                         {
                             ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
                             ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                            _graph.AddEdge(irfm, orfm);
+                            _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id, ContentController.DereferenceToRootFieldModel(orfm).Id);
                         }
                     }
                 }
@@ -623,7 +674,7 @@ namespace Dash
         /// <summary>
         /// Helper class to detect cycles 
         /// </summary>
-        private Graph _graph = new Graph();
+        private Graph<string> _graph = new Graph<string>();
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
         /// </summary>
@@ -798,23 +849,21 @@ namespace Dash
             }
             if (_currReference.IsOutput)
             {
-                _graph.AddEdge(_currReference.ReferenceFieldModel,
-                    ioReference.ReferenceFieldModel);
+                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
             }
             else
             {
-                _graph.AddEdge(ioReference.ReferenceFieldModel,
-                    _currReference.ReferenceFieldModel); 
+                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
             }
             if (_graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
                 }
                 else
                 {
-                    _graph.RemoveEdge(ioReference.ReferenceFieldModel, _currReference.ReferenceFieldModel);
+                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");

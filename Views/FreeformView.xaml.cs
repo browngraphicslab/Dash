@@ -142,7 +142,7 @@ namespace Dash
         /// <summary>
         /// Helper class to detect cycles 
         /// </summary>
-        private Graph _graph = new Graph(); 
+        private Graph<ReferenceFieldModel> _graph = new Graph<ReferenceFieldModel>(); 
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
         /// </summary>

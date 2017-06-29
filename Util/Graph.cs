@@ -7,33 +7,33 @@ using DashShared;
 
 namespace Dash
 {
-    public class Graph
+    public class Graph<T>
     {
         /// <summary>
         /// Dictionary mapping input ReferenceFieldModel to the list of output ReferenceFieldModels
         /// </summary>
-        private Dictionary<ReferenceFieldModel, List<ReferenceFieldModel>> _edges = new Dictionary<ReferenceFieldModel, List<ReferenceFieldModel>>(); 
+        private Dictionary<T, List<T>> _edges = new Dictionary<T, List<T>>(); 
 
-        public void AddEdge(ReferenceFieldModel inputRef, ReferenceFieldModel outputRef)
+        public void AddEdge(T startNode, T endNode)
         {
-            if (_edges.ContainsKey(inputRef))
-                _edges[inputRef].Add(outputRef);
+            if (_edges.ContainsKey(startNode))
+                _edges[startNode].Add(endNode);
             else
-                _edges[inputRef] = new List<ReferenceFieldModel> { outputRef };
+                _edges[startNode] = new List<T> { endNode };
         }
 
-        public void RemoveEdge(ReferenceFieldModel inputRef, ReferenceFieldModel outputRef)
+        public void RemoveEdge(T startNode, T endNode)
         {
-            if (_edges.ContainsKey(inputRef))
+            if (_edges.ContainsKey(startNode))
             {
-                _edges[inputRef].Remove(outputRef); 
+                _edges[startNode].Remove(endNode); 
             }
         }
 
         public bool IsCyclic()
         {
-            HashSet<ReferenceFieldModel> visited = new HashSet<ReferenceFieldModel>();
-            HashSet<ReferenceFieldModel> recStack = new HashSet<ReferenceFieldModel>();
+            HashSet<T> visited = new HashSet<T>();
+            HashSet<T> recStack = new HashSet<T>();
 
 
             foreach (var edge in _edges)
@@ -46,18 +46,18 @@ namespace Dash
         }
 
 
-        private bool IsCyclicUtil(ReferenceFieldModel input, ref HashSet<ReferenceFieldModel> visited, ref HashSet<ReferenceFieldModel> recStack)
+        private bool IsCyclicUtil(T startNode, ref HashSet<T> visited, ref HashSet<T> recStack)
         {
-            if (!visited.Contains(input))
+            if (!visited.Contains(startNode))
             {
                 // Mark the current node as visited and part of recursion stack
-                visited.Add(input);
-                recStack.Add(input);
+                visited.Add(startNode);
+                recStack.Add(startNode);
 
                 // Recur for all the vertices adjacent to this vertex
-                if (_edges.ContainsKey(input))
+                if (_edges.ContainsKey(startNode))
                 {
-                    foreach (var edge in _edges[input])
+                    foreach (var edge in _edges[startNode])
                     {
                         if (!visited.Contains(edge) && IsCyclicUtil(edge, ref visited, ref recStack))
                             return true;
@@ -66,7 +66,7 @@ namespace Dash
                     }
                 }
             }
-            recStack.Remove(input);
+            recStack.Remove(startNode);
 
             return false; 
         }
