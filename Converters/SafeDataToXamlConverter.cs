@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using Windows.UI.Xaml.Data;
 
 namespace Dash
@@ -9,7 +10,7 @@ namespace Dash
     /// </summary>
     /// <typeparam name="TData">The data type which is going to be converted into xaml</typeparam>
     /// <typeparam name="TXaml">The xaml type which is going to be converted into data</typeparam>
-    public abstract class SafeDataToXamlConverter<TData, TXaml> : IValueConverter
+    public abstract class SafeDataToXamlConverter<TData, TXaml> : IValueConverter 
     {
         /// <summary>
         ///     A method which is called by XAML and binding. You should use <see cref="ConvertDataToXaml" /> instead
@@ -22,7 +23,9 @@ namespace Dash
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             Debug.Assert(value is TData, "You are trying to convert data into xaml, but the data is of the wrong type");
-            Debug.Assert(typeof(TXaml) == targetType,
+
+            // TODO somehow make sure that this assert works. it started failing on me
+            Debug.Assert(targetType.IsAssignableFrom(typeof(TXaml)), 
                 "You are trying to get a xaml type which this converter does not produce");
             return ConvertDataToXaml((TData) value);
         }
@@ -38,7 +41,7 @@ namespace Dash
         public object ConvertBack(object value, Type targetType, object parameter, string language)
         {
             Debug.Assert(value is TXaml, "You are trying to convert xaml into data, but the xaml is of the wrong type");
-            Debug.Assert(typeof(TData) == targetType,
+            Debug.Assert(targetType.IsAssignableFrom(typeof(TData)),
                 "You are trying to get a data type which this converter does not produce");
             return ConvertXamlToData((TXaml) value);
         }

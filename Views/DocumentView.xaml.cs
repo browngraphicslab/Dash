@@ -53,6 +53,14 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
         }
 
+        public DocumentView(DocumentViewModel documentViewModel) : this()
+        {
+            DataContext = documentViewModel;
+
+            // reset the fields on the documetn to be those displayed by the documentViewModel
+            ResetFields(documentViewModel);
+        }
+
         /// <summary>
         /// Resizes the CollectionView according to the increments in width and height. 
         /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
@@ -190,14 +198,6 @@ namespace Dash
                 ProportionalScaling = false;
             }
         }
-        public DocumentView(DocumentViewModel documentViewModel)
-        {
-            InitializeComponent();
-            DataContext = documentViewModel;
-
-            // reset the fields on the documetn to be those displayed by the documentViewModel
-            ResetFields(documentViewModel);
-        }
 
         /// <summary>
         /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
@@ -279,9 +279,28 @@ namespace Dash
             ResetFields(_vm);
             _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);
             _vm.IODragEnded += reference => IODragEnded?.Invoke(reference);
-            // Add any methods
-            //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-            //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+
+            #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
+
+            _vm.PropertyChanged += (o, eventArgs) =>
+            {
+                if (eventArgs.PropertyName == "IsMoveable")
+                {
+                    if (_vm.IsMoveable)
+                    {
+                        manipulator.AddAllAndHandle();
+                    }
+                    else
+                    {
+                        manipulator.RemoveAllButHandle();
+                    }
+                }
+            };
+
+            if (_vm.IsMoveable) manipulator.AddAllAndHandle();
+            else manipulator.RemoveAllButHandle();
+
+            #endregion
         }
 
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)

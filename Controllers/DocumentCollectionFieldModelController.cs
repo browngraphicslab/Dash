@@ -70,7 +70,8 @@ namespace Dash
 
         public List<DocumentController> GetDocuments()
         {
-            return _documents;
+            // since we want people to set the documents through methods lets just pass a copy of the model's list
+            return _documents.ToList();
         }
 
         protected override void UpdateValue(FieldModelController fieldModel)

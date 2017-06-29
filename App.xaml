@@ -139,6 +139,7 @@
         <!-- SAMPLE NODE HERE-->
 
         <!-- MISC. STYLES-->
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
 
     </Application.Resources>
 </Application>
