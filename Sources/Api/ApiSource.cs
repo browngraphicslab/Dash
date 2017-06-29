@@ -298,7 +298,6 @@ namespace Dash.Sources.Api {
             responseAsDocuments = new List<DocumentModel>();
             var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
-                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();

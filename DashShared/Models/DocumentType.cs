@@ -9,8 +9,7 @@ namespace DashShared
     public class DocumentType : EntityBase
     {
         // reserved default display for layoutless documents
-        // TODO: make a less garbage key for this
-        public static DocumentType DefaultType = new DocumentType("default","default");
+        public static DocumentType DefaultType = new DocumentType("B492D995-701B-4703-B867-8C957762E352","Default");
 
         /// <summary>
         /// The actual name of the type which is displayed but can change

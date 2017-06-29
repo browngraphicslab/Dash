@@ -49,7 +49,6 @@ namespace Dash
                         return new IntersectionOperatorModelController(model as OperatorFieldModel);
                     case "Union":
                         return new UnionOperatorFieldModelController(model as OperatorFieldModel);
-                        // TODO add shit to this 
                 }
                 //return new OperatorFieldModelController(model as OperatorFieldModel); 
             }

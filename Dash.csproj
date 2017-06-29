@@ -126,17 +126,15 @@
     <Compile Include="Models\FreeformModel.cs" />
     <Compile Include="Models\GuideLineModel.cs" />
     <Compile Include="Models\ImageFieldModel.cs" />
-    <Compile Include="Models\LayoutModel.cs" />
-    <Compile Include="Models\LayoutModelFieldModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModelController.cs" />
-    <Compile Include="Models\OperatorModels\ImageOperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorModelController.cs" />
+    <Compile Include="Controllers\Operators\ImageOperatorFieldModelController.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
-    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModelController.cs" />
-    <Compile Include="Models\OperatorModels\Set\UnionOperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\Set\IntersectionOperatorModelController.cs" />
+    <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
@@ -372,6 +370,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Models\OperatorModels\Set\" />
     <Folder Include="ServerClient\SignalRHubProxies\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
