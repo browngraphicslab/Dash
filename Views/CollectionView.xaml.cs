@@ -21,6 +21,7 @@ using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
+using System.Collections.ObjectModel;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -941,8 +942,25 @@ namespace Dash
             MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
         }
 
+        private void ChangeDocuments(List<DocumentController> docControllers, bool add)
+        {
+            var parentDoc = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.DocumentController;
+            var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController 
+                          ?? parentDoc.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;      
+            if (controller != null)
+                foreach (var item in docControllers)
+                    if (add) controller.AddDocument(item);
+                    else controller.RemoveDocument(item);
 
-        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop(object sender, DragEventArgs e)
+        }
+
+        private void CollectionGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
+            e.AcceptedOperation = DataPackageOperation.Move;
+        }
+
+        private void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
             e.Handled = true;
             RefreshItemsBinding();
@@ -950,35 +968,14 @@ namespace Dash
             ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
         }
 
-        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-            e.AcceptedOperation = DataPackageOperation.Move;
-        }
-
-        private void ChangeDocuments(List<DocumentController> docControllers, bool add)
-        {
-            var parentDoc = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.DocumentController;
-            var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController;
-            if (controller != null)
-                foreach (var item in docControllers)
-                    if (add) controller.AddDocument(item);
-                    else controller.RemoveDocument(item);
-        }
-
         private void RefreshItemsBinding()
         {
-            if(ViewModel.GridViewVisibility == Visibility.Visible)
-            {
-                GridView.ItemsSource = null;
-                GridView.ItemsSource = ViewModel.DataBindingSource;
-            }
-            else if(ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility == Visibility.Visible)
+            if (ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility == Visibility.Visible)
             {
                 GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = null;
                 GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = ViewModel.DataBindingSource;
             }
-            else
+            else if (ViewModel.ListViewVisibility == Visibility.Visible)
             {
                 HListView.ItemsSource = null;
                 HListView.ItemsSource = ViewModel.DataBindingSource;

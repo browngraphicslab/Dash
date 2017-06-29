@@ -11,7 +11,10 @@
     ManipulationStarted="Grid_OnManipulationStarted">
 
     <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}">
-        <Grid x:Name="DocumentViewContainerGrid"  
+        <Grid x:Name="DocumentViewContainerGrid" 
+                  AllowDrop="True" 
+                  DragOver="CollectionGrid_DragOver" 
+                  Drop="CollectionGrid_Drop"              
                   HorizontalAlignment="Stretch" 
                   Margin="0,30,0,30" 
                   VerticalAlignment="Stretch"   
@@ -28,10 +31,15 @@
                 <RectangleGeometry x:Name="ClipRect"/>
             </Grid.Clip>
             <Grid x:Name="FreeformGrid" Visibility="{Binding GridViewVisibility}">
-                <ItemsControl x:Name="GridView" x:FieldModifier="public" Padding="5" ItemsSource="{Binding DataBindingSource}">
+                <ItemsControl x:Name="GridView" 
+                              x:FieldModifier="public" 
+                              ItemsSource="{Binding DataBindingSource}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <Canvas x:Name="CollectionCanvas" x:FieldModifier="public"></Canvas>
+                            <Canvas x:Name="CollectionCanvas" 
+                                    x:FieldModifier="public"                              
+                                    Background="Transparent">
+                            </Canvas>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -67,9 +75,7 @@
                           CanReorderItems="True"
                           AllowDrop="True"
                           DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
-                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted"
-                          Drop="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop"
-                          DragOver="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver">
+                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted">
                     <GridView.ItemTemplate>
                         <DataTemplate>
                             <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 

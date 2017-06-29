@@ -47,7 +47,7 @@
         <Button x:Name="xEditButton" 
                 Width="35"
                 Height="35"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,50,0" Tapped="XEditButton_OnTapped" Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Tapped="XEditButton_OnTapped" Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" />
             <Button.Template>
                 <ControlTemplate TargetType="Button">

@@ -37,7 +37,7 @@ namespace Dash
             get { return _dataBindingSource; }
             set
             {
-                SetProperty(ref _dataBindingSource, value); 
+                SetProperty(ref _dataBindingSource, value);
             }
         }
 
