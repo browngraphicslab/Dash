@@ -73,9 +73,9 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            ////TODO this seriously slows down the document 
-            //var jsonDoc = JsonToDashUtil.RunTests();
-            //DisplayDocument(jsonDoc);
+            //TODO this seriously slows down the document 
+            var jsonDoc = JsonToDashUtil.RunTests();
+            DisplayDocument(jsonDoc);
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -494,7 +494,7 @@ namespace Dash
                 {
                     [DashConstants.KeyStore.DataKey] = refToText,
                     [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(200),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(200),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(30),
                     [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0, 0)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
@@ -506,12 +506,6 @@ namespace Dash
             }
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
-                // use the reference to the image to get the image field model controller
-                var retToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-                Debug.Assert(retToText != null);
-                var textFieldModelController = ContentController.DereferenceToRootFieldModel<TextFieldModelController>(retToText);
-                Debug.Assert(textFieldModelController != null);
-
                 // the text field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
                 // X, Y, Width, and Height etc....
@@ -519,13 +513,34 @@ namespace Dash
                 // create the textblock
                 var tb = new TextBlock();
 
-                // make text update when changed
-                var sourceBinding = new Binding
+                // use the reference to the text to get the text field model controller
+                var retToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                Debug.Assert(retToText != null);
+                var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText);
+                if (fieldModelController is TextFieldModelController)
                 {
-                    Source = textFieldModelController,
-                    Path = new PropertyPath(nameof(textFieldModelController.Data))
-                };
-                tb.SetBinding(TextBlock.TextProperty, sourceBinding);
+                    var textFieldModelController = fieldModelController as TextFieldModelController;
+                    Debug.Assert(textFieldModelController != null);
+                    // make text update when changed
+                    var sourceBinding = new Binding
+                    {
+                        Source = textFieldModelController,
+                        Path = new PropertyPath(nameof(textFieldModelController.Data))
+                    };
+                    tb.SetBinding(TextBlock.TextProperty, sourceBinding);
+
+                } else if (fieldModelController is NumberFieldModelController)
+                {
+                    var numFieldModelController = fieldModelController as NumberFieldModelController;
+                    Debug.Assert(numFieldModelController != null);
+                    // make text update when changed
+                    var sourceBinding = new Binding
+                    {
+                        Source = numFieldModelController,
+                        Path = new PropertyPath(nameof(numFieldModelController.Data))
+                    };
+                    tb.SetBinding(TextBlock.TextProperty, sourceBinding);
+                }
 
                 // bind the text height
                 var heightController = GetHeightFieldController(docController);
@@ -853,9 +868,9 @@ namespace Dash
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages(false).Document);
-            //DisplayDocument(new Numbers().Document);
-            //DisplayDocument(new NestedDocExample(true).Document);
-            //DisplayDocument(new NestedDocExample(false).Document);
+            DisplayDocument(new Numbers().Document);
+            DisplayDocument(new NestedDocExample(true).Document);
+            DisplayDocument(new NestedDocExample(false).Document);
         }
 
 
