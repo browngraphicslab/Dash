@@ -28,6 +28,7 @@ using Dash.Sources.Api;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -79,6 +80,8 @@ namespace Dash
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
 
+            RadialMenuView radialMenu = new RadialMenuView(xCanvas);
+
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -88,6 +91,11 @@ namespace Dash
 
 
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            AddOperator();
+        }
+
+        public void AddOperator()
         {
             //Create Operator document
             var opModel =
@@ -200,7 +208,7 @@ namespace Dash
             }
         }
 
-        private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             var twoImages = new TwoImages(false).Document;
             var twoImages2 = new TwoImages(false).Document;
@@ -239,7 +247,7 @@ namespace Dash
 
         }
 
-        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
             DisplayDocument(new ApiSourceCreatorDoc().Document);
         }
 
@@ -671,7 +679,7 @@ namespace Dash
 
         }
         
-        private void AddDocuments(object sender, TappedRoutedEventArgs e)
+        public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages(false).Document);
             DisplayDocument(new Numbers().Document);

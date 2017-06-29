@@ -27,6 +27,7 @@
             <Grid.Clip>
                 <RectangleGeometry x:Name="ClipRect"/>
             </Grid.Clip>
+            <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
             <Grid x:Name="FreeformGrid" Visibility="{Binding GridViewVisibility}">
                 <ItemsControl x:Name="GridView" 
                                   x:FieldModifier="public" 

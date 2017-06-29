@@ -17,6 +17,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -50,6 +51,8 @@ namespace Dash
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
             Loaded += (s, e) => ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            InkSource.Presenters.Add(xInkCanvas.InkPresenter);
+            xInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
         }
 
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
