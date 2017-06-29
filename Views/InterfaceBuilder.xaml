@@ -21,9 +21,8 @@
             <Grid x:Name="xKeyValuePane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0" Background="White" BorderBrush="Black" BorderThickness="0,0,1,0">
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Key Value Menu</TextBlock>
             </Grid>
-            <Viewbox x:Name="xDocumentsPane" Grid.Column="1" Stretch="Uniform" StretchDirection="Both">
-                <Grid x:Name="xDocumentHolder" Margin="50"/>
-            </Viewbox>
+            <Grid x:Name="xDocumentHolder" Grid.Column="1" Margin="50"/>
+
             <Grid x:Name="xSettingsPane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Settings Menu</TextBlock>
             </Grid>

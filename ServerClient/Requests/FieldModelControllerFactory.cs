@@ -32,6 +32,10 @@ namespace Dash
             {
                 return new ReferenceFieldModelController(model as ReferenceFieldModel);
             }
+            if (model is PointFieldModel)
+            {
+                return new PointFieldModelController(model as PointFieldModel);
+            }
             if (model is OperatorFieldModel)
             {
                 var opFM = model as OperatorFieldModel;

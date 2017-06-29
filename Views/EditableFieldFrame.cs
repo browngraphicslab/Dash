@@ -21,9 +21,9 @@ namespace Dash
     public class EditableFieldFrame : Control
     {
         /// <summary>
-        /// The key associated with this editable field frame
+        /// The id associated with this editable field frame
         /// </summary>
-        public Key Key { get; private set; }
+        public string DocumentId { get; private set; }
 
 
         public delegate void PositionChangedHandler(object sender, double deltaX, double deltaY);
@@ -81,9 +81,9 @@ namespace Dash
         public static readonly DependencyProperty EditableContentProperty = DependencyProperty.Register(
             "EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(default(object)));
 
-        public EditableFieldFrame(Key key)
+        public EditableFieldFrame(string documentId)
         {
-            Key = key;
+            DocumentId = documentId;
             DefaultStyleKey = typeof(EditableFieldFrame);
         }
 

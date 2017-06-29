@@ -18,7 +18,7 @@
         <Grid.Clip>
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
         </Grid.Clip>
-        <Grid x:Name="XGrid"
+        <Grid x:Name="XGrid" Background="LightGray"
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
                 RightTapped="Grid_RightTapped"

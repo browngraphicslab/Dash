@@ -69,10 +69,9 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            //TODO this seriously slows down the document 
-            var jsonDoc = JsonToDashUtil.RunTests();
-            DisplayDocument(jsonDoc);
-
+            ////TODO this seriously slows down the document 
+            //var jsonDoc = JsonToDashUtil.RunTests();
+            //DisplayDocument(jsonDoc);
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -377,7 +376,10 @@ namespace Dash
                 // create a layout for the image
                 var fields = new Dictionary<Key, FieldModel>
                 {
-                    [DashConstants.KeyStore.DataKey] = refToText
+                    [DashConstants.KeyStore.DataKey] = refToText,
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(200),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(200),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0, 0)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
                 SetLayoutForDocument(Document.DocumentModel);
@@ -430,8 +432,9 @@ namespace Dash
                 var fields = new Dictionary<Key, FieldModel>
                 {
                     [DashConstants.KeyStore.DataKey] = refToImage,
-                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(double.NaN),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(double.NaN)
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(200),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(200),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0,0)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
 
@@ -439,30 +442,82 @@ namespace Dash
             }
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
-                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
-                if (data != null)
-                {
-                    var uiElements = new ImageTemplateModel(0, 0).MakeViewUI(data, docController);
+                // use the reference to the image to get the image field model controller
+                var refToImage = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                Debug.Assert(refToImage != null);
+                var imFieldModelController = ContentController.DereferenceToRootFieldModel<ImageFieldModelController>(refToImage);
+                Debug.Assert(imFieldModelController != null);
 
-                    var reference = data as ReferenceFieldModelController;
-                    Debug.Assert(reference != null);
-                    var tb = uiElements[0];
-                    tb.DataContext = reference.ReferenceFieldModel;
-                    tb.ManipulationMode = ManipulationModes.All;
-                    tb.ManipulationStarted += (sender, args) => args.Complete();
-                    tb.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
-                    {
-                        var view = tb.GetFirstAncestorOfType<CollectionView>();
-                        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
-                    };
-                    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
-                    {
-                        var view = tb.GetFirstAncestorOfType<CollectionView>();
-                        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
-                    };
-                    return uiElements;
-                }
-                return new List<FrameworkElement>();
+                // the image field model controller provides us with the DATA
+                // the Document on this courtesty document provides us with the parameters to display the DATA.
+                // X, Y, Width, and Height etc....
+
+                // create the image
+                var image = new Image();
+
+                // set the source of the image
+                image.Source = imFieldModelController.Data;
+
+                // make image height resize
+                var heightController =
+                    docController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+                Debug.Assert(heightController != null);
+                var heightBinding = new Binding
+                {
+                    Source = heightController,
+                    Path = new PropertyPath(nameof(heightController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                image.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+
+                // make image width resize
+                var widthController =
+                    docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+                Debug.Assert(widthController != null);
+                var widthBinding = new Binding
+                {
+                    Source = widthController,
+                    Path = new PropertyPath(nameof(widthController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                image.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+
+                // make image translate
+                var translateController =
+                    docController.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                Debug.Assert(translateController != null);
+                var translateBinding = new Binding
+                {
+                    Source = translateController,
+                    Path = new PropertyPath(nameof(translateController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new PointToTranslateTransformConverter()
+                };
+                image.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+
+                //if (refToImage != null)
+                //{
+                //    var uiElements = new ImageTemplateModel(0, 0).MakeViewUI(refToImage, docController);
+
+                //    var reference = refToImage as ReferenceFieldModelController;
+                //    Debug.Assert(reference != null);
+                //    var tb = uiElements[0];
+                //    tb.DataContext = reference.ReferenceFieldModel;
+                //    tb.ManipulationMode = ManipulationModes.All;
+                //    tb.ManipulationStarted += (sender, args) => args.Complete();
+                //    tb.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
+                //    {
+                //        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                //        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                //    };
+                //    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+                //    {
+                //        var view = tb.GetFirstAncestorOfType<CollectionView>();
+                //        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
+                //    };
+                //    return uiElements;
+                //}
+                return new List<FrameworkElement> {image};
             }
             public override List<FrameworkElement> makeView(DocumentController docController)
             {
@@ -520,6 +575,47 @@ namespace Dash
                 return new List<FrameworkElement>();
             }
         }
+
+        public class FreeformDocument : CourtesyDocument
+        {
+            public static DocumentType FreeFormDocumentType = new DocumentType("59B0C184-59BD-4570-87B8-0B660A68CBEC", "FreeFormDocument");
+
+            public static DocumentType DocumentType { get { return FreeFormDocumentType; } }
+
+            public FreeformDocument(IEnumerable<DocumentModel> docs)
+            {
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                    [DashConstants.KeyStore.DataKey] = new DocumentCollectionFieldModel(docs)
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, FreeFormDocumentType)).GetReturnedDocumentController();
+            }
+
+            public static List<FrameworkElement> MakeView(DocumentController docController)
+            {
+                var output = new List<FrameworkElement>();
+
+                var layoutData = docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+                Debug.Assert(layoutData != null);
+
+                foreach (var layoutDoc in layoutData.GetDocuments())
+                {
+                    var position =
+                        (layoutDoc.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?.Data;
+                    Debug.Assert(position != null);
+                    var ele = layoutDoc.MakeViewUI();
+                    foreach (var frameworkElement in ele)
+                    {
+                        frameworkElement.HorizontalAlignment = HorizontalAlignment.Left;
+                        frameworkElement.VerticalAlignment = VerticalAlignment.Top;
+                        frameworkElement.RenderTransform =
+                            PointToTranslateTransformConverter.Instance.ConvertDataToXaml(position.Value);
+                    }
+                    output.AddRange(ele);
+                }
+                return output;
+            }
+        }
         
         public class StackingPanel : CourtesyDocument {
             public static DocumentType StackPanelDocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
@@ -560,17 +656,17 @@ namespace Dash
             public static DocumentType TwoImagesType = new DocumentType("FC8EF5EB-1A0B-433C-85B6-6929B974A4B7", "Two Images");
             public static Key Image1FieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField1");
             public static Key Image2FieldKey = new Key("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
-            public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            //public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
 
             public TwoImages(bool displayFieldsAsDocuments)
             {
                 // create a document with two images
                 var imModel  = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
                 var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-                var tModel   = new TextFieldModel("Hello World!");
+                //var tModel   = new TextFieldModel("Hello World!");
                 var fields   = new Dictionary<Key, FieldModel>
                 {
-                    [TextFieldKey]   = tModel,
+                    //[TextFieldKey]   = tModel,
                     [Image1FieldKey] = imModel,
                     [Image2FieldKey] = imModel2
                 };
@@ -580,13 +676,11 @@ namespace Dash
                
                 var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey)).Document;
                 var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
-                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
-                imBox1.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(new NumberFieldModel(100)), true);
-                imBox2.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(new NumberFieldModel(100)), true);
+                //var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
 
                 if (displayFieldsAsDocuments)
                 {
-                    var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel } );
+                    var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { /*tBox.DocumentModel,*/ imBox1.DocumentModel, imBox2.DocumentModel } );
                     var documentFieldModelController = new DocumentCollectionFieldModelController(documentFieldModel);
                     ContentController.AddModel(documentFieldModel);
                     ContentController.AddController(documentFieldModelController);
@@ -598,9 +692,9 @@ namespace Dash
                     SetLayoutForDocument(genericCollection.DocumentModel);
                 } else
                 {
-                    var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
+                    var freeFormDoc = new FreeformDocument(new [] { /*tBox.DocumentModel,*/ imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
-                    SetLayoutForDocument(stackPan.DocumentModel);
+                    SetLayoutForDocument(freeFormDoc.DocumentModel);
                 }
             }
 
@@ -668,9 +762,9 @@ namespace Dash
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new TwoImages(false).Document);
-            DisplayDocument(new Numbers().Document);
-            DisplayDocument(new NestedDocExample(true).Document);
-            DisplayDocument(new NestedDocExample(false).Document);
+            //DisplayDocument(new Numbers().Document);
+            //DisplayDocument(new NestedDocExample(true).Document);
+            //DisplayDocument(new NestedDocExample(false).Document);
         }
 
 
