@@ -26,9 +26,21 @@ namespace Dash
             {
                 var documentFieldModel = new DocumentModelFieldModel(layoutDoc);
                 var layoutController = new DocumentFieldModelController(documentFieldModel);
-                ContentController.AddModel(documentFieldModel);
                 ContentController.AddController(layoutController);
                 Document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
+            }
+            public Dictionary<Key,FieldModel>  DefaultLayoutFields(double x, double y, double w, double h, FieldModel data)
+            {
+                // create a layout for the image
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(w),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(h),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(x, y)
+                };
+                if (data != null)
+                    fields.Add(DashConstants.KeyStore.DataKey, data);
+                return fields;
             }
             public virtual List<FrameworkElement> makeView(DocumentController docController)
             {
@@ -157,10 +169,7 @@ namespace Dash
                 DocumentController LayoutDocumentController = null;
                 if (layoutField == null)
                 {
-                    var fields = new Dictionary<Key, FieldModel>
-                    {
-                        [DashConstants.KeyStore.DataKey] = new DocumentCollectionFieldModel(new DocumentModel[] { })
-                    };
+                    var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(new DocumentModel[] { }));
                     LayoutDocumentController = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, CourtesyDocuments.GenericCollection.DocumentType)).GetReturnedDocumentController();
 
                     SetLayoutForDocument(LayoutDocumentController.DocumentModel);
@@ -195,11 +204,7 @@ namespace Dash
 
             public OperatorBox(ReferenceFieldModel refToOp)
             {
-                // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = refToOp
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, refToOp); 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
 
@@ -226,9 +231,7 @@ namespace Dash
             public ApiSourceCreatorDoc()
             {
                 // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
 
@@ -282,16 +285,9 @@ namespace Dash
             public static Key FontWeightKey = new Key("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
             public static DocumentType DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
-            public TextingBox(ReferenceFieldModel refToText)
+            public TextingBox(ReferenceFieldModel refToText, double x = 0, double y = 0, double w = 200, double h = 20)
             {
-                // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = refToText,
-                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(200),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(30),
-                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0, 0)
-                };
+                var fields = DefaultLayoutFields(x, y, w, h, refToText);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
                 SetLayoutForDocument(Document.DocumentModel);
             }
@@ -363,16 +359,9 @@ namespace Dash
         public class ImageBox : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
-            public ImageBox(ReferenceFieldModel refToImage)
+            public ImageBox(ReferenceFieldModel refToImage, double x=0, double y=0, double w=200, double h=200)
             {
-                // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = refToImage,
-                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(200),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(200),
-                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0, 0)
-                };
+                var fields = DefaultLayoutFields(x, y, w, h, refToImage);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
 
                 SetLayoutForDocument(Document.DocumentModel);
@@ -453,10 +442,7 @@ namespace Dash
 
             void Initialize(FieldModel fieldModel)
             {
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = fieldModel
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, fieldModel);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
 
                 SetLayoutForDocument(Document.DocumentModel);
@@ -487,10 +473,7 @@ namespace Dash
 
             public FreeformDocument(IEnumerable<DocumentModel> docs)
             {
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = new DocumentCollectionFieldModel(docs)
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(docs));
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, FreeFormDocumentType)).GetReturnedDocumentController();
             }
 
@@ -528,10 +511,7 @@ namespace Dash
 
             public StackingPanel(IEnumerable<DocumentModel> docs)
             {
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [DashConstants.KeyStore.DataKey] = new DocumentCollectionFieldModel(docs)
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(docs));
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, StackPanelDocumentType)).GetReturnedDocumentController();
             }
 
@@ -568,19 +548,16 @@ namespace Dash
                 var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
                 var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
                 var tModel = new TextFieldModel("Hello World!");
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [TextFieldKey] = tModel,
-                    [Image1FieldKey] = imModel,
-                    [Image2FieldKey] = imModel2
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+                fields.Add(TextFieldKey, tModel);
+                fields.Add(Image1FieldKey, imModel);
+                fields.Add(Image2FieldKey, imModel2);
 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
 
-
-                var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey)).Document;
-                var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
-                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
+                var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey), 0, 20, 200, 200).Document;
+                var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey), 0, 220, 200, 200).Document;
+                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey), 0, 0,  200, 20).Document;
 
                 if (displayFieldsAsDocuments)
                 {
@@ -645,12 +622,11 @@ namespace Dash
             public Numbers()
             {
                 // create a document with two images
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                    [Number1FieldKey] = new NumberFieldModel(789),
-                    [Number2FieldKey] = new NumberFieldModel(23),
-                    [Number3FieldKey] = new NumberFieldModel(8)
-                };
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+                fields.Add(Number1FieldKey, new NumberFieldModel(789));
+                fields.Add(Number2FieldKey, new NumberFieldModel(23));
+                fields.Add(Number3FieldKey, new NumberFieldModel(8));
+                
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NumbersType)).GetReturnedDocumentController();
 
                 var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey)).Document;

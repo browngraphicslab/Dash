@@ -64,10 +64,6 @@ namespace Dash
             // iterate over all the documents which define views
             foreach (var layoutDocument in _layoutDocumentCollection.GetDocuments())
             {
-                // get the controller for the data field that the layout document is parameterizing a view for -- What's the point of this Assert() ?
-                //var referenceToData = layoutDocument.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-                //Debug.Assert(referenceToData != null, "The layout document customarily defines the data key as a reference to the data field that it is defining a layout for");
-
                 // use the layout document to generate a UI
                 var fieldView = layoutDocument.MakeViewUI();
 
