@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using static Dash.CourtesyDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -24,18 +25,7 @@ namespace Dash
     {
 
         private List<GuideLineViewModel> _guides = new List<GuideLineViewModel>();
-
-        /// <summary>
-        /// The document view model of the document which is being edited
-        /// </summary>
-        private DocumentViewModel _documentViewModel;
-
-        /// <summary>
-        /// the document controller of the document which is being edited. This contains the fields for all the data
-        /// that is going to be displayed
-        /// </summary>
-        private DocumentController _documentController;
-
+        
         /// <summary>
         /// The document view of the document which is being edited
         /// </summary>
@@ -45,35 +35,23 @@ namespace Dash
         /// The document controller of the layout document for the document which is being edited. The fields in this
         /// document are courtesy documents used to display data from fields in the _documentController
         /// </summary>
-        private DocumentCollectionFieldModelController _layoutDocumentCollection;
+        private DocumentCollectionFieldModelController _layoutDocumentCollection { get { return LayoutCourtesyDocument.LayoutDocumentCollectionController;  } }
+
+        /// <summary>
+        /// Courtesy document that manages getting the necessary layout fields to edit the document's layout
+        /// </summary>
+        private LayoutCourtesyDocument LayoutCourtesyDocument;
 
         public InterfaceBuilder(DocumentViewModel viewModel,int width=800, int height=500)
         {
             this.InitializeComponent();
             Width = width;
             Height = height;
+            
+            LayoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController);
+           
+            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document).First() as DocumentView;
 
-            // set the view model, document model and view variables
-            _documentViewModel = new DocumentViewModel(viewModel.DocumentController) // create a new documentViewModel because  the view in the editor is different from the view in the workspace
-            {
-                IsDetailedUserInterfaceVisible = false,
-                IsMoveable = false
-            };
-            _documentController = viewModel.DocumentController;
-
-            // get the layout field on the document being displayed
-            var layoutField = viewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-            // get the layout document controller from the layout field
-            var layoutDocumentController = layoutField?.Data;
-            // get the documentCollectionFieldModelController from the layout document controller
-            _layoutDocumentCollection = layoutDocumentController?.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
-            if (_layoutDocumentCollection == null)
-            {
-                throw new NotImplementedException("we can't edit views without a layout yet");
-            }
-
-
-            _documentView = new DocumentView(_documentViewModel);
             xDocumentHolder.Children.Add(_documentView);
 
             ApplyEditable();
@@ -86,9 +64,9 @@ namespace Dash
             // iterate over all the documents which define views
             foreach (var layoutDocument in _layoutDocumentCollection.GetDocuments())
             {
-                // get the controller for the data field that the layout document is parameterizing a view for
-                var referenceToData = layoutDocument.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-                Debug.Assert(referenceToData != null, "The layout document customarily defines the data key as a reference to the data field that it is defining a layout for");
+                // get the controller for the data field that the layout document is parameterizing a view for -- What's the point of this Assert() ?
+                //var referenceToData = layoutDocument.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                //Debug.Assert(referenceToData != null, "The layout document customarily defines the data key as a reference to the data field that it is defining a layout for");
 
                 // use the layout document to generate a UI
                 var fieldView = layoutDocument.MakeViewUI();

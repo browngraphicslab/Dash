@@ -148,6 +148,44 @@ namespace Dash
             }
         }
 
+        public class LayoutCourtesyDocument : CourtesyDocument
+        {
+            public LayoutCourtesyDocument(DocumentController docController)
+            {
+                Document = docController; // get the layout field on the document being displayed
+                var layoutField = docController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+                DocumentController LayoutDocumentController = null;
+                if (layoutField == null)
+                {
+                    var fields = new Dictionary<Key, FieldModel>
+                    {
+                        [DashConstants.KeyStore.DataKey] = new DocumentCollectionFieldModel(new DocumentModel[] { })
+                    };
+                    LayoutDocumentController = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, CourtesyDocuments.GenericCollection.DocumentType)).GetReturnedDocumentController();
+
+                    SetLayoutForDocument(LayoutDocumentController.DocumentModel);
+                }
+                else
+                    LayoutDocumentController = layoutField?.Data;
+                // get the documentCollectionFieldModelController from the layout document controller
+                LayoutDocumentCollectionController = LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+            }
+            public DocumentCollectionFieldModelController LayoutDocumentCollectionController = null;
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
+                return LayoutCourtesyDocument.MakeView(docController);
+            }
+            public static List<FrameworkElement> MakeView(DocumentController docController)
+            {
+                var docViewModel = new DocumentViewModel(docController)
+                {
+                    IsDetailedUserInterfaceVisible = false,
+                    IsMoveable = false
+                };
+                return new List<FrameworkElement> { new DocumentView(docViewModel) };
+            }
+        }
+
         /// <summary>
         /// Given a reference to an operator field model, constructs a document type that displays that operator.
         /// </summary>
