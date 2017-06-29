@@ -434,6 +434,7 @@ namespace Dash
                     var w = docController.GetField(DashConstants.KeyStore.WidthFieldKey) != null ?
                         (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
                     var h = double.NaN;
+
                     return new DocumentCollectionTemplateModel(0, 0, w, h).MakeViewUI(data, docController);
                 }
                 return new List<FrameworkElement>();
