@@ -55,7 +55,9 @@
             </Grid>
 
             <Grid Visibility="{Binding GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility}">
-                <GridView x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControl" x:FieldModifier="public" HorizontalAlignment="Stretch" 
+                <GridView x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControl" 
+                          x:FieldModifier="public" 
+                          HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch"
                           ScrollViewer.VerticalScrollMode="Enabled"
                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
@@ -70,11 +72,8 @@
                           DragOver="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver">
                     <GridView.ItemTemplate>
                         <DataTemplate>
-                            <Border Width="{Binding ElementName=Grid, 
-                                    Path=DataContext.CellSize}" 
-                                    Height="{Binding 
-                                    ElementName=Grid, 
-                                    Path=DataContext.CellSize}">
+                            <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
+                                    Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
                                 <dash:DocumentView  Width="300" Height="300" DataContext="{Binding}" IsHitTestVisible="False"/>
                             </Border>
                         </DataTemplate>
@@ -205,6 +204,7 @@
         </Grid>
 
         <Button x:Name="DisplayButton" 
+                Height="30"
                 HorizontalAlignment="Left" 
                 VerticalAlignment="Top"  
                 Foreground="WhiteSmoke" 
@@ -243,11 +243,13 @@
         </StackPanel>
 
         <Button x:Name="CloseButton" 
+                Height="30"
                 Content ="Close" 
                 HorizontalAlignment="Right" 
                 VerticalAlignment="Top" 
                 Background="{StaticResource AccentGreen}" 
-                Foreground="WhiteSmoke"/>
+                Foreground="WhiteSmoke"
+                FontFamily="Rockwell"/>
 
         <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"

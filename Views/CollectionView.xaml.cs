@@ -935,7 +935,7 @@ namespace Dash
         {
             if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-            Debug.WriteLine(args.DropResult);
+            RefreshItemsBinding();
             KeepItemsOnMove = true;
             ItemsCarrier.GetInstance().Payload.Clear();
             MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
@@ -945,6 +945,7 @@ namespace Dash
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop(object sender, DragEventArgs e)
         {
             e.Handled = true;
+            RefreshItemsBinding();
             ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
             ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
         }
@@ -959,11 +960,29 @@ namespace Dash
         {
             var parentDoc = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.DocumentController;
             var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController;
-            Debug.WriteLine(controller == null);
             if (controller != null)
                 foreach (var item in docControllers)
                     if (add) controller.AddDocument(item);
                     else controller.RemoveDocument(item);
+        }
+
+        private void RefreshItemsBinding()
+        {
+            if(ViewModel.GridViewVisibility == Visibility.Visible)
+            {
+                GridView.ItemsSource = null;
+                GridView.ItemsSource = ViewModel.DataBindingSource;
+            }
+            else if(ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility == Visibility.Visible)
+            {
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = null;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = ViewModel.DataBindingSource;
+            }
+            else
+            {
+                HListView.ItemsSource = null;
+                HListView.ItemsSource = ViewModel.DataBindingSource;
+            }
         }
     }
 }

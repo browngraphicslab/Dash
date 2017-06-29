@@ -528,12 +528,8 @@ namespace Dash
         private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
         {
             foreach (var viewModel in col)
-            {
                 if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
-                {
                     return true;
-                }
-            }
             return false;
         }
 
