@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,6 +31,17 @@ namespace Dash
         {
             element.RegisterPropertyChangedCallback(prop, Callback);
             Callback(element, prop);
+        }
+
+        /// <summary>
+        /// Forces an update on the multibinding
+        /// This only works if the multibinding has a converter and the converter doesn't expect a value, only a parameter
+        /// </summary>
+        public void ForceUpdate()
+        {
+            Debug.Assert(_converter != null);
+            var newValue = (T)_converter.Convert(null, typeof(T), _converterParameter, "en");
+            Property = newValue;
         }
 
         private void Callback(DependencyObject sender, DependencyProperty dp)

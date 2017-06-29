@@ -8,9 +8,9 @@
     xmlns:views="using:Dash"
     mc:Ignorable="d">
 
-    <Grid x:Name="MyGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" SizeChanged="MyGrid_SizeChanged" >
+    <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
         <Viewbox x:Name="xViewBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <views:DocumentView x:Name="MainDocView"></views:DocumentView>
+            <views:DocumentView AllowDrop="True" Drop="XCanvas_Drop" DragOver="XCanvas_DragOver_1" x:Name="MainDocView"></views:DocumentView>
         </Viewbox>
         <local:OverlayCanvas x:Name="xOverlayCanvas"></local:OverlayCanvas>
     </Grid>

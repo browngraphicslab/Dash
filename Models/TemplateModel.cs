@@ -59,9 +59,10 @@ namespace Dash
 
 
         /// <summary>
-        /// Creates a UI view of the field based on this templates display parameters
+        /// Creates a UI view of the field based on this templates display parameters. This gets overriden by children
+        /// of this class.
         /// </summary>
-        protected virtual List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected virtual List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
             return null;
         }
@@ -70,19 +71,15 @@ namespace Dash
         /// <summary>
         /// Creates a UI view of the field based on this templates display parameters
         /// </summary>
-        public virtual List<FrameworkElement> MakeViewUI(FieldModel fieldModel, DocumentModel context)
+        public virtual List<FrameworkElement> MakeViewUI(FieldModelController fieldModelController, DocumentController context)
         {
-            while (fieldModel is ReferenceFieldModel)
+            fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);
+            if (fieldModelController is DocumentFieldModelController)
             {
-                var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                fieldModel = docController.GetDocumentAsync((fieldModel as ReferenceFieldModel).DocId).Field((fieldModel as ReferenceFieldModel).FieldKey);
-            }
-            if (fieldModel is DocumentModelFieldModel)
-            {
-                var doc = (fieldModel as DocumentModelFieldModel).Data;
+                var doc = (fieldModelController as DocumentFieldModelController).Data;
                 return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
             }
-            return MakeView(fieldModel, context);
+            return MakeView(fieldModelController, context);
         }
 
 
@@ -100,7 +97,8 @@ namespace Dash
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
             {
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
+                return new object();
             }
         }
     }

@@ -16,8 +16,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
-    public class DivideOperatorModel : OperatorFieldModel
+    public class DivideOperatorFieldModelController : OperatorFieldModelController
     {
+        public DivideOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
+            OperatorFieldModel = operatorFieldModel;
+        }
         //Input keys
         public static readonly Key AKey = new Key("AAC1631C-9DC3-48FC-984A-EE0D80C9A397", "A");
         public static readonly Key BKey = new Key("A757D709-8D83-44C9-B047-D5DB6420F51F", "B");
@@ -45,22 +49,18 @@ namespace Dash
             };
         }
 
-        public DivideOperatorModel()
+        public override void Execute(DocumentController doc)
         {
-        }
-
-        public override void Execute(DocumentModel doc)
-        {
-            NumberFieldModel numberA = doc.Field(AKey) as NumberFieldModel;
+            var numberA = doc.GetField(AKey) as NumberFieldModelController;
             Debug.Assert(numberA != null, "Input is not a number");
 
-            NumberFieldModel numberB = doc.Field(BKey) as NumberFieldModel;
+            var numberB = doc.GetField(BKey) as NumberFieldModelController;
             Debug.Assert(numberB != null, "Input is not a number");
-
+            
             double a = numberA.Data;
             double b = numberB.Data;
-            (doc.Field(QuotientKey) as NumberFieldModel).Data = a / b;
-            (doc.Field(RemainderKey) as NumberFieldModel).Data = a % b;
+            (doc.GetField(QuotientKey) as NumberFieldModelController).Data = a / b;
+            (doc.GetField(RemainderKey) as NumberFieldModelController).Data = a % b;
         }
     }
 }

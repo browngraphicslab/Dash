@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -21,9 +22,9 @@ namespace Dash
     public class EditableFieldFrame : Control
     {
         /// <summary>
-        /// The key associated with this editable field frame
+        /// The id associated with this editable field frame
         /// </summary>
-        public Key Key { get; private set; }
+        public string DocumentId { get; private set; }
 
 
         public delegate void PositionChangedHandler(object sender, double deltaX, double deltaY);
@@ -81,9 +82,9 @@ namespace Dash
         public static readonly DependencyProperty EditableContentProperty = DependencyProperty.Register(
             "EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(default(object)));
 
-        public EditableFieldFrame(Key key)
+        public EditableFieldFrame(string documentId)
         {
-            Key = key;
+            DocumentId = documentId;
             DefaultStyleKey = typeof(EditableFieldFrame);
         }
 
@@ -188,7 +189,7 @@ namespace Dash
         {
             foreach (var kvp in _resizeHandleToPosition)
             {
-                kvp.Key.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                kvp.Key.Visibility = isVisible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
             }
         }
 
@@ -200,7 +201,7 @@ namespace Dash
                 Width = 10,
                 Background = new SolidColorBrush(Colors.White),
                 BorderBrush = new SolidColorBrush(_visibleBorderColor),
-                Visibility = Visibility.Collapsed
+                Visibility = Windows.UI.Xaml.Visibility.Collapsed
             };
 
             thumb.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
@@ -262,6 +263,16 @@ namespace Dash
             FieldSizeChanged?.Invoke(this, Width, Height);
 
             e.Handled = true;
+        }
+
+        /// <summary>
+        /// Whenever content is translated the editable field frame has to apply that translation to itself.
+        /// </summary>
+        /// <param name="translation"></param>
+        public void ApplyContentTranslationToFrame(Point translation)
+        {
+            _container.RenderTransform =
+                PointToTranslateTransformConverter.Instance.ConvertDataToXaml(translation);
         }
     }
 }

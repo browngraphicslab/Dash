@@ -14,13 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
+    /* 
     public abstract class OperatorFieldModel : FieldModel
     {
-        /// <summary>
-        /// ID of the OperatorDocument that this OperatorFieldModel is in (Used for events)
-        /// </summary>
-        public string DocumentID { get; set; } //TODO probably remove this along with code in setter in OperatorDocumentModel
-
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
@@ -38,8 +34,21 @@ namespace Dash
         /// <summary>
         /// Abstract method to execute the operator
         /// </summary>
-        /// <param name="fields"></param>
         /// <returns></returns>
         public abstract void Execute(DocumentModel doc);
+    }
+    */
+
+    public class OperatorFieldModel : FieldModel
+    {
+        /// <summary>
+        /// Type of operator it is; to be used by the server to determine what controller to use for operations 
+        /// </summary>
+        public string Type { get; set; }
+
+        public OperatorFieldModel(string type)
+        {
+            Type = type; 
+        }
     }
 }

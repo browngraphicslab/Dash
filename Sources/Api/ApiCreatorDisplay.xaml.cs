@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using static Dash.MainPage;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -26,7 +27,7 @@ namespace Dash.Sources.Api {
         public ApiCreatorDisplay() {
             this.InitializeComponent();
 
-            manipulator = new ManipulationControls(this);
+           // manipulator = new ManipulationControls(this);
         }
 
         // == API FUNCTIONALITY ==
@@ -89,9 +90,8 @@ namespace Dash.Sources.Api {
             // instantiate new APISource
             ApiSource newApi = new ApiSource(requestType, xApiURLTB.Text, headers, parameters,
                 authParameters, authHeaders, xAuthControl.AuthURL, xAuthControl.Secret,
-                xAuthControl.Key, (Canvas)this.Parent);
-            Canvas parent = (Canvas)this.Parent;
-            parent.Children.Add(newApi.createAPISourceDisplay());
+                xAuthControl.Key);
+            MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
         }
     }

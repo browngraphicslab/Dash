@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -14,20 +15,19 @@ using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
 using Dash.ViewModels;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-        
+       
+
         private CollectionModel _collectionModel;
 
+        public CollectionModel CollectionModel { get { return _collectionModel; } }
 
-        public ObservableCollection<DocumentViewModel> DocumentViewModels
-        {
-            get { return _documentViewModels; }
-            set { SetProperty(ref _documentViewModels, value); }
-        }
+        public DocumentView ParentDocument { get; set; }
 
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
@@ -35,7 +35,10 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> DataBindingSource
         {
             get { return _dataBindingSource; }
-            set { SetProperty(ref _dataBindingSource, value); }
+            set
+            {
+                SetProperty(ref _dataBindingSource, value); 
+            }
         }
 
         public ObservableCollection<UIElement> SoloDisplayElements
@@ -84,6 +87,7 @@ namespace Dash
         private ListViewSelectionMode _itemSelectionMode;
 
         private Visibility _gridViewVisibility;
+        private Visibility _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility;
         private Visibility _listViewVisibility;
         private Visibility _controlsVisibility;
         private Visibility _filterViewVisibility;
@@ -91,7 +95,6 @@ namespace Dash
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
 
-        private ObservableCollection<DocumentViewModel> _documentViewModels;
         private ObservableCollection<DocumentViewModel> _dataBindingSource;
 
         private DocumentViewModel _soloDisplayDocument;
@@ -107,8 +110,6 @@ namespace Dash
         #endregion
 
         #region Size Variables
-
-
 
         /// <summary>
         /// The size of each cell in the GridView.
@@ -176,7 +177,12 @@ namespace Dash
             get { return _gridViewVisibility; }
             set { SetProperty(ref _gridViewVisibility, value); }
         }
-        
+
+        public Visibility GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility
+        {
+            get { return _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility; }
+            set { SetProperty(ref _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility, value); }
+        }
 
         public Visibility ListViewVisibility
         {
@@ -270,15 +276,22 @@ namespace Dash
             _collectionModel = model;
 
             SetInitialValues();
-            AddViewModels(MakeViewModels(_collectionModel.Documents));
+            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
             //SetDimensions();
-            _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
-            
+           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
+            controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
+           // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
+        }
+
+        private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            //AddDocuments(_collectionModel.Documents.Data);
+            UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
 
         private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            AddDocuments(_collectionModel.Documents);
+           // AddDocuments(_collectionModel.Documents);
         }
 
         /// <summary>
@@ -301,11 +314,12 @@ namespace Dash
 
             CellSize = 400;
             ListViewVisibility = Visibility.Collapsed;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             GridViewVisibility = Visibility.Visible;
             FilterViewVisibility = Visibility.Collapsed;
 
             _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            DataBindingSource = new ObservableCollection<DocumentViewModel>();
 
             ViewIsEnabled = true;
             SoloDisplayVisibility = Visibility.Collapsed;
@@ -343,9 +357,8 @@ namespace Dash
             _selectedItems.Clear();
             foreach (var vm in itemsToDelete)
             {
-                DocumentViewModels.Remove(vm);
+                DataBindingSource.Remove(vm);
             }
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -355,21 +368,20 @@ namespace Dash
         /// <param name="e"></param>
         public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DataBindingSource = null;
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 ListViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 GridViewVisibility = Visibility.Visible;
             }
             else
             {
                 ListViewVisibility = Visibility.Collapsed;
-                DataBindingSource = DocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 GridViewVisibility = Visibility.Visible;
             }
-            
         }
 
         /// <summary>
@@ -379,24 +391,40 @@ namespace Dash
         /// <param name="e"></param>
         public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DataBindingSource = null;
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 ListViewVisibility = Visibility.Visible;
             }
             else
             {
                 GridViewVisibility = Visibility.Collapsed;
-                DataBindingSource = DocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 ListViewVisibility = Visibility.Visible;
-            }
-
-                       
+            }                    
             OuterGridHeight = CellSize + 44;
             //SetDimensions();
+        }
+
+        public void GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_filtered)
+            {
+                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
+                ListViewVisibility = Visibility.Collapsed;
+                GridViewVisibility = Visibility.Collapsed;
+                DataBindingSource = filteredDocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+            }
+            else
+            {
+                ListViewVisibility = Visibility.Collapsed;               
+                GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+            }
         }
 
         /// <summary>
@@ -461,62 +489,6 @@ namespace Dash
             e.Handled = true;
         }
         
-        
-
-        /// <summary>
-        /// Called when the user double taps on a documentView displayed in the collection; 
-        /// displays that document in an enlarged format in front of the others and disables 
-        /// interactions with the other documents while the solo document is displayed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void DocumentView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                if (dvm.DocumentModel.DocumentType.Id == "itunes")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
-                else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
-                (sender as DocumentView).DataContext = dvm;
-                var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
-                // testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
-                var annotatedImageModel = new DocumentModel(new Dictionary<Key,FieldModel>(), new DocumentType("annotatedImage", "annotatedImage"));
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation1"), new TextFieldModel("Header Text"), false);
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Image"), new ReferenceFieldModel(dvm.DocumentModel.Id, DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100")), false);
-                annotatedImageModel.SetField(DocumentModel.GetFieldKeyByName("Annotation2"), new TextFieldModel("Trailing Text"), false);
-                testPrototypedoc.SetField(DocumentModel.GetFieldKeyByName("itunes.apple.comartworkUrl100"), new DocumentModelFieldModel(annotatedImageModel), true);
-                // var DocView2 = new DocumentView(new DocumentViewModel());
-                // var center = e.GetPosition(FreeformView.MainFreeformView);
-                MainPage.Instance.DisplayDocument(testPrototypedoc);
-                //FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
-
-                if (GridViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize + 50;
-                    if (OuterGridHeight < CellSize + 125) OuterGridHeight = CellSize + 125;
-                    if (OuterGridWidth < CellSize + 125) OuterGridWidth = CellSize + 125;
-                    //Resize();
-                    //SetDimensions();
-                }
-                else if (ListViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize;
-                }
-
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements(new Windows.Foundation.Rect()));
-                foreach (var s in SoloDisplayElements)
-                    s.RenderTransform = new TranslateTransform();
-                ViewIsEnabled = false;
-                SoloDisplayVisibility = Visibility.Visible;
-            }
-            e.Handled = true;
-        }
-
-       
-       
-
         #endregion
 
         #region DocumentModel and DocumentViewModel Data Changes
@@ -527,14 +499,15 @@ namespace Dash
         /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
         /// </summary>
         /// <param name="documents"></param>
-        public void AddDocuments(ObservableCollection<DocumentModel> documents)
+        public void AddDocuments(List<DocumentController> documents)
         {
-            foreach (DocumentModel document in documents)
+            var docList = new List<string>(_collectionModel.DocumentCollectionFieldModel.Data);
+            foreach (var document in documents)
             {
-                if (!_collectionModel.Documents.Contains(document))
-                    _collectionModel.Documents.Add(document);
+                if (!docList.Contains(document.GetId()))
+                    docList.Add(document.GetId());
             }
-            AddViewModels(MakeViewModels(documents));
+            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
         }
 
         /// <summary>
@@ -542,13 +515,48 @@ namespace Dash
         /// that no longer reference DocumentModels in the Collection.
         /// </summary>
         /// <param name="documents"></param>
-        public void RemoveDocuments(ObservableCollection<DocumentModel> documents)
+        public void RemoveDocuments(ObservableCollection<DocumentController> documents)
         { 
-            foreach (DocumentModel document in documents)
+            foreach (var document in documents)
             {
-                if(_collectionModel.Documents.Contains(document)) _collectionModel.Documents.Remove(document);
+                if (new List<string>(_collectionModel.DocumentCollectionFieldModel.Data).Contains(document.GetId()))
+                    ;//_collectionModel.DocumentCollectionFieldModel.Remove(document);
             }
             RemoveDefunctViewModels();
+        }
+
+        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
+        {
+            foreach (var viewModel in col)
+            {
+                if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void UpdateViewModels(ObservableCollection<DocumentViewModel> viewModels)
+        {
+            foreach (var viewModel in viewModels)
+            {
+                if (ViewModelContains(DataBindingSource, viewModel))
+                {
+                    continue;
+                }
+                viewModel.ManipulationMode = ManipulationModes.System;
+                viewModel.DoubleTapEnabled = false;
+                DataBindingSource.Add(viewModel);
+            }
+            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
+            {
+                if (ViewModelContains(viewModels, DataBindingSource[i]))
+                {
+                    continue;
+                }
+                DataBindingSource.RemoveAt(i);
+            }
         }
 
         /// <summary>
@@ -557,24 +565,24 @@ namespace Dash
         /// <param name="viewModels"></param>
         private void AddViewModels(ObservableCollection<DocumentViewModel> viewModels)
         {
-            foreach (DocumentViewModel viewModel in viewModels)
+            foreach (var viewModel in viewModels)
             {
                 bool found = false;
-                foreach (var vm in DocumentViewModels)
-                    if (vm.DocumentModel.Id == viewModel.DocumentModel.Id)
+                foreach (var vm in DataBindingSource)
+                    if (vm.DocumentController.GetId() == viewModel.DocumentController.GetId())
                         found = true;
                 if (!found)
                 {
                     //viewModel.DefaultViewVisibility = Visibility.Collapsed;
                     //viewModel.ListViewVisibility = Visibility.Visible;
+                    Debug.WriteLine($"{viewModel.ManipulationMode}, {ManipulationModes.None}");
                     viewModel.ManipulationMode = ManipulationModes.System;
                     viewModel.DoubleTapEnabled = false;
                     //viewModel.CanMoveControl = false;
-                    DocumentViewModels.Add(viewModel);
+                    DataBindingSource.Add(viewModel);
                 }
             }
             //ScaleDocumentsToFitCell();
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -585,9 +593,8 @@ namespace Dash
         {
             foreach (DocumentViewModel viewModel in viewModels)
             {
-                if (DocumentViewModels.Contains(viewModel)) DocumentViewModels.Remove(viewModel);
+                DataBindingSource.Remove(viewModel);
             }
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -596,34 +603,18 @@ namespace Dash
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+
         /// <summary>
         /// Constructs standard DocumentViewModels from the passed in DocumentModels
         /// </summary>
         /// <param name="documents"></param>
         /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentModel> documents)
+        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
         {
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (DocumentModel document in documents)
+            foreach (var document in documents.Data)
             {
-                var documentDisplayDelegate = DocumentToDelegateMap.ContainsKey(document.Id) ? DocumentToDelegateMap[document.Id] : null;
-                if (documentDisplayDelegate == null) {
-                    foreach (var deleg in docController.GetDelegates(document.Id))
-                    {
-                        var field = deleg.Field(DocumentModel.GetFieldKeyByName("CollectionDelegate")) as TextFieldModel;
-                        if (field != null && field.Data == _collectionModel.Context.Id)
-                            documentDisplayDelegate = deleg;
-                    }
-                    if (documentDisplayDelegate == null)
-                    {
-                        documentDisplayDelegate = document.MakeDelegate();
-                        documentDisplayDelegate.SetField(DocumentModel.GetFieldKeyByName("CollectionDelegate"), new TextFieldModel(_collectionModel.Context.Id), true);
-                     }
-                    DocumentToDelegateMap.Add(document.Id, documentDisplayDelegate);
-                }
-                viewModels.Add(new DocumentViewModel(documentDisplayDelegate));
+                viewModels.Add(new DocumentViewModel(ContentController.GetController(document) as DocumentController));
             }
             return viewModels;
         }
@@ -634,15 +625,16 @@ namespace Dash
         /// </summary>
         public void RemoveDefunctViewModels()
         {
-            ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
-            foreach (DocumentViewModel vm in DocumentViewModels)
-            {
-                if (!_collectionModel.Documents.Contains(vm.DocumentModel))
-                {
-                    toRemove.Add(vm);
-                }
-            }
-            RemoveViewModels(toRemove);
+            throw new NotImplementedException();
+            //ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
+            //foreach (DocumentViewModel vm in DocumentViewModels)
+            //{
+            //    if (!_collectionModel.Documents.Contains(vm.DocumentModel))
+            //    {
+            //        toRemove.Add(vm);
+            //    }
+            //}
+            //RemoveViewModels(toRemove);
         }
 
         #endregion
@@ -679,35 +671,36 @@ namespace Dash
 
         public void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            FilterModel filterModel = null;
+            throw new NotImplementedException();
+            //FilterModel filterModel = null;
 
-            // generate FilterModels accordingly
-            if (CollectionFilterMode == FilterMode.HasField)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
-            }
-            else if (CollectionFilterMode == FilterMode.FieldContains)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
-            }
-            else if (CollectionFilterMode == FilterMode.FieldEquals)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
-            }
+            //// generate FilterModels accordingly
+            //if (CollectionFilterMode == FilterMode.HasField)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
+            //}
+            //else if (CollectionFilterMode == FilterMode.FieldContains)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
+            //}
+            //else if (CollectionFilterMode == FilterMode.FieldEquals)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
+            //}
 
-            var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
+            //var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
 
             
-            ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (var dvm in DocumentViewModels)
-            {
-                if (list.Contains(dvm.DocumentModel))
-                {
-                    ViewModels.Add(dvm);
-                }
-            }
-            DataBindingSource = ViewModels;
-            _filtered = true;
+            //ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
+            //foreach (var dvm in DocumentViewModels)
+            //{
+            //    if (list.Contains(dvm.DocumentModel))
+            //    {
+            //        ViewModels.Add(dvm);
+            //    }
+            //}
+            //DataBindingSource = ViewModels;
+            //_filtered = true;
         }
 
         public void FilterFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -717,7 +710,9 @@ namespace Dash
                 if (sender.Text.Length > 0)
                 {
                     FieldBoxText = sender.Text;
-                    sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentModel>(_collectionModel.Documents), sender.Text.ToLower());
+                    throw new Exception();
+                    //sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(
+                    //    _collectionModel.DocumentCollectionFieldModel.Data), sender.Text.ToLower());
                 }
                 else
                 {
@@ -769,13 +764,13 @@ namespace Dash
         public void ClearFilter_Tapped(object sender, TappedRoutedEventArgs e)
         {
             FilterViewVisibility = Visibility.Collapsed;
-            DataBindingSource = DocumentViewModels;
             _filtered = false;
         }
         public void MoveDocument(DocumentViewModel docViewModel, Point where)
         {
-            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("X"), new NumberFieldModel(where.X), true);
-            docViewModel.DocumentModel.SetField(DocumentModel.GetFieldKeyByName("Y"), new NumberFieldModel(where.Y), true);
-         }
+
+            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.X)), true);
+            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.Y)), true);
+        }
     }
 }

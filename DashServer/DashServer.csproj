@@ -15,7 +15,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>DashServer</RootNamespace>
     <AssemblyName>DashServer</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
     <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort>
@@ -111,7 +111,6 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\KeyController.cs" />
-    <Compile Include="Controllers\ShapeController.cs" />
     <Compile Include="Database\CosmosDb.cs" />
     <Compile Include="Database\IDocumentRepository.cs" />
     <Compile Include="Global.asax.cs">

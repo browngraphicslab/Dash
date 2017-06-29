@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid ManipulationMode="All" x:Name="xGrid" Width="400" Height="300" Background="White" Style="{StaticResource xNodeContainerGrid}">
+    <Grid x:Name="xGrid" Width="400" Height="300" Padding="20">
         <TextBlock x:Name="xTitle" Style="{StaticResource xTitleStyle}">API Node</TextBlock>
         <Grid Margin="22,35,22,37">
             <ListView x:Name="xListView" SelectionMode="None"></ListView>

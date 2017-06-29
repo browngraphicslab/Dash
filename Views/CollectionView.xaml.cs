@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Reflection.Metadata;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -13,6 +16,9 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Microsoft.Extensions.DependencyInjection;
+using Windows.Foundation.Collections;
+using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -26,6 +32,8 @@ namespace Dash
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
+        private Canvas FreeformCanvas => GridView.ItemsPanelRoot as Canvas;
+
         public CollectionViewModel ViewModel;
         private bool _isHasFieldPreviouslySelected;
         public Grid OuterGrid
@@ -38,12 +46,24 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
+            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
+            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
+            Loaded += (s, e) => ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+        }
+
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            DataContext = ViewModel;
         }
 
         private void SetEventHandlers()
         {
+            GridView.Items.VectorChanged += ItemsControl_ItemsChanged;
+            //ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
             GridOption.Tapped += ViewModel.GridViewButton_Tapped;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption.Tapped +=
+                ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped;
             ListOption.Tapped += ViewModel.ListViewButton_Tapped;
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
@@ -53,19 +73,16 @@ namespace Dash
             //CancelSoloDisplayButton.Tapped += ViewModel.CancelSoloDisplayButton_Tapped;
 
             HListView.SelectionChanged += ViewModel.SelectionChanged;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControl.SelectionChanged += ViewModel.SelectionChanged;
             // GridView.SelectionChanged += ViewModel.SelectionChanged;
             
-
-            
-
             Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
 
             SingleDocDisplayGrid.Tapped += ViewModel.SingleDocDisplayGrid_Tapped;
 
             xFilterExit.Tapped += ViewModel.FilterExit_Tapped;
             xFilterButton.Tapped += ViewModel.FilterButton_Tapped;
-
-
+            
             xSearchBox.TextCompositionEnded += ViewModel.SearchBox_TextEntered;
             xSearchBox.TextChanged += ViewModel.xSearchBox_TextChanged;
 
@@ -77,16 +94,57 @@ namespace Dash
 
         }
 
-        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            var canvas = Parent as Canvas;
-            canvas?.Children.Remove(this);
+            //TODO implement itemschanged event in here
+            throw new NotImplementedException();
         }
 
-        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
-            ViewModel.DocumentView_OnDoubleTapped(sender, e);
-            e.Handled = true;
+            if (e.CollectionChange == CollectionChange.ItemInserted)
+            {
+                var docVM = sender[(int)e.Index] as DocumentViewModel;
+                Debug.Assert(docVM != null);
+                OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                if (ofm != null)
+                {
+                    foreach (var inputKey in ofm.InputKeys)
+                    {
+                        foreach (var outputKey in ofm.OutputKeys)
+                        {
+                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                            _graph.AddEdge(irfm, orfm);
+                        }
+                    }
+                }
+            }
+            //else if (e.CollectionChange == CollectionChange.ItemRemoved)
+            //{
+            //    var docVM = sender[(int)e.Index] as DocumentViewModel;
+            //    Debug.Assert(docVM != null);
+            //    OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            //    if (ofm != null)
+            //    {
+            //        foreach (var inputKey in ofm.InputKeys)
+            //        {
+            //            foreach (var outputKey in ofm.OutputKeys)
+            //            {
+            //                ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+            //                ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+            //                _graph.RemoveEdge(irfm, orfm);
+            //            }
+            //        }
+            //    }
+            //}
+        }
+
+        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            var contentPresentor = this.GetFirstAncestorOfType<ContentPresenter>();
+            (VisualTreeHelper.GetParent(contentPresentor) as Canvas)?.Children.Remove(this
+                .GetFirstAncestorOfType<ContentPresenter>());
         }
 
         private void SoloDocument_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -257,10 +315,7 @@ namespace Dash
             ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldEquals;
             fieldContainsOrEquals_Tapped(sender, e);
         }
-       
-
-
-
+      
         private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var cvm = DataContext as CollectionViewModel;
@@ -422,7 +477,6 @@ namespace Dash
             CanvasScale *= (float)scaleAmount;
             Debug.Assert(canvas.RenderTransform != null);
             Point p = point.Position;
-            Debug.WriteLine(p);
             //Create initial ScaleTransform 
             ScaleTransform scale = new ScaleTransform
             {
@@ -573,14 +627,17 @@ namespace Dash
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
         /// </summary>
-        private Line _connectionLine;
+        private Path _connectionLine;
+
+        private MultiBinding<PathFigureCollection> _lineBinding;
+        private BezierConverter _converter;
 
         /// <summary>
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
         private OperatorView.IOReference _currReference;
 
-        private Dictionary<ReferenceFieldModel, Line> _lineDict = new Dictionary<ReferenceFieldModel, Line>();
+        private Dictionary<ReferenceFieldModel, Path> _lineDict = new Dictionary<ReferenceFieldModel, Path>();
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -591,6 +648,63 @@ namespace Dash
         /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
         /// </summary>
         //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
+
+        private class BezierConverter : IValueConverter
+        {
+            public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
+            {
+                Element1 = element1;
+                Element2 = element2;
+                ToElement = toElement;
+                _figure = new PathFigure();
+                _bezier = new BezierSegment();
+                _figure.Segments.Add(_bezier);
+                _col.Add(_figure);
+            }
+
+            public FrameworkElement Element1 { get; set; }
+            public FrameworkElement Element2 { get; set; }
+
+            public FrameworkElement ToElement { get; set; }
+
+            public Point Pos2 { get; set; }
+
+            private PathFigureCollection _col = new PathFigureCollection();
+            private PathFigure _figure;
+            private BezierSegment _bezier;
+
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                var pos1 = Element1.TransformToVisual(ToElement)
+                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
+                var pos2 = Element2?.TransformToVisual(ToElement)
+                               .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+
+                double offset = Math.Abs((pos1.X - pos2.X) / 3);
+                if (pos1.X < pos2.X)
+                {
+                    _figure.StartPoint = new Point(pos1.X + Element1.ActualWidth / 2, pos1.Y);
+                    _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
+                    _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
+                    _bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                }
+                else
+                {
+                    _figure.StartPoint = new Point(pos1.X - Element1.ActualWidth / 2, pos1.Y);
+                    _bezier.Point1 = new Point(pos1.X - offset, pos1.Y);
+                    _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
+                    _bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                }
+
+                return _col;
+            }
+            
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         private class VisibilityConverter : IValueConverter
         {
@@ -611,21 +725,39 @@ namespace Dash
             {
                 return;
             }
-            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.Pointer.PointerId);
+            _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
-
-            _connectionLine = new Line
+            
+            _connectionLine = new Path
             {
-                StrokeThickness = 10,
-                Stroke = new SolidColorBrush(Colors.Black),
+                StrokeThickness = 5,
+                Stroke = new SolidColorBrush(Colors.Orange),
                 IsHitTestVisible = false,
-                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed (https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                CompositeMode =
+                    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+            Canvas.SetZIndex(_connectionLine, -1);
+            _converter = new BezierConverter(ioReference.FrameworkElement, null, FreeformCanvas);
+            _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(FreeformCanvas).Position;
+            _lineBinding =
+                new MultiBinding<PathFigureCollection>(_converter, null);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
+            Binding lineBinding = new Binding
+            {
+                Source = _lineBinding,
+                Path = new PropertyPath("Property")
+            };
+            PathGeometry pathGeo = new PathGeometry();
+            BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
+            _connectionLine.Data = pathGeo;
 
             Binding visibilityBinding = new Binding
             {
@@ -634,50 +766,8 @@ namespace Dash
                 Converter = new VisibilityConverter()
             };
             _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
-
-            //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
-
-            //Binding x1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y1Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X1Property, x1Binding);
-            //_connectionLine.SetBinding(Line.Y1Property, y1Binding);
-            Binding x1Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(true),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
-                Path = new PropertyPath("RenderTransform")
-            };
-            Binding y1Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(false),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
-                Path = new PropertyPath("RenderTransform")
-            };
-            _connectionLine.SetBinding(Line.X1Property, x1Binding);
-            _connectionLine.SetBinding(Line.Y1Property, y1Binding);
-
-            _connectionLine.X2 = _connectionLine.X1;
-            _connectionLine.Y2 = _connectionLine.Y1;
-
-            FreeformGrid.Children.Add(_connectionLine);
+            
+            FreeformCanvas.Children.Add(_connectionLine);
 
             if (!ioReference.IsOutput)
             {
@@ -698,7 +788,7 @@ namespace Dash
             {
                 return;
             }
-            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
             if (_currReference.IsOutput == ioReference.IsOutput)
@@ -706,11 +796,27 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            _graph.AddEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);//TODO Detect cycles with operators internal edges as well
+            if (_currReference.IsOutput)
+            {
+                _graph.AddEdge(_currReference.ReferenceFieldModel,
+                    ioReference.ReferenceFieldModel);
+            }
+            else
+            {
+                _graph.AddEdge(ioReference.ReferenceFieldModel,
+                    _currReference.ReferenceFieldModel); 
+            }
             if (_graph.IsCyclic())
             {
-                _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
-                CancelDrag(ioReference.Pointer);
+                if (_currReference.IsOutput)
+                {
+                    _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
+                }
+                else
+                {
+                    _graph.RemoveEdge(ioReference.ReferenceFieldModel, _currReference.ReferenceFieldModel);
+                }
+                CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
             }
@@ -721,54 +827,19 @@ namespace Dash
                 _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
             }
 
-            //DocumentView view = _documentViews[ioReference.ReferenceFieldModel.DocId];
-            //Binding x2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(true),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //Binding y2Binding = new Binding
-            //{
-            //    Converter = new FrameworkElementToPosition(false),
-            //    ConverterParameter =
-            //        new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-            //    Source = view,
-            //    Path = new PropertyPath("RenderTransform")
-            //};
-            //_connectionLine.SetBinding(Line.X2Property, x2Binding);
-            //_connectionLine.SetBinding(Line.Y2Property, y2Binding);
-            Binding x2Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(true),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
-                Path = new PropertyPath("RenderTransform")
-            };
-            Binding y2Binding = new Binding
-            {
-                Converter = new FrameworkElementToPosition(false),
-                ConverterParameter =
-                    new KeyValuePair<FrameworkElement, FrameworkElement>(ioReference.FrameworkElement, FreeformGrid),
-                Source = this,
-                Path = new PropertyPath("RenderTransform")
-            };
-            _connectionLine.SetBinding(Line.X2Property, x2Binding);
-            _connectionLine.SetBinding(Line.Y2Property, y2Binding);
+            _converter.Element2 = ioReference.FrameworkElement;
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
 
             if (ioReference.IsOutput)
             {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+                ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
                 _connectionLine = null;
             }
             else
             {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+                ContentController.GetController<DocumentController>(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
                 _connectionLine = null;
             }
         }
@@ -782,16 +853,15 @@ namespace Dash
         {
             if (_lineDict.ContainsKey(model))
             {
-                Line line = _lineDict[model];
-                FreeformGrid.Children.Remove(line);
+                Path line = _lineDict[model];
+                FreeformCanvas.Children.Remove(line);
                 _lineDict.Remove(model);
             }
         }
 
         private void UndoLine()
         {
-            FreeformGrid.Children.Remove(_connectionLine);
-            //_lineDict. //TODO lol figure this out later 
+            FreeformCanvas.Children.Remove(_connectionLine);
             _connectionLine = null;
             _currReference = null;
         }
@@ -802,9 +872,9 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
-                Point pos = e.GetCurrentPoint(FreeformGrid).Position;
-                _connectionLine.X2 = pos.X;
-                _connectionLine.Y2 = pos.Y;
+                Point pos = e.GetCurrentPoint(FreeformCanvas).Position;
+                _converter.Pos2 = pos;
+                _lineBinding.ForceUpdate();
             }
         }
 
@@ -812,9 +882,6 @@ namespace Dash
         {
             if (_currReference != null)
             {
-                DocumentEndpoint docEnd = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                FieldModel fm = docEnd.GetFieldInDocument(_currReference.ReferenceFieldModel);
-                Debug.WriteLine(fm);
                 CancelDrag(e.Pointer);
 
                 //DocumentView view = new DocumentView();
@@ -822,6 +889,75 @@ namespace Dash
                 //view.DataContext = viewModel;
                 //FreeformView.MainFreeformView.Canvas.Children.Add(view);
 
+            }
+        }
+
+        private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Complete();
+        }
+
+        private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view?.StartDrag(ioRef);
+        }
+
+        private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            view?.EndDrag(ioRef);
+        }
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+            ItemsCarrier carrier = ItemsCarrier.GetInstance();
+            carrier.Source = this;
+            foreach(var item in e.Items)
+                carrier.Payload.Add(item as DocumentViewModel);            
+        }
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        {
+            //throw new NotImplementedException();
+        }
+
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            var controllers = ItemsCarrier.GetInstance().Payload.Select(viewModel => viewModel.DocumentController).ToList();
+            ViewModel.AddDocuments(controllers);
+        }
+
+        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver(object sender, DragEventArgs e)
+        {
+            Debug.WriteLine("hi");
+            e.AcceptedOperation |= DataPackageOperation.Move;
+        }
+
+        private class ItemsCarrier
+        {
+            private static ItemsCarrier carrier = new ItemsCarrier();
+            public List<DocumentViewModel> Payload;
+            public CollectionView Source;
+            private ItemsCarrier()
+            {
+                Payload = new List<DocumentViewModel>();
+            }
+
+            public static ItemsCarrier GetInstance()
+            {
+                return carrier;
             }
         }
     }

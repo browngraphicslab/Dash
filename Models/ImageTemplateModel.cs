@@ -11,6 +11,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Data;
+using DashShared;
 
 namespace Dash
 {
@@ -18,7 +19,7 @@ namespace Dash
     {
         private bool fill;
         public ImageTemplateModel(double left = 0, double top = 0, double width = 0, double height = 0,
-            Visibility visibility = Visibility.Visible, bool fill = false)
+            Windows.UI.Xaml.Visibility visibility = Windows.UI.Xaml.Visibility.Visible, bool fill = false)
             : base(left, top, width, height, visibility)
         {
             this.fill = fill;
@@ -27,12 +28,22 @@ namespace Dash
         /// <summary>
         /// Creates Image using layout information from template and Data 
         /// </summary>
-        protected override List<FrameworkElement> MakeView(FieldModel fieldModel, DocumentModel context)
+        protected override List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
-            var imageFieldModel = fieldModel is TextFieldModel ? new ImageFieldModel(new Uri((fieldModel as TextFieldModel).Data)) :  fieldModel as ImageFieldModel;
+            var imageFieldModel = fieldModel is TextFieldModelController ? new ImageFieldModelController(new ImageFieldModel(new Uri((fieldModel as TextFieldModelController).Data))) : fieldModel as ImageFieldModelController;
             Debug.Assert(imageFieldModel != null);
             var image = new Image();
-            image.Source = imageFieldModel.Data;
+
+            Binding binding = new Binding
+            {
+                Source = imageFieldModel,
+                Path = new PropertyPath("Data")
+            };
+            image.SetBinding(Image.SourceProperty, binding);
+
+            Width = context.GetField(DashConstants.KeyStore.WidthFieldKey) != null ? (context.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : 0;
+            Height = context.GetField(DashConstants.KeyStore.HeightFieldKey) != null ? (context.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController).Data : 0;
+
 
             var translateBinding = new Binding
             {
@@ -72,9 +83,9 @@ namespace Dash
 
             image.HorizontalAlignment = HorizontalAlignment.Left;
             image.VerticalAlignment = VerticalAlignment.Top;
-            
+
             if (fill)
-                image.Stretch = Windows.UI.Xaml.Media.Stretch.UniformToFill;
+                image.Stretch = Stretch.UniformToFill;
             return new List<FrameworkElement> { image };
         }
     }

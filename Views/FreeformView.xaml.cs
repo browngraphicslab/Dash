@@ -124,11 +124,12 @@ namespace Dash
             XCanvas.Children.Add(element);
             if (element is DocumentView)//TODO Clean this up
             {
-                var view = element as DocumentView;
-                var vm = view.DataContext as DocumentViewModel;
-                _documentViews[vm.DocumentModel.Id] = view;
-                vm.IODragStarted += StartDrag;
-                vm.IODragEnded += EndDrag;
+                throw new NotImplementedException();
+                //var view = element as DocumentView;
+                //var vm = view.DataContext as DocumentViewModel;
+                //_documentViews[vm.DocumentModel.Id] = view;
+                //vm.IODragStarted += StartDrag;
+                //vm.IODragEnded += EndDrag;
             }
             element.RenderTransform = new TranslateTransform
             {
@@ -169,7 +170,7 @@ namespace Dash
             public object Convert(object value, Type targetType, object parameter, string language)
             {
                 bool isEditorMode = (bool)value;
-                return isEditorMode ? Visibility.Visible : Visibility.Collapsed;
+                return isEditorMode ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
@@ -183,11 +184,11 @@ namespace Dash
             {
                 return;
             }
-            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.Pointer.PointerId);
+            _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
 
@@ -248,10 +249,11 @@ namespace Dash
 
         public void AddOperatorView(DocumentViewModel viewModel, DocumentView operatorView, float left, float right)
         {
-            viewModel.IODragStarted += StartDrag;
-            viewModel.IODragEnded += EndDrag;
-            ViewModel.AddElement(operatorView, left, right);
-            _documentViews[viewModel.DocumentModel.Id] = operatorView;
+            throw new NotImplementedException();
+            //viewModel.IODragStarted += StartDrag;
+            //viewModel.IODragEnded += EndDrag;
+            //ViewModel.AddElement(operatorView, left, right);
+            //_documentViews[viewModel.DocumentModel.Id] = operatorView;
         }
 
         public void EndDrag(OperatorView.IOReference ioReference)
@@ -264,12 +266,12 @@ namespace Dash
             if (_graph.IsCyclic())
             {
                 _graph.RemoveEdge(_currReference.ReferenceFieldModel, ioReference.ReferenceFieldModel);
-                CancelDrag(ioReference.Pointer);
+                CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
             }
 
-            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
             if (_currReference.IsOutput == ioReference.IsOutput)
@@ -304,18 +306,19 @@ namespace Dash
             _connectionLine.SetBinding(Line.X2Property, x2Binding);
             _connectionLine.SetBinding(Line.Y2Property, y2Binding);
 
-            if (ioReference.IsOutput)
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
-                _connectionLine = null;
-            }
-            else
-            {
-                var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
-                _connectionLine = null;
-            }
+            throw new NotImplementedException();
+            //if (ioReference.IsOutput)
+            //{
+            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+            //    _connectionLine = null;
+            //}
+            //else
+            //{
+            //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //    docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+            //    _connectionLine = null;
+            //}
         }
 
         /// <summary>
@@ -632,24 +635,25 @@ namespace Dash
         /// <param name="e">drag event arguments</param>
         private void XCanvas_Drop(object sender, DragEventArgs e)
         {
-            Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
+            throw new NotImplementedException();
+            //Image dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
 
-            // make document
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
+            //// make document
+            //var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+            //var keyController = App.Instance.Container.GetRequiredService<KeyEndpoint>();
 
-            // generate single-image document model
-            DocumentModel image = DocumentModel.OneImage();
-            image.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(dragged), true);
-            Key contentKey = keyController.CreateKeyAsync("content");
-            DocumentViewModel model3 = new DocumentViewModel(image);
-            DocumentView view3 = new DocumentView(model3);
+            //// generate single-image document model
+            //DocumentModel image = DocumentModel.OneImage();
+            //image.SetField(DocumentModel.GetFieldKeyByName("content"), new ImageFieldModel(dragged), true);
+            //Key contentKey = keyController.CreateKeyAsync("content");
+            //DocumentViewModel model3 = new DocumentViewModel(image);
+            //DocumentView view3 = new DocumentView(model3);
 
-            // position relative to mouse
-            Point dropPos = e.GetPosition(XCanvas);
-            view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
+            //// position relative to mouse
+            //Point dropPos = e.GetPosition(XCanvas);
+            //view3.Margin = new Thickness(dropPos.X, dropPos.Y, 0, 0);
 
-            XCanvas.Children.Add(view3);
+            //XCanvas.Children.Add(view3);
         }
 
         private void XCanvas_DragOver_1(object sender, DragEventArgs e)

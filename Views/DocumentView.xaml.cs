@@ -11,7 +11,9 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
+using DashShared;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -25,6 +27,7 @@ namespace Dash
         /// </summary>
         private ManipulationControls manipulator;
         private DocumentViewModel _vm;
+        
 
         public bool ProportionalScaling;
         public ManipulationControls Manipulator { get { return manipulator; } }
@@ -48,6 +51,14 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+        }
+
+        public DocumentView(DocumentViewModel documentViewModel) : this()
+        {
+            DataContext = documentViewModel;
+
+            // reset the fields on the documetn to be those displayed by the documentViewModel
+            ResetFields(documentViewModel);
         }
 
         /// <summary>
@@ -187,13 +198,6 @@ namespace Dash
                 ProportionalScaling = false;
             }
         }
-        public DocumentView(DocumentViewModel documentViewModel)
-        {
-            DataContext = documentViewModel;
-
-            // reset the fields on the documetn to be those displayed by the documentViewModel
-            ResetFields(documentViewModel);
-        }
 
         /// <summary>
         /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
@@ -203,12 +207,17 @@ namespace Dash
         {
             // clear any current children (fields) and then add them over again
             XGrid.Children.Clear();
-            var elements = documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
-            foreach (var element in elements)
+            var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
+            if (elements.Count == 0)
             {
-                //if (!(element is TextBlock))
+                var panel = documentViewModel.DocumentController.MakeAllViewUI();
+                XGrid.Children.Add(panel);
+            } else
+                foreach (var element in elements)
+                {
                     XGrid.Children.Add(element);
-            }
+                }
         }
 
         /// <summary>
@@ -221,27 +230,6 @@ namespace Dash
             foreach (var element in uiElements)
             {
                 XGrid.Children.Add(element);
-            }
-        }
-
-
-        /// <summary>
-        /// Brings up OperationWindow when DocumentView is double tapped 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UserControl_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (_vm != null && _vm.DoubleTapEnabled)
-            {
-                e.Handled = true;
-                var window = new OperationWindow(1000, 800, new OperationWindowViewModel(_vm.DocumentModel));
-
-                var center = RenderTransform.TransformPoint(e.GetPosition(this));
-
-                throw new Exception("Operation Window needs to be a document to be added to the MainPage");
-                //FreeformView.MainFreeformView.ViewModel.AddElement(window, (float)(center.X - window.Width / 2), (float)(center.Y - window.Height / 2));
-                // MainPage.Instance.MainDocument.Children.Add(window);
             }
         }
 
@@ -291,26 +279,53 @@ namespace Dash
             ResetFields(_vm);
             _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);
             _vm.IODragEnded += reference => IODragEnded?.Invoke(reference);
-            // Add any methods
-            //_vm.DocumentModel.DocumentFieldUpdated -= DocumentModel_DocumentFieldUpdated;
-            //_vm.DocumentModel.DocumentFieldUpdated += DocumentModel_DocumentFieldUpdated;
+
+            #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
+
+            _vm.PropertyChanged += (o, eventArgs) =>
+            {
+                if (eventArgs.PropertyName == "IsMoveable")
+                {
+                    if (_vm.IsMoveable)
+                    {
+                        manipulator.AddAllAndHandle();
+                    }
+                    else
+                    {
+                        manipulator.RemoveAllButHandle();
+                    }
+                }
+            };
+
+            if (_vm.IsMoveable) manipulator.AddAllAndHandle();
+            else manipulator.RemoveAllButHandle();
+
+            #endregion
         }
 
         private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            //e.Handled = true;
+            var parent = this.GetFirstAncestorOfType<Canvas>();
+            if (parent == null) return;
+            var maxZ = int.MinValue;
+            foreach (var child in parent.GetDescendantsOfType<ContentPresenter>())
+            {
+                var childZ = Canvas.GetZIndex(child);
+                if (childZ > maxZ && child.GetFirstDescendantOfType<DocumentView>() != this)
+                    maxZ = childZ;
+            }
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
+        }
 
-            //var parent = OuterGrid.Parent as Grid;
-            //Debug.WriteLine(OuterGrid.Parent);
-            //if (parent == null) return;
-            //var maxZ = int.MinValue;
-            //foreach (var child in parent.Children)
-            //{
-            //    var childZ = (int)child.GetValue(Canvas.ZIndexProperty);
-            //    if (childZ > maxZ)
-            //        maxZ = childZ;
-            //}
-            //OuterGrid.SetValue(Canvas.ZIndexProperty, maxZ + 1);
+        private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+        }
+
+        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var position = e.GetPosition(OverlayCanvas.Instance);
+            OverlayCanvas.Instance.OpenInterfaceBuilder(_vm, position);
         }
     }
 }

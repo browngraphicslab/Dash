@@ -14,29 +14,7 @@ namespace Dash
             Data = data;
         }
 
-        private double _data;
-        public double Data
-        {
-            get { return _data; }
-            set
-            {
-                SetProperty(ref _data, value); 
-                OnFieldUpdated();
-            }
-        }
-
-        /// <summary>
-        /// Update the value of the FieldModel and send update event for the field
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        protected override void UpdateValue(FieldModel model)
-        {
-            NumberFieldModel fm = model as NumberFieldModel;
-            if (fm != null)
-            {
-                Data = fm.Data;
-            }
-        }
+        public double Data;
 
         public override string ToString()
         {

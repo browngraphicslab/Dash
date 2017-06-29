@@ -32,7 +32,9 @@ namespace Dash
     /// <summary>
     /// Window that allows users to create their own Key,Value pairs 
     /// </summary>
-    public sealed partial class OperationWindow : WindowTemplate
+    public sealed partial class 
+        
+        OperationWindow : WindowTemplate
     {
         private DocumentModel InputDocument => (DataContext as OperationWindowViewModel).InputDocument;
         private DocumentModel OutputDocument => (DataContext as OperationWindowViewModel).OutputDocument;
@@ -67,6 +69,7 @@ namespace Dash
         /// <param name="height">Height of the window</param>
         public OperationWindow(int width, int height, OperationWindowViewModel viewModel)
         {
+            throw new NotImplementedException();
             this.InitializeComponent();
             Width = width;
             Height = height;
@@ -74,20 +77,21 @@ namespace Dash
 
             //Create Operator document
             var docEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            DocumentModel opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel());
-            docEndpoint.UpdateDocumentAsync(opModel);
+            //DocumentModel opModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorModel()).DocumentModel;
+            //docEndpoint.UpdateDocumentAsync(opModel);
             DocumentView view = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            DocumentViewModel opvm = new DocumentViewModel(opModel);
-            opvm.IODragStarted += Vm_IODragStarted;
-            opvm.IODragEnded += Vm_IODragEnded;
-            view.DataContext = opvm;
-            XFreeformView.Canvas.Children.Add(view);
-            _documentViews.Add(opModel.Id, view);
+
+            //DocumentViewModel opvm = new DocumentViewModel(opModel);
+            //opvm.IODragStarted += Vm_IODragStarted;
+            //opvm.IODragEnded += Vm_IODragEnded;
+            //view.DataContext = opvm;
+            //XFreeformView.Canvas.Children.Add(view);
+            //_documentViews.Add(opModel.Id, view);
 
             NumberFieldModel nfm = new NumberFieldModel(57);
             //OutputDocument.SetField(DocumentModel.GetFieldKeyByName("Price/Sqft"), nfm);
@@ -121,11 +125,11 @@ namespace Dash
 
         private void StartDrag(OperatorView.IOReference ioReference, bool fromDoc)
         {
-            if (_currentPointers.Contains(ioReference.Pointer.PointerId))
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
             }
-            _currentPointers.Add(ioReference.Pointer.PointerId);
+            _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
             _currReference = ioReference;
 
@@ -201,7 +205,7 @@ namespace Dash
 
         private void EndDrag(OperatorView.IOReference ioReference, bool onDoc)
         {
-            _currentPointers.Remove(ioReference.Pointer.PointerId);
+            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
             if (_currReference.IsOutput == ioReference.IsOutput)
@@ -218,21 +222,22 @@ namespace Dash
 
             if (onDoc)
             {
-                if (ioReference.IsOutput)
-                {
-                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId);
-                    Debug.Assert(opDoc != null);
-                    opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
-                        ioReference.ReferenceFieldModel);
-                    _connectionLine = null;
-                }
-                else
-                {
-                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
-                    _connectionLine = null;
-                }
+                throw new NotImplementedException();
+                //if (ioReference.IsOutput)
+                //{
+                //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                //    var opDoc = docCont.GetDocumentAsync(_currReference.ReferenceFieldModel.DocId);
+                //    Debug.Assert(opDoc != null);
+                //    opDoc.AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                //        ioReference.ReferenceFieldModel);
+                //    _connectionLine = null;
+                //}
+                //else
+                //{
+                //    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                //    docCont.GetFieldInDocument(ioReference.ReferenceFieldModel).InputReference = _currReference.ReferenceFieldModel;
+                //    _connectionLine = null;
+                //}
             }
             else
             {
@@ -266,12 +271,14 @@ namespace Dash
                 }
                 else
                 {
-                    var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                    var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId);
-                    Debug.Assert(opDoc != null);
-                    opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
-                        _currReference.ReferenceFieldModel);
-                    _connectionLine = null;
+                    throw new NotImplementedException();
+
+                    //var docCont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
+                    //var opDoc = docCont.GetDocumentAsync(ioReference.ReferenceFieldModel.DocId);
+                    //Debug.Assert(opDoc != null);
+                    //opDoc.AddInputReference(ioReference.ReferenceFieldModel.FieldKey,
+                    //    _currReference.ReferenceFieldModel);
+                    //_connectionLine = null;
                 }
             }
         }
@@ -313,9 +320,11 @@ namespace Dash
         /// <param name="e"></param>
         private void B_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DocumentView view = new DocumentView();
-            DocumentViewModel viewModel = new DocumentViewModel(OutputDocument);
-            view.DataContext = viewModel;
+            throw new NotImplementedException();
+
+            //DocumentView view = new DocumentView();
+            //DocumentViewModel viewModel = new DocumentViewModel(OutputDocument);
+            //view.DataContext = viewModel;
             //FreeformView.MainFreeformView.Canvas.Children.Add(view);
         }
 
@@ -339,8 +348,8 @@ namespace Dash
             e.Handled = true;
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
-                new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
-                sender as Ellipse), true);
+                new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e,
+                sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -348,8 +357,8 @@ namespace Dash
             e.Handled = true;
             var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
             EndDrag(new OperatorView.IOReference(
-                new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
-                sender as Ellipse), true);
+                new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e,
+                sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
         }
 
         private void UndoLine()
@@ -367,8 +376,8 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e.Pointer,
-                    sender as Ellipse), true);
+                    new ReferenceFieldModel(OutputDocument.Id, dictEntry.Key as Key), false, e,
+                    sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
             }
         }
 
@@ -379,8 +388,8 @@ namespace Dash
                 e.Handled = true;
                 var dictEntry = (DictionaryEntry)(sender as Ellipse).DataContext;
                 StartDrag(new OperatorView.IOReference(
-                    new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e.Pointer,
-                    sender as Ellipse), true);
+                    new ReferenceFieldModel(InputDocument.Id, dictEntry.Key as Key), true, e,
+                    sender as Ellipse, (sender as FrameworkElement).GetFirstAncestorOfType<DocumentView>()), true);
             }
         }
 

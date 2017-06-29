@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
+using static Dash.MainPage;
 
 namespace Dash.Sources.Api {
     /// <summary>
@@ -77,28 +78,24 @@ namespace Dash.Sources.Api {
             if (responseAsDocuments.Count == 0)
                 return false;
 
-            // add document to given canvas
-            //DocumentModel testDocument = responseAsDocuments[0];
 
-            ////set layout
-            //testDocument.DocumentType = DocumentType.DefaultType;
+            //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
 
-            //// this part generates a defaultlayoutmodel that shows key/value string text pairs
-            //DocumentViewModel testModel = new DocumentViewModel(testDocument);
-            //testModel.SetLayoutModel(LayoutModel.DefaultLayoutModel(testDocument)); // TODO: simplify this in dvm constructor
-            //DocumentView testView = new DocumentView();
-            //testView.DataContext = testModel;
-            //testGrid.Children.Add(testView);
-            //LayoutModel.DefaultLayoutModel(testDocument);
-
-            // put document results into collection model
-            var docController = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            var collection = docController.CreateDocumentAsync("collection"); //_example?
-            collection.SetField(DocumentModel.GetFieldKeyByName("documents"), new DocumentCollectionFieldModel(responseAsDocuments), false);
-            DocumentViewModel cm = new DocumentViewModel(collection);
-            DocumentView v = new DocumentView(cm);
-            testGrid.Children.Add(v);
+            // make collection view
             
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            {
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(responseAsDocuments) }
+            };
+
+            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
+            var layoutDoc = new GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
+            var layoutController = new DocumentFieldModelController(documentFieldModel);
+            ContentController.AddModel(documentFieldModel);
+            ContentController.AddController(layoutController);
+            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            MainPage.Instance.DisplayDocument(col);
             return true;
         }
 
@@ -306,8 +303,12 @@ namespace Dash.Sources.Api {
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
 
+                int max = 10, i = 0; // this limits the # of results returned
                 // loop through all instantiated objects, making 
                 foreach (JObject result in resultObjects) {
+                    if (i > max)
+                        break;
+                    i++;
                     Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                     foreach (JProperty property in result.Properties()) {
                         //Debug.WriteLine(property.Name + ": " + property.Value);
@@ -316,9 +317,9 @@ namespace Dash.Sources.Api {
                         //       concerns: rabbit hole-ing?
                         toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                     }
-                    var newDoc = docController.CreateDocumentAsync(apiDocType);
-                    newDoc.SetFields(toAdd);
-                    responseAsDocuments.Add(newDoc); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+
+                    DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
+                    responseAsDocuments.Add(Document.DocumentModel); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
 

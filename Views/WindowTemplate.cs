@@ -169,18 +169,9 @@ namespace Dash
         /// </summary>
         private void ResizerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            // Transform e.Delta.Translation to relative size of FreeformView; scaling takes into account zoom factor  
-            Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, this);
-            var newWidth = this.ActualWidth + p.X; 
-            var newHeight = this.ActualHeight + p.Y; 
-
-            // clamp width and height to max and min
-            //this.Width = Math.Max(this.MinWidth, Math.Min(this.MaxWidth, newWidth));
-            //this.Height = Math.Max(Math.Min(this.MaxHeight, newHeight), this.MinHeight);
-            this.Width = newWidth;
-            this.Height = newHeight;
+            Width = ActualWidth + e.Delta.Translation.X;
+            Height = ActualHeight + e.Delta.Translation.Y;
             e.Handled = true;
-
         }
     }
 }

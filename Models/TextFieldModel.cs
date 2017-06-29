@@ -13,43 +13,23 @@ using Dash.Models;
 namespace Dash
 {
     /// <summary>
-    /// Field model for holding text data
+    /// A Field Model which holds text data
     /// </summary>
-    class TextFieldModel : FieldModel
+    public class TextFieldModel : FieldModel
     {
-        public TextFieldModel() { }
 
         /// <summary>
         /// Create a new text field model with the passed in string as data
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">The data whcih the field model will encapsulate</param>
         public TextFieldModel(string data)
         {
             Data = data;
         }
 
-        private string _data;
-
         /// <summary>
         /// The text which is the field model contains
         /// </summary>
-        public string Data
-        {
-            get { return _data; }
-            set
-            {
-                SetProperty(ref _data, value);
-                OnFieldUpdated();
-            }
-        }
-
-        protected override void UpdateValue(FieldModel model)
-        {
-            TextFieldModel fm = model as TextFieldModel;
-            if (fm != null)
-            {
-                Data = fm.Data;
-            }
-        }
+        public string Data;
     }
 }

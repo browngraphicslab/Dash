@@ -96,15 +96,30 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
-    <Compile Include="Controllers\ShapeController.cs" />
+    <Compile Include="Controllers\IController.cs" />
+    <Compile Include="Controllers\DocumentCollectionFieldModelController.cs" />
+    <Compile Include="Controllers\DocumentController.cs" />
+    <Compile Include="Controllers\DocumentFieldModelController.cs" />
+    <Compile Include="Controllers\FieldModelController.cs" />
+    <Compile Include="Controllers\ImageFieldModelController.cs" />
+    <Compile Include="Controllers\NumberFieldModelController.cs" />
+    <Compile Include="Controllers\OperatorFieldModelController.cs" />
+    <Compile Include="Controllers\PointFieldModelController.cs" />
+    <Compile Include="Controllers\TextFieldModelController.cs" />
+    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
+    <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
+    <Compile Include="Converters\SafeDataToXamlConverter.cs" />
+    <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
+    <Compile Include="Converters\UriToBitmapImageConverter.cs" />
+    <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
     <Compile Include="Models\DocumentModelFieldModel.cs" />
-    <Compile Include="Models\ExampleApiSource.cs" />
     <Compile Include="Models\FieldModel.cs" />
     <Compile Include="Models\FilterModel.cs" />
     <Compile Include="Models\FreeformModel.cs" />
@@ -116,13 +131,14 @@
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\ImageOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\DivideOperatorModelController.cs" />
+    <Compile Include="Models\OperatorModels\ImageOperatorFieldModelController.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorTemplateModel.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
-    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModel.cs" />
-    <Compile Include="Models\OperatorModels\Set\UnionOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Set\IntersectionOperatorModelController.cs" />
+    <Compile Include="Models\OperatorModels\Set\UnionOperatorFieldModelController.cs" />
+    <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TemplateModel.cs" />
@@ -138,13 +154,17 @@
     <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="ServerClient\Requests\CreateNewDocumentRequest.cs" />
+    <Compile Include="ServerClient\Requests\FieldModelControllerFactory.cs" />
+    <Compile Include="ServerClient\Requests\Request.cs" />
+    <Compile Include="ServerClient\Requests\RequestArgs\RequestArgs.cs" />
+    <Compile Include="ServerClient\Requests\RequestArgs\CreateNewDocumentRequestArgs.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxy.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\IHubProxyOneWay.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
-    <Compile Include="ServerClient\SignalRHubProxies\ShapeProxy.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -178,6 +198,7 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
+    <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
@@ -192,7 +213,6 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperationWindowViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
-    <Compile Include="ViewModels\ShapeViewModel.cs" />
     <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\CollectionView.xaml.cs">
@@ -229,13 +249,11 @@
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ShapeView.xaml.cs">
-      <DependentUpon>ShapeView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\VisualTreeHelperExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -244,13 +262,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\a.txt" />
+    <Content Include="Assets\ArrayOfNestedDocumentJson.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
-    <Content Include="Assets\grid.gif" />
+    <Content Include="Assets\customerJson.txt" />
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
+    <Content Include="Assets\dashlogo.png" />
+    <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\ppsqft.txt" />
-    <Content Include="Assets\Workspace_image.PNG" />
+    <Content Include="Assets\renderableJson.txt" />
+    <Content Include="Assets\resizehandle.png" />
+    <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
     <Content Include="Assets\SplashScreen.scale-200.png" />
@@ -348,9 +371,6 @@
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\ShapeView.xaml">
-      <SubType>Designer</SubType>
-    </Page>
     <Page Include="Views\WindowView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -367,6 +387,9 @@
       <Project>{4a1e5c52-06b9-436c-8fe0-8238809c1f57}</Project>
       <Name>DashShared</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ServerClient\SignalRHubProxies\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

@@ -38,28 +38,34 @@ namespace Dash
 
         public FieldModel GetFieldInDocument(string docId, Key field)
         {
-            DocumentModel model = _documents[docId];
-            return model?.Field(field);
+            throw new NotImplementedException();
+
+            //DocumentModel model = _documents[docId];
+            //return model?.Field(field);
         }
 
         public FieldModel GetFieldInDocument(ReferenceFieldModel referenceFieldModel)
         {
-            DocumentModel model = _documents[referenceFieldModel.DocId];
-            if (model != null)
-            {
-                return model.Field(referenceFieldModel.FieldKey);
-            }
-            return null;
+            throw new NotImplementedException();
+
+            //DocumentModel model = _documents[referenceFieldModel.DocId];
+            //if (model != null)
+            //{
+            //    return model.Field(referenceFieldModel.FieldKey);
+            //}
+            //return null;
         }
-        
+
         public IEnumerable<DocumentModel> GetDelegates(string protoId)
         {
-            foreach (var doc in _documents)
-            {
-                var docsProto = doc.Value.Field(DocumentModel.PrototypeKey) as DocumentModelFieldModel;
-                if (docsProto != null && docsProto.Data.Id == protoId)
-                    yield return doc.Value;
-            }
+            throw new NotImplementedException();
+
+            //foreach (var doc in _documents)
+            //{
+            //    var docsProto = doc.Value.Field(DocumentModel.PrototypeKey) as DocumentModelFieldModel;
+            //    if (docsProto != null && docsProto.Data.Id == protoId)
+            //        yield return doc.Value;
+            //}
         }
 
         public DocumentModel GetDocumentAsync(string docId)
@@ -86,32 +92,36 @@ namespace Dash
 
         public DocumentModel CreateDocumentAsync(string type)
         {
-            var id = $"{_numDocs++}";
+            throw new NotImplementedException();
 
-            var newDoc = new DocumentModel
-            {
-                DocumentType = _typeEndpoint.CreateTypeAsync(type),
-                Id = id
-            };
+            //var id = $"{_numDocs++}";
 
-            _documents[id] = newDoc;
+            //var newDoc = new DocumentModel
+            //{
+            //    DocumentType = _typeEndpoint.CreateTypeAsync(type),
+            //    Id = id
+            //};
 
-            return newDoc;
+            //_documents[id] = newDoc;
+
+            //return newDoc;
         }
 
         public DocumentModel CreateDocumentAsync(DocumentType type)
         {
-            var id = $"{_numDocs++}";
+            throw new NotImplementedException();
 
-            var newDoc = new DocumentModel
-            {
-                DocumentType = type,
-                Id = id
-            };
+            //var id = $"{_numDocs++}";
 
-            _documents[id] = newDoc;
+            //var newDoc = new DocumentModel
+            //{
+            //    DocumentType = type,
+            //    Id = id
+            //};
 
-            return newDoc;
+            //_documents[id] = newDoc;
+
+            //return newDoc;
         }
     }
 }
