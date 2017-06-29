@@ -148,23 +148,6 @@ namespace Dash
             widthFieldController.Data = newWidth;
         }
 
-
-        /// <summary>
-        /// Needed to make sure that the bounds on the windows size (min and max) don't exceed the size of the free form canvas
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XDocumentsPane_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            FreeformView freeform = sender as FreeformView;
-            Debug.Assert(freeform != null);
-            this.MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
-            this.MaxWidth = xSettingsPane.ActualWidth + freeform.CanvasWidth;
-            
-            this.MinWidth = xSettingsPane.ActualWidth + 50;
-            this.MinHeight = HeaderHeight * 2;
-        }
-
         private void ApplyEditableOnTapped(object sender, TappedRoutedEventArgs e)
         {
             ApplyEditable();
