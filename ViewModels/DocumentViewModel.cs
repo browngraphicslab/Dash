@@ -35,6 +35,10 @@ namespace Dash
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
 
+        public delegate void OnLayoutChangedHandler(DocumentViewModel sender);
+
+        public event OnLayoutChangedHandler OnLayoutChanged;
+
         public double Width
         {
             get { return _width; }
@@ -110,6 +114,15 @@ namespace Dash
                 X = (xPositionFieldModelController as NumberFieldModelController).Data;
                 Y = (yPositionFieldModelController as NumberFieldModelController).Data;
             }
+
+            var documentFieldModelController = DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            if (documentFieldModelController != null)
+                documentFieldModelController.Data.OnLayoutChanged += DocumentController_OnLayoutChanged;
+        }
+
+        private void DocumentController_OnLayoutChanged(DocumentController sender)
+        {
+            OnLayoutChanged?.Invoke(this);
         }
 
         private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)

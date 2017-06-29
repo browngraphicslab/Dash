@@ -463,6 +463,11 @@ namespace Dash
                 var layoutData = docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
                 Debug.Assert(layoutData != null);
 
+                layoutData.OnDocumentsChanged += delegate
+                {
+                    docController.FireOnLayoutChanged();
+                };
+
                 foreach (var layoutDoc in layoutData.GetDocuments())
                 {
                     var position =
@@ -479,6 +484,11 @@ namespace Dash
                     output.AddRange(ele);
                 }
                 return output;
+            }
+
+            private static void LayoutData_FieldModelUpdatedEvent(FieldModelController sender)
+            {
+                throw new NotImplementedException();
             }
         }
 

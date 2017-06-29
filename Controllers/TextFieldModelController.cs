@@ -36,5 +36,10 @@
                 Data = (fieldModel as TextFieldModelController).Data;
             
         }
+
+        public override string ToString()
+        {
+            return Data;
+        }
     }
 }

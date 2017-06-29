@@ -275,6 +275,11 @@ namespace Dash
             if (_vm == null)
                 return;
 
+            _vm.OnLayoutChanged += delegate
+            {
+                ResetFields(_vm);
+            };
+
             // otherwise layout the document according to the _vm
             ResetFields(_vm);
             _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);

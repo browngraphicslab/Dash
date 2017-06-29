@@ -59,5 +59,10 @@ namespace Dash
                 }
             }
         }
+
+        public override string ToString()
+        {
+            return ImageSource.ToString();
+        }
     }
 }
