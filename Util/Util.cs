@@ -1,7 +1,10 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
+using DashShared;
 
 namespace Dash
 {
@@ -46,6 +49,62 @@ namespace Dash
                 X = p.X * elemScale,
                 Y = p.Y * elemScale
             };
+        }
+
+        public static HashSet<DocumentController> GetIntersection(DocumentCollectionFieldModelController setA, DocumentCollectionFieldModelController setB)
+        {
+            HashSet<DocumentController> result = new HashSet<DocumentController>();
+            foreach (DocumentController contA in setA.GetDocuments())
+            {
+                foreach (DocumentController contB in setB.GetDocuments())
+                {
+                    if (result.Contains(contB)) continue;
+
+                    var enumFieldsA = contA.EnumFields().ToList();
+                    var enumFieldsB = contB.EnumFields().ToList();
+                    if (enumFieldsA.Count != enumFieldsB.Count) continue;
+
+                    bool equal = true;
+                    foreach (KeyValuePair<Key, FieldModelController> pair in enumFieldsA)
+                    {
+                        if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
+                        {
+                            if (pair.Value is TextFieldModelController)
+                            {
+                                TextFieldModelController fmContA = pair.Value as TextFieldModelController;
+                                TextFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as TextFieldModelController;
+                                if (!fmContA.Data.Equals(fmContB?.Data))
+                                {
+                                    equal = false;
+                                    break;
+                                }
+                            }
+                            else if (pair.Value is NumberFieldModelController)
+                            {
+                                NumberFieldModelController fmContA = pair.Value as NumberFieldModelController;
+                                NumberFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as NumberFieldModelController;
+                                if (!fmContA.Data.Equals(fmContB?.Data))
+                                {
+                                    equal = false;
+                                    break;
+                                }
+                            }
+                            else if (pair.Value is ImageFieldModelController)
+                            {
+                                ImageFieldModelController fmContA = pair.Value as ImageFieldModelController;
+                                ImageFieldModelController fmContB = enumFieldsB.First(p => p.Key.Equals(pair.Key)).Value as ImageFieldModelController;
+                                if (!fmContA.Data.UriSource.AbsoluteUri.Equals(fmContB?.Data.UriSource.AbsoluteUri))
+                                {
+                                    equal = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (equal) result.Add(contB);
+                }
+            }
+            return result; 
         }
     }
 }

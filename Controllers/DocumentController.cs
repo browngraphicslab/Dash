@@ -318,7 +318,6 @@ namespace Dash
         public FrameworkElement MakeAllViewUI()
         {
             var sp = new StackPanel();
-            sp.Margin = new Thickness(10, 0, 0, 0);
             foreach (var f in EnumFields())
             {
                 if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
@@ -338,17 +337,17 @@ namespace Dash
                 else if (f.Value is DocumentFieldModelController)
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                    var docEles = fieldDoc.MakeAllViewUI();
-                    if (docEles != null)
-                        sp.Children.Add(docEles);
+                    sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
+                    (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
+                    (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
                     foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
-                        var docEles = fieldDoc.MakeAllViewUI();
-                        if (docEles != null)
-                            sp.Children.Add(docEles);
+                        sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
+                        (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
+                        (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                     }
                 }
             }
@@ -392,25 +391,17 @@ namespace Dash
                 var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey) as FieldModelController;
                 if (fieldModelController != null)
                 {
-                    while (fieldModelController is ReferenceFieldModelController)
-                    {
-                        var refFM = (fieldModelController as ReferenceFieldModelController).ReferenceFieldModel;
-                        fieldModelController = ContentController.GetController<DocumentController>(refFM.DocId).GetField(refFM.FieldKey);
-                    }
+                    fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);
                     if (fieldModelController is DocumentFieldModelController)
                     {
                         var fieldDoc = (fieldModelController as DocumentFieldModelController).Data;
-                        var docEles = fieldDoc.MakeViewUI();
-                        if (docEles != null)
-                            uieles.AddRange(docEles);
+                        uieles.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
                     }
                     else if (fieldModelController is DocumentCollectionFieldModelController)
                     {
                         foreach (var fieldDoc in (fieldModelController as DocumentCollectionFieldModelController).GetDocuments())
                         {
-                            var docEles = fieldDoc.MakeViewUI();
-                            if (docEles != null)
-                                uieles.AddRange(docEles);
+                            uieles.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
                         }
                     }
                 }

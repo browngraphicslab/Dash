@@ -208,7 +208,7 @@ namespace Dash
             // clear any current children (fields) and then add them over again
             XGrid.Children.Clear();
             var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-            var elements = layout != null ? layout.Data.MakeViewUI() : new List<FrameworkElement>();
+            var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
             if (elements.Count == 0)
             {
                 var panel = documentViewModel.DocumentController.MakeAllViewUI();
