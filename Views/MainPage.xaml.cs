@@ -13,6 +13,7 @@ using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input;
 using Windows.UI.Input.Inking;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -283,6 +284,28 @@ namespace Dash
             {
                 return new List<FrameworkElement>();
             }
+
+            /// <summary>
+            /// Adds bindings needed to create links between renderable fields on collections.
+            /// </summary>
+            /// <param name="refFieldModelController">A reference back to the data source for the <paramref name="renderElement"/></param>
+            /// <param name="renderElement">The element which is actually rendered on the screen, this will receive bindings for interactions</param>
+            protected static void AddOperationBindings(ReferenceFieldModelController refFieldModelController, FrameworkElement renderElement)
+            {
+                renderElement.ManipulationStarted += (sender, args) => args.Complete();
+                renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
+                {
+                    var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                    if (view == null) return; // we can't always assume we're on a collection
+                    view.StartDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, true, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
+                };
+                renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+                {
+                    var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                    if (view == null) return; // we can't always assume we're on a collection
+                    view.EndDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, false, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
+                };
+            }
         }
 
         /// <summary>
@@ -390,13 +413,10 @@ namespace Dash
             }
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
-                var fw = docController.GetField(FontWeightKey);
-                var fontWeight = fw is TextFieldModelController ? ((fw as TextFieldModelController).Data == "Bold" ? Windows.UI.Text.FontWeights.Bold : Windows.UI.Text.FontWeights.Normal) : Windows.UI.Text.FontWeights.Normal;
-
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
                 {
-                    var uiElements = new TextTemplateModel(0, 0, fontWeight).MakeViewUI(data, docController);
+                    var uiElements = new TextTemplateModel(0, 0, new Windows.UI.Text.FontWeight()).MakeViewUI(data, docController);
 
                     var reference = data as ReferenceFieldModelController;
                     Debug.Assert(reference != null);
@@ -453,10 +473,18 @@ namespace Dash
                 // X, Y, Width, and Height etc....
 
                 // create the image
-                var image = new Image();
+                var image = new Image
+                {
+                    Stretch = Stretch.Fill // set image to fill container but ignore aspect ratio :/
+                };
 
-                // set the source of the image
-                image.Source = imFieldModelController.Data;
+                // make image source update when changed
+                var sourceBinding = new Binding
+                {
+                    Source = imFieldModelController,
+                    Path = new PropertyPath(nameof(imFieldModelController.Data))
+                };
+                image.SetBinding(Image.SourceProperty, sourceBinding);
 
                 // make image height resize
                 var heightController =
@@ -468,7 +496,7 @@ namespace Dash
                     Path = new PropertyPath(nameof(heightController.Data)),
                     Mode = BindingMode.TwoWay
                 };
-                image.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+                image.SetBinding(HeightProperty, heightBinding);
 
                 // make image width resize
                 var widthController =
@@ -480,7 +508,7 @@ namespace Dash
                     Path = new PropertyPath(nameof(widthController.Data)),
                     Mode = BindingMode.TwoWay
                 };
-                image.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+                image.SetBinding(WidthProperty, widthBinding);
 
                 // make image translate
                 var translateController =
@@ -493,32 +521,14 @@ namespace Dash
                     Mode = BindingMode.TwoWay,
                     Converter = new PointToTranslateTransformConverter()
                 };
-                image.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+                image.SetBinding(RenderTransformProperty, translateBinding);
 
-                //if (refToImage != null)
-                //{
-                //    var uiElements = new ImageTemplateModel(0, 0).MakeViewUI(refToImage, docController);
+                // TODO all this binding code should be abstracted
+                AddOperationBindings(refToImage, image);
 
-                //    var reference = refToImage as ReferenceFieldModelController;
-                //    Debug.Assert(reference != null);
-                //    var tb = uiElements[0];
-                //    tb.DataContext = reference.ReferenceFieldModel;
-                //    tb.ManipulationMode = ManipulationModes.All;
-                //    tb.ManipulationStarted += (sender, args) => args.Complete();
-                //    tb.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
-                //    {
-                //        var view = tb.GetFirstAncestorOfType<CollectionView>();
-                //        view.StartDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, true, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
-                //    };
-                //    tb.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
-                //    {
-                //        var view = tb.GetFirstAncestorOfType<CollectionView>();
-                //        view.EndDrag(new OperatorView.IOReference(reference.ReferenceFieldModel, false, args, tb, tb.GetFirstAncestorOfType<DocumentView>()));
-                //    };
-                //    return uiElements;
-                //}
-                return new List<FrameworkElement> {image};
+                return new List<FrameworkElement> { image };
             }
+
             public override List<FrameworkElement> makeView(DocumentController docController)
             {
                 return ImageBox.MakeView(docController);

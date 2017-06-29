@@ -54,7 +54,7 @@ namespace Dash
         /// </summary>
         private bool _isEditing;
 
-        private readonly Color _visibleBorderColor = Colors.Transparent;
+        private readonly Color _visibleBorderColor = Colors.CornflowerBlue;
         private readonly Color _hiddenBordercolor = Colors.Transparent;
         private readonly Thickness _borderThickness = new Thickness(1);
 
@@ -271,7 +271,7 @@ namespace Dash
         /// <param name="translation"></param>
         public void ApplyContentTranslationToFrame(Point translation)
         {
-            _overlayCanvas.RenderTransform =
+            _container.RenderTransform =
                 PointToTranslateTransformConverter.Instance.ConvertDataToXaml(translation);
         }
     }
