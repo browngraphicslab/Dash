@@ -108,8 +108,8 @@
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
-    <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
+    <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
     <Compile Include="Converters\DocumentToUIElementConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />

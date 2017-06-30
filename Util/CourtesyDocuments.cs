@@ -361,17 +361,28 @@ namespace Dash
                 return textController;
             }
 
-            protected static void BindTextAlignment(TextBlock tb, NumberFieldModelController textAlignmentController)
+            protected static void BindTextAlignment(FrameworkElement renderElement, NumberFieldModelController textAlignmentController)
             {
                 if (textAlignmentController == null) throw new ArgumentNullException(nameof(textAlignmentController));
-                var fontWeightBinding = new Binding
+                var alignmentBinding = new Binding
                 {
                     Source = textAlignmentController,
                     Path = new PropertyPath(nameof(textAlignmentController.Data)),
                     Mode = BindingMode.TwoWay,
                     Converter = new IntToTextAlignmentConverter()
                 };
-                tb.SetBinding(TextBlock.TextAlignmentProperty, fontWeightBinding);
+                if (renderElement is TextBlock)
+                {
+                    renderElement.SetBinding(TextBlock.TextAlignmentProperty, alignmentBinding);
+                }
+                else if (renderElement is TextBox)
+                {
+                    renderElement.SetBinding(TextBox.TextAlignmentProperty, alignmentBinding);
+                }
+                else
+                {
+                    Debug.Assert(false, $"we don't support alignment for elements of type {renderElement.GetType()}");
+                }
             }
 
             #region Font Weight Binding
@@ -384,7 +395,7 @@ namespace Dash
                 return fontController;
             }
 
-            protected static void BindFontWeight(TextBlock tb, NumberFieldModelController fontWeightController)
+            protected static void BindFontWeight(FrameworkElement renderElement, NumberFieldModelController fontWeightController)
             {
                 if (fontWeightController == null) throw new ArgumentNullException(nameof(fontWeightController));
                 var fontWeightBinding = new Binding
@@ -394,7 +405,18 @@ namespace Dash
                     Mode = BindingMode.TwoWay,
                     Converter = new DoubleToFontWeightConverter()
                 };
-                tb.SetBinding(TextBlock.FontWeightProperty, fontWeightBinding);
+                if (renderElement is TextBlock)
+                {
+                    renderElement.SetBinding(Control.FontWeightProperty, fontWeightBinding);
+                }
+                else if (renderElement is TextBox)
+                {
+                    renderElement.SetBinding(Control.FontWeightProperty, fontWeightBinding);
+                }
+                else
+                {
+                    Debug.Assert(false, $"we don't support fontweight for elements of type {renderElement.GetType()}");
+                }
             }
 
             #endregion
@@ -409,7 +431,7 @@ namespace Dash
                 return fontController;
             }
 
-            protected static void BindFontSize(TextBlock tb, NumberFieldModelController sizeController)
+            protected static void BindFontSize(FrameworkElement renderElement, NumberFieldModelController sizeController)
             {
                 if (sizeController == null) throw new ArgumentNullException(nameof(sizeController));
                 var fontSizeBinding = new Binding
@@ -418,7 +440,17 @@ namespace Dash
                     Path = new PropertyPath(nameof(sizeController.Data)),
                     Mode = BindingMode.TwoWay,
                 };
-                tb.SetBinding(TextBlock.FontSizeProperty, fontSizeBinding);
+                if (renderElement is TextBlock)
+                {
+                    renderElement.SetBinding(Control.FontSizeProperty, fontSizeBinding);
+                } else if (renderElement is TextBox)
+                {
+                    renderElement.SetBinding(Control.FontSizeProperty, fontSizeBinding);
+                }
+                else
+                {
+                    Debug.Assert(false, $"we don't support fontsize for elements of type {renderElement.GetType()}");
+                }
             }
 
             #endregion
