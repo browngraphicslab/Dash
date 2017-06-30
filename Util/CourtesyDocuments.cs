@@ -219,7 +219,7 @@ namespace Dash
                         yield return d;
                 else if (layoutDataField.FieldModel is DocumentModelFieldModel)
                     yield return ContentController.GetController<DocumentController>((layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
-
+                else yield return LayoutDocumentController;
             }
             public DocumentCollectionFieldModelController LayoutDocumentCollectionController = null;
             public override List<FrameworkElement> makeView(DocumentController docController)
@@ -298,7 +298,7 @@ namespace Dash
                 // X, Y, Width, and Height etc....
 
                 // create the textblock
-                var tb = new TextBlock();
+                FrameworkElement tb = null;
 
                 // use the reference to the text to get the text field model controller
                 var retToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
@@ -306,19 +306,24 @@ namespace Dash
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText);
                 if (fieldModelController is TextFieldModelController)
                 {
+                    tb = new TextBox();
+                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    tb.VerticalAlignment = VerticalAlignment.Stretch;
                     var textFieldModelController = fieldModelController as TextFieldModelController;
                     Debug.Assert(textFieldModelController != null);
                     // make text update when changed
                     var sourceBinding = new Binding
                     {
                         Source = textFieldModelController,
-                        Path = new PropertyPath(nameof(textFieldModelController.Data))
+                        Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                        Mode=BindingMode.TwoWay
                     };
-                    tb.SetBinding(TextBlock.TextProperty, sourceBinding);
+                    tb.SetBinding(TextBox.TextProperty, sourceBinding);
 
                 }
                 else if (fieldModelController is NumberFieldModelController)
                 {
+                    tb = new TextBlock();
                     var numFieldModelController = fieldModelController as NumberFieldModelController;
                     Debug.Assert(numFieldModelController != null);
                     // make text update when changed
@@ -576,6 +581,33 @@ namespace Dash
             }
         }
 
+        public class PostitNote : CourtesyDocument
+        {
+            public static DocumentType PostitNoteType = new DocumentType("A5FEFB00-EA2C-4B64-9230-BBA41BACCAFC", "Post It");
+            public static Key NotesFieldKey = new Key("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
+            static DocumentController _prototypeLayout = CreatePrototypeLayout();
+            static TextingBox _prototypeTextLayout;
+
+            static DocumentController CreatePrototypeLayout()
+            {
+                _prototypeTextLayout = new TextingBox(new TextFieldModel("Text"), 0, 0, double.NaN, double.NaN);
+
+                return _prototypeTextLayout.Document;
+            }
+            public PostitNote()
+            {
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+                fields.Add(NotesFieldKey, new TextFieldModel("<your note>"));
+
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, PostitNoteType)).GetReturnedDocumentController();
+                
+                var tBox = _prototypeTextLayout.MakeDelegate(new ReferenceFieldModel(Document.GetId(), NotesFieldKey));
+                SetLayoutForDocument(tBox, tBox.DocumentModel);
+             
+                SetLayoutForDocument(Document, tBox.DocumentModel);
+            }
+
+        }
 
         public class TwoImages : CourtesyDocument
         {
@@ -589,9 +621,11 @@ namespace Dash
 
             static DocumentController CreatePrototypeLayout()
             {
+                // set the default layout parameters on prototypes of field layout documents
+                // these prototypes will be overridden by delegates when an instance is created
                 _prototypeImage1Layout = new ImageBox(new TextFieldModel("Image 1"), 0, 20, 200, 200);
                 _prototypeImage2Layout = new ImageBox(new TextFieldModel("Image 2"), 0, 220, 200, 200);
-                _prototypeTextLayout = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 20);
+                _prototypeTextLayout   = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 20);
 
                 return new FreeformDocument(new[] { _prototypeTextLayout.Document.DocumentModel, _prototypeImage1Layout.Document.DocumentModel, _prototypeImage2Layout.Document.DocumentModel }).Document;
             }
@@ -604,6 +638,7 @@ namespace Dash
 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
 
+                // create delegates for each prototype layout field and override the instance data (DataKey and LayoutKey)
                 var imBox1 = _prototypeImage1Layout.MakeDelegate(new ReferenceFieldModel(Document.GetId(), Image1FieldKey));
                 var imBox2 = _prototypeImage2Layout.MakeDelegate(new ReferenceFieldModel(Document.GetId(), Image2FieldKey));
                 var tBox   = _prototypeTextLayout.MakeDelegate  (new ReferenceFieldModel(Document.GetId(), TextFieldKey));
@@ -627,6 +662,8 @@ namespace Dash
                 }
                 else
                 {
+                    // create a delegate for the prototype layout document and override the list of layout display elements :
+                    //   the list of display elements is a list of delegates of the prototype layout documents prototype layout field documents.
                     SetLayoutForDocument(Document, CreateDelegateLayout(_prototypeLayout, new DocumentModel[] { imBox1.DocumentModel, imBox2.DocumentModel, tBox.DocumentModel }).DocumentModel);
                 }
             }
@@ -680,13 +717,13 @@ namespace Dash
                 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NumbersType)).GetReturnedDocumentController();
 
-                var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey)).Document;
-                var imBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number2FieldKey)).Document;
-                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey)).Document;
+                var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey), 0, 0, 50, 20).Document;
+                var imBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number2FieldKey), 0, 0, 50, 20).Document;
+                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey), 0, 0, 50, 20).Document;
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
-                //SetLayoutForDocument(stackPan.DocumentModel);
+                SetLayoutForDocument(Document, stackPan.DocumentModel);
             }
 
         }
