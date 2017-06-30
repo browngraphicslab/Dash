@@ -74,6 +74,16 @@ namespace Dash
             JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
 
+        public static DocumentController Parse(string str) {
+            var documentModel = ParseJson(JToken.Parse(str), null, true);
+            return ContentController.GetController(documentModel.Id) as DocumentController;
+        }
+
+        public static DocumentController Parse(JToken t) {
+            var documentModel = ParseJson(t, null, true);
+            return ContentController.GetController(documentModel.Id) as DocumentController;
+        }
+
         public static EntityBase ParseJson(JToken jToken, DocumentSchema parentSchema, bool isRoot, bool isChildOfArray = false)
         {
             DocumentSchema schema;
@@ -121,8 +131,10 @@ namespace Dash
                 foreach (var item in myArray)
                 {
                     var dm = ParseJson(item, parentSchema, false, true) as DocumentModel;
-                    if (dm == null)
-                        throw new NotImplementedException("We have no way of creating lists of anything other than documents at the moment!");
+                    if (dm == null) {
+
+                        //throw new NotImplementedException("We have no way of creating lists of anything other than documents at the moment!");
+                    } else 
                     documentModels.Add(dm);
                 }
                 var documentCollectionFieldModel = new DocumentCollectionFieldModel(documentModels);

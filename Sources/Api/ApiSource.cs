@@ -231,7 +231,7 @@ namespace Dash.Sources.Api {
             responseAsDocuments = new List<DocumentController>();
             var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
-
+                
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
@@ -252,14 +252,16 @@ namespace Dash.Sources.Api {
                     }
 
                     DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
-                    responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
-
-                    /*
-                     var documentModel = (DocumentCollectionFieldModel)JsonToDashUtil.ParseJson(JToken.Parse(text.Text),null,false);
-                var JsonDocument = ContentController.GetController(documentModel.Id) as DocumentCollectionFieldModelController;
-                responseAsDocuments = JsonDocument.GetDocuments();
-                */
+                    responseAsDocuments.Add(Document); // /*apiURL.Host.ToString() DocumentType.DefaultType));
                 }
+                    
+                /*
+                DocumentController documentModel = JsonToDashUtil.Parse(text.Text);
+                responseAsDocuments.Add(documentModel);
+                TODO: add this back in when an API it works with is found
+                */
+                
+                
 
 
                 // at this point resultAsDocuments contains a list of all JSON results formatted
