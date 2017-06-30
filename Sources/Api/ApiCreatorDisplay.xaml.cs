@@ -103,7 +103,7 @@ namespace Dash.Sources.Api {
                 xApiURLTB.Text = "https://itunes.apple.com/search";
 
             // instantiate new APISource
-            ApiSource newApi = new ApiSource(requestType, xApiURLTB.Text, xAuthControl.AuthURL, xAuthControl.Secret,
+            ApiSource newApi = new ApiSource(DocModel, requestType, xApiURLTB.Text, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
             newApi.setApiDisplay(SourceDisplay);
 

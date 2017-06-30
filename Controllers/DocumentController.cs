@@ -355,10 +355,6 @@ namespace Dash
             {
                 uieles.AddRange(CourtesyDocuments.ApiDocumentModel.MakeView(this));
             } 
-            else if (DocumentType == CourtesyDocuments.ApiSourceDoc.DocumentType) 
-            {
-                uieles.AddRange(CourtesyDocuments.ApiSourceDoc.MakeView(this));
-            } 
             else if (DocumentType == CourtesyDocuments.FreeformDocument.DocumentType)
             {
                 uieles.AddRange(CourtesyDocuments.FreeformDocument.MakeView(this));

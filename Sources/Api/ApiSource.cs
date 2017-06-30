@@ -33,17 +33,19 @@ namespace Dash.Sources.Api {
         private HttpClient client;
         private TextBlock text;
         private HttpResponseMessage response;
-        private List<DocumentModel> responseAsDocuments; // list of results formatted as documents
+        private List<DocumentController> responseAsDocuments; // list of results formatted as documents
         private ApiSourceDisplay display;
         public TextBlock debugger;
         private Canvas testGrid;
+        private DocumentController docController;
 
         // == CONSTRUCTORS ==
-        public ApiSource(HttpMethod requestType, string apiURL, string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
+        public ApiSource(DocumentController docController, HttpMethod requestType, string apiURL, string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
             this.headers = new Dictionary<string, ApiProperty>();
             this.parameters = new Dictionary<string, ApiProperty>();
             this.authHeaders = new Dictionary<string, ApiProperty>();
             this.authParameters = new Dictionary<string, ApiProperty>();
+            this.docController = docController;
             this.apiURI = new Uri(apiURL);
             if (!string.IsNullOrWhiteSpace(authURL)) {
                 this.authURI = new Uri(authURL);
@@ -59,11 +61,11 @@ namespace Dash.Sources.Api {
             response = null;
             testGrid = testGridToAddDocumentsTo;
             client = new HttpClient(); // TODO: comment out for HttpClient abstraction
-            responseAsDocuments = new List<DocumentModel>();
+            responseAsDocuments = new List<DocumentController>();
         }
 
         // == GETTERS / SETTERS ==
-        public List<DocumentModel> ResponseAsDocuments { get { return this.responseAsDocuments; } set { this.responseAsDocuments = value; } }
+        public List<DocumentController> ResponseAsDocuments { get { return this.responseAsDocuments; } set { this.responseAsDocuments = value; } }
 
         // == METHODS ==
         /// <summary>
@@ -71,28 +73,10 @@ namespace Dash.Sources.Api {
         /// test canvas.
         /// </summary>
         /// <param name="g"></param>
-        public bool addResponseDocumentsToCanvas() {
-            if (responseAsDocuments.Count == 0)
-                return false;
-
-
-            //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
-
-            // make collection view
+        public bool updateDocumentModelResults() {
             
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
-            {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(responseAsDocuments) }
-            };
 
-            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
-            var layoutController = new DocumentFieldModelController(documentFieldModel);
-            ContentController.AddModel(documentFieldModel);
-            ContentController.AddController(layoutController);
-            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
-            MainPage.Instance.DisplayDocument(col);
+            CourtesyDocuments.ApiDocumentModel.setResults(docController, responseAsDocuments);
             return true;
         }
 
@@ -248,7 +232,7 @@ namespace Dash.Sources.Api {
             // TODO: is it extra to loop into nested Objects in a JSON value and generate fields 
             // representing all of them? Ask how to have nested properties inside of documents
             //      -> document of documents? or create custom object type maybe?
-            responseAsDocuments = new List<DocumentModel>();
+            responseAsDocuments = new List<DocumentController>();
             var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
@@ -271,7 +255,7 @@ namespace Dash.Sources.Api {
                     }
 
                     DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
-                    responseAsDocuments.Add(Document.DocumentModel); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                    responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
                 }
 
 
@@ -285,20 +269,21 @@ namespace Dash.Sources.Api {
                 // then try and parse it as a single object
             } catch (InvalidOperationException e) {
                 JObject result = JObject.Parse(text.Text);
-                Dictionary<Key, FieldModel> resultAsDictionary = new Dictionary<Key, FieldModel>();
+                Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                 foreach (JProperty property in result.Properties()) {
                     //Debug.WriteLine(property.Name + ": " + property.Value.Type);
-                    resultAsDictionary.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
+                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                 }
 
                 // at this point, resultAsDocument is a new document
                 //
                 // TODO: unique identifiers as above
-                responseAsDocuments.Add(new DocumentModel(resultAsDictionary, apiDocType)); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
+                responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
             }
 
             // add document to children
-            addResponseDocumentsToCanvas();
+            updateDocumentModelResults();
         }
 
         // recursively yield all children of json
