@@ -185,57 +185,7 @@ namespace Dash
             //e.Items.Insert(0, );
         }
 
-        private void AddField(Key key)
-        {
-            //ReferenceFieldModel reference = _documentController.Fields[key].InputReference;
-            //var box = new CourtesyDocuments.TextingBox(reference);
-            //var doc = box.Document;
-
-            ////var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
-            ////var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-            ////var tModel = new TextFieldModel("Hello World!");
-            ////var fields = new Dictionary<Key, FieldModel>
-            ////{
-            ////    [TextFieldKey] = tModel,
-            ////    [Image1FieldKey] = imModel,
-            ////    [Image2FieldKey] = imModel2
-            ////};
-
-
-            //var imBox1 = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), Image1FieldKey)).Document;
-            //var imBox2 =
-            //    new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), Image2FieldKey))
-            //        .Document;
-            //var tBox =
-            //    new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), TextFieldKey))
-            //        .Document;
-
-
-            //var documentFieldModel =
-            //    new DocumentCollectionFieldModel(new DocumentModel[]
-            //        {tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel});
-            //var documentFieldModelController = new DocumentCollectionFieldModelController(documentFieldModel);
-            //ContentController.AddModel(documentFieldModel);
-            //ContentController.AddController(documentFieldModelController);
-            //_documentController.SetField(DashConstants.KeyStore.DataKey, documentFieldModelController, true);
-
-            //var genericCollection = new CourtesyDocuments.GenericCollection(documentFieldModel).Document;
-            //genericCollection.SetField(DashConstants.KeyStore.WidthFieldKey,
-            //    new NumberFieldModelController(new NumberFieldModel(800)), true);
-
-            //var layoutDoc = genericCollection.DocumentModel;
-            ////SetLayoutForDocument(genericCollection.DocumentModel);
-
-            //var documentFieldModel2 = new DocumentModelFieldModel(layoutDoc);
-            //var layoutController = new DocumentFieldModelController(documentFieldModel2);
-            //ContentController.AddModel(documentFieldModel2);
-            //ContentController.AddController(layoutController);
-            //_documentController.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
-
-
-
-            ////_layoutDocumentCollection.AddDocument(_documentController.Fields[key].);
-        }
+        
 
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
@@ -246,15 +196,30 @@ namespace Dash
         {
             Key key = e.Data.Properties["key"] as Key;
             var fieldModel = _documentController.GetField(key).FieldModel;
+            CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModel is TextFieldModel)
             {
-                CourtesyDocuments.TextingBox box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
-                _layoutDocumentCollection.AddDocument(box.Document);
-            } else if (fieldModel is ImageFieldModel)
+                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+            }
+            else if (fieldModel is ImageFieldModel)
             {
-                CourtesyDocuments.ImageBox box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+            }
+            else if (fieldModel is DocumentModelFieldModel)
+            {
+                var dm = fieldModel as DocumentModelFieldModel;
+                box = new CourtesyDocuments.FreeformDocument(_layoutDocumentCollection.GetDocuments().Select(DocController => DocController.DocumentModel));
+            }
+
+            if (box != null)
+            {
+                //Sets the point position of the image/text box
+                box.Document.Fields[DashConstants.KeyStore.PositionFieldKey] =
+                    new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
+                        e.GetPosition(_documentView).Y));
                 _layoutDocumentCollection.AddDocument(box.Document);
             }
+
             ApplyEditable();
         }
 

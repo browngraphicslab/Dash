@@ -472,7 +472,7 @@ namespace Dash
                 {
                     var position =
                         (layoutDoc.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?.Data;
-                    Debug.Assert(position != null);
+                    //Debug.Assert(position != null);
                     var ele = layoutDoc.MakeViewUI();
                     foreach (var frameworkElement in ele)
                     {

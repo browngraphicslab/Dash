@@ -20,17 +20,17 @@
             </Grid.ColumnDefinitions>
             <Grid x:Name="xKeyValuePane" Width="200" Height="Auto" HorizontalAlignment="Center" Grid.Column="0"
                   Background="White" BorderBrush="Black" BorderThickness="0,0,1,0">
-                <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Vertical" Height="{Binding ElementName=xKeyValuePane, Path=Height}">
                     <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Key Value Menu</TextBlock>
-                    <ListView x:Name="xKeyValueListView" VerticalAlignment="Stretch" HorizontalAlignment="Center"
+                    <ListView x:Name="xKeyValueListView" HorizontalAlignment="Center"
                               CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
                               SelectionMode="Single" SelectionChanged="XKeyValueListView_OnSelectionChanged"
-                              ItemsSource="{Binding _keyValuePairs}" Height="Auto"
+                              ItemsSource="{Binding _keyValuePairs}" VerticalAlignment="Stretch"
                               >
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Vertical">
-                                    <Rectangle Height="7.5"></Rectangle>
+                                    <Rectangle Height="25"></Rectangle>
                                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" >
                                         <TextBox Text="{Binding Path=Key.Name}" IsReadOnly="True"
                                              BorderBrush="{StaticResource WindowsBlue}" BorderThickness="2,2,2,2"
