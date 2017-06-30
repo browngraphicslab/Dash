@@ -26,7 +26,7 @@ namespace Dash
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
         private ManipulationControls manipulator;
-        private DocumentViewModel _vm;
+        public DocumentViewModel ViewModel { get; set; }
         
 
         public bool ProportionalScaling;
@@ -268,25 +268,25 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (_vm != null)
+            if (ViewModel != null)
                 return;
-            _vm = DataContext as DocumentViewModel;
+            ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
-            if (_vm == null)
+            if (ViewModel == null)
                 return;
 
             // otherwise layout the document according to the _vm
-            ResetFields(_vm);
-            _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);
-            _vm.IODragEnded += reference => IODragEnded?.Invoke(reference);
+            ResetFields(ViewModel);
+            ViewModel.IODragStarted += reference => IODragStarted?.Invoke(reference);
+            ViewModel.IODragEnded += reference => IODragEnded?.Invoke(reference);
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
-            _vm.PropertyChanged += (o, eventArgs) =>
+            ViewModel.PropertyChanged += (o, eventArgs) =>
             {
                 if (eventArgs.PropertyName == "IsMoveable")
                 {
-                    if (_vm.IsMoveable)
+                    if (ViewModel.IsMoveable)
                     {
                         manipulator.AddAllAndHandle();
                     }
@@ -297,7 +297,7 @@ namespace Dash
                 }
             };
 
-            if (_vm.IsMoveable) manipulator.AddAllAndHandle();
+            if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
             else manipulator.RemoveAllButHandle();
 
             #endregion
@@ -325,7 +325,7 @@ namespace Dash
         private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var position = e.GetPosition(OverlayCanvas.Instance);
-            OverlayCanvas.Instance.OpenInterfaceBuilder(_vm, position);
+            OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
         }
     }
 }

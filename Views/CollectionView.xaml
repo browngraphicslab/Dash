@@ -24,6 +24,7 @@
                   PointerWheelChanged="UserControl_PointerWheelChanged"
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
+                  Padding="0"
                   PointerMoved="FreeformGrid_OnPointerMoved" 
                   PointerReleased="FreeformGrid_OnPointerReleased"
                   Style="{StaticResource xNodeContainerGrid}">
@@ -99,6 +100,8 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           SelectionMode="{Binding ItemSelectionMode}"
                           ItemsSource="{Binding DataBindingSource}"
+                          DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
+                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True">

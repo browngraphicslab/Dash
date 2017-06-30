@@ -42,7 +42,6 @@ namespace Dash
     {
 
         static public MainPage Instance;
-
         public MainPage()
         {
             this.InitializeComponent();

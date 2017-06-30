@@ -27,6 +27,7 @@ namespace Dash
 
         public CollectionModel CollectionModel { get { return _collectionModel; } }
 
+        public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
         /// <summary>
@@ -299,30 +300,17 @@ namespace Dash
         /// </summary>
         private void SetInitialValues()
         {
-            OuterGridHeight = 420;
-            OuterGridWidth = 400;
-
-            DraggerMargin = new Thickness(360, 400, 0, 0);
-            ProportionalDraggerMargin = new Thickness(380, 400, 0, 0);
-            CloseButtonMargin = new Thickness(366, 0, 0, 0);
-            BottomBarMargin = new Thickness(0, 400, 0, 0);
-            SelectButtonMargin = new Thickness(0, OuterGridHeight-20, 0,0);
-
-            DraggerFill = new SolidColorBrush(Color.FromArgb(255, 95, 95, 95));
-            ProportionalDraggerFill = new SolidColorBrush(Color.FromArgb(255, 139, 139, 139));
-            ProportionalDraggerStroke = new SolidColorBrush(Colors.Transparent);
-
             CellSize = 300;
-            ListViewVisibility = Visibility.Collapsed;
-            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             GridViewVisibility = Visibility.Visible;
+            ListViewVisibility = Visibility.Collapsed;
             FilterViewVisibility = Visibility.Collapsed;
-
+            SoloDisplayVisibility = Visibility.Collapsed;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
 
             ViewIsEnabled = true;
-            SoloDisplayVisibility = Visibility.Collapsed;
+
         }
 
         #region Size and Location methods
@@ -537,20 +525,17 @@ namespace Dash
         {
             foreach (var viewModel in viewModels)
             {
-                if (ViewModelContains(DataBindingSource, viewModel))
-                {
-                    continue;
-                }
+                if (ViewModelContains(DataBindingSource, viewModel)) continue;
                 viewModel.ManipulationMode = ManipulationModes.System;
                 viewModel.DoubleTapEnabled = false;
+                Point translate = ItemsCarrier.GetInstance().Translate;
+                viewModel.X = ItemsCarrier.GetInstance().Translate.X;
+                viewModel.Y = ItemsCarrier.GetInstance().Translate.Y;
                 DataBindingSource.Add(viewModel);
             }
             for (int i = DataBindingSource.Count - 1; i >= 0; --i)
             {
-                if (ViewModelContains(viewModels, DataBindingSource[i]))
-                {
-                    continue;
-                }
+                if (ViewModelContains(viewModels, DataBindingSource[i])) continue;
                 DataBindingSource.RemoveAt(i);
             }
         }
@@ -610,7 +595,8 @@ namespace Dash
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
             foreach (var document in documents.Data)
             {
-                viewModels.Add(new DocumentViewModel(ContentController.GetController(document) as DocumentController));
+                var viewModel = new DocumentViewModel(ContentController.GetController(document) as DocumentController);
+                viewModels.Add(viewModel);
             }
             return viewModels;
         }

@@ -18,7 +18,6 @@ namespace Dash
         ///     to the server and across the client
         /// </summary>
         public Dictionary<Key, FieldModelController> Fields;
-
         public DocumentController(DocumentModel documentModel)
         {
             // Initialize Local Variables

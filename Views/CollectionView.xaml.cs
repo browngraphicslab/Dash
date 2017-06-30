@@ -54,7 +54,10 @@ namespace Dash
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-            Loaded += (s, e) => ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            Loaded += (s, e) => {
+                ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+                ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            };
         }
 
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
@@ -907,8 +910,8 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, ViewModel.ParentDocument);
+            CollectionView view = ViewModel.ParentCollection;
             view?.StartDrag(ioRef);
         }
 
@@ -917,8 +920,8 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, ViewModel.ParentDocument);
+            CollectionView view = ViewModel.ParentCollection;
             view?.EndDrag(ioRef);
         }
 
@@ -928,7 +931,7 @@ namespace Dash
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = this;
             foreach(var item in e.Items)
-                carrier.Payload.Add((item as DocumentViewModel).DocumentController);
+                carrier.Payload.Add(item as DocumentViewModel);
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
@@ -938,20 +941,26 @@ namespace Dash
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
             RefreshItemsBinding();
             KeepItemsOnMove = true;
-            ItemsCarrier.GetInstance().Payload.Clear();
+            var carrier = ItemsCarrier.GetInstance();
+            carrier.Payload.Clear();
+            carrier.Source = null;
+            carrier.Destination = null;
+            carrier.Translate = new Point();
             MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
         }
 
-        private void ChangeDocuments(List<DocumentController> docControllers, bool add)
+        private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
         {
-            var parentDoc = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.DocumentController;
+            var docControllers = new List<DocumentController>();
+            foreach (var item in docViewModels)
+                docControllers.Add(item.DocumentController);
+            var parentDoc = (ViewModel.ParentDocument.ViewModel)?.DocumentController;
             var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController 
                           ?? parentDoc.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;      
             if (controller != null)
                 foreach (var item in docControllers)
                     if (add) controller.AddDocument(item);
                     else controller.RemoveDocument(item);
-
         }
 
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
@@ -964,7 +973,9 @@ namespace Dash
         {
             e.Handled = true;
             RefreshItemsBinding();
+            ItemsCarrier.GetInstance().Destination = this;
             ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
+            ItemsCarrier.GetInstance().Translate = e.GetPosition(GridView.ItemsPanelRoot);
             ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
         }
 
