@@ -30,12 +30,7 @@ namespace Dash
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
-
-        /// <summary>
-        /// The document controller of the layout document for the document which is being edited. The fields in this
-        /// document are courtesy documents used to display data from fields in the _documentController
-        /// </summary>
-        private DocumentCollectionFieldModelController _layoutDocumentCollection { get { return LayoutCourtesyDocument.LayoutDocumentCollectionController;  } }
+        
 
         /// <summary>
         /// Courtesy document that manages getting the necessary layout fields to edit the document's layout
@@ -64,7 +59,7 @@ namespace Dash
             List<FrameworkElement> editableElements = new List<FrameworkElement>();
 
             // iterate over all the documents which define views
-            foreach (var layoutDocument in _layoutDocumentCollection.GetDocuments())
+            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
             {
                 // use the layout document to generate a UI
                 var fieldView = layoutDocument.MakeViewUI();
@@ -136,7 +131,7 @@ namespace Dash
 
             var layoutDocumentId = editableFieldFrame.DocumentId;
 
-            var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
+            var editedLayoutDocument = LayoutCourtesyDocument.GetLayoutDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
             Debug.Assert(editedLayoutDocument != null);
 
             xSettingsPane.Children.Add(SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument));
