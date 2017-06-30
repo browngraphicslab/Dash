@@ -17,7 +17,7 @@ namespace Dash
             Instance = new FontWeightToFontWeightConverter();
         }
 
-        public override Windows.UI.Text.FontWeight ConvertDataToXaml(FontWeight data)
+        public override Windows.UI.Text.FontWeight ConvertDataToXaml(FontWeight data, object parameter = null)
         {
             Debug.Assert(data != null);
             return new Windows.UI.Text.FontWeight
@@ -26,7 +26,7 @@ namespace Dash
             };
         }
 
-        public override FontWeight ConvertXamlToData(Windows.UI.Text.FontWeight xaml)
+        public override FontWeight ConvertXamlToData(Windows.UI.Text.FontWeight xaml, object parameter = null)
         {
             return new FontWeight(xaml.Weight);
         }

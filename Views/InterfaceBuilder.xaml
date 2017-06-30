@@ -23,8 +23,7 @@
             </Grid>
             <Grid x:Name="xDocumentHolder" Grid.Column="1" Margin="50"/>
 
-            <Grid x:Name="xSettingsPane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Settings Menu</TextBlock>
+            <Grid x:Name="xSettingsPane" Width="300"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
             </Grid>
         </Grid>
     </local:WindowTemplate.InnerContent>

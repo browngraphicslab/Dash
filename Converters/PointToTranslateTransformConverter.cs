@@ -10,7 +10,7 @@ namespace Dash
 {
     public class PointToTranslateTransformConverter : SafeDataToXamlConverter<Point, TranslateTransform>
     {
-        public override TranslateTransform ConvertDataToXaml(Point data)
+        public override TranslateTransform ConvertDataToXaml(Point data, object parameter = null)
         {
             return new TranslateTransform
             {
@@ -19,7 +19,7 @@ namespace Dash
             };
         }
 
-        public override Point ConvertXamlToData(TranslateTransform xaml)
+        public override Point ConvertXamlToData(TranslateTransform xaml, object parameter = null)
         {
             return new Point(xaml.X, xaml.Y);
         }

@@ -138,6 +138,7 @@ namespace Dash
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
             proto.Fields[key] = field;
+            proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
@@ -182,14 +183,18 @@ namespace Dash
         {
             // TODO WE NEED TO STORE THESE CONTROLLERS SOMEWHERE
             // create the child with all the same fields
-            var delegateModel = new DocumentModel(DocumentModel.Fields, DocumentType);
+            var delegateModel = new DocumentModel(new Dictionary<Key,FieldModel>(), DocumentType);
+            ContentController.AddModel(delegateModel);
 
             // create a controller for the child
             var delegateController = new DocumentController(delegateModel);
+            ContentController.AddController(delegateController);
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldModel = new DocumentModelFieldModel(DocumentModel);
+            ContentController.AddModel(prototypeFieldModel);
             var prototypeFieldController = new DocumentFieldModelController(prototypeFieldModel);
+            ContentController.AddController(prototypeFieldController);
             delegateController.SetField(DashConstants.KeyStore.PrototypeKey, prototypeFieldController, true);
 
             // add the delegate to our delegates field

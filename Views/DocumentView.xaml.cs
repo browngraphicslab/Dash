@@ -277,8 +277,6 @@ namespace Dash
 
             // otherwise layout the document according to the _vm
             ResetFields(_vm);
-            _vm.IODragStarted += reference => IODragStarted?.Invoke(reference);
-            _vm.IODragEnded += reference => IODragEnded?.Invoke(reference);
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
