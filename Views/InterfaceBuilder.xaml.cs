@@ -74,6 +74,17 @@ namespace Dash
                     VerticalAlignment = VerticalAlignment.Top
                 };
 
+                // apply the transform of the view to the editable frame
+                //TODO this throws a null reference exception
+                //var position =
+                //    (layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?
+                //    .Data;
+                //if (position != null)
+                //{
+                //    editableBorder.ApplyContentTranslationToFrame(position.Value);
+                //}
+
+                editableBorder.Tapped += EditableBorder_Tapped;
                 editableBorder.FieldSizeChanged += EditableBorderOnFieldSizeChanged;
                 editableBorder.FieldPositionChanged += EditableBorderOnFieldPositionChanged;
                 editableElements.Add(editableBorder);
@@ -82,6 +93,20 @@ namespace Dash
             _documentView.SetUIElements(editableElements);
         }
 
+        private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xSettingsPane.Children.Clear();
+
+            var editableFieldFrame = sender as EditableFieldFrame;
+            Debug.Assert(editableFieldFrame != null);
+
+            var layoutDocumentId = editableFieldFrame.DocumentId;
+
+            var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
+            Debug.Assert(editedLayoutDocument != null);
+
+            xSettingsPane.Children.Add(SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument));
+        }
 
         private void EditableBorderOnFieldPositionChanged(object sender, double deltaX, double deltaY)
         {
@@ -121,10 +146,33 @@ namespace Dash
             heightFieldController.Data = newHeight;
             widthFieldController.Data = newWidth;
         }
+    }
 
-        private void ApplyEditableOnTapped(object sender, TappedRoutedEventArgs e)
+    public static class SettingsPaneFromDocumentControllerFactory
+    {
+        public static UIElement CreateSettingsPane(DocumentController editedLayoutDocument)
         {
-            ApplyEditable();
+            if (editedLayoutDocument.DocumentType == ImageBox.DocumentType)
+            {
+                return CreateImageSettingsLayout(editedLayoutDocument);
+            }
+            if (editedLayoutDocument.DocumentType == TextingBox.DocumentType)
+            {
+                return CreateTextSettingsLayout(editedLayoutDocument);
+            }
+
+            Debug.Assert(false, $"We do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
+            return null;
+        }
+
+        private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)
+        {
+            return new ImageSettings(editedLayoutDocument);
+        }
+
+        private static UIElement CreateTextSettingsLayout(DocumentController editedLayoutDocument)
+        {
+            return new TextSettings(editedLayoutDocument);
         }
     }
 }

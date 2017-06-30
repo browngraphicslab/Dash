@@ -359,9 +359,13 @@ namespace Dash
         public class ImageBox : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
+            public static Key OpacityKey = new Key("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
+            public static double OpacityDefault = 1;
+
             public ImageBox(ReferenceFieldModel refToImage, double x=0, double y=0, double w=200, double h=200)
             {
                 var fields = DefaultLayoutFields(x, y, w, h, refToImage);
+                fields[OpacityKey] = new NumberFieldModel(OpacityDefault);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
 
                 SetLayoutForDocument(Document.DocumentModel);
@@ -406,6 +410,17 @@ namespace Dash
 
                 // set up interactions with operations
                 BindOperationInteractions(refToImage, image);
+
+                // make image opacity change
+                var opacityController =
+                    docController.GetField(OpacityKey) as NumberFieldModelController;
+                Debug.Assert(opacityController != null);
+                var opacityBinding = new Binding
+                {
+                    Source = opacityController,
+                    Path = new PropertyPath(nameof(opacityController.Data))
+                };
+                image.SetBinding(UIElement.OpacityProperty, opacityBinding);
 
                 return new List<FrameworkElement> { image };
             }
