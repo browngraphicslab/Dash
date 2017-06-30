@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash.Converters;
 using Dash.Sources.Api;
 using DashShared;
 
@@ -176,6 +177,8 @@ namespace Dash
                 return widthController;
             }
 
+           
+
             /// <summary>
             /// Returns the <see cref="NumberFieldModelController"/> from the passed in <see cref="DocumentController"/>
             /// used to control that <see cref="DocumentController"/>'s translation.
@@ -323,6 +326,8 @@ namespace Dash
         {
             public static Key PrefixKey = new Key("AC1B4A0C-CFBF-43B3-B7F1-D7FC9E5BEEBE", "Text Prefix");
             public static Key FontWeightKey = new Key("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
+            public static Key FontSizeKey = new Key("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
+            public static Key TextAlignmentKey = new Key("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
             public static DocumentType DocumentType = new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
             public DocumentController MakeDelegate(ReferenceFieldModel refModel)
@@ -337,6 +342,9 @@ namespace Dash
             public TextingBox(FieldModel refToText, double x = 0, double y = 0, double w = 200, double h = 20)
             {
                 var fields = DefaultLayoutFields(x, y, w, h, refToText);
+                fields[FontWeightKey] = new NumberFieldModel(FontWeights.Normal.Weight);
+                fields[FontSizeKey] = new NumberFieldModel(12);
+                fields[TextAlignmentKey] = new NumberFieldModel(0);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
                 SetLayoutForDocument(Document, Document.DocumentModel);
             }
@@ -344,6 +352,77 @@ namespace Dash
             {
                 return TextingBox.MakeView(docController);
             }
+
+            protected static NumberFieldModelController GetTextAlignmentFieldController(DocumentController docController)
+            {
+                var textController =
+                    docController.GetField(TextAlignmentKey) as NumberFieldModelController;
+                Debug.Assert(textController != null);
+                return textController;
+            }
+
+            protected static void BindTextAlignment(TextBlock tb, NumberFieldModelController textAlignmentController)
+            {
+                if (textAlignmentController == null) throw new ArgumentNullException(nameof(textAlignmentController));
+                var fontWeightBinding = new Binding
+                {
+                    Source = textAlignmentController,
+                    Path = new PropertyPath(nameof(textAlignmentController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new IntToTextAlignmentConverter()
+                };
+                tb.SetBinding(TextBlock.TextAlignmentProperty, fontWeightBinding);
+            }
+
+            #region Font Weight Binding
+
+            protected static NumberFieldModelController GetFontWeightFieldController(DocumentController docController)
+            {
+                var fontController =
+                    docController.GetField(FontWeightKey) as NumberFieldModelController;
+                Debug.Assert(fontController != null);
+                return fontController;
+            }
+
+            protected static void BindFontWeight(TextBlock tb, NumberFieldModelController fontWeightController)
+            {
+                if (fontWeightController == null) throw new ArgumentNullException(nameof(fontWeightController));
+                var fontWeightBinding = new Binding
+                {
+                    Source = fontWeightController,
+                    Path = new PropertyPath(nameof(fontWeightController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new DoubleToFontWeightConverter()
+                };
+                tb.SetBinding(TextBlock.FontWeightProperty, fontWeightBinding);
+            }
+
+            #endregion
+
+            #region Font Size Binding
+
+            protected static NumberFieldModelController GetFontSizeFieldController(DocumentController docController)
+            {
+                var fontController =
+                    docController.GetField(FontSizeKey) as NumberFieldModelController;
+                Debug.Assert(fontController != null);
+                return fontController;
+            }
+
+            protected static void BindFontSize(TextBlock tb, NumberFieldModelController sizeController)
+            {
+                if (sizeController == null) throw new ArgumentNullException(nameof(sizeController));
+                var fontSizeBinding = new Binding
+                {
+                    Source = sizeController,
+                    Path = new PropertyPath(nameof(sizeController.Data)),
+                    Mode = BindingMode.TwoWay,
+                };
+                tb.SetBinding(TextBlock.FontSizeProperty, fontSizeBinding);
+            }
+
+            #endregion
+
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
                 // the text field model controller provides us with the DATA
@@ -399,6 +478,15 @@ namespace Dash
                 // bind the text position
                 var translateController = GetTranslateFieldController(docController);
                 BindTranslation(tb, translateController);
+
+                var fontWeightController = GetFontWeightFieldController(docController);
+                BindFontWeight(tb, fontWeightController);
+
+                var fontSizeController = GetFontSizeFieldController(docController);
+                BindFontSize(tb, fontSizeController);
+
+                var textAlignmentController = GetTextAlignmentFieldController(docController);
+                BindTextAlignment(tb, textAlignmentController);
 
                 // add bindings to work with operators
                 BindOperationInteractions(retToText, tb);
