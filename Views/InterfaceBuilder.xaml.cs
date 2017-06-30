@@ -42,6 +42,8 @@ namespace Dash
         /// </summary>
         private LayoutCourtesyDocument LayoutCourtesyDocument;
 
+        private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
+
         public InterfaceBuilder(DocumentViewModel viewModel,int width=800, int height=500)
         {
             this.InitializeComponent();
@@ -67,26 +69,56 @@ namespace Dash
                 // use the layout document to generate a UI
                 var fieldView = layoutDocument.MakeViewUI();
 
+                // generate an editable border
                 var editableBorder = new EditableFieldFrame(layoutDocument.GetId())
                 {
                     EditableContent = fieldView.FirstOrDefault(),
-                    HorizontalAlignment = HorizontalAlignment.Left,
+                    HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
                     VerticalAlignment = VerticalAlignment.Top
                 };
 
-                // apply the transform of the view to the editable frame
-                //TODO this throws a null reference exception
-                //var position =
-                //    (layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?
-                //    .Data;
-                //if (position != null)
-                //{
-                //    editableBorder.ApplyContentTranslationToFrame(position.Value);
-                //}
+                // bind the editable border width to the layout width
+                var widthController =
+                    layoutDocument.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+                Debug.Assert(widthController != null);
+                var widthBinding = new Binding
+                {
+                    Source = widthController,
+                    Path = new PropertyPath(nameof(widthController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                editableBorder.SetBinding(WidthProperty, widthBinding);
+
+                // bind the editable border height to the layout height
+                var heightController =
+                    layoutDocument.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+                Debug.Assert(heightController != null);
+                var heightBinding = new Binding
+                {
+                    Source = heightController,
+                    Path = new PropertyPath(nameof(heightController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                editableBorder.SetBinding(HeightProperty, heightBinding);
+
+                // when the editable border is loaded bind it's translation to the layout's translation
+                // TODO this probably causes a memory leak, but we have to capture the layoutDocument variable.
+                editableBorder.Loaded += delegate
+                {
+                    var translationController =
+                            layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                    Debug.Assert(translationController != null);
+                    var translateBinding = new Binding
+                    {
+                        Source = translationController,
+                        Path = new PropertyPath(nameof(translationController.Data)),
+                        Mode = BindingMode.TwoWay,
+                        Converter = new PointToTranslateTransformConverter()
+                    };
+                    editableBorder.Container.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+                };
 
                 editableBorder.Tapped += EditableBorder_Tapped;
-                editableBorder.FieldSizeChanged += EditableBorderOnFieldSizeChanged;
-                editableBorder.FieldPositionChanged += EditableBorderOnFieldPositionChanged;
                 editableElements.Add(editableBorder);
             }
 
@@ -100,6 +132,8 @@ namespace Dash
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
 
+            UpdateEditableFieldFrameSelection(editableFieldFrame);
+
             var layoutDocumentId = editableFieldFrame.DocumentId;
 
             var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
@@ -108,43 +142,14 @@ namespace Dash
             xSettingsPane.Children.Add(SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument));
         }
 
-        private void EditableBorderOnFieldPositionChanged(object sender, double deltaX, double deltaY)
+        private void UpdateEditableFieldFrameSelection(EditableFieldFrame newlySelectedEditableFieldFrame)
         {
-            var editableFieldFrame = sender as EditableFieldFrame;
-            Debug.Assert(editableFieldFrame != null);
-
-            var layoutDocumentId = editableFieldFrame.DocumentId;
-
-            var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
-            Debug.Assert(editedLayoutDocument != null);
-            var translateController =
-                editedLayoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
-            Debug.Assert(translateController != null);
-
-            var p = translateController.Data;
-            var newTranslation = new Point(p.X + deltaX, p.Y + deltaY);
-            translateController.Data = newTranslation;
-
-            editableFieldFrame.ApplyContentTranslationToFrame(newTranslation);
-        }
-
-        private void EditableBorderOnFieldSizeChanged(object sender, double newWidth, double newHeight)
-        {
-            var editableFieldFrame = sender as EditableFieldFrame;
-            Debug.Assert(editableFieldFrame != null);
-
-            var layoutDocumentId = editableFieldFrame.DocumentId;
-
-            var editedLayoutDocument = _layoutDocumentCollection.GetDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
-            Debug.Assert(editedLayoutDocument != null);
-            var widthFieldController =
-                editedLayoutDocument.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
-            var heightFieldController =
-                editedLayoutDocument.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
-            Debug.Assert(widthFieldController != null && heightFieldController != null);
-
-            heightFieldController.Data = newHeight;
-            widthFieldController.Data = newWidth;
+            if (_selectedEditableFieldFrame != null)
+            {
+                _selectedEditableFieldFrame.IsSelected = false;
+            }
+            newlySelectedEditableFieldFrame.IsSelected = true;
+            _selectedEditableFieldFrame = newlySelectedEditableFieldFrame;
         }
     }
 

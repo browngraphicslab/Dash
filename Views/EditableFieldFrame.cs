@@ -42,7 +42,7 @@ namespace Dash
         /// Private variable to get the container which determines the size of the window
         /// so we don't have to look for it on manipulation delta
         /// </summary>
-        private FrameworkElement _container;
+        public FrameworkElement Container;
 
         /// <summary>
         /// The overlay canvas used to display the thumbs
@@ -50,9 +50,26 @@ namespace Dash
         private Canvas _overlayCanvas;
 
         /// <summary>
-        /// Whether or not the editable field frame is currently editing
+        /// Whether or not the editable field frame is currently selected. SHOULD ONLY BE SET THROUGH THE PUBLIC IsSelected boolean.
         /// </summary>
-        private bool _isEditing;
+        private bool _isSelected;
+
+        /// <summary>
+        /// Whether or not the editable field frame is currently selected, if it is, then it can display UI for editing
+        /// otherwise that UI is hidden
+        /// </summary>
+        public bool IsSelected
+        {
+            get { return _isSelected; }
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    UpdateUiToMatchSelectionValue();
+                }
+            }
+        }
 
         private readonly Color _visibleBorderColor = Colors.CornflowerBlue;
         private readonly Color _hiddenBordercolor = Colors.Transparent;
@@ -94,17 +111,15 @@ namespace Dash
         protected override void OnApplyTemplate()
         {
             // get the container private variable
-            _container = GetTemplateChild(ContainerName) as FrameworkElement;
-            Debug.Assert(_container != null);
+            Container = GetTemplateChild(ContainerName) as FrameworkElement;
+            Debug.Assert(Container != null);
 
             _overlayCanvas = GetTemplateChild(OverlayCanvasName) as Canvas;
             Debug.Assert(_overlayCanvas != null);
 
             InstantiateResizeHandles();
 
-            _container.SizeChanged += _container_SizeChanged;
-
-            _container.Tapped += _container_Tapped;
+            Container.SizeChanged += _container_SizeChanged;
         }
 
         private void _container_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -146,23 +161,23 @@ namespace Dash
                 {
                     case ResizeHandlePositions.LeftLower:
                         Canvas.SetLeft(handle, 0 - handle.Width);
-                        Canvas.SetTop(handle, _container.ActualHeight);
+                        Canvas.SetTop(handle, Container.ActualHeight);
                         break;
                     case ResizeHandlePositions.LeftUpper:
                         Canvas.SetLeft(handle, 0 - handle.Width);
                         Canvas.SetTop(handle, 0 - handle.Height);
                         break;
                     case ResizeHandlePositions.RightLower:
-                        Canvas.SetLeft(handle, _container.ActualWidth);
-                        Canvas.SetTop(handle, _container.ActualHeight);
+                        Canvas.SetLeft(handle, Container.ActualWidth);
+                        Canvas.SetTop(handle, Container.ActualHeight);
                         break;
                     case ResizeHandlePositions.RightUpper:
-                        Canvas.SetLeft(handle, _container.ActualWidth);
+                        Canvas.SetLeft(handle, Container.ActualWidth);
                         Canvas.SetTop(handle, 0 - handle.Height);
                         break;
                     case ResizeHandlePositions.Center:
-                        Canvas.SetLeft(handle, _container.ActualWidth / 2 - handle.Width / 2);
-                        Canvas.SetTop(handle, _container.ActualHeight / 2 - handle.Height / 2);
+                        Canvas.SetLeft(handle, Container.ActualWidth / 2 - handle.Width / 2);
+                        Canvas.SetTop(handle, Container.ActualHeight / 2 - handle.Height / 2);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -170,26 +185,25 @@ namespace Dash
             }
         }
 
-        private void _container_Tapped(object sender, TappedRoutedEventArgs e)
+        private void UpdateUiToMatchSelectionValue()
         {
-            _isEditing = !_isEditing;
-            DisplayResizeHandles(_isEditing);
-            DisplayBorder(_isEditing);
+            DisplayResizeHandles();
+            DisplayBorder();
         }
 
-        private void DisplayBorder(bool isVisible)
+        private void DisplayBorder()
         {
-            BorderBrush = _isEditing
+            BorderBrush = IsSelected
                 ? new SolidColorBrush(_visibleBorderColor)
                 : new SolidColorBrush(_hiddenBordercolor);
             BorderThickness = _borderThickness;
         }
 
-        private void DisplayResizeHandles(bool isVisible)
+        private void DisplayResizeHandles()
         {
             foreach (var kvp in _resizeHandleToPosition)
             {
-                kvp.Key.Visibility = isVisible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+                kvp.Key.Visibility = IsSelected ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
             }
         }
 
@@ -251,9 +265,14 @@ namespace Dash
                     throw new ArgumentOutOfRangeException();
             }
 
+            var currentTranslateTransform = Container.RenderTransform as TranslateTransform;
+            Debug.Assert(currentTranslateTransform != null, "we assume the render transform is a translate transform, if that assumption is false we need to change this code.");
 
-            Canvas.SetLeft(this, Canvas.GetLeft(this) + transXDelta);
-            Canvas.SetTop(this, Canvas.GetTop(this) + transYDelta);
+            Container.RenderTransform = new TranslateTransform()
+            {
+                X = currentTranslateTransform.X + transXDelta,
+                Y = currentTranslateTransform.Y + transYDelta,
+            };
 
             //TODO provide minimum width and height
             Width = ActualWidth + widthDelta;
@@ -263,16 +282,6 @@ namespace Dash
             FieldSizeChanged?.Invoke(this, Width, Height);
 
             e.Handled = true;
-        }
-
-        /// <summary>
-        /// Whenever content is translated the editable field frame has to apply that translation to itself.
-        /// </summary>
-        /// <param name="translation"></param>
-        public void ApplyContentTranslationToFrame(Point translation)
-        {
-            _container.RenderTransform =
-                PointToTranslateTransformConverter.Instance.ConvertDataToXaml(translation);
         }
     }
 }
