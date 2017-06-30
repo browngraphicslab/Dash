@@ -271,10 +271,11 @@ namespace Dash
         
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
+            DisplayDocument(new CourtesyDocuments.PostitNote().Document);
             DisplayDocument(new CourtesyDocuments.TwoImages(true).Document);
             DisplayDocument(new CourtesyDocuments.Numbers().Document);
-            DisplayDocument(new CourtesyDocuments.NestedDocExample(true).Document);
-            DisplayDocument(new CourtesyDocuments.NestedDocExample(false).Document);
+            //DisplayDocument(new CourtesyDocuments.NestedDocExample(true).Document);
+            //DisplayDocument(new CourtesyDocuments.NestedDocExample(false).Document);
         }
 
 
