@@ -522,7 +522,6 @@ namespace Dash
             {
                 var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, fieldModel);
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-
                 SetLayoutForDocument(Document, Document.DocumentModel);
             }
             public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
@@ -580,11 +579,16 @@ namespace Dash
                 var layoutData = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                 Debug.Assert(layoutData != null);
 
+                layoutData.OnDocumentsChanged += delegate
+                {
+                    docController.FireOnLayoutChanged();
+                };
+
                 foreach (var layoutDoc in layoutData.GetDocuments())
                 {
                     var position =
                         (layoutDoc.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?.Data;
-                    Debug.Assert(position != null);
+                    //Debug.Assert(position != null);
                     var ele = layoutDoc.MakeViewUI();
                     foreach (var frameworkElement in ele)
                     {
@@ -596,6 +600,11 @@ namespace Dash
                     output.AddRange(ele);
                 }
                 return output;
+            }
+
+            private static void LayoutData_FieldModelUpdatedEvent(FieldModelController sender)
+            {
+                throw new NotImplementedException();
             }
         }
 

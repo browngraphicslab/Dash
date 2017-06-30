@@ -109,6 +109,7 @@
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
+    <Compile Include="Converters\DocumentToUIElementConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
+    <Compile Include="Util\ObservableConvertCollection.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />

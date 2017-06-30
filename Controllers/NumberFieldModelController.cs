@@ -42,5 +42,10 @@ namespace Dash
                 OnDataUpdated();
             }
         }
+
+        public override string ToString()
+        {
+            return Data.ToString();
+        }
     }
 }

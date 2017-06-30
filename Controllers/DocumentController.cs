@@ -12,6 +12,10 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        public delegate void OnLayoutChangedHandler(DocumentController sender);
+
+        public event OnLayoutChangedHandler OnLayoutChanged;
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
@@ -383,6 +387,11 @@ namespace Dash
                 }
             }
             return uieles;
+        }
+
+        public void FireOnLayoutChanged()
+        {
+            OnLayoutChanged?.Invoke(this);
         }
     }
 }

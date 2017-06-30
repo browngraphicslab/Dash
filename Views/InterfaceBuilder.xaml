@@ -14,17 +14,44 @@
     <local:WindowTemplate.InnerContent>
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <Grid x:Name="xKeyValuePane" Width="200"  Height="Auto" HorizontalAlignment="Center" Grid.Column="0" Background="White" BorderBrush="Black" BorderThickness="0,0,1,0">
+            <Grid x:Name="xKeyValuePane" Width="200" Height="Auto" HorizontalAlignment="Center" Grid.Column="0"
+                  Background="White" BorderBrush="Black" BorderThickness="0,0,1,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="17" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
                 <TextBlock HorizontalAlignment="Center" VerticalAlignment="Top">Key Value Menu</TextBlock>
+                <ListView x:Name="xKeyValueListView" HorizontalAlignment="Center"
+                          CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
+                          SelectionMode="Single"
+                          ItemsSource="{Binding _keyValuePairs}" VerticalAlignment="Stretch" Grid.Row="1">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical">
+                                <Rectangle Height="25" />
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBox Text="{Binding Path=Key.Name}" IsReadOnly="True"
+                                             BorderBrush="{StaticResource WindowsBlue}" BorderThickness="2,2,2,2"
+                                             HorizontalAlignment="Stretch" TextWrapping="Wrap" Width="75"
+                                             IsHitTestVisible="False" />
+                                    <TextBox Text="{Binding Value}" Grid.Column="1" IsReadOnly="True"
+                                             BorderBrush="{StaticResource WindowsBlue}" BorderThickness="0,2,2,2"
+                                             HorizontalAlignment="Stretch" CanDrag="True" TextWrapping="Wrap"
+                                             Width="75" IsHitTestVisible="False" />
+                                </StackPanel>
+                                <Rectangle Height="7.5" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
             </Grid>
-            <Grid x:Name="xDocumentHolder" Grid.Column="1" Margin="50"/>
-
-            <Grid x:Name="xSettingsPane" Width="300"  Height="Auto" HorizontalAlignment="Center" Grid.Column="2" Background="White" BorderBrush="Black" BorderThickness="1,0,0,0">
-            </Grid>
+            <Grid x:Name="xDocumentHolder" Grid.Column="1" Margin="50" />
+            <Grid x:Name="xSettingsPane" Width="300" Height="Auto" HorizontalAlignment="Center" Grid.Column="2"
+                  Background="White" BorderBrush="Black" BorderThickness="1,0,0,0" />
         </Grid>
     </local:WindowTemplate.InnerContent>
 </local:WindowTemplate>

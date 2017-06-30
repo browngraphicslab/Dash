@@ -9,6 +9,11 @@ namespace Dash
 {
     public class DocumentCollectionFieldModelController : FieldModelController
     {
+
+        public delegate void DocumentsChangedHandler(IEnumerable<DocumentController> currentDocuments);
+
+        public event DocumentsChangedHandler OnDocumentsChanged;
+
         /// <summary>
         /// Key for collection data
         /// TODO This might be better in a different class
@@ -57,6 +62,7 @@ namespace Dash
             DocumentCollectionFieldModel.Data = _documents.Select((d) => d.GetId());
 
             OnDataUpdated();
+            OnDocumentsChanged?.Invoke(GetDocuments());
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
@@ -66,6 +72,8 @@ namespace Dash
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
             OnDataUpdated();
+            OnDocumentsChanged?.Invoke(GetDocuments());
+
         }
 
         public List<DocumentController> GetDocuments()

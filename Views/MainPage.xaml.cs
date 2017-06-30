@@ -345,7 +345,7 @@ namespace Dash
 
         private void XCanvas_DragOver_1(object sender, DragEventArgs e)
         {
-            e.AcceptedOperation = DataPackageOperation.Copy;
+            //e.AcceptedOperation = DataPackageOperation.Copy;
         }
     }
 }

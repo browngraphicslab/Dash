@@ -22,7 +22,23 @@
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
                 RightTapped="Grid_RightTapped"
-               Style="{StaticResource xNodeContainerGrid}"/>
+               Style="{StaticResource xNodeContainerGrid}">
+
+            <ItemsControl x:Name="DocumentsControl"
+                          x:FieldModifier="public"
+                          Padding="5">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas x:Name="DocumentsCanvas" x:FieldModifier="public"></Canvas>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+
+
+        </Grid>
+
+
+
         <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
         </Image>
         <Button x:Name="DraggerButton" 
@@ -61,3 +77,10 @@
         </Button>
     </Grid>
 </UserControl>
+
+
+
+
+
+
+
