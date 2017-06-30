@@ -26,7 +26,7 @@ namespace Dash
             this.InitializeComponent();
         }
 
-        public TextSettings(DocumentController editedLayoutDocument)
+        public TextSettings(DocumentController editedLayoutDocument) : this()
         {
             this.editedLayoutDocument = editedLayoutDocument;
         }
