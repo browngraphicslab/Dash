@@ -711,6 +711,8 @@ namespace Dash
                 }
                 else
                 {
+                    // create a delegate for the prototype layout document and override the list of layout display elements :
+                    //   the list of display elements is a list of delegates of the prototype layout documents prototype layout field documents.
                     SetLayoutForDocument(Document, CreateDelegateLayout(_prototypeLayout, new DocumentModel[] { imBox1.DocumentModel, imBox2.DocumentModel, tBox.DocumentModel }).DocumentModel);
                 }
             }
