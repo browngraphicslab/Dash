@@ -15,14 +15,14 @@ using DashShared;
 
 namespace Dash
 {
-
+    // Define different parts of the template, this is a convention!
     [TemplatePart(Name = EditableContentName, Type = typeof(ContentControl))]
     [TemplatePart(Name = ContainerName, Type = typeof(UIElement))]
     [TemplatePart(Name = OverlayCanvasName, Type = typeof(Canvas))]
     public class EditableFieldFrame : Control
     {
         /// <summary>
-        /// The id associated with this editable field frame
+        /// The id associated with this <see cref="EditableFieldFrame"/>
         /// </summary>
         public string DocumentId { get; private set; }
 
@@ -39,8 +39,8 @@ namespace Dash
         private const string OverlayCanvasName = "PART_OverlayCanvas";
 
         /// <summary>
-        /// Private variable to get the container which determines the size of the window
-        /// so we don't have to look for it on manipulation delta
+        /// The container contains the resize handles (<see cref="Thumb"/>s) but is separated from the content in <see cref="EditableContent"/>
+        /// so <see cref="TranslateTransform"/> applied to this will only be applied to the resize handles.
         /// </summary>
         public FrameworkElement Container;
 
@@ -66,16 +66,19 @@ namespace Dash
                 if (_isSelected != value)
                 {
                     _isSelected = value;
-                    UpdateUiToMatchSelectionValue();
+                    UpdateUiToMatchSelectionValue(); // if the value changes we update the UI to match the selection value
                 }
             }
         }
 
+        //TODO move these backing colors to App.xaml
         private readonly Color _visibleBorderColor = Colors.CornflowerBlue;
         private readonly Color _hiddenBordercolor = Colors.Transparent;
         private readonly Thickness _borderThickness = new Thickness(1);
 
-
+        /// <summary>
+        /// Describe the various possible positions for <see cref="Thumb"/>s on the <see cref="EditableFieldFrame"/>
+        /// </summary>
         private enum ResizeHandlePositions
         {
             LeftLower,
@@ -85,10 +88,13 @@ namespace Dash
             Center
         }
 
+        /// <summary>
+        /// Dictionary of <see cref="Thumb"/>'s (resize handle UI) to positions (<see cref="ResizeHandlePositions"/>)
+        /// </summary>
         private Dictionary<Thumb, ResizeHandlePositions> _resizeHandleToPosition = new Dictionary<Thumb, ResizeHandlePositions>();
 
         /// <summary>
-        /// The inner content of the window can be anything!
+        /// The inner content of the editable field frame can be anything!
         /// </summary>
         public object EditableContent
         {
@@ -96,9 +102,16 @@ namespace Dash
             set { SetValue(EditableContentProperty, value); }
         }
 
+        /// <summary>
+        /// Dependency property for the inner content (<see cref="EditableContent"/>) of the editable field frame
+        /// </summary>
         public static readonly DependencyProperty EditableContentProperty = DependencyProperty.Register(
             "EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(default(object)));
 
+        /// <summary>
+        /// Create a new <see cref="EditableFieldFrame"/> for the UI described by the passed in <paramref name="documentId"/>
+        /// </summary>
+        /// <param name="documentId"></param>
         public EditableFieldFrame(string documentId)
         {
             DocumentId = documentId;
@@ -114,19 +127,30 @@ namespace Dash
             Container = GetTemplateChild(ContainerName) as FrameworkElement;
             Debug.Assert(Container != null);
 
+            // get the overlay canvas which the thumbs are placed on top of
             _overlayCanvas = GetTemplateChild(OverlayCanvasName) as Canvas;
             Debug.Assert(_overlayCanvas != null);
 
+            // Create all the thumbs, this doesn't position them
             InstantiateResizeHandles();
 
+            // Add an event to layout the thumbs when the container changes size.
             Container.SizeChanged += _container_SizeChanged;
         }
 
+        /// <summary>
+        /// Called whenever the <see cref="Container"/> changes size, lays out all the resize handles (<see cref="Thumb"/>s)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void _container_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             LayoutResizeHandles();
         }
 
+        /// <summary>
+        /// Creates all the resize handles, stores references to them, but doesn't position them
+        /// </summary>
         private void InstantiateResizeHandles()
         {
             var leftLowerResizeHandle = InstantiateThumb();
@@ -151,6 +175,9 @@ namespace Dash
 
         }
 
+        /// <summary>
+        /// Lays out all the resize handles, should be called whenever the size of the frame changes
+        /// </summary>
         private void LayoutResizeHandles()
         {
             foreach (var kvp in _resizeHandleToPosition)
@@ -185,12 +212,18 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Updates the UI to match whether or not the <see cref="EditableFieldFrame"/> is selected
+        /// </summary>
         private void UpdateUiToMatchSelectionValue()
         {
             DisplayResizeHandles();
             DisplayBorder();
         }
 
+        /// <summary>
+        /// Displays or hides the border around the <see cref="EditableFieldFrame"/> based on current state (selection)
+        /// </summary>
         private void DisplayBorder()
         {
             BorderBrush = IsSelected
@@ -199,6 +232,9 @@ namespace Dash
             BorderThickness = _borderThickness;
         }
 
+        /// <summary>
+        /// Displays or hides the resize handles around the <see cref="EditableFieldFrame"/> based on current state (selection)
+        /// </summary>
         private void DisplayResizeHandles()
         {
             foreach (var kvp in _resizeHandleToPosition)
@@ -207,8 +243,13 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Create a new <see cref="Thumb"/> to be used as a resize handle, using some xaml properties
+        /// </summary>
+        /// <returns></returns>
         private Thumb InstantiateThumb()
         {
+            // TODO this could be extracted to app.xaml
             var thumb = new Thumb
             {
                 Height = 10,
@@ -224,17 +265,24 @@ namespace Dash
             return thumb;
         }
 
+        /// <summary>
+        /// Called whenever a thumb is manipulated, calculates the position and size deltas, and applies them to the frame.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ResizeHandleOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {    
             var handle = sender as Thumb;
             Debug.Assert(handle != null);
             var position = _resizeHandleToPosition[handle];
 
+            // hold position and size deltas in variables
             double widthDelta = 0;
             double heightDelta = 0;
             double transXDelta = 0;
             double transYDelta = 0;
 
+            // calculate position and size deltas based on the resize handle that was manipulated
             switch (position)
             {
                 case ResizeHandlePositions.LeftLower:
@@ -265,6 +313,7 @@ namespace Dash
                     throw new ArgumentOutOfRangeException();
             }
 
+            // apply the position delta to the Container's render transform
             var currentTranslateTransform = Container.RenderTransform as TranslateTransform;
             Debug.Assert(currentTranslateTransform != null, "we assume the render transform is a translate transform, if that assumption is false we need to change this code.");
 
@@ -274,10 +323,13 @@ namespace Dash
                 Y = currentTranslateTransform.Y + transYDelta,
             };
 
+            // apply the size delta to the entire Width and Height of this editable field frame
             //TODO provide minimum width and height
             Width = ActualWidth + widthDelta;
             Height = ActualHeight + heightDelta;
 
+            // invoke events
+            // TODO these could probably be removed...
             FieldPositionChanged?.Invoke(this, transXDelta, transYDelta);
             FieldSizeChanged?.Invoke(this, Width, Height);
 
