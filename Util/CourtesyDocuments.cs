@@ -503,7 +503,7 @@ namespace Dash
                         (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
                     var h = double.NaN;
 
-                    var collectionFieldModelController = data as DocumentCollectionFieldModelController;
+                    var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                     Debug.Assert(collectionFieldModelController != null);
                     var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
                     var collectionViewModel = new CollectionViewModel(collectionModel);
