@@ -420,8 +420,6 @@ namespace Dash
                     [DashConstants.KeyStore.DataKey] = fieldModel
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-
-                SetLayoutForDocument(Document.DocumentModel);
             }
             public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
             public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }

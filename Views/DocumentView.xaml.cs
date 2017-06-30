@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
@@ -8,10 +9,12 @@ using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Markup;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Converters;
 using Dash.ViewModels;
 using DashShared;
 
@@ -35,6 +38,8 @@ namespace Dash
         public event OperatorView.IODragEventHandler IODragStarted;
         public event OperatorView.IODragEventHandler IODragEnded;
 
+        public ICollectionView View { get; set; }
+
         public DocumentView()
         {
             this.InitializeComponent();
@@ -51,6 +56,8 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+
+            
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -60,6 +67,8 @@ namespace Dash
             // reset the fields on the documetn to be those displayed by the documentViewModel
             ResetFields(documentViewModel);
         }
+
+
 
         /// <summary>
         /// Resizes the CollectionView according to the increments in width and height. 
@@ -206,18 +215,19 @@ namespace Dash
         public void ResetFields(DocumentViewModel documentViewModel)
         {
             // clear any current children (fields) and then add them over again
-            XGrid.Children.Clear();
-            var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-            var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
-            if (elements.Count == 0)
-            {
-                var panel = documentViewModel.DocumentController.MakeAllViewUI();
-                XGrid.Children.Add(panel);
-            } else
-                foreach (var element in elements)
-                {
-                    XGrid.Children.Add(element);
-                }
+            //XGrid.Children.Clear();
+            //var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            //var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
+            //if (elements.Count == 0)
+            //{
+            //    var panel = documentViewModel.DocumentController.MakeAllViewUI();
+            //    XGrid.Children.Add(panel);
+            //}
+            //else
+            //    foreach (var element in elements)
+            //    {
+            //        XGrid.Children.Add(element);
+            //    }
         }
 
         /// <summary>
@@ -226,11 +236,11 @@ namespace Dash
         /// <param name="uiElements"></param>
         public void SetUIElements(List<FrameworkElement> uiElements)
         {
-            XGrid.Children.Clear();
-            foreach (var element in uiElements)
-            {
-                XGrid.Children.Add(element);
-            }
+            //XGrid.Children.Clear();
+            //foreach (var element in uiElements)
+            //{
+            //    XGrid.Children.Add(element);
+            //}
         }
 
         /// <summary>
@@ -274,6 +284,17 @@ namespace Dash
             // if new _vm is not correct return
             if (_vm == null)
                 return;
+
+            ObservableConvertCollection collection = new ObservableConvertCollection(_vm.DataBindingSource, this);
+
+
+            DocumentsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+            {
+                Source = collection,
+            });
+
+            collection.CollectionChanged += delegate { Debug.WriteLine("hi"); }; 
+
 
             _vm.OnLayoutChanged += delegate
             {

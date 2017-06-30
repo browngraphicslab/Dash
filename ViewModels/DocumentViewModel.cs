@@ -39,6 +39,9 @@ namespace Dash
 
         public event OnLayoutChangedHandler OnLayoutChanged;
 
+        public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
+            new ObservableCollection<DocumentModel>();
+
         public double Width
         {
             get { return _width; }
@@ -118,6 +121,8 @@ namespace Dash
             var documentFieldModelController = DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
             if (documentFieldModelController != null)
                 documentFieldModelController.Data.OnLayoutChanged += DocumentController_OnLayoutChanged;
+
+            DataBindingSource.Add(documentController.DocumentModel);
         }
 
         private void DocumentController_OnLayoutChanged(DocumentController sender)
