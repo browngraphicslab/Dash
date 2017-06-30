@@ -24,7 +24,7 @@
                     <ComboBoxItem Content="GET"/>
                     <ComboBoxItem Content="POST"/>
                 </ComboBox>
-                <TextBox x:Name="xApiURLTB" Grid.Column="1" Height="25" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search" BorderBrush="#FF474747"  />
+                <TextBox x:Name="xApiURLTB" TextChanged="xApiURLTB_TextChanged" Grid.Column="1" Height="25" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search" BorderBrush="#FF474747"  />
             </Grid>
             <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>

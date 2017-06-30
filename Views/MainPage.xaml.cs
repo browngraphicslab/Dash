@@ -237,7 +237,8 @@ namespace Dash
         }
 
         private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
-            DisplayDocument(new CourtesyDocuments.ApiSourceCreatorDoc().Document);
+            var a = new CourtesyDocuments.ApiDocumentModel().Document;
+            DisplayDocument(a);
         }
 
         private void AddAnotherLol()

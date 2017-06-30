@@ -39,14 +39,11 @@ namespace Dash.Sources.Api {
         private Canvas testGrid;
 
         // == CONSTRUCTORS ==
-        public ApiSource(HttpMethod requestType, string apiURL,
-            Dictionary<string, ApiProperty> headerProperties, Dictionary<string, ApiProperty> parameterProperties,
-                Dictionary<string, ApiProperty> authParameterProperties, Dictionary<string, ApiProperty> authHeaderProperties,
-                string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
-            this.headers = headerProperties;
-            this.parameters = parameterProperties;
-            this.authHeaders = authHeaderProperties;
-            this.authParameters = authParameterProperties;
+        public ApiSource(HttpMethod requestType, string apiURL, string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
+            this.headers = new Dictionary<string, ApiProperty>();
+            this.parameters = new Dictionary<string, ApiProperty>();
+            this.authHeaders = new Dictionary<string, ApiProperty>();
+            this.authParameters = new Dictionary<string, ApiProperty>();
             this.apiURI = new Uri(apiURL);
             if (!string.IsNullOrWhiteSpace(authURL)) {
                 this.authURI = new Uri(authURL);
@@ -100,45 +97,12 @@ namespace Dash.Sources.Api {
         }
 
         /// <summary>
-        /// Adds a dictionary of key, value pair to a given list view, creating the key as a TextBlock
-        /// and the value as a TextBox.
+        /// Sets the display to an existing source. Probably, you should use that.
         /// </summary>
-        /// <param name="view">ListView to add pair to</param>
-        /// <param name="dictionary">dictionary to get pairs frm</param>
-        void addToView(Dictionary<string, ApiProperty> dictionary, bool isParameter) {
-            int lastRequiredPosition = 0;
-            foreach (KeyValuePair<string, ApiProperty> entry in dictionary) {
-                // only add editable header params for values that do not have defaults
-                if (entry.Value.IsDisplayed) {
-                    if (entry.Value.IsRequired) {
-                        display.addToListView(entry.Value, lastRequiredPosition);
-                        lastRequiredPosition++;
-                    } else
-                        display.addToListView(entry.Value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Generates a physical Grid that can be displayed on canvas representing 
-        /// the APINode template.
-        /// 
-        /// TODO: seperate layout for MVVM maybe?
-        /// </summary>
-        /// <returns>
-        /// The generated grid object.
-        /// </returns>
-        public ApiSourceDisplay createAPISourceDisplay() {
-            display = new ApiSourceDisplay();
-
-            // add everyone to containing grid
-            addToView(authHeaders, false);
-            addToView(authParameters, false);
-            addToView(headers, false);
-            addToView(parameters, true);
-            display.addButtonEventHandler(clickHandler);
-
-            return display;
+        /// <param name="sdisplay"></param>
+        public void setApiDisplay(ApiSourceDisplay sdisplay) {
+            sdisplay.addButtonEventHandler(clickHandler);
+            display = sdisplay;
         }
 
         /// <summary>
@@ -151,36 +115,24 @@ namespace Dash.Sources.Api {
         }
 
         /// <summary>
-        /// Updates ApiSourceCreator to represent this ApiSource. The creator can
-        /// then be used to edit the fields of this ApiSource.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void editHandler(object sender, RoutedEventArgs e) {
-            makeRequest();
-        }
-
-        /// <summary>
         /// Updates the in-node representation of the parameters list based on
         /// user input into editable ApiConnectionProperties of the listview.
         /// </summary>
         private void updateParametersFromListView() {
+            this.headers = new Dictionary<string, ApiProperty>();
+            this.parameters = new Dictionary<string, ApiProperty>();
+            this.authHeaders = new Dictionary<string, ApiProperty>();
+            this.authParameters = new Dictionary<string, ApiProperty>();
             foreach (ApiProperty grid in display.PropertiesListView.Items) {
-                if (!grid.ForAuth) {
-                    string key = grid.Key;
-                    string val = grid.Value;
-                    if (grid.IsParameter)
-                        parameters[key].Value = val;
-                    else
-                        headers[key].Value = val;
-                } else {
-                    string key = grid.Key;
-                    string val = grid.Value;
-                    if (grid.IsParameter)
-                        authParameters[key].Value = val;
-                    else
-                        authHeaders[key].Value = val;
-                }
+                Debug.WriteLine(grid.Key);
+                if (grid.Type == ApiProperty.ApiPropertyType.AuthHeader)
+                    authHeaders.Add(grid.Key, grid);
+                if (grid.Type == ApiProperty.ApiPropertyType.AuthParameter)
+                    authParameters.Add(grid.Key, grid);
+                if (grid.Type == ApiProperty.ApiPropertyType.Header)
+                    headers.Add(grid.Key, grid);
+                if (grid.Type == ApiProperty.ApiPropertyType.Parameter)
+                    parameters.Add(grid.Key, grid);
             }
         }
 
@@ -227,13 +179,14 @@ namespace Dash.Sources.Api {
         public async virtual void makeRequest() {
             // load in parameters from listViews
             updateParametersFromListView();
-
+            
             // check that all required fields are filled
             if (!(requiredPropertiesValid(parameters) &&
             requiredPropertiesValid(headers))) {
                 text.Text = "Please fill in all required fields (denoted by a *).";
                 return;
             }
+            
 
             // initialize request message and headers
             HttpRequestMessage message = new HttpRequestMessage(requestType, apiURI);
@@ -287,7 +240,7 @@ namespace Dash.Sources.Api {
             // send message
             response = await client.SendRequestAsync(message);
             text.Text = response.Content.ToString();
-            Debug.WriteLine("Content: " + response.Content.ToString());
+           // Debug.WriteLine("Content: " + response.Content.ToString());
 
             // generate and store response document by parsing HTTP output
             // first try to parse it as a list of objects

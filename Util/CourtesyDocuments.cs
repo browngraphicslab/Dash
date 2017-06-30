@@ -11,6 +11,8 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Sources.Api;
 using DashShared;
+using Dash.Sources.Api.XAML_Elements;
+using static Dash.Sources.Api.XAML_Elements.ApiProperty;
 
 namespace Dash
 {
@@ -178,6 +180,252 @@ namespace Dash
             }
         }
 
+
+        /// <summary>
+        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
+        /// </summary>
+        public class ApiDocumentModel : CourtesyDocument {
+            public static DocumentType DocumentType = new DocumentType("APIC9C82-F32C-4704-AF6B-E55AC805C84F", "Api Source Creator");
+            public static Key UrlKey = new Key("APIURL82-F32C-4704-AF6B-E55AC805C84F", "URL");
+            public static Key MethodKey = new Key("APIMET82-F32C-4704-AF6B-E55AC805C84F", "Method");
+            public static Key HeadersKey = new Key("APISECNN-F32C-4704-AF6B-E55AC805C84F", "Headers");
+            public static Key ParametersKey = new Key("APIPARNN-F32C-4704-AF6B-E55AC805C84F", "Parameter");
+
+            public static Key AuthMethodKey = new Key("APIMETAU-F32C-4704-AF6B-E55AC805C84F", "Auth Method");
+            public static Key AuthUrlKey = new Key("APIURLAU-F32C-4704-AF6B-E55AC805C84F", "Auth URL");
+            public static Key AuthKey = new Key("APIKEYAU-F32C-4704-AF6B-E55AC805C84F", "Auth Key");
+            public static Key AuthSecret = new Key("APISECAU-F32C-4704-AF6B-E55AC805C84F", "Auth Secret");
+            public static Key AuthHeaders = new Key("APISECAU-F32C-4704-AF6B-E55AC805C84F", "Auth Header");
+            public static Key AuthParameters = new Key("APIPARAU-F32C-4704-AF6B-E55AC805C84F", "Auth Parameter");
+
+            public static Key KeyTextKey = new Key("KEYURL82-F32C-4704-AF6B-E55AC805C84F", "Key");
+            public static Key ValueTextKey = new Key("KEYMET82-F32C-4704-AF6B-E55AC805C84F", "Value");
+            public static Key RequiredKey = new Key("KEYSECNN-F32C-4704-AF6B-E55AC805C84F", "Required");
+            public static Key DisplayKey = new Key("KEYPARNN-F32C-4704-AF6B-E55AC805C84F", "Display");
+
+            public static Key CollectionResultKey = new Key("APICOLLN-F32C-4704-AF6B-E55AC805C84F", "Collection Result");
+
+            public ApiDocumentModel() {
+                // create a layout for the image
+                var fields = new Dictionary<Key, FieldModel> {
+                    [UrlKey] = new TextFieldModel(""),
+                    [MethodKey] = new NumberFieldModel(0),
+                    [AuthUrlKey] = new TextFieldModel(""),
+                    [AuthMethodKey] = new NumberFieldModel(0),
+                    [AuthSecret] = new TextFieldModel(""),
+                    [AuthKey] = new TextFieldModel(""),
+                    [ParametersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [HeadersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [AuthParameters] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [AuthHeaders] = new DocumentCollectionFieldModel(new List<DocumentModel>())
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+
+            /// <summary>
+            /// Generates a new document containing the parameter information and adds that document to
+            /// the corresponding DocumentCollectionFieldModel representing that parameter's list (i.e. Header, AuthParameters).
+            /// </summary>
+            /// <param name="key"></param>
+            /// <param name="value"></param>
+            /// <param name="display"></param>
+            /// <param name="required"></param>
+            /// <returns>The newly generated document representing the newly added parameter.</returns>
+            public static DocumentController addParameter(DocumentController docController, TextBox key, TextBox value, CheckBox display, 
+                CheckBox required, Key parameterCollectionKey, ApiSourceDisplay sourceDisplay) {
+                Debug.Assert(docController.DocumentType == DocumentType);
+                Debug.Assert(parameterCollectionKey == AuthParameters || parameterCollectionKey == AuthHeaders ||
+                    parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
+
+                // fetch parameter list to add to
+                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
+
+                double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
+                double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
+
+                // generate new doc with information to add
+                var fields = new Dictionary<Key, FieldModel> {
+                    [ValueTextKey] = new TextFieldModel(key.Text),
+                    [DisplayKey] = new NumberFieldModel(displayDouble),
+                    [KeyTextKey] = new TextFieldModel(value.Text),
+                    [RequiredKey] = new NumberFieldModel(requiredDouble),
+                };
+                
+                // add to collection & return new document result
+                var ret = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+
+                // apply textbox bindings
+                bindToTextBox(key, ret.Fields[KeyTextKey]);
+                bindToTextBox(value, ret.Fields[ValueTextKey]);
+
+                // apply checkbox bindings
+                bindToCheckBox(display, ret.Fields[DisplayKey]);
+                bindToCheckBox(required, ret.Fields[RequiredKey]);
+
+                // get the property's type
+                ApiPropertyType type = ApiPropertyType.Parameter;
+                if (parameterCollectionKey == HeadersKey)
+                    type = ApiPropertyType.Header;
+                if (parameterCollectionKey == AuthHeaders)
+                    type = ApiPropertyType.AuthHeader;
+                if (parameterCollectionKey == AuthParameters)
+                    type = ApiPropertyType.AuthParameter;
+
+                // make new property in source view
+                ApiProperty apiprop = new ApiProperty(key.Text,value.Text, type, ret, required.IsChecked.Value);
+                sourceDisplay.addToListView(apiprop);
+                Debug.WriteLine("here: " + key.Text);
+
+                // bind source's fields to those of the editor (key, value)
+                TextFieldModelController textFieldModelController = ret.Fields[KeyTextKey] as TextFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = textFieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                    Mode = BindingMode.OneWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                apiprop.XKey.SetBinding(TextBlock.TextProperty, sourceBinding);
+                bindToTextBox(apiprop.XValue, ret.Fields[ValueTextKey]);
+
+                // bind source visibility to display checkbox which is bound to backend display field of param document
+                var binding = new Binding {
+                    Source = display,
+                    Path = new PropertyPath(nameof(display.IsChecked)),
+                    Mode = BindingMode.OneWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Converter = new BoolToVisibilityConverter()
+                };
+                apiprop.SetBinding(ApiProperty.VisibilityProperty, binding);
+
+                // bind ApiRequired property to the required checkbox
+                var bindin = new Binding {
+                    Source = display,
+                    Path = new PropertyPath(nameof(required.IsChecked)),
+                    Mode = BindingMode.OneWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                apiprop.XRequired.SetBinding(CheckBox.IsCheckedProperty, bindin);
+
+
+                col.AddDocument(ret);
+                return ret;
+            }
+
+            /// <summary>
+            /// Removes a parameter from a given list of parameter documents.
+            /// </summary>
+            /// <param name="docController"></param>
+            /// <param name="docModelToRemove"></param>
+            /// <param name="parameterCollectionKey"></param>
+            /// <param name="sourceDisplay"></param>
+            public static void removeParameter(DocumentController docController, DocumentController docModelToRemove,
+                Key parameterCollectionKey, ApiSourceDisplay sourceDisplay) {
+                Debug.Assert(docController.DocumentType == DocumentType);
+                Debug.Assert(parameterCollectionKey == AuthParameters || parameterCollectionKey == AuthHeaders ||
+                    parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
+                
+                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
+                col.RemoveDocument(docModelToRemove);
+                
+            }
+
+            // inherited
+            public override List<FrameworkElement> makeView(DocumentController docController) {
+                return TextingBox.MakeView(docController);
+            }
+
+            /// <summary>
+            /// Binds a textbox to a fieldModelController.
+            /// </summary>
+            /// <param name="tb"></param>
+            /// <param name="field"></param>
+            private static void bindToTextBox(TextBox tb, FieldModelController field) {
+
+                // bind URL
+                TextFieldModelController textFieldModelController = field as TextFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = textFieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                tb.SetBinding(TextBox.TextProperty, sourceBinding);
+
+            }
+
+
+            /// <summary>
+            /// Binds a textbox to a fieldModelController.
+            /// </summary>
+            /// <param name="cb"></param>
+            /// <param name="field"></param>
+            private static void bindToCheckBox(CheckBox cb, FieldModelController field) {
+
+                // bind URL
+                NumberFieldModelController textFieldModelController = field as NumberFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = textFieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Converter = new DoubleToBoolConverter()
+                };
+                cb.SetBinding(CheckBox.IsCheckedProperty, sourceBinding);
+                textFieldModelController.Data = 1;
+            }
+
+            private static void makeBinding(ApiCreatorDisplay apiDisplay, DocumentController docController) {
+
+                // set up text bindings
+                bindToTextBox(apiDisplay.UrlTB, docController.Fields[UrlKey]);
+                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.Fields[AuthUrlKey]);
+                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.Fields[AuthKey]);
+               // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecret]);
+
+                // bind drop down list
+                NumberFieldModelController fmcontroller = docController.Fields[MethodKey] as NumberFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = fmcontroller,
+                    Path = new PropertyPath(nameof(fmcontroller.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                apiDisplay.RequestMethodCB.SetBinding(ComboBox.SelectedIndexProperty, sourceBinding);
+
+            }
+
+            public static List<FrameworkElement> MakeView(DocumentController docController) {
+                ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
+                ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
+                makeBinding(apiDisplay, docController);
+                sourceDisplay.Margin = new Thickness(400, 0, 0, 0);
+
+                // test bindings are working
+                Debug.WriteLine((docController.Fields[UrlKey] as TextFieldModelController).Data);
+                apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
+                Debug.WriteLine((docController.Fields[UrlKey] as TextFieldModelController).Data);
+
+
+              //  MainPage.Instance.DisplayDocument(new ApiSourceDoc(sourceDisplay).Document);
+                return new List<FrameworkElement>() { apiDisplay, sourceDisplay };
+            }
+        }
+
+        /// <summary>
+        /// Converts doubles to booleans and back. 0 = false, 1 = true (or any nonzero number). Used
+        /// primarily to convert NumberFieldModels into boolean values.
+        /// </summary>
+        public class DoubleToBoolConverter : IValueConverter {
+            public object Convert(object value, Type targetType, object parameter, string language) {
+                return ((double)value != 0);
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language) {
+                if ((bool)value) return 1;
+                return 0;
+            }
+        }
+
         /// <summary>
         /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
         /// </summary>
@@ -188,9 +436,7 @@ namespace Dash
             public ApiSourceCreatorDoc()
             {
                 // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                };
+                var fields = new Dictionary<Key, FieldModel> { };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
 
@@ -206,7 +452,7 @@ namespace Dash
 
 
         /// <summary>
-        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
+        /// Wrapper document to display the ApiSource Usercontrol
         /// </summary>
         public class ApiSourceDoc : CourtesyDocument
         {
@@ -218,9 +464,7 @@ namespace Dash
             {
                 // create a layout for the image
                 ApiSourceDoc.source = source;
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                };
+                var fields = new Dictionary<Key, FieldModel> { };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
 
@@ -231,7 +475,7 @@ namespace Dash
 
             public static List<FrameworkElement> MakeView(DocumentController docController)
             {
-                return new List<FrameworkElement>() { ApiSourceDoc.source };
+                return new List<FrameworkElement>() { source };
             }
         }
 
@@ -481,6 +725,10 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Constructs a nested stackpanel that displays the fields of all documents in the list
+        /// docs.
+        /// </summary>
         public class StackingPanel : CourtesyDocument
         {
             public static DocumentType StackPanelDocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");

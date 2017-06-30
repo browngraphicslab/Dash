@@ -18,10 +18,10 @@
                     <ComboBoxItem Content="GET"/>
                     <ComboBoxItem Content="POST"/>
                 </ComboBox>
-                    <TextBox x:Name="xApiURLTB" Height="25" Width="345" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search" Text="https://itunes.apple.com/search" BorderBrush="#FF474747"  />
+                    <TextBox TextChanged="xApiURLTB_TextChanged" x:Name="xApiURLTB" Height="25" Width="345" Margin="3,0,0,0"  TextWrapping="Wrap" PlaceholderText="API address, e.g. https://itunes.apple.com/search"  BorderBrush="#FF474747"  />
             </StackPanel>
             <api:ApiCreatorAuthenticationDisplay x:Name="xAuthControl" Margin="0,0,0,12" />
-            <api:ApiCreatorPropertyGenerator x:Name="xHeaderControl" Margin="0,0,0,12" TitleTag="HEADERS" ></api:ApiCreatorPropertyGenerator>
+            <api:ApiCreatorPropertyGenerator x:Name="xHeaderControl" Margin="0,0,0,12" TitleTag="HEADERS" Loaded="xHeaderControl_Loaded" ></api:ApiCreatorPropertyGenerator>
             <api:ApiCreatorPropertyGenerator x:Name="xParameterControl" TitleTag="PARAMETERS" ></api:ApiCreatorPropertyGenerator>
 
             <Button x:Name="createAPIBtn" Click="createAPINodeTemplate" Content="CREATE API" HorizontalAlignment="Center" Margin="0,20,0,0" Foreground="White" Background="#FF0078D7"/>

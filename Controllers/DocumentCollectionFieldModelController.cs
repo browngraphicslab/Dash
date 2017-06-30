@@ -54,8 +54,14 @@ namespace Dash
         public void AddDocument(DocumentController docController)
         {
             _documents.Add(docController);
-            DocumentCollectionFieldModel.Data = _documents.Select((d) => d.GetId());
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
+            OnDataUpdated();
+        }
+
+        public void RemoveDocument(DocumentController doc) {
+            _documents.Remove(doc);
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
             OnDataUpdated();
         }
 

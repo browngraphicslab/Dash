@@ -32,9 +32,10 @@ namespace Dash
             // create the doucment model and document controller and add it to the content controller
             var documentModel = new DocumentModel(newDocumentRequestArgs.Fields, newDocumentRequestArgs.Type);
             ContentController.AddModel(documentModel);
-            var documentController = new DocumentController(documentModel);
-            ContentController.AddController(documentController);
+            DocumentController documentController;
+            documentController = new DocumentController(documentModel);
 
+            ContentController.AddController(documentController);
             _newDocumentId = documentModel.Id;
         }
 
