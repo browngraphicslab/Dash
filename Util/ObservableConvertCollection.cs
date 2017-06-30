@@ -55,20 +55,20 @@ namespace Dash
             {
                 DocumentController controller = new DocumentController(model);
                 var layout = controller.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-                var elements = layout != null ? layout.Data.MakeViewUI() : new DocumentViewModel(controller).GetUiElements(new Rect(0, 0, _view.ActualWidth, _view.ActualHeight));
-                if (elements != null)
+                var elements = layout != null
+                    ? layout.Data.MakeViewUI()
+                    : new DocumentViewModel(controller).GetUiElements(new Rect());
+
+                if (elements.Count == 0)
                 {
-                    if (elements.Count == 0)
-                    {
-                        var panel = controller.MakeAllViewUI();
-                        Add(panel);
-                    }
-                    else
-                        _dictionary[model] = elements;
-                        foreach (var element in elements)
-                        {
-                            base.Add(element);
-                        }
+                    var panel = controller.MakeAllViewUI();
+                    Add(panel);
+                }
+                else
+                    _dictionary[model] = elements;
+                foreach (var element in elements)
+                {
+                    base.Add(element);
                 }
             }
         }

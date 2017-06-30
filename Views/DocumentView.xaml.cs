@@ -214,20 +214,21 @@ namespace Dash
         /// <param name="documentViewModel"></param>
         public void ResetFields(DocumentViewModel documentViewModel)
         {
-            // clear any current children (fields) and then add them over again
-            //XGrid.Children.Clear();
-            //var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-            //var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
-            //if (elements.Count == 0)
-            //{
-            //    var panel = documentViewModel.DocumentController.MakeAllViewUI();
-            //    XGrid.Children.Add(panel);
-            //}
-            //else
-            //    foreach (var element in elements)
-            //    {
-            //        XGrid.Children.Add(element);
-            //    }
+            //clear any current children (fields)and then add them over again
+
+            XGrid.Children.Clear();
+            var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
+            if (elements.Count == 0)
+            {
+                var panel = documentViewModel.DocumentController.MakeAllViewUI();
+                XGrid.Children.Add(panel);
+            }
+            else
+                foreach (var element in elements)
+                {
+                    XGrid.Children.Add(element);
+                }
         }
 
         /// <summary>
@@ -236,11 +237,11 @@ namespace Dash
         /// <param name="uiElements"></param>
         public void SetUIElements(List<FrameworkElement> uiElements)
         {
-            //XGrid.Children.Clear();
-            //foreach (var element in uiElements)
-            //{
-            //    XGrid.Children.Add(element);
-            //}
+            XGrid.Children.Clear();
+            foreach (var element in uiElements)
+            {
+                XGrid.Children.Add(element);
+            }
         }
 
         /// <summary>
@@ -285,15 +286,12 @@ namespace Dash
             if (_vm == null)
                 return;
 
-            ObservableConvertCollection collection = new ObservableConvertCollection(_vm.DataBindingSource, this);
-
-
-            DocumentsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
-            {
-                Source = collection,
-            });
-
-            collection.CollectionChanged += delegate { Debug.WriteLine("hi"); }; 
+            //ObservableConvertCollection collection = new ObservableConvertCollection(_vm.DataBindingSource, this);
+            //DocumentsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+            //{
+            //    Source = collection,
+            //});
+            //collection.CollectionChanged += delegate { Debug.WriteLine("hi"); }; 
 
 
             _vm.OnLayoutChanged += delegate
