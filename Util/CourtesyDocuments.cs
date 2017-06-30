@@ -670,9 +670,11 @@ namespace Dash
 
             static DocumentController CreatePrototypeLayout()
             {
+                // set the default layout parameters on prototypes of field layout documents
+                // these prototypes will be overridden by delegates when an instance is created
                 _prototypeImage1Layout = new ImageBox(new TextFieldModel("Image 1"), 0, 20, 200, 200);
                 _prototypeImage2Layout = new ImageBox(new TextFieldModel("Image 2"), 0, 220, 200, 200);
-                _prototypeTextLayout = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 20);
+                _prototypeTextLayout   = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 20);
 
                 return new FreeformDocument(new[] { _prototypeTextLayout.Document.DocumentModel, _prototypeImage1Layout.Document.DocumentModel, _prototypeImage2Layout.Document.DocumentModel }).Document;
             }
@@ -685,6 +687,7 @@ namespace Dash
 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
 
+                // create delegates for each prototype layout field and override the instance data (DataKey and LayoutKey)
                 var imBox1 = _prototypeImage1Layout.MakeDelegate(new ReferenceFieldModel(Document.GetId(), Image1FieldKey));
                 var imBox2 = _prototypeImage2Layout.MakeDelegate(new ReferenceFieldModel(Document.GetId(), Image2FieldKey));
                 var tBox   = _prototypeTextLayout.MakeDelegate  (new ReferenceFieldModel(Document.GetId(), TextFieldKey));
@@ -761,13 +764,13 @@ namespace Dash
                 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NumbersType)).GetReturnedDocumentController();
 
-                var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey)).Document;
-                var imBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number2FieldKey)).Document;
-                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey)).Document;
+                var imBox1 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number1FieldKey), 0, 0, 50, 20).Document;
+                var imBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number2FieldKey), 0, 0, 50, 20).Document;
+                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), Number3FieldKey), 0, 0, 50, 20).Document;
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
-                //SetLayoutForDocument(stackPan.DocumentModel);
+                SetLayoutForDocument(Document, stackPan.DocumentModel);
             }
 
         }
