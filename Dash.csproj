@@ -168,7 +168,6 @@
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Api\ApiSource.cs" />
-    <Compile Include="Sources\Api\ApiSourceCreator.cs" />
     <Compile Include="Sources\Api\ApiSourceDisplay.xaml.cs">
       <DependentUpon>ApiSourceDisplay.xaml</DependentUpon>
     </Compile>

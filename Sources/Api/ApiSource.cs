@@ -228,13 +228,10 @@ namespace Dash.Sources.Api {
 
             // generate and store response document by parsing HTTP output
             // first try to parse it as a list of objects
-            //
-            // TODO: is it extra to loop into nested Objects in a JSON value and generate fields 
-            // representing all of them? Ask how to have nested properties inside of documents
-            //      -> document of documents? or create custom object type maybe?
             responseAsDocuments = new List<DocumentController>();
             var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
+
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
@@ -256,6 +253,12 @@ namespace Dash.Sources.Api {
 
                     DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
                     responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+
+                    /*
+                     var documentModel = (DocumentCollectionFieldModel)JsonToDashUtil.ParseJson(JToken.Parse(text.Text),null,false);
+                var JsonDocument = ContentController.GetController(documentModel.Id) as DocumentCollectionFieldModelController;
+                responseAsDocuments = JsonDocument.GetDocuments();
+                */
                 }
 
 

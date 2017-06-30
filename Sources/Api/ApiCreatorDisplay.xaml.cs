@@ -74,6 +74,7 @@ namespace Dash.Sources.Api {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void createAPINodeTemplate(object sender, RoutedEventArgs e) {
+            this.Visibility = Visibility.Collapsed;
         }
 
         private void updateSource() {

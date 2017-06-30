@@ -68,5 +68,9 @@ namespace Dash.Sources.Api {
         public void addButtonEventHandler(TappedEventHandler r) {
             xQueryBtn.Tapped += r;
         }
+
+        private void xEditBtn_Tapped(object sender, TappedRoutedEventArgs e) {
+            this.Visibility = Visibility.Collapsed;
+        }
     }
 }

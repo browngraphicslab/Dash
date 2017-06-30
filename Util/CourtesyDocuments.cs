@@ -905,7 +905,6 @@ namespace Dash
                 ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
                 ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
                 makeBinding(apiDisplay, docController);
-                sourceDisplay.Margin = new Thickness(400, 0, 0, 0);
 
                 // test bindings are working
                 Debug.WriteLine((docController.Fields[UrlKey] as TextFieldModelController).Data);
@@ -918,8 +917,21 @@ namespace Dash
                 var elements = new List<FrameworkElement>() { apiDisplay, sourceDisplay };
                 var moreElements = GenericCollection.MakeView(ctr.Document);
 
-                moreElements[0].Margin = new Thickness(800, 0, 0, 0);
+                moreElements[0].Margin = new Thickness(450, 0, 0, 0);
                 elements.AddRange(moreElements);
+
+                // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
+                // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)
+                // or should everyone just see the same view ?
+                // bind URL
+                var sourceBinding = new Binding {
+                    Source = apiDisplay,
+                    Path = new PropertyPath(nameof(apiDisplay.Visibility)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Converter = new InverseVisibilityConverter()
+                };
+                sourceDisplay.SetBinding(ApiSourceDisplay.VisibilityProperty, sourceBinding);
 
                 // return all results
                 return elements;
@@ -938,6 +950,27 @@ namespace Dash
             public object ConvertBack(object value, Type targetType, object parameter, string language) {
                 if ((bool)value) return 1;
                 return 0;
+            }
+        }
+
+
+        /// <summary>
+        /// Converts doubles to booleans and back. 0 = false, 1 = true (or any nonzero number). Used
+        /// primarily to convert NumberFieldModels into boolean values.
+        /// </summary>
+        public class InverseVisibilityConverter : IValueConverter {
+            public object Convert(object value, Type targetType, object parameter, string language) {
+                if ((Windows.UI.Xaml.Visibility)value == Windows.UI.Xaml.Visibility.Collapsed)
+                    return Windows.UI.Xaml.Visibility.Visible;
+                else
+                return Windows.UI.Xaml.Visibility.Collapsed;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language) {
+                if ((Windows.UI.Xaml.Visibility)value == Windows.UI.Xaml.Visibility.Collapsed)
+                    return Windows.UI.Xaml.Visibility.Visible;
+                else
+                    return Windows.UI.Xaml.Visibility.Collapsed;
             }
         }
 

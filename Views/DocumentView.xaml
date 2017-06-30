@@ -23,7 +23,7 @@
                 Padding="0"
                 RightTapped="Grid_RightTapped"
                Style="{StaticResource xNodeContainerGrid}"/>
-        <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        <Image Source="ms-appx:///Assets/resizehandle.png" Height="40" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
         </Image>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
