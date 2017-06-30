@@ -268,7 +268,7 @@ namespace Dash
                 Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache.");
 
                 // get the field model id from the document model
-                fieldModelId = docModel.Fields[reference.FieldKey];
+                fieldModelId = ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey).GetId();// docModel.Fields[reference.FieldKey];
             }
             else
             {

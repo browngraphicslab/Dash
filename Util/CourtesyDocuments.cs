@@ -25,6 +25,7 @@ namespace Dash
             public static void SetLayoutForDocument(DocumentController document, DocumentModel layoutDoc)
             {
                 var documentFieldModel = new DocumentModelFieldModel(layoutDoc);
+                ContentController.AddModel(documentFieldModel);
                 var layoutController = new DocumentFieldModelController(documentFieldModel);
                 ContentController.AddController(layoutController);
                 document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
@@ -174,13 +175,16 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Given a document, this provides an API for getting all of the layout documents that define it's view.
+        /// </summary>
         public class LayoutCourtesyDocument : CourtesyDocument
         {
+            DocumentController LayoutDocumentController = null;
             public LayoutCourtesyDocument(DocumentController docController)
             {
                 Document = docController; // get the layout field on the document being displayed
                 var layoutField = docController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-                DocumentController LayoutDocumentController = null;
                 if (layoutField == null)
                 {
                     var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(new DocumentModel[] { }));
@@ -190,8 +194,16 @@ namespace Dash
                 }
                 else
                     LayoutDocumentController = layoutField?.Data;
-                // get the documentCollectionFieldModelController from the layout document controller
-                LayoutDocumentCollectionController = LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+            }
+            public IEnumerable<DocumentController> GetLayoutDocuments()
+            {
+                var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));
+                if (layoutDataField is DocumentCollectionFieldModelController)
+                    foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
+                        yield return d;
+                else if (layoutDataField.FieldModel is DocumentModelFieldModel)
+                    yield return ContentController.GetController<DocumentController>((layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
+
             }
             public DocumentCollectionFieldModelController LayoutDocumentCollectionController = null;
             public override List<FrameworkElement> makeView(DocumentController docController)
@@ -481,7 +493,7 @@ namespace Dash
             }
             public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
             public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
-
+            
             static public List<FrameworkElement> MakeView(DocumentController docController)
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
@@ -491,7 +503,24 @@ namespace Dash
                         (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
                     var h = double.NaN;
 
-                    return new DocumentCollectionTemplateModel(0, 0, w, h).MakeViewUI(data, docController);
+                    var collectionFieldModelController = data as DocumentCollectionFieldModelController;
+                    Debug.Assert(collectionFieldModelController != null);
+                    var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
+                    var collectionViewModel = new CollectionViewModel(collectionModel);
+                    var view = new CollectionView(collectionViewModel);
+
+                    var translateBinding = new Binding
+                    {
+                        Source = collectionViewModel,
+                        Path = new PropertyPath("Pos"),
+                        Mode = BindingMode.TwoWay,
+                        Converter = new PointToTranslateTransformConverter()
+                    };
+                    view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+                    if (w > 0)
+                        view.Width = w;
+
+                    return new List<FrameworkElement> { view };
                 }
                 return new List<FrameworkElement>();
             }

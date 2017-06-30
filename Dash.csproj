@@ -117,7 +117,6 @@
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
-    <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
     <Compile Include="Models\DocumentModelFieldModel.cs" />
@@ -138,7 +137,6 @@
     <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
-    <Compile Include="Models\TemplateModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -202,13 +200,9 @@
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
     <Compile Include="ViewModels\DocumentViewModel.cs" />
-    <Compile Include="ViewModels\FieldViewModel.cs" />
     <Compile Include="ViewModels\GuideLineViewModel.cs" />
-    <Compile Include="ViewModels\ImageViewModel.cs" />
-    <Compile Include="ViewModels\LayoutViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
-    <Compile Include="ViewModels\TextViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
