@@ -15,29 +15,19 @@ namespace Dash
     /// </summary>
     public class StringCoordinateToPointConverter : SafeDataToXamlConverter<Point, string>
     {
+        private Point _point;
 
-        /// <summary>
-        /// The <see cref="Coordinate"/> which this converter is bound to
-        /// </summary>
-        public Coordinate BoundCoordinate { get; }
-
-        /// <summary>
-        /// Create a new <see cref="StringCoordinateToPointConverter"/> which is bound to the <paramref name="coordinateToBind"/>
-        /// </summary>
-        /// <param name="coordinateToBind"></param>
-        public StringCoordinateToPointConverter(Coordinate coordinateToBind)
+        public StringCoordinateToPointConverter(Point initialPoint)
         {
-            BoundCoordinate = coordinateToBind;
+            _point = initialPoint;
         }
 
-        /// <summary>
-        /// Converts a <see cref="Point"/> into the <see cref="double"/> matching the <see cref="BoundCoordinate"/>
-        /// </summary>
-        /// <param name="data">The transform which is being converted</param>
-        /// <param name="parameter">The parameter is unused</param>
         public override string ConvertDataToXaml(Point data, object parameter = null)
         {
-            switch (BoundCoordinate)
+            _point = data;
+            Debug.Assert(parameter is Coordinate);
+            var coordinate = (Coordinate) parameter;
+            switch (coordinate)
             {
                 case Coordinate.X:
                     return data.X.ToString(CultureInfo.InvariantCulture);
@@ -48,18 +38,28 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Converts a <see cref="double"/> into a <see cref="Point"/>. The <paramref name="xaml"/> is the double
-        /// representing the <see cref="BoundCoordinate"/>, the <paramref name="parameter"/> is a <see cref="Windows.Foundation.Point"/>
-        /// which represents the entire position the <see cref="Point"/> is supposed to be set to
-        /// </summary>
-        /// <param name="xaml">The double which is being converted</param>
-        /// <param name="parameter">A <see cref="Windows.Foundation.Point"/></param>
         public override Point ConvertXamlToData(string xaml, object parameter = null)
         {
-            Debug.Assert(parameter is Func<Point>, "the parameter must be the point representing the full position of the TranslateTransform you want to beind to");
-            var point = ((Func<Point>) parameter)();
-            return point;
+            Debug.Assert(parameter is Coordinate);
+            var coordinate = (Coordinate)parameter;
+
+            double coordinateValue;
+            if (!double.TryParse(xaml, out coordinateValue))
+            {
+                coordinateValue = 0;
+            }
+
+            switch (coordinate)
+            {
+                case Coordinate.X:
+                    _point = new Point(coordinateValue, _point.Y);
+                    return _point;
+                case Coordinate.Y:
+                    _point = new Point(_point.X, coordinateValue);
+                    return _point;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 

@@ -33,6 +33,14 @@ namespace Dash
                 document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
             }
 
+            /// <summary>
+            /// Gives a layout document delegate both a Data field and a Layout field which override their prototypes' fields.
+            /// The Data field is specifies the layout field instance documents that are needed to render the delegate
+            /// The Layout field specifies that delegate will render itself instead of creating dynamic render instances for each of its fields
+            /// </summary>
+            /// <param name="prototypeLayout"></param>
+            /// <param name="layoutDocs"></param>
+            /// <returns></returns>
             public static DocumentController CreateDelegateLayout(DocumentController prototypeLayout, IEnumerable<DocumentModel> layoutDocs)
             {
                 var deleg = prototypeLayout.MakeDelegate();
@@ -44,6 +52,12 @@ namespace Dash
                 var delg = prototypeLayout.MakeDelegate();
 
                 deleg.SetField(DashConstants.KeyStore.DataKey, fmc, true);
+
+                var selfFm = new DocumentModelFieldModel(deleg.DocumentModel);
+                ContentController.AddModel(selfFm);
+                var selfFmc = new DocumentFieldModelController(selfFm);
+                ContentController.AddController(selfFmc);
+                deleg.SetField(DashConstants.KeyStore.LayoutKey, selfFmc, true);
                 return deleg;
             }
             public Dictionary<Key,FieldModel>  DefaultLayoutFields(double x, double y, double w, double h, FieldModel data)
@@ -473,7 +487,7 @@ namespace Dash
 
                     var translateBinding = new Binding
                     {
-                        Source = collectionViewModel,
+                        Source = collectionFieldModelController,
                         Path = new PropertyPath("Pos"),
                         Mode = BindingMode.TwoWay,
                         Converter = new PointToTranslateTransformConverter()
@@ -504,7 +518,8 @@ namespace Dash
             {
                 var output = new List<FrameworkElement>();
 
-                var layoutData = docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
+                var layoutData = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                 Debug.Assert(layoutData != null);
 
                 foreach (var layoutDoc in layoutData.GetDocuments())
@@ -595,7 +610,7 @@ namespace Dash
 
                 SetLayoutForDocument(imBox1, imBox1.DocumentModel);
                 SetLayoutForDocument(imBox2, imBox2.DocumentModel);
-                SetLayoutForDocument(tBox, tBox.DocumentModel);
+                SetLayoutForDocument(tBox,   tBox.DocumentModel);
 
                 if (displayFieldsAsDocuments)
                 {
@@ -628,9 +643,9 @@ namespace Dash
             {
                 // create a document with two images
                 var twoModel = new DocumentModelFieldModel(new TwoImages(displayFieldsAsDocuments).Document.DocumentModel);
-                var tModel = new TextFieldModel("Nesting");
-                var tModel2 = new TextFieldModel("More Nesting");
-                var fields = new Dictionary<Key, FieldModel>
+                var tModel   = new TextFieldModel("Nesting");
+                var tModel2  = new TextFieldModel("More Nesting");
+                var fields   = new Dictionary<Key, FieldModel>
                 {
                     [TextFieldKey] = tModel,
                     [TwoImagesKey] = twoModel,
@@ -638,9 +653,9 @@ namespace Dash
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NestedDocExampleType)).GetReturnedDocumentController();
 
-                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
+                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
                 var imBox1 = twoModel.Data;
-                var tBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextField2Key)).Document;
+                var tBox2  = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextField2Key)).Document;
 
                 var stackPan = new StackingPanel(new DocumentModel[] { tBox.DocumentModel, imBox1, tBox2.DocumentModel }).Document;
 

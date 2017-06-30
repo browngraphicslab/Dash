@@ -22,13 +22,6 @@ namespace Dash
 {
     public sealed partial class ImageSettings : UserControl
     {
-        private DocumentController _docController;
-
-        /// <summary>
-        /// delegate which takes in no parameters and returns a <see cref="Point"/>
-        /// </summary>
-        private Func<Point> _positionConverterCallback;
-
         public ImageSettings()
         {
             this.InitializeComponent();
@@ -37,30 +30,27 @@ namespace Dash
         public ImageSettings(DocumentController docController) : this()
         {
             Debug.Assert(docController.DocumentType == CourtesyDocuments.ImageBox.DocumentType, "You can only create image settings for an ImageBox");
-            _docController = docController;
 
-            BindOpacity(_docController);
-            BindWidth(_docController);
-            BindHeight(_docController);
-            BindPosition(_docController);
-
+            BindOpacity(docController);
+            BindWidth(docController);
+            BindHeight(docController);
+            BindPosition(docController);
         }
 
         private void BindPosition(DocumentController docController)
         {
-
-            _positionConverterCallback = PositionConverterCallback;
-
             var positionController = docController.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
             Debug.Assert(positionController != null);
+
+            var converter = new StringCoordinateToPointConverter(positionController.Data);
 
             var xPositionBinding = new Binding
             {
                 Source = positionController,
                 Path = new PropertyPath(nameof(positionController.Data)),
                 Mode = BindingMode.TwoWay,
-                Converter = new StringCoordinateToPointConverter(Coordinate.X),
-                ConverterParameter = _positionConverterCallback
+                Converter = converter,
+                ConverterParameter = Coordinate.X
             };
             xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty, xPositionBinding);
 
@@ -69,25 +59,10 @@ namespace Dash
                 Source = positionController,
                 Path = new PropertyPath(nameof(positionController.Data)),
                 Mode = BindingMode.TwoWay,
-                Converter = new StringCoordinateToPointConverter(Coordinate.Y),
-                ConverterParameter = _positionConverterCallback
+                Converter = converter,
+                ConverterParameter = Coordinate.Y
             };
             xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
-        }
-
-        private Point PositionConverterCallback()
-        {
-            double xCoordinate;
-            if (!double.TryParse(xHorizontalPositionTextBox.Text, out xCoordinate))
-            {
-                xCoordinate = 0;
-            }
-            double yCoordinate;
-            if (!double.TryParse(xVerticalPositionTextBox.Text, out yCoordinate))
-            {
-                yCoordinate = 0;
-            }
-            return new Point(xCoordinate, yCoordinate);
         }
 
         private void BindHeight(DocumentController docController)
