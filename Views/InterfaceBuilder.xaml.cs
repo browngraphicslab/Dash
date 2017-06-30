@@ -204,11 +204,9 @@ namespace Dash
             else if (fieldModel is ImageFieldModel)
             {
                 box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
-            }
-            else if (fieldModel is DocumentModelFieldModel)
+            } else if (fieldModel is NumberFieldModel)
             {
-                var dm = fieldModel as DocumentModelFieldModel;
-                box = new CourtesyDocuments.FreeformDocument(_layoutDocumentCollection.GetDocuments().Select(DocController => DocController.DocumentModel));
+                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
             }
 
             if (box != null)
