@@ -12,7 +12,7 @@ namespace Dash
 
         public static VisibilityToVisibilityConverter Instance { get; private set; }
 
-        public override Windows.UI.Xaml.Visibility ConvertDataToXaml(Visibility data)
+        public override Windows.UI.Xaml.Visibility ConvertDataToXaml(Visibility data, object parameter = null)
         {
             switch (data)
             {
@@ -25,7 +25,7 @@ namespace Dash
             }
         }
 
-        public override Visibility ConvertXamlToData(Windows.UI.Xaml.Visibility xaml)
+        public override Visibility ConvertXamlToData(Windows.UI.Xaml.Visibility xaml, object parameter = null)
         {
             switch (xaml)
             {

@@ -7,7 +7,7 @@ using DashShared;
 
 namespace Dash.Converters
 {
-    class TextWrappingToTextWrappingConverter : SafeDataToXamlConverter<TextWrapping, Windows.UI.Xaml.TextWrapping>
+    public class TextWrappingToTextWrappingConverter : SafeDataToXamlConverter<TextWrapping, Windows.UI.Xaml.TextWrapping>
     {
         public static TextWrappingToTextWrappingConverter Instance;
 
@@ -16,7 +16,7 @@ namespace Dash.Converters
             Instance = new TextWrappingToTextWrappingConverter();
         }
 
-        public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(TextWrapping data)
+        public override Windows.UI.Xaml.TextWrapping ConvertDataToXaml(TextWrapping data, object parameter = null)
         {
             switch (data)
             {
@@ -31,7 +31,7 @@ namespace Dash.Converters
             }
         }
 
-        public override TextWrapping ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml)
+        public override TextWrapping ConvertXamlToData(Windows.UI.Xaml.TextWrapping xaml, object parameter = null)
         {
             switch (xaml)
             {

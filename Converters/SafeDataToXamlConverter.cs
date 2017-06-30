@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -25,9 +26,9 @@ namespace Dash
             Debug.Assert(value is TData, "You are trying to convert data into xaml, but the data is of the wrong type");
 
             // TODO somehow make sure that this assert works. it started failing on me
-            Debug.Assert(targetType.IsAssignableFrom(typeof(TXaml)), 
+            Debug.Assert(targetType.IsAssignableFrom(typeof(TXaml)),
                 "You are trying to get a xaml type which this converter does not produce");
-            return ConvertDataToXaml((TData) value);
+            return ConvertDataToXaml((TData) value, parameter);
         }
 
         /// <summary>
@@ -43,22 +44,25 @@ namespace Dash
             Debug.Assert(value is TXaml, "You are trying to convert xaml into data, but the xaml is of the wrong type");
             Debug.Assert(targetType.IsAssignableFrom(typeof(TData)),
                 "You are trying to get a data type which this converter does not produce");
-            return ConvertXamlToData((TXaml) value);
+            return ConvertXamlToData((TXaml) value, parameter);
         }
 
         /// <summary>
         ///     Implement this method if you want to convert a data type into a xaml type, you almost always want to do this
         /// </summary>
         /// <param name="data">The data type that is going to be converted</param>
+        /// <param name="parameter">Optional paramter that can be used in the conversion. This part is NOT type safe to allow for flexibility</param>
         /// <returns>The xaml type which is going to be rendered</returns>
-        public abstract TXaml ConvertDataToXaml(TData data);
+        public abstract TXaml ConvertDataToXaml(TData data, object parameter = null);
 
         /// <summary>
         ///     Implement this method if you want to convert xaml back into data. This method is unnecessary in some cases
         ///     such as one way binding. So it can just throw a NotImplementedException if that is the case
         /// </summary>
         /// <param name="xaml">The xaml type which is going to be converted</param>
+        /// <param name="parameter">Optional paramter that can be used in the conversion. This part is NOT type safe to allow for flexibility</param>
         /// <returns>The data type which is the equivalent to the xaml</returns>
-        public abstract TData ConvertXamlToData(TXaml xaml);
+        public abstract TData ConvertXamlToData(TXaml xaml, object parameter = null);
+
     }
 }
