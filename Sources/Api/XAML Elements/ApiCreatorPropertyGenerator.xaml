@@ -11,7 +11,7 @@
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
     x:Name="xApiCreatorPropertyGenerator">
 
-    <StackPanel  Background="White" HorizontalAlignment="Stretch">
+    <StackPanel  Background="Transparent" HorizontalAlignment="Stretch">
         <Grid Background="{StaticResource WindowsBlue}">
             <TextBlock Text="{Binding TitleTag}" TextAlignment="Center" Padding="0,5,0,5" Foreground="white" Tapped="xCollapseButton_OnTapped" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
             <TextBlock Name="xCollapseButtonText"  HorizontalAlignment="Right" VerticalAlignment="Center" Height="auto" Tapped="xCollapseButton_OnTapped" Margin="0,0,10,4" Text="-" Foreground="White"></TextBlock>

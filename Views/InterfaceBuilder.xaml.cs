@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage.FileProperties;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,6 +18,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using static Dash.CourtesyDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -24,144 +28,221 @@ namespace Dash
     {
 
         private List<GuideLineViewModel> _guides = new List<GuideLineViewModel>();
-
-        /// <summary>
-        /// The document view model of the document which is being edited
-        /// </summary>
-        private DocumentViewModel _documentViewModel;
-
-        /// <summary>
-        /// the document model of the document which is being edited
-        /// </summary>
-        private DocumentModel _documentModel;
-
+        
         /// <summary>
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
+        
 
         /// <summary>
-        /// dictionary of keys to template models for the template models on the document which is being edited
+        /// Courtesy document that manages getting the necessary layout fields to edit the document's layout
         /// </summary>
-        private Dictionary<Key, TemplateModel> _keyToTemplateModel = new Dictionary<Key, TemplateModel>();
+        private LayoutCourtesyDocument LayoutCourtesyDocument;
 
-        /// <summary>
-        /// dictionary of keys to field models for the field models on the document which is being edited
-        /// </summary>
-        private Dictionary<Key, FieldModel> _keyToFieldModel = new Dictionary<Key, FieldModel>();
+        private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
 
-        public InterfaceBuilder(DocumentViewModel viewModel,int width=500, int height=500)
+        private ObservableCollection<KeyValuePair<Key, string>> _keyValuePairs;
+        private DocumentController _documentController;
+
+        public InterfaceBuilder(DocumentViewModel viewModel, int width = 800, int height = 500)
         {
             this.InitializeComponent();
+            Width = width;
+            Height = height;
+            
+            LayoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController);
+           
+            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document).First() as DocumentView;
 
-            // set width and height to avoid Width = NaN ...
-            Width = 500;
-            Height = 500;
+            _documentController = viewModel.DocumentController;
 
-            // set the view model, document model and view variables
-            _documentViewModel = viewModel;
-            _documentModel = viewModel.DocumentModel;
-            _documentView = new DocumentView(_documentViewModel);
+            _keyValuePairs = new ObservableCollection<KeyValuePair<Key, string>>();
+            foreach (KeyValuePair<Key, FieldModelController> pair in _documentController.EnumFields())
+            {
+                _keyValuePairs.Add(new KeyValuePair<Key, string>(pair.Key, pair.Value.ToString()));
+            }
+            xKeyValueListView.ItemsSource = _keyValuePairs;
 
-            // add the document view to the canvas in the center
-            Canvas.SetLeft(_documentView, xDocumentsPane.CanvasWidth / 2 - _documentView.Width);
-            Canvas.SetTop(_documentView, xDocumentsPane.CanvasHeight / 2 - _documentView.Height);
-            xDocumentsPane.Canvas.Children.Add(_documentView);
 
-            InitializeKeyDicts();
+            xDocumentHolder.Children.Add(_documentView);
+
+            _documentView.DragOver += DocumentViewOnDragOver;
+            _documentView.Drop += DocumentViewOnDrop;
+            _documentView.AllowDrop = true;
+
 
             ApplyEditable();
         }
 
-        private void InitializeKeyDicts()
-        {
-            _keyToTemplateModel = _documentViewModel.GetLayoutModel().Fields;
-            _keyToFieldModel = _documentModel.EnumFields().ToDictionary(x => x.Key, x => x.Value);
-        }
-
         private void ApplyEditable()
         {
-            List<UIElement> editableElements = new List<UIElement>();
+            List<FrameworkElement> editableElements = new List<FrameworkElement>();
 
-            foreach (var kvp in _keyToFieldModel)
+            // iterate over all the documents which define views
+            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
             {
-                var key = kvp.Key;
+                // use the layout document to generate a UI
+                var fieldView = layoutDocument.MakeViewUI();
 
-                // if there is no template model for the key don't try to display it
-                if (!_keyToTemplateModel.ContainsKey(key))
-                    continue;
-
-                var fieldModel = kvp.Value;
-
-                var fieldView = _keyToTemplateModel[key].MakeView(fieldModel);
-
-                var editableBorder = new EditableFieldFrame(key)
+                // generate an editable border
+                var editableBorder = new EditableFieldFrame(layoutDocument.GetId())
                 {
-                    EditableContent = fieldView,
-                    //Width = fieldView.Width,
-                    //Height = fieldView.Height
+                    EditableContent = fieldView.FirstOrDefault(),
+                    HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
+                    VerticalAlignment = VerticalAlignment.Top
                 };
-                Canvas.SetLeft(editableBorder, _keyToTemplateModel[key].Left);
-                Canvas.SetTop(editableBorder, _keyToTemplateModel[key].Top);
-                var guideModel = new GuideLineModel();
-                var guideViewModel = new GuideLineViewModel(guideModel);
-                var guideView = new GuideLineView(guideViewModel);
-                // maybe add guideView to documentView Canvas
-                _guides.Add(guideViewModel);
 
-                editableBorder.SizeChanged += EditableBorder_SizeChanged;
-                editableBorder.PositionChanged += EditableBorderPositionChanged;
+                // bind the editable border width to the layout width
+                var widthController =
+                    layoutDocument.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+                Debug.Assert(widthController != null);
+                var widthBinding = new Binding
+                {
+                    Source = widthController,
+                    Path = new PropertyPath(nameof(widthController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                editableBorder.SetBinding(WidthProperty, widthBinding);
+
+                // bind the editable border height to the layout height
+                var heightController =
+                    layoutDocument.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+                Debug.Assert(heightController != null);
+                var heightBinding = new Binding
+                {
+                    Source = heightController,
+                    Path = new PropertyPath(nameof(heightController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                editableBorder.SetBinding(HeightProperty, heightBinding);
+
+                // when the editable border is loaded bind it's translation to the layout's translation
+                // TODO this probably causes a memory leak, but we have to capture the layoutDocument variable.
+                editableBorder.Loaded += delegate
+                {
+                    var translationController =
+                            layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                    Debug.Assert(translationController != null);
+                    var translateBinding = new Binding
+                    {
+                        Source = translationController,
+                        Path = new PropertyPath(nameof(translationController.Data)),
+                        Mode = BindingMode.TwoWay,
+                        Converter = new PointToTranslateTransformConverter()
+                    };
+                    editableBorder.Container.SetBinding(UIElement.RenderTransformProperty, translateBinding);
+                };
+
+                editableBorder.Tapped += EditableBorder_Tapped;
                 editableElements.Add(editableBorder);
             }
 
             _documentView.SetUIElements(editableElements);
         }
 
-
-        private void EditableBorderPositionChanged(object sender, double deltaX, double deltaY)
+        private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            xSettingsPane.Children.Clear();
+
             var editableFieldFrame = sender as EditableFieldFrame;
             Debug.Assert(editableFieldFrame != null);
 
-            var key = editableFieldFrame.Key;
+            UpdateEditableFieldFrameSelection(editableFieldFrame);
 
-            var templateModel = _keyToTemplateModel[key];
-            templateModel.Left += deltaX;
-            templateModel.Top += deltaY;
+            var layoutDocumentId = editableFieldFrame.DocumentId;
+
+            var editedLayoutDocument = LayoutCourtesyDocument.GetLayoutDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
+            Debug.Assert(editedLayoutDocument != null);
+
+            xSettingsPane.Children.Add(SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument));
         }
 
-        private void EditableBorder_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void UpdateEditableFieldFrameSelection(EditableFieldFrame newlySelectedEditableFieldFrame)
         {
-            var editableFieldFrame = sender as EditableFieldFrame;
-            Debug.Assert(editableFieldFrame != null);
+            if (_selectedEditableFieldFrame != null)
+            {
+                _selectedEditableFieldFrame.IsSelected = false;
+            }
+            newlySelectedEditableFieldFrame.IsSelected = true;
+            _selectedEditableFieldFrame = newlySelectedEditableFieldFrame;
+        }
 
-            var key = editableFieldFrame.Key;
-
-            var templateModel = _keyToTemplateModel[key];
-            templateModel.Width = e.NewSize.Width;
-            templateModel.Height = e.NewSize.Height;
+        private void XKeyValueListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            Debug.WriteLine(e.Items.Count);
+            var pair = e.Items[0] is KeyValuePair<Key, string> ? (KeyValuePair<Key, string>)e.Items[0] : new KeyValuePair<Key, string>();
+            Debug.WriteLine(pair.Key.Name);
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+            Debug.WriteLine(_documentController.Fields[pair.Key].GetType());
+            e.Data.Properties.Add("key", pair.Key);
+            //e.Items.Insert(0, );
         }
 
 
-        /// <summary>
-        /// Needed to make sure that the bounds on the windows size (min and max) don't exceed the size of the free form canvas
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XDocumentsPane_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
-            FreeformView freeform = sender as FreeformView;
-            Debug.Assert(freeform != null);
-            this.MaxHeight = HeaderHeight + freeform.CanvasHeight - 5;
-            this.MaxWidth = xSettingsPane.ActualWidth + freeform.CanvasWidth;
-            
-            this.MinWidth = xSettingsPane.ActualWidth + 50;
-            this.MinHeight = HeaderHeight * 2;
+            e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        private void ApplyEditableOnTapped(object sender, TappedRoutedEventArgs e)
+        private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
+            Key key = e.Data.Properties["key"] as Key;
+            var fieldModel = _documentController.GetField(key).FieldModel;
+            CourtesyDocuments.CourtesyDocument box = null;
+            if (fieldModel is TextFieldModel)
+            {
+                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+            }
+            else if (fieldModel is ImageFieldModel)
+            {
+                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+            }
+            else if (fieldModel is NumberFieldModel)
+            {
+                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+            }
+
+            if (box != null)
+            {
+                //Sets the point position of the image/text box
+                box.Document.Fields[DashConstants.KeyStore.PositionFieldKey] =
+                    new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
+                        e.GetPosition(_documentView).Y));
+                LayoutCourtesyDocument.LayoutDocumentCollectionController.AddDocument(box.Document);
+            }
+
             ApplyEditable();
         }
+    }
+
+    public static class SettingsPaneFromDocumentControllerFactory
+    {
+        public static UIElement CreateSettingsPane(DocumentController editedLayoutDocument)
+        {
+            if (editedLayoutDocument.DocumentType == ImageBox.DocumentType)
+            {
+                return CreateImageSettingsLayout(editedLayoutDocument);
+            }
+            if (editedLayoutDocument.DocumentType == TextingBox.DocumentType)
+            {
+                return CreateTextSettingsLayout(editedLayoutDocument);
+            }
+
+            Debug.Assert(false,
+                $"We do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
+            return null;
+        }
+
+        private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)
+        {
+            return new ImageSettings(editedLayoutDocument);
+        }
+
+        private static UIElement CreateTextSettingsLayout(DocumentController editedLayoutDocument)
+        {
+            return new TextSettings(editedLayoutDocument);
+        }
+
     }
 }

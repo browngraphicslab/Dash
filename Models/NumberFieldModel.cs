@@ -14,33 +14,11 @@ namespace Dash
             Data = data;
         }
 
-        private double _data;
-        public double Data
-        {
-            get { return _data; }
-            set { SetProperty(ref _data, value); }
-        }
+        public double Data;
 
-        protected override void UpdateValue(ReferenceFieldModel fieldReference)
+        public override string ToString()
         {
-            DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            NumberFieldModel fm = cont.GetFieldInDocument(fieldReference) as NumberFieldModel;
-            if (fm != null)
-            {
-                Data = fm.Data;
-            }
-
-            //    DocumentModel doc = cont.GetDocumentAsync(fieldReference.DocId);
-            //    if (doc != null)
-            //    {
-            //        if (doc.Fields.ContainsKey(fieldReference.FieldKey))
-            //        {
-            //            var fm = doc.Fields[fieldReference.FieldKey] as NumberFieldModel;
-            //            Data = fm.Data;
-            //        }
-            //    }
-            //}
+            return $"NumberFieldModel: {Data}";
         }
-        
     }
 }

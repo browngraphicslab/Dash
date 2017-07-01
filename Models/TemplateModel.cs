@@ -1,29 +1,27 @@
-﻿using System;
+﻿using Dash.Models;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
     public abstract class TemplateModel : ViewModelBase
     {
-        private double _left;
+        
 
-        public double Left
+        public Point _point;
+        public Point Pos
         {
-            get { return _left; }
-            set { SetProperty(ref _left, value); }
-        }
-
-        private double _top;
-
-        public double Top
-        {
-            get { return _top; }
-            set { SetProperty(ref _top, value); }
+            get { return _point; }
+            set { SetProperty(ref _point, value); }
         }
 
         private Visibility _visibility;
@@ -53,17 +51,55 @@ namespace Dash
 
         public TemplateModel(double left = 0, double top = 0, double width = 0, double height = 0, Visibility visibility = Visibility.Visible)
         {
-            Left = left;
-            Top = top;
+            Pos = new Point {X = left, Y = top};
             Width = width;
             Height = height;
             Visibility = visibility;
-        }/// <summary>
-         /// Creates TextBlock using layout information from template and Data 
-         /// </summary>
-        public virtual UIElement MakeView(FieldModel fieldModel)
+        }
+
+
+        /// <summary>
+        /// Creates a UI view of the field based on this templates display parameters. This gets overriden by children
+        /// of this class.
+        /// </summary>
+        protected virtual List<FrameworkElement> MakeView(FieldModelController fieldModel, DocumentController context)
         {
             return null;
+        }
+
+
+        /// <summary>
+        /// Creates a UI view of the field based on this templates display parameters
+        /// </summary>
+        public virtual List<FrameworkElement> MakeViewUI(FieldModelController fieldModelController, DocumentController context)
+        {
+            fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);
+            if (fieldModelController is DocumentFieldModelController)
+            {
+                var doc = (fieldModelController as DocumentFieldModelController).Data;
+                return new DocumentViewModel(doc).GetUiElements(new Rect(Pos.X, Pos.Y, Width, Height));
+            }
+            return MakeView(fieldModelController, context);
+        }
+
+
+        protected class PositionConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                Point p = (Point)value;
+                return new TranslateTransform
+                {
+                    X = p.X,
+                    Y = p.Y
+                };
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                //throw new NotImplementedException();
+                return new object();
+            }
         }
     }
 }

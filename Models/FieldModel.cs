@@ -1,64 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
+﻿using System.Collections.Generic;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
     /// <summary>
-    /// Base data class for documents; holds data and displays it as UIElement 
+    ///     Base data class for documents. If a document is a spread sheet, a field is a cell, and a fieldModel wraps
+    ///     the data which is stored in a cell
     /// </summary>
-    public abstract class FieldModel : ViewModelBase //TODO Should ViewModelBase be named something else or should FieldModel have a ViewModel
+    public abstract class FieldModel : EntityBase
     {
-        private ReferenceFieldModel _inputReference;
-
-        public ReferenceFieldModel InputReference
+        public FieldModel()
         {
-            get { return _inputReference; }
-            set
-            {
-                if (value == null)//TODO Remove this when JSON serialization is removed
-                {
-                    return;
-                }
-                _inputReference = value;
-                DocumentEndpoint cont = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-                cont.GetDocumentAsync(value.DocId).DocumentFieldUpdated += FieldModel_DocumentFieldUpdated;
-                UpdateValue(value);
-            }
+            // Initialize Local Variables
+            OutputReferences = new List<ReferenceFieldModel>();
+
+            // Add Any Events
         }
 
-        private void FieldModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            if (fieldReference.Equals(InputReference))
-            {
-                UpdateValue(fieldReference);
-            }
-        }
 
-        protected virtual void UpdateValue(ReferenceFieldModel fieldReference)
-        {
-        }
+        /// <summary>
+        ///     Optional reference to a separate <see cref="FieldModel" /> that this <see cref="FieldModel" /> takes as input
+        /// </summary>
+        public ReferenceFieldModel InputReference;
 
-        protected List<ReferenceFieldModel> OutputReferences { get; set; } = new List<ReferenceFieldModel>();
-
-        public void AddOutputReference(ReferenceFieldModel reference)
-        {
-            OutputReferences.Add(reference);
-        }
-
-        public void RemoveOutputReference(ReferenceFieldModel reference)
-        {
-            OutputReferences.Remove(reference); 
-        }
-
-        public FieldModel Copy()
-        {
-            return MemberwiseClone() as FieldModel;
-        }
+        /// <summary>
+        ///     List of references to fields that take this field as input
+        /// </summary>
+        public List<ReferenceFieldModel> OutputReferences;
     }
 }

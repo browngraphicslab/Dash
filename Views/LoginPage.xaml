@@ -26,7 +26,7 @@
             <RowDefinition Height="5*"/>
         </Grid.RowDefinitions>
         <Grid x:Name="TopGrid" Grid.Column="1" Grid.Row="1" Margin="0,0,0,-0.333" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
-            <TextBlock x:Name="textBlock" Height="122" Text="dashboards" FontSize="75" TextAlignment="Center" VerticalAlignment="Bottom" FontFamily="Rockwell" Margin="4,0,-4,0" d:LayoutOverrides="TopMargin, BottomMargin" Foreground="#E5FFFFFF"/>
+            <TextBlock x:Name="textBlock" Height="122" Text="dash" FontSize="75" TextAlignment="Center" VerticalAlignment="Bottom" FontFamily="Rockwell" Margin="4,0,-4,0" d:LayoutOverrides="TopMargin, BottomMargin" Foreground="#E5FFFFFF"/>
         </Grid>
         <Grid x:Name="FirstGrid" Grid.Column="1" Grid.Row="2" Margin="0,0,0,0" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
             <StackPanel Orientation="Vertical">

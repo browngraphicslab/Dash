@@ -23,35 +23,54 @@ namespace Dash {
         private float _documentScale = 1.0f;
         private const float MinScale = 0.5f;
         private const float MaxScale = 2.0f;
-        private Grid handleControl;
-        private UIElement element;
+        private bool _disabled;
+        private FrameworkElement _element;
 
-        // == CONSTRUCTORS ==
-        public ManipulationControls(Grid handleControl, UIElement element) {
-            handleControl.ManipulationDelta += ManipulateDeltaaMoveAndScale;
-            handleControl.ManipulationMode = ManipulationModes.All;
-            this.element = element;
-            this.element.ManipulationMode = ManipulationModes.Scale;
-            this.element.ManipulationDelta += ManipulateDeltaScale;
-            this.handleControl = handleControl;
+        /// <summary>
+        /// Created a manipulation control to move element
+        /// NOTE: bounds checking is done relative to element.Parent so the element must be in an element with the proper size for bounds checking
+        /// </summary>
+        /// <param name="element">The element to add manipulation to</param>
+        public ManipulationControls(FrameworkElement element) {
+            _element = element;
+            element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            element.ManipulationMode = ManipulationModes.All;
+        }
+
+        public void AddAllAndHandle()
+        {
+            if (!_disabled) return;
+            _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta -= EmptyManipulationDelta;
+        }
+
+        public void RemoveAllButHandle()
+        {
+            if (_disabled) return;
+            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta += EmptyManipulationDelta;
         }
 
         // == METHODS ==
 
+        public void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        public void ManipulateDeltaaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
-            translateAndScale(true, true, e);
+        public void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
+            TranslateAndScale(true, true, e);
         }
-
 
         /// <summary>
         /// Applies manipulation controls (translate) in the grid manipulation event. Typically,
         /// use this for elements that have a horizonal title bar that users use to drag.
         /// </summary>
         public void ManipulateDeltaScale(object sender, ManipulationDeltaRoutedEventArgs e) {
-            translateAndScale(false, true, e);
+            TranslateAndScale(false, true, e);
         }
 
         /// <summary>
@@ -60,7 +79,8 @@ namespace Dash {
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void translateAndScale(bool canTranslate, bool canScale, ManipulationDeltaRoutedEventArgs e) {
+        private void TranslateAndScale(bool canTranslate, bool canScale, ManipulationDeltaRoutedEventArgs e) {
+            FrameworkElement handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
             e.Handled = true;
 
             //Create initial composite transform 
@@ -73,7 +93,7 @@ namespace Dash {
             };
             
             // set up translation transform
-            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, element);
+            TranslateTransform translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
             
             //Clamp the scale factor 
             float newScale = _documentScale * e.Delta.Scale;
@@ -89,13 +109,60 @@ namespace Dash {
                 _documentScale = newScale;
             }
 
-            // apply the transformation group
             if (canScale)
                 group.Children.Add(scale);
-            group.Children.Add(element.RenderTransform);
+            group.Children.Add(_element.RenderTransform);
             if (canTranslate)
                 group.Children.Add(translate);
-            element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+
+            ////Get top left and bottom right points of documents in canvas space
+            //Point p1 = group.TransformPoint(new Point(0, 0));
+            //Point p2 = group.TransformPoint(new Point(_element.ActualWidth, _element.ActualHeight));
+            //Debug.Assert(_element.RenderTransform != null);
+            //Point oldP1 = _element.RenderTransform.TransformPoint(new Point(0, 0));
+            //Point oldP2 = _element.RenderTransform.TransformPoint(new Point(_element.ActualWidth, _element.ActualHeight));
+
+            ////Check if translating or scaling the document puts the view out of bounds of the canvas
+            ////Nullify scale or translate components accordingly
+            //bool outOfBounds = false;
+            //if (p1.X < 0)
+            //{
+            //    outOfBounds = true;
+            //    translate.X = -oldP1.X;
+            //    scale.CenterX = 0;
+            //}
+            //else if (p2.X > handleControl.ActualWidth)
+            //{
+            //    outOfBounds = true;
+            //    translate.X = handleControl.ActualWidth - oldP2.X;
+            //    scale.CenterX = _element.ActualWidth;
+            //}
+            //if (p1.Y < 0)
+            //{
+            //    outOfBounds = true;
+            //    translate.Y = -oldP1.Y;
+            //    scale.CenterY = 0;
+            //}
+            //else if (p2.Y > handleControl.ActualHeight)
+            //{
+            //    outOfBounds = true;
+            //    translate.Y = handleControl.ActualHeight - oldP2.Y;
+            //    scale.CenterY = _element.ActualHeight;
+            //}
+
+            ////If the view was out of bounds recalculate the composite matrix
+            //if (outOfBounds)
+            //{
+            //    group = new TransformGroup();
+            //    if (canScale)
+            //        group.Children.Add(scale);
+            //    group.Children.Add(_element.RenderTransform);
+            //    if (canTranslate)
+            //        group.Children.Add(translate);
+            //}
+
+            // apply the transformation group
+            _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
     }

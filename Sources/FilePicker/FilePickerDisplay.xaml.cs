@@ -23,7 +23,7 @@ namespace Dash.Sources.FilePicker {
 
         public FilePickerDisplay() {
             this.InitializeComponent();
-            new ManipulationControls(xGrid, this);
+            new ManipulationControls(this);
 
         }
 

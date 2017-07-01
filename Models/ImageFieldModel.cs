@@ -10,34 +10,22 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Dash
 {
     /// <summary>
-    /// Field model for holding image data
+    /// A Field Model which holds image data
     /// </summary>
-    class ImageFieldModel : FieldModel
+    public class ImageFieldModel : FieldModel
     {
-        public BitmapImage _data; 
+        /// <summary>
+        /// A <see cref="Uri"/> which points to the <see cref="BitmapImage.UriSource"/>
+        /// </summary>
+        public Uri Data;
 
-        public BitmapImage Data
+        /// <summary>
+        /// Create a new Image Field Model which represents the image pointed to by the <paramref name="data"/>
+        /// </summary>
+        /// <param name="data">The uri that the image this field model encapsulates is sourced from</param>
+        public ImageFieldModel(Uri data)
         {
-            get { return _data; }
-            set { SetProperty(ref _data, value); }
-        }
-
-        public ImageFieldModel(Uri image)
-        {
-            Data = new BitmapImage(image);
-        }
-        public ImageFieldModel(Image image) {
-            Data = (BitmapImage)image.Source;
-        }
-
-        protected override void UpdateValue(ReferenceFieldModel fieldReference)
-        {
-            var documentEndpoint = App.Instance.Container.GetRequiredService<DocumentEndpoint>();
-            ImageFieldModel fm = documentEndpoint.GetFieldInDocument(fieldReference) as ImageFieldModel;
-            if (fm != null)
-            {
-                Data = fm.Data;
-            }
+            Data = data;
         }
     }
 }

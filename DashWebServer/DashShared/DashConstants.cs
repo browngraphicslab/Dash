@@ -10,7 +10,7 @@ namespace DashShared
         /// <summary>
         ///     Set the endpoints to local endpoints or server side endpoitns. If Local you must have cosmosDb emulator installed
         /// </summary>
-        public const bool DEVELOP_LOCALLY = false;
+        public const bool DEVELOP_LOCALLY = true;
 
         #region DocumentDB
 
@@ -92,22 +92,6 @@ namespace DashShared
 
         #endregion
 
-        #region Signalr
-
-        /// <summary>
-        /// The endpoint on the server where signalr code is accessed
-        /// <para>
-        /// To get the full path use <code>DashConstants.ServerBaseUrl + DashConstants.SignalrBaseUrl</code>
-        /// </para>
-        /// </summary>
-        public const string SignalrBaseUrl = "signalr";
-
-        /// <summary>
-        /// The name of the shape hub
-        /// </summary>
-        public const string HubShapeName = "shapeHub";
-        #endregion
-
         #region LocalCredentials
 
         /// <summary>
@@ -116,5 +100,29 @@ namespace DashShared
         public const string ResourceName = "DashApp";
 
         #endregion
+
+        public static class KeyStore
+        {
+
+            public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
+            public static Key PrototypeKey = new Key("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
+            public static Key DelegatesKey = new Key("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "Delegates");
+            public static Key XPositionFieldKey = new Key("CC6B105F-D73C-4076-973F-FAF2A4CA6218", "XPositionFieldKey");
+            public static Key YPositionFieldKey = new Key("EF7CCB37-3512-463B-915A-EB8078702F14", "YPositionFieldKey");
+            public static Key WidthFieldKey = new Key("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "WidthFieldKey");
+            public static Key HeightFieldKey = new Key("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "HeightFieldKey");
+            public static Key DataKey = new Key("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
+            public static Key PositionFieldKey = new Key("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "PositionFieldKey");
+        }
+
+        public static class DocumentTypeStore
+        {
+            public static DocumentType OperatorDocumentType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
+
+            public static DocumentType TextBoxDocumentType = new DocumentType("D63DDB00-1A66-4E3A-A19B-6B06BBD6DAC8", "Text Box");
+            public static DocumentType FreeFormCollectionDocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Free Form Collection");
+        }
+
+
     }
 }

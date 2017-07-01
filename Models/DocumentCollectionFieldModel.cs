@@ -1,32 +1,42 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash.Models;
+using DashShared;
 
 namespace Dash
 {
+    /// <summary>
+    /// A field model which encapsulates a list of Documents
+    /// </summary>
     public class DocumentCollectionFieldModel : FieldModel
     {
-        private List<DocumentModel> _docs;
+        /// <summary>
+        /// The list of <see cref="DocumentModel.Id"/> which the <see cref="DocumentCollectionFieldModel"/> is encapsulating
+        /// </summary>
+        public IEnumerable<string> Data;
 
-        public DocumentCollectionFieldModel(List<DocumentModel> docs)
+        /// <summary>
+        /// Creates a new DocumentCollectionFieldModel using the passed in list of <see cref="DocumentModel"/>
+        /// </summary>
+        /// <param name="documents"></param>
+        public DocumentCollectionFieldModel(IEnumerable<DocumentModel> documents)
         {
-            _docs = docs;
+            Debug.Assert(documents != null);
+            Data = documents.Select(document => document.Id);
         }
 
-        public List<DocumentModel> Documents { get { return _docs; } }
-
-        public void AddDocumentModel(DocumentModel doc)
+        /// <summary>
+        /// Creates a new DocumentCollectionFieldModel using the passed in list of <see cref="DocumentModel.Id"/>
+        /// </summary>
+        /// <param name="documents"></param>
+        public DocumentCollectionFieldModel(IEnumerable<string> documents)
         {
-            _docs.Add(doc);
+            Debug.Assert(documents != null);
+            Data = documents;
         }
-
-        public IEnumerable<DocumentModel> EnumDocuments()
-        {
-            return _docs;
-        }
-
     }
 }

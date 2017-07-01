@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
@@ -11,20 +12,22 @@ using Windows.UI.Xaml.Media;
 using Dash.Models;
 using Dash.StaticClasses;
 using DashShared;
+using Microsoft.Extensions.DependencyInjection;
+using Windows.Foundation;
+using Dash.ViewModels;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-        
+       
+
         private CollectionModel _collectionModel;
 
+        public CollectionModel CollectionModel { get { return _collectionModel; } }
 
-        public ObservableCollection<DocumentViewModel> DocumentViewModels
-        {
-            get { return _documentViewModels; }
-            set { SetProperty(ref _documentViewModels, value); }
-        }
+        public DocumentView ParentDocument { get; set; }
 
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
@@ -32,7 +35,10 @@ namespace Dash
         public ObservableCollection<DocumentViewModel> DataBindingSource
         {
             get { return _dataBindingSource; }
-            set { SetProperty(ref _dataBindingSource, value); }
+            set
+            {
+                SetProperty(ref _dataBindingSource, value); 
+            }
         }
 
         public ObservableCollection<UIElement> SoloDisplayElements
@@ -55,11 +61,13 @@ namespace Dash
         public string FieldBoxText;
         public string SearchBoxText;
 
+        public bool IsEditorMode { get; set; } = true;
+
 
         #region Private & Backing variables
         
 
-        private double _cellSize = 150;
+        private double _cellSize = 400;
         private double _outerGridWidth;
         private double _outerGridHeight;
         private double _containerGridHeight;
@@ -74,12 +82,12 @@ namespace Dash
 
         private SolidColorBrush _proportionalDraggerStroke;
         private SolidColorBrush _proportionalDraggerFill;
-        private SolidColorBrush _draggerStroke;
         private SolidColorBrush _draggerFill;
 
         private ListViewSelectionMode _itemSelectionMode;
 
         private Visibility _gridViewVisibility;
+        private Visibility _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility;
         private Visibility _listViewVisibility;
         private Visibility _controlsVisibility;
         private Visibility _filterViewVisibility;
@@ -87,14 +95,12 @@ namespace Dash
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
 
-        private ObservableCollection<DocumentViewModel> _documentViewModels;
         private ObservableCollection<DocumentViewModel> _dataBindingSource;
 
         private DocumentViewModel _soloDisplayDocument;
         private Visibility _soloDisplayVisibility;
 
         private bool _viewIsEnabled;
-        public bool ProportionalScaling;
 
         private double _soloDocDisplayGridWidth;
         private double _soloDocDisplayGridHeight;
@@ -104,8 +110,6 @@ namespace Dash
         #endregion
 
         #region Size Variables
-
-
 
         /// <summary>
         /// The size of each cell in the GridView.
@@ -174,6 +178,12 @@ namespace Dash
             set { SetProperty(ref _gridViewVisibility, value); }
         }
 
+        public Visibility GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility
+        {
+            get { return _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility; }
+            set { SetProperty(ref _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility, value); }
+        }
+
         public Visibility ListViewVisibility
         {
             get { return _listViewVisibility; }
@@ -234,12 +244,6 @@ namespace Dash
             set { SetProperty(ref _proportionalDraggerFill, value); }
         }
 
-        public SolidColorBrush DraggerStroke
-        {
-            get { return _draggerStroke; }
-            set { SetProperty(ref _draggerStroke, value); }
-        }
-
         public SolidColorBrush DraggerFill
         {
             get { return _draggerFill; }
@@ -272,9 +276,22 @@ namespace Dash
             _collectionModel = model;
 
             SetInitialValues();
-            AddViewModels(MakeViewModels(_collectionModel.Documents));
-            SetDimensions();
-            
+            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
+            //SetDimensions();
+           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
+            controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
+           // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
+        }
+
+        private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            //AddDocuments(_collectionModel.Documents.Data);
+            UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
+        }
+
+        private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+           // AddDocuments(_collectionModel.Documents);
         }
 
         /// <summary>
@@ -292,17 +309,17 @@ namespace Dash
             SelectButtonMargin = new Thickness(0, OuterGridHeight-20, 0,0);
 
             DraggerFill = new SolidColorBrush(Color.FromArgb(255, 95, 95, 95));
-            DraggerStroke = new SolidColorBrush(Colors.Transparent);
             ProportionalDraggerFill = new SolidColorBrush(Color.FromArgb(255, 139, 139, 139));
             ProportionalDraggerStroke = new SolidColorBrush(Colors.Transparent);
 
-            CellSize = 150;
+            CellSize = 400;
             ListViewVisibility = Visibility.Collapsed;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             GridViewVisibility = Visibility.Visible;
             FilterViewVisibility = Visibility.Collapsed;
 
             _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            DataBindingSource = new ObservableCollection<DocumentViewModel>();
 
             ViewIsEnabled = true;
             SoloDisplayVisibility = Visibility.Collapsed;
@@ -318,98 +335,6 @@ namespace Dash
         {
             return (GridViewVisibility == Visibility.Visible || ListViewVisibility == Visibility.Visible);
         }
-
-        /// <summary>
-        /// Resizes the CollectionView according to the increments in width and height. 
-        /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, the Grid must change size to accomodate the height of the ListView.
-        /// </summary>
-        /// <param name="dx"></param>
-        /// <param name="dy"></param>
-        public void Resize(double dx=0, double dy=0)
-        {
-
-            //Changes width if permissible within size constraints.
-            if (OuterGridWidth + dx > CellSize || dx > 0)
-            {
-                OuterGridWidth += dx;
-                if (ProportionalScaling && DisplayingItems())
-                {
-                    var scaleFactor = OuterGridWidth / (OuterGridWidth-dx);
-                    CellSize = CellSize * scaleFactor;
-                    ScaleDocumentsToFitCell();
-
-                    //Takes care of proportional height resizing if proportional dragger is used
-                    if (ListViewVisibility == Visibility.Visible)
-                    {
-                        OuterGridHeight = CellSize + 44;
-
-                    }
-                    else if (GridViewVisibility == Visibility.Visible)
-                    {
-                        var aspectRatio = OuterGridHeight / OuterGridWidth;
-                        OuterGridHeight += dx * aspectRatio;
-                    }
-                }
-            }
-
-            //Changes height if permissible within size constraints; makes the height of the Grid track the height of the ListView if the ListView is showing and proportional scaling is allowed.
-            if ((OuterGridHeight + dy > CellSize + 50 || dy > 0) && (!ProportionalScaling || !DisplayingItems()))
-            {
-                if (DisplayingItems() && ListViewVisibility == Visibility.Visible)
-                {
-                    OuterGridHeight = CellSize + 44;
-                }
-                else
-                {
-                    OuterGridHeight += dy;
-                }
-            }
-
-            SetDimensions();
-        }
-
-        /// <summary>
-        /// Sets the sizes and/or locations of all of the components of the CollectionView correspoding to the size of the Grid.
-        /// </summary>
-        public void SetDimensions()
-        {
-            ContainerGridHeight = OuterGridHeight - 45;
-            ContainerGridWidth = OuterGridWidth-2;
-
-            DraggerMargin = new Thickness(OuterGridWidth - 62, OuterGridHeight - 20, 0, 0);
-            ProportionalDraggerMargin = new Thickness(OuterGridWidth - 22, OuterGridHeight - 20, 0, 0);
-            CloseButtonMargin = new Thickness(OuterGridWidth - 34, 0, 0, 0);
-
-            SelectButtonMargin = new Thickness(0, OuterGridHeight - 23, 0, 0);
-
-            BottomBarMargin = new Thickness(0, OuterGridHeight - 21, 0, 0);
-
-            DeleteButtonMargin = new Thickness(42, OuterGridHeight - 23, 0, 0);
-        }
-
-
-        /// <summary>
-        /// Resizes all of the documents to fit the CellSize, mainting their aspect ratios.
-        /// </summary>
-        private void ScaleDocumentsToFitCell()
-        {
-            foreach (var dvm in DocumentViewModels)
-            {
-                var aspectRatio = dvm.Width / dvm.Height;
-                if (dvm.Width > dvm.Height)
-                {
-                    dvm.Width = CellSize;
-                    dvm.Height = CellSize / aspectRatio;
-                }
-                else
-                {
-                    dvm.Height = CellSize;
-                    dvm.Width = CellSize * aspectRatio;
-                }
-            }
-            
-        }
-
 
 
         #endregion
@@ -432,9 +357,8 @@ namespace Dash
             _selectedItems.Clear();
             foreach (var vm in itemsToDelete)
             {
-                DocumentViewModels.Remove(vm);
+                DataBindingSource.Remove(vm);
             }
-            DataBindingSource = DocumentViewModels;
         }
 
         /// <summary>
@@ -444,21 +368,20 @@ namespace Dash
         /// <param name="e"></param>
         public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DataBindingSource = null;
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 ListViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 GridViewVisibility = Visibility.Visible;
             }
             else
             {
                 ListViewVisibility = Visibility.Collapsed;
-                DataBindingSource = DocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 GridViewVisibility = Visibility.Visible;
             }
-            
         }
 
         /// <summary>
@@ -468,54 +391,39 @@ namespace Dash
         /// <param name="e"></param>
         public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            DataBindingSource = null;
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 ListViewVisibility = Visibility.Visible;
             }
             else
             {
                 GridViewVisibility = Visibility.Collapsed;
-                DataBindingSource = DocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
                 ListViewVisibility = Visibility.Visible;
-            }
-
-                       
+            }                    
             OuterGridHeight = CellSize + 44;
-            SetDimensions();
+            //SetDimensions();
         }
 
-        /// <summary>
-        /// Resizes the control based on the user's dragging the DraggerButton.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        public void GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Resize(e.Delta.Translation.X, e.Delta.Translation.Y);
-            e.Handled = true;
-        }
-
-        public void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            
-        }
-
-        /// <summary>
-        /// If the user was resizing proportionally, ends the proportional resizing and 
-        /// changes the DraggerButton back to its normal appearance.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Dragger_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
-        {
-            if (ProportionalScaling)
+            if (_filtered)
             {
-                ProportionalScaling = false;
-                DraggerStroke = new SolidColorBrush(Colors.Transparent);
+                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
+                ListViewVisibility = Visibility.Collapsed;
+                GridViewVisibility = Visibility.Collapsed;
+                DataBindingSource = filteredDocumentViewModels;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+            }
+            else
+            {
+                ListViewVisibility = Visibility.Collapsed;               
+                GridViewVisibility = Visibility.Collapsed;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
             }
         }
 
@@ -577,75 +485,10 @@ namespace Dash
         {
             ViewIsEnabled = true;
             SoloDisplayVisibility = Visibility.Collapsed;
-            Resize();
+            //Resize();
             e.Handled = true;
         }
         
-        /// <summary>
-        /// Called when the user holds the dragger button, or finishes holding it; 
-        /// if the button is held down, initiates the proportional resizing mode.
-        /// </summary>
-        /// <param name="sender">DraggerButton in the DocumentView class</param>
-        /// <param name="e"></param>
-        public void DraggerButtonHolding(object sender, HoldingRoutedEventArgs e)
-        {
-            if (e.HoldingState == HoldingState.Started)
-            {
-                ProportionalScaling = true;
-                DraggerStroke = new SolidColorBrush(Colors.Blue);
-            }
-            else if (e.HoldingState == HoldingState.Completed)
-            {
-                ProportionalScaling = false;
-                DraggerStroke = new SolidColorBrush(Colors.Transparent);
-            }
-        }
-
-        /// <summary>
-        /// Called when the user double taps on a documentView displayed in the collection; 
-        /// displays that document in an enlarged format in front of the others and disables 
-        /// interactions with the other documents while the solo document is displayed.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void DocumentView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            var dvm = (sender as DocumentView)?.DataContext as DocumentViewModel;
-            if (dvm != null)
-            {
-                if (dvm.DocumentModel.DocumentType.Id == "itunes")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunesLite", "itunesLite");
-                else if (dvm.DocumentModel.DocumentType.Id == "itunesLite")
-                    dvm.DocumentModel.DocumentType = new DocumentType("itunes", "itunes");
-                (sender as DocumentView).DataContext = dvm;
-                var testPrototypedoc = dvm.DocumentModel.MakeDelegate();
-                testPrototypedoc.DocumentType = new DocumentType("generic", "generic");
-                var DocView2 = new DocumentView(new DocumentViewModel(testPrototypedoc));
-                var center = e.GetPosition(FreeformView.MainFreeformView);
-                FreeformView.MainFreeformView.ViewModel.AddElement(DocView2, (float)(center.X - (sender as DocumentView).ActualWidth / 2), (float)(center.Y - (sender as DocumentView).ActualHeight / 2));
-                
-                if (GridViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize + 50;
-                    if (OuterGridHeight < CellSize + 125) OuterGridHeight = CellSize + 125;
-                    if (OuterGridWidth < CellSize + 125) OuterGridWidth = CellSize + 125;
-                    Resize();
-                    SetDimensions();
-                }
-                else if (ListViewVisibility == Visibility.Visible)
-                {
-                    SoloDisplaySize = CellSize;
-                }
-
-                SoloDisplayElements = new ObservableCollection<UIElement>(dvm.GetUiElements());
-                ViewIsEnabled = false;
-                SoloDisplayVisibility = Visibility.Visible;
-            }
-            e.Handled = true;
-        }
-
-       
-
         #endregion
 
         #region DocumentModel and DocumentViewModel Data Changes
@@ -656,14 +499,15 @@ namespace Dash
         /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
         /// </summary>
         /// <param name="documents"></param>
-        public void AddDocuments(ObservableCollection<DocumentModel> documents)
+        public void AddDocuments(List<DocumentController> documents)
         {
-            foreach (DocumentModel document in documents)
+            var docList = new List<string>(_collectionModel.DocumentCollectionFieldModel.Data);
+            foreach (var document in documents)
             {
-                if(!_collectionModel.Documents.Contains(document))
-                _collectionModel.Documents.Add(document);
+                if (!docList.Contains(document.GetId()))
+                    docList.Add(document.GetId());
             }
-            AddViewModels(MakeViewModels(documents));
+            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
         }
 
         /// <summary>
@@ -671,13 +515,48 @@ namespace Dash
         /// that no longer reference DocumentModels in the Collection.
         /// </summary>
         /// <param name="documents"></param>
-        public void RemoveDocuments(ObservableCollection<DocumentModel> documents)
+        public void RemoveDocuments(ObservableCollection<DocumentController> documents)
         { 
-            foreach (DocumentModel document in documents)
+            foreach (var document in documents)
             {
-                if(_collectionModel.Documents.Contains(document)) _collectionModel.Documents.Remove(document);
+                if (new List<string>(_collectionModel.DocumentCollectionFieldModel.Data).Contains(document.GetId()))
+                    ;//_collectionModel.DocumentCollectionFieldModel.Remove(document);
             }
             RemoveDefunctViewModels();
+        }
+
+        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
+        {
+            foreach (var viewModel in col)
+            {
+                if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public void UpdateViewModels(ObservableCollection<DocumentViewModel> viewModels)
+        {
+            foreach (var viewModel in viewModels)
+            {
+                if (ViewModelContains(DataBindingSource, viewModel))
+                {
+                    continue;
+                }
+                viewModel.ManipulationMode = ManipulationModes.System;
+                viewModel.DoubleTapEnabled = false;
+                DataBindingSource.Add(viewModel);
+            }
+            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
+            {
+                if (ViewModelContains(viewModels, DataBindingSource[i]))
+                {
+                    continue;
+                }
+                DataBindingSource.RemoveAt(i);
+            }
         }
 
         /// <summary>
@@ -686,17 +565,24 @@ namespace Dash
         /// <param name="viewModels"></param>
         private void AddViewModels(ObservableCollection<DocumentViewModel> viewModels)
         {
-            foreach (DocumentViewModel viewModel in viewModels)
+            foreach (var viewModel in viewModels)
             {
-                //viewModel.DefaultViewVisibility = Visibility.Collapsed;
-                //viewModel.ListViewVisibility = Visibility.Visible;
-                viewModel.ManipulationMode = ManipulationModes.System;
-                viewModel.DoubleTapEnabled = false;
-                //viewModel.CanMoveControl = false;
-                DocumentViewModels.Add(viewModel);
+                bool found = false;
+                foreach (var vm in DataBindingSource)
+                    if (vm.DocumentController.GetId() == viewModel.DocumentController.GetId())
+                        found = true;
+                if (!found)
+                {
+                    //viewModel.DefaultViewVisibility = Visibility.Collapsed;
+                    //viewModel.ListViewVisibility = Visibility.Visible;
+                    Debug.WriteLine($"{viewModel.ManipulationMode}, {ManipulationModes.None}");
+                    viewModel.ManipulationMode = ManipulationModes.System;
+                    viewModel.DoubleTapEnabled = false;
+                    //viewModel.CanMoveControl = false;
+                    DataBindingSource.Add(viewModel);
+                }
             }
-            ScaleDocumentsToFitCell();
-            DataBindingSource = DocumentViewModels;
+            //ScaleDocumentsToFitCell();
         }
 
         /// <summary>
@@ -707,57 +593,48 @@ namespace Dash
         {
             foreach (DocumentViewModel viewModel in viewModels)
             {
-                if (DocumentViewModels.Contains(viewModel)) DocumentViewModels.Remove(viewModel);
+                DataBindingSource.Remove(viewModel);
             }
-            DataBindingSource = DocumentViewModels;
         }
+
+        /// <summary>
+        /// The collection creates delegates for each document it displays so that it can associate display-specific
+        /// information on the documents.  This allows different collection views to save different views of the same
+        /// document collection.
+        /// </summary>
+        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
 
         /// <summary>
         /// Constructs standard DocumentViewModels from the passed in DocumentModels
         /// </summary>
         /// <param name="documents"></param>
         /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(ObservableCollection<DocumentModel> documents)
+        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
         {
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (DocumentModel document in documents)
+            foreach (var document in documents.Data)
             {
-                DocumentViewModel vm = new DocumentViewModel(document);
-                viewModels.Add(vm);
+                viewModels.Add(new DocumentViewModel(ContentController.GetController(document) as DocumentController));
             }
             return viewModels;
         }
 
-        /// <summary>
-        /// Returns a collection of DocumentModels corresponding to the DocumentViewModels passed in.
-        /// </summary>
-        /// <param name="viewModels"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentModel> GetDocumentModelsFromDocumentViewModels(
-            ObservableCollection<DocumentViewModel> viewModels)
-        {
-            ObservableCollection<DocumentModel> documentModels = new ObservableCollection<DocumentModel>();
-            foreach (var vm in viewModels)
-            {
-                documentModels.Add(vm.DocumentModel);
-            }
-            return documentModels;
-        }
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
         /// </summary>
         public void RemoveDefunctViewModels()
         {
-            ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
-            foreach (DocumentViewModel vm in DocumentViewModels)
-            {
-                if (!_collectionModel.Documents.Contains(vm.DocumentModel))
-                {
-                    toRemove.Add(vm);
-                }
-            }
-            RemoveViewModels(toRemove);
+            throw new NotImplementedException();
+            //ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
+            //foreach (DocumentViewModel vm in DocumentViewModels)
+            //{
+            //    if (!_collectionModel.Documents.Contains(vm.DocumentModel))
+            //    {
+            //        toRemove.Add(vm);
+            //    }
+            //}
+            //RemoveViewModels(toRemove);
         }
 
         #endregion
@@ -783,46 +660,47 @@ namespace Dash
             {
                 OuterGridWidth = 650;
             }
-            SetDimensions();
+            //SetDimensions();
         }
 
         public void FilterExit_Tapped(object sender, TappedRoutedEventArgs e)
         {
             FilterViewVisibility = Visibility.Collapsed;
-            Resize();
+            //Resize();
         }
 
         public void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            FilterModel filterModel = null;
+            throw new NotImplementedException();
+            //FilterModel filterModel = null;
 
-            // generate FilterModels accordingly
-            if (CollectionFilterMode == FilterMode.HasField)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
-            }
-            else if (CollectionFilterMode == FilterMode.FieldContains)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
-            }
-            else if (CollectionFilterMode == FilterMode.FieldEquals)
-            {
-                filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
-            }
+            //// generate FilterModels accordingly
+            //if (CollectionFilterMode == FilterMode.HasField)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
+            //}
+            //else if (CollectionFilterMode == FilterMode.FieldContains)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
+            //}
+            //else if (CollectionFilterMode == FilterMode.FieldEquals)
+            //{
+            //    filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
+            //}
 
-            var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
+            //var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
 
             
-            ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (var dvm in DocumentViewModels)
-            {
-                if (list.Contains(dvm.DocumentModel))
-                {
-                    ViewModels.Add(dvm);
-                }
-            }
-            DataBindingSource = ViewModels;
-            _filtered = true;
+            //ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
+            //foreach (var dvm in DocumentViewModels)
+            //{
+            //    if (list.Contains(dvm.DocumentModel))
+            //    {
+            //        ViewModels.Add(dvm);
+            //    }
+            //}
+            //DataBindingSource = ViewModels;
+            //_filtered = true;
         }
 
         public void FilterFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
@@ -832,7 +710,9 @@ namespace Dash
                 if (sender.Text.Length > 0)
                 {
                     FieldBoxText = sender.Text;
-                    sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentModel>(_collectionModel.Documents), sender.Text.ToLower());
+                    throw new Exception();
+                    //sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(
+                    //    _collectionModel.DocumentCollectionFieldModel.Data), sender.Text.ToLower());
                 }
                 else
                 {
@@ -884,8 +764,13 @@ namespace Dash
         public void ClearFilter_Tapped(object sender, TappedRoutedEventArgs e)
         {
             FilterViewVisibility = Visibility.Collapsed;
-            DataBindingSource = DocumentViewModels;
             _filtered = false;
+        }
+        public void MoveDocument(DocumentViewModel docViewModel, Point where)
+        {
+
+            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.X)), true);
+            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.Y)), true);
         }
     }
 }
