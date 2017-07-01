@@ -12,6 +12,8 @@ using Microsoft.Extensions.Caching.Memory;
 
 // cache design which could be really nice http://pdalinis.blogspot.com/2013/06/auto-refresh-caching-for-net-using.html
 // it could also make things a little more complicated (dependency injection with two instances of the same interface)
+// current cache design is based off of https://codeopinion.com/documentdb-caching-tips/
+// as well as https://docs.microsoft.com/en-us/aspnet/core/performance/caching/memory
 
 namespace DashWebServer
 {
