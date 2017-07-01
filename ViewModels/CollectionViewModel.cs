@@ -16,6 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
 using Dash.ViewModels;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Linq;
 
 namespace Dash
 {
@@ -308,9 +309,7 @@ namespace Dash
             GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-
             ViewIsEnabled = true;
-
         }
 
         #region Size and Location methods
@@ -528,9 +527,6 @@ namespace Dash
                 if (ViewModelContains(DataBindingSource, viewModel)) continue;
                 viewModel.ManipulationMode = ManipulationModes.System;
                 viewModel.DoubleTapEnabled = false;
-                Point translate = ItemsCarrier.GetInstance().Translate;
-                viewModel.X = ItemsCarrier.GetInstance().Translate.X;
-                viewModel.Y = ItemsCarrier.GetInstance().Translate.Y;
                 DataBindingSource.Add(viewModel);
             }
             for (int i = DataBindingSource.Count - 1; i >= 0; --i)
@@ -538,6 +534,30 @@ namespace Dash
                 if (ViewModelContains(viewModels, DataBindingSource[i])) continue;
                 DataBindingSource.RemoveAt(i);
             }
+        }
+
+        /// <summary>
+        /// Constructs standard DocumentViewModels from the passed in DocumentModels
+        /// </summary>
+        /// <param name="documents"></param>
+        /// <returns></returns>
+        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
+         {
+            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
+            var offset = 0;
+            for (int i = 0; i<documents.Data.ToList().Count; i++)
+            {
+                var controller = ContentController.GetController(documents.Data.ToList()[i]) as DocumentController;
+                var viewModel = new DocumentViewModel(controller);
+                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
+                {
+                    viewModel.X = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
+                    viewModel.Y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
+                    offset += 15;
+                }
+                viewModels.Add(viewModel);
+            }
+            return viewModels;
         }
 
         /// <summary>
@@ -584,23 +604,6 @@ namespace Dash
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-        /// <summary>
-        /// Constructs standard DocumentViewModels from the passed in DocumentModels
-        /// </summary>
-        /// <param name="documents"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
-        {
-            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (var document in documents.Data)
-            {
-                var viewModel = new DocumentViewModel(ContentController.GetController(document) as DocumentController);
-                viewModels.Add(viewModel);
-            }
-            return viewModels;
-        }
-
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.

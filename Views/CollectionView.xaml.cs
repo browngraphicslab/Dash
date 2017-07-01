@@ -54,10 +54,7 @@ namespace Dash
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-            Loaded += (s, e) => {
-                ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-                ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            };
+            Loaded += CollectionView_Loaded;
         }
 
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
@@ -100,6 +97,21 @@ namespace Dash
             
             xSearchFieldBox.TextChanged += ViewModel.xSearchFieldBox_TextChanged;
 
+        }
+
+        private void CollectionView_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            if (ViewModel.ParentDocument != MainPage.Instance.MainDocView)
+            {
+                ViewModel.ParentDocument.Width = ViewModel.ParentDocument.Height = Width = Height = 400;
+                ViewModel.ParentDocument.SizeChanged += (ss, ee) =>
+                {
+                    Height = ee.NewSize.Height;
+                    Width = ee.NewSize.Width;
+                };
+            }
         }
 
         private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -342,7 +354,8 @@ namespace Dash
 
         private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+            Thickness border = DocumentViewContainerGrid.BorderThickness;
+            ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
         }
 
         /// <summary>

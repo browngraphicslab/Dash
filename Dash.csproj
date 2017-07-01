@@ -114,7 +114,7 @@
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
-    <Compile Include="ItemsCarrier.cs" />
+    <Compile Include="Util\ItemsCarrier.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentCollectionTemplateModel.cs" />
