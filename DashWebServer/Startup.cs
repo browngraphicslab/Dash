@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -19,8 +16,8 @@ namespace DashWebServer
         {
             var builder = new ConfigurationBuilder()
                 .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
+                .AddJsonFile("appsettings.json", true, true)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
                 .AddEnvironmentVariables();
             Configuration = builder.Build();
         }
@@ -30,9 +27,12 @@ namespace DashWebServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // add in memory caching, this is used in the document repository so it must be added before the documentRepository
+            services.AddMemoryCache();
+
             // Add a reference to the document repository
-            var documentRepository = new CosmosDb();
-            services.AddSingleton<IDocumentRepository>(documentRepository);
+            //var documentRepository = new CosmosDb();
+            services.AddSingleton<IDocumentRepository, CosmosDb>();
 
             // Add framework services.
             services.AddMvc();
@@ -46,7 +46,7 @@ namespace DashWebServer
                     Version = "v1",
                     Description = "The base API for the Dash App Produced by the Brown Graphics Lab",
                     TermsOfService = "None",
-                    Contact = new Contact() { Email = "luke_murray@brown.edu", Name = "Luke Murray"},
+                    Contact = new Contact { Email = "luke_murray@brown.edu", Name = "Luke Murray" }
                 });
 
                 //Set the comments path for the swagger json and ui.
@@ -70,7 +70,7 @@ namespace DashWebServer
                 })
                 .AddConsole()
                 .AddDebug()
-                .AddFile("Logs/DashWebServer-{DATE}.txt", minimumLevel: LogLevel.Information);
+                .AddFile("Logs/DashWebServer-{DATE}.txt", LogLevel.Information);
 
             app.UseMvcWithDefaultRoute();
 
@@ -78,10 +78,7 @@ namespace DashWebServer
             app.UseSwagger();
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
-            app.UseSwaggerUI(c =>
-            {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-            });
+            app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"); });
         }
     }
 }

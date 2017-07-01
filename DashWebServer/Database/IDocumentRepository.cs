@@ -22,8 +22,8 @@ namespace DashWebServer
 
         Task<IEnumerable<T>> UpdateItemsAsync<T>(IEnumerable<T> items) where T : EntityBase;
 
-        Task<T> UpdateItemAsync<T>(T item) where T : EntityBase;
+        Task<T> UpdateItemAsync<T>(T document) where T : EntityBase;
 
-        Task DeleteItemAsync<T>(T item) where T : EntityBase;
+        Task DeleteItemAsync<T>(T document) where T : EntityBase;
     }
 }
