@@ -40,7 +40,8 @@
                         <ItemsPanelTemplate>
                             <Canvas x:Name="CollectionCanvas" 
                                     x:FieldModifier="public"                              
-                                    Background="Transparent">
+                                    Background="Transparent"
+                                    Width ="0" Height="0" VerticalAlignment="Top" HorizontalAlignment="Left">
                             </Canvas>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>

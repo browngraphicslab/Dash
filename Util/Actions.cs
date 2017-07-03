@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -118,5 +119,24 @@ namespace Dash
             MainPage.Instance.AddDocuments(null, null);
         }
 
+        public static void SetTouchInput(object obj)
+        {
+            InkSource.InkInputType = CoreInputDeviceTypes.Touch;
+        }
+
+        public static void SetPenInput(object obj)
+        {
+            InkSource.InkInputType = CoreInputDeviceTypes.Pen;
+        }
+
+        public static void SetMouseInput(object obj)
+        {
+            InkSource.InkInputType = CoreInputDeviceTypes.Mouse;
+        }
+
+        public static void SetNoInput(object obj)
+        {
+            InkSource.InkInputType = CoreInputDeviceTypes.None;
+        }
     }
 }

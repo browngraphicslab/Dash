@@ -18,8 +18,8 @@ namespace Dash
         private static double _opacity = 1;
         private static double _size = 3;
         private static Color _color = Colors.DarkGray;
-        private static CoreInputDeviceTypes _inputTypes = CoreInputDeviceTypes.Mouse;
         private static StrokeTypes _strokeType;
+        private static CoreInputDeviceTypes _inkInputType;
 
         public enum StrokeTypes
         {
@@ -33,6 +33,18 @@ namespace Dash
             set { _strokeType = value; }
         }
 
+        public static CoreInputDeviceTypes InkInputType
+        {
+            get { return _inkInputType; }
+            set
+            {
+                _inkInputType = value;
+                foreach (var inkPresenter in Presenters)
+                {
+                    inkPresenter.InputDeviceTypes = value;
+                }
+            }
+        }
 
         public static double BrightnessFactor { get; set; }
 
@@ -89,12 +101,6 @@ namespace Dash
             }
         }
 
-        public static CoreInputDeviceTypes InputTypes
-        {
-            get { return _inputTypes; }
-            set { _inputTypes = value; }
-        }
-
         private static Color ChangeColorBrightness()
         {
             double newFactor = BrightnessFactor/50 - 1;
@@ -126,18 +132,14 @@ namespace Dash
             if (StrokeType == StrokeTypes.Pencil)
             {
                 attributes = InkDrawingAttributes.CreateForPencil();
+                attributes.PencilProperties.Opacity = InkSource.Opacity;
             }
             else
             {
                 attributes = new InkDrawingAttributes();
             }
-
-            if (attributes.PencilProperties != null) attributes.PencilProperties.Opacity = InkSource.Opacity;
-            else attributes.Color = Color.FromArgb((byte) (255*Opacity), Color.R, Color.G, Color.B);
             attributes.Color = ChangeColorBrightness();
-
             attributes.Size = new Size(InkSource.Size, InkSource.Size);
-
             InkSource.Attributes = attributes;
         }
     }

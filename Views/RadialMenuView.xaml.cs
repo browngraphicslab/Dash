@@ -370,6 +370,10 @@ namespace Dash.Views
             Action<double> setSize = Actions.SetSize;
             Action<RadialMenuView> displayBrightnessSlider = Actions.DisplayBrightnessSlider;
             Action<RadialMenuView> closeSliderPanel = Actions.CloseSliderPanel;
+            Action<object> setPenInput = Actions.SetPenInput;
+            Action<object> setTouchInput = Actions.SetTouchInput;
+            Action<object> setMouseInput = Actions.SetMouseInput;
+            Action<object> setNoInput = Actions.SetNoInput;
             this.InitializeColors();
 
             var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
@@ -399,20 +403,44 @@ namespace Dash.Views
                     }
                 });
 
-            var inkPalette = new RadialSubmenuModel("Ink Color Palette", "🎨", _colors)
+            var inkPalette = new RadialSubmenuModel("Color Palette", "🎨", _colors)
             {
                 IsDraggable = false,
                 MenuModificationAction = displayBrightnessSlider,
                 CenterButtonMenuModAction = closeSliderPanel
             };
 
+            var inputTypeMenu = new RadialSubmenuModel("Input Type", "⬇️", new List<RadialItemModel>()
+            {
+                new RadialActionModel("Pen", "🖊️")
+                {
+                    GenericAction = setPenInput
+                },
+                new RadialActionModel("Touch", "☝️")
+                {
+                    GenericAction = setTouchInput
+                },
+                new RadialActionModel("Mouse", "🖱️")
+                {
+                    GenericAction = setMouseInput
+                },
+                new RadialActionModel("None", "❎")
+                {
+                    GenericAction = setNoInput
+                }
+
+            });
+
+
             var inkOptions = new RadialSubmenuModel("Ink Options", "🖌️", new List<RadialItemModel>
             {
                 strokeTypeMenu,
                 strokeMeter,
                 opacityMeter,
-                inkPalette
+                inkPalette,
+                inputTypeMenu
             });
+
 
             #endregion
 
@@ -513,7 +541,6 @@ namespace Dash.Views
                 StartAngle = 0,
                 RoundSelectValue = false,
                 SelectedValueColor = new SolidColorBrush(Colors.Black),
-                FocusVisualPrimaryBrush = new SolidColorBrush(Colors.Black),
                 OuterEdgeBrush = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]),
                 BackgroundFillBrush = (SolidColorBrush)App.Instance.Resources["TranslucentWhite"],
                 SelectedValueTextColor = new SolidColorBrush(Colors.Black),

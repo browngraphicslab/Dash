@@ -58,7 +58,6 @@ namespace Dash
             SetEventHandlers();
             Loaded += CollectionView_Loaded;
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
-            xInkCanvas.InkPresenter.InputDeviceTypes = CoreInputDeviceTypes.Mouse;
         }
 
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
