@@ -70,9 +70,9 @@ namespace DashWebServer.Controllers
 
         // GET api/values/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<ShapeModel> Get(string id)
         {
-            return "value";
+            return await _documentRepository.GetItemByIdAsync<ShapeModel>(id);
         }
 
         // POST api/values

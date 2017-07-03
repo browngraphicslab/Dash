@@ -27,7 +27,6 @@ namespace Dash
         /// The instance of the app this can be used to access the services for dependency injection
         /// </summary>
         public static App Instance;
-        public static RealtimeC
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code

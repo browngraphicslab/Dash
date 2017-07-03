@@ -17,6 +17,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace DashWebServer
 {
+
     /// <summary>
     ///     Serves as the connector for the cosmosDb database
     ///     Based off of https://auth0.com/blog/documentdb-with-aspnetcore/
@@ -166,7 +167,7 @@ namespace DashWebServer
                 T result = (dynamic)resourceResponse.Resource;
 
                 // add the new document to the cache
-                AddDocumentToCache(result);
+                var result2 = AddDocumentToCache(result);
                 return result;
             }
             catch (DocumentClientException e)
@@ -214,7 +215,7 @@ namespace DashWebServer
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        public async Task<T> GetItemById<T>(string documentId) where T : EntityBase
+        public async Task<T> GetItemByIdAsync<T>(string documentId) where T : EntityBase
         {
             var result = GetDocumentFromCacheOrNull<T>(documentId);
             if (result is null)
@@ -241,12 +242,12 @@ namespace DashWebServer
         /// <typeparam name="T"></typeparam>
         /// <param name="documentId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<T>> GetItemsById<T>(IEnumerable<string> documentIds) where T : EntityBase
+        public async Task<IEnumerable<T>> GetItemsByIdAsync<T>(IEnumerable<string> documentIds) where T : EntityBase
         {
             var results = new List<T>();
             foreach (var documentId in documentIds)
             {
-                results.Add(await GetItemById<T>(documentId));
+                results.Add(await GetItemByIdAsync<T>(documentId));
             }
 
             return results;
@@ -301,15 +302,13 @@ namespace DashWebServer
         /// </summary>
         /// <typeparam name="T">The class type of the document that is going to be updated</typeparam>
         /// <param name="document">The document that is going to be updated</param>
-        /// <returns>The updated document</returns>
-        private async Task<T> UpdateItemAsyncSkipCache<T>(T document) where T : EntityBase
+        /// <returns>Nothing</returns>
+        private async Task UpdateItemAsyncSkipCache<T>(T document) where T : EntityBase
         {
             try
             {
                 // we use upsert to replace the document if it exists or create a new one if it doesn't
-                var resourceResponse = await _client.UpsertDocumentAsync(GetDocumentLink(document.Id), document);
-                T result = (dynamic)resourceResponse.Resource;
-                return result;
+                await _client.UpsertDocumentAsync(GetCollectionLink, document);
             }
             catch (DocumentClientException e)
             {
@@ -452,7 +451,7 @@ namespace DashWebServer
         {
             return new MemoryCacheEntryOptions
             {
-                SlidingExpiration = TimeSpan.FromMinutes(5), // remove any data from the cache that hasn't been accessed for this amount of time
+                SlidingExpiration = TimeSpan.FromMinutes(2), // remove any data from the cache that hasn't been accessed for this amount of time
                 PostEvictionCallbacks =
                 {
                     new PostEvictionCallbackRegistration
