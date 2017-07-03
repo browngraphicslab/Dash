@@ -39,24 +39,21 @@
 
 
 
-        <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-        </Image>
+        <!--<Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+        </Image>-->
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
                 Width="40"
                 Background="Transparent"
                 Height="40"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY"
+                VerticalAlignment="Bottom" 
+                ManipulationMode="TranslateX, TranslateY"
                 Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 >
             <Button.Template>
                 <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <Ellipse Fill="Transparent" />
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                    </Grid>
+                    <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
                 </ControlTemplate>
             </Button.Template>
         </Button>
