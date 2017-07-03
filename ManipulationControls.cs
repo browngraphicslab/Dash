@@ -24,7 +24,7 @@ namespace Dash {
         private const float MinScale = 0.5f;
         private const float MaxScale = 2.0f;
         private bool _disabled;
-        private FrameworkElement _element;
+        public FrameworkElement Element;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -32,7 +32,7 @@ namespace Dash {
         /// </summary>
         /// <param name="element">The element to add manipulation to</param>
         public ManipulationControls(FrameworkElement element) {
-            _element = element;
+            Element = element;
             element.ManipulationDelta += ManipulateDeltaMoveAndScale;
             element.ManipulationMode = ManipulationModes.All;
         }
@@ -40,15 +40,15 @@ namespace Dash {
         public void AddAllAndHandle()
         {
             if (!_disabled) return;
-            _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
-            _element.ManipulationDelta -= EmptyManipulationDelta;
+            Element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            Element.ManipulationDelta -= EmptyManipulationDelta;
         }
 
         public void RemoveAllButHandle()
         {
             if (_disabled) return;
-            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
-            _element.ManipulationDelta += EmptyManipulationDelta;
+            Element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+            Element.ManipulationDelta += EmptyManipulationDelta;
         }
 
         // == METHODS ==
@@ -79,8 +79,8 @@ namespace Dash {
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(bool canTranslate, bool canScale, ManipulationDeltaRoutedEventArgs e) {
-            FrameworkElement handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
+        public void TranslateAndScale(bool canTranslate, bool canScale, ManipulationDeltaRoutedEventArgs e) {
+            FrameworkElement handleControl = VisualTreeHelper.GetParent(Element) as FrameworkElement;
             e.Handled = true;
 
             //Create initial composite transform 
@@ -111,7 +111,7 @@ namespace Dash {
 
             if (canScale)
                 group.Children.Add(scale);
-            group.Children.Add(_element.RenderTransform);
+            group.Children.Add(Element.RenderTransform);
             if (canTranslate)
                 group.Children.Add(translate);
 
@@ -162,8 +162,7 @@ namespace Dash {
             //}
 
             // apply the transformation group
-            _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+            Element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
-
     }
 }

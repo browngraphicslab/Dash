@@ -10,7 +10,7 @@
 
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
         <Viewbox x:Name="xViewBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <views:DocumentView AllowDrop="True" Drop="XCanvas_Drop" DragOver="XCanvas_DragOver_1" x:Name="MainDocView" Width="500" Height="500"></views:DocumentView>
+            <views:DocumentView AllowDrop="True" Drop="XCanvas_Drop" DragOver="XCanvas_DragOver_1" x:Name="MainDocView" x:FieldModifier="public"/>
         </Viewbox>
         <local:OverlayCanvas x:Name="xOverlayCanvas"></local:OverlayCanvas>
     </Grid>
