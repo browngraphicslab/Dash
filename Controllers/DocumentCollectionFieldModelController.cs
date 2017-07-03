@@ -63,6 +63,7 @@ namespace Dash
             OnDocumentsChanged?.Invoke(GetDocuments());
         }
 
+
         public void RemoveDocument(DocumentController doc) {
             _documents.Remove(doc);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());

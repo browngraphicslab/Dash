@@ -15,8 +15,12 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
+using Windows.UI.Core;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.Storage;
+using Windows.UI.Xaml.Media.Imaging;
+using System.Collections.ObjectModel;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -40,6 +44,8 @@ namespace Dash
             set { Grid = value; }
         }
 
+        public bool KeepItemsOnMove { get; set; } = true;
+
         public CollectionView(CollectionViewModel vm)
         {
             this.InitializeComponent();
@@ -47,7 +53,8 @@ namespace Dash
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-            Loaded += (s, e) => ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            Loaded += CollectionView_Loaded;
+            InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
 
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
@@ -90,6 +97,21 @@ namespace Dash
             
             xSearchFieldBox.TextChanged += ViewModel.xSearchFieldBox_TextChanged;
 
+        }
+
+        private void CollectionView_Loaded(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            if (ViewModel.ParentDocument != MainPage.Instance.MainDocView)
+            {
+                ViewModel.ParentDocument.Width = ViewModel.ParentDocument.Height = Width = Height = 400;
+                ViewModel.ParentDocument.SizeChanged += (ss, ee) =>
+                {
+                    Height = ee.NewSize.Height;
+                    Width = ee.NewSize.Width;
+                };
+            }
         }
 
         private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -382,7 +404,8 @@ namespace Dash
 
         private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+            Thickness border = DocumentViewContainerGrid.BorderThickness;
+            ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
         }
 
         /// <summary>
@@ -948,8 +971,8 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, ViewModel.ParentDocument);
+            CollectionView view = ViewModel.ParentCollection;
             view?.StartDrag(ioRef);
         }
 
@@ -958,52 +981,76 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, ViewModel.ParentDocument);
+            CollectionView view = ViewModel.ParentCollection;
             view?.EndDrag(ioRef);
         }
 
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            e.Data.RequestedOperation = DataPackageOperation.Move;
+            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = this;
             foreach(var item in e.Items)
-                carrier.Payload.Add(item as DocumentViewModel);            
+                carrier.Payload.Add(item as DocumentViewModel);
+            e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
         private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            //throw new NotImplementedException();
+            if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
+                ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
+            RefreshItemsBinding();
+            KeepItemsOnMove = true;
+            var carrier = ItemsCarrier.GetInstance();
+            carrier.Payload.Clear();
+            carrier.Source = null;
+            carrier.Destination = null;
+            carrier.Translate = new Point();
+            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
         }
 
-
-        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop(object sender, DragEventArgs e)
+        private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
         {
+            var docControllers = new List<DocumentController>();
+            foreach (var item in docViewModels)
+                docControllers.Add(item.DocumentController);
+            var parentDoc = (ViewModel.ParentDocument.ViewModel)?.DocumentController;
+            var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController 
+                          ?? parentDoc.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;      
+            if (controller != null)
+                foreach (var item in docControllers)
+                    if (add) controller.AddDocument(item);
+                    else controller.RemoveDocument(item);
+        }
+
+        private void CollectionGrid_DragOver(object sender, DragEventArgs e)
+        {
+            e.Handled = true;
             e.AcceptedOperation = DataPackageOperation.Move;
-            var controllers = ItemsCarrier.GetInstance().Payload.Select(viewModel => viewModel.DocumentController).ToList();
-            ViewModel.AddDocuments(controllers);
         }
 
-        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver(object sender, DragEventArgs e)
+        private void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
-            Debug.WriteLine("hi");
-            e.AcceptedOperation |= DataPackageOperation.Move;
+            e.Handled = true;
+            RefreshItemsBinding();
+            ItemsCarrier.GetInstance().Destination = this;
+            ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
+            ItemsCarrier.GetInstance().Translate = e.GetPosition(GridView.ItemsPanelRoot);
+            ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
         }
 
-        private class ItemsCarrier
+        private void RefreshItemsBinding()
         {
-            private static ItemsCarrier carrier = new ItemsCarrier();
-            public List<DocumentViewModel> Payload;
-            public CollectionView Source;
-            private ItemsCarrier()
+            if (ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility == Visibility.Visible)
             {
-                Payload = new List<DocumentViewModel>();
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = null;
+                GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = ViewModel.DataBindingSource;
             }
-
-            public static ItemsCarrier GetInstance()
+            else if (ViewModel.ListViewVisibility == Visibility.Visible)
             {
-                return carrier;
+                HListView.ItemsSource = null;
+                HListView.ItemsSource = ViewModel.DataBindingSource;
             }
         }
 
