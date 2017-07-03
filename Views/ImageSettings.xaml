@@ -14,8 +14,7 @@
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
             <RowDefinition />
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
@@ -32,8 +31,8 @@
                 </TextBlock>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="2" Width="250" VerticalAlignment="Stretch" MaxHeight="800">
-            <ScrollViewer VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollMode="Auto" IsVerticalRailEnabled="False" VerticalScrollBarVisibility="Auto" >
+        <Grid Grid.Row="2" Width="250">
+            <ScrollViewer VerticalScrollMode="Enabled"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -43,16 +42,16 @@
                         <RowDefinition Height="35"/>
                         <RowDefinition Height="60"/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16" >
                             <Run Text="OPACITY"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="1" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="1*"/>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="0.8*"/>
                             </Grid.ColumnDefinitions>
                             <Grid Grid.Column="0">
                                 <Slider x:Name="xOpacitySlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="1" StepFrequency="0.1"/>
@@ -62,12 +61,12 @@
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row="2"  Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="2"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="SIZE"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="3"  Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="3"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -81,12 +80,12 @@
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row="4" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="4" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="POSITION"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="5" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="5" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -102,9 +101,6 @@
                     </Grid>
                 </Grid>
             </ScrollViewer>
-        </Grid>
-        <Grid Grid.Row="3" HorizontalAlignment="Right" Margin="0,0,25,0">
-            <SymbolIcon x:Name="xScrollIcon" Symbol="Sort" />
         </Grid>
     </Grid>
 </UserControl>

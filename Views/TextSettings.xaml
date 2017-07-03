@@ -14,8 +14,7 @@
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
             <RowDefinition />
-            <RowDefinition Height="30"/>
-            <RowDefinition Height="80"/>
+            <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
@@ -32,8 +31,8 @@
                 </TextBlock>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="2" Width="250" VerticalAlignment="Stretch" MaxHeight="800">
-            <ScrollViewer VerticalAlignment="Stretch" HorizontalAlignment="Stretch" VerticalScrollMode="Auto" IsVerticalRailEnabled="False" VerticalScrollBarVisibility="Auto" >
+        <Grid Grid.Row="2" Width="250">
+            <ScrollViewer VerticalScrollMode="Enabled"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
@@ -47,15 +46,15 @@
                         <RowDefinition Height="35"/>
                         <RowDefinition Height="60"/>
                     </Grid.RowDefinitions>
-                    <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="0"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="FONT SIZE"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="1" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="1"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.8*"/>
+                                <ColumnDefinition Width="1.5*"/>
                                 <ColumnDefinition Width="0.8*"/>
                                 <ColumnDefinition Width="0.3*"/>
                             </Grid.ColumnDefinitions>
@@ -72,14 +71,14 @@
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row ="2" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row ="2"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="TEXT ALIGNMENT"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="3" Width="250" VerticalAlignment="Top">
-                        <Grid Width="250">
-                            <ListView x:Name="xAlignmentListView" Height="Auto" Width="Auto" SelectionMode="Single" HorizontalAlignment="Stretch"
+                    <Grid Grid.Row="3"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <Grid Width="230">
+                            <ListView x:Name="xAlignmentListView" Height="35" HorizontalAlignment="Center" HorizontalContentAlignment="Center" SelectionMode="Single"
                         ScrollViewer.HorizontalScrollMode="Disabled"
                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
@@ -99,45 +98,31 @@
                                 <!--                                    <Image Source="ms-appx:///Assets/Rightlg.png" Height="55" ></Image>-->
                                 <!--                                </Border>-->
                                 <Border>
-                                    <SymbolIcon Symbol="AlignLeft" Width="55"/>
+                                    <SymbolIcon Symbol="AlignLeft"/>
                                 </Border>
                                 <Border>
-                                    <SymbolIcon Symbol="AlignCenter" Width="55"/>
+                                    <SymbolIcon Symbol="AlignCenter"/>
                                 </Border>
                                 <Border>
-                                    <SymbolIcon Symbol="AlignRight" Width="55"/>
+                                    <SymbolIcon Symbol="AlignRight"/>
                                 </Border>
                             </ListView>
-                            <!--<Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.3*"/>
-                    <ColumnDefinition Width="1.5*"/>
-                    <ColumnDefinition Width="1*"/>
-                </Grid.ColumnDefinitions>
-                <Grid Grid.Column="0">
-                    <RadioButton GroupName="xFontWeight" IsChecked="True">Left</RadioButton>
-                </Grid>
-                <Grid Grid.Column="1">
-                    <RadioButton GroupName="xFontWeight">Center</RadioButton>
-                </Grid>
-                <Grid Grid.Column="2">
-                    <RadioButton GroupName="xFontWeight">Right</RadioButton>
-                </Grid>-->
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row="4" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="4"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="FONT STYLE"/>
                         </TextBlock>
                     </Grid>
-                    <Grid x:Name="xComboBoxRow" Grid.Row="5" Width="250" VerticalAlignment="Center">
+                    <Grid x:Name="xComboBoxRow" Grid.Row="5"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <ComboBox x:Name="xFontWeightBox" Width="{Binding Width, ElementName=xComboBoxRow}" />
                     </Grid>
-                    <Grid Grid.Row="6" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="6"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="SIZE"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="7" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="7"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -151,12 +136,12 @@
                             </Grid>
                         </Grid>
                     </Grid>
-                    <Grid Grid.Row="8" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="8"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="POSITION"/>
                         </TextBlock>
                     </Grid>
-                    <Grid Grid.Row="9" Width="250" VerticalAlignment="Center">
+                    <Grid Grid.Row="9"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
@@ -172,9 +157,6 @@
                     </Grid>
                 </Grid>
             </ScrollViewer>
-        </Grid>
-        <Grid Grid.Row="3" HorizontalAlignment="Right" Margin="0,0,25,0">
-            <SymbolIcon x:Name="xScrollIcon" Symbol="Sort" />
         </Grid>
     </Grid>
 </UserControl>
