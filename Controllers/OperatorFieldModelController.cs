@@ -20,12 +20,17 @@ namespace Dash
         public abstract List<Key> OutputKeys { get; }
 
         /// <summary>
-        /// Abstract method to execute the operator
+        /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
         public abstract void Execute(DocumentController doc);
 
         public abstract List<FieldModel> GetNewInputFields();
+
+        /// <summary>
+        /// Returns a list of fieldmodels corresponsing to the keys of OutputKeys.
+        /// </summary>
+        /// <returns></returns>
         public abstract List<FieldModel> GetNewOutputFields();
 
         /// <summary>

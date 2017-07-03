@@ -33,12 +33,7 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-
-
         </Grid>
-
-
-
         <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
         </Image>
         <Button x:Name="DraggerButton" 

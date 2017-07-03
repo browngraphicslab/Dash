@@ -1,6 +1,7 @@
 ﻿using Dash.Sources.Api.XAML_Elements;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -18,15 +19,22 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Sources.Api {
     public sealed partial class ApiSourceDisplay : UserControl {
+        public DocumentController DocModel;
 
         // == CONSTRUCTORS ==
         public ApiSourceDisplay() {
             this.InitializeComponent();
             //new ManipulationControls(this);
+            Debug.WriteLine("hello!");
+        }
+
+        public ApiSourceDisplay(DocumentController docModel) {
+            this.InitializeComponent();
+            DocModel = docModel;
         }
 
         // == MEMBERS ==
-        public ListView PropertiesListView { get { return xListView;  } }
+        public ListView PropertiesListView { get { return xListView; } set { xListView = value; } }
 
         // == METHODS ==
 
@@ -36,10 +44,21 @@ namespace Dash.Sources.Api {
         /// <param name="property">ApiProperty to add</param>
         /// <param name="index">(optional) position to insert into</param>
         public void addToListView(ApiProperty property, int index = -1) {
-            if (index == -1)
+            Debug.WriteLine("awwww");
+            if (index == -1) {
                 xListView.Items.Add(property);
-            else
+            } else {
                 xListView.Items.Insert(index, property);
+            }
+        }
+
+        /// <summary>
+        /// Removes an ApiProperty to our ListView.
+        /// </summary>
+        /// <param name="property">ApiProperty to add</param>
+        /// <param name="index">(optional) position to insert into</param>
+        public void removeFromListView(int index) {
+            xListView.Items.RemoveAt(index);
         }
 
         /// <summary>
@@ -48,6 +67,10 @@ namespace Dash.Sources.Api {
         /// <param name="r">event handler to add</param>
         public void addButtonEventHandler(TappedEventHandler r) {
             xQueryBtn.Tapped += r;
+        }
+
+        private void xEditBtn_Tapped(object sender, TappedRoutedEventArgs e) {
+            this.Visibility = Visibility.Collapsed;
         }
     }
 }

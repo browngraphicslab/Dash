@@ -11,8 +11,9 @@
     ManipulationMode="All"
     x:Name="xProperty">
 
-    <StackPanel Orientation="Horizontal"  Background="Transparent">
+    <StackPanel Orientation="Horizontal">
         <TextBlock x:Name="xKey" Width="100" TextWrapping="Wrap" Text="Key Here" Padding="10,5,0,5"/>
         <TextBox x:Name="xValue" Background="White" Width="150" TextWrapping="Wrap" Margin="3,0,0,0" PlaceholderText="Property Value"/>
+        <CheckBox x:Name="xRequired" Visibility="Collapsed"></CheckBox>
     </StackPanel>
 </UserControl>

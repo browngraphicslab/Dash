@@ -11,6 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
+    /// <summary>
+    /// Provides static utilities for creating Documents that contain an OperatorFieldModel.
+    /// </summary>
     public static class OperatorDocumentModel
     {
         public static Key OperatorKey = new Key("F5B0E5E0-2C1F-4E49-BD26-5F6CBCDE766A", "Operator");

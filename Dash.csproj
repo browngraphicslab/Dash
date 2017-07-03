@@ -104,6 +104,7 @@
     <Compile Include="Controllers\ImageFieldModelController.cs" />
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\ApiSourceOperatorController.cs" />
     <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
@@ -120,6 +121,8 @@
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="ManipulationControls.cs" />
+    <Compile Include="Models\ApiSourceFieldModel.cs" />
+    <Compile Include="Models\ApiSourceFieldModelController.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
@@ -168,7 +171,6 @@
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Api\ApiSource.cs" />
-    <Compile Include="Sources\Api\ApiSourceCreator.cs" />
     <Compile Include="Sources\Api\ApiSourceDisplay.xaml.cs">
       <DependentUpon>ApiSourceDisplay.xaml</DependentUpon>
     </Compile>

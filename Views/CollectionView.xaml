@@ -7,10 +7,35 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
+    d:DesignHeight="400"
+    d:DesignWidth="670"
     Background="{StaticResource TranslucentWhite}"
     ManipulationStarted="Grid_OnManipulationStarted">
+    <Grid>
+        <Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+            <Button x:Name="CloseButton" 
+                Content ="X" 
+                Width="30"
+                    
+                HorizontalAlignment="Right" 
+                VerticalAlignment="Stretch"/>
 
-    <Grid x:Name="Grid" BorderThickness="0" Style="{StaticResource xNodeContainerGrid}">
+            <Button x:Name="DisplayButton" 
+                HorizontalAlignment="Left" 
+                Margin="20,0,0,0"
+                    Style="{StaticResource xAccentButtonStyle}"
+                VerticalAlignment="Top"  
+                Content="Display" >
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption" Text="Grid"/>
+                        <MenuFlyoutItem x:Name="GridOption" Text="Freeform"/>
+                        <MenuFlyoutItem x:Name="ListOption" Text="List"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+        </Grid>
+    <Grid x:Name="Grid" BorderThickness="0" Margin="0,30,0,0" Style="{StaticResource xNodeContainerGrid}" >
         <Grid x:Name="DocumentViewContainerGrid"  
                   HorizontalAlignment="Stretch" 
                   Margin="0,30,0,30" 
@@ -203,25 +228,9 @@
             </StackPanel>
         </Grid>
 
-        <Button x:Name="DisplayButton" 
-                HorizontalAlignment="Left" 
-                VerticalAlignment="Top"  
-                Foreground="WhiteSmoke" 
-                Content="Display" 
-                FontSize="14" 
-                FontFamily="Rockwell">
-            <Button.Flyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption" Text="GridViewWhichIsActuallyGridViewAndNotAnItemsControl"/>
-                    <MenuFlyoutItem x:Name="GridOption" Text="Grid"/>
-                    <MenuFlyoutItem x:Name="ListOption" Text="List"/>
-                </MenuFlyout>
-            </Button.Flyout>
-        </Button>
-
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
             <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="30" 
-                        Width="70" Foreground="WhiteSmoke" Margin="{Binding DeleteButtonMargin}" FontSize="14" FontFamily="Rockwell">
+                        Width="70" Foreground="WhiteSmoke" Margin="{Binding DeleteButtonMargin}">
                 <Button.Flyout>
                     <MenuFlyout Placement="Bottom">
                         <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
@@ -235,18 +244,9 @@
                     VerticalAlignment="Bottom" 
                     Height="30" 
                     Width="70" 
-                    Foreground="WhiteSmoke" 
-                    Margin="10,0,0,0" 
-                    FontSize="14" 
-                    FontFamily="Rockwell"/>
+                    Margin="10,0,0,0" />
         </StackPanel>
 
-        <Button x:Name="CloseButton" 
-                Content ="Close" 
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Top" 
-                Background="{StaticResource AccentGreen}" 
-                Foreground="WhiteSmoke"/>
 
         <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
@@ -260,6 +260,8 @@
                  ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
                  PointerPressed="ConnectionEllipse_OnPointerPressed"
                  PointerReleased="ConnectionEllipse_OnPointerReleased"/>
+    </Grid>
+
     </Grid>
 </UserControl>
 

@@ -355,14 +355,11 @@ namespace Dash
             {
                 uieles.AddRange(CourtesyDocuments.OperatorBox.MakeView(this));
             } 
-            else if (DocumentType == CourtesyDocuments.ApiSourceCreatorDoc.DocumentType) 
+            else if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType) 
             {
-                uieles.AddRange(CourtesyDocuments.ApiSourceCreatorDoc.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.ApiDocumentModel.MakeView(this));
             } 
-            else if (DocumentType == CourtesyDocuments.ApiSourceDoc.DocumentType) 
-            {
-                uieles.AddRange(CourtesyDocuments.ApiSourceDoc.MakeView(this));
-            } else if (DocumentType == CourtesyDocuments.FreeformDocument.DocumentType)
+            else if (DocumentType == CourtesyDocuments.FreeformDocument.DocumentType)
             {
                 uieles.AddRange(CourtesyDocuments.FreeformDocument.MakeView(this));
             }

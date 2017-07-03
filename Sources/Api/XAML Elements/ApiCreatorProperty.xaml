@@ -21,7 +21,7 @@
         </Grid.ColumnDefinitions>
         <TextBox x:Name="xKey" TextWrapping="Wrap" PlaceholderText="Property Name" Grid.Column="0"/>
         <TextBox x:Name="xValue" TextWrapping="Wrap" Margin="3,0,0,0" PlaceholderText="Property Value" Grid.Column="1"/>
-        <CheckBox x:Name="xDisplay" IsChecked="True"  MinWidth="0" Margin="10,0,0,0" Grid.Column="2"/>
+        <CheckBox x:Name="xDisplay" IsChecked="True"  MinWidth="0" Margin="10,0,0,0" Checked="xDisplay_Checked"  Unchecked="xDisplay_Unchecked" Grid.Column="2"/>
         <CheckBox x:Name="xRequired" IsChecked="True"  MinWidth="0" Margin="10,0,0,0" Grid.Column="3"/>
         <Button x:Name="xDelete" Tapped="xDelete_Tapped" Padding="0" Content="X"  Height="26" Width="30" Grid.Column="4" MinWidth="0" Margin="10,0,0,0" Background="{StaticResource AccentGreen}" />
     </Grid>

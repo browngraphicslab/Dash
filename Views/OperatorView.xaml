@@ -24,6 +24,7 @@
                             <ColumnDefinition Width="Auto"></ColumnDefinition>
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{Binding Name}" Grid.Column="1"></TextBlock>
+                        <!-- This is the draggable node handle -->
                         <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="0" 
                                  PointerPressed="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                     </Grid>

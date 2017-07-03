@@ -33,20 +33,19 @@ namespace Dash.Sources.Api {
         private HttpClient client;
         private TextBlock text;
         private HttpResponseMessage response;
-        private List<DocumentModel> responseAsDocuments; // list of results formatted as documents
+        private List<DocumentController> responseAsDocuments; // list of results formatted as documents
         private ApiSourceDisplay display;
         public TextBlock debugger;
         private Canvas testGrid;
+        private DocumentController docController;
 
         // == CONSTRUCTORS ==
-        public ApiSource(HttpMethod requestType, string apiURL,
-            Dictionary<string, ApiProperty> headerProperties, Dictionary<string, ApiProperty> parameterProperties,
-                Dictionary<string, ApiProperty> authParameterProperties, Dictionary<string, ApiProperty> authHeaderProperties,
-                string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
-            this.headers = headerProperties;
-            this.parameters = parameterProperties;
-            this.authHeaders = authHeaderProperties;
-            this.authParameters = authParameterProperties;
+        public ApiSource(DocumentController docController, HttpMethod requestType, string apiURL, string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
+            this.headers = new Dictionary<string, ApiProperty>();
+            this.parameters = new Dictionary<string, ApiProperty>();
+            this.authHeaders = new Dictionary<string, ApiProperty>();
+            this.authParameters = new Dictionary<string, ApiProperty>();
+            this.docController = docController;
             this.apiURI = new Uri(apiURL);
             if (!string.IsNullOrWhiteSpace(authURL)) {
                 this.authURI = new Uri(authURL);
@@ -62,11 +61,11 @@ namespace Dash.Sources.Api {
             response = null;
             testGrid = testGridToAddDocumentsTo;
             client = new HttpClient(); // TODO: comment out for HttpClient abstraction
-            responseAsDocuments = new List<DocumentModel>();
+            responseAsDocuments = new List<DocumentController>();
         }
 
         // == GETTERS / SETTERS ==
-        public List<DocumentModel> ResponseAsDocuments { get { return this.responseAsDocuments; } set { this.responseAsDocuments = value; } }
+        public List<DocumentController> ResponseAsDocuments { get { return this.responseAsDocuments; } set { this.responseAsDocuments = value; } }
 
         // == METHODS ==
         /// <summary>
@@ -74,71 +73,20 @@ namespace Dash.Sources.Api {
         /// test canvas.
         /// </summary>
         /// <param name="g"></param>
-        public bool addResponseDocumentsToCanvas() {
-            if (responseAsDocuments.Count == 0)
-                return false;
-
-
-            //MainPage.Instance.DisplayDocument(new ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
-
-            // make collection view
+        public bool updateDocumentModelResults() {
             
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
-            {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(responseAsDocuments) }
-            };
 
-            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
-            var layoutController = new DocumentFieldModelController(documentFieldModel);
-            ContentController.AddModel(documentFieldModel);
-            ContentController.AddController(layoutController);
-            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
-            MainPage.Instance.DisplayDocument(col);
+            CourtesyDocuments.ApiDocumentModel.setResults(docController, responseAsDocuments);
             return true;
         }
 
         /// <summary>
-        /// Adds a dictionary of key, value pair to a given list view, creating the key as a TextBlock
-        /// and the value as a TextBox.
+        /// Sets the display to an existing source. Probably, you should use that.
         /// </summary>
-        /// <param name="view">ListView to add pair to</param>
-        /// <param name="dictionary">dictionary to get pairs frm</param>
-        void addToView(Dictionary<string, ApiProperty> dictionary, bool isParameter) {
-            int lastRequiredPosition = 0;
-            foreach (KeyValuePair<string, ApiProperty> entry in dictionary) {
-                // only add editable header params for values that do not have defaults
-                if (entry.Value.IsDisplayed) {
-                    if (entry.Value.IsRequired) {
-                        display.addToListView(entry.Value, lastRequiredPosition);
-                        lastRequiredPosition++;
-                    } else
-                        display.addToListView(entry.Value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Generates a physical Grid that can be displayed on canvas representing 
-        /// the APINode template.
-        /// 
-        /// TODO: seperate layout for MVVM maybe?
-        /// </summary>
-        /// <returns>
-        /// The generated grid object.
-        /// </returns>
-        public ApiSourceDisplay createAPISourceDisplay() {
-            display = new ApiSourceDisplay();
-
-            // add everyone to containing grid
-            addToView(authHeaders, false);
-            addToView(authParameters, false);
-            addToView(headers, false);
-            addToView(parameters, true);
-            display.addButtonEventHandler(clickHandler);
-
-            return display;
+        /// <param name="sdisplay"></param>
+        public void setApiDisplay(ApiSourceDisplay sdisplay) {
+            sdisplay.addButtonEventHandler(clickHandler);
+            display = sdisplay;
         }
 
         /// <summary>
@@ -151,36 +99,24 @@ namespace Dash.Sources.Api {
         }
 
         /// <summary>
-        /// Updates ApiSourceCreator to represent this ApiSource. The creator can
-        /// then be used to edit the fields of this ApiSource.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void editHandler(object sender, RoutedEventArgs e) {
-            makeRequest();
-        }
-
-        /// <summary>
         /// Updates the in-node representation of the parameters list based on
         /// user input into editable ApiConnectionProperties of the listview.
         /// </summary>
         private void updateParametersFromListView() {
+            this.headers = new Dictionary<string, ApiProperty>();
+            this.parameters = new Dictionary<string, ApiProperty>();
+            this.authHeaders = new Dictionary<string, ApiProperty>();
+            this.authParameters = new Dictionary<string, ApiProperty>();
             foreach (ApiProperty grid in display.PropertiesListView.Items) {
-                if (!grid.ForAuth) {
-                    string key = grid.Key;
-                    string val = grid.Value;
-                    if (grid.IsParameter)
-                        parameters[key].Value = val;
-                    else
-                        headers[key].Value = val;
-                } else {
-                    string key = grid.Key;
-                    string val = grid.Value;
-                    if (grid.IsParameter)
-                        authParameters[key].Value = val;
-                    else
-                        authHeaders[key].Value = val;
-                }
+                Debug.WriteLine(grid.Key);
+                if (grid.Type == ApiProperty.ApiPropertyType.AuthHeader)
+                    authHeaders.Add(grid.Key, grid);
+                if (grid.Type == ApiProperty.ApiPropertyType.AuthParameter)
+                    authParameters.Add(grid.Key, grid);
+                if (grid.Type == ApiProperty.ApiPropertyType.Header)
+                    headers.Add(grid.Key, grid);
+                if (grid.Type == ApiProperty.ApiPropertyType.Parameter)
+                    parameters.Add(grid.Key, grid);
             }
         }
 
@@ -227,13 +163,14 @@ namespace Dash.Sources.Api {
         public async virtual void makeRequest() {
             // load in parameters from listViews
             updateParametersFromListView();
-
+            
             // check that all required fields are filled
             if (!(requiredPropertiesValid(parameters) &&
             requiredPropertiesValid(headers))) {
                 text.Text = "Please fill in all required fields (denoted by a *).";
                 return;
             }
+            
 
             // initialize request message and headers
             HttpRequestMessage message = new HttpRequestMessage(requestType, apiURI);
@@ -287,22 +224,19 @@ namespace Dash.Sources.Api {
             // send message
             response = await client.SendRequestAsync(message);
             text.Text = response.Content.ToString();
-            Debug.WriteLine("Content: " + response.Content.ToString());
+           // Debug.WriteLine("Content: " + response.Content.ToString());
 
             // generate and store response document by parsing HTTP output
             // first try to parse it as a list of objects
-            //
-            // TODO: is it extra to loop into nested Objects in a JSON value and generate fields 
-            // representing all of them? Ask how to have nested properties inside of documents
-            //      -> document of documents? or create custom object type maybe?
-            responseAsDocuments = new List<DocumentModel>();
+            responseAsDocuments = new List<DocumentController>();
             var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
             try {
+                
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
 
-                int max = 10, i = 0; // this limits the # of results returned
+                int max = 100000, i = 0; // this limits the # of results returned
                 // loop through all instantiated objects, making 
                 foreach (JObject result in resultObjects) {
                     if (i > max)
@@ -318,8 +252,16 @@ namespace Dash.Sources.Api {
                     }
 
                     DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
-                    responseAsDocuments.Add(Document.DocumentModel); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                    responseAsDocuments.Add(Document); // /*apiURL.Host.ToString() DocumentType.DefaultType));
                 }
+                    
+                /*
+                DocumentController documentModel = JsonToDashUtil.Parse(text.Text);
+                responseAsDocuments.Add(documentModel);
+                TODO: add this back in when an API it works with is found
+                */
+                
+                
 
 
                 // at this point resultAsDocuments contains a list of all JSON results formatted
@@ -332,20 +274,21 @@ namespace Dash.Sources.Api {
                 // then try and parse it as a single object
             } catch (InvalidOperationException e) {
                 JObject result = JObject.Parse(text.Text);
-                Dictionary<Key, FieldModel> resultAsDictionary = new Dictionary<Key, FieldModel>();
+                Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                 foreach (JProperty property in result.Properties()) {
                     //Debug.WriteLine(property.Name + ": " + property.Value.Type);
-                    resultAsDictionary.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
+                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                 }
 
                 // at this point, resultAsDocument is a new document
                 //
                 // TODO: unique identifiers as above
-                responseAsDocuments.Add(new DocumentModel(resultAsDictionary, apiDocType)); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
+                responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
             }
 
             // add document to children
-            addResponseDocumentsToCanvas();
+            updateDocumentModelResults();
         }
 
         // recursively yield all children of json

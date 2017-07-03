@@ -9,11 +9,13 @@
     d:DesignHeight="200"
     d:DesignWidth="400">
 
-    <Grid x:Name="xGrid" Padding="20">
+
+    <Grid x:Name="xGrid" Width="400" Height="300" Padding="20" HorizontalAlignment="Left" VerticalAlignment="Top">
         <TextBlock x:Name="xTitle" Style="{StaticResource xTitleStyle}">API Node</TextBlock>
         <Grid Margin="22,35,22,37">
             <ListView x:Name="xListView" SelectionMode="None"></ListView>
         </Grid>
         <Button HorizontalAlignment="Center"  VerticalAlignment="Bottom" x:Name="xQueryBtn" Content="Query API" />
+        <Button HorizontalAlignment="Left" Tapped="xEditBtn_Tapped" Style="{StaticResource xAccentButtonStyle}"  VerticalAlignment="Bottom" x:Name="xEditBtn" Content="Edit API" />
     </Grid>
 </UserControl>

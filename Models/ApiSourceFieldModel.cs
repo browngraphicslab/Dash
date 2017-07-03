@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dash.Sources.Api {
-    class ApiSourceCreator {
+namespace Dash.Models {
+    class ApiSourceFieldModel {
     }
 }
