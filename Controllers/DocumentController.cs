@@ -282,7 +282,7 @@ namespace Dash
             {
                 var prototype = GetPrototype();
                 if (prototype != null)
-                    foreach (var field in prototype.EnumFields())
+                    foreach (var field in prototype.EnumFields().Where((f) => !Fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }
@@ -347,9 +347,9 @@ namespace Dash
             {
                 uieles.AddRange(CourtesyDocuments.StackingPanel.MakeView(this));
             }
-            else if (DocumentType == CourtesyDocuments.GenericCollection.DocumentType)
+            else if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.GenericCollection.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.CollectionBox.MakeView(this));
             }
             else if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
@@ -362,9 +362,6 @@ namespace Dash
             else if (DocumentType == CourtesyDocuments.ApiSourceDoc.DocumentType) 
             {
                 uieles.AddRange(CourtesyDocuments.ApiSourceDoc.MakeView(this));
-            } else if (DocumentType == CourtesyDocuments.FreeformDocument.DocumentType)
-            {
-                uieles.AddRange(CourtesyDocuments.FreeformDocument.MakeView(this));
             }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {

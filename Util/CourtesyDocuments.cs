@@ -205,7 +205,7 @@ namespace Dash
                 if (layoutField == null)
                 {
                     var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(new DocumentModel[] { }));
-                    LayoutDocumentController = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, CourtesyDocuments.GenericCollection.DocumentType)).GetReturnedDocumentController();
+                    LayoutDocumentController = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, CourtesyDocuments.CollectionBox.DocumentType)).GetReturnedDocumentController();
 
                     SetLayoutForDocument(Document, LayoutDocumentController.DocumentModel);
                 }
@@ -508,10 +508,6 @@ namespace Dash
                 var widthController = GetWidthFieldController(docController);
                 BindWidth(tb, widthController);
 
-                // bind the text position
-                var translateController = GetTranslateFieldController(docController);
-                BindTranslation(tb, translateController);
-
                 var fontWeightController = GetFontWeightFieldController(docController);
                 BindFontWeight(tb, fontWeightController);
 
@@ -594,10 +590,6 @@ namespace Dash
                 var widthController = GetWidthFieldController(docController);
                 BindWidth(image, widthController);
 
-                // make image translate
-                var translateController = GetTranslateFieldController(docController);
-                BindTranslation(image, translateController);
-
                 // set up interactions with operations
                 BindOperationInteractions(refToImage, image);
 
@@ -641,7 +633,7 @@ namespace Dash
             }
         }
 
-        public class GenericCollection : CourtesyDocument
+        public class CollectionBox : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
 
@@ -651,8 +643,8 @@ namespace Dash
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
                 SetLayoutForDocument(Document, Document.DocumentModel);
             }
-            public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
-            public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
+            public CollectionBox(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
+            public CollectionBox(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
             
             static public List<FrameworkElement> MakeView(DocumentController docController)
             {
@@ -661,7 +653,8 @@ namespace Dash
                 {
                     var w = docController.GetField(DashConstants.KeyStore.WidthFieldKey) != null ?
                         (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
-                    var h = double.NaN;
+                    var h = docController.GetField(DashConstants.KeyStore.HeightFieldKey) != null ?
+                        (docController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController).Data : double.NaN;
 
                     var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                     Debug.Assert(collectionFieldModelController != null);
@@ -679,6 +672,8 @@ namespace Dash
                     view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
                     if (w > 0)
                         view.Width = w;
+                    if (h > 0)
+                        view.Height = h;
 
                     return new List<FrameworkElement> { view };
                 }
@@ -686,54 +681,6 @@ namespace Dash
             }
         }
 
-        public class FreeformDocument : CourtesyDocument
-        {
-            public static DocumentType FreeFormDocumentType = new DocumentType("59B0C184-59BD-4570-87B8-0B660A68CBEC", "FreeFormDocument");
-
-            public static DocumentType DocumentType { get { return FreeFormDocumentType; } }
-
-            public FreeformDocument(IEnumerable<DocumentModel> docs)
-            {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(docs));
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, FreeFormDocumentType)).GetReturnedDocumentController();
-            }
-
-            public static List<FrameworkElement> MakeView(DocumentController docController)
-            {
-                var output = new List<FrameworkElement>();
-
-                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
-                var layoutData = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
-                Debug.Assert(layoutData != null);
-
-                layoutData.OnDocumentsChanged += delegate
-                {
-                    docController.FireOnLayoutChanged();
-                };
-
-                foreach (var layoutDoc in layoutData.GetDocuments())
-                {
-                    var position =
-                        (layoutDoc.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?.Data;
-                    //Debug.Assert(position != null);
-                    var ele = layoutDoc.MakeViewUI();
-                    foreach (var frameworkElement in ele)
-                    {
-                        frameworkElement.HorizontalAlignment = HorizontalAlignment.Left;
-                        frameworkElement.VerticalAlignment = VerticalAlignment.Top;
-                        frameworkElement.RenderTransform =
-                            PointToTranslateTransformConverter.Instance.ConvertDataToXaml(position.Value);
-                    }
-                    output.AddRange(ele);
-                }
-                return output;
-            }
-
-            private static void LayoutData_FieldModelUpdatedEvent(FieldModelController sender)
-            {
-                throw new NotImplementedException();
-            }
-        }
 
         public class StackingPanel : CourtesyDocument
         {
@@ -810,9 +757,9 @@ namespace Dash
                 // these prototypes will be overridden by delegates when an instance is created
                 _prototypeImage1Layout = new ImageBox(new TextFieldModel("Image 1"), 0, 20, 200, 200);
                 _prototypeImage2Layout = new ImageBox(new TextFieldModel("Image 2"), 0, 220, 200, 200);
-                _prototypeTextLayout   = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 20);
+                _prototypeTextLayout   = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 50);
 
-                return new FreeformDocument(new[] { _prototypeTextLayout.Document.DocumentModel, _prototypeImage1Layout.Document.DocumentModel, _prototypeImage2Layout.Document.DocumentModel }).Document;
+                return new CollectionBox(new DocumentCollectionFieldModel(new[] { _prototypeTextLayout.Document.DocumentModel, _prototypeImage1Layout.Document.DocumentModel, _prototypeImage2Layout.Document.DocumentModel })).Document;
             }
             public TwoImages(bool displayFieldsAsDocuments)
             {
@@ -840,7 +787,7 @@ namespace Dash
                     ContentController.AddController(documentFieldModelController);
                     Document.SetField(DashConstants.KeyStore.DataKey, documentFieldModelController, true);
 
-                    var genericCollection = new GenericCollection(documentFieldModel).Document;
+                    var genericCollection = new CollectionBox(documentFieldModel).Document;
                     genericCollection.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(new NumberFieldModel(800)), true);
 
                     SetLayoutForDocument(Document, genericCollection.DocumentModel);

@@ -89,7 +89,7 @@ namespace Dash.Sources.Api {
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
             var layoutController = new DocumentFieldModelController(documentFieldModel);
             ContentController.AddModel(documentFieldModel);

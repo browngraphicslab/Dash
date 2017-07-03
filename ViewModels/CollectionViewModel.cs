@@ -768,9 +768,7 @@ namespace Dash
         }
         public void MoveDocument(DocumentViewModel docViewModel, Point where)
         {
-
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.X)), true);
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.Y)), true);
+            docViewModel.DocumentController.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new PointFieldModel(where)), true);
         }
     }
 }

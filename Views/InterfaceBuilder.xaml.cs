@@ -174,7 +174,7 @@ namespace Dash
             var pair = e.Items[0] is KeyValuePair<Key, string> ? (KeyValuePair<Key, string>)e.Items[0] : new KeyValuePair<Key, string>();
             Debug.WriteLine(pair.Key.Name);
             e.Data.RequestedOperation = DataPackageOperation.Move;
-            Debug.WriteLine(_documentController.Fields[pair.Key].GetType());
+            Debug.WriteLine(_documentController.GetField(pair.Key).GetType());
             e.Data.Properties.Add("key", pair.Key);
             //e.Items.Insert(0, );
         }
