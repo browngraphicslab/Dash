@@ -141,6 +141,9 @@
     <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
+    <Compile Include="Models\RadialActionModel.cs" />
+    <Compile Include="Models\RadialItemModel.cs" />
+    <Compile Include="Models\RadialSubmenuModel.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
@@ -196,8 +199,10 @@
     </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\CourtesyDocuments.cs" />
+    <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
+    <Compile Include="Util\InkSource.cs" />
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
@@ -243,6 +248,12 @@
     </Compile>
     <Compile Include="Views\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RadialMenuView.xaml.cs">
+      <DependentUpon>RadialMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SearchView.xaml.cs">
+      <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
@@ -365,7 +376,12 @@
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\TextSettings.xaml">
+    <Page Include="Views\TextSettings.xaml"></Page>
+    <Page Include="Views\RadialMenuView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SearchView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

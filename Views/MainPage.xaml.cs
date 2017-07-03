@@ -29,6 +29,7 @@ using Dash.Sources.Api;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -74,6 +75,8 @@ namespace Dash
             //TODO this seriously slows down the document 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
+            RadialMenuView radialMenu = new RadialMenuView(xCanvas);
+
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -83,6 +86,11 @@ namespace Dash
 
 
         private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            AddOperator();
+        }
+
+        public void AddOperator()
         {
             //Create Operator document
             var opModel =
@@ -187,7 +195,7 @@ namespace Dash
                 children.AddDocument(docModel);
         }
 
-        private void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             var twoImages = new CourtesyDocuments.TwoImages(false).Document;
             var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
@@ -210,7 +218,7 @@ namespace Dash
             AddAnotherLol();
         }
 
-        private void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
             DisplayDocument(new CourtesyDocuments.ApiSourceCreatorDoc().Document);
         }
 
@@ -252,7 +260,7 @@ namespace Dash
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
-        private void AddDocuments(object sender, TappedRoutedEventArgs e)
+        public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new CourtesyDocuments.PostitNote().Document);
             DisplayDocument(new CourtesyDocuments.TwoImages(true).Document);
@@ -853,7 +861,6 @@ namespace Dash
             }
 
         }
-
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
