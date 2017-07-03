@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using DashShared;
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
@@ -54,6 +55,8 @@ namespace Dash
         /// </summary>
         private bool _isSelected;
 
+        private Shape _centerResizeHandle;
+
         /// <summary>
         /// Whether or not the editable field frame is currently selected, if it is, then it can display UI for editing
         /// otherwise that UI is hidden
@@ -91,7 +94,7 @@ namespace Dash
         /// <summary>
         /// Dictionary of <see cref="Thumb"/>'s (resize handle UI) to positions (<see cref="ResizeHandlePositions"/>)
         /// </summary>
-        private Dictionary<Thumb, ResizeHandlePositions> _resizeHandleToPosition = new Dictionary<Thumb, ResizeHandlePositions>();
+        private Dictionary<Shape, ResizeHandlePositions> _resizeHandleToPosition = new Dictionary<Shape, ResizeHandlePositions>();
 
         /// <summary>
         /// The inner content of the editable field frame can be anything!
@@ -153,25 +156,25 @@ namespace Dash
         /// </summary>
         private void InstantiateResizeHandles()
         {
-            var leftLowerResizeHandle = InstantiateThumb();
+            var leftLowerResizeHandle = InstantiateThumb(18,18,1);
             _overlayCanvas.Children.Add(leftLowerResizeHandle);
             _resizeHandleToPosition.Add(leftLowerResizeHandle, ResizeHandlePositions.LeftLower);
 
-            var leftUpperResizeHandle = InstantiateThumb();
+            var leftUpperResizeHandle = InstantiateThumb(18,18,1);
             _overlayCanvas.Children.Add(leftUpperResizeHandle);
             _resizeHandleToPosition.Add(leftUpperResizeHandle, ResizeHandlePositions.LeftUpper);
 
-            var rightLowerResizeHandle = InstantiateThumb();
+            var rightLowerResizeHandle = InstantiateThumb(18,18,1);
             _overlayCanvas.Children.Add(rightLowerResizeHandle);
             _resizeHandleToPosition.Add(rightLowerResizeHandle, ResizeHandlePositions.RightLower);
 
-            var rightUpperResizeHandle = InstantiateThumb();
+            var rightUpperResizeHandle = InstantiateThumb(18,18,1);
             _overlayCanvas.Children.Add(rightUpperResizeHandle);
             _resizeHandleToPosition.Add(rightUpperResizeHandle, ResizeHandlePositions.RightUpper);
 
-            var centerResizeHandle = InstantiateThumb();
-            _overlayCanvas.Children.Add(centerResizeHandle);
-            _resizeHandleToPosition.Add(centerResizeHandle, ResizeHandlePositions.Center);
+            _centerResizeHandle = InstantiateThumb(Width,Height,0.2);
+            _overlayCanvas.Children.Add(_centerResizeHandle);
+            _resizeHandleToPosition.Add(_centerResizeHandle, ResizeHandlePositions.Center);
 
         }
 
@@ -203,8 +206,10 @@ namespace Dash
                         Canvas.SetTop(handle, 0 - handle.Height);
                         break;
                     case ResizeHandlePositions.Center:
-                        Canvas.SetLeft(handle, Container.ActualWidth / 2 - handle.Width / 2);
-                        Canvas.SetTop(handle, Container.ActualHeight / 2 - handle.Height / 2);
+//                        Canvas.SetLeft(handle, Container.ActualWidth / 2 - handle.Width / 2);
+//                        Canvas.SetTop(handle, Container.ActualHeight / 2 - handle.Height / 2);
+                        Canvas.SetLeft(handle,0);
+                        Canvas.SetTop(handle,0);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -247,18 +252,34 @@ namespace Dash
         /// Create a new <see cref="Thumb"/> to be used as a resize handle, using some xaml properties
         /// </summary>
         /// <returns></returns>
-        private Thumb InstantiateThumb()
+        private Shape InstantiateThumb(double width, double height, double opacity)
         {
             // TODO this could be extracted to app.xaml
-            var thumb = new Thumb
+            Shape thumb = null;
+            if (opacity == 1)
             {
-                Height = 10,
-                Width = 10,
-                Background = new SolidColorBrush(Colors.White),
-                BorderBrush = new SolidColorBrush(_visibleBorderColor),
-                Visibility = Windows.UI.Xaml.Visibility.Collapsed
-            };
-
+                thumb = new Ellipse()
+                {
+                    Height = height,
+                    Width = width,
+                    Opacity = opacity,
+                    Fill = new SolidColorBrush(Colors.AliceBlue),
+                    Stroke = new SolidColorBrush(_visibleBorderColor),
+                    Visibility = Windows.UI.Xaml.Visibility.Collapsed
+                };
+            }
+            else
+            {
+                thumb = new Rectangle()
+                {
+                    Height = height,
+                    Width = width,
+                    Opacity = opacity,
+                    Fill = new SolidColorBrush(Colors.AliceBlue),
+                    Stroke = new SolidColorBrush(_visibleBorderColor),
+                    Visibility = Windows.UI.Xaml.Visibility.Collapsed
+                };
+            }
             thumb.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             thumb.ManipulationDelta += ResizeHandleOnManipulationDelta;
 
@@ -272,7 +293,7 @@ namespace Dash
         /// <param name="e"></param>
         private void ResizeHandleOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {    
-            var handle = sender as Thumb;
+            var handle = sender as Shape;
             Debug.Assert(handle != null);
             var position = _resizeHandleToPosition[handle];
 
@@ -323,10 +344,17 @@ namespace Dash
                 Y = currentTranslateTransform.Y + transYDelta,
             };
 
-            // apply the size delta to the entire Width and Height of this editable field frame
+            // apply the size delta to the entire Width and Height of this editable field frame and the center thumb
             //TODO provide minimum width and height
-            Width = ActualWidth + widthDelta;
-            Height = ActualHeight + heightDelta;
+            // restricts min size to 5x5
+            // issue: handles other than the lower right handle are moving the frame when min size is reached
+            Width = ActualWidth + widthDelta > 5 ? ActualWidth + widthDelta : 5;
+            Height = ActualHeight + heightDelta > 5 ? ActualHeight + heightDelta : 5;
+//            Width = ActualWidth + widthDelta;
+//            Height = ActualHeight + heightDelta;
+            // center handle doesn't respond to size changes made using the settings pane
+            _centerResizeHandle.Width = Width;
+            _centerResizeHandle.Height = Height;
 
             // invoke events
             // TODO these could probably be removed...
