@@ -41,15 +41,15 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <dash:DocumentView 
-                                    Width="{Binding Width}"
-                                    Height="{Binding Height}"
+                                    Width="{Binding Width, Mode=TwoWay}"
+                                    Height="{Binding Height, Mode=TwoWay}"
                                     DataContext="{Binding}" 
                                     ManipulationStarted="DocumentView_ManipulationStarted" 
                                     ManipulationDelta="DocumentView_ManipulationDelta" 
                                     IODragStarted="StartDrag" 
                                     IODragEnded="EndDrag">
                                 <dash:DocumentView.RenderTransform>
-                                    <TranslateTransform X="{Binding X}" Y="{Binding Y}"/>
+                                    <TranslateTransform X="{Binding X, Mode=TwoWay}" Y="{Binding Y, Mode=TwoWay}"/>
                                 </dash:DocumentView.RenderTransform>
                             </dash:DocumentView>
                         </DataTemplate>

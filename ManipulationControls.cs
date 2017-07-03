@@ -162,7 +162,14 @@ namespace Dash {
             //}
 
             // apply the transformation group
-            _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+
+            // bcz: TODO:  if there are bindings on the TranslateTransform and we switch it to a MatrixTransform, then  things will be broken...
+            if (_element.RenderTransform is TranslateTransform && group.Value.M11 == 1 && group.Value.M22 == 1)
+            {
+                (_element.RenderTransform as TranslateTransform).X = group.Value.OffsetX;
+                (_element.RenderTransform as TranslateTransform).Y = group.Value.OffsetY;
+            } else
+                _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
     }

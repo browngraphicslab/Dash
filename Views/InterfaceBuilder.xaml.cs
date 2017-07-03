@@ -210,9 +210,10 @@ namespace Dash
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                box.Document.Fields[DashConstants.KeyStore.PositionFieldKey] =
-                    new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
+                var pfmc = new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
                         e.GetPosition(_documentView).Y));
+                box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
+                ContentController.AddController(pfmc);
                 var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutCourtesyDocument.LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));
 
                 ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);
