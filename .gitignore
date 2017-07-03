@@ -575,3 +575,4 @@ __pycache__/
 *.odx.cs
 
 *.xsd.cs
+DashWebServer/Logs/
