@@ -12,6 +12,8 @@ namespace DashWebServer
 {
     public class Startup
     {
+        public IConfigurationRoot Configuration { get; }
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -22,8 +24,6 @@ namespace DashWebServer
             Configuration = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
@@ -31,8 +31,17 @@ namespace DashWebServer
             services.AddMemoryCache();
 
             // Add a reference to the document repository
-            //var documentRepository = new CosmosDb();
             services.AddSingleton<IDocumentRepository, CosmosDb>();
+
+            // Add a reference to the real time server, this uses the document repository so it must be created after it
+            services.AddSingleton(
+                provider =>
+                {
+                    var db = provider.GetRequiredService<IDocumentRepository>();
+                    var server = new RealtimeServer(db);
+                    Task.Run(() => { server.Start(); });
+                    return server;
+                });
 
             // Add framework services.
             services.AddMvc();
@@ -46,7 +55,7 @@ namespace DashWebServer
                     Version = "v1",
                     Description = "The base API for the Dash App Produced by the Brown Graphics Lab",
                     TermsOfService = "None",
-                    Contact = new Contact { Email = "luke_murray@brown.edu", Name = "Luke Murray" }
+                    Contact = new Contact {Email = "luke_murray@brown.edu", Name = "Luke Murray"}
                 });
 
                 //Set the comments path for the swagger json and ui.

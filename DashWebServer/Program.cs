@@ -12,6 +12,8 @@ namespace DashWebServer
     {
         public static void Main(string[] args)
         {
+
+            // start the REST API
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
