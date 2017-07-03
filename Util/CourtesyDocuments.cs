@@ -2,18 +2,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
-using Dash.Sources.Api;
 using DashShared;
-using Dash.Sources.Api.XAML_Elements;
-using static Dash.Sources.Api.XAML_Elements.ApiProperty;
 
 namespace Dash
 {
@@ -871,23 +866,23 @@ namespace Dash
         /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
         /// </summary>
         public class ApiDocumentModel : CourtesyDocument {
-            public static DocumentType DocumentType = new DocumentType("APIC9C82-F32C-4704-AF6B-E55AC805C84F", "Api Source Creator");
-            public static Key UrlKey = new Key("APIURL82-F32C-4704-AF6B-E55AC805C84F", "URL");
-            public static Key MethodKey = new Key("APIMET82-F32C-4704-AF6B-E55AC805C84F", "Method");
-            public static Key HeadersKey = new Key("APISECNN-F32C-4704-AF6B-E55AC805C84F", "Headers");
-            public static Key ParametersKey = new Key("APIPARNN-F32C-4704-AF6B-E55AC805C84F", "Parameter");
+            public static DocumentType DocumentType = new DocumentType("453ACC23-14EF-4990-A36D-53D5EBE2734D", "Api Source Creator");
+            public static Key UrlKey = new Key("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "URL");
+            public static Key HttpMethodKey = new Key("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Method");
+            public static Key HeadersKey = new Key("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
+            public static Key ParametersKey = new Key("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
 
-            public static Key AuthMethodKey = new Key("APIMETAU-F32C-4704-AF6B-E55AC805C84F", "Auth Method");
-            public static Key AuthUrlKey = new Key("APIURLAU-F32C-4704-AF6B-E55AC805C84F", "Auth URL");
-            public static Key AuthKey = new Key("APIKEYAU-F32C-4704-AF6B-E55AC805C84F", "Auth Key");
-            public static Key AuthSecret = new Key("APISECAU-F32C-4704-AF6B-E55AC805C84F", "Auth Secret");
-            public static Key AuthHeaders = new Key("APISECAU-F32C-4704-AF6B-E55AC805C84F", "Auth Header");
-            public static Key AuthParameters = new Key("APIPARAU-F32C-4704-AF6B-E55AC805C84F", "Auth Parameter");
+            public static Key AuthMethodKey = new Key("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
+            public static Key AuthUrlKey = new Key("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
+            public static Key AuthKey = new Key("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
+            public static Key AuthSecret = new Key("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
+            public static Key AuthHeaders = new Key("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
+            public static Key AuthParameters = new Key("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
 
-            public static Key KeyTextKey = new Key("KEYURL82-F32C-4704-AF6B-E55AC805C84F", "Key");
-            public static Key ValueTextKey = new Key("KEYMET82-F32C-4704-AF6B-E55AC805C84F", "Value");
-            public static Key RequiredKey = new Key("KEYSECNN-F32C-4704-AF6B-E55AC805C84F", "Required");
-            public static Key DisplayKey = new Key("KEYPARNN-F32C-4704-AF6B-E55AC805C84F", "Display");
+            public static Key KeyTextKey = new Key("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
+            public static Key ValueTextKey = new Key("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
+            public static Key RequiredKey = new Key("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
+            public static Key DisplayKey = new Key("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
 
            // public static Key CollectionResultKey = new Key("APICOLLN-F32C-4704-AF6B-E55AC805C84F", "Collection Result");
 
@@ -895,7 +890,7 @@ namespace Dash
                 // create a layout for the image
                 var fields = new Dictionary<Key, FieldModel> {
                     [UrlKey] = new TextFieldModel(""),
-                    [MethodKey] = new NumberFieldModel(0),
+                    [HttpMethodKey] = new NumberFieldModel(0),
                     [AuthUrlKey] = new TextFieldModel(""),
                     [AuthMethodKey] = new NumberFieldModel(0),
                     [AuthSecret] = new TextFieldModel(""),
@@ -948,13 +943,13 @@ namespace Dash
                 bindToCheckBox(required, ret.Fields[RequiredKey]);
 
                 // get the property's type
-                ApiPropertyType type = ApiPropertyType.Parameter;
+                ApiProperty.ApiPropertyType type = ApiProperty.ApiPropertyType.Parameter;
                 if (parameterCollectionKey == HeadersKey)
-                    type = ApiPropertyType.Header;
+                    type = ApiProperty.ApiPropertyType.Header;
                 if (parameterCollectionKey == AuthHeaders)
-                    type = ApiPropertyType.AuthHeader;
+                    type = ApiProperty.ApiPropertyType.AuthHeader;
                 if (parameterCollectionKey == AuthParameters)
-                    type = ApiPropertyType.AuthParameter;
+                    type = ApiProperty.ApiPropertyType.AuthParameter;
 
                 // make new property in source view
                 ApiProperty apiprop = new ApiProperty(key.Text, value.Text, type, ret, required.IsChecked.Value);
@@ -1059,7 +1054,7 @@ namespace Dash
                 // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecret]);
 
                 // bind drop down list
-                NumberFieldModelController fmcontroller = docController.Fields[MethodKey] as NumberFieldModelController;
+                NumberFieldModelController fmcontroller = docController.Fields[HttpMethodKey] as NumberFieldModelController;
                 var sourceBinding = new Binding {
                     Source = fmcontroller,
                     Path = new PropertyPath(nameof(fmcontroller.Data)),

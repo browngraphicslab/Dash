@@ -1,23 +1,16 @@
-﻿using Dash.Models;
-using Dash.Sources.Api.XAML_Elements;
-using DashShared;
-using Microsoft.Extensions.DependencyInjection;
+﻿using DashShared;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
-using static Dash.MainPage;
 
-namespace Dash.Sources.Api {
+namespace Dash {
     /// <summary>
     /// Instantiations of this class represent a user-created API interface: an APISource.
     /// 

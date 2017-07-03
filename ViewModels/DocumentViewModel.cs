@@ -1,24 +1,11 @@
-﻿using Dash;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
-using Dash.Models;
 using Windows.Foundation;
-using System.Diagnostics;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dash.Sources {
+﻿namespace Dash.Sources {
     /// <summary>
     /// This class abstracts default functionality for a "Source", an
     /// object that is used to generate document data from either user

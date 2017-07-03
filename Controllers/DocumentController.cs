@@ -1,12 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using DashShared;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Controls;
-using static Dash.MainPage;
 
 namespace Dash
 {

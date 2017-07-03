@@ -2,19 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
-using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models;
-using Dash.StaticClasses;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
-using Dash.ViewModels;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
