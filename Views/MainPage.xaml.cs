@@ -40,7 +40,7 @@ namespace Dash
             xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
-            var collectionDocumentController = new CourtesyDocuments.GenericCollection(new DocumentCollectionFieldModel(new List<DocumentModel>())).Document;
+            var collectionDocumentController = new CourtesyDocuments.CollectionBox(new DocumentCollectionFieldModel(new List<DocumentModel>())).Document;
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(collectionDocumentController)
             {
@@ -192,7 +192,7 @@ namespace Dash
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
             var layoutController = new DocumentFieldModelController(documentFieldModel);
             ContentController.AddModel(documentFieldModel);
@@ -236,7 +236,7 @@ namespace Dash
             };
 
             var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.GenericCollection(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
             var layoutController = new DocumentFieldModelController(documentFieldModel);
             ContentController.AddModel(documentFieldModel);
@@ -256,7 +256,7 @@ namespace Dash
         private void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             DisplayDocument(new CourtesyDocuments.PostitNote().Document);
-            DisplayDocument(new CourtesyDocuments.TwoImages(true).Document);
+            DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
             DisplayDocument(new CourtesyDocuments.Numbers().Document);
             //DisplayDocument(new CourtesyDocuments.NestedDocExample(true).Document);
             //DisplayDocument(new CourtesyDocuments.NestedDocExample(false).Document);

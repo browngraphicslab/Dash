@@ -316,20 +316,6 @@ namespace Dash
             #endregion
         }
 
-        private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var parent = this.GetFirstAncestorOfType<Canvas>();
-            if (parent == null) return;
-            var maxZ = int.MinValue;
-            foreach (var child in parent.GetDescendantsOfType<ContentPresenter>())
-            {
-                var childZ = Canvas.GetZIndex(child);
-                if (childZ > maxZ && child.GetFirstDescendantOfType<DocumentView>() != this)
-                    maxZ = childZ;
-            }
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
-        }
-
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);

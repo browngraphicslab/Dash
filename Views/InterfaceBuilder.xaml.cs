@@ -164,7 +164,7 @@ namespace Dash
             var pair = e.Items[0] is KeyValuePair<Key, string> ? (KeyValuePair<Key, string>)e.Items[0] : new KeyValuePair<Key, string>();
             Debug.WriteLine(pair.Key.Name);
             e.Data.RequestedOperation = DataPackageOperation.Move;
-            Debug.WriteLine(_documentController.Fields[pair.Key].GetType());
+            Debug.WriteLine(_documentController.GetField(pair.Key).GetType());
             e.Data.Properties.Add("key", pair.Key);
             //e.Items.Insert(0, );
         }
@@ -200,9 +200,10 @@ namespace Dash
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                box.Document.Fields[DashConstants.KeyStore.PositionFieldKey] =
-                    new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
+                var pfmc = new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
                         e.GetPosition(_documentView).Y));
+                box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
+                ContentController.AddController(pfmc);
                 var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutCourtesyDocument.LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));
 
                 ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);

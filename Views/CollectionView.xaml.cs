@@ -1006,5 +1006,9 @@ namespace Dash
                 return carrier;
             }
         }
+
+        private void UIElement_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+        }
     }
 }

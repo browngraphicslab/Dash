@@ -11,7 +11,7 @@
     d:DesignWidth="670"
     Background="{StaticResource TranslucentWhite}"
     ManipulationStarted="Grid_OnManipulationStarted">
-    <Grid>
+    <Grid PointerPressed="UIElement_OnPointerPressed">
         <Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
             <Button x:Name="CloseButton" 
                 Content ="X" 
@@ -66,16 +66,15 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <dash:DocumentView 
-                                    Width="300" 
-                                    Height="300" 
+                                    Width="{Binding Width, Mode=TwoWay}"
+                                    Height="{Binding Height, Mode=TwoWay}"
                                     DataContext="{Binding}" 
                                     ManipulationStarted="DocumentView_ManipulationStarted" 
                                     ManipulationDelta="DocumentView_ManipulationDelta" 
                                     IODragStarted="StartDrag" 
                                     IODragEnded="EndDrag">
                                 <dash:DocumentView.RenderTransform>
-                                    <TranslateTransform X="{Binding X}" Y="{Binding Y}">
-                                    </TranslateTransform>
+                                    <TranslateTransform X="{Binding X, Mode=TwoWay}" Y="{Binding Y, Mode=TwoWay}"/>
                                 </dash:DocumentView.RenderTransform>
                             </dash:DocumentView>
                         </DataTemplate>

@@ -107,8 +107,6 @@ namespace DashShared
             public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
             public static Key PrototypeKey = new Key("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
             public static Key DelegatesKey = new Key("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "Delegates");
-            public static Key XPositionFieldKey = new Key("CC6B105F-D73C-4076-973F-FAF2A4CA6218", "XPositionFieldKey");
-            public static Key YPositionFieldKey = new Key("EF7CCB37-3512-463B-915A-EB8078702F14", "YPositionFieldKey");
             public static Key WidthFieldKey = new Key("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "WidthFieldKey");
             public static Key HeightFieldKey = new Key("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "HeightFieldKey");
             public static Key DataKey = new Key("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
