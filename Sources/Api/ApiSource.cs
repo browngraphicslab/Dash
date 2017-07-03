@@ -78,7 +78,7 @@ namespace Dash {
         /// </summary>
         /// <param name="sdisplay"></param>
         public void setApiDisplay(ApiSourceDisplay sdisplay) {
-            sdisplay.addButtonEventHandler(clickHandler);
+            sdisplay.AddButtonEventHandler(clickHandler);
             display = sdisplay;
         }
 

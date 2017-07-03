@@ -33,8 +33,8 @@ namespace Dash {
 
             xHeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.HeadersKey;
             xParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.ParametersKey;
-            xAuthControl.ParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthParameters;
-            xAuthControl.HeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthHeaders;
+            xAuthControl.ParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthParametersKey;
+            xAuthControl.HeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthHeadersKey;
             SourceDisplay = display;
 
             updateSource();
@@ -103,7 +103,7 @@ namespace Dash {
         }
 
         private void xApiURLTB_TextChanged(object sender, TextChangedEventArgs e) {
-            Debug.WriteLine((DocModel.Fields[CourtesyDocuments.ApiDocumentModel.UrlKey] as TextFieldModelController).Data);
+            Debug.WriteLine((DocModel.Fields[CourtesyDocuments.ApiDocumentModel.BaseUrlKey] as TextFieldModelController).Data);
         }
     }
 }

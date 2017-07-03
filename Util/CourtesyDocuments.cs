@@ -867,40 +867,38 @@ namespace Dash
         /// </summary>
         public class ApiDocumentModel : CourtesyDocument {
             public static DocumentType DocumentType = new DocumentType("453ACC23-14EF-4990-A36D-53D5EBE2734D", "Api Source Creator");
-            public static Key UrlKey = new Key("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "URL");
-            public static Key HttpMethodKey = new Key("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Method");
+            public static Key BaseUrlKey = new Key("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
+            public static Key HttpMethodKey = new Key("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
             public static Key HeadersKey = new Key("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
             public static Key ParametersKey = new Key("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
 
-            public static Key AuthMethodKey = new Key("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
-            public static Key AuthUrlKey = new Key("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
+            public static Key AuthHttpMethodKey = new Key("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
+            public static Key AuthBaseUrlKey = new Key("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
             public static Key AuthKey = new Key("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
-            public static Key AuthSecret = new Key("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
-            public static Key AuthHeaders = new Key("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
-            public static Key AuthParameters = new Key("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
+            public static Key AuthSecretKey = new Key("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
+            public static Key AuthHeadersKey = new Key("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
+            public static Key AuthParametersKey = new Key("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
 
             public static Key KeyTextKey = new Key("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
             public static Key ValueTextKey = new Key("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
             public static Key RequiredKey = new Key("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
             public static Key DisplayKey = new Key("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
 
-           // public static Key CollectionResultKey = new Key("APICOLLN-F32C-4704-AF6B-E55AC805C84F", "Collection Result");
 
             public ApiDocumentModel() {
-                // create a layout for the image
                 var fields = new Dictionary<Key, FieldModel> {
-                    [UrlKey] = new TextFieldModel(""),
+                    [BaseUrlKey] = new TextFieldModel(""),
                     [HttpMethodKey] = new NumberFieldModel(0),
-                    [AuthUrlKey] = new TextFieldModel(""),
-                    [AuthMethodKey] = new NumberFieldModel(0),
-                    [AuthSecret] = new TextFieldModel(""),
+                    [AuthBaseUrlKey] = new TextFieldModel(""),
+                    [AuthHttpMethodKey] = new NumberFieldModel(0),
+                    [AuthSecretKey] = new TextFieldModel(""),
                     [AuthKey] = new TextFieldModel(""),
                     [ParametersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
                     [HeadersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
-                    [AuthParameters] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
-                    [AuthHeaders] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [AuthParametersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [AuthHeadersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
 
-                    // TODO: differentiating similar fields in different documents for operator view
+                    // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
                     [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModel(new List<DocumentModel>())
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
@@ -908,13 +906,13 @@ namespace Dash
 
             /// <summary>
             /// Generates a new document containing the parameter information and adds that document to
-            /// the corresponding DocumentCollectionFieldModel representing that parameter's list (i.e. Header, AuthParameters).
+             /// the corresponding DocumentCollectionFieldModel representing that parameter's list (i.e. Header, AuthParameters).
             /// </summary>
             /// <returns>The newly generated document representing the newly added parameter.</returns>
             public static DocumentController addParameter(DocumentController docController, TextBox key, TextBox value, CheckBox display,
                 CheckBox required, Key parameterCollectionKey, ApiSourceDisplay sourceDisplay) {
                 Debug.Assert(docController.DocumentType == DocumentType);
-                Debug.Assert(parameterCollectionKey == AuthParameters || parameterCollectionKey == AuthHeaders ||
+                Debug.Assert(parameterCollectionKey == AuthParametersKey || parameterCollectionKey == AuthHeadersKey ||
                     parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
                 // fetch parameter list to add to
@@ -946,14 +944,14 @@ namespace Dash
                 ApiProperty.ApiPropertyType type = ApiProperty.ApiPropertyType.Parameter;
                 if (parameterCollectionKey == HeadersKey)
                     type = ApiProperty.ApiPropertyType.Header;
-                if (parameterCollectionKey == AuthHeaders)
+                if (parameterCollectionKey == AuthHeadersKey)
                     type = ApiProperty.ApiPropertyType.AuthHeader;
-                if (parameterCollectionKey == AuthParameters)
+                if (parameterCollectionKey == AuthParametersKey)
                     type = ApiProperty.ApiPropertyType.AuthParameter;
 
                 // make new property in source view
                 ApiProperty apiprop = new ApiProperty(key.Text, value.Text, type, ret, required.IsChecked.Value);
-                sourceDisplay.addToListView(apiprop);
+                sourceDisplay.AddToListView(apiprop);
                 Debug.WriteLine("here: " + key.Text);
 
                 // bind source's fields to those of the editor (key, value)
@@ -997,7 +995,7 @@ namespace Dash
             public static void removeParameter(DocumentController docController, DocumentController docModelToRemove,
                 Key parameterCollectionKey, ApiSourceDisplay sourceDisplay) {
                 Debug.Assert(docController.DocumentType == DocumentType);
-                Debug.Assert(parameterCollectionKey == AuthParameters || parameterCollectionKey == AuthHeaders ||
+                Debug.Assert(parameterCollectionKey == AuthParametersKey || parameterCollectionKey == AuthHeadersKey ||
                     parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
                 DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
@@ -1048,10 +1046,10 @@ namespace Dash
             private static void makeBinding(ApiCreatorDisplay apiDisplay, DocumentController docController) {
 
                 // set up text bindings
-                bindToTextBox(apiDisplay.UrlTB, docController.Fields[UrlKey]);
-                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.Fields[AuthUrlKey]);
+                bindToTextBox(apiDisplay.UrlTB, docController.Fields[BaseUrlKey]);
+                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.Fields[AuthBaseUrlKey]);
                 bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.Fields[AuthKey]);
-                // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecret]);
+                // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey]);
 
                 // bind drop down list
                 NumberFieldModelController fmcontroller = docController.Fields[HttpMethodKey] as NumberFieldModelController;
@@ -1075,9 +1073,9 @@ namespace Dash
                 makeBinding(apiDisplay, docController);
 
                 // test bindings are working
-                Debug.WriteLine((docController.Fields[UrlKey] as TextFieldModelController).Data);
+                Debug.WriteLine((docController.Fields[BaseUrlKey] as TextFieldModelController).Data);
                 apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
-                Debug.WriteLine((docController.Fields[UrlKey] as TextFieldModelController).Data);
+                Debug.WriteLine((docController.Fields[BaseUrlKey] as TextFieldModelController).Data);
 
                 // generate collection view preview for results
                 var resultView = docController.Fields[DocumentCollectionFieldModelController.CollectionKey] as DocumentCollectionFieldModelController;

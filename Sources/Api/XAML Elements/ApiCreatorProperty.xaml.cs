@@ -53,7 +53,7 @@ namespace Dash {
                 listView.Items.RemoveAt(index);
 
                 // update rendered source result to reflect the deleted field
-                parent.SourceDisplay.removeFromListView(index);
+                parent.SourceDisplay.RemoveFromListView(index);
 
                 // propagate changes to the document model
                 CourtesyDocuments.ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
