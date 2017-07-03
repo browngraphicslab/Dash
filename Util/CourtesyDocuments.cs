@@ -469,7 +469,8 @@ namespace Dash
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText);
                 if (fieldModelController is TextFieldModelController)
                 {
-                    tb = new TextBox();
+                    var textBox = new TextBox();
+                    tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
                     var textFieldModelController = fieldModelController as TextFieldModelController;
@@ -482,6 +483,7 @@ namespace Dash
                         Mode=BindingMode.TwoWay
                     };
                     tb.SetBinding(TextBox.TextProperty, sourceBinding);
+                    textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
 
                 }
                 else if (fieldModelController is NumberFieldModelController)
