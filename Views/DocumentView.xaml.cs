@@ -51,7 +51,7 @@ namespace Dash
 
             // set bounds
             MinWidth = 200;
-            MinHeight = 200;
+            MinHeight = 50;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;

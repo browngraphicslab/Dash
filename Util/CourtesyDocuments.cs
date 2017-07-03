@@ -197,7 +197,7 @@ namespace Dash
         /// </summary>
         public class LayoutCourtesyDocument : CourtesyDocument
         {
-            DocumentController LayoutDocumentController = null;
+            public DocumentController LayoutDocumentController = null;
             public LayoutCourtesyDocument(DocumentController docController)
             {
                 Document = docController; // get the layout field on the document being displayed
@@ -222,7 +222,6 @@ namespace Dash
                     yield return ContentController.GetController<DocumentController>((layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
                 else yield return LayoutDocumentController;
             }
-            public DocumentCollectionFieldModelController LayoutDocumentCollectionController = null;
             public override List<FrameworkElement> makeView(DocumentController docController)
             {
                 return LayoutCourtesyDocument.MakeView(docController);
@@ -558,8 +557,10 @@ namespace Dash
                 // use the reference to the image to get the image field model controller
                 var refToImage = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
                 Debug.Assert(refToImage != null);
-                var imFieldModelController = ContentController.DereferenceToRootFieldModel<ImageFieldModelController>(refToImage);
-                Debug.Assert(imFieldModelController != null);
+                var fieldModelController = ContentController.DereferenceToRootFieldModel<FieldModelController>(refToImage);
+                var imFieldModelController = fieldModelController as ImageFieldModelController;
+                var textFieldModelController = fieldModelController as TextFieldModelController;
+                Debug.Assert(imFieldModelController != null || textFieldModelController != null);
 
                 // the image field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -572,10 +573,14 @@ namespace Dash
                 };
 
                 // make image source update when changed
-                var sourceBinding = new Binding
+                var sourceBinding = imFieldModelController != null ? new Binding
                 {
                     Source = imFieldModelController,
                     Path = new PropertyPath(nameof(imFieldModelController.Data))
+                } : new Binding
+                {
+                    Source = fieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data))
                 };
                 image.SetBinding(Image.SourceProperty, sourceBinding);
 

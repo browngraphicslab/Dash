@@ -192,7 +192,11 @@ namespace Dash
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModel is TextFieldModel)
             {
-                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                var textFieldModel= ContentController.DereferenceToRootFieldModel<TextFieldModel>(new ReferenceFieldModel(_documentController.GetId(), key));
+                var textFieldModelController = ContentController.GetController<TextFieldModelController>(textFieldModel.Id);
+                if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
+                    box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
             }
             else if (fieldModel is ImageFieldModel)
             {
@@ -209,7 +213,9 @@ namespace Dash
                 box.Document.Fields[DashConstants.KeyStore.PositionFieldKey] =
                     new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
                         e.GetPosition(_documentView).Y));
-                LayoutCourtesyDocument.LayoutDocumentCollectionController.AddDocument(box.Document);
+                var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutCourtesyDocument.LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));
+
+                ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);
             }
 
             ApplyEditable();
