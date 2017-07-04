@@ -303,6 +303,8 @@ namespace Dash
             double transXDelta = 0;
             double transYDelta = 0;
 
+            bool isCenter = false;
+
             // calculate position and size deltas based on the resize handle that was manipulated
             switch (position)
             {
@@ -329,6 +331,7 @@ namespace Dash
                 case ResizeHandlePositions.Center:
                     transXDelta = e.Delta.Translation.X;
                     transYDelta = e.Delta.Translation.Y;
+                    isCenter = true;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -338,20 +341,25 @@ namespace Dash
             var currentTranslateTransform = Container.RenderTransform as TranslateTransform;
             Debug.Assert(currentTranslateTransform != null, "we assume the render transform is a translate transform, if that assumption is false we need to change this code.");
 
+            var xPos = ActualWidth + widthDelta <= 25 && !isCenter
+                ? currentTranslateTransform.X
+                : currentTranslateTransform.X + transXDelta;
+            var yPos = ActualHeight + heightDelta <= 25 && !isCenter
+                ? currentTranslateTransform.Y
+                : currentTranslateTransform.Y + transYDelta;
             Container.RenderTransform = new TranslateTransform()
             {
-                X = currentTranslateTransform.X + transXDelta,
-                Y = currentTranslateTransform.Y + transYDelta,
+                X = xPos,
+                Y = yPos,
             };
 
             // apply the size delta to the entire Width and Height of this editable field frame and the center thumb
+            //            Width = ActualWidth + widthDelta;
+            //            Height = ActualHeight + heightDelta;
             //TODO provide minimum width and height
-            // restricts min size to 5x5
-            // issue: handles other than the lower right handle are moving the frame when min size is reached
-            Width = ActualWidth + widthDelta > 5 ? ActualWidth + widthDelta : 5;
-            Height = ActualHeight + heightDelta > 5 ? ActualHeight + heightDelta : 5;
-//            Width = ActualWidth + widthDelta;
-//            Height = ActualHeight + heightDelta;
+            // restrict to arbitrary minimum size
+            Width = ActualWidth + widthDelta > 24 ? ActualWidth + widthDelta : 24;
+            Height = ActualHeight + heightDelta > 24 ? ActualHeight + heightDelta : 24;
             // center handle doesn't respond to size changes made using the settings pane
             _centerResizeHandle.Width = Width;
             _centerResizeHandle.Height = Height;
