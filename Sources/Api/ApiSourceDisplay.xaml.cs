@@ -22,8 +22,9 @@ namespace Dash
         }
 
         // == MEMBERS ==
-        public ListView PropertiesListView { get => xListView;
-            set => xListView = value;
+        public ListView PropertiesListView {
+            get { return xListView; }
+            set { xListView = value; }
         }
 
         // == METHODS ==

@@ -257,8 +257,8 @@ namespace Dash
 
             var interfaceBuilder = new InterfaceBuilder(dvm);
             var center = RenderTransform.TransformPoint(e.GetPosition(this));
-            throw new Exception("interface builder needs to be a document to be added to the MainPage");
-            // FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
+            MainPage.Instance.xOverlayCanvas.xOuterGrid.Children.Add(interfaceBuilder);
+            e.Handled = true;
         }
 
         /// <summary>
