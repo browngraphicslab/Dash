@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using DashShared;
+using Windows.UI;
 
 namespace Dash
 {
@@ -1062,9 +1063,13 @@ namespace Dash
                 Grid.SetColumn(collectionDisplay, 1);
                 g.Children.Add(apiDisplay);
                 g.Children.Add(sourceDisplay);
-                g.Children.Add(collectionDisplay);
-
-                collectionDisplay.MaxWidth = 550;
+                Border b = new Border();
+                Grid.SetColumn(b, 1);
+                b.Child = collectionDisplay;
+                collectionDisplay.Width = double.NaN;
+                collectionDisplay.HorizontalAlignment = HorizontalAlignment.Stretch;
+                g.Children.Add(b);
+                
                 collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
                 
                 // return all results

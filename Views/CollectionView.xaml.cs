@@ -108,7 +108,11 @@ namespace Dash
             if (ViewModel.ParentDocument != MainPage.Instance.MainDocView)
             {
                 ViewModel.ParentDocument.Width = ViewModel.ParentDocument.Height = Width = Height = 400;
-                ViewModel.ParentDocument.SizeChanged += (ss, ee) =>
+
+
+                var parentContainer = this.GetFirstAncestorOfType<FrameworkElement>();
+
+                parentContainer.SizeChanged += (ss, ee) =>
                 {
                     Height = ee.NewSize.Height;
                     Width = ee.NewSize.Width;
