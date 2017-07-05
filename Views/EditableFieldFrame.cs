@@ -55,8 +55,6 @@ namespace Dash
         /// </summary>
         private bool _isSelected;
 
-        private Shape _centerResizeHandle;
-
         /// <summary>
         /// Whether or not the editable field frame is currently selected, if it is, then it can display UI for editing
         /// otherwise that UI is hidden
@@ -172,9 +170,9 @@ namespace Dash
             _overlayCanvas.Children.Add(rightUpperResizeHandle);
             _resizeHandleToPosition.Add(rightUpperResizeHandle, ResizeHandlePositions.RightUpper);
 
-            _centerResizeHandle = InstantiateThumb(Width,Height,0.2);
-            _overlayCanvas.Children.Add(_centerResizeHandle);
-            _resizeHandleToPosition.Add(_centerResizeHandle, ResizeHandlePositions.Center);
+            var centerResizeHandle = InstantiateThumb(Width,Height,0.2);
+            _overlayCanvas.Children.Add(centerResizeHandle);
+            _resizeHandleToPosition.Add(centerResizeHandle, ResizeHandlePositions.Center);
 
         }
 
@@ -210,6 +208,8 @@ namespace Dash
 //                        Canvas.SetTop(handle, Container.ActualHeight / 2 - handle.Height / 2);
                         Canvas.SetLeft(handle,0);
                         Canvas.SetTop(handle,0);
+                        handle.Width = Width;
+                        handle.Height = Height;
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
@@ -360,9 +360,6 @@ namespace Dash
             // restrict to arbitrary minimum size
             Width = ActualWidth + widthDelta > 24 ? ActualWidth + widthDelta : 24;
             Height = ActualHeight + heightDelta > 24 ? ActualHeight + heightDelta : 24;
-            // center handle doesn't respond to size changes made using the settings pane
-            _centerResizeHandle.Width = Width;
-            _centerResizeHandle.Height = Height;
 
             // invoke events
             // TODO these could probably be removed...
