@@ -53,7 +53,7 @@ namespace Dash
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-            Loaded += CollectionView_Loaded;
+
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
 
@@ -64,6 +64,8 @@ namespace Dash
 
         private void SetEventHandlers()
         {
+            Loaded += CollectionView_Loaded;
+            
             xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
             //ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
             FreeformOption.Tapped += ViewModel.FreeformButton_Tapped;
@@ -172,6 +174,7 @@ namespace Dash
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
+            RefreshItemsBinding();
             if (e.CollectionChange == CollectionChange.ItemInserted)
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
@@ -999,8 +1002,10 @@ namespace Dash
         private void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
+            {
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-            RefreshItemsBinding();
+                RefreshItemsBinding();
+            }
             KeepItemsOnMove = true;
             var carrier = ItemsCarrier.GetInstance();
             carrier.Payload.Clear();
@@ -1012,12 +1017,9 @@ namespace Dash
 
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
         {
-            var docControllers = new List<DocumentController>();
-            foreach (var item in docViewModels)
-                docControllers.Add(item.DocumentController);
+            var docControllers = docViewModels.Select(item => item.DocumentController);
             var parentDoc = (ViewModel.ParentDocument.ViewModel)?.DocumentController;
-            var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController 
-                          ?? parentDoc.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;      
+            var controller = ContentController.GetController<DocumentCollectionFieldModelController>(ViewModel.CollectionModel.DocumentCollectionFieldModel.Id);
             if (controller != null)
                 foreach (var item in docControllers)
                     if (add) controller.AddDocument(item);
