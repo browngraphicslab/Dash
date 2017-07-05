@@ -134,7 +134,7 @@ namespace Dash
             /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="PointFieldModelController"/>
             /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="PointFieldModelController"/> is null</exception>
             /// </summary>
-            protected static void BindTranslation(FrameworkElement renderElement, PointFieldModelController translateController)
+            public static void BindTranslation(FrameworkElement renderElement, PointFieldModelController translateController)
             {
                 if (translateController == null) throw new ArgumentNullException(nameof(translateController));
                 var translateBinding = new Binding
@@ -605,18 +605,10 @@ namespace Dash
                     var collectionViewModel = new CollectionViewModel(collectionModel);
                     var view = new CollectionView(collectionViewModel);
 
-                    var translateBinding = new Binding
-                    {
-                        Source = collectionFieldModelController,
-                        Path = new PropertyPath("Pos"),
-                        Mode = BindingMode.TwoWay,
-                        Converter = new PointToTranslateTransformConverter()
-                    };
-                    view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
-                    if (w > 0)
-                        view.Width = w;
-                    if (h > 0)
-                        view.Height = h;
+                    //if (w > 0)
+                    //    view.Width = w;
+                    //if (h > 0)
+                    //    view.Height = h;
 
                     return new List<FrameworkElement> { view };
                 }
@@ -710,7 +702,7 @@ namespace Dash
             }
             public TwoImages(bool displayFieldsAsDocuments)
             {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+                var fields = DefaultLayoutFields(0, 0, 400, 400, null);
                 fields.Add(TextFieldKey,  new TextFieldModel("Hello World!"));
                 fields.Add(Image1FieldKey, new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
@@ -953,7 +945,7 @@ namespace Dash
 
             // inherited
             public override List<FrameworkElement> makeView(DocumentController docController) {
-                return TextingBox.MakeView(docController);
+                return ApiDocumentModel.MakeView(docController);
             }
 
             /// <summary>

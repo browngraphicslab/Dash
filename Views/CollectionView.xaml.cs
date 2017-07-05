@@ -103,13 +103,17 @@ namespace Dash
         {
             ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+
             if (ViewModel.ParentDocument != MainPage.Instance.MainDocView)
             {
-                ViewModel.ParentDocument.Width = ViewModel.ParentDocument.Height = Width = Height = 400;
                 ViewModel.ParentDocument.SizeChanged += (ss, ee) =>
                 {
-                    Height = ee.NewSize.Height;
-                    Width = ee.NewSize.Width;
+                    var height = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.Height;
+                    if (height != null)
+                        Height = (double) height;
+                    var width = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.Width;
+                    if (width != null)
+                        Width = (double) width;
                 };
             }
         }

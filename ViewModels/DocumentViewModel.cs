@@ -34,12 +34,12 @@ namespace Dash
             get { return _width; }
             set
             {
-                SetProperty(ref _width, value);
-                var widthField = DocumentController.GetField(DashConstants.KeyStore.WidthFieldKey);
-                if (widthField != null)
+                if (SetProperty(ref _width, value))
                 {
-                    var pfm = ContentController.GetController<NumberFieldModelController>(widthField.GetId()).NumberFieldModel;
-                    pfm.Data = value;
+                    var widthFieldModelController =
+                        DocumentController.GetField(DashConstants.KeyStore.WidthFieldKey) as
+                            NumberFieldModelController;
+                    widthFieldModelController.Data = value;
                 }
             }
         }
@@ -49,11 +49,12 @@ namespace Dash
             get { return _height; }
             set
             {
-                SetProperty(ref _height, value);
-                var heightField = DocumentController.GetField(DashConstants.KeyStore.HeightFieldKey);
-                if (heightField != null) {
-                    var pfm = ContentController.GetController<NumberFieldModelController>(heightField.GetId()).NumberFieldModel;
-                    pfm.Data = value;
+                if (SetProperty(ref _height, value))
+                {
+                    var heightFieldModelController =
+                        DocumentController.GetField(DashConstants.KeyStore.HeightFieldKey) as
+                            NumberFieldModelController;
+                    heightFieldModelController.Data = value;
                 }
             }
         }
@@ -124,18 +125,33 @@ namespace Dash
                 ContentController.AddModel(pointFieldModel);
                 DocumentController.SetField(DashConstants.KeyStore.PositionFieldKey, posFieldModelController, true);
             }
+            Position = posFieldModelController.Data;
             posFieldModelController.FieldModelUpdatedEvent += PosFieldModelController_FieldModelUpdatedEvent;
 
-            var widthFieldModelController = DocumentController.GetField(DashConstants.KeyStore.WidthFieldKey);
-            if (widthFieldModelController != null)
+            var widthFieldModelController = DocumentController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+            if (widthFieldModelController == null)
             {
-                Width = (widthFieldModelController as NumberFieldModelController).Data;
+                var widthFieldModel = new NumberFieldModel(double.NaN);
+                widthFieldModelController = new NumberFieldModelController(widthFieldModel);
+                ContentController.AddController(widthFieldModelController);
+                ContentController.AddModel(widthFieldModel);
+                DocumentController.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldModelController, true);
             }
-            var heightFieldModelController = DocumentController.GetField(DashConstants.KeyStore.HeightFieldKey);
-            if (heightFieldModelController != null)
+            Width = widthFieldModelController.Data;
+            widthFieldModelController.FieldModelUpdatedEvent += WidthFieldModelController_FieldModelUpdatedEvent;
+
+
+            var heightFieldModelController = DocumentController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+            if (heightFieldModelController == null)
             {
-                Height = (heightFieldModelController as NumberFieldModelController).Data;
+                var heightFieldModel = new NumberFieldModel(double.NaN);
+                heightFieldModelController = new NumberFieldModelController(heightFieldModel);
+                ContentController.AddController(heightFieldModelController);
+                ContentController.AddModel(heightFieldModel);
+                DocumentController.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldModelController, true);
             }
+            Height = heightFieldModelController.Data;
+            heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent; ;
 
             var documentFieldModelController = DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
             if (documentFieldModelController != null)
@@ -144,6 +160,23 @@ namespace Dash
             DataBindingSource.Add(documentController.DocumentModel);
         }
 
+        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            var heightFieldModelController = sender as NumberFieldModelController;
+            if (heightFieldModelController != null)
+            {
+                Height = heightFieldModelController.Data;
+            }
+        }
+
+        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            var widthFieldModelController = sender as NumberFieldModelController;
+            if (widthFieldModelController != null)
+            {
+                Width = widthFieldModelController.Data;
+            }
+        }
 
         private void PosFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
         {
