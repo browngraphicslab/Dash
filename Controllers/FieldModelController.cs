@@ -37,7 +37,7 @@ namespace Dash
         }
 
 
-        public void OnDataUpdated()
+        public void FireFieldModelUpdated()
         {
             FieldModelUpdatedEvent?.Invoke(this);
         }

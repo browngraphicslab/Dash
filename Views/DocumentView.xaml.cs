@@ -40,6 +40,8 @@ namespace Dash
             // add manipulation code
             manipulator = new ManipulationControls(this);
 
+            manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
+
             // set bounds
             MinWidth = 200;
             MinHeight = 50;
@@ -47,8 +49,12 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+        }
 
-            
+        private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
+        {
+            var documentViewModel = this.DataContext as DocumentViewModel;
+            documentViewModel.Position = new Point(documentViewModel.Position.X + translationDelta.X, documentViewModel.Position.Y + translationDelta.Y);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -70,8 +76,13 @@ namespace Dash
         /// <param name="dy"></param>
         public void Resize(double dx = 0, double dy = 0)
         {
-            Width = ActualWidth + dx;
-            Height = ActualHeight + dy;
+            var dvm = DataContext as DocumentViewModel;
+            dvm.Width = ActualWidth + dx;
+            dvm.Height = ActualHeight + dy;
+
+
+            //Width = ActualWidth + dx;
+            //Height = ActualHeight + dy;
             ////Changes width if permissible within size constraints.
             //if (OuterGridWidth + dx > CellSize || dx > 0)
             //{

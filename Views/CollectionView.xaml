@@ -77,17 +77,12 @@
                                     ManipulationStarted="DocumentView_ManipulationStarted" 
                                     ManipulationDelta="DocumentView_ManipulationDelta" 
                                     IODragStarted="StartDrag" 
-                                    IODragEnded="EndDrag">
-                                    <dash:DocumentView.RenderTransform>
-                                        <TranslateTransform X="{Binding X}" Y="{Binding Y}">
-                                        </TranslateTransform>
-                                    </dash:DocumentView.RenderTransform>
-                                </dash:DocumentView>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
-
+                                    IODragEnded="EndDrag" 
+                                    RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Grid>
 
             <Grid Visibility="{Binding GridViewVisibility}">
                 <GridView x:Name="xGridView" 

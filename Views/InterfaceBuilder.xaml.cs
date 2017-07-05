@@ -73,12 +73,18 @@ namespace Dash
             foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
             {
                 // use the layout document to generate a UI
-                var fieldView = layoutDocument.MakeViewUI();
+                var fieldView = layoutDocument.MakeViewUI().First();
+
+                var translationController = layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                if (translationController != null)
+                {
+                    CourtesyDocument.BindTranslation(fieldView, translationController);
+                }               
 
                 // generate an editable border
                 var editableBorder = new EditableFieldFrame(layoutDocument.GetId())
                 {
-                    EditableContent = fieldView.FirstOrDefault(),
+                    EditableContent = fieldView,
                     HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
                     VerticalAlignment = VerticalAlignment.Top
                 };
@@ -111,7 +117,7 @@ namespace Dash
                 // TODO this probably causes a memory leak, but we have to capture the layoutDocument variable.
                 editableBorder.Loaded += delegate
                 {
-                    var translationController =
+                    translationController =
                             layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
                     Debug.Assert(translationController != null);
                     var translateBinding = new Binding

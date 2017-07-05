@@ -105,17 +105,20 @@ namespace Dash
         {
             ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+
             if (ViewModel.ParentDocument != MainPage.Instance.MainDocView)
             {
-                ViewModel.ParentDocument.Width = ViewModel.ParentDocument.Height = Width = Height = 400;
-
-
+                
                 var parentContainer = this.GetFirstAncestorOfType<FrameworkElement>();
 
                 parentContainer.SizeChanged += (ss, ee) =>
                 {
-                    Height = ee.NewSize.Height;
-                    Width = ee.NewSize.Width;
+                    var height = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.Height;
+                    if (height != null)
+                        Height = (double) height;
+                    var width = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.Width;
+                    if (width != null)
+                        Width = (double) width;
                 };
             }
         }
@@ -405,7 +408,8 @@ namespace Dash
             var cvm = DataContext as CollectionViewModel;
             var dv  = (sender as DocumentView);
             var dvm = dv.DataContext as DocumentViewModel;
-            cvm.MoveDocument(dvm, dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y)));
+            var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
+            dvm.Position = where;
             e.Handled = true;
         }
 

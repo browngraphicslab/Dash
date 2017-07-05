@@ -61,7 +61,7 @@ namespace Dash
             _documents.Add(docController);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            OnDataUpdated();
+            FireFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
         }
 
@@ -69,7 +69,7 @@ namespace Dash
         public void RemoveDocument(DocumentController doc) {
             _documents.Remove(doc);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
-            OnDataUpdated();
+            FireFieldModelUpdated();
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
@@ -78,7 +78,7 @@ namespace Dash
             Debug.WriteLine(_documents.Count);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            OnDataUpdated();
+            FireFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
 
         }
