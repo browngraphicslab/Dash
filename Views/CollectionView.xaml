@@ -16,7 +16,7 @@
                   DragOver="CollectionGrid_DragOver" 
                   Drop="CollectionGrid_Drop"              
                   HorizontalAlignment="Stretch" 
-                  Margin="0,30,0,30" 
+                  Margin="0,0,0,30" 
                   VerticalAlignment="Stretch"   
                   BorderBrush="LightGray"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
@@ -212,26 +212,26 @@
             </StackPanel>
         </Grid>
 
-        <Button x:Name="DisplayButton" 
-                Height="30"
-                HorizontalAlignment="Left" 
-                VerticalAlignment="Top"  
-                Foreground="WhiteSmoke" 
-                Content="Display" 
-                FontSize="14" 
-                FontFamily="Rockwell">
-            <Button.Flyout>
-                <MenuFlyout>
-                    <MenuFlyoutItem x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption" Text="GridViewWhichIsActuallyGridViewAndNotAnItemsControl"/>
-                    <MenuFlyoutItem x:Name="GridOption" Text="Grid"/>
-                    <MenuFlyoutItem x:Name="ListOption" Text="List"/>
-                </MenuFlyout>
-            </Button.Flyout>
-        </Button>
+        <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom">
+            <Button x:Name="DisplayButton" 
+                    Height="30"
+                    HorizontalAlignment="Left" 
+                    VerticalAlignment="Top"  
+                    Foreground="WhiteSmoke" 
+                    Content="Display" 
+                    FontSize="14" 
+                    FontFamily="Rockwell">
+                <Button.Flyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption" Text="GridViewWhichIsActuallyGridViewAndNotAnItemsControl"/>
+                        <MenuFlyoutItem x:Name="GridOption" Text="Grid"/>
+                        <MenuFlyoutItem x:Name="ListOption" Text="List"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
 
-        <StackPanel Orientation="Horizontal">
-            <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="30" 
-                        Width="70" Foreground="WhiteSmoke" Margin="{Binding DeleteButtonMargin}" FontSize="14" FontFamily="Rockwell">
+            <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
+                        Width="70" Foreground="WhiteSmoke" Margin="10 0 0 0" FontSize="14" FontFamily="Rockwell">
                 <Button.Flyout>
                     <MenuFlyout Placement="Bottom">
                         <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
@@ -240,25 +240,28 @@
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
+            
             <Button x:Name="SelectButton" 
                     Content ="Select" 
-                    VerticalAlignment="Bottom" 
+                    VerticalAlignment="Top" 
                     Height="30" 
                     Width="70" 
                     Foreground="WhiteSmoke" 
                     Margin="10,0,0,0" 
                     FontSize="14" 
                     FontFamily="Rockwell"/>
-        </StackPanel>
-
-        <Button x:Name="CloseButton" 
+            
+            <Button x:Name="CloseButton" 
                 Height="30"
                 Content ="Close" 
+                Margin="10 0 0 0"
                 HorizontalAlignment="Right" 
                 VerticalAlignment="Top" 
                 Background="{StaticResource AccentGreen}" 
                 Foreground="WhiteSmoke"
                 FontFamily="Rockwell"/>
+        </StackPanel>
+
 
         <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
