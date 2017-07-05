@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
+﻿using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
@@ -162,7 +154,14 @@ namespace Dash {
             //}
 
             // apply the transformation group
-            _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+
+            // bcz: TODO:  if there are bindings on the TranslateTransform and we switch it to a MatrixTransform, then  things will be broken...
+            if (_element.RenderTransform is TranslateTransform && group.Value.M11 == 1 && group.Value.M22 == 1)
+            {
+                (_element.RenderTransform as TranslateTransform).X = group.Value.OffsetX;
+                (_element.RenderTransform as TranslateTransform).Y = group.Value.OffsetY;
+            } else
+                _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
     }

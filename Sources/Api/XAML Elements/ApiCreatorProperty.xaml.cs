@@ -1,21 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Sources.Api.XAML_Elements {
+namespace Dash {
 
     /// <summary>
     /// This class contains the visual display for an ApiSourceCreator connection
@@ -63,7 +53,7 @@ namespace Dash.Sources.Api.XAML_Elements {
                 listView.Items.RemoveAt(index);
 
                 // update rendered source result to reflect the deleted field
-                parent.SourceDisplay.removeFromListView(index);
+                parent.SourceDisplay.RemoveFromListView(index);
 
                 // propagate changes to the document model
                 CourtesyDocuments.ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);

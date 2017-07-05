@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
-using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models;
-using Dash.StaticClasses;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
-using Dash.ViewModels;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Linq;
 
 namespace Dash
 {
@@ -27,6 +22,7 @@ namespace Dash
 
         public CollectionModel CollectionModel { get { return _collectionModel; } }
 
+        public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
         /// <summary>
@@ -37,7 +33,7 @@ namespace Dash
             get { return _dataBindingSource; }
             set
             {
-                SetProperty(ref _dataBindingSource, value); 
+                SetProperty(ref _dataBindingSource, value);
             }
         }
 
@@ -67,7 +63,7 @@ namespace Dash
         #region Private & Backing variables
         
 
-        private double _cellSize = 400;
+        private double _cellSize;
         private double _outerGridWidth;
         private double _outerGridHeight;
         private double _containerGridHeight;
@@ -299,30 +295,15 @@ namespace Dash
         /// </summary>
         private void SetInitialValues()
         {
-            OuterGridHeight = 420;
-            OuterGridWidth = 400;
-
-            DraggerMargin = new Thickness(360, 400, 0, 0);
-            ProportionalDraggerMargin = new Thickness(380, 400, 0, 0);
-            CloseButtonMargin = new Thickness(366, 0, 0, 0);
-            BottomBarMargin = new Thickness(0, 400, 0, 0);
-            SelectButtonMargin = new Thickness(0, OuterGridHeight-20, 0,0);
-
-            DraggerFill = new SolidColorBrush(Color.FromArgb(255, 95, 95, 95));
-            ProportionalDraggerFill = new SolidColorBrush(Color.FromArgb(255, 139, 139, 139));
-            ProportionalDraggerStroke = new SolidColorBrush(Colors.Transparent);
-
-            CellSize = 400;
-            ListViewVisibility = Visibility.Collapsed;
-            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
+            CellSize = 250;
             GridViewVisibility = Visibility.Visible;
+            ListViewVisibility = Visibility.Collapsed;
             FilterViewVisibility = Visibility.Collapsed;
-
+            SoloDisplayVisibility = Visibility.Collapsed;
+            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-
             ViewIsEnabled = true;
-            SoloDisplayVisibility = Visibility.Collapsed;
         }
 
         #region Size and Location methods
@@ -528,12 +509,8 @@ namespace Dash
         private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
         {
             foreach (var viewModel in col)
-            {
                 if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
-                {
                     return true;
-                }
-            }
             return false;
         }
 
@@ -541,22 +518,40 @@ namespace Dash
         {
             foreach (var viewModel in viewModels)
             {
-                if (ViewModelContains(DataBindingSource, viewModel))
-                {
-                    continue;
-                }
+                if (ViewModelContains(DataBindingSource, viewModel)) continue;
                 viewModel.ManipulationMode = ManipulationModes.System;
                 viewModel.DoubleTapEnabled = false;
                 DataBindingSource.Add(viewModel);
             }
             for (int i = DataBindingSource.Count - 1; i >= 0; --i)
             {
-                if (ViewModelContains(viewModels, DataBindingSource[i]))
-                {
-                    continue;
-                }
+                if (ViewModelContains(viewModels, DataBindingSource[i])) continue;
                 DataBindingSource.RemoveAt(i);
             }
+        }
+
+        /// <summary>
+        /// Constructs standard DocumentViewModels from the passed in DocumentModels
+        /// </summary>
+        /// <param name="documents"></param>
+        /// <returns></returns>
+        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
+         {
+            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
+            var offset = 0;
+            for (int i = 0; i<documents.Data.ToList().Count; i++)
+            {
+                var controller = ContentController.GetController(documents.Data.ToList()[i]) as DocumentController;
+                var viewModel = new DocumentViewModel(controller);
+                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
+                {
+                    viewModel.X = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
+                    viewModel.Y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
+                    offset += 15;
+                }
+                viewModels.Add(viewModel);
+            }
+            return viewModels;
         }
 
         /// <summary>
@@ -603,22 +598,6 @@ namespace Dash
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-        /// <summary>
-        /// Constructs standard DocumentViewModels from the passed in DocumentModels
-        /// </summary>
-        /// <param name="documents"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
-        {
-            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (var document in documents.Data)
-            {
-                viewModels.Add(new DocumentViewModel(ContentController.GetController(document) as DocumentController));
-            }
-            return viewModels;
-        }
-
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
@@ -768,9 +747,7 @@ namespace Dash
         }
         public void MoveDocument(DocumentViewModel docViewModel, Point where)
         {
-
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.X)), true);
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.Y)), true);
+            docViewModel.DocumentController.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new PointFieldModel(where)), true);
         }
     }
 }

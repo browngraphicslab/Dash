@@ -1,10 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DashShared;
-using Microsoft.AspNet.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash

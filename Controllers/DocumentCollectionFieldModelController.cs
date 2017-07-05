@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
@@ -9,6 +7,11 @@ namespace Dash
 {
     public class DocumentCollectionFieldModelController : FieldModelController
     {
+
+        public delegate void DocumentsChangedHandler(IEnumerable<DocumentController> currentDocuments);
+
+        public event DocumentsChangedHandler OnDocumentsChanged;
+
         /// <summary>
         /// Key for collection data
         /// TODO This might be better in a different class
@@ -21,6 +24,8 @@ namespace Dash
         ///     to the server and across the client
         /// </summary>
         private List<DocumentController> _documents;
+
+        public List<DocumentController> Documents { get { return _documents;  } }
 
         /// <summary>
         ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
@@ -57,7 +62,9 @@ namespace Dash
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
             OnDataUpdated();
+            OnDocumentsChanged?.Invoke(GetDocuments());
         }
+
 
         public void RemoveDocument(DocumentController doc) {
             _documents.Remove(doc);
@@ -72,6 +79,8 @@ namespace Dash
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
             OnDataUpdated();
+            OnDocumentsChanged?.Invoke(GetDocuments());
+
         }
 
         public List<DocumentController> GetDocuments()

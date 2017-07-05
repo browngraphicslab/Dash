@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using DashShared;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Dash
@@ -19,12 +17,12 @@ namespace Dash
         {
             //ParseYoutube();
             //var task = ParseCustomer();
-            var task = RenderableJson();
+            //var task = RenderableJson();
             //var task = ParseArrayOfNestedDocument();
-            task.Wait();
+            //task.Wait();
             return JsonDocument;
         }
-
+        /*
         public static async Task ParseYoutube()
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
@@ -73,7 +71,7 @@ namespace Dash
             var documentModel = ParseJson(jtoken, null, true);
             JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
         }
-
+        */
         public static DocumentController Parse(string str) {
             var documentModel = ParseJson(JToken.Parse(str), null, true);
             return ContentController.GetController(documentModel.Id) as DocumentController;

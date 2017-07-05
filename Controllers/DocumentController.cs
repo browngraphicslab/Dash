@@ -1,23 +1,22 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Linq;
 using DashShared;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Controls;
-using static Dash.MainPage;
 
 namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
+        public delegate void OnLayoutChangedHandler(DocumentController sender);
+
+        public event OnLayoutChangedHandler OnLayoutChanged;
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         public Dictionary<Key, FieldModelController> Fields;
-
         public DocumentController(DocumentModel documentModel)
         {
             // Initialize Local Variables
@@ -278,7 +277,7 @@ namespace Dash
             {
                 var prototype = GetPrototype();
                 if (prototype != null)
-                    foreach (var field in prototype.EnumFields())
+                    foreach (var field in prototype.EnumFields().Where((f) => !Fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }
@@ -343,9 +342,9 @@ namespace Dash
             {
                 uieles.AddRange(CourtesyDocuments.StackingPanel.MakeView(this));
             }
-            else if (DocumentType == CourtesyDocuments.GenericCollection.DocumentType)
+            else if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.GenericCollection.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.CollectionBox.MakeView(this));
             }
             else if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
@@ -355,10 +354,6 @@ namespace Dash
             {
                 uieles.AddRange(CourtesyDocuments.ApiDocumentModel.MakeView(this));
             } 
-            else if (DocumentType == CourtesyDocuments.FreeformDocument.DocumentType)
-            {
-                uieles.AddRange(CourtesyDocuments.FreeformDocument.MakeView(this));
-            }
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
                 var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey);
@@ -380,6 +375,11 @@ namespace Dash
                 }
             }
             return uieles;
+        }
+
+        public void FireOnLayoutChanged()
+        {
+            OnLayoutChanged?.Invoke(this);
         }
     }
 }

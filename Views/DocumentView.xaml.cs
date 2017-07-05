@@ -1,18 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using Windows.Foundation;
-using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Markup;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Shapes;
-using Dash.ViewModels;
 using DashShared;
 
 
@@ -26,7 +20,7 @@ namespace Dash
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
         private ManipulationControls manipulator;
-        private DocumentViewModel _vm;
+        public DocumentViewModel ViewModel { get; set; }
         
 
         public bool ProportionalScaling;
@@ -34,6 +28,8 @@ namespace Dash
 
         public event OperatorView.IODragEventHandler IODragStarted;
         public event OperatorView.IODragEventHandler IODragEnded;
+
+        public ICollectionView View { get; set; }
 
         public DocumentView()
         {
@@ -46,11 +42,13 @@ namespace Dash
 
             // set bounds
             MinWidth = 200;
-            MinHeight = 200;
+            MinHeight = 50;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+
+            
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -60,6 +58,8 @@ namespace Dash
             // reset the fields on the documetn to be those displayed by the documentViewModel
             ResetFields(documentViewModel);
         }
+
+
 
         /// <summary>
         /// Resizes the CollectionView according to the increments in width and height. 
@@ -205,7 +205,8 @@ namespace Dash
         /// <param name="documentViewModel"></param>
         public void ResetFields(DocumentViewModel documentViewModel)
         {
-            // clear any current children (fields) and then add them over again
+            //clear any current children (fields)and then add them over again
+
             XGrid.Children.Clear();
             var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
             var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
@@ -213,7 +214,8 @@ namespace Dash
             {
                 var panel = documentViewModel.DocumentController.MakeAllViewUI();
                 XGrid.Children.Add(panel);
-            } else
+            }
+            else
                 foreach (var element in elements)
                 {
                     XGrid.Children.Add(element);
@@ -255,8 +257,8 @@ namespace Dash
 
             var interfaceBuilder = new InterfaceBuilder(dvm);
             var center = RenderTransform.TransformPoint(e.GetPosition(this));
-            throw new Exception("interface builder needs to be a document to be added to the MainPage");
-            // FreeformView.MainFreeformView.ViewModel.AddElement(interfaceBuilder, (float)(center.X - interfaceBuilder.Width / 2), (float)(center.Y - interfaceBuilder.Height / 2));
+            MainPage.Instance.xOverlayCanvas.xOuterGrid.Children.Add(interfaceBuilder);
+            e.Handled = true;
         }
 
         /// <summary>
@@ -268,23 +270,36 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (_vm != null)
+            if (ViewModel != null)
                 return;
-            _vm = DataContext as DocumentViewModel;
+            ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
-            if (_vm == null)
+            if (ViewModel == null)
                 return;
 
+            //ObservableConvertCollection collection = new ObservableConvertCollection(_vm.DataBindingSource, this);
+            //DocumentsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
+            //{
+            //    Source = collection,
+            //});
+            //collection.CollectionChanged += delegate { Debug.WriteLine("hi"); }; 
+
+
+            ViewModel.OnLayoutChanged += delegate
+            {
+                ResetFields(ViewModel);
+            };
+
             // otherwise layout the document according to the _vm
-            ResetFields(_vm);
+            ResetFields(ViewModel);
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
-            _vm.PropertyChanged += (o, eventArgs) =>
+            ViewModel.PropertyChanged += (o, eventArgs) =>
             {
                 if (eventArgs.PropertyName == "IsMoveable")
                 {
-                    if (_vm.IsMoveable)
+                    if (ViewModel.IsMoveable)
                     {
                         manipulator.AddAllAndHandle();
                     }
@@ -295,24 +310,10 @@ namespace Dash
                 }
             };
 
-            if (_vm.IsMoveable) manipulator.AddAllAndHandle();
+            if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
             else manipulator.RemoveAllButHandle();
 
             #endregion
-        }
-
-        private void DocumentView_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            var parent = this.GetFirstAncestorOfType<Canvas>();
-            if (parent == null) return;
-            var maxZ = int.MinValue;
-            foreach (var child in parent.GetDescendantsOfType<ContentPresenter>())
-            {
-                var childZ = Canvas.GetZIndex(child);
-                if (childZ > maxZ && child.GetFirstDescendantOfType<DocumentView>() != this)
-                    maxZ = childZ;
-            }
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), maxZ + 1);
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -323,7 +324,7 @@ namespace Dash
         private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var position = e.GetPosition(OverlayCanvas.Instance);
-            OverlayCanvas.Instance.OpenInterfaceBuilder(_vm, position);
+            OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
         }
     }
 }

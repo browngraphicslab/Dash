@@ -1,24 +1,12 @@
-﻿using Dash.Sources.Api.XAML_Elements;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using static Dash.MainPage;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Dash.Sources.Api {
+namespace Dash {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -45,8 +33,8 @@ namespace Dash.Sources.Api {
 
             xHeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.HeadersKey;
             xParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.ParametersKey;
-            xAuthControl.ParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthParameters;
-            xAuthControl.HeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthHeaders;
+            xAuthControl.ParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthParametersKey;
+            xAuthControl.HeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthHeadersKey;
             SourceDisplay = display;
 
             updateSource();
@@ -75,6 +63,7 @@ namespace Dash.Sources.Api {
         /// <param name="e"></param>
         private void createAPINodeTemplate(object sender, RoutedEventArgs e) {
             this.Visibility = Visibility.Collapsed;
+            updateSource();
         }
 
         private void updateSource() {
@@ -104,18 +93,15 @@ namespace Dash.Sources.Api {
                 xApiURLTB.Text = "https://itunes.apple.com/search";
 
             // instantiate new APISource
-            ApiSource newApi = new ApiSource(DocModel, requestType, xApiURLTB.Text, xAuthControl.AuthURL, xAuthControl.Secret,
+            Source = new ApiSource(DocModel, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
-            newApi.setApiDisplay(SourceDisplay);
+            Source.setApiDisplay(SourceDisplay);
 
         }
 
         private void xHeaderControl_Loaded(object sender, RoutedEventArgs e) {
 
         }
-
-        private void xApiURLTB_TextChanged(object sender, TextChangedEventArgs e) {
-            Debug.WriteLine((DocModel.Fields[CourtesyDocuments.ApiDocumentModel.UrlKey] as TextFieldModelController).Data);
-        }
+        
     }
 }

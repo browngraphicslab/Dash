@@ -12,7 +12,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10586.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -109,7 +109,10 @@
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
+    <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
+    <Compile Include="Converters\DocumentToUIElementConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
@@ -117,6 +120,7 @@
     <Compile Include="Converters\TextWrappingToTextWrappingConverter.cs" />
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
+    <Compile Include="Util\ItemsCarrier.cs" />
     <Compile Include="ManipulationControls.cs" />
     <Compile Include="Models\ApiSourceFieldModel.cs" />
     <Compile Include="Models\ApiSourceFieldModelController.cs" />
@@ -140,6 +144,9 @@
     <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\PointFieldModel.cs" />
     <Compile Include="Models\PricePerSquareFootApi.cs" />
+    <Compile Include="Models\RadialActionModel.cs" />
+    <Compile Include="Models\RadialItemModel.cs" />
+    <Compile Include="Models\RadialSubmenuModel.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
@@ -194,11 +201,14 @@
     </Compile>
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\CourtesyDocuments.cs" />
+    <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
+    <Compile Include="Util\InkSource.cs" />
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
+    <Compile Include="Util\ObservableConvertCollection.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
@@ -241,6 +251,12 @@
     <Compile Include="Views\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\RadialMenuView.xaml.cs">
+      <DependentUpon>RadialMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SearchView.xaml.cs">
+      <DependentUpon>SearchView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
       <DependentUpon>WindowView.xaml</DependentUpon>
@@ -257,14 +273,17 @@
     <Content Include="Assets\ArrayOfNestedDocumentJson.txt" />
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
+    <Content Include="Assets\Centerlg.png" />
     <Content Include="Assets\customerJson.txt" />
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\dashlogo.png" />
+    <Content Include="Assets\Leftlg.png" />
     <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\ppsqft.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resizehandle.png" />
+    <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -360,6 +379,12 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TextSettings.xaml">
+    </Page>
+    <Page Include="Views\RadialMenuView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SearchView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

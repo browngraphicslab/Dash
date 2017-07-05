@@ -4,7 +4,7 @@ using Windows.UI.Xaml.Input;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Sources.Api.XAML_Elements {
+namespace Dash {
     public sealed partial class ApiCreatorAuthenticationDisplay : UserControl {
         public ApiCreatorAuthenticationDisplay() {
             this.InitializeComponent();

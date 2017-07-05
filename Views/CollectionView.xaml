@@ -35,120 +35,129 @@
                 </Button.Flyout>
             </Button>
         </Grid>
-    <Grid x:Name="Grid" BorderThickness="0" Margin="0,30,0,0" Style="{StaticResource xNodeContainerGrid}" >
-        <Grid x:Name="DocumentViewContainerGrid"  
+        <Grid x:Name="Grid" BorderThickness="0" Margin="0,30,0,0" Style="{StaticResource xNodeContainerGrid}" Padding="0">
+            <Grid x:Name="DocumentViewContainerGrid" 
+                  AllowDrop="True" 
+                  DragOver="CollectionGrid_DragOver" 
+                  Drop="CollectionGrid_Drop"              
                   HorizontalAlignment="Stretch" 
                   Margin="0,30,0,30" 
-                  VerticalAlignment="Stretch"  
+                  VerticalAlignment="Stretch"   
                   BorderBrush="LightGray"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
                   ManipulationMode="All" 
                   PointerWheelChanged="UserControl_PointerWheelChanged"
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
+                  Padding="0"
                   PointerMoved="FreeformGrid_OnPointerMoved" 
                   PointerReleased="FreeformGrid_OnPointerReleased"
                   Style="{StaticResource xNodeContainerGrid}">
-            <Grid.Clip>
-                <RectangleGeometry x:Name="ClipRect"/>
-            </Grid.Clip>
-            <Grid x:Name="FreeformGrid" Visibility="{Binding GridViewVisibility}">
-                <ItemsControl x:Name="GridView" 
-                                  x:FieldModifier="public" 
-                                  Padding="5" 
-                                  ItemsSource="{Binding DataBindingSource}"
-                                  IsEnabled="{Binding ViewIsEnabled}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas x:Name="CollectionCanvas" x:FieldModifier="public"></Canvas>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <dash:DocumentView 
-                                    Width="300" 
-                                    Height="300" 
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="ClipRect"/>
+                </Grid.Clip>
+                <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
+                <Grid x:Name="FreeformGrid" Visibility="{Binding GridViewVisibility}">
+                    <ItemsControl x:Name="GridView" 
+                              x:FieldModifier="public" 
+                              ItemsSource="{Binding DataBindingSource}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas x:Name="CollectionCanvas" 
+                                    x:FieldModifier="public"                              
+                                    Background="Transparent"
+                                    Width ="0" Height="0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                                </Canvas>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <dash:DocumentView
                                     DataContext="{Binding}" 
                                     ManipulationStarted="DocumentView_ManipulationStarted" 
                                     ManipulationDelta="DocumentView_ManipulationDelta" 
                                     IODragStarted="StartDrag" 
                                     IODragEnded="EndDrag">
-                                <dash:DocumentView.RenderTransform>
-                                    <TranslateTransform X="{Binding X}" Y="{Binding Y}">
-                                    </TranslateTransform>
-                                </dash:DocumentView.RenderTransform>
-                            </dash:DocumentView>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
+                                    <dash:DocumentView.RenderTransform>
+                                        <TranslateTransform X="{Binding X}" Y="{Binding Y}">
+                                        </TranslateTransform>
+                                    </dash:DocumentView.RenderTransform>
+                                </dash:DocumentView>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
 
-            <Grid Visibility="{Binding GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility}">
-                <GridView x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControl" x:FieldModifier="public" FlowDirection="LeftToRight" HorizontalAlignment="Stretch" 
+                <Grid Visibility="{Binding GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility}">
+                    <GridView x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControl" 
+                          x:FieldModifier="public" 
+                          HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch"
                           ScrollViewer.VerticalScrollMode="Enabled"
                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
                           SelectionMode="{Binding ItemSelectionMode}"
                           ItemsSource="{Binding DataBindingSource}"
-                          IsEnabled="{Binding ViewIsEnabled}"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True"
                           DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
-                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted"
-                          Drop="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDrop"
-                          DragOver="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragOver">
-                    <GridView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                <dash:DocumentView  Width="300" Height="300" DataContext="{Binding}" IsHitTestVisible="False"/>
-                            </Border>
-                        </DataTemplate>
-                    </GridView.ItemTemplate>
-                </GridView>
-            </Grid>
+                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted">
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
+                                    Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
+                                    <dash:DocumentView  Width="250" Height="250" DataContext="{Binding}" IsHitTestVisible="False"/>
+                                </Border>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                </Grid>
 
-            <Grid Visibility="{Binding ListViewVisibility}">
-                <ListView x:Name="HListView" x:FieldModifier="public" FlowDirection="LeftToRight" HorizontalAlignment="Stretch" 
-                              VerticalAlignment="Stretch" 
-                              ScrollViewer.HorizontalScrollMode="Enabled"
-                              ScrollViewer.VerticalScrollMode="Disabled"
-                              ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                              ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                              SelectionMode="{Binding ItemSelectionMode}"
-                              ItemsSource="{Binding DataBindingSource}"
-                              IsEnabled="{Binding ViewIsEnabled}"
-                              CanDragItems="True"
-                              CanReorderItems="True"
-                              AllowDrop="True">
-                    <ListView.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
-                        </ItemsPanelTemplate>
-                    </ListView.ItemsPanel>
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                <dash:DocumentView 
-                                    Width="300" 
-                                    Height="300" 
+                <Grid Visibility="{Binding ListViewVisibility}">
+                    <ListView x:Name="HListView" 
+                          x:FieldModifier="public" 
+                          FlowDirection="LeftToRight" 
+                          HorizontalAlignment="Stretch" 
+                          VerticalAlignment="Stretch" 
+                          ScrollViewer.HorizontalScrollMode="Enabled"
+                          ScrollViewer.VerticalScrollMode="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                          SelectionMode="{Binding ItemSelectionMode}"
+                          ItemsSource="{Binding DataBindingSource}"
+                          DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
+                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted"
+                          CanDragItems="True"
+                          CanReorderItems="True"
+                          AllowDrop="True">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
+                                    <dash:DocumentView 
+                                    Width="250" 
+                                    Height="250" 
                                     DataContext="{Binding}"
                                     IsHitTestVisible="False">
-                                </dash:DocumentView>
-                            </Border>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                                    </dash:DocumentView>
+                                </Border>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
             </Grid>
-        </Grid>
 
-        <Grid Visibility="{Binding SoloDisplayVisibility}">
-            <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Grid.Background>
-                    <SolidColorBrush Color="White" Opacity="0.75"/>
-                </Grid.Background>
-                <Grid Width="{Binding SoloDisplaySize}" Height="{Binding SoloDisplaySize}">
-                    <ListView x:Name="SoloDisplayListView" x:FieldModifier="public" FlowDirection="LeftToRight" HorizontalAlignment="Center" 
+            <Grid Visibility="{Binding SoloDisplayVisibility}">
+                <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Grid.Background>
+                        <SolidColorBrush Color="White" Opacity="0.75"/>
+                    </Grid.Background>
+                    <Grid Width="{Binding SoloDisplaySize}" Height="{Binding SoloDisplaySize}">
+                        <ListView x:Name="SoloDisplayListView" x:FieldModifier="public" FlowDirection="LeftToRight" HorizontalAlignment="Center" 
                               VerticalAlignment="Center"  
                               ScrollViewer.HorizontalScrollMode="Disabled"
                               ScrollViewer.VerticalScrollMode="Enabled"
@@ -156,99 +165,101 @@
                               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                               ItemsSource="{Binding SoloDisplayElements}"
                               Background="LightSlateGray">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <ItemsStackPanel Background="Transparent" Orientation="Vertical"/>
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                    </ListView>
+                            <ListView.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <ItemsStackPanel Background="Transparent" Orientation="Vertical"/>
+                                </ItemsPanelTemplate>
+                            </ListView.ItemsPanel>
+                        </ListView>
+                    </Grid>
                 </Grid>
             </Grid>
-        </Grid>
 
-        <Grid x:Name="FilterGrid" Visibility="{Binding FilterViewVisibility}">
-            <StackPanel Orientation="Vertical" Width="605" Height="305" Style="{StaticResource xNodeContainerStackPanel}">
-                <Button x:Name="xFilterExit" Content="X" HorizontalAlignment="Right" Height="30" Style="{StaticResource xBlueTextButtonStyle}"/>
-                <TextBlock Text="Filter Collection" Height="60" HorizontalAlignment="Center" FontSize="45"
+            <Grid x:Name="FilterGrid" Visibility="{Binding FilterViewVisibility}">
+                <StackPanel Visibility="Collapsed" Orientation="Vertical" Width="605" Height="305" Style="{StaticResource xNodeContainerStackPanel}">
+                    <Button x:Name="xFilterExit" Content="X" HorizontalAlignment="Right" Height="30" Style="{StaticResource xBlueTextButtonStyle}"/>
+                    <TextBlock Text="Filter Collection" Height="60" HorizontalAlignment="Center" FontSize="45"
                            Style="{StaticResource xBlueTextBoxStyle}" />
-                <Grid x:Name="xMainGrid" VerticalAlignment="Center" Height="90"
+                    <Grid x:Name="xMainGrid" VerticalAlignment="Center" Height="90"
                       d:LayoutOverrides="LeftMargin, RightMargin">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="35" />
-                        <ColumnDefinition Width="165" />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition />
-                        <ColumnDefinition Width="15" />
-                        <ColumnDefinition Width="165" />
-                        <ColumnDefinition Width="35" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="1" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
-                        <ComboBox x:Name="xComboBox" Width="165" Height="30" HorizontalAlignment="Center"
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="35" />
+                            <ColumnDefinition Width="165" />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="15" />
+                            <ColumnDefinition Width="165" />
+                            <ColumnDefinition Width="35" />
+                        </Grid.ColumnDefinitions>
+                        <Grid Grid.Column="1" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
+                            <ComboBox x:Name="xComboBox" Width="165" Height="30" HorizontalAlignment="Center"
                                   VerticalAlignment="Center" d:LayoutOverrides="Height" BorderBrush="LightSlateGray">
-                            <ComboBoxItem x:Name="xHasField" Tapped="hasField_Tapped">Has field</ComboBoxItem>
-                            <ComboBoxItem x:Name="xFieldContains" Tapped="fieldContains_Tapped">Field contains</ComboBoxItem>
-                            <ComboBoxItem x:Name="xFieldEquals" Tapped="fieldEquals_Tapped">Field equals</ComboBoxItem>
-                        </ComboBox>
-                        <Grid.Resources>
-                            <Storyboard x:Name="xHideFieldBox">
-                                <FadeOutThemeAnimation TargetName="xFieldBox" />
-                            </Storyboard>
-                            <Storyboard x:Name="xShowFieldBox" Duration="0:0:1">
-                                <FadeInThemeAnimation TargetName="xFieldBox" />
-                            </Storyboard>
-                        </Grid.Resources>
-                    </Grid>
-                    <Grid Grid.Column="3" x:Name="xFieldBoxColumn" Width="165"
+                                <ComboBoxItem x:Name="xHasField" Tapped="hasField_Tapped">Has field</ComboBoxItem>
+                                <ComboBoxItem x:Name="xFieldContains" Tapped="fieldContains_Tapped">Field contains</ComboBoxItem>
+                                <ComboBoxItem x:Name="xFieldEquals" Tapped="fieldEquals_Tapped">Field equals</ComboBoxItem>
+                            </ComboBox>
+                            <Grid.Resources>
+                                <Storyboard x:Name="xHideFieldBox">
+                                    <FadeOutThemeAnimation TargetName="xFieldBox" />
+                                </Storyboard>
+                                <Storyboard x:Name="xShowFieldBox" Duration="0:0:1">
+                                    <FadeInThemeAnimation TargetName="xFieldBox" />
+                                </Storyboard>
+                            </Grid.Resources>
+                        </Grid>
+                        <Grid Grid.Column="3" x:Name="xFieldBoxColumn" Width="165"
                           d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
-                        <AutoSuggestBox x:Name="xFieldBox" PlaceholderText="Enter field here" 
+                            <AutoSuggestBox x:Name="xFieldBox" PlaceholderText="Enter field here" 
                                  Height="32" BorderBrush="LightSlateGray" AutoMaximizeSuggestionArea="False" Margin="0,30,34,0"/>
-                        <Grid.Resources>
-                            <Storyboard x:Name="xCollapseMainGrid" Storyboard.TargetName="xMainGrid"
+                            <Grid.Resources>
+                                <Storyboard x:Name="xCollapseMainGrid" Storyboard.TargetName="xMainGrid"
                                         Completed="xCollapseMainGrid_Completed">
-                                <DoubleAnimation Storyboard.TargetProperty="Width" From="605" To="435"
+                                    <DoubleAnimation Storyboard.TargetProperty="Width" From="605" To="435"
                                                  Duration="0:0:0.3" EnableDependentAnimation="True" />
-                            </Storyboard>
-                            <Storyboard x:Name="xExpandMainGrid" Storyboard.TargetName="xMainGrid"
+                                </Storyboard>
+                                <Storyboard x:Name="xExpandMainGrid" Storyboard.TargetName="xMainGrid"
                                         Completed="xExpandMainGrid_Completed">
-                                <DoubleAnimation Storyboard.TargetProperty="Width" From="435" To="605"
+                                    <DoubleAnimation Storyboard.TargetProperty="Width" From="435" To="605"
                                                  Duration="0:0:0.3" EnableDependentAnimation="True" />
-                            </Storyboard>
-                        </Grid.Resources>
-                    </Grid>
-                    <Grid Grid.Column="5" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
-                        <TextBox x:Name="xSearchBox" PlaceholderText="Search" VerticalAlignment="Stretch" Height="30"
+                                </Storyboard>
+                            </Grid.Resources>
+                        </Grid>
+                        <Grid Grid.Column="5" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
+                            <TextBox x:Name="xSearchBox" PlaceholderText="Search" VerticalAlignment="Stretch" Height="30"
                                  BorderBrush="LightSlateGray" TextChanged="xSearchBox_TextChanged"/>
-                        <AutoSuggestBox x:Name="xSearchFieldBox" PlaceholderText="Enter field here" 
+                            <AutoSuggestBox x:Name="xSearchFieldBox" PlaceholderText="Enter field here" 
                                  Height="30" BorderBrush="LightSlateGray" TextChanged="XFieldBox_OnTextChanged" AutoMaximizeSuggestionArea="False" Margin="0,30,0,0" Visibility="Collapsed" UpdateTextOnSelect="True"/>
+                        </Grid>
                     </Grid>
-                </Grid>
-                <Button x:Name="xFilterButton" Visibility="Collapsed" Content="Filter" Width="75" VerticalAlignment="Center"
+                    <Button x:Name="xFilterButton" Visibility="Collapsed" Content="Filter" Width="75" VerticalAlignment="Center"
                         HorizontalAlignment="Center" Style="{StaticResource xBlueTextButtonStyle}" FontSize="20" Height="30"
                          Margin="30" />
-            </StackPanel>
-        </Grid>
+                </StackPanel>
+            </Grid>
 
-        <StackPanel Orientation="Horizontal" Margin="20,0,0,0">
-            <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="30" 
-                        Width="70" Foreground="WhiteSmoke" Margin="{Binding DeleteButtonMargin}">
-                <Button.Flyout>
-                    <MenuFlyout Placement="Bottom">
-                        <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
-                        <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
-                        <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-            <Button x:Name="SelectButton" 
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="DeleteButton" x:FieldModifier="public"  Content="Options" VerticalAlignment="Bottom" Height="30" 
+                        Width="70" Foreground="WhiteSmoke" Margin="{Binding DeleteButtonMargin}" FontSize="14" FontFamily="Rockwell">
+                    <Button.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
+                            <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
+                            <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button x:Name="SelectButton" 
                     Content ="Select" 
                     VerticalAlignment="Bottom" 
                     Height="30" 
                     Width="70" 
-                    Margin="10,0,0,0" />
-        </StackPanel>
+                    Foreground="WhiteSmoke" 
+                    Margin="10,0,0,0" 
+                    FontSize="14" 
+                    FontFamily="Rockwell"/>
+            </StackPanel>
 
-
-        <Ellipse x:Name="ConnectionEllipse"
+            <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
                  Width="20" 
                  Height="20" 
@@ -260,8 +271,7 @@
                  ManipulationStarted="ConnectionEllipse_OnManipulationStarted" 
                  PointerPressed="ConnectionEllipse_OnPointerPressed"
                  PointerReleased="ConnectionEllipse_OnPointerReleased"/>
-    </Grid>
-
+        </Grid>
     </Grid>
 </UserControl>
 

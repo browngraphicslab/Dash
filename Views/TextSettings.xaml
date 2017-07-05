@@ -44,7 +44,7 @@
                     <ColumnDefinition Width="1*"/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0">
-                    <Slider x:Name="xFontSizeSlider" IsThumbToolTipEnabled="True"  Value="{Binding ElementName=xFontSizeTextBox, Path=Text, Mode=TwoWay}" StepFrequency="12"></Slider>
+                    <Slider x:Name="xFontSizeSlider" IsThumbToolTipEnabled="True" Minimum="4" StepFrequency="4"></Slider>
                 </Grid>
                 <Grid Grid.Column="1" Margin="15,0,0,0">
                     <TextBox x:Name="xFontSizeTextBox" Height="20"></TextBox>
@@ -56,7 +56,27 @@
         </Grid>
         <Grid Grid.Row="5" Width="250" VerticalAlignment="Center">
             <Grid Width="250">
-                <Grid.ColumnDefinitions>
+                <ListView x:Name="xAlignmentListView" Height="Auto" Width="Auto" SelectionMode="Single" HorizontalAlignment="Stretch"
+                        ScrollViewer.HorizontalScrollMode="Enabled"
+                        ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                        ScrollViewer.VerticalScrollMode="Disabled">
+                    <ListView.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"></StackPanel>
+                        </ItemsPanelTemplate>
+                    </ListView.ItemsPanel>
+                    <Border>
+                        <Image Source="ms-appx:///Assets/Leftlg.png" Height="55" ></Image>
+                    </Border>
+                    <Border>
+                        <Image Source="ms-appx:///Assets/Centerlg.png" Height="55" ></Image>
+                    </Border>
+                    <Border>
+                        <Image Source="ms-appx:///Assets/Rightlg.png" Height="55" ></Image>
+                    </Border>
+                </ListView>
+                <!--<Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.3*"/>
                     <ColumnDefinition Width="1.5*"/>
                     <ColumnDefinition Width="1*"/>
@@ -69,18 +89,14 @@
                 </Grid>
                 <Grid Grid.Column="2">
                     <RadioButton GroupName="xFontWeight">Right</RadioButton>
-                </Grid>
+                </Grid>-->
             </Grid>
         </Grid>
         <Grid Grid.Row="6" Width="250" VerticalAlignment="Center">
             <TextBlock FontWeight="SemiBold" FontSize="16">FONT STYLE</TextBlock>
         </Grid>
         <Grid x:Name="xComboBoxRow" Grid.Row="7" Width="250" VerticalAlignment="Center">
-            <ComboBox Width="{Binding ElementName=xComboBoxRow, Path=Width}" SelectedIndex="0">
-                <ComboBoxItem>Normal</ComboBoxItem>
-                <ComboBoxItem>Bold</ComboBoxItem>
-                <ComboBoxItem>Italic</ComboBoxItem>
-                <ComboBoxItem>Underline</ComboBoxItem>
+            <ComboBox x:Name="xFontWeightBox" Width="{Binding ElementName=xComboBoxRow, Path=Width}" >
             </ComboBox>
         </Grid>
         <Grid Grid.Row="8" Width="250" VerticalAlignment="Center">
@@ -93,10 +109,10 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0" Margin="0,0,15,0">
-                    <TextBox Header="Width" Height="60"></TextBox>
+                    <TextBox x:Name="xWidthTextBox" Header="Width" Height="60"></TextBox>
                 </Grid>
                 <Grid Grid.Column="1" Margin="15,0,0,0">
-                    <TextBox Header="Height" Height="60"></TextBox>
+                    <TextBox x:Name="xHeightTextBox" Header="Height" Height="60"></TextBox>
                 </Grid>
             </Grid>
         </Grid>
@@ -110,10 +126,10 @@
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0" Margin="0,0,15,0">
-                    <TextBox Header="X" Height="60"></TextBox>
+                    <TextBox x:Name="xHorizontalPositionTextBox" Header="X" Height="60"></TextBox>
                 </Grid>
                 <Grid Grid.Column="1" Margin="15,0,0,0">
-                    <TextBox Header="Y" Height="60"></TextBox>
+                    <TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="60"></TextBox>
                 </Grid>
             </Grid>
         </Grid>

@@ -1,23 +1,16 @@
-﻿using Dash.Models;
-using Dash.Sources.Api.XAML_Elements;
-using DashShared;
-using Microsoft.Extensions.DependencyInjection;
+﻿using DashShared;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Media;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
-using static Dash.MainPage;
 
-namespace Dash.Sources.Api {
+namespace Dash {
     /// <summary>
     /// Instantiations of this class represent a user-created API interface: an APISource.
     /// 
@@ -27,26 +20,26 @@ namespace Dash.Sources.Api {
     class ApiSource {
         // == MEMBERS ==
         private HttpMethod requestType; // POST, GET, etc.
-        private Uri apiURI, authURI;
+        private Uri authURI;
         private string secret, key;
         private Dictionary<string, ApiProperty> headers, parameters, authHeaders, authParameters;
         private HttpClient client;
-        private TextBlock text;
+        private TextBox apiUrlTB;
         private HttpResponseMessage response;
         private List<DocumentController> responseAsDocuments; // list of results formatted as documents
         private ApiSourceDisplay display;
-        public TextBlock debugger;
+        public TextBox debugger;
         private Canvas testGrid;
         private DocumentController docController;
 
         // == CONSTRUCTORS ==
-        public ApiSource(DocumentController docController, HttpMethod requestType, string apiURL, string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
+        public ApiSource(DocumentController docController, HttpMethod requestType, TextBox apiURLTB, string authURL, string secret, string key, Canvas testGridToAddDocumentsTo = null) {
             this.headers = new Dictionary<string, ApiProperty>();
             this.parameters = new Dictionary<string, ApiProperty>();
             this.authHeaders = new Dictionary<string, ApiProperty>();
             this.authParameters = new Dictionary<string, ApiProperty>();
             this.docController = docController;
-            this.apiURI = new Uri(apiURL);
+            apiUrlTB = apiURLTB;
             if (!string.IsNullOrWhiteSpace(authURL)) {
                 this.authURI = new Uri(authURL);
                 this.secret = secret;
@@ -57,7 +50,6 @@ namespace Dash.Sources.Api {
                 this.key = null;
             }
             this.requestType = requestType;
-            text = new TextBlock();
             response = null;
             testGrid = testGridToAddDocumentsTo;
             client = new HttpClient(); // TODO: comment out for HttpClient abstraction
@@ -85,7 +77,7 @@ namespace Dash.Sources.Api {
         /// </summary>
         /// <param name="sdisplay"></param>
         public void setApiDisplay(ApiSourceDisplay sdisplay) {
-            sdisplay.addButtonEventHandler(clickHandler);
+            sdisplay.AddButtonEventHandler(clickHandler);
             display = sdisplay;
         }
 
@@ -108,7 +100,6 @@ namespace Dash.Sources.Api {
             this.authHeaders = new Dictionary<string, ApiProperty>();
             this.authParameters = new Dictionary<string, ApiProperty>();
             foreach (ApiProperty grid in display.PropertiesListView.Items) {
-                Debug.WriteLine(grid.Key);
                 if (grid.Type == ApiProperty.ApiPropertyType.AuthHeader)
                     authHeaders.Add(grid.Key, grid);
                 if (grid.Type == ApiProperty.ApiPropertyType.AuthParameter)
@@ -163,14 +154,14 @@ namespace Dash.Sources.Api {
         public async virtual void makeRequest() {
             // load in parameters from listViews
             updateParametersFromListView();
+            var apiURI = new Uri(apiUrlTB.Text);
             
             // check that all required fields are filled
             if (!(requiredPropertiesValid(parameters) &&
             requiredPropertiesValid(headers))) {
-                text.Text = "Please fill in all required fields (denoted by a *).";
+                // TODO: show error message here?
                 return;
             }
-            
 
             // initialize request message and headers
             HttpRequestMessage message = new HttpRequestMessage(requestType, apiURI);
@@ -186,19 +177,18 @@ namespace Dash.Sources.Api {
             HttpFormUrlEncodedContent messageBody
                 = new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(parameters));
 
-            // if get, we add parameters to the URI
+            // if get, we add parameters to the URI either in URL for GET or in body for POST requests
             if (requestType == HttpMethod.Get) {
-                message.RequestUri = new Uri(apiURI.OriginalString + "?" + messageBody.ToString());
-                Debug.WriteLine(apiURI.OriginalString + "?" + messageBody.ToString());
+                if (!String.IsNullOrWhiteSpace(messageBody.ToString()))
+                    message.RequestUri = new Uri(apiURI.OriginalString + "?" + messageBody.ToString());
             } else {
                 message.Content = messageBody;
             }
 
 
             // fetch authentication token if required
-            string token;
-        
             if (!(string.IsNullOrWhiteSpace(apiURI.AbsolutePath) || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))) {
+                string token;
                 HttpRequestMessage tokenmsg = new HttpRequestMessage(HttpMethod.Post, authURI);
                 var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
                 var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray));
@@ -211,7 +201,6 @@ namespace Dash.Sources.Api {
                     if (!tokenmsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
                         return;
                 }
-                Debug.WriteLine(apiURI.OriginalString.ToString());
                 // fetch token
                 response = await client.SendRequestAsync(tokenmsg);
 
@@ -223,15 +212,14 @@ namespace Dash.Sources.Api {
 
             // send message
             response = await client.SendRequestAsync(message);
-            text.Text = response.Content.ToString();
-           // Debug.WriteLine("Content: " + response.Content.ToString());
+            Debug.WriteLine("Content: " + response.Content.ToString());
 
             // generate and store response document by parsing HTTP output
             // first try to parse it as a list of objects
             responseAsDocuments = new List<DocumentController>();
-            var apiDocType = new DocumentType(this.apiURI.Host.ToString().Split('.').First(), this.apiURI.Host.ToString().Split('.').First());
+            var apiDocType = new DocumentType(apiURI.Host.ToString().Split('.').First(), apiURI.Host.ToString().Split('.').First());
             try {
-                
+                /*
                 var resultObjects = AllChildren(JObject.Parse(text.Text))
                     .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
                     .Children<JObject>();
@@ -255,11 +243,24 @@ namespace Dash.Sources.Api {
                     responseAsDocuments.Add(Document); // /*apiURL.Host.ToString() DocumentType.DefaultType));
                 }
                     
-                /*
-                DocumentController documentModel = JsonToDashUtil.Parse(text.Text);
-                responseAsDocuments.Add(documentModel);
-                TODO: add this back in when an API it works with is found
                 */
+
+                // parse JSON result. place first-tier documents in collection view. if there are none, simply
+                // put a single document into the collection view
+                DocumentController documentModel = JsonToDashUtil.Parse(response.Content.ToString());
+
+                // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
+                // the parser should be reworked to auto do this or do it in a more user-friendly way
+                foreach (var f in documentModel.Fields) {
+                    Debug.WriteLine(f.Value.GetType().ToString());
+                    if (f.Value is DocumentFieldModelController)
+                        responseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
+                    if (f.Value is DocumentCollectionFieldModelController)
+                        responseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
+                }
+
+                if (responseAsDocuments.Count == 0)
+                    ResponseAsDocuments.Add(documentModel);
                 
                 
 
@@ -273,10 +274,9 @@ namespace Dash.Sources.Api {
 
                 // then try and parse it as a single object
             } catch (InvalidOperationException e) {
-                JObject result = JObject.Parse(text.Text);
+                JObject result = JObject.Parse(response.Content.ToString());
                 Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
                 foreach (JProperty property in result.Properties()) {
-                    //Debug.WriteLine(property.Name + ": " + property.Value.Type);
                     toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
                 }
 
