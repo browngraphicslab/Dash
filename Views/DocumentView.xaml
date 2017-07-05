@@ -21,8 +21,7 @@
         <Grid x:Name="XGrid"
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
-                RightTapped="Grid_RightTapped"
-               Style="{StaticResource xNodeContainerGrid}">
+                Style="{StaticResource xNodeContainerGrid}">
 
             <ItemsControl x:Name="DocumentsControl"
                           x:FieldModifier="public"

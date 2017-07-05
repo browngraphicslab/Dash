@@ -4,8 +4,7 @@
     "Microsoft.AspNet.WebApi.Client": "5.2.3",
     "Microsoft.Extensions.DependencyInjection": "1.1.1",
     "Microsoft.NETCore.UniversalWindowsPlatform": "5.2.3",
-    "Newtonsoft.Json": "10.0.2",
-    "RadialMenuControl": "0.2.1"
+    "Newtonsoft.Json": "10.0.2"
   },
   "frameworks": {
     "uap10.0": {}
