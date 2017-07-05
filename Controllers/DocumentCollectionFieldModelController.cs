@@ -25,6 +25,8 @@ namespace Dash
         /// </summary>
         private List<DocumentController> _documents;
 
+        public List<DocumentController> Documents { get { return _documents;  } }
+
         /// <summary>
         ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
         ///     <see cref="DocumentCollectionFieldModel" />
