@@ -15,7 +15,7 @@
 
         private void Fmc_FieldModelUpdatedEvent(FieldModelController sender)
         {
-            OnDataUpdated();
+            FireFieldModelUpdated();
         }
 
         /// <summary>

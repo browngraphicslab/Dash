@@ -398,7 +398,8 @@ namespace Dash
             var cvm = DataContext as CollectionViewModel;
             var dv  = (sender as DocumentView);
             var dvm = dv.DataContext as DocumentViewModel;
-            cvm.MoveDocument(dvm, dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y)));
+            var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
+            dvm.Position = where;
             e.Handled = true;
         }
 

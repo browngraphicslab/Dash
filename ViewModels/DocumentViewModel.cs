@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -15,7 +16,7 @@ namespace Dash
         private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
-        private double _x, _y;
+        private Point _pos;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         public bool DoubleTapEnabled = true;
@@ -56,32 +57,17 @@ namespace Dash
                 }
             }
         }
-        public double X
-        {
-            get { return _x; }
-            set
-            {
-                SetProperty(ref _x, value);
-                var posField = DocumentController.GetField(DashConstants.KeyStore.PositionFieldKey);
-                if (posField != null)
-                {
-                    var pfm = ContentController.GetController<PointFieldModelController>(posField.GetId()).PointFieldModel;
-                    pfm.Data = new Point(value, pfm.Data.Y);
-                }
-            }
-        }
 
-        public double Y
+        public Point Position
         {
-            get { return _y; }
-            set
-            {
-                SetProperty(ref _y, value);
-                var posField = DocumentController.GetField(DashConstants.KeyStore.PositionFieldKey);
-                if (posField != null)
+            get { return _pos; }
+            set {
+                if (SetProperty(ref _pos, value))
                 {
-                    var pfm = ContentController.GetController<PointFieldModelController>(posField.GetId()).PointFieldModel;
-                    pfm.Data = new Point(pfm.Data.X, value);
+                    var posFieldModelController =
+                        DocumentController.GetField(DashConstants.KeyStore.PositionFieldKey) as
+                            PointFieldModelController;
+                    posFieldModelController.Data = value;
                 }
             }
         }
@@ -128,15 +114,18 @@ namespace Dash
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Color.FromArgb(50, 34, 34, 34));
-
-            // set the X and Y position if the fields for those positions exist
        
-            var posFieldModelController = DocumentController.GetField(DashConstants.KeyStore.PositionFieldKey);
-            if (posFieldModelController != null)
+            var posFieldModelController = DocumentController.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+            if (posFieldModelController == null)
             {
-                X = (posFieldModelController as PointFieldModelController).Data.X;
-                Y = (posFieldModelController as PointFieldModelController).Data.Y;
+                var pointFieldModel = new PointFieldModel(0,0);
+                posFieldModelController = new PointFieldModelController(pointFieldModel);
+                ContentController.AddController(posFieldModelController);
+                ContentController.AddModel(pointFieldModel);
+                DocumentController.SetField(DashConstants.KeyStore.PositionFieldKey, posFieldModelController, true);
             }
+            posFieldModelController.FieldModelUpdatedEvent += PosFieldModelController_FieldModelUpdatedEvent;
+
             var widthFieldModelController = DocumentController.GetField(DashConstants.KeyStore.WidthFieldKey);
             if (widthFieldModelController != null)
             {
@@ -153,6 +142,16 @@ namespace Dash
                 documentFieldModelController.Data.OnLayoutChanged += DocumentController_OnLayoutChanged;
 
             DataBindingSource.Add(documentController.DocumentModel);
+        }
+
+
+        private void PosFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            var posFieldModelController = sender as PointFieldModelController;
+            if (posFieldModelController != null)
+            {
+                Position = posFieldModelController.Data;
+            }
         }
 
         private void DocumentController_OnLayoutChanged(DocumentController sender)

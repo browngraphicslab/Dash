@@ -545,8 +545,9 @@ namespace Dash
                 var viewModel = new DocumentViewModel(controller);
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
                 {
-                    viewModel.X = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
-                    viewModel.Y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
+                    var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
+                    var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
+                    viewModel.Position = new Point(x, y);
                     offset += 15;
                 }
                 viewModels.Add(viewModel);
@@ -744,10 +745,6 @@ namespace Dash
         {
             FilterViewVisibility = Visibility.Collapsed;
             _filtered = false;
-        }
-        public void MoveDocument(DocumentViewModel docViewModel, Point where)
-        {
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new PointFieldModel(where)), true);
         }
     }
 }

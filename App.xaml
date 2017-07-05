@@ -140,6 +140,7 @@
 
         <!-- MISC. STYLES-->
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
 
     </Application.Resources>
 </Application>

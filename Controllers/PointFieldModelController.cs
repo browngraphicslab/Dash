@@ -36,7 +36,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                OnDataUpdated();
+                FireFieldModelUpdated();
             }
         }
     }
