@@ -246,22 +246,6 @@ namespace Dash
         }
 
         /// <summary>
-        /// Right tapping to bring up the interface builder
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_RightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            var dvm = DataContext as DocumentViewModel;
-            Debug.Assert(dvm != null);
-
-            var interfaceBuilder = new InterfaceBuilder(dvm);
-            var center = RenderTransform.TransformPoint(e.GetPosition(this));
-            MainPage.Instance.xOverlayCanvas.xOuterGrid.Children.Add(interfaceBuilder);
-            e.Handled = true;
-        }
-
-        /// <summary>
         /// The first time the local DocumentViewModel _vm can be set to the new datacontext
         /// this resets the fields otherwise does nothing
         /// </summary>
