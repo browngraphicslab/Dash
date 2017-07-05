@@ -594,6 +594,7 @@ namespace Dash
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
                 {
+                    // defaults to fill width of parent if no width is provided in the docController
                     var w = docController.GetField(DashConstants.KeyStore.WidthFieldKey) != null ?
                         (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
                     var h = docController.GetField(DashConstants.KeyStore.HeightFieldKey) != null ?
@@ -1027,12 +1028,16 @@ namespace Dash
 
                 // generate collection view preview for results
                 var resultView = docController.Fields[DocumentCollectionFieldModelController.CollectionKey] as DocumentCollectionFieldModelController;
-                var ctr = new CollectionBox(docController.Fields[DocumentCollectionFieldModelController.CollectionKey].FieldModel as DocumentCollectionFieldModel);
                 var elements = new List<FrameworkElement>() { apiDisplay, sourceDisplay };
-                var moreElements = CollectionBox.MakeView(ctr.Document);
 
-                moreElements[0].Margin = new Thickness(450, 0, 0, 0);
-                elements.AddRange(moreElements);
+                // make collection view display framework element
+                var data = resultView;
+                var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
+                Debug.Assert(collectionFieldModelController != null);
+                var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
+                var collectionViewModel = new CollectionViewModel(collectionModel);
+                var collectionDisplay = new CollectionView(collectionViewModel);
+                
 
                 // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
                 // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)
@@ -1047,8 +1052,23 @@ namespace Dash
                 };
                 sourceDisplay.SetBinding(ApiSourceDisplay.VisibilityProperty, sourceBinding);
 
+                // set up grid to hold UI elements: api size is fixed, results display resizes w/ document container
+                Grid g = new Grid();
+                g.HorizontalAlignment = HorizontalAlignment.Stretch;
+                g.VerticalAlignment = VerticalAlignment.Stretch;
+                g.RowDefinitions.Add(new RowDefinition());
+                g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(450) });
+                g.ColumnDefinitions.Add(new ColumnDefinition());
+                Grid.SetColumn(collectionDisplay, 1);
+                g.Children.Add(apiDisplay);
+                g.Children.Add(sourceDisplay);
+                g.Children.Add(collectionDisplay);
+
+                collectionDisplay.MaxWidth = 550;
+                collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
+                
                 // return all results
-                return elements;
+                return new List<FrameworkElement>() { g };
             }
         }
 

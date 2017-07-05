@@ -63,6 +63,7 @@ namespace Dash {
         /// <param name="e"></param>
         private void createAPINodeTemplate(object sender, RoutedEventArgs e) {
             this.Visibility = Visibility.Collapsed;
+            updateSource();
         }
 
         private void updateSource() {
@@ -92,18 +93,15 @@ namespace Dash {
                 xApiURLTB.Text = "https://itunes.apple.com/search";
 
             // instantiate new APISource
-            ApiSource newApi = new ApiSource(DocModel, requestType, xApiURLTB.Text, xAuthControl.AuthURL, xAuthControl.Secret,
+            Source = new ApiSource(DocModel, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
-            newApi.setApiDisplay(SourceDisplay);
+            Source.setApiDisplay(SourceDisplay);
 
         }
 
         private void xHeaderControl_Loaded(object sender, RoutedEventArgs e) {
 
         }
-
-        private void xApiURLTB_TextChanged(object sender, TextChangedEventArgs e) {
-            Debug.WriteLine((DocModel.Fields[CourtesyDocuments.ApiDocumentModel.BaseUrlKey] as TextFieldModelController).Data);
-        }
+        
     }
 }
