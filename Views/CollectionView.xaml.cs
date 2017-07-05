@@ -34,7 +34,7 @@ namespace Dash
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
-        private Canvas FreeformCanvas => GridView.ItemsPanelRoot as Canvas;
+        private Canvas FreeformCanvas => xItemsControl.ItemsPanelRoot as Canvas;
 
         public CollectionViewModel ViewModel;
         private bool _isHasFieldPreviouslySelected;
@@ -53,7 +53,7 @@ namespace Dash
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-            Loaded += CollectionView_Loaded;
+
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
 
@@ -64,11 +64,13 @@ namespace Dash
 
         private void SetEventHandlers()
         {
-            GridView.Items.VectorChanged += ItemsControl_ItemsChanged;
+            Loaded += CollectionView_Loaded;
+            
+            xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
             //ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
-            GridOption.Tapped += ViewModel.GridViewButton_Tapped;
-            GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption.Tapped +=
-                ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped;
+            FreeformOption.Tapped += ViewModel.FreeformButton_Tapped;
+            GridViewOption.Tapped +=
+                ViewModel.GridViewButton_Tapped;
             ListOption.Tapped += ViewModel.ListViewButton_Tapped;
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
@@ -78,8 +80,8 @@ namespace Dash
             //CancelSoloDisplayButton.Tapped += ViewModel.CancelSoloDisplayButton_Tapped;
 
             HListView.SelectionChanged += ViewModel.SelectionChanged;
-            GridViewWhichIsActuallyGridViewAndNotAnItemsControl.SelectionChanged += ViewModel.SelectionChanged;
-            // GridView.SelectionChanged += ViewModel.SelectionChanged;
+            xGridView.SelectionChanged += ViewModel.SelectionChanged;
+            // xItemsControl.SelectionChanged += ViewModel.SelectionChanged;
             
             Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
 
@@ -176,6 +178,7 @@ namespace Dash
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
+            RefreshItemsBinding();
             if (e.CollectionChange == CollectionChange.ItemInserted)
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
@@ -418,7 +421,7 @@ namespace Dash
         /// </summary>
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            Canvas canvas = GridView.ItemsPanelRoot as Canvas;
+            Canvas canvas = xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
             e.Handled = true;
             ManipulationDelta delta = e.Delta;
@@ -542,7 +545,7 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            Canvas canvas = GridView.ItemsPanelRoot as Canvas;
+            Canvas canvas = xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
             e.Handled = true;
             //Get mousepoint in canvas space 
@@ -991,7 +994,7 @@ namespace Dash
             view?.EndDrag(ioRef);
         }
 
-        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        private void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
@@ -1001,11 +1004,13 @@ namespace Dash
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
-        private void GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        private void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
+            {
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-            RefreshItemsBinding();
+                RefreshItemsBinding();
+            }
             KeepItemsOnMove = true;
             var carrier = ItemsCarrier.GetInstance();
             carrier.Payload.Clear();
@@ -1017,12 +1022,9 @@ namespace Dash
 
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
         {
-            var docControllers = new List<DocumentController>();
-            foreach (var item in docViewModels)
-                docControllers.Add(item.DocumentController);
+            var docControllers = docViewModels.Select(item => item.DocumentController);
             var parentDoc = (ViewModel.ParentDocument.ViewModel)?.DocumentController;
-            var controller = parentDoc.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController 
-                          ?? parentDoc.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;      
+            var controller = ContentController.GetController<DocumentCollectionFieldModelController>(ViewModel.CollectionModel.DocumentCollectionFieldModel.Id);
             if (controller != null)
                 foreach (var item in docControllers)
                     if (add) controller.AddDocument(item);
@@ -1041,16 +1043,16 @@ namespace Dash
             RefreshItemsBinding();
             ItemsCarrier.GetInstance().Destination = this;
             ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
-            ItemsCarrier.GetInstance().Translate = e.GetPosition(GridView.ItemsPanelRoot);
+            ItemsCarrier.GetInstance().Translate = e.GetPosition(xItemsControl.ItemsPanelRoot);
             ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
         }
 
         private void RefreshItemsBinding()
         {
-            if (ViewModel.GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility == Visibility.Visible)
+            if (ViewModel.GridViewVisibility == Visibility.Visible)
             {
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = null;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControl.ItemsSource = ViewModel.DataBindingSource;
+                xGridView.ItemsSource = null;
+                xGridView.ItemsSource = ViewModel.DataBindingSource;
             }
             else if (ViewModel.ListViewVisibility == Visibility.Visible)
             {

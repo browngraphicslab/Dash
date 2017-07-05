@@ -32,8 +32,8 @@
                 <RectangleGeometry x:Name="ClipRect"/>
             </Grid.Clip>
             <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-            <Grid x:Name="FreeformGrid" Visibility="{Binding GridViewVisibility}">
-                <ItemsControl x:Name="GridView" 
+            <Grid x:Name="FreeformGrid" Visibility="{Binding FreeformVisibility}">
+                <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">
                     <ItemsControl.ItemsPanel>
@@ -59,8 +59,8 @@
                 </ItemsControl>
             </Grid>
 
-            <Grid Visibility="{Binding GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility}">
-                <GridView x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControl" 
+            <Grid Visibility="{Binding GridViewVisibility}">
+                <GridView x:Name="xGridView" 
                           x:FieldModifier="public" 
                           HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch"
@@ -71,8 +71,8 @@
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True"
-                          DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
-                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted">
+                          DragItemsStarting="xGridView_OnDragItemsStarting"
+                          DragItemsCompleted="xGridView_OnDragItemsCompleted">
                     <GridView.ItemTemplate>
                         <DataTemplate>
                             <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
@@ -96,8 +96,8 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           SelectionMode="{Binding ItemSelectionMode}"
                           ItemsSource="{Binding DataBindingSource}"
-                          DragItemsStarting="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsStarting"
-                          DragItemsCompleted="GridViewWhichIsActuallyGridViewAndNotAnItemsControl_OnDragItemsCompleted"
+                          DragItemsStarting="xGridView_OnDragItemsStarting"
+                          DragItemsCompleted="xGridView_OnDragItemsCompleted"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True">
@@ -219,8 +219,8 @@
                     FontFamily="Rockwell">
                 <Button.Flyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem x:Name="GridViewWhichIsActuallyGridViewAndNotAnItemsControlOption" Text="GridViewWhichIsActuallyGridViewAndNotAnItemsControl"/>
-                        <MenuFlyoutItem x:Name="GridOption" Text="Grid"/>
+                        <MenuFlyoutItem x:Name="GridViewOption" Text="Grid"/>
+                        <MenuFlyoutItem x:Name="FreeformOption" Text="Freeform"/>
                         <MenuFlyoutItem x:Name="ListOption" Text="List"/>
                     </MenuFlyout>
                 </Button.Flyout>
