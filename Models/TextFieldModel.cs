@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
-using Microsoft.Extensions.DependencyInjection;
-using Dash.Models;
-
-namespace Dash
+﻿namespace Dash
 {
     /// <summary>
     /// A Field Model which holds text data

@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
 using Windows.UI;
-using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Dash.Models;
-using Dash.StaticClasses;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
 using Windows.Foundation;
-using Dash.ViewModels;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Linq;
 
 namespace Dash
 {
@@ -27,6 +22,7 @@ namespace Dash
 
         public CollectionModel CollectionModel { get { return _collectionModel; } }
 
+        public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
         /// <summary>
@@ -37,7 +33,7 @@ namespace Dash
             get { return _dataBindingSource; }
             set
             {
-                SetProperty(ref _dataBindingSource, value); 
+                SetProperty(ref _dataBindingSource, value);
             }
         }
 
@@ -67,7 +63,7 @@ namespace Dash
         #region Private & Backing variables
         
 
-        private double _cellSize = 400;
+        private double _cellSize;
         private double _outerGridWidth;
         private double _outerGridHeight;
         private double _containerGridHeight;
@@ -86,8 +82,8 @@ namespace Dash
 
         private ListViewSelectionMode _itemSelectionMode;
 
+        private Visibility _freeformVisibility;
         private Visibility _gridViewVisibility;
-        private Visibility _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility;
         private Visibility _listViewVisibility;
         private Visibility _controlsVisibility;
         private Visibility _filterViewVisibility;
@@ -172,16 +168,16 @@ namespace Dash
             set { SetProperty(ref _viewIsEnabled, value); }
         }
 
+        public Visibility FreeformVisibility
+        {
+            get { return _freeformVisibility; }
+            set { SetProperty(ref _freeformVisibility, value); }
+        }
+
         public Visibility GridViewVisibility
         {
             get { return _gridViewVisibility; }
             set { SetProperty(ref _gridViewVisibility, value); }
-        }
-
-        public Visibility GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility
-        {
-            get { return _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility; }
-            set { SetProperty(ref _gridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility, value); }
         }
 
         public Visibility ListViewVisibility
@@ -299,30 +295,15 @@ namespace Dash
         /// </summary>
         private void SetInitialValues()
         {
-            OuterGridHeight = 420;
-            OuterGridWidth = 400;
-
-            DraggerMargin = new Thickness(360, 400, 0, 0);
-            ProportionalDraggerMargin = new Thickness(380, 400, 0, 0);
-            CloseButtonMargin = new Thickness(366, 0, 0, 0);
-            BottomBarMargin = new Thickness(0, 400, 0, 0);
-            SelectButtonMargin = new Thickness(0, OuterGridHeight-20, 0,0);
-
-            DraggerFill = new SolidColorBrush(Color.FromArgb(255, 95, 95, 95));
-            ProportionalDraggerFill = new SolidColorBrush(Color.FromArgb(255, 139, 139, 139));
-            ProportionalDraggerStroke = new SolidColorBrush(Colors.Transparent);
-
-            CellSize = 400;
-            ListViewVisibility = Visibility.Collapsed;
-            GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
+            CellSize = 250;
             GridViewVisibility = Visibility.Visible;
+            ListViewVisibility = Visibility.Collapsed;
             FilterViewVisibility = Visibility.Collapsed;
-
+            SoloDisplayVisibility = Visibility.Collapsed;
+            GridViewVisibility = Visibility.Collapsed;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-
             ViewIsEnabled = true;
-            SoloDisplayVisibility = Visibility.Collapsed;
         }
 
         #region Size and Location methods
@@ -362,25 +343,25 @@ namespace Dash
         }
 
         /// <summary>
-        /// Changes the view to the GridView by making that Grid visible in the CollectionView.
+        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 ListViewVisibility = Visibility.Collapsed;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
+                GridViewVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
-                GridViewVisibility = Visibility.Visible;
+                FreeformVisibility = Visibility.Visible;
             }
             else
             {
                 ListViewVisibility = Visibility.Collapsed;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Visible;
+                GridViewVisibility = Visibility.Collapsed;
+                FreeformVisibility = Visibility.Visible;
             }
         }
 
@@ -395,35 +376,35 @@ namespace Dash
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 GridViewVisibility = Visibility.Collapsed;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
+                FreeformVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
                 ListViewVisibility = Visibility.Visible;
             }
             else
             {
                 GridViewVisibility = Visibility.Collapsed;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Collapsed;
+                FreeformVisibility = Visibility.Collapsed;
                 ListViewVisibility = Visibility.Visible;
             }                    
             OuterGridHeight = CellSize + 44;
             //SetDimensions();
         }
 
-        public void GridViewWhichIsActuallyGridViewAndNotAnItemsControlButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (_filtered)
             {
                 ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
                 ListViewVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Collapsed;
+                FreeformVisibility = Visibility.Collapsed;
                 DataBindingSource = filteredDocumentViewModels;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+                GridViewVisibility = Visibility.Visible;
             }
             else
             {
                 ListViewVisibility = Visibility.Collapsed;               
-                GridViewVisibility = Visibility.Collapsed;
-                GridViewWhichIsActuallyGridViewAndNotAnItemsControlVisibility = Visibility.Visible;
+                FreeformVisibility = Visibility.Collapsed;
+                GridViewVisibility = Visibility.Visible;
             }
         }
 
@@ -528,12 +509,8 @@ namespace Dash
         private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
         {
             foreach (var viewModel in col)
-            {
                 if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
-                {
                     return true;
-                }
-            }
             return false;
         }
 
@@ -541,22 +518,41 @@ namespace Dash
         {
             foreach (var viewModel in viewModels)
             {
-                if (ViewModelContains(DataBindingSource, viewModel))
-                {
-                    continue;
-                }
+                if (ViewModelContains(DataBindingSource, viewModel)) continue;
                 viewModel.ManipulationMode = ManipulationModes.System;
                 viewModel.DoubleTapEnabled = false;
                 DataBindingSource.Add(viewModel);
             }
             for (int i = DataBindingSource.Count - 1; i >= 0; --i)
             {
-                if (ViewModelContains(viewModels, DataBindingSource[i]))
-                {
-                    continue;
-                }
+                if (ViewModelContains(viewModels, DataBindingSource[i])) continue;
                 DataBindingSource.RemoveAt(i);
             }
+        }
+
+        /// <summary>
+        /// Constructs standard DocumentViewModels from the passed in DocumentModels
+        /// </summary>
+        /// <param name="documents"></param>
+        /// <returns></returns>
+        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
+         {
+            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
+            var offset = 0;
+            for (int i = 0; i<documents.Data.ToList().Count; i++)
+            {
+                var controller = ContentController.GetController(documents.Data.ToList()[i]) as DocumentController;
+                var viewModel = new DocumentViewModel(controller);
+                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
+                {
+                    var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
+                    var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
+                    viewModel.Position = new Point(x, y);
+                    offset += 15;
+                }
+                viewModels.Add(viewModel);
+            }
+            return viewModels;
         }
 
         /// <summary>
@@ -603,22 +599,6 @@ namespace Dash
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-        /// <summary>
-        /// Constructs standard DocumentViewModels from the passed in DocumentModels
-        /// </summary>
-        /// <param name="documents"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
-        {
-            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
-            foreach (var document in documents.Data)
-            {
-                viewModels.Add(new DocumentViewModel(ContentController.GetController(document) as DocumentController));
-            }
-            return viewModels;
-        }
-
 
         /// <summary>
         /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
@@ -765,12 +745,6 @@ namespace Dash
         {
             FilterViewVisibility = Visibility.Collapsed;
             _filtered = false;
-        }
-        public void MoveDocument(DocumentViewModel docViewModel, Point where)
-        {
-
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.X)), true);
-            docViewModel.DocumentController.SetField(DashConstants.KeyStore.XPositionFieldKey, new NumberFieldModelController(new NumberFieldModel(where.Y)), true);
         }
     }
 }

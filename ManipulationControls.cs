@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Foundation;
+﻿using Windows.Foundation;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 
@@ -73,6 +66,11 @@ namespace Dash {
             TranslateAndScale(false, true, e);
         }
 
+        public delegate void OnManipulatorTranslatedHandler(Point translationDelta);
+
+        public event OnManipulatorTranslatedHandler OnManipulatorTranslated;
+
+
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
@@ -113,7 +111,11 @@ namespace Dash {
                 group.Children.Add(scale);
             group.Children.Add(_element.RenderTransform);
             if (canTranslate)
+            {
                 group.Children.Add(translate);
+                OnManipulatorTranslated?.Invoke(new Point(translate.X, translate.Y));
+            }
+
 
             ////Get top left and bottom right points of documents in canvas space
             //Point p1 = group.TransformPoint(new Point(0, 0));
@@ -162,7 +164,8 @@ namespace Dash {
             //}
 
             // apply the transformation group
-            _element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+
+            //_element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
     }

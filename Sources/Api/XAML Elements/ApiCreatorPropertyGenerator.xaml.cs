@@ -1,29 +1,38 @@
-﻿using Dash.Sources.Api.XAML_Elements;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿using System;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Sources.Api.XAML_Elements {
-
-
+namespace Dash
+{
+    
     public sealed partial class ApiCreatorPropertyGenerator : UserControl {
+
+        public DashShared.Key parameterCollectionKey;
+        public ApiSourceDisplay SourceDisplay;
+
+        private DocumentController docModel;
+        public DocumentController DocModel {
+            get { return this.docModel; }
+            set { this.docModel = value; }
+        }
+
         public ApiCreatorPropertyGenerator() {
             DataContext = this;
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
+        }
+
+        public ApiCreatorPropertyGenerator(DashShared.Key key) {
+            DataContext = this;
+            InitializeComponent();
+            xListView.Visibility = Visibility.Collapsed;
+            docModel = null;
+            parameterCollectionKey = key;
+
         }
 
         // == DEPENDENCY MEMBERS ==
@@ -53,7 +62,7 @@ namespace Dash.Sources.Api.XAML_Elements {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void addParameterItem_Click(object sender, RoutedEventArgs e) {
-            var stackPanel = new ApiCreatorProperty();
+            var stackPanel = new ApiCreatorProperty(this);
 
             // make listview visible
             xListView.Items.Add(stackPanel);
@@ -63,6 +72,12 @@ namespace Dash.Sources.Api.XAML_Elements {
             // make panel visible
             xCollapseStackPanel.Visibility = Visibility.Visible;
             xCollapseButtonText.Text = "-";
+
+            Debug.Assert(SourceDisplay != null);
+            DocumentController c = CourtesyDocuments.ApiDocumentModel.addParameter(
+                docModel, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
+                stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
+            stackPanel.docModelRef = c; // update to contain ref to docmodel generated
         }
     }
 }

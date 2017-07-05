@@ -2,15 +2,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
-using Dash.Sources.Api;
 using DashShared;
 
 namespace Dash
@@ -85,7 +82,8 @@ namespace Dash
             protected static void BindOperationInteractions(ReferenceFieldModelController refFieldModelController, FrameworkElement renderElement)
             {
                 renderElement.ManipulationMode = ManipulationModes.All;
-                renderElement.ManipulationStarted += (sender, args) => args.Complete();
+                renderElement.ManipulationStarted += (sender, args) => 
+                args.Complete();
                 renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
@@ -136,7 +134,7 @@ namespace Dash
             /// Adds a binding from the passed in <see cref="renderElement"/> to the passed in <see cref="PointFieldModelController"/>
             /// <exception cref="ArgumentNullException">Throws an exception if the passed in <see cref="PointFieldModelController"/> is null</exception>
             /// </summary>
-            protected static void BindTranslation(FrameworkElement renderElement, PointFieldModelController translateController)
+            public static void BindTranslation(FrameworkElement renderElement, PointFieldModelController translateController)
             {
                 if (translateController == null) throw new ArgumentNullException(nameof(translateController));
                 var translateBinding = new Binding
@@ -197,7 +195,7 @@ namespace Dash
         /// </summary>
         public class LayoutCourtesyDocument : CourtesyDocument
         {
-            DocumentController LayoutDocumentController = null;
+            public DocumentController LayoutDocumentController = null;
             public LayoutCourtesyDocument(DocumentController docController)
             {
                 Document = docController; // get the layout field on the document being displayed
@@ -205,7 +203,7 @@ namespace Dash
                 if (layoutField == null)
                 {
                     var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(new DocumentModel[] { }));
-                    LayoutDocumentController = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, CourtesyDocuments.GenericCollection.DocumentType)).GetReturnedDocumentController();
+                    LayoutDocumentController = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, CourtesyDocuments.CollectionBox.DocumentType)).GetReturnedDocumentController();
 
                     SetLayoutForDocument(Document, LayoutDocumentController.DocumentModel);
                 }
@@ -222,7 +220,6 @@ namespace Dash
                     yield return ContentController.GetController<DocumentController>((layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
                 else yield return LayoutDocumentController;
             }
-            public DocumentCollectionFieldModelController LayoutDocumentCollectionController = null;
             public override List<FrameworkElement> makeView(DocumentController docController)
             {
                 return LayoutCourtesyDocument.MakeView(docController);
@@ -261,61 +258,6 @@ namespace Dash
                 ReferenceFieldModel rfm = (data as ReferenceFieldModelController).ReferenceFieldModel;
                 OperatorView opView = new OperatorView { DataContext = rfm };
                 return new List<FrameworkElement> { opView };
-            }
-        }
-
-        /// <summary>
-        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
-        /// </summary>
-        public class ApiSourceCreatorDoc : CourtesyDocument
-        {
-            public static DocumentType DocumentType = new DocumentType("APIC9C82-F32C-4704-AF6B-E55AC805C84F", "Api Source Creator");
-
-            public ApiSourceCreatorDoc()
-            {
-                // create a layout for the image
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-            }
-
-            public override List<FrameworkElement> makeView(DocumentController docController)
-            {
-                return TextingBox.MakeView(docController);
-            }
-            public static List<FrameworkElement> MakeView(DocumentController docController)
-            {
-                return new List<FrameworkElement>() { new ApiCreatorDisplay() };
-            }
-        }
-
-
-        /// <summary>
-        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
-        /// </summary>
-        public class ApiSourceDoc : CourtesyDocument
-        {
-            public static DocumentType DocumentType = new DocumentType("66FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
-            public static Key ApiFieldKey = new Key("927F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Api");
-            private static ApiSourceDisplay source;
-
-            public ApiSourceDoc(ApiSourceDisplay source)
-            {
-                // create a layout for the image
-                ApiSourceDoc.source = source;
-                var fields = new Dictionary<Key, FieldModel>
-                {
-                };
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-            }
-
-            public override List<FrameworkElement> makeView(DocumentController docController)
-            {
-                return new List<FrameworkElement>() { source };
-            }
-
-            public static List<FrameworkElement> MakeView(DocumentController docController)
-            {
-                return new List<FrameworkElement>() { ApiSourceDoc.source };
             }
         }
 
@@ -470,7 +412,8 @@ namespace Dash
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText);
                 if (fieldModelController is TextFieldModelController)
                 {
-                    tb = new TextBox();
+                    var textBox = new TextBox();
+                    tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
                     var textFieldModelController = fieldModelController as TextFieldModelController;
@@ -483,6 +426,7 @@ namespace Dash
                         Mode=BindingMode.TwoWay
                     };
                     tb.SetBinding(TextBox.TextProperty, sourceBinding);
+                    textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
 
                 }
                 else if (fieldModelController is NumberFieldModelController)
@@ -506,10 +450,6 @@ namespace Dash
                 // bind the text width
                 var widthController = GetWidthFieldController(docController);
                 BindWidth(tb, widthController);
-
-                // bind the text position
-                var translateController = GetTranslateFieldController(docController);
-                BindTranslation(tb, translateController);
 
                 var fontWeightController = GetFontWeightFieldController(docController);
                 BindFontWeight(tb, fontWeightController);
@@ -558,8 +498,10 @@ namespace Dash
                 // use the reference to the image to get the image field model controller
                 var refToImage = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
                 Debug.Assert(refToImage != null);
-                var imFieldModelController = ContentController.DereferenceToRootFieldModel<ImageFieldModelController>(refToImage);
-                Debug.Assert(imFieldModelController != null);
+                var fieldModelController = ContentController.DereferenceToRootFieldModel<FieldModelController>(refToImage);
+                var imFieldModelController = fieldModelController as ImageFieldModelController;
+                var textFieldModelController = fieldModelController as TextFieldModelController;
+                Debug.Assert(imFieldModelController != null || textFieldModelController != null);
 
                 // the image field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -572,10 +514,14 @@ namespace Dash
                 };
 
                 // make image source update when changed
-                var sourceBinding = new Binding
+                var sourceBinding = imFieldModelController != null ? new Binding
                 {
                     Source = imFieldModelController,
                     Path = new PropertyPath(nameof(imFieldModelController.Data))
+                } : new Binding
+                {
+                    Source = fieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data))
                 };
                 image.SetBinding(Image.SourceProperty, sourceBinding);
 
@@ -586,10 +532,6 @@ namespace Dash
                 // make image width resize
                 var widthController = GetWidthFieldController(docController);
                 BindWidth(image, widthController);
-
-                // make image translate
-                var translateController = GetTranslateFieldController(docController);
-                BindTranslation(image, translateController);
 
                 // set up interactions with operations
                 BindOperationInteractions(refToImage, image);
@@ -634,7 +576,7 @@ namespace Dash
             }
         }
 
-        public class GenericCollection : CourtesyDocument
+        public class CollectionBox : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
 
@@ -644,17 +586,19 @@ namespace Dash
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
                 SetLayoutForDocument(Document, Document.DocumentModel);
             }
-            public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
-            public GenericCollection(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
+            public CollectionBox(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
+            public CollectionBox(DocumentCollectionFieldModel docCollection) { Initialize(docCollection); }
             
             static public List<FrameworkElement> MakeView(DocumentController docController)
             {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 if (data != null)
                 {
+                    // defaults to fill width of parent if no width is provided in the docController
                     var w = docController.GetField(DashConstants.KeyStore.WidthFieldKey) != null ?
                         (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data : double.NaN;
-                    var h = double.NaN;
+                    var h = docController.GetField(DashConstants.KeyStore.HeightFieldKey) != null ?
+                        (docController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController).Data : double.NaN;
 
                     var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                     Debug.Assert(collectionFieldModelController != null);
@@ -662,16 +606,10 @@ namespace Dash
                     var collectionViewModel = new CollectionViewModel(collectionModel);
                     var view = new CollectionView(collectionViewModel);
 
-                    var translateBinding = new Binding
-                    {
-                        Source = collectionFieldModelController,
-                        Path = new PropertyPath("Pos"),
-                        Mode = BindingMode.TwoWay,
-                        Converter = new PointToTranslateTransformConverter()
-                    };
-                    view.SetBinding(UIElement.RenderTransformProperty, translateBinding);
-                    if (w > 0)
-                        view.Width = w;
+                    //if (w > 0)
+                    //    view.Width = w;
+                    //if (h > 0)
+                    //    view.Height = h;
 
                     return new List<FrameworkElement> { view };
                 }
@@ -679,55 +617,11 @@ namespace Dash
             }
         }
 
-        public class FreeformDocument : CourtesyDocument
-        {
-            public static DocumentType FreeFormDocumentType = new DocumentType("59B0C184-59BD-4570-87B8-0B660A68CBEC", "FreeFormDocument");
 
-            public static DocumentType DocumentType { get { return FreeFormDocumentType; } }
-
-            public FreeformDocument(IEnumerable<DocumentModel> docs)
-            {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModel(docs));
-                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, FreeFormDocumentType)).GetReturnedDocumentController();
-            }
-
-            public static List<FrameworkElement> MakeView(DocumentController docController)
-            {
-                var output = new List<FrameworkElement>();
-
-                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
-                var layoutData = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
-                Debug.Assert(layoutData != null);
-
-                layoutData.OnDocumentsChanged += delegate
-                {
-                    docController.FireOnLayoutChanged();
-                };
-
-                foreach (var layoutDoc in layoutData.GetDocuments())
-                {
-                    var position =
-                        (layoutDoc.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?.Data;
-                    //Debug.Assert(position != null);
-                    var ele = layoutDoc.MakeViewUI();
-                    foreach (var frameworkElement in ele)
-                    {
-                        frameworkElement.HorizontalAlignment = HorizontalAlignment.Left;
-                        frameworkElement.VerticalAlignment = VerticalAlignment.Top;
-                        frameworkElement.RenderTransform =
-                            PointToTranslateTransformConverter.Instance.ConvertDataToXaml(position.Value);
-                    }
-                    output.AddRange(ele);
-                }
-                return output;
-            }
-
-            private static void LayoutData_FieldModelUpdatedEvent(FieldModelController sender)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
+        /// <summary>
+        /// Constructs a nested stackpanel that displays the fields of all documents in the list
+        /// docs.
+        /// </summary>
         public class StackingPanel : CourtesyDocument
         {
             public static DocumentType StackPanelDocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
@@ -803,13 +697,13 @@ namespace Dash
                 // these prototypes will be overridden by delegates when an instance is created
                 _prototypeImage1Layout = new ImageBox(new TextFieldModel("Image 1"), 0, 20, 200, 200);
                 _prototypeImage2Layout = new ImageBox(new TextFieldModel("Image 2"), 0, 220, 200, 200);
-                _prototypeTextLayout   = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 20);
+                _prototypeTextLayout   = new TextingBox(new TextFieldModel("Text"), 0, 0, 200, 50);
 
-                return new FreeformDocument(new[] { _prototypeTextLayout.Document.DocumentModel, _prototypeImage1Layout.Document.DocumentModel, _prototypeImage2Layout.Document.DocumentModel }).Document;
+                return new CollectionBox(new DocumentCollectionFieldModel(new[] { _prototypeTextLayout.Document.DocumentModel, _prototypeImage1Layout.Document.DocumentModel, _prototypeImage2Layout.Document.DocumentModel })).Document;
             }
             public TwoImages(bool displayFieldsAsDocuments)
             {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+                var fields = DefaultLayoutFields(0, 0, 400, 400, null);
                 fields.Add(TextFieldKey,  new TextFieldModel("Hello World!"));
                 fields.Add(Image1FieldKey, new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
@@ -833,7 +727,7 @@ namespace Dash
                     ContentController.AddController(documentFieldModelController);
                     Document.SetField(DashConstants.KeyStore.DataKey, documentFieldModelController, true);
 
-                    var genericCollection = new GenericCollection(documentFieldModel).Document;
+                    var genericCollection = new CollectionBox(documentFieldModel).Document;
                     genericCollection.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(new NumberFieldModel(800)), true);
 
                     SetLayoutForDocument(Document, genericCollection.DocumentModel);
@@ -905,6 +799,307 @@ namespace Dash
             }
 
         }
+
+        // == API COURTESY DOCUMENTS ==
+
+
+        /// <summary>
+        /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
+        /// </summary>
+        public class ApiDocumentModel : CourtesyDocument {
+            public static DocumentType DocumentType = new DocumentType("453ACC23-14EF-4990-A36D-53D5EBE2734D", "Api Source Creator");
+            public static Key BaseUrlKey = new Key("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
+            public static Key HttpMethodKey = new Key("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
+            public static Key HeadersKey = new Key("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
+            public static Key ParametersKey = new Key("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
+
+            public static Key AuthHttpMethodKey = new Key("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
+            public static Key AuthBaseUrlKey = new Key("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
+            public static Key AuthKey = new Key("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
+            public static Key AuthSecretKey = new Key("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
+            public static Key AuthHeadersKey = new Key("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
+            public static Key AuthParametersKey = new Key("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
+
+            public static Key KeyTextKey = new Key("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
+            public static Key ValueTextKey = new Key("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
+            public static Key RequiredKey = new Key("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
+            public static Key DisplayKey = new Key("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
+
+
+            public ApiDocumentModel() {
+                var fields = new Dictionary<Key, FieldModel> {
+                    [BaseUrlKey] = new TextFieldModel(""),
+                    [HttpMethodKey] = new NumberFieldModel(0),
+                    [AuthBaseUrlKey] = new TextFieldModel(""),
+                    [AuthHttpMethodKey] = new NumberFieldModel(0),
+                    [AuthSecretKey] = new TextFieldModel(""),
+                    [AuthKey] = new TextFieldModel(""),
+                    [ParametersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [HeadersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [AuthParametersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+                    [AuthHeadersKey] = new DocumentCollectionFieldModel(new List<DocumentModel>()),
+
+                    // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
+                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModel(new List<DocumentModel>())
+                };
+                Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+            }
+
+            /// <summary>
+            /// Generates a new document containing the parameter information and adds that document to
+             /// the corresponding DocumentCollectionFieldModel representing that parameter's list (i.e. Header, AuthParameters).
+            /// </summary>
+            /// <returns>The newly generated document representing the newly added parameter.</returns>
+            public static DocumentController addParameter(DocumentController docController, TextBox key, TextBox value, CheckBox display,
+                CheckBox required, Key parameterCollectionKey, ApiSourceDisplay sourceDisplay) {
+                Debug.Assert(docController.DocumentType == DocumentType);
+                Debug.Assert(parameterCollectionKey == AuthParametersKey || parameterCollectionKey == AuthHeadersKey ||
+                    parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
+
+                // fetch parameter list to add to
+                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
+
+                double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
+                double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
+
+                // generate new doc with information to add
+                var fields = new Dictionary<Key, FieldModel> {
+                    [ValueTextKey] = new TextFieldModel(key.Text),
+                    [DisplayKey] = new NumberFieldModel(displayDouble),
+                    [KeyTextKey] = new TextFieldModel(value.Text),
+                    [RequiredKey] = new NumberFieldModel(requiredDouble),
+                };
+
+                // add to collection & return new document result
+                var ret = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
+
+                // apply textbox bindings
+                bindToTextBox(key, ret.Fields[KeyTextKey]);
+                bindToTextBox(value, ret.Fields[ValueTextKey]);
+
+                // apply checkbox bindings
+                bindToCheckBox(display, ret.Fields[DisplayKey]);
+                bindToCheckBox(required, ret.Fields[RequiredKey]);
+
+                // get the property's type
+                ApiProperty.ApiPropertyType type = ApiProperty.ApiPropertyType.Parameter;
+                if (parameterCollectionKey == HeadersKey)
+                    type = ApiProperty.ApiPropertyType.Header;
+                if (parameterCollectionKey == AuthHeadersKey)
+                    type = ApiProperty.ApiPropertyType.AuthHeader;
+                if (parameterCollectionKey == AuthParametersKey)
+                    type = ApiProperty.ApiPropertyType.AuthParameter;
+
+                // make new property in source view
+                ApiProperty apiprop = new ApiProperty(key.Text, value.Text, type, ret, required.IsChecked.Value);
+                sourceDisplay.AddToListView(apiprop);
+                Debug.WriteLine("here: " + key.Text);
+
+                // bind source's fields to those of the editor (key, value)
+                TextFieldModelController textFieldModelController = ret.Fields[KeyTextKey] as TextFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = textFieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                    Mode = BindingMode.OneWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                apiprop.XKey.SetBinding(TextBlock.TextProperty, sourceBinding);
+                bindToTextBox(apiprop.XValue, ret.Fields[ValueTextKey]);
+
+                // bind source visibility to display checkbox which is bound to backend display field of param document
+                var binding = new Binding {
+                    Source = display,
+                    Path = new PropertyPath(nameof(display.IsChecked)),
+                    Mode = BindingMode.OneWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Converter = new BoolToVisibilityConverter()
+                };
+                apiprop.SetBinding(ApiProperty.VisibilityProperty, binding);
+
+                // bind ApiRequired property to the required checkbox
+                var bindin = new Binding {
+                    Source = display,
+                    Path = new PropertyPath(nameof(required.IsChecked)),
+                    Mode = BindingMode.OneWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                apiprop.XRequired.SetBinding(CheckBox.IsCheckedProperty, bindin);
+
+
+                col.AddDocument(ret);
+                return ret;
+            }
+
+            /// <summary>
+            /// Removes a parameter from a given list of parameter documents.
+            /// </summary>
+            public static void removeParameter(DocumentController docController, DocumentController docModelToRemove,
+                Key parameterCollectionKey, ApiSourceDisplay sourceDisplay) {
+                Debug.Assert(docController.DocumentType == DocumentType);
+                Debug.Assert(parameterCollectionKey == AuthParametersKey || parameterCollectionKey == AuthHeadersKey ||
+                    parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
+
+                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
+                col.RemoveDocument(docModelToRemove);
+
+            }
+
+            // inherited
+            public override List<FrameworkElement> makeView(DocumentController docController) {
+                return ApiDocumentModel.MakeView(docController);
+            }
+
+            /// <summary>
+            /// Binds a textbox to a fieldModelController.
+            /// </summary>
+            private static void bindToTextBox(TextBox tb, FieldModelController field) {
+
+                // bind URL
+                TextFieldModelController textFieldModelController = field as TextFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = textFieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                tb.SetBinding(TextBox.TextProperty, sourceBinding);
+
+            }
+
+            /// <summary>
+            /// Binds a textbox to a fieldModelController.
+            /// </summary>
+            private static void bindToCheckBox(CheckBox cb, FieldModelController field) {
+
+                // bind URL
+                NumberFieldModelController textFieldModelController = field as NumberFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = textFieldModelController,
+                    Path = new PropertyPath(nameof(textFieldModelController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Converter = new DoubleToBoolConverter()
+                };
+                cb.SetBinding(CheckBox.IsCheckedProperty, sourceBinding);
+                textFieldModelController.Data = 1;
+            }
+
+            private static void makeBinding(ApiCreatorDisplay apiDisplay, DocumentController docController) {
+
+                // set up text bindings
+                bindToTextBox(apiDisplay.UrlTB, docController.Fields[BaseUrlKey]);
+                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.Fields[AuthBaseUrlKey]);
+                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.Fields[AuthKey]);
+                // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey]);
+
+                // bind drop down list
+                NumberFieldModelController fmcontroller = docController.Fields[HttpMethodKey] as NumberFieldModelController;
+                var sourceBinding = new Binding {
+                    Source = fmcontroller,
+                    Path = new PropertyPath(nameof(fmcontroller.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                apiDisplay.RequestMethodCB.SetBinding(ComboBox.SelectedIndexProperty, sourceBinding);
+
+            }
+
+            public static void setResults(DocumentController docController, List<DocumentController> documents) {
+                (docController.Fields[DocumentCollectionFieldModelController.CollectionKey] as DocumentCollectionFieldModelController).SetDocuments(documents);
+            }
+
+            public static List<FrameworkElement> MakeView(DocumentController docController) {
+                ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
+                ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
+                makeBinding(apiDisplay, docController);
+
+                // test bindings are working
+                Debug.WriteLine((docController.Fields[BaseUrlKey] as TextFieldModelController).Data);
+                apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
+                Debug.WriteLine((docController.Fields[BaseUrlKey] as TextFieldModelController).Data);
+
+                // generate collection view preview for results
+                var resultView = docController.Fields[DocumentCollectionFieldModelController.CollectionKey] as DocumentCollectionFieldModelController;
+                var elements = new List<FrameworkElement>() { apiDisplay, sourceDisplay };
+
+                // make collection view display framework element
+                var data = resultView;
+                var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
+                Debug.Assert(collectionFieldModelController != null);
+                var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
+                var collectionViewModel = new CollectionViewModel(collectionModel);
+                var collectionDisplay = new CollectionView(collectionViewModel);
+                
+
+                // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
+                // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)
+                // or should everyone just see the same view ?
+                // bind URL
+                var sourceBinding = new Binding {
+                    Source = apiDisplay,
+                    Path = new PropertyPath(nameof(apiDisplay.Visibility)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+                    Converter = new InverseVisibilityConverter()
+                };
+                sourceDisplay.SetBinding(ApiSourceDisplay.VisibilityProperty, sourceBinding);
+
+                // set up grid to hold UI elements: api size is fixed, results display resizes w/ document container
+                Grid g = new Grid();
+                g.HorizontalAlignment = HorizontalAlignment.Stretch;
+                g.VerticalAlignment = VerticalAlignment.Stretch;
+                g.RowDefinitions.Add(new RowDefinition());
+                g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(450) });
+                g.ColumnDefinitions.Add(new ColumnDefinition());
+                Grid.SetColumn(collectionDisplay, 1);
+                g.Children.Add(apiDisplay);
+                g.Children.Add(sourceDisplay);
+                g.Children.Add(collectionDisplay);
+
+                collectionDisplay.MaxWidth = 550;
+                collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
+                
+                // return all results
+                return new List<FrameworkElement>() { g };
+            }
+        }
+
+        /// <summary>
+        /// Converts doubles to booleans and back. 0 = false, 1 = true (or any nonzero number). Used
+        /// primarily to convert NumberFieldModels into boolean values.
+        /// </summary>
+        public class DoubleToBoolConverter : IValueConverter {
+            public object Convert(object value, Type targetType, object parameter, string language) {
+                return ((double)value != 0);
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language) {
+                if ((bool)value) return 1;
+                return 0;
+            }
+        }
+
+
+        /// <summary>
+        /// Converts doubles to booleans and back. 0 = false, 1 = true (or any nonzero number). Used
+        /// primarily to convert NumberFieldModels into boolean values.
+        /// </summary>
+        public class InverseVisibilityConverter : IValueConverter {
+            public object Convert(object value, Type targetType, object parameter, string language) {
+                if ((Windows.UI.Xaml.Visibility)value == Windows.UI.Xaml.Visibility.Collapsed)
+                    return Windows.UI.Xaml.Visibility.Visible;
+                else
+                return Windows.UI.Xaml.Visibility.Collapsed;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language) {
+                if ((Windows.UI.Xaml.Visibility)value == Windows.UI.Xaml.Visibility.Collapsed)
+                    return Windows.UI.Xaml.Visibility.Visible;
+                else
+                    return Windows.UI.Xaml.Visibility.Collapsed;
+            }
+        }
+
 
     }
 }

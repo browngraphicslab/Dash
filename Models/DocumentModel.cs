@@ -1,20 +1,7 @@
-﻿using Dash;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Dynamic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Storage.Pickers;
-using Windows.UI.Text;
-using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media.Animation;
 using DashShared;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
-using Dash.Models;
 
 namespace Dash
 {

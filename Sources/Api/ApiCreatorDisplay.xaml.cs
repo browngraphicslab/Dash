@@ -1,34 +1,55 @@
-﻿using Dash.Sources.Api.XAML_Elements;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using static Dash.MainPage;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Dash.Sources.Api {
+namespace Dash {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
     public sealed partial class ApiCreatorDisplay : UserControl {
-        private ManipulationControls manipulator;
+        public DocumentController DocModel;
+        public ApiSourceDisplay SourceDisplay;
+        private ApiSource Source;
 
+        // == CONSTRUCTORS ==
+        public ApiCreatorDisplay(DocumentController docModel, ApiSourceDisplay display) {
+            this.InitializeComponent();
+
+            // todo: probably put collectionkey, docmodel, and display in a separate class for readability
+            this.DocModel = docModel;
+            xHeaderControl.DocModel = docModel;
+            xParameterControl.DocModel = docModel;
+            xAuthControl.HeaderControl.DocModel = docModel;
+            xAuthControl.ParameterControl.DocModel = docModel;
+            
+            xHeaderControl.SourceDisplay = display;
+            xParameterControl.SourceDisplay = display;
+            xAuthControl.HeaderControl.SourceDisplay = display;
+            xAuthControl.ParameterControl.SourceDisplay = display;
+
+            xHeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.HeadersKey;
+            xParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.ParametersKey;
+            xAuthControl.ParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthParametersKey;
+            xAuthControl.HeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthHeadersKey;
+            SourceDisplay = display;
+
+            updateSource();
+        }
         public ApiCreatorDisplay() {
             this.InitializeComponent();
 
-           // manipulator = new ManipulationControls(this);
+            // manipulator = new ManipulationControls(this);
         }
+
+        // == GETTERS / SETTERS ==
+        public TextBox UrlTB { get { return xApiURLTB; } set { this.xApiURLTB = value; } }
+        public ComboBox RequestMethodCB { get { return requestTypePicker; } set { requestTypePicker = value; } }
+        public ApiCreatorAuthenticationDisplay AuthDisplay { get { return xAuthControl; } set { xAuthControl = value; } }
+
 
         // == API FUNCTIONALITY ==
 
@@ -41,6 +62,11 @@ namespace Dash.Sources.Api {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void createAPINodeTemplate(object sender, RoutedEventArgs e) {
+            this.Visibility = Visibility.Collapsed;
+            updateSource();
+        }
+
+        private void updateSource() {
 
             // convert listviews to dictionaries
             Dictionary<string, ApiProperty> headers, parameters, authHeaders, authParameters;
@@ -48,31 +74,7 @@ namespace Dash.Sources.Api {
             parameters = new Dictionary<string, ApiProperty>();
             authHeaders = new Dictionary<string, ApiProperty>();
             authParameters = new Dictionary<string, ApiProperty>();
-
-            // auth params to dictionary
-            foreach (ApiCreatorProperty p in xAuthControl.ParameterListView.Items) {
-                if (!(string.IsNullOrWhiteSpace(p.PropertyName)))
-                    authParameters.Add(p.PropertyName, new ApiProperty(p.PropertyName, p.PropertyValue, true, p.Required, p.ToDisplay, true));
-            }
-
-            // auth headers to dictionary
-            foreach (ApiCreatorProperty p in xAuthControl.HeaderListView.Items) {
-                if (!(string.IsNullOrWhiteSpace(p.PropertyName)))
-                    authHeaders.Add(p.PropertyName, new ApiProperty(p.PropertyName, p.PropertyValue, true, p.Required, p.ToDisplay, true));
-            }
-
-            // headers to dictionary
-            foreach (ApiCreatorProperty p in xHeaderControl.ItemListView.Items) {
-                parameters.Add(p.PropertyName, new ApiProperty(p.PropertyName, p.PropertyValue, false, p.Required, p.ToDisplay));
-            }
-
-            // params to dictionary
-            foreach (ApiCreatorProperty p in xParameterControl.ItemListView.Items) {
-                if (!(string.IsNullOrWhiteSpace(p.PropertyName)))
-                    parameters.Add(p.PropertyName, new ApiProperty(p.PropertyName, p.PropertyValue,
-                        true, p.Required, p.ToDisplay));
-            }
-
+           
             // dropdown to Httprequest type
             Windows.Web.Http.HttpMethod requestType;
             if (requestTypePicker.SelectedIndex == 0)
@@ -87,12 +89,19 @@ namespace Dash.Sources.Api {
                 return;
             }
 
+            if (String.IsNullOrEmpty(xApiURLTB.Text))
+                xApiURLTB.Text = "https://itunes.apple.com/search";
+
             // instantiate new APISource
-            ApiSource newApi = new ApiSource(requestType, xApiURLTB.Text, headers, parameters,
-                authParameters, authHeaders, xAuthControl.AuthURL, xAuthControl.Secret,
+            Source = new ApiSource(DocModel, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
-            MainPage.Instance.DisplayDocument(new CourtesyDocuments.ApiSourceDoc(newApi.createAPISourceDisplay()).Document);
+            Source.setApiDisplay(SourceDisplay);
 
         }
+
+        private void xHeaderControl_Loaded(object sender, RoutedEventArgs e) {
+
+        }
+        
     }
 }

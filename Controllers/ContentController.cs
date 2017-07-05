@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -268,7 +265,7 @@ namespace Dash
                 Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache.");
 
                 // get the field model id from the document model
-                fieldModelId = ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey).GetId();// docModel.Fields[reference.FieldKey];
+                fieldModelId = GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey).GetId();// docModel.Fields[reference.FieldKey];
             }
             else
             {

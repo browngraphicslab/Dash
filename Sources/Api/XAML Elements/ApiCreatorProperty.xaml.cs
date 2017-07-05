@@ -1,21 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Sources.Api.XAML_Elements {
+namespace Dash {
 
     /// <summary>
     /// This class contains the visual display for an ApiSourceCreator connection
@@ -23,6 +13,7 @@ namespace Dash.Sources.Api.XAML_Elements {
     /// for additional display options.
     /// </summary>
     public sealed partial class ApiCreatorProperty : UserControl {
+        ApiCreatorPropertyGenerator parent;
 
         // == MEMBERS ==
         public String PropertyName { get { return xKey.Text; } }
@@ -30,10 +21,19 @@ namespace Dash.Sources.Api.XAML_Elements {
         public bool ToDisplay { get { return (bool)xDisplay.IsChecked; } }
         public bool Required { get { return (bool)xRequired.IsChecked; } }
 
+
+        public TextBox XPropertyName { get { return xKey; } }
+        public TextBox XPropertyValue { get { return xValue; } }
+        public CheckBox XToDisplay { get { return xDisplay; } }
+        public CheckBox XRequired { get { return xRequired; } }
+
+        public DocumentController docModelRef;
+
         // == CONSTRUCTORS == 
-        public ApiCreatorProperty() {
+        public ApiCreatorProperty(ApiCreatorPropertyGenerator parent) {
             DataContext = this;
             this.InitializeComponent();
+            this.parent = parent;
         }
 
         // == METHODS ==
@@ -45,17 +45,32 @@ namespace Dash.Sources.Api.XAML_Elements {
         /// <param name="sender">sending obj (the delete button)</param>
         /// <param name="e">event arg</param>
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) {
-
-            // TODO: I could have this throw an error. If you get an error here, you're not
-            // using this thing correctly.
             if (this.Parent.GetType() == typeof(ListView)) {
+
+                // fetch containing list view
                 ListView listView = (ListView)XApiCreatorProperty.Parent;
-                listView.Items.RemoveAt(listView.Items.IndexOf(XApiCreatorProperty));
+                int index = listView.Items.IndexOf(XApiCreatorProperty);
+                listView.Items.RemoveAt(index);
+
+                // update rendered source result to reflect the deleted field
+                parent.SourceDisplay.RemoveFromListView(index);
+
+                // propagate changes to the document model
+                CourtesyDocuments.ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
+
                 if (listView.Items.Count == 0)
                     listView.Visibility = Visibility.Collapsed;
                 else
                     listView.Visibility = Visibility.Visible;
             } 
+        }
+
+        private void xDisplay_Checked(object sender, RoutedEventArgs e) {
+           
+        }
+
+        private void xDisplay_Unchecked(object sender, RoutedEventArgs e) {
+
         }
     }
 }

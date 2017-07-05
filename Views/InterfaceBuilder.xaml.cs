@@ -1,22 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.Storage.FileProperties;
-using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using DashShared;
 using static Dash.CourtesyDocuments;
 
@@ -83,12 +73,18 @@ namespace Dash
             foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
             {
                 // use the layout document to generate a UI
-                var fieldView = layoutDocument.MakeViewUI();
+                var fieldView = layoutDocument.MakeViewUI().First();
+
+                var translationController = layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                if (translationController != null)
+                {
+                    CourtesyDocument.BindTranslation(fieldView, translationController);
+                }               
 
                 // generate an editable border
                 var editableBorder = new EditableFieldFrame(layoutDocument.GetId())
                 {
-                    EditableContent = fieldView.FirstOrDefault(),
+                    EditableContent = fieldView,
                     HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
                     VerticalAlignment = VerticalAlignment.Top
                 };
@@ -121,7 +117,7 @@ namespace Dash
                 // TODO this probably causes a memory leak, but we have to capture the layoutDocument variable.
                 editableBorder.Loaded += delegate
                 {
-                    var translationController =
+                    translationController =
                             layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
                     Debug.Assert(translationController != null);
                     var translateBinding = new Binding
@@ -174,7 +170,7 @@ namespace Dash
             var pair = e.Items[0] is KeyValuePair<Key, string> ? (KeyValuePair<Key, string>)e.Items[0] : new KeyValuePair<Key, string>();
             Debug.WriteLine(pair.Key.Name);
             e.Data.RequestedOperation = DataPackageOperation.Move;
-            Debug.WriteLine(_documentController.Fields[pair.Key].GetType());
+            Debug.WriteLine(_documentController.GetField(pair.Key).GetType());
             e.Data.Properties.Add("key", pair.Key);
             //e.Items.Insert(0, );
         }
@@ -192,7 +188,11 @@ namespace Dash
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModel is TextFieldModel)
             {
-                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                var textFieldModel= ContentController.DereferenceToRootFieldModel<TextFieldModel>(new ReferenceFieldModel(_documentController.GetId(), key));
+                var textFieldModelController = ContentController.GetController<TextFieldModelController>(textFieldModel.Id);
+                if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
+                    box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
             }
             else if (fieldModel is ImageFieldModel)
             {
@@ -206,10 +206,13 @@ namespace Dash
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                box.Document.Fields[DashConstants.KeyStore.PositionFieldKey] =
-                    new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
+                var pfmc = new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
                         e.GetPosition(_documentView).Y));
-                LayoutCourtesyDocument.LayoutDocumentCollectionController.AddDocument(box.Document);
+                box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
+                ContentController.AddController(pfmc);
+                var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutCourtesyDocument.LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));
+
+                ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);
             }
 
             ApplyEditable();

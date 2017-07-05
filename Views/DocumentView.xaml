@@ -8,7 +8,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    PointerPressed="DocumentView_OnPointerPressed" d:DataContext="{d:DesignInstance local:DocumentViewModel }">
+    d:DataContext="{d:DesignInstance local:DocumentViewModel }"
+    Width="{Binding Width}" Height="{Binding Height}">
 
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
@@ -21,8 +22,7 @@
         <Grid x:Name="XGrid"
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
-                RightTapped="Grid_RightTapped"
-               Style="{StaticResource xNodeContainerGrid}">
+                Style="{StaticResource xNodeContainerGrid}">
 
             <ItemsControl x:Name="DocumentsControl"
                           x:FieldModifier="public"
@@ -33,37 +33,27 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
-
-
         </Grid>
-
-
-
-        <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-        </Image>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
                 Width="40"
                 Background="Transparent"
                 Height="40"
                 HorizontalAlignment="Right"
-                VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY"
+                VerticalAlignment="Bottom" 
+                ManipulationMode="TranslateX, TranslateY"
                 Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 >
             <Button.Template>
                 <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <Ellipse Fill="Transparent" />
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                    </Grid>
+                    <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
                 </ControlTemplate>
             </Button.Template>
         </Button>
         <Button x:Name="xEditButton" 
                 Width="35"
                 Height="35"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,50,0" Tapped="XEditButton_OnTapped" Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Tapped="XEditButton_OnTapped" Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" />
             <Button.Template>
                 <ControlTemplate TargetType="Button">

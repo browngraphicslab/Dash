@@ -27,7 +27,7 @@
                     // update local
                     // update server
                 }
-                OnDataUpdated();
+                FireFieldModelUpdated();
             }
         }
 

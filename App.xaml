@@ -78,7 +78,7 @@
         <!-- border & padding on node-containing elements-->
         <Style TargetType="Grid" x:Name="xNodeContainerGrid">
             <Setter Property="BorderBrush" Value="#FF0078D7"/>
-            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Padding" Value="0,0,0,0"/>
             <Setter Property="Background" Value="#AAFFFFFF"/>
             <Setter Property="BorderThickness" Value="2" />
         </Style>
@@ -140,6 +140,7 @@
 
         <!-- MISC. STYLES-->
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
 
     </Application.Resources>
 </Application>

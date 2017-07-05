@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
@@ -26,6 +24,8 @@ namespace Dash
         ///     to the server and across the client
         /// </summary>
         private List<DocumentController> _documents;
+
+        public List<DocumentController> Documents { get { return _documents;  } }
 
         /// <summary>
         ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
@@ -59,10 +59,17 @@ namespace Dash
         public void AddDocument(DocumentController docController)
         {
             _documents.Add(docController);
-            DocumentCollectionFieldModel.Data = _documents.Select((d) => d.GetId());
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            OnDataUpdated();
+            FireFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
+        }
+
+
+        public void RemoveDocument(DocumentController doc) {
+            _documents.Remove(doc);
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            FireFieldModelUpdated();
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
@@ -71,7 +78,7 @@ namespace Dash
             Debug.WriteLine(_documents.Count);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            OnDataUpdated();
+            FireFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
 
         }

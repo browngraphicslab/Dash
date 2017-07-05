@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dash
+﻿namespace Dash
 {
     public class ReferenceFieldModelController : FieldModelController
     {
@@ -21,7 +15,7 @@ namespace Dash
 
         private void Fmc_FieldModelUpdatedEvent(FieldModelController sender)
         {
-            OnDataUpdated();
+            FireFieldModelUpdated();
         }
 
         /// <summary>
