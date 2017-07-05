@@ -126,6 +126,7 @@ namespace Dash
                 Source = fontSizeController,
                 Path = new PropertyPath(nameof(fontSizeController.Data)),
                 Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
 
             xFontSizeSlider.SetBinding(Slider.ValueProperty, fontSizeBinding);
@@ -145,7 +146,8 @@ namespace Dash
                 Path = new PropertyPath(nameof(positionController.Data)),
                 Mode = BindingMode.TwoWay,
                 Converter = converter,
-                ConverterParameter = Coordinate.X
+                ConverterParameter = Coordinate.X,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty, xPositionBinding);
 
@@ -155,7 +157,8 @@ namespace Dash
                 Path = new PropertyPath(nameof(positionController.Data)),
                 Mode = BindingMode.TwoWay,
                 Converter = converter,
-                ConverterParameter = Coordinate.Y
+                ConverterParameter = Coordinate.Y,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
         }
@@ -169,7 +172,8 @@ namespace Dash
             {
                 Source = heightController,
                 Path = new PropertyPath(nameof(heightController.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
         }
@@ -183,7 +187,8 @@ namespace Dash
             {
                 Source = widthController,
                 Path = new PropertyPath(nameof(widthController.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             xWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
         }
