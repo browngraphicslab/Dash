@@ -137,12 +137,12 @@ namespace Dash
                         {
                             foreach (var outputKey in ofm.OutputKeys)
                             {
-                                ReferenceFieldModel irfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                                ReferenceFieldModel orfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
-                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                                ReferenceFieldModelController irfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey);
+                                ReferenceFieldModelController orfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey);
+                                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
+                                    ContentController.DereferenceToRootFieldModel(orfm).GetId());
                             }
                         }
                     }
@@ -163,12 +163,12 @@ namespace Dash
                         {
                             foreach (var outputKey in ofm.OutputKeys)
                             {
-                                ReferenceFieldModel irfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                                ReferenceFieldModel orfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                                _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
-                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                                ReferenceFieldModelController irfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey);
+                                ReferenceFieldModelController orfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey);
+                                _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
+                                    ContentController.DereferenceToRootFieldModel(orfm).GetId());
                             }
                         }
                     }
@@ -190,9 +190,9 @@ namespace Dash
                     {
                         foreach (var outputKey in ofm.OutputKeys)
                         {
-                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                            _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id, ContentController.DereferenceToRootFieldModel(orfm).Id);
+                            ReferenceFieldModelController irfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey);
+                            ReferenceFieldModelController orfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey);
+                            _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(), ContentController.DereferenceToRootFieldModel(orfm).GetId());
                         }
                     }
                 }

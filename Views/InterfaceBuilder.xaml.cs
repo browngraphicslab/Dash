@@ -188,8 +188,7 @@ namespace Dash
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModel is TextFieldModel)
             {
-                var textFieldModel= ContentController.DereferenceToRootFieldModel<TextFieldModel>(new ReferenceFieldModel(_documentController.GetId(), key));
-                var textFieldModelController = ContentController.GetController<TextFieldModelController>(textFieldModel.Id);
+                var textFieldModelController = ContentController.DereferenceToRootFieldModel<TextFieldModelController>(new ReferenceFieldModelController(_documentController.GetId(), key));
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
                     box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(_documentController.GetId(), key));
                 else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
