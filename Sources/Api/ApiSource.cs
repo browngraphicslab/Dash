@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
+using static Dash.CourtesyDocuments;
 
 namespace Dash {
     /// <summary>
@@ -249,6 +250,28 @@ namespace Dash {
                 // put a single document into the collection view
                 DocumentController documentModel = JsonToDashUtil.Parse(response.Content.ToString());
 
+                var layoutDocModel = new DocumentModel(new Dictionary<Key, FieldModel>(), CourtesyDocuments.CollectionBox.DocumentType);
+                var layDocCtrl = new DocumentController(layoutDocModel);
+                var dcfm = new DocumentCollectionFieldModel(new DocumentModel[] { });
+                ContentController.AddModel(dcfm);
+                ContentController.AddController(layDocCtrl);
+                var cbox = new CollectionBox(dcfm).Document;
+                var cfm = new DocumentModelFieldModel(cbox.DocumentModel);
+                ContentController.AddModel(cfm);
+                var cfmc = new DocumentFieldModelController(cfm);
+                ContentController.AddController(cfmc);
+                var widthField = new NumberFieldModel(200);
+                ContentController.AddModel(widthField);
+                var widthFieldCtrl = new NumberFieldModelController(widthField);
+                ContentController.AddController(widthFieldCtrl);
+                var heightField = new NumberFieldModel(200);
+                ContentController.AddModel(heightField);
+                var heightFieldCtrl = new NumberFieldModelController(heightField);
+                ContentController.AddController(heightFieldCtrl);
+                layDocCtrl.SetField(DashConstants.KeyStore.LayoutKey, cfmc, false);
+                layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
+                layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
+
                 // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
                 // the parser should be reworked to auto do this or do it in a more user-friendly way
                 foreach (var f in documentModel.Fields) {
@@ -257,6 +280,9 @@ namespace Dash {
                         responseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
                     if (f.Value is DocumentCollectionFieldModelController)
                         responseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
+                    foreach (var doc in ResponseAsDocuments)
+                    {
+                    }
                 }
 
                 if (responseAsDocuments.Count == 0)

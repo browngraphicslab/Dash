@@ -205,6 +205,16 @@ namespace Dash
             return delegateController;
         }
 
+        public bool IsDelegateOf(string id)
+        {
+            var proto = GetPrototype();
+            if (proto != null)
+                if (proto.GetId() == id)
+                    return true;
+                else return proto.IsDelegateOf(id);
+            return false;
+        }
+
         /// <summary>
         ///     Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
         ///     and returns it if no delegates field existed
@@ -288,7 +298,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        public FrameworkElement MakeAllViewUI()
+        private FrameworkElement makeAllViewUI(List<DocumentController> docList)
         {
             var sp = new StackPanel();
             foreach (var f in EnumFields())
@@ -300,7 +310,7 @@ namespace Dash
                     var dBox = new CourtesyDocuments.DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
-                    foreach (var ele in dBox.MakeViewUI())
+                    foreach (var ele in dBox.makeViewUI(docList))
                     {
                         ele.MaxWidth = 200;
                         hstack.Children.Add(ele);
@@ -326,34 +336,40 @@ namespace Dash
             }
             return sp;
         }
-
         public List<FrameworkElement> MakeViewUI()
         {
+            return makeViewUI(new List<DocumentController>());
+        }
+
+        public List<FrameworkElement> makeViewUI(IEnumerable<DocumentController> docContextList)
+        {
+            var docList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);
+            docList.Add(this);
             var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.TextingBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.TextingBox.MakeView(this, docList));
             }
             else if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.ImageBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.ImageBox.MakeView(this, docList));
             }
             else if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.StackingPanel.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.StackingPanel.MakeView(this, docList));
             }
             else if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.CollectionBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.CollectionBox.MakeView(this, docList));
             }
             else if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.OperatorBox.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.OperatorBox.MakeView(this, docList));
             } 
             else if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType) 
             {
-                uieles.AddRange(CourtesyDocuments.ApiDocumentModel.MakeView(this));
+                uieles.AddRange(CourtesyDocuments.ApiDocumentModel.MakeView(this, docList));
             } 
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
@@ -362,11 +378,11 @@ namespace Dash
                 {
                     var doc = ContentController.DereferenceToRootFieldModel<DocumentFieldModelController>(fieldModelController);
                     Debug.Assert(doc != null);
-                    uieles.AddRange(doc.Data.MakeViewUI());
+                    uieles.AddRange(doc.Data.makeViewUI(docList));
                 }
                 else
                 {
-                    uieles.Add(MakeAllViewUI());
+                    uieles.Add(makeAllViewUI(docList));
                 }
             }
             return uieles;

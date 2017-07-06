@@ -47,21 +47,12 @@ namespace Dash
 
         private void AddElements(IList<DocumentModel> newDocs)
         {
-            foreach (DocumentModel model in newDocs)
+            foreach (var model in newDocs)
             {
-                DocumentController controller = new DocumentController(model);
-                var layout = controller.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-                var elements = layout != null
-                    ? layout.Data.MakeViewUI()
-                    : new DocumentViewModel(controller).GetUiElements(new Rect());
+                var controller = new DocumentController(model);
+                var elements = controller.MakeViewUI();
 
-                if (elements.Count == 0)
-                {
-                    var panel = controller.MakeAllViewUI();
-                    Add(panel);
-                }
-                else
-                    _dictionary[model] = elements;
+                _dictionary[model] = elements;
                 foreach (var element in elements)
                 {
                     base.Add(element);

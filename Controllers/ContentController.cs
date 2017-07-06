@@ -237,9 +237,9 @@ namespace Dash
         /// Follows a <see cref="ReferenceFieldModel"/> to the first field that it references, and returns that reference as the passed in type. On error
         /// this returns null
         /// </summary>
-        public static TFieldModelType DereferenceFieldModel<TFieldModelType>(ReferenceFieldModel reference) where TFieldModelType : FieldModel
+        public static TFieldModelType DereferenceFieldModel<TFieldModelType>(ReferenceFieldModel reference, List<DocumentController> contextList = null) where TFieldModelType : FieldModel
         {
-            var firstReference = DereferenceFieldModel(reference);
+            var firstReference = DereferenceFieldModel(reference, contextList = null);
             Debug.Assert(firstReference != null, "The passed in reference does not exist");
             var typeSafeFirstReference = firstReference as TFieldModelType;
             Debug.Assert(typeSafeFirstReference != null, "The passed in reference is not of the passed in type");
@@ -250,22 +250,28 @@ namespace Dash
         /// Follows a <see cref="ReferenceFieldModel"/> to the first field that it references, and returns that reference as the passed in type. On error
         /// this returns null
         /// </summary>
-        public static FieldModel DereferenceFieldModel(ReferenceFieldModel reference)
+        public static FieldModel DereferenceFieldModel(ReferenceFieldModel reference, List<DocumentController> contextList = null)
         {
             Debug.Assert(reference != null);
             DocumentModel docModel = null;
             string fieldModelId = null;
             FieldModel fieldModel = null;
 
+            var refDocId = reference.DocId;
+            if (contextList != null)
+                foreach (var doc in contextList)
+                    if (doc.IsDelegateOf(refDocId))
+                        refDocId = doc.GetId();
+
             // check if the document exists
-            if (_models.ContainsKey(reference.DocId))
+            if (_models.ContainsKey(refDocId))
             {
                 // get the document model
-                docModel = _models[reference.DocId] as DocumentModel;
+                docModel = _models[refDocId] as DocumentModel;
                 Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache.");
 
                 // get the field model id from the document model
-                fieldModelId = GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey).GetId();// docModel.Fields[reference.FieldKey];
+                fieldModelId = GetController<DocumentController>(refDocId).GetField(reference.FieldKey).GetId();// docModel.Fields[reference.FieldKey];
             }
             else
             {
@@ -297,13 +303,13 @@ namespace Dash
         /// <summary>
         /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
         /// </summary>
-        public static FieldModel DereferenceToRootFieldModel(FieldModel reference)
+        public static FieldModel DereferenceToRootFieldModel(FieldModel reference, List<DocumentController> contextList = null)
         {
             Debug.Assert(reference != null);
             FieldModel possibleFieldModel = reference;
             while (possibleFieldModel is ReferenceFieldModel)
             {
-                possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel);
+                possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel,  contextList);
             }
 
             Debug.Assert(possibleFieldModel != null, "The chain of references ended in a null field");
@@ -326,9 +332,9 @@ namespace Dash
         /// <summary>
         /// Follows a <see cref="FieldModelController"/>/<see cref="FieldModelController"/> or chain of <see cref="ReferenceFieldModelController"/> to the "root" item, which is a <see cref="FieldModelController"/>
         /// </summary>
-        public static FieldModelController DereferenceToRootFieldModel(FieldModelController reference)
+        public static FieldModelController DereferenceToRootFieldModel(FieldModelController reference, List<DocumentController> contextList = null)
         {
-            var dereferencedFieldModel = DereferenceToRootFieldModel(reference.FieldModel);
+            var dereferencedFieldModel = DereferenceToRootFieldModel(reference.FieldModel, contextList);
             var derefrencedFieldModelController = GetController<FieldModelController>(dereferencedFieldModel.Id);
             return derefrencedFieldModelController;
         }
@@ -337,9 +343,9 @@ namespace Dash
         /// <summary>
         /// Follows a <see cref="ReferenceFieldModelController"/>/<see cref="FieldModelController"/> or chain of <see cref="ReferenceFieldModelController"/> to the "root" item, which is a <see cref="TFieldModelControllerType"/>
         /// </summary>
-        public static TFieldModelControllerType DereferenceToRootFieldModel<TFieldModelControllerType>(FieldModelController reference) where TFieldModelControllerType : FieldModelController
+        public static TFieldModelControllerType DereferenceToRootFieldModel<TFieldModelControllerType>(FieldModelController reference, List<DocumentController> contextList=null) where TFieldModelControllerType : FieldModelController
         {
-            var rootFieldModelController = DereferenceToRootFieldModel(reference);
+            var rootFieldModelController = DereferenceToRootFieldModel(reference, contextList);
             Debug.Assert(rootFieldModelController is TFieldModelControllerType, "The chain of references ends in a field model controller which is not of the desired type");
             return rootFieldModelController as TFieldModelControllerType;
         }
