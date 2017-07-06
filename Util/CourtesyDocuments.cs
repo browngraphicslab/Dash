@@ -859,7 +859,7 @@ namespace Dash
                     parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
                 // fetch parameter list to add to
-                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
+                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
 
                 double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
                 double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
@@ -877,12 +877,12 @@ namespace Dash
                 var ret = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
 
                 // apply textbox bindings
-                bindToTextBox(key, ret.Fields[KeyTextKey]);
-                bindToTextBox(value, ret.Fields[ValueTextKey]);
+                bindToTextBox(key, ret.GetField(KeyTextKey));
+                bindToTextBox(value, ret.GetField(ValueTextKey));
 
                 // apply checkbox bindings
-                bindToCheckBox(display, ret.Fields[DisplayKey]);
-                bindToCheckBox(required, ret.Fields[RequiredKey]);
+                bindToCheckBox(display, ret.GetField(DisplayKey));
+                bindToCheckBox(required, ret.GetField(RequiredKey));
 
                 // get the property's type
                 ApiProperty.ApiPropertyType type = ApiProperty.ApiPropertyType.Parameter;
@@ -899,7 +899,7 @@ namespace Dash
                 Debug.WriteLine("here: " + key.Text);
 
                 // bind source's fields to those of the editor (key, value)
-                TextFieldModelController textFieldModelController = ret.Fields[KeyTextKey] as TextFieldModelController;
+                TextFieldModelController textFieldModelController = ret.GetField(KeyTextKey) as TextFieldModelController;
                 var sourceBinding = new Binding
                 {
                     Source = textFieldModelController,
@@ -908,7 +908,7 @@ namespace Dash
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
                 apiprop.XKey.SetBinding(TextBlock.TextProperty, sourceBinding);
-                bindToTextBox(apiprop.XValue, ret.Fields[ValueTextKey]);
+                bindToTextBox(apiprop.XValue, ret.GetField(ValueTextKey));
 
                 // bind source visibility to display checkbox which is bound to backend display field of param document
                 var binding = new Binding
@@ -946,7 +946,7 @@ namespace Dash
                 Debug.Assert(parameterCollectionKey == AuthParametersKey || parameterCollectionKey == AuthHeadersKey ||
                     parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
-                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.Fields[parameterCollectionKey];
+                DocumentCollectionFieldModelController col = (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
                 col.RemoveDocument(docModelToRemove);
 
             }
@@ -1000,13 +1000,13 @@ namespace Dash
             {
 
                 // set up text bindings
-                bindToTextBox(apiDisplay.UrlTB, docController.Fields[BaseUrlKey]);
-                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.Fields[AuthBaseUrlKey]);
-                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.Fields[AuthKey]);
-                // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey]);
+                bindToTextBox(apiDisplay.UrlTB, docController.GetField(BaseUrlKey));
+                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.GetField(AuthBaseUrlKey));
+                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.GetField(AuthKey));
+                // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey));
 
                 // bind drop down list
-                NumberFieldModelController fmcontroller = docController.Fields[HttpMethodKey] as NumberFieldModelController;
+                NumberFieldModelController fmcontroller = docController.GetField(HttpMethodKey) as NumberFieldModelController;
                 var sourceBinding = new Binding
                 {
                     Source = fmcontroller,
@@ -1020,7 +1020,7 @@ namespace Dash
 
             public static void setResults(DocumentController docController, List<DocumentController> documents)
             {
-                (docController.Fields[DocumentCollectionFieldModelController.CollectionKey] as DocumentCollectionFieldModelController).SetDocuments(documents);
+                (docController.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController).SetDocuments(documents);
             }
 
             public static FrameworkElement MakeView(DocumentController docController)
@@ -1030,12 +1030,12 @@ namespace Dash
                 makeBinding(apiDisplay, docController);
 
                 // test bindings are working
-                Debug.WriteLine((docController.Fields[BaseUrlKey] as TextFieldModelController).Data);
+                Debug.WriteLine((docController.GetField(BaseUrlKey) as TextFieldModelController).Data);
                 apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
-                Debug.WriteLine((docController.Fields[BaseUrlKey] as TextFieldModelController).Data);
+                Debug.WriteLine((docController.GetField(BaseUrlKey) as TextFieldModelController).Data);
 
                 // generate collection view preview for results
-                var resultView = docController.Fields[DocumentCollectionFieldModelController.CollectionKey] as DocumentCollectionFieldModelController;
+                var resultView = docController.GetField(DocumentCollectionFieldModelController.CollectionKey) as DocumentCollectionFieldModelController;
 
                 // make collection view display framework element
                 var data = resultView;

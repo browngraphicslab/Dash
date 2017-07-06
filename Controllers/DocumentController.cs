@@ -17,7 +17,7 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public Dictionary<Key, FieldModelController> Fields;
+        private Dictionary<Key, FieldModelController> _fields;
         public DocumentController(DocumentModel documentModel)
         {
             // Initialize Local Variables
@@ -26,7 +26,7 @@ namespace Dash
             var fieldControllers =
                 ContentController.GetControllers<FieldModelController>(documentModel.Fields.Values);
             // put the field controllers in an observable dictionary
-            Fields =
+            _fields =
                 new Dictionary<Key, FieldModelController>(documentModel.Fields.ToDictionary(kvp => kvp.Key,
                     kvp => fieldControllers.First(controller => controller.GetId() == kvp.Value)));
 
@@ -93,7 +93,7 @@ namespace Dash
         public DocumentController GetPrototypeWithFieldKey(Key key)
         {
             // if we mask the key by storing it as a field return ourself
-            if (Fields.ContainsKey(key))
+            if (_fields.ContainsKey(key))
                 return this;
 
             // otherwise get our prototype and see if it associated a Field with the Key
@@ -110,12 +110,12 @@ namespace Dash
         public DocumentController GetPrototype()
         {
             // if there is no prototype return null
-            if (!Fields.ContainsKey(DashConstants.KeyStore.PrototypeKey))
+            if (!_fields.ContainsKey(DashConstants.KeyStore.PrototypeKey))
                 return null;
 
             // otherwise try to convert the field associated with the prototype key into a DocumentFieldModelController
             var documentFieldModelController =
-                Fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
+                _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
             // if the field contained a DocumentFieldModelController return it's data, otherwise return null
             return documentFieldModelController?.Data;
@@ -137,7 +137,7 @@ namespace Dash
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
-            proto.Fields[key] = field;
+            proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -157,7 +157,7 @@ namespace Dash
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
 
-            return firstProtoWithKeyOrNull?.Fields[key];
+            return firstProtoWithKeyOrNull?._fields[key];
         }
 
         /// <summary>
@@ -213,8 +213,8 @@ namespace Dash
         public DocumentCollectionFieldModelController GetDelegates()
         {
             // see if we have a populated delegates field
-            var currentDelegates = Fields.ContainsKey(DashConstants.KeyStore.DelegatesKey)
-                ? Fields[DashConstants.KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
+            var currentDelegates = _fields.ContainsKey(DashConstants.KeyStore.DelegatesKey)
+                ? _fields[DashConstants.KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
                 : null;
 
             // if not then populate it with a new list of documents
@@ -269,7 +269,7 @@ namespace Dash
 
         public IEnumerable<KeyValuePair<Key, FieldModelController>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<Key, FieldModelController> fieldModelController in Fields)
+            foreach (KeyValuePair<Key, FieldModelController> fieldModelController in _fields)
             {
                 yield return fieldModelController;
             }
@@ -278,7 +278,7 @@ namespace Dash
             {
                 var prototype = GetPrototype();
                 if (prototype != null)
-                    foreach (var field in prototype.EnumFields().Where((f) => !Fields.ContainsKey(f.Key)))
+                    foreach (var field in prototype.EnumFields().Where((f) => !_fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }
