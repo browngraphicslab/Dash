@@ -282,6 +282,13 @@ namespace Dash {
                         responseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
                     foreach (var doc in ResponseAsDocuments)
                     {
+                        var delg = layDocCtrl.MakeDelegate();
+                        CourtesyDocument.SetLayoutForDocument(doc, delg.DocumentModel);
+                        var dataFieldModel = new DocumentCollectionFieldModel(new List<DocumentModel>());
+                        ContentController.AddModel(dataFieldModel);
+                        var dataFieldModelController = new DocumentCollectionFieldModelController(dataFieldModel);
+                        ContentController.AddController(dataFieldModelController);
+                        layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
                     }
                 }
 
