@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
 namespace Dash
@@ -29,8 +30,12 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var textBlockText = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";
-            return GetTableCellViewOfScrollableText(textBlockText);
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            textBlock.Text = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";
         }
     }
 }

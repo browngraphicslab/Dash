@@ -1,5 +1,7 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -42,8 +44,18 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var textBlockText = TextFieldModel.Data;
-            return GetTableCellViewOfScrollableText(textBlockText);
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            var textBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(Data)),
+                Mode = BindingMode.OneWay
+            };
+            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
         public override string ToString()

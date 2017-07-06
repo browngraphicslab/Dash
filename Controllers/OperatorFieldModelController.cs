@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using DashShared;
 
 namespace Dash
@@ -48,8 +50,12 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var textBlockText = $"Operator of type: {OperatorFieldModel.Type}";
-            return GetTableCellViewOfScrollableText(textBlockText);
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            textBlock.Text = $"Operator of type: {OperatorFieldModel.Type}";
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -28,8 +29,18 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var textBlockText = NumberFieldModel.Data.ToString(CultureInfo.InvariantCulture);
-            return GetTableCellViewOfScrollableText(textBlockText);
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        protected void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            var textBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(Data)),
+                Mode = BindingMode.OneWay
+            };
+            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
         public double Data

@@ -98,8 +98,12 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var textBlockText = "A Collection of Documents";
-            return GetTableCellViewOfScrollableText(textBlockText);
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            textBlock.Text = "A Collection of Documents";
         }
     }
 }

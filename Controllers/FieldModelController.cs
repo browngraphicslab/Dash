@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
@@ -113,9 +114,8 @@ namespace Dash
         /// <summary>
         /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll
         /// </summary>
-        /// <param name="textBlockText"></param>
-        /// <returns></returns>
-        protected FrameworkElement GetTableCellViewOfScrollableText(string textBlockText)
+        /// <param name="bindTextOrSetOnce">A method which will create a binding on the passed in textbox, or set the text of the textbox to some initial value</param>
+        protected FrameworkElement GetTableCellViewOfScrollableText(Action<TextBlock> bindTextOrSetOnce)
         {
             var textBlock = new TextBlock
             {
@@ -123,8 +123,9 @@ namespace Dash
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextAlignment = TextAlignment.Center,
                 TextWrapping = TextWrapping.NoWrap,
-                Text = textBlockText
             };
+
+            bindTextOrSetOnce(textBlock);
 
             var scrollViewer = new ScrollViewer
             {

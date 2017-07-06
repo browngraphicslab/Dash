@@ -1,6 +1,7 @@
 ﻿using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
@@ -46,12 +47,22 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            return new Image
+            var image = new Image
             {
                 Source = new BitmapImage(ImageSource),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
+
+            var imageSourceBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(Data)),
+                Mode = BindingMode.OneWay
+            };
+            image.SetBinding(Image.SourceProperty, imageSourceBinding);
+
+            return image;
         }
 
         /// <summary>
