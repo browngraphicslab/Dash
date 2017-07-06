@@ -1,7 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using DashShared;
+using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
@@ -99,6 +102,40 @@ namespace Dash
         public string GetId()
         {
             return FieldModel.Id;
+        }
+
+        /// <summary>
+        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
+        /// </summary>
+        /// <returns></returns>
+        public abstract FrameworkElement GetTableCellView();
+
+        /// <summary>
+        /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll
+        /// </summary>
+        /// <param name="textBlockText"></param>
+        /// <returns></returns>
+        protected FrameworkElement GetTableCellViewOfScrollableText(string textBlockText)
+        {
+            var textBlock = new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.NoWrap,
+                Text = textBlockText
+            };
+
+            var scrollViewer = new ScrollViewer
+            {
+                HorizontalScrollMode = ScrollMode.Enabled,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                VerticalScrollMode = ScrollMode.Disabled,
+                Content = textBlock
+            };
+
+            return scrollViewer;
         }
     }
 }

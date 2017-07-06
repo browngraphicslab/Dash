@@ -1,4 +1,8 @@
-﻿namespace Dash
+﻿using System.Globalization;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace Dash
 {
     public class NumberFieldModelController : FieldModelController
     {
@@ -20,6 +24,12 @@
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             Data = (fieldModel as NumberFieldModelController).Data;
+        }
+
+        public override FrameworkElement GetTableCellView()
+        {
+            var textBlockText = NumberFieldModel.Data.ToString(CultureInfo.InvariantCulture);
+            return GetTableCellViewOfScrollableText(textBlockText);
         }
 
         public double Data

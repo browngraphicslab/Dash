@@ -1,4 +1,7 @@
-﻿namespace Dash
+﻿using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace Dash
 {
     public class ReferenceFieldModelController : FieldModelController
     {
@@ -24,5 +27,10 @@
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel { get; }
 
+        public override FrameworkElement GetTableCellView()
+        {
+            var textBlockText = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";
+            return GetTableCellViewOfScrollableText(textBlockText);
+        }
     }
 }

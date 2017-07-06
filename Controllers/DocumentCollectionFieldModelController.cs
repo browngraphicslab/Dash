@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using DashShared;
 
 namespace Dash
@@ -92,6 +94,12 @@ namespace Dash
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
+        }
+
+        public override FrameworkElement GetTableCellView()
+        {
+            var textBlockText = "A Collection of Documents";
+            return GetTableCellViewOfScrollableText(textBlockText);
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿namespace Dash
+﻿using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace Dash
 {
     public class TextFieldModelController : FieldModelController
     {
@@ -35,6 +38,12 @@
         {
                 Data = (fieldModel as TextFieldModelController).Data;
             
+        }
+
+        public override FrameworkElement GetTableCellView()
+        {
+            var textBlockText = TextFieldModel.Data;
+            return GetTableCellViewOfScrollableText(textBlockText);
         }
 
         public override string ToString()

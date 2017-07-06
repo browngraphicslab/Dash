@@ -32,7 +32,6 @@ namespace Dash
 
         private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
 
-        private ObservableCollection<KeyValuePair<Key, string>> _keyValuePairs;
         private DocumentController _documentController;
 
         public InterfaceBuilder(DocumentViewModel viewModel, int width = 800, int height = 500)
@@ -47,15 +46,9 @@ namespace Dash
 
             _documentController = viewModel.DocumentController;
 
-            _keyValuePairs = new ObservableCollection<KeyValuePair<Key, string>>();
-            foreach (KeyValuePair<Key, FieldModelController> pair in _documentController.EnumFields())
-            {
-                _keyValuePairs.Add(new KeyValuePair<Key, string>(pair.Key, pair.Value.ToString()));
-            }
-            xKeyValueListView.ItemsSource = _keyValuePairs;
-
-
             xDocumentHolder.Children.Add(_documentView);
+
+            xKeyValuePane.SetDataContextToDocumentController(_documentController);
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.Drop += DocumentViewOnDrop;
@@ -164,18 +157,6 @@ namespace Dash
             _selectedEditableFieldFrame = newlySelectedEditableFieldFrame;
         }
 
-        private void XKeyValueListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            Debug.WriteLine(e.Items.Count);
-            var pair = e.Items[0] is KeyValuePair<Key, string> ? (KeyValuePair<Key, string>)e.Items[0] : new KeyValuePair<Key, string>();
-            Debug.WriteLine(pair.Key.Name);
-            e.Data.RequestedOperation = DataPackageOperation.Move;
-            Debug.WriteLine(_documentController.GetField(pair.Key).GetType());
-            e.Data.Properties.Add("key", pair.Key);
-            //e.Items.Insert(0, );
-        }
-
-
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -183,7 +164,7 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
-            Key key = e.Data.Properties["key"] as Key;
+            var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
             var fieldModel = _documentController.GetField(key).FieldModel;
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModel is TextFieldModel)

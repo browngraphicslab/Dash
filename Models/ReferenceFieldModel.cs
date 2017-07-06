@@ -14,11 +14,6 @@ namespace Dash
         /// </summary>
         public Key FieldKey { get; set; }
 
-        /// <summary>
-        /// Cached type of field
-        /// </summary>
-        public string Type { get; set; }
-
         public ReferenceFieldModel(string docId, Key fieldKey)
         {
             DocId = docId;

@@ -1,4 +1,6 @@
 ﻿using System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
@@ -40,6 +42,16 @@ namespace Dash
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             Data = (fieldModel as ImageFieldModelController).Data;
+        }
+
+        public override FrameworkElement GetTableCellView()
+        {
+            return new Image
+            {
+                Source = new BitmapImage(ImageSource),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
+            };
         }
 
         /// <summary>
