@@ -11,6 +11,7 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
+using Dash.Views;
 
 namespace Dash
 {
@@ -18,9 +19,9 @@ namespace Dash
     {
        
 
-        private CollectionModel _collectionModel;
+        private DocumentCollectionFieldModelController _collectionFieldModelController;
 
-        public CollectionModel CollectionModel { get { return _collectionModel; } }
+        public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
 
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
@@ -37,11 +38,15 @@ namespace Dash
             }
         }
 
-        public ObservableCollection<UIElement> SoloDisplayElements
+        /// <summary>
+        /// References the ItemsControl used to 
+        /// </summary>
+        public UserControl DocumentDisplayView
         {
-            get { return _soloDisplayElements; }
-            set { SetProperty(ref _soloDisplayElements, value); }
+            get { return _documentDisplayView; }
+            set { SetProperty(ref _documentDisplayView, value); }
         }
+        private UserControl _documentDisplayView;
 
         private bool _filtered;
 
@@ -69,39 +74,12 @@ namespace Dash
         private double _containerGridHeight;
         private double _containerGridWidth;
 
-        private Thickness _draggerMargin;
-        private Thickness _proportionalDraggerMargin;
-        private Thickness _closeButtonMargin;
-        private Thickness _bottomBarMargin;
-        private Thickness _selectButtonMargin;
-        private Thickness _deleteButtonMargin;
-
-        private SolidColorBrush _proportionalDraggerStroke;
-        private SolidColorBrush _proportionalDraggerFill;
-        private SolidColorBrush _draggerFill;
-
         private ListViewSelectionMode _itemSelectionMode;
-
-        private Visibility _freeformVisibility;
-        private Visibility _gridViewVisibility;
-        private Visibility _listViewVisibility;
-        private Visibility _controlsVisibility;
-        private Visibility _filterViewVisibility;
 
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
 
         private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        private DocumentViewModel _soloDisplayDocument;
-        private Visibility _soloDisplayVisibility;
-
-        private bool _viewIsEnabled;
-
-        private double _soloDocDisplayGridWidth;
-        private double _soloDocDisplayGridHeight;
-        private double _soloDisplaySize;
-        private ObservableCollection<UIElement> _soloDisplayElements;
 
         #endregion
 
@@ -116,179 +94,39 @@ namespace Dash
             set { SetProperty(ref _cellSize, value); }
         }
 
-        public double OuterGridWidth
-        {
-            get { return _outerGridWidth; }
-            set { SetProperty(ref _outerGridWidth, value); }
-        }
-
-        public double OuterGridHeight
-        {
-            get { return _outerGridHeight; }
-            set { SetProperty(ref _outerGridHeight, value); }
-        }
-
-        public double ContainerGridWidth
-        {
-            get { return _containerGridWidth; }
-            set { SetProperty(ref _containerGridWidth, value); }
-        }
-
-        public double ContainerGridHeight
-        {
-            get { return _containerGridHeight; }
-            set { SetProperty(ref _containerGridHeight, value); }
-        }
-
         #endregion
 
         #region Appearance & Location properties
-
-        public double SoloDisplaySize
-        {
-            get { return _soloDisplaySize; }
-            set { SetProperty(ref _soloDisplaySize, value); }
-        }
-
-        public Visibility FilterViewVisibility
-        {
-            get { return _filterViewVisibility; }
-            set { SetProperty(ref _filterViewVisibility, value); }
-        }
-
-        public Visibility SoloDisplayVisibility
-        {
-            get { return _soloDisplayVisibility; }
-            set { SetProperty(ref _soloDisplayVisibility, value); }
-        }
-
-        public bool ViewIsEnabled
-        {
-            get { return _viewIsEnabled; }
-            set { SetProperty(ref _viewIsEnabled, value); }
-        }
-
-        public Visibility FreeformVisibility
-        {
-            get { return _freeformVisibility; }
-            set { SetProperty(ref _freeformVisibility, value); }
-        }
-
-        public Visibility GridViewVisibility
-        {
-            get { return _gridViewVisibility; }
-            set { SetProperty(ref _gridViewVisibility, value); }
-        }
-
-        public Visibility ListViewVisibility
-        {
-            get { return _listViewVisibility; }
-            set { SetProperty(ref _listViewVisibility, value); }
-        }
-
-        public Visibility ControlsVisibility
-        {
-            get { return _controlsVisibility; }
-            set { SetProperty(ref _controlsVisibility, value); }
-        }
+        
 
         public ListViewSelectionMode ItemSelectionMode
         {
             get { return _itemSelectionMode; }
             set { SetProperty(ref _itemSelectionMode, value); }
         }
-
-        public Thickness SelectButtonMargin
-        {
-            get { return _selectButtonMargin; }
-            set { SetProperty(ref _selectButtonMargin, value); }
-        }
-
-        public Thickness DeleteButtonMargin
-        {
-            get { return _deleteButtonMargin; }
-            set { SetProperty(ref _deleteButtonMargin, value); }
-        }
-
-        public Thickness DraggerMargin
-        {
-            get { return _draggerMargin; }
-            set { SetProperty(ref _draggerMargin, value); }
-        }
-
-        public Thickness ProportionalDraggerMargin
-        {
-            get { return _proportionalDraggerMargin; }
-            set { SetProperty(ref _proportionalDraggerMargin, value); }
-        }
-
-        public Thickness CloseButtonMargin
-        {
-            get { return _closeButtonMargin; }
-            set { SetProperty(ref _closeButtonMargin, value); }
-        }
-
-        public SolidColorBrush ProportionalDraggerStroke
-        {
-            get { return _proportionalDraggerStroke; }
-            set { SetProperty(ref _proportionalDraggerStroke, value); }
-        }
-
-        public SolidColorBrush ProportionalDraggerFill
-        {
-            get { return _proportionalDraggerFill; }
-            set { SetProperty(ref _proportionalDraggerFill, value); }
-        }
-
-        public SolidColorBrush DraggerFill
-        {
-            get { return _draggerFill; }
-            set { SetProperty(ref _draggerFill, value); }
-        }
-
-        public Thickness BottomBarMargin
-        {
-            get { return _bottomBarMargin; }
-            set { SetProperty(ref _bottomBarMargin, value); }
-        }
-
-        public double SoloDocDisplayGridWidth
-        {
-            get { return _soloDocDisplayGridWidth; }
-            set { SetProperty(ref _soloDocDisplayGridWidth, value); }
-        }
-
-        public double SoloDocDisplayGridHeight
-        {
-            get { return _soloDocDisplayGridHeight; }
-            set { SetProperty(ref _soloDocDisplayGridHeight, value); }
-        }
+        
 
         #endregion
 
 
-        public CollectionViewModel(CollectionModel model)
+        public CollectionViewModel(DocumentCollectionFieldModelController collection)
         {
-            _collectionModel = model;
+            _collectionFieldModelController = collection;
 
             SetInitialValues();
-            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
+            UpdateViewModels(MakeViewModels(_collectionFieldModelController.DocumentCollectionFieldModel));
             //SetDimensions();
-           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
+           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionFieldModelController.DocumentCollectionFieldModel.Id);
             controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
-           // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
+           // _collectionFieldModelController.Documents.CollectionChanged += Documents_CollectionChanged;
         }
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
         {
-            //AddDocuments(_collectionModel.Documents.Data);
+            //AddDocuments(_collectionFieldModelController.Documents.Data);
             UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
 
-        private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-           // AddDocuments(_collectionModel.Documents);
-        }
 
         /// <summary>
         /// Sets initial values of instance variables required for the CollectionView to display nicely.
@@ -296,29 +134,10 @@ namespace Dash
         private void SetInitialValues()
         {
             CellSize = 250;
-            GridViewVisibility = Visibility.Visible;
-            ListViewVisibility = Visibility.Collapsed;
-            FilterViewVisibility = Visibility.Collapsed;
-            SoloDisplayVisibility = Visibility.Collapsed;
-            GridViewVisibility = Visibility.Collapsed;
+            DocumentDisplayView = new CollectionFreeformView {DataContext = this};
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            ViewIsEnabled = true;
         }
-
-        #region Size and Location methods
-
-        /// <summary>
-        /// Returns a bool indicating whether any of the grids used to diplay items are Visible.
-        /// </summary>
-        /// <returns></returns>
-        private bool DisplayingItems()
-        {
-            return (GridViewVisibility == Visibility.Visible || ListViewVisibility == Visibility.Visible);
-        }
-
-
-        #endregion
 
         #region Event Handlers
 
@@ -349,20 +168,7 @@ namespace Dash
         /// <param name="e"></param>
         public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_filtered)
-            {
-                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
-                ListViewVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Collapsed;
-                DataBindingSource = filteredDocumentViewModels;
-                FreeformVisibility = Visibility.Visible;
-            }
-            else
-            {
-                ListViewVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Visible;
-            }
+            DocumentDisplayView = new CollectionFreeformView { DataContext = this };
         }
 
         /// <summary>
@@ -372,40 +178,13 @@ namespace Dash
         /// <param name="e"></param>
         public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_filtered)
-            {
-                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
-                GridViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Collapsed;
-                DataBindingSource = filteredDocumentViewModels;
-                ListViewVisibility = Visibility.Visible;
-            }
-            else
-            {
-                GridViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Collapsed;
-                ListViewVisibility = Visibility.Visible;
-            }                    
-            OuterGridHeight = CellSize + 44;
+            DocumentDisplayView = new CollectionListView { DataContext = this };
             //SetDimensions();
         }
 
         public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_filtered)
-            {
-                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
-                ListViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Collapsed;
-                DataBindingSource = filteredDocumentViewModels;
-                GridViewVisibility = Visibility.Visible;
-            }
-            else
-            {
-                ListViewVisibility = Visibility.Collapsed;               
-                FreeformVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Visible;
-            }
+            DocumentDisplayView = new CollectionGridView {DataContext = this};
         }
 
         /// <summary>
@@ -456,55 +235,10 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Called when the user double taps on the document being displayed in the 
-        /// enlarged view; closes that view and returns to the normal display.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SingleDocDisplayGrid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            ViewIsEnabled = true;
-            SoloDisplayVisibility = Visibility.Collapsed;
-            //Resize();
-            e.Handled = true;
-        }
-        
         #endregion
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        
-        /// <summary>
-        /// Adds a collection of new documents to the CollectionModel, and adds new 
-        /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
-        /// </summary>
-        /// <param name="documents"></param>
-        public void AddDocuments(List<DocumentController> documents)
-        {
-            var docList = new List<string>(_collectionModel.DocumentCollectionFieldModel.Data);
-            foreach (var document in documents)
-            {
-                if (!docList.Contains(document.GetId()))
-                    docList.Add(document.GetId());
-            }
-            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
-        }
-
-        /// <summary>
-        /// Removes DocumentModels from the Collection and removes all DocumentViewModels 
-        /// that no longer reference DocumentModels in the Collection.
-        /// </summary>
-        /// <param name="documents"></param>
-        public void RemoveDocuments(ObservableCollection<DocumentController> documents)
-        { 
-            foreach (var document in documents)
-            {
-                if (new List<string>(_collectionModel.DocumentCollectionFieldModel.Data).Contains(document.GetId()))
-                    ;//_collectionModel.DocumentCollectionFieldModel.Remove(document);
-            }
-            RemoveDefunctViewModels();
-        }
 
         private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
         {
@@ -555,43 +289,6 @@ namespace Dash
             return viewModels;
         }
 
-        /// <summary>
-        /// Adds a collection of DocumentViewModels to the Collection, and thus displays their corresponding views.
-        /// </summary>
-        /// <param name="viewModels"></param>
-        private void AddViewModels(ObservableCollection<DocumentViewModel> viewModels)
-        {
-            foreach (var viewModel in viewModels)
-            {
-                bool found = false;
-                foreach (var vm in DataBindingSource)
-                    if (vm.DocumentController.GetId() == viewModel.DocumentController.GetId())
-                        found = true;
-                if (!found)
-                {
-                    //viewModel.DefaultViewVisibility = Visibility.Collapsed;
-                    //viewModel.ListViewVisibility = Visibility.Visible;
-                    Debug.WriteLine($"{viewModel.ManipulationMode}, {ManipulationModes.None}");
-                    viewModel.ManipulationMode = ManipulationModes.System;
-                    viewModel.DoubleTapEnabled = false;
-                    //viewModel.CanMoveControl = false;
-                    DataBindingSource.Add(viewModel);
-                }
-            }
-            //ScaleDocumentsToFitCell();
-        }
-
-        /// <summary>
-        /// Removes the selected DocumentViewModels (but not their DocumentModels) from the collection
-        /// </summary>
-        /// <param name="viewModels"></param>
-        public void RemoveViewModels(ObservableCollection<DocumentViewModel> viewModels)
-        {
-            foreach (DocumentViewModel viewModel in viewModels)
-            {
-                DataBindingSource.Remove(viewModel);
-            }
-        }
 
         /// <summary>
         /// The collection creates delegates for each document it displays so that it can associate display-specific
@@ -600,151 +297,572 @@ namespace Dash
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
 
-        /// <summary>
-        /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
-        /// </summary>
-        public void RemoveDefunctViewModels()
-        {
-            throw new NotImplementedException();
-            //ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
-            //foreach (DocumentViewModel vm in DocumentViewModels)
-            //{
-            //    if (!_collectionModel.Documents.Contains(vm.DocumentModel))
-            //    {
-            //        toRemove.Add(vm);
-            //    }
-            //}
-            //RemoveViewModels(toRemove);
-        }
-
         #endregion
 
-        public void OuterGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            //Debug.WriteLine("hi");
-        }
+        //private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        //{
+        //    var cvm = DataContext as CollectionViewModel;
+        //    var dv  = (sender as DocumentView);
+        //    var dvm = dv.DataContext as DocumentViewModel;
+        //    var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
+        //    dvm.Position = where;
+        //    e.Handled = true;
+        //}
 
-        public void SelectAll_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
+        //private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        //{
+        //    Thickness border = DocumentViewContainerGrid.BorderThickness;
+        //    ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
+        //}
 
-        #region Filtering Methods
+        ///// <summary>
+        ///// Pans and zooms upon touch manipulation 
+        ///// </summary>
+        //private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        //{
+        //    Canvas canvas = xItemsControl.ItemsPanelRoot as Canvas;
+        //    Debug.Assert(canvas != null);
+        //    e.Handled = true;
+        //    ManipulationDelta delta = e.Delta;
 
-        public void FilterSelection_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            FilterViewVisibility = Visibility.Visible;
+        //    //Create initial translate and scale transforms
+        //    //Translate is in screen space, scale is in canvas space
+        //    TranslateTransform translate = new TranslateTransform
+        //    {
+        //        X = delta.Translation.X,
+        //        Y = delta.Translation.Y
+        //    };
 
-            if (OuterGridHeight < 350) OuterGridHeight = 350;
-            if (OuterGridWidth < 605)
-            {
-                OuterGridWidth = 650;
-            }
-            //SetDimensions();
-        }
+        //    Point p = Util.PointTransformFromVisual(e.Position, canvas);
+        //    ScaleTransform scale = new ScaleTransform
+        //    {
+        //        CenterX = p.X,
+        //        CenterY = p.Y,
+        //        ScaleX = delta.Scale,
+        //        ScaleY = delta.Scale
+        //    };
 
-        public void FilterExit_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            FilterViewVisibility = Visibility.Collapsed;
-            //Resize();
-        }
+        //    //Clamp the zoom
+        //    CanvasScale *= delta.Scale;
+        //    if (CanvasScale > MaxScale)
+        //    {
+        //        CanvasScale = MaxScale;
+        //        scale.ScaleX = 1;
+        //        scale.ScaleY = 1;
+        //    }
+        //    if (CanvasScale < MinScale)
+        //    {
+        //        CanvasScale = MinScale;
+        //        scale.ScaleX = 1;
+        //        scale.ScaleY = 1;
+        //    }
 
-        public void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-            //FilterModel filterModel = null;
+        //    //Create initial composite transform
+        //    TransformGroup composite = new TransformGroup();
+        //    composite.Children.Add(scale);
+        //    composite.Children.Add(canvas.RenderTransform);
+        //    composite.Children.Add(translate);
 
-            //// generate FilterModels accordingly
-            //if (CollectionFilterMode == FilterMode.HasField)
-            //{
-            //    filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
-            //}
-            //else if (CollectionFilterMode == FilterMode.FieldContains)
-            //{
-            //    filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
-            //}
-            //else if (CollectionFilterMode == FilterMode.FieldEquals)
-            //{
-            //    filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
-            //}
+        //    //Get top left and bottom right screen space points in canvas space
+        //    GeneralTransform inverse = composite.Inverse;
+        //    Debug.Assert(inverse != null);
+        //    Debug.Assert(canvas.RenderTransform != null);
+        //    GeneralTransform renderInverse = canvas.RenderTransform.Inverse;
+        //    Debug.Assert(renderInverse != null);
+        //    Point topLeft = inverse.TransformPoint(new Point(0, 0));
+        //    Point bottomRight = inverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
+        //    Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
+        //    Point preBottomRight = renderInverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
 
-            //var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
+        //    //Check if the panning or zooming puts the view out of bounds of the canvas
+        //    //Nullify scale or translate components accordingly
+        //    bool outOfBounds = false;
+        //    //Create a canvas space translation to correct the translation if necessary
+        //    TranslateTransform fixTranslate = new TranslateTransform();
+        //    if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
+        //    {
+        //        translate.X = 0;
+        //        fixTranslate.X = 0;
+        //        double scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
+        //        scale.ScaleY = scaleAmount;
+        //        scale.ScaleX = scaleAmount;
+        //        outOfBounds = true;
+        //    }
+        //    else if (topLeft.X < Bounds.Left)
+        //    {
+        //        translate.X = 0;
+        //        fixTranslate.X = preTopLeft.X;
+        //        scale.CenterX = Bounds.Left;
+        //        outOfBounds = true;
+        //    }
+        //    else if (bottomRight.X > Bounds.Right)
+        //    {
+        //        translate.X = 0;
+        //        fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
+        //        scale.CenterX = Bounds.Right;
+        //        outOfBounds = true;
+        //    }
+        //    if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
+        //    {
+        //        translate.Y = 0;
+        //        fixTranslate.Y = 0;
+        //        double scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
+        //        scale.ScaleX = scaleAmount;
+        //        scale.ScaleY = scaleAmount;
+        //        outOfBounds = true;
+        //    }
+        //    else if (topLeft.Y < Bounds.Top)
+        //    {
+        //        translate.Y = 0;
+        //        fixTranslate.Y = preTopLeft.Y;
+        //        scale.CenterY = Bounds.Top;
+        //        outOfBounds = true;
+        //    }
+        //    else if (bottomRight.Y > Bounds.Bottom)
+        //    {
+        //        translate.Y = 0;
+        //        fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
+        //        scale.CenterY = Bounds.Bottom;
+        //        outOfBounds = true;
+        //    }
 
-            
-            //ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
-            //foreach (var dvm in DocumentViewModels)
-            //{
-            //    if (list.Contains(dvm.DocumentModel))
-            //    {
-            //        ViewModels.Add(dvm);
-            //    }
-            //}
-            //DataBindingSource = ViewModels;
-            //_filtered = true;
-        }
+        //    //If the view was out of bounds recalculate the composite matrix
+        //    if (outOfBounds)
+        //    {
+        //        composite = new TransformGroup();
+        //        composite.Children.Add(fixTranslate);
+        //        composite.Children.Add(scale);
+        //        composite.Children.Add(canvas.RenderTransform);
+        //        composite.Children.Add(translate);
+        //    }
 
-        public void FilterFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-            {
-                if (sender.Text.Length > 0)
-                {
-                    FieldBoxText = sender.Text;
-                    throw new Exception();
-                    //sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(
-                    //    _collectionModel.DocumentCollectionFieldModel.Data), sender.Text.ToLower());
-                }
-                else
-                {
-                    sender.ItemsSource = new string[] { "No suggestions..." };
-                }
-            }
-        }
+        //    canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        //}
 
-        public void xSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox textBox = sender as TextBox;
-            if (textBox != null)
-            {
-                SearchBoxText = textBox.Text;
-            }
-        }
+        //public void StartDrag(OperatorView.IOReference ioReference)
+        //{
+        //    if (!ViewModel.IsEditorMode)
+        //    {
+        //        return;
+        //    }
+        //    if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
+        //    {
+        //        return;
+        //    }
+        //    _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
-        public void xSearchFieldBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            SearchFieldBoxText = sender.Text;
-        }
+        //    _currReference = ioReference;
 
-        public void xFieldBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            FieldBoxText = sender.Text;
-        }
+        //    _connectionLine = new Path
+        //    {
+        //        StrokeThickness = 5,
+        //        Stroke = new SolidColorBrush(Colors.Orange),
+        //        IsHitTestVisible = false,
+        //        //CompositeMode =
+        //        //    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+        //        //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+        //    };
+        //    Canvas.SetZIndex(_connectionLine, -1);
+        //    _converter = new BezierConverter(ioReference.FrameworkElement, null, FreeformCanvas);
+        //    _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(FreeformCanvas).Position;
+        //    _lineBinding =
+        //        new MultiBinding<PathFigureCollection>(_converter, null);
+        //    _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+        //    _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
+        //    _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
+        //    Binding lineBinding = new Binding
+        //    {
+        //        Source = _lineBinding,
+        //        Path = new PropertyPath("Property")
+        //    };
+        //    PathGeometry pathGeo = new PathGeometry();
+        //    BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
+        //    _connectionLine.Data = pathGeo;
 
-        #endregion
+        //    Binding visibilityBinding = new Binding
+        //    {
+        //        Source = ViewModel,
+        //        Path = new PropertyPath("IsEditorMode"),
+        //        Converter = new VisibilityConverter()
+        //    };
+        //    _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
 
-        public void SearchBox_TextEntered(TextBox sender, TextCompositionEndedEventArgs args)
-        {
-            TextBox textBox = sender as TextBox;
-            if (textBox != null)
-            {
-                SearchBoxText = textBox.Text;
-            }
-        }
+        //    FreeformCanvas.Children.Add(_connectionLine);
 
-        public void FilterFieldBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            //
-        }
+        //    if (!ioReference.IsOutput)
+        //    {
+        //        CheckLinePresence(ioReference.ReferenceFieldModel);
+        //        _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+        //    }
+        //}
 
-        public void FilterFieldBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            FieldBoxText = args.QueryText;
-        }
+        //public void CancelDrag(Pointer p)
+        //{
+        //    _currentPointers.Remove(p.PointerId);
+        //    UndoLine();
+        //}
 
-        public void ClearFilter_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            FilterViewVisibility = Visibility.Collapsed;
-            _filtered = false;
-        }
+        //public void EndDrag(OperatorView.IOReference ioReference)
+        //{
+        //    if (!ViewModel.IsEditorMode)
+        //    {
+        //        return;
+        //    }
+        //    _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
+        //    if (_connectionLine == null) return;
+
+        //    if (_currReference.IsOutput == ioReference.IsOutput)
+        //    {
+        //        UndoLine();
+        //        return;
+        //    }
+        //    if (_currReference.IsOutput)
+        //    {
+        //        _graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
+        //    }
+        //    else
+        //    {
+        //        _graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
+        //    }
+        //    if (_graph.IsCyclic())
+        //    {
+        //        if (_currReference.IsOutput)
+        //        {
+        //            _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
+        //        }
+        //        else
+        //        {
+        //            _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
+        //        }
+        //        CancelDrag(ioReference.PointerArgs.Pointer);
+        //        Debug.WriteLine("Cycle detected");
+        //        return;
+        //    }
+
+        //    if (!ioReference.IsOutput)
+        //    {
+        //        CheckLinePresence(ioReference.ReferenceFieldModel);
+        //        _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
+        //    }
+
+        //    _converter.Element2 = ioReference.FrameworkElement;
+        //    _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
+        //    _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
+        //    _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
+
+        //    if (ioReference.IsOutput)
+        //    {
+        //        ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
+        //        _connectionLine = null;
+        //    }
+        //    else
+        //    {
+        //        ContentController.GetController<DocumentController>(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+        //        _connectionLine = null;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
+        ///// </summary>
+        ///// <param name="x"></param>
+        ///// <param name="y"></param>
+        //private void CheckLinePresence(ReferenceFieldModel model)
+        //{
+        //    if (_lineDict.ContainsKey(model))
+        //    {
+        //        Path line = _lineDict[model];
+        //        FreeformCanvas.Children.Remove(line);
+        //        _lineDict.Remove(model);
+        //    }
+        //}
+
+        //private void UndoLine()
+        //{
+        //    FreeformCanvas.Children.Remove(_connectionLine);
+        //    _connectionLine = null;
+        //    _currReference = null;
+        //}
+
+        //#endregion
+
+        //private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        //{
+        //    if (_connectionLine != null)
+        //    {
+        //        Point pos = e.GetCurrentPoint(FreeformCanvas).Position;
+        //        _converter.Pos2 = pos;
+        //        _lineBinding.ForceUpdate();
+        //    }
+        //}
+
+        //private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        //{
+        //    if (_currReference != null)
+        //    {
+        //        CancelDrag(e.Pointer);
+
+        //        //DocumentView view = new DocumentView();
+        //        //DocumentViewModel viewModel = new DocumentViewModel();
+        //        //view.DataContext = viewModel;
+        //        //FreeformView.MainFreeformView.Canvas.Children.Add(view);
+
+        //    }
+        //}
+
+        //private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //{
+        //    e.Complete();
+        //}
+
+        //private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        //{
+        //    string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+        //    Ellipse el = sender as Ellipse;
+        //    Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+        //    OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, ViewModel.ParentDocument);
+        //    CollectionView view = ViewModel.ParentCollection;
+        //    view?.StartDrag(ioRef);
+        //}
+
+        //private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        //{
+        //    string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+        //    Ellipse el = sender as Ellipse;
+        //    Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+        //    OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, ViewModel.ParentDocument);
+        //    CollectionView view = ViewModel.ParentCollection;
+        //    view?.EndDrag(ioRef);
+        //}
+
+        //private void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        //{
+        //    MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
+        //    ItemsCarrier carrier = ItemsCarrier.GetInstance();
+        //    carrier.Source = this;
+        //    foreach(var item in e.Items)
+        //        carrier.Payload.Add(item as DocumentViewModel);
+        //    e.Data.RequestedOperation = DataPackageOperation.Move;
+        //}
+
+        //private void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
+        //{
+        //    if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
+        //    {
+        //        ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
+        //        RefreshItemsBinding();
+        //    }
+        //    KeepItemsOnMove = true;
+        //    var carrier = ItemsCarrier.GetInstance();
+        //    carrier.Payload.Clear();
+        //    carrier.Source = null;
+        //    carrier.Destination = null;
+        //    carrier.Translate = new Point();
+        //    MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
+        //}
+
+        //private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
+        //{
+        //    var docControllers = docViewModels.Select(item => item.DocumentController);
+        //    var parentDoc = (ViewModel.ParentDocument.ViewModel)?.DocumentController;
+        //    var controller = ContentController.GetController<DocumentCollectionFieldModelController>(ViewModel.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
+        //    if (controller != null)
+        //        foreach (var item in docControllers)
+        //            if (add) controller.AddDocument(item);
+        //            else controller.RemoveDocument(item);
+        //}
+
+        //private void CollectionGrid_DragOver(object sender, DragEventArgs e)
+        //{
+        //    e.Handled = true;
+        //    e.AcceptedOperation = DataPackageOperation.Move;
+        //}
+
+        //private void CollectionGrid_Drop(object sender, DragEventArgs e)
+        //{
+        //    e.Handled = true;
+        //    RefreshItemsBinding();
+        //    ItemsCarrier.GetInstance().Destination = this;
+        //    ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
+        //    ItemsCarrier.GetInstance().Translate = e.GetPosition(xItemsControl.ItemsPanelRoot);
+        //    ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
+        //}
+
+        //private void RefreshItemsBinding()
+        //{
+        //    if (ViewModel.GridViewVisibility == Visibility.Visible)
+        //    {
+
+        //        xGridView.ItemsSource = null;
+        //        xGridView.ItemsSource = ViewModel.DataBindingSource;
+        //    }
+        //    else if (ViewModel.ListViewVisibility == Visibility.Visible)
+        //    {
+        //        HListView.ItemsSource = null;
+        //        HListView.ItemsSource = ViewModel.DataBindingSource;
+        //    }
+        //}
+
+        ///// <summary>
+        ///// Zooms upon mousewheel interaction 
+        ///// </summary>
+        //private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        //{
+        //    Canvas canvas = xItemsControl.ItemsPanelRoot as Canvas;
+        //    Debug.Assert(canvas != null);
+        //    e.Handled = true;
+        //    //Get mousepoint in canvas space 
+        //    PointerPoint point = e.GetCurrentPoint(canvas);
+        //    double scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
+        //        Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
+        //    scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+        //    CanvasScale *= (float)scaleAmount;
+        //    Debug.Assert(canvas.RenderTransform != null);
+        //    Point p = point.Position;
+        //    //Create initial ScaleTransform 
+        //    ScaleTransform scale = new ScaleTransform
+        //    {
+        //        CenterX = p.X,
+        //        CenterY = p.Y,
+        //        ScaleX = scaleAmount,
+        //        ScaleY = scaleAmount
+        //    };
+
+        //    //Clamp scale
+        //    if (CanvasScale > MaxScale)
+        //    {
+        //        CanvasScale = MaxScale;
+        //        scale.ScaleX = MaxScale / CanvasScale;
+        //        scale.ScaleY = MaxScale / CanvasScale;
+        //    }
+        //    if (CanvasScale < MinScale)
+        //    {
+        //        CanvasScale = MinScale;
+        //        scale.ScaleX = MinScale / CanvasScale;
+        //        scale.ScaleY = MinScale / CanvasScale;
+        //    }
+
+        //    //Create initial composite transform
+        //    TransformGroup composite = new TransformGroup();
+        //    composite.Children.Add(scale);
+        //    composite.Children.Add(canvas.RenderTransform);
+
+        //    GeneralTransform inverse = composite.Inverse;
+        //    Debug.Assert(inverse != null);
+        //    GeneralTransform renderInverse = canvas.RenderTransform.Inverse;
+        //    Debug.Assert(inverse != null);
+        //    Debug.Assert(renderInverse != null);
+        //    Point topLeft = inverse.TransformPoint(new Point(0, 0));
+        //    Point bottomRight = inverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
+        //    Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
+        //    Point preBottomRight = renderInverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
+
+        //    //Check if the zooming puts the view out of bounds of the canvas
+        //    //Nullify scale or translate components accordingly 
+        //    bool outOfBounds = false;
+        //    //Create a canvas space translation to correct the translation if necessary
+        //    TranslateTransform fixTranslate = new TranslateTransform();
+        //    if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
+        //    {
+        //        fixTranslate.X = 0;
+        //        scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
+        //        scale.ScaleY = scaleAmount;
+        //        scale.ScaleX = scaleAmount;
+        //        outOfBounds = true;
+        //    }
+        //    else if (topLeft.X < Bounds.Left)
+        //    {
+        //        fixTranslate.X = preTopLeft.X;
+        //        scale.CenterX = Bounds.Left;
+        //        outOfBounds = true;
+        //    }
+        //    else if (bottomRight.X > Bounds.Right)
+        //    {
+        //        fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
+        //        scale.CenterX = Bounds.Right;
+        //        outOfBounds = true;
+        //    }
+        //    if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
+        //    {
+        //        fixTranslate.Y = 0;
+        //        scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
+        //        scale.ScaleX = scaleAmount;
+        //        scale.ScaleY = scaleAmount;
+        //        outOfBounds = true;
+        //    }
+        //    else if (topLeft.Y < Bounds.Top)
+        //    {
+        //        fixTranslate.Y = preTopLeft.Y;
+        //        scale.CenterY = Bounds.Top;
+        //        outOfBounds = true;
+        //    }
+        //    else if (bottomRight.Y > Bounds.Bottom)
+        //    {
+        //        fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
+        //        scale.CenterY = Bounds.Bottom;
+        //        outOfBounds = true;
+        //    }
+
+        //    //If the view was out of bounds recalculate the composite matrix
+        //    if (outOfBounds)
+        //    {
+        //        composite = new TransformGroup();
+        //        composite.Children.Add(fixTranslate);
+        //        composite.Children.Add(scale);
+        //        composite.Children.Add(canvas.RenderTransform);
+        //    }
+        //    canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        //}
+
+        ///// <summary>
+        ///// Make translation inertia slow down faster
+        ///// </summary>
+        //private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
+        //{
+        //    e.TranslationBehavior.DesiredDeceleration = 0.01;
+        //}
+
+        ///// <summary>
+        ///// Make sure the canvas is still in bounds after resize
+        ///// </summary>
+        //private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        //{
+        //    TranslateTransform translate = new TranslateTransform();
+
+        //    //Calculate bottomRight corner of screen in canvas space before and after resize 
+        //    Debug.Assert(DocumentViewContainerGrid.RenderTransform != null);
+        //    Debug.Assert(DocumentViewContainerGrid.RenderTransform.Inverse != null);
+        //    Point oldBottomRight =
+        //        DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
+        //    Point bottomRight =
+        //        DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
+
+        //    //Check if new bottom right is out of bounds
+        //    bool outOfBounds = false;
+        //    if (bottomRight.X > Grid.ActualWidth - 1)
+        //    {
+        //        translate.X = -(oldBottomRight.X - bottomRight.X);
+        //        outOfBounds = true;
+        //    }
+        //    if (bottomRight.Y > Grid.ActualHeight - 1)
+        //    {
+        //        translate.Y = -(oldBottomRight.Y - bottomRight.Y);
+        //        outOfBounds = true;
+        //    }
+        //    //If it is out of bounds, translate so that is is in bounds
+        //    if (outOfBounds)
+        //    {
+        //        TransformGroup composite = new TransformGroup();
+        //        composite.Children.Add(translate);
+        //        composite.Children.Add(DocumentViewContainerGrid.RenderTransform);
+        //        DocumentViewContainerGrid.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+        //    }
+
+        //    Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
+        //}
+
+
+
+
     }
 }

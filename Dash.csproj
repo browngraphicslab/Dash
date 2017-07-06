@@ -95,6 +95,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CollectionGridView.xaml.cs">
+      <DependentUpon>CollectionGridView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="CollectionListView.xaml.cs">
       <DependentUpon>CollectionListView.xaml</DependentUpon>
     </Compile>
@@ -216,6 +219,9 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\CollectionFreeformView.xaml.cs">
+      <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
@@ -295,6 +301,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="CollectionGridView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="CollectionListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -338,6 +348,10 @@
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CollectionFreeformView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -88,13 +88,14 @@ namespace Dash
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.StartDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, true, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    //view.StartDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, true, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
                 };
                 renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.EndDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, false, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    //TODO: Fix these bindings?
+                    //view.EndDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, false, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
                 };
             }
 
@@ -603,8 +604,7 @@ namespace Dash
 
                     var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                     Debug.Assert(collectionFieldModelController != null);
-                    var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                    var collectionViewModel = new CollectionViewModel(collectionModel);
+                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                     var view = new CollectionView(collectionViewModel);
 
                     //if (w > 0)
@@ -1041,8 +1041,7 @@ namespace Dash
                 var data = resultView;
                 var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                 Debug.Assert(collectionFieldModelController != null);
-                var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                var collectionViewModel = new CollectionViewModel(collectionModel);
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 
