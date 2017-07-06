@@ -11,7 +11,7 @@ namespace Dash
     public class ObservableConvertCollection : ObservableCollection<FrameworkElement>
     {
         public ObservableCollection<DocumentModel> Documents;
-        private Dictionary<DocumentModel, IList<FrameworkElement>> _dictionary = new Dictionary<DocumentModel, IList<FrameworkElement>>();
+        private Dictionary<DocumentModel, FrameworkElement> _dictionary = new Dictionary<DocumentModel, FrameworkElement>();
         private DocumentView _view;
 
 
@@ -31,10 +31,7 @@ namespace Dash
                 case NotifyCollectionChangedAction.Remove:
                     foreach (DocumentModel model in e.OldItems)
                     {
-                        foreach (FrameworkElement elem in _dictionary[model])
-                        {
-                            base.Remove(elem);
-                        }
+                        base.Remove(_dictionary[model]);
                     }
                     break;
                 case NotifyCollectionChangedAction.Add:
@@ -55,17 +52,9 @@ namespace Dash
                     ? layout.Data.MakeViewUI()
                     : new DocumentViewModel(controller).GetUiElements(new Rect());
 
-                if (elements.Count == 0)
-                {
-                    var panel = controller.MakeAllViewUI();
-                    Add(panel);
-                }
-                else
-                    _dictionary[model] = elements;
-                foreach (var element in elements)
-                {
-                    base.Add(element);
-                }
+                var view = controller.MakeViewUI();
+                _dictionary[model] = view;
+                Add(view);
             }
         }
     }

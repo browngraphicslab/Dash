@@ -199,7 +199,7 @@ namespace Dash
         /// </summary>
         /// TODO: rename this to create ui elements
         /// <returns>List of all UIElements generated</returns>
-        public virtual List<FrameworkElement> GetUiElements(Rect bounds)
+        public virtual FrameworkElement GetUiElements(Rect bounds)
         {
             return DocumentController.MakeViewUI();
         }

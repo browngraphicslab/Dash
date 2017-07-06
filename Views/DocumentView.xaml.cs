@@ -219,11 +219,8 @@ namespace Dash
             //clear any current children (fields)and then add them over again
 
             XGrid.Children.Clear();
-            var elements = documentViewModel.DocumentController.MakeViewUI();
-            foreach (var element in elements)
-            {
-                XGrid.Children.Add(element);
-            }
+            var element = documentViewModel.DocumentController.MakeViewUI();
+            XGrid.Children.Add(element);
         }
 
         /// <summary>

@@ -183,7 +183,7 @@ namespace Dash
         {
             // TODO WE NEED TO STORE THESE CONTROLLERS SOMEWHERE
             // create the child with all the same fields
-            var delegateModel = new DocumentModel(new Dictionary<Key,FieldModel>(), DocumentType);
+            var delegateModel = new DocumentModel(new Dictionary<Key, FieldModel>(), DocumentType);
             ContentController.AddModel(delegateModel);
 
             // create a controller for the child
@@ -300,11 +300,9 @@ namespace Dash
                     var dBox = new CourtesyDocuments.DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
-                    foreach (var ele in dBox.MakeViewUI())
-                    {
-                        ele.MaxWidth = 200;
-                        hstack.Children.Add(ele);
-                    }
+                    var ele = dBox.MakeViewUI();
+                    ele.MaxWidth = 200;
+                    hstack.Children.Add(ele);
                     sp.Children.Add(hstack);
                 }
                 else if (f.Value is DocumentFieldModelController)
@@ -327,49 +325,42 @@ namespace Dash
             return sp;
         }
 
-        public List<FrameworkElement> MakeViewUI()
+        public FrameworkElement MakeViewUI()
         {
-            var uieles = new List<FrameworkElement>();
-
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.TextingBox.MakeView(this));
+                return CourtesyDocuments.TextingBox.MakeView(this);
             }
-            else if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
+            if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.ImageBox.MakeView(this));
+                return CourtesyDocuments.ImageBox.MakeView(this);
             }
-            else if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
+            if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.StackingPanel.MakeView(this));
+                return CourtesyDocuments.StackingPanel.MakeView(this);
             }
-            else if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
+            if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.CollectionBox.MakeView(this));
+                return CourtesyDocuments.CollectionBox.MakeView(this);
             }
-            else if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
+            if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
-                uieles.AddRange(CourtesyDocuments.OperatorBox.MakeView(this));
-            } 
-            else if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType) 
-            {
-                uieles.AddRange(CourtesyDocuments.ApiDocumentModel.MakeView(this));
-            } 
-            else // if document is not a known UI View, then see if it contains any documents with known UI views
-            {
-                var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey);
-                if (fieldModelController != null)
-                {
-                    var doc = ContentController.DereferenceToRootFieldModel<DocumentFieldModelController>(fieldModelController);
-                    Debug.Assert(doc != null);
-                    uieles.AddRange(doc.Data.MakeViewUI());
-                }
-                else
-                {
-                    uieles.Add(MakeAllViewUI());
-                }
+                return CourtesyDocuments.OperatorBox.MakeView(this);
             }
-            return uieles;
+            if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
+            {
+                return CourtesyDocuments.ApiDocumentModel.MakeView(this);
+            }
+
+            var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey);
+            if (fieldModelController != null)
+            {
+                var doc = ContentController.DereferenceToRootFieldModel<DocumentFieldModelController>(fieldModelController);
+                Debug.Assert(doc != null);
+                return doc.Data.MakeViewUI();
+            }
+
+            return MakeAllViewUI();
         }
 
         public void FireOnLayoutChanged()

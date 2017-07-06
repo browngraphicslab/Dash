@@ -52,13 +52,13 @@ namespace Dash
             // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
-            
+
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
             //TODO this seriously slows down the document 
-            
+
             //var jsonDoc = JsonToDashUtil.RunTests();
             //DisplayDocument(jsonDoc);
             //RadialMenuView radialMenu = new RadialMenuView(xCanvas);
@@ -206,7 +206,8 @@ namespace Dash
             AddAnotherLol();
         }
 
-        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
             var a = new CourtesyDocuments.ApiDocumentModel().Document;
             DisplayDocument(a);
         }
@@ -221,9 +222,9 @@ namespace Dash
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
                     new DocumentCollectionFieldModel(
-                                                        new DocumentModel[] 
+                                                        new DocumentModel[]
                                                         {
-                                                            
+
                                                             numbers.DocumentModel,
                                                             twoImages2.DocumentModel
                                                         }
@@ -240,7 +241,7 @@ namespace Dash
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
         }
-        
+
 
         private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
@@ -418,24 +419,29 @@ namespace Dash
                 return new List<FrameworkElement> { opView };
             }
         }
-        
+
         /// <summary>
         /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
         /// </summary>
-        public class ApiSourceCreatorDoc : CourtesyDocument {
+        public class ApiSourceCreatorDoc : CourtesyDocument
+        {
             public static DocumentType DocumentType = new DocumentType("APIC9C82-F32C-4704-AF6B-E55AC805C84F", "Api Source Creator");
 
-            public ApiSourceCreatorDoc() {
+            public ApiSourceCreatorDoc()
+            {
                 // create a layout for the image
-                var fields = new Dictionary<Key, FieldModel> {
+                var fields = new Dictionary<Key, FieldModel>
+                {
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
 
-            public override List<FrameworkElement> makeView(DocumentController docController) {
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
                 return TextingBox.MakeView(docController);
             }
-            public static List<FrameworkElement> MakeView(DocumentController docController) {
+            public static List<FrameworkElement> MakeView(DocumentController docController)
+            {
                 return new List<FrameworkElement>() { new ApiCreatorDisplay() };
             }
         }
@@ -444,24 +450,29 @@ namespace Dash
         /// <summary>
         /// Wrapper document to display the ApiSourceCreatorDisplay Usercontrol.
         /// </summary>
-        public class ApiSourceDoc : CourtesyDocument {
+        public class ApiSourceDoc : CourtesyDocument
+        {
             public static DocumentType DocumentType = new DocumentType("66FC9C82-F32C-4704-AF6B-E55AC805C84F", "Operator Box");
             public static Key ApiFieldKey = new Key("927F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Api");
             private static ApiSourceDisplay source;
 
-            public ApiSourceDoc(ApiSourceDisplay source) {
+            public ApiSourceDoc(ApiSourceDisplay source)
+            {
                 // create a layout for the image
                 ApiSourceDoc.source = source;
-                var fields = new Dictionary<Key, FieldModel> {
-            };
+                var fields = new Dictionary<Key, FieldModel>
+                {
+                };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
             }
 
-            public override List<FrameworkElement> makeView(DocumentController docController) {
+            public override List<FrameworkElement> makeView(DocumentController docController)
+            {
                 return new List<FrameworkElement>() { source };
             }
 
-            public static List<FrameworkElement> MakeView(DocumentController docController) {
+            public static List<FrameworkElement> MakeView(DocumentController docController)
+            {
                 return new List<FrameworkElement>() { ApiSourceDoc.source };
             }
         }
@@ -517,7 +528,8 @@ namespace Dash
                     };
                     tb.SetBinding(TextBlock.TextProperty, sourceBinding);
 
-                } else if (fieldModelController is NumberFieldModelController)
+                }
+                else if (fieldModelController is NumberFieldModelController)
                 {
                     var numFieldModelController = fieldModelController as NumberFieldModelController;
                     Debug.Assert(numFieldModelController != null);
@@ -563,7 +575,7 @@ namespace Dash
                     [DashConstants.KeyStore.DataKey] = refToImage,
                     [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModel(200),
                     [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModel(200),
-                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0,0)
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModel(0, 0)
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
 
@@ -618,11 +630,11 @@ namespace Dash
                 return ImageBox.MakeView(docController);
             }
         }
-        
+
         /// <summary>
         /// A generic data wrappe document display type used to display images or text fields.
         /// </summary>
-        public class DataBox: CourtesyDocument
+        public class DataBox : CourtesyDocument
         {
             CourtesyDocument _doc;
             public DataBox(ReferenceFieldModel refToField, bool isImage)
@@ -638,7 +650,7 @@ namespace Dash
                 return _doc.makeView(docController);
             }
         }
-        
+
         public class GenericCollection : CourtesyDocument
         {
             public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
@@ -650,7 +662,7 @@ namespace Dash
                     [DashConstants.KeyStore.DataKey] = fieldModel
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, DocumentType)).GetReturnedDocumentController();
-                
+
                 SetLayoutForDocument(Document.DocumentModel);
             }
             public GenericCollection(ReferenceFieldModel refToCollection) { Initialize(refToCollection); }
@@ -698,23 +710,21 @@ namespace Dash
                         (layoutDoc.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController)?.Data;
                     Debug.Assert(position != null);
                     var ele = layoutDoc.MakeViewUI();
-                    foreach (var frameworkElement in ele)
-                    {
-                        frameworkElement.HorizontalAlignment = HorizontalAlignment.Left;
-                        frameworkElement.VerticalAlignment = VerticalAlignment.Top;
-                        frameworkElement.RenderTransform =
-                            PointToTranslateTransformConverter.Instance.ConvertDataToXaml(position.Value);
-                    }
-                    output.AddRange(ele);
+                    ele.HorizontalAlignment = HorizontalAlignment.Left;
+                    ele.VerticalAlignment = VerticalAlignment.Top;
+                    ele.RenderTransform =
+                        PointToTranslateTransformConverter.Instance.ConvertDataToXaml(position.Value);
+                    output.Add(ele);
                 }
                 return output;
             }
         }
-        
-        public class StackingPanel : CourtesyDocument {
+
+        public class StackingPanel : CourtesyDocument
+        {
             public static DocumentType StackPanelDocumentType = new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
 
-            static public DocumentType DocumentType { get { return StackPanelDocumentType;  } }
+            static public DocumentType DocumentType { get { return StackPanelDocumentType; } }
 
             public StackingPanel(IEnumerable<DocumentModel> docs)
             {
@@ -735,10 +745,7 @@ namespace Dash
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments())
                     {
-                        foreach (var ele in stackDoc.MakeViewUI().Where((e) => e != null))
-                        {
-                            stack.Children.Add(ele);
-                        }
+                        stack.Children.Add(stackDoc.MakeViewUI());
                     }
                 return new List<FrameworkElement>(new FrameworkElement[] { stack });
             }
@@ -755,26 +762,26 @@ namespace Dash
             public TwoImages(bool displayFieldsAsDocuments)
             {
                 // create a document with two images
-                var imModel  = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
+                var imModel = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat.jpg"));
                 var imModel2 = new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"));
-                var tModel   = new TextFieldModel("Hello World!");
-                var fields   = new Dictionary<Key, FieldModel>
+                var tModel = new TextFieldModel("Hello World!");
+                var fields = new Dictionary<Key, FieldModel>
                 {
-                    [TextFieldKey]   = tModel,
+                    [TextFieldKey] = tModel,
                     [Image1FieldKey] = imModel,
                     [Image2FieldKey] = imModel2
                 };
 
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, TwoImagesType)).GetReturnedDocumentController();
 
-               
+
                 var imBox1 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image1FieldKey)).Document;
                 var imBox2 = new ImageBox(new ReferenceFieldModel(Document.GetId(), Image2FieldKey)).Document;
                 var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
 
                 if (displayFieldsAsDocuments)
                 {
-                    var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel } );
+                    var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel });
                     var documentFieldModelController = new DocumentCollectionFieldModelController(documentFieldModel);
                     ContentController.AddModel(documentFieldModel);
                     ContentController.AddController(documentFieldModelController);
@@ -784,9 +791,10 @@ namespace Dash
                     genericCollection.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(new NumberFieldModel(800)), true);
 
                     SetLayoutForDocument(genericCollection.DocumentModel);
-                } else
+                }
+                else
                 {
-                    var freeFormDoc = new FreeformDocument(new [] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
+                    var freeFormDoc = new FreeformDocument(new[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel }).Document;
 
                     SetLayoutForDocument(freeFormDoc.DocumentModel);
                 }
@@ -796,25 +804,25 @@ namespace Dash
         public class NestedDocExample : CourtesyDocument
         {
             public static DocumentType NestedDocExampleType = new DocumentType("700FAEE4-5520-4E5E-9AED-3C8C5C1BE58B", "Nested Doc Example");
-            public static Key TextFieldKey  = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
             public static Key TextField2Key = new Key("B53F1453-4C52-4302-96A3-A6B40DA7D587", "TextField2");
-            public static Key TwoImagesKey  = new Key("4E5C2B62-905D-4952-891D-24AADE14CA80", "TowImagesField");
+            public static Key TwoImagesKey = new Key("4E5C2B62-905D-4952-891D-24AADE14CA80", "TowImagesField");
 
             public NestedDocExample(bool displayFieldsAsDocuments)
             {
                 // create a document with two images
                 var twoModel = new DocumentModelFieldModel(new TwoImages(displayFieldsAsDocuments).Document.DocumentModel);
-                var tModel   = new TextFieldModel("Nesting");
+                var tModel = new TextFieldModel("Nesting");
                 var tModel2 = new TextFieldModel("More Nesting");
-                var fields   = new Dictionary<Key, FieldModel>
+                var fields = new Dictionary<Key, FieldModel>
                 {
-                    [TextFieldKey]  = tModel,
-                    [TwoImagesKey]  = twoModel,
+                    [TextFieldKey] = tModel,
+                    [TwoImagesKey] = twoModel,
                     [TextField2Key] = tModel2
                 };
                 Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, NestedDocExampleType)).GetReturnedDocumentController();
 
-                var tBox   = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
+                var tBox = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextFieldKey)).Document;
                 var imBox1 = twoModel.Data;
                 var tBox2 = new TextingBox(new ReferenceFieldModel(Document.GetId(), TextField2Key)).Document;
 
