@@ -191,23 +191,23 @@ namespace Dash
                 var textFieldModel= ContentController.DereferenceToRootFieldModel<TextFieldModel>(new ReferenceFieldModel(_documentController.GetId(), key));
                 var textFieldModelController = ContentController.GetController<TextFieldModelController>(textFieldModel.Id);
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                    box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                    box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(_documentController.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             }
             else if (fieldModel is ImageFieldModel)
             {
-                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             }
             else if (fieldModel is NumberFieldModel)
             {
-                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             }
 
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                var pfmc = new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
-                        e.GetPosition(_documentView).Y));
+                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X,
+                        e.GetPosition(_documentView).Y);
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
                 ContentController.AddController(pfmc);
                 var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutCourtesyDocument.LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));

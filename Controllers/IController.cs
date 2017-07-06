@@ -8,6 +8,7 @@ namespace Dash
     /// </summary>
     public interface IController
     {
+
         /// <summary>
         /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
         /// </summary>

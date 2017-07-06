@@ -18,18 +18,17 @@ namespace Dash
         ///     to the server and across the client
         /// </summary>
         private Dictionary<Key, FieldModelController> _fields;
-        public DocumentController(DocumentModel documentModel)
-        {
-            // Initialize Local Variables
-            DocumentModel = documentModel;
-            // get the field controllers associated with the FieldModel id's stored in the document Model
-            var fieldControllers =
-                ContentController.GetControllers<FieldModelController>(documentModel.Fields.Values);
-            // put the field controllers in an observable dictionary
-            _fields =
-                new Dictionary<Key, FieldModelController>(documentModel.Fields.ToDictionary(kvp => kvp.Key,
-                    kvp => fieldControllers.First(controller => controller.GetId() == kvp.Value)));
 
+        public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type)
+        {
+            DocumentModel model = new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type);
+            ContentController.AddModel(model);
+            // Initialize Local Variables
+            DocumentModel = model;
+            // get the field controllers associated with the FieldModel id's stored in the document Model
+            // put the field controllers in an observable dictionary
+            _fields = new Dictionary<Key, FieldModelController>(fields);
+            ContentController.AddController(this);
             // Add Events
         }
 
@@ -182,19 +181,11 @@ namespace Dash
         public DocumentController MakeDelegate()
         {
             // TODO WE NEED TO STORE THESE CONTROLLERS SOMEWHERE
-            // create the child with all the same fields
-            var delegateModel = new DocumentModel(new Dictionary<Key, FieldModel>(), DocumentType);
-            ContentController.AddModel(delegateModel);
-
             // create a controller for the child
-            var delegateController = new DocumentController(delegateModel);
-            ContentController.AddController(delegateController);
+            var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
 
             // create and set a prototype field on the child, pointing to ourself
-            var prototypeFieldModel = new DocumentModelFieldModel(DocumentModel);
-            ContentController.AddModel(prototypeFieldModel);
-            var prototypeFieldController = new DocumentFieldModelController(prototypeFieldModel);
-            ContentController.AddController(prototypeFieldController);
+            var prototypeFieldController = new DocumentFieldModelController(this);
             delegateController.SetField(DashConstants.KeyStore.PrototypeKey, prototypeFieldController, true);
 
             // add the delegate to our delegates field
@@ -220,13 +211,12 @@ namespace Dash
             // if not then populate it with a new list of documents
             if (currentDelegates == null)
                 currentDelegates =
-                    new DocumentCollectionFieldModelController(
-                        new DocumentCollectionFieldModel(new List<DocumentModel>()));
+                    new DocumentCollectionFieldModelController(new List<DocumentController>());
 
             return currentDelegates;
         }
 
-        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModel reference)
+        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference)
         {
             //TODO Remove existing output references and add new output reference
             //if (InputReferences.ContainsKey(fieldKey))
@@ -235,7 +225,7 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             GetField(fieldKey).InputReference = reference;
-            ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;
+            ContentController.DereferenceToRootFieldModel(reference).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
             Execute();
         }
 
@@ -297,7 +287,7 @@ namespace Dash
                 {
                     var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
                     var label = new TextBlock() { Text = f.Key.Name + ": " };
-                    var dBox = new CourtesyDocuments.DataBox(new ReferenceFieldModel(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var dBox = new CourtesyDocuments.DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
                     var ele = dBox.MakeViewUI();

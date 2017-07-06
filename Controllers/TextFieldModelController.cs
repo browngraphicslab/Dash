@@ -2,20 +2,13 @@
 {
     public class TextFieldModelController : FieldModelController
     {
-        /// <summary>
-        ///     Create a new <see cref="TextFieldModelController"/> associated with the passed in <see cref="TextFieldModel" />
-        /// </summary>
-        /// <param name="textFieldModel">The model which this controller will be operating over</param>
-        public TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel)
-        {
-            TextFieldModel = textFieldModel;
-        }
+        public TextFieldModelController(string data) : base(new TextFieldModel(data)) { }
 
         /// <summary>
         ///     The <see cref="TextFieldModel" /> associated with this <see cref="TextFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public TextFieldModel TextFieldModel { get; }
+        public TextFieldModel TextFieldModel => FieldModel as TextFieldModel;
 
         public string Data
         {
@@ -33,8 +26,7 @@
 
         protected override void UpdateValue(FieldModelController fieldModel)
         {
-                Data = (fieldModel as TextFieldModelController).Data;
-            
+            Data = (fieldModel as TextFieldModelController).Data;
         }
 
         public override string ToString()

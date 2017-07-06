@@ -7,17 +7,17 @@ namespace Dash
         /// <summary>
         /// ID of document that this FieldModel references
         /// </summary>
-        public string DocId { get; set; }
+        public string DocId;
 
         /// <summary>
         /// Key of field within document that is referenced
         /// </summary>
-        public Key FieldKey { get; set; }
+        public Key FieldKey;
 
         /// <summary>
         /// Cached type of field
         /// </summary>
-        public string Type { get; set; }
+        public string Type;
 
         public ReferenceFieldModel(string docId, Key fieldKey)
         {

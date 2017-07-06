@@ -19,7 +19,7 @@ namespace Dash
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ReferenceFieldModel InputReference
+        public ReferenceFieldModelController InputReference
         {
             get { return FieldModel.InputReference; }
             set
@@ -27,7 +27,7 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    var cont = ContentController.GetController<DocumentController>(value.DocId).GetField(value.FieldKey);
+                    var cont = ContentController.DereferenceToRootFieldModel(value);
                     cont.FieldModelUpdatedEvent += UpdateValue;
                     UpdateValue(cont);
 
@@ -46,7 +46,7 @@ namespace Dash
         ///     A wrapper for <see cref="Dash.FieldModel.OutputReferences" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ObservableCollection<ReferenceFieldModel> OutputReferences;
+        public ObservableCollection<ReferenceFieldModelController> OutputReferences;
 
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
@@ -57,11 +57,13 @@ namespace Dash
         {
         }
 
-        public FieldModelController(FieldModel fieldModel)
+        protected FieldModelController(FieldModel fieldModel)
         {
             // Initialize Local Variables
             FieldModel = fieldModel;
-            OutputReferences = new ObservableCollection<ReferenceFieldModel>(fieldModel.OutputReferences);
+            ContentController.AddModel(fieldModel);
+            ContentController.AddController(this);
+            OutputReferences = new ObservableCollection<ReferenceFieldModelController>(fieldModel.OutputReferences);
 
             // Add Events
             OutputReferences.CollectionChanged += OutputReferences_CollectionChanged;
@@ -85,7 +87,7 @@ namespace Dash
             //    default:
             //        throw new ArgumentOutOfRangeException();
             //}
-            var freshList = sender as ObservableCollection<ReferenceFieldModel>;
+            var freshList = sender as ObservableCollection<ReferenceFieldModelController>;
             Debug.Assert(freshList != null);
             FieldModel.OutputReferences = freshList.ToList();
 

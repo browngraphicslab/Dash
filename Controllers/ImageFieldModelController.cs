@@ -5,20 +5,13 @@ namespace Dash
 {
     public class ImageFieldModelController : FieldModelController
     {
-        /// <summary>
-        ///     Create a new <see cref="ImageFieldModelController"/> associated with the passed in <see cref="ImageFieldModel" />
-        /// </summary>
-        /// <param name="imageFieldModel">The model which this controller will be operating over</param>
-        public ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel)
-        {
-            ImageFieldModel = imageFieldModel;
-        }
+        public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data)) { }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ImageFieldModel ImageFieldModel { get; }
+        public ImageFieldModel ImageFieldModel => FieldModel as ImageFieldModel;
 
         /// <summary>
         ///     The uri which this image is sourced from. This is a wrapper for <see cref="ImageFieldModel.Data" />

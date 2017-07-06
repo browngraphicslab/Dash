@@ -156,11 +156,8 @@
     <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
-    <Compile Include="ServerClient\Requests\CreateNewDocumentRequest.cs" />
-    <Compile Include="ServerClient\Requests\FieldModelControllerFactory.cs" />
     <Compile Include="ServerClient\Requests\Request.cs" />
     <Compile Include="ServerClient\Requests\RequestArgs\RequestArgs.cs" />
-    <Compile Include="ServerClient\Requests\RequestArgs\CreateNewDocumentRequestArgs.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
     <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
@@ -204,7 +201,6 @@
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
-    <Compile Include="Util\ObservableConvertCollection.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />

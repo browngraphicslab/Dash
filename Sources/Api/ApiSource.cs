@@ -275,15 +275,15 @@ namespace Dash {
                 // then try and parse it as a single object
             } catch (InvalidOperationException e) {
                 JObject result = JObject.Parse(response.Content.ToString());
-                Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
+                Dictionary<Key, FieldModelController> toAdd = new Dictionary<Key, FieldModelController>();
                 foreach (JProperty property in result.Properties()) {
-                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
+                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModelController(property.Value.ToString()));
                 }
 
                 // at this point, resultAsDocument is a new document
                 //
                 // TODO: unique identifiers as above
-                DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
+                DocumentController Document = new DocumentController(toAdd, new DocumentType(apiURI.Host));
                 responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
             }
 

@@ -12,7 +12,7 @@ namespace Dash
         public FieldModel()
         {
             // Initialize Local Variables
-            OutputReferences = new List<ReferenceFieldModel>();
+            OutputReferences = new List<ReferenceFieldModelController>();
 
             // Add Any Events
         }
@@ -21,11 +21,11 @@ namespace Dash
         /// <summary>
         ///     Optional reference to a separate <see cref="FieldModel" /> that this <see cref="FieldModel" /> takes as input
         /// </summary>
-        public ReferenceFieldModel InputReference;
+        public ReferenceFieldModelController InputReference;
 
         /// <summary>
         ///     List of references to fields that take this field as input
         /// </summary>
-        public List<ReferenceFieldModel> OutputReferences;
+        public List<ReferenceFieldModelController> OutputReferences;
     }
 }

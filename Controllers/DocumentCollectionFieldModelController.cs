@@ -7,7 +7,6 @@ namespace Dash
 {
     public class DocumentCollectionFieldModelController : FieldModelController
     {
-
         public delegate void DocumentsChangedHandler(IEnumerable<DocumentController> currentDocuments);
 
         public event DocumentsChangedHandler OnDocumentsChanged;
@@ -27,22 +26,9 @@ namespace Dash
 
         public List<DocumentController> Documents { get { return _documents;  } }
 
-        /// <summary>
-        ///     Create a new <see cref="DocumentCollectionFieldModelController" /> associated with the passed in
-        ///     <see cref="DocumentCollectionFieldModel" />
-        /// </summary>
-        /// <param name="documentCollectionFieldModel">The model which this controller will be operating over</param>
-        public DocumentCollectionFieldModelController(DocumentCollectionFieldModel documentCollectionFieldModel)
-            : base(documentCollectionFieldModel)
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) :base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
         {
-            // Initialize Local Variables
-            DocumentCollectionFieldModel = documentCollectionFieldModel;
-            var documentControllers =
-                ContentController.GetControllers<DocumentController>(documentCollectionFieldModel.Data);
-            _documents = new List<DocumentController>(documentControllers);
-
-            // Add Events
-
+            _documents = documents.ToList();
         }
 
         /// <summary>
@@ -50,7 +36,7 @@ namespace Dash
         ///     <see cref="DocumentCollectionFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public DocumentCollectionFieldModel DocumentCollectionFieldModel { get; }
+        public DocumentCollectionFieldModel DocumentCollectionFieldModel => FieldModel as DocumentCollectionFieldModel;
 
         /// <summary>
         /// Adds a single document to the collection.

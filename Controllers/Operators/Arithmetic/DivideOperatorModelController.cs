@@ -22,19 +22,19 @@ namespace Dash
         public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
         public override List<Key> OutputKeys { get; } = new List<Key> {QuotientKey, RemainderKey};
 
-        public override List<FieldModel> GetNewInputFields()
+        public override List<FieldModelController> GetNewInputFields()
         {
-            return new List<FieldModel>
+            return new List<FieldModelController>
             {
-                new NumberFieldModel(), new NumberFieldModel()
+                new NumberFieldModelController(), new NumberFieldModelController()
             };
         }
 
-        public override List<FieldModel> GetNewOutputFields()
+        public override List<FieldModelController> GetNewOutputFields()
         {
-            return new List<FieldModel>
+            return new List<FieldModelController>
             {
-                new NumberFieldModel(), new NumberFieldModel()
+                new NumberFieldModelController(), new NumberFieldModelController()
             };
         }
 

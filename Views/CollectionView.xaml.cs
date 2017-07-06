@@ -716,7 +716,7 @@ namespace Dash
         /// </summary>
         private OperatorView.IOReference _currReference;
 
-        private Dictionary<ReferenceFieldModel, Path> _lineDict = new Dictionary<ReferenceFieldModel, Path>();
+        private Dictionary<ReferenceFieldModelController, Path> _lineDict = new Dictionary<ReferenceFieldModelController, Path>();
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -877,21 +877,21 @@ namespace Dash
             }
             if (_currReference.IsOutput)
             {
-                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
+                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId());
             }
             else
             {
-                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
+                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId());
             }
             if (_graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
+                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId());
                 }
                 else
                 {
-                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
+                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId());
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
@@ -926,7 +926,7 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(ReferenceFieldModel model)
+        private void CheckLinePresence(ReferenceFieldModelController model)
         {
             if (_lineDict.ContainsKey(model))
             {
@@ -979,7 +979,7 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, ViewModel.ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, ViewModel.ParentDocument);
             CollectionView view = ViewModel.ParentCollection;
             view?.StartDrag(ioRef);
         }
@@ -989,7 +989,7 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, ViewModel.ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, ViewModel.ParentDocument);
             CollectionView view = ViewModel.ParentCollection;
             view?.EndDrag(ioRef);
         }

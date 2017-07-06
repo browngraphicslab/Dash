@@ -21,19 +21,19 @@ namespace Dash
         /// <returns></returns>
         public abstract void Execute(DocumentController doc);
 
-        public abstract List<FieldModel> GetNewInputFields();
+        public abstract List<FieldModelController> GetNewInputFields();
 
         /// <summary>
         /// Returns a list of fieldmodels corresponsing to the keys of OutputKeys.
         /// </summary>
         /// <returns></returns>
-        public abstract List<FieldModel> GetNewOutputFields();
+        public abstract List<FieldModelController> GetNewOutputFields();
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
         /// </summary>
         /// <param name="operatorFieldModel">The model which this controller will be operating over</param>
-        public OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
         }
