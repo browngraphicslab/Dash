@@ -1,20 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -26,13 +15,11 @@ namespace Dash
         public static readonly string DragPropertyKey = "key";
 
         private DocumentController _documentControllerDataContext;
-
-        public ObservableCollection<KeyFieldContainer> ListItemSource { get; }
-
+        private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
         public KeyValuePane()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
             DataContextChanged += KeyValuePane_DataContextChanged;
         }
@@ -54,9 +41,7 @@ namespace Dash
         {
             ListItemSource.Clear();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
-            {
                 ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
-            }
         }
 
 
@@ -74,15 +59,18 @@ namespace Dash
         }
     }
 
+    /// <summary>
+    /// A container which represents a single row in the list created by the <see cref="KeyValuePane"/>
+    /// </summary>
     public class KeyFieldContainer
     {
+        public Key Key { get; }
+        public FieldModelController Controller { get; }
+
         public KeyFieldContainer(Key key, FieldModelController controller)
         {
             Key = key;
             Controller = controller;
         }
-
-        public Key Key { get; }
-        public FieldModelController Controller { get; }
     }
 }
