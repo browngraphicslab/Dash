@@ -7,7 +7,7 @@ namespace Dash.Converters
     {
         public override FrameworkElement ConvertDataToXaml(DocumentModel data, object parameter = null)
         {
-            return new DocumentController(data).MakeViewUI()[0];
+            return new DocumentController(data).MakeViewUI();
         }
 
         public override DocumentModel ConvertXamlToData(FrameworkElement xaml, object parameter = null)

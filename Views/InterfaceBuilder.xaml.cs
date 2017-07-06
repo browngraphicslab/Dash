@@ -43,7 +43,8 @@ namespace Dash
             
             LayoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController);
            
-            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document, new List<DocumentController>()).First() as DocumentView;
+            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document, viewModel.DocContextList) as DocumentView;
+
 
             _documentController = viewModel.DocumentController;
 
@@ -73,7 +74,7 @@ namespace Dash
             foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
             {
                 // use the layout document to generate a UI
-                var fieldView = layoutDocument.MakeViewUI().First();
+                var fieldView = layoutDocument.MakeViewUI();
 
                 var translationController = layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
                 if (translationController != null)

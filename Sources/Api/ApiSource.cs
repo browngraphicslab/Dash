@@ -274,7 +274,7 @@ namespace Dash {
 
                 // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
                 // the parser should be reworked to auto do this or do it in a more user-friendly way
-                foreach (var f in documentModel.Fields) {
+                foreach (var f in documentModel.EnumFields()) {
                     Debug.WriteLine(f.Value.GetType().ToString());
                     if (f.Value is DocumentFieldModelController)
                         responseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);

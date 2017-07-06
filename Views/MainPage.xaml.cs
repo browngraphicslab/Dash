@@ -52,13 +52,13 @@ namespace Dash
             // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
             MainDocView.Height = MyGrid.ActualHeight;
-            
+
             // Set the instance to be itself, there should only ever be one MainView
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
             //TODO this seriously slows down the document 
-            
+
             //var jsonDoc = JsonToDashUtil.RunTests();
             //DisplayDocument(jsonDoc);
             //RadialMenuView radialMenu = new RadialMenuView(xCanvas);
@@ -206,7 +206,8 @@ namespace Dash
             AddAnotherLol();
         }
 
-        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs) {
+        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
             var a = new CourtesyDocuments.ApiDocumentModel().Document;
             DisplayDocument(a);
         }
@@ -221,9 +222,9 @@ namespace Dash
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
                     new DocumentCollectionFieldModel(
-                                                        new DocumentModel[] 
+                                                        new DocumentModel[]
                                                         {
-                                                            
+
                                                             numbers.DocumentModel,
                                                             twoImages2.DocumentModel
                                                         }
@@ -240,7 +241,7 @@ namespace Dash
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
         }
-        
+
 
         private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
@@ -255,6 +256,7 @@ namespace Dash
             DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
             //DisplayDocument(new CourtesyDocuments.Numbers().Document);
         }
+
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
