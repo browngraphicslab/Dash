@@ -95,6 +95,9 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CollectionListView.xaml.cs">
+      <DependentUpon>CollectionListView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\ContentController.cs" />
     <Compile Include="Controllers\IController.cs" />
     <Compile Include="Controllers\DocumentCollectionFieldModelController.cs" />
@@ -292,6 +295,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="CollectionListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

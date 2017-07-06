@@ -15,11 +15,9 @@
         <Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
             <Button x:Name="CloseButton" 
                 Content ="X" 
-                Width="30"
-                    
+                Width="30"                  
                 HorizontalAlignment="Right" 
                 VerticalAlignment="Stretch"/>
-
             <Button x:Name="DisplayButton" 
                 HorizontalAlignment="Left" 
                 Margin="20,0,0,0"
@@ -54,11 +52,11 @@
                   PointerReleased="FreeformGrid_OnPointerReleased"
                   Style="{StaticResource xNodeContainerGrid}">
                 <Grid.Clip>
-                <RectangleGeometry x:Name="ClipRect"/>
-            </Grid.Clip>
-            <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-            <Grid x:Name="FreeformGrid" Visibility="{Binding FreeformVisibility}">
-                <ItemsControl x:Name="xItemsControl" 
+                    <RectangleGeometry x:Name="ClipRect"/>
+                </Grid.Clip>
+                <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
+                <Grid x:Name="FreeformGrid" Visibility="{Binding FreeformVisibility}">
+                    <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">
                         <ItemsControl.ItemsPanel>
@@ -79,13 +77,12 @@
                                     IODragStarted="StartDrag" 
                                     IODragEnded="EndDrag" 
                                     RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
-
-            <Grid Visibility="{Binding GridViewVisibility}">
-                <GridView x:Name="xGridView" 
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
+                <Grid Visibility="{Binding GridViewVisibility}">
+                    <GridView x:Name="xGridView" 
                           x:FieldModifier="public" 
                           HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch"
@@ -98,9 +95,9 @@
                           AllowDrop="True"
                           DragItemsStarting="xGridView_OnDragItemsStarting"
                           DragItemsCompleted="xGridView_OnDragItemsCompleted">
-                    <GridView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
                                     Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
                                     <dash:DocumentView  Width="250" Height="250" DataContext="{Binding}" IsHitTestVisible="False"/>
                                 </Border>
@@ -108,45 +105,7 @@
                         </GridView.ItemTemplate>
                     </GridView>
                 </Grid>
-
-                <Grid Visibility="{Binding ListViewVisibility}">
-                    <ListView x:Name="HListView" 
-                          x:FieldModifier="public" 
-                          FlowDirection="LeftToRight" 
-                          HorizontalAlignment="Stretch" 
-                          VerticalAlignment="Stretch" 
-                          ScrollViewer.HorizontalScrollMode="Enabled"
-                          ScrollViewer.VerticalScrollMode="Disabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          SelectionMode="{Binding ItemSelectionMode}"
-                          ItemsSource="{Binding DataBindingSource}"
-                          DragItemsStarting="xGridView_OnDragItemsStarting"
-                          DragItemsCompleted="xGridView_OnDragItemsCompleted"
-                          CanDragItems="True"
-                          CanReorderItems="True"
-                          AllowDrop="True">
-                        <ListView.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
-                            </ItemsPanelTemplate>
-                        </ListView.ItemsPanel>
-                        <ListView.ItemTemplate>
-                            <DataTemplate>
-                                <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                    <dash:DocumentView 
-                                    Width="250" 
-                                    Height="250" 
-                                    DataContext="{Binding}"
-                                    IsHitTestVisible="False">
-                                    </dash:DocumentView>
-                                </Border>
-                            </DataTemplate>
-                        </ListView.ItemTemplate>
-                    </ListView>
-                </Grid>
             </Grid>
-
             <Grid Visibility="{Binding SoloDisplayVisibility}">
                 <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Grid.Background>
@@ -170,7 +129,6 @@
                     </Grid>
                 </Grid>
             </Grid>
-
             <Grid x:Name="FilterGrid" Visibility="{Binding FilterViewVisibility}">
                 <StackPanel Visibility="Collapsed" Orientation="Vertical" Width="605" Height="305" Style="{StaticResource xNodeContainerStackPanel}">
                     <Button x:Name="xFilterExit" Content="X" HorizontalAlignment="Right" Height="30" Style="{StaticResource xBlueTextButtonStyle}"/>
@@ -231,24 +189,20 @@
                         HorizontalAlignment="Center" Style="{StaticResource xBlueTextButtonStyle}" FontSize="20" Height="30"
                          Margin="30" />
 
-            </StackPanel>
-        </Grid>
-
-        <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom">
-            
-
-            <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
+                </StackPanel>
+            </Grid>
+            <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom">
+                <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
                         Width="70" Foreground="WhiteSmoke" Margin="10 0 0 0" FontSize="14" FontFamily="Rockwell">
-                <Button.Flyout>
-                    <MenuFlyout Placement="Bottom">
-                        <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
-                        <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
-                        <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
-                    </MenuFlyout>
-                </Button.Flyout>
-            </Button>
-            
-            <Button x:Name="SelectButton" 
+                    <Button.Flyout>
+                        <MenuFlyout Placement="Bottom">
+                            <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
+                            <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
+                            <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
+                        </MenuFlyout>
+                    </Button.Flyout>
+                </Button>
+                <Button x:Name="SelectButton" 
                     Content ="Select" 
                     VerticalAlignment="Top" 
                     Height="30" 
@@ -258,7 +212,6 @@
                     FontSize="14" 
                     FontFamily="Rockwell"/>
             </StackPanel>
-            
             <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
                  Width="20" 

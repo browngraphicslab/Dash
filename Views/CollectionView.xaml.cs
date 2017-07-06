@@ -1051,6 +1051,7 @@ namespace Dash
         {
             if (ViewModel.GridViewVisibility == Visibility.Visible)
             {
+                
                 xGridView.ItemsSource = null;
                 xGridView.ItemsSource = ViewModel.DataBindingSource;
             }
