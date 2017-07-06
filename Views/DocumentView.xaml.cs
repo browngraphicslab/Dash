@@ -21,7 +21,7 @@ namespace Dash
         /// </summary>
         private ManipulationControls manipulator;
         public DocumentViewModel ViewModel { get; set; }
-        
+
 
         public bool ProportionalScaling;
         public ManipulationControls Manipulator { get { return manipulator; } }
@@ -219,18 +219,11 @@ namespace Dash
             //clear any current children (fields)and then add them over again
 
             XGrid.Children.Clear();
-            var layout = documentViewModel.DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
-            var elements = layout != null ? layout.Data.MakeViewUI() : documentViewModel.GetUiElements(new Rect(0, 0, ActualWidth, ActualHeight));
-            if (elements.Count == 0)
+            var elements = documentViewModel.DocumentController.MakeViewUI();
+            foreach (var element in elements)
             {
-                var panel = documentViewModel.DocumentController.MakeAllViewUI();
-                XGrid.Children.Add(panel);
+                XGrid.Children.Add(element);
             }
-            else
-                foreach (var element in elements)
-                {
-                    XGrid.Children.Add(element);
-                }
         }
 
         /// <summary>
@@ -313,7 +306,7 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
         }
 
         private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)

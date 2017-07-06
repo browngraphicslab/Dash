@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using DashShared;
 using Windows.UI.Xaml;
@@ -359,19 +360,13 @@ namespace Dash
                 var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey);
                 if (fieldModelController != null)
                 {
-                    fieldModelController = ContentController.DereferenceToRootFieldModel(fieldModelController);
-                    if (fieldModelController is DocumentFieldModelController)
-                    {
-                        var fieldDoc = (fieldModelController as DocumentFieldModelController).Data;
-                        uieles.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
-                    }
-                    else if (fieldModelController is DocumentCollectionFieldModelController)
-                    {
-                        foreach (var fieldDoc in (fieldModelController as DocumentCollectionFieldModelController).GetDocuments())
-                        {
-                            uieles.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
-                        }
-                    }
+                    var doc = ContentController.DereferenceToRootFieldModel<DocumentFieldModelController>(fieldModelController);
+                    Debug.Assert(doc != null);
+                    uieles.AddRange(doc.Data.MakeViewUI());
+                }
+                else
+                {
+                    uieles.Add(MakeAllViewUI());
                 }
             }
             return uieles;
