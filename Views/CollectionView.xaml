@@ -81,30 +81,6 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </Grid>
-                <Grid Visibility="{Binding GridViewVisibility}">
-                    <GridView x:Name="xGridView" 
-                          x:FieldModifier="public" 
-                          HorizontalAlignment="Stretch" 
-                          VerticalAlignment="Stretch"
-                          ScrollViewer.VerticalScrollMode="Enabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                          SelectionMode="{Binding ItemSelectionMode}"
-                          ItemsSource="{Binding DataBindingSource}"
-                          CanDragItems="True"
-                          CanReorderItems="True"
-                          AllowDrop="True"
-                          DragItemsStarting="xGridView_OnDragItemsStarting"
-                          DragItemsCompleted="xGridView_OnDragItemsCompleted">
-                        <GridView.ItemTemplate>
-                            <DataTemplate>
-                                <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
-                                    Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                                    <dash:DocumentView  Width="250" Height="250" DataContext="{Binding}" IsHitTestVisible="False"/>
-                                </Border>
-                            </DataTemplate>
-                        </GridView.ItemTemplate>
-                    </GridView>
-                </Grid>
             </Grid>
             <Grid Visibility="{Binding SoloDisplayVisibility}">
                 <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
