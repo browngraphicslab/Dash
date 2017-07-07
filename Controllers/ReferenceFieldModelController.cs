@@ -9,6 +9,8 @@ namespace Dash
         public ReferenceFieldModelController(string docID, Key key) : base(new ReferenceFieldModel(docID, key))
         {
             var fmc = (ContentController.GetController(ReferenceFieldModel.DocId) as DocumentController).GetField(ReferenceFieldModel.FieldKey);//TODO Change ContentController to dereference to FieldModelController and use dereference here
+
+
             fmc.FieldModelUpdatedEvent += Fmc_FieldModelUpdatedEvent;
         }
 
