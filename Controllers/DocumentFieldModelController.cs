@@ -1,4 +1,8 @@
-﻿namespace Dash
+﻿using System;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+
+namespace Dash
 {
     public class DocumentFieldModelController : FieldModelController
     {
@@ -30,6 +34,16 @@
                     // update server
                 }
             }
+        }
+
+        public override FrameworkElement GetTableCellView()
+        {
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
         }
     }
 }

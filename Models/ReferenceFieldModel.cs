@@ -14,11 +14,6 @@ namespace Dash
         /// </summary>
         public Key FieldKey;
 
-        /// <summary>
-        /// Cached type of field
-        /// </summary>
-        public string Type;
-
         //TODO Do we ever want to just create a reference field model without the controller?
         //Some/many references are created temporarily so we don't really need a controller
         //for them and we don't need to add them to the content controller, but it might be better to be safe than sorry

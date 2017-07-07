@@ -1,4 +1,6 @@
-﻿using DashShared;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using DashShared;
 
 namespace Dash
 {
@@ -45,5 +47,14 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
+        public override FrameworkElement GetTableCellView()
+        {
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            textBlock.Text = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";
+        }
     }
 }

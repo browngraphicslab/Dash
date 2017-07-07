@@ -1,5 +1,9 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Windows.Foundation;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -18,6 +22,22 @@ namespace Dash
         {
             Debug.Assert(fieldModel is PointFieldModelController);
             Data = ((PointFieldModelController) fieldModel).Data;
+        }
+
+        public override FrameworkElement GetTableCellView()
+        {
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            var textBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath(nameof(Data)),
+                Mode = BindingMode.OneWay
+            };
+            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
         public Point Data
