@@ -84,6 +84,7 @@ namespace Dash
             get { return _backgroundBrush; }
             set { SetProperty(ref _backgroundBrush, value); }
         }
+        public string DebugName = "";
 
         public Brush BorderBrush
         {
@@ -107,11 +108,13 @@ namespace Dash
             set { SetProperty(ref _isMoveable, value); }
         }
 
+        public List<DocumentController> DocContextList = null;
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
-        public DocumentViewModel(DocumentController documentController)
+        public DocumentViewModel(DocumentController documentController, IEnumerable<DocumentController> docContextList = null)
         {
+            DocContextList = docContextList == null ? null : new List<DocumentController>(docContextList);
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Color.FromArgb(50, 34, 34, 34));
@@ -181,18 +184,6 @@ namespace Dash
         private void DocumentController_OnLayoutChanged(DocumentController sender)
         {
             OnLayoutChanged?.Invoke(this);
-        }
-
-        // == METHODS ==
-        /// <summary>
-        /// Generates a list of UIElements by making FieldViewModels of a document;s
-        /// given fields.
-        /// </summary>
-        /// TODO: rename this to create ui elements
-        /// <returns>List of all UIElements generated</returns>
-        public virtual FrameworkElement GetUiElements(Rect bounds)
-        {
-            return DocumentController.MakeViewUI();
         }
     }
 }

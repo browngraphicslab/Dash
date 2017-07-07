@@ -9,6 +9,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
+using static Dash.CourtesyDocuments;
 
 namespace Dash {
     /// <summary>
@@ -249,6 +250,15 @@ namespace Dash {
                 // put a single document into the collection view
                 DocumentController documentModel = JsonToDashUtil.Parse(response.Content.ToString());
 
+                var layDocCtrl = new DocumentController(new Dictionary<Key, FieldModelController>(), CollectionBox.DocumentType);
+                var cbox = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[0]));
+                var cfmc = new DocumentFieldModelController(cbox.Document);
+                var widthFieldCtrl = new NumberFieldModelController(200);
+                var heightFieldCtrl = new NumberFieldModelController(200);
+                layDocCtrl.SetField(DashConstants.KeyStore.LayoutKey, cfmc, false);
+                layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
+                layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
+
                 // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
                 // the parser should be reworked to auto do this or do it in a more user-friendly way
                 foreach (var f in documentModel.EnumFields()) {
@@ -257,6 +267,13 @@ namespace Dash {
                         responseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
                     if (f.Value is DocumentCollectionFieldModelController)
                         responseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
+                    foreach (var doc in ResponseAsDocuments)
+                    {
+                        var delg = layDocCtrl.MakeDelegate();
+                        CourtesyDocument.SetLayoutForDocument(doc, delg);
+                        var dataFieldModelController = new DocumentCollectionFieldModelController(new DocumentController[0]);
+                        layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
+                    }
                 }
 
                 if (responseAsDocuments.Count == 0)

@@ -43,7 +43,8 @@ namespace Dash
             
             LayoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController);
            
-            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document) as DocumentView;
+            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document, viewModel.DocContextList) as DocumentView;
+
 
             _documentController = viewModel.DocumentController;
 

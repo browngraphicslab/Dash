@@ -266,9 +266,10 @@ namespace Dash
 
         #endregion
 
-
-        public CollectionViewModel(CollectionModel model)
+        List<DocumentController> DocContextList;
+        public CollectionViewModel(CollectionModel model, List<DocumentController> docContextList)
         {
+            DocContextList = docContextList;
             _collectionModel = model;
 
             SetInitialValues();
@@ -542,7 +543,7 @@ namespace Dash
             for (int i = 0; i<documents.Data.ToList().Count; i++)
             {
                 var controller = ContentController.GetController(documents.Data.ToList()[i]) as DocumentController;
-                var viewModel = new DocumentViewModel(controller);
+                var viewModel = new DocumentViewModel(controller, DocContextList);
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
