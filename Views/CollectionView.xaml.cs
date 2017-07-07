@@ -68,7 +68,7 @@ namespace Dash
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
             DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
-            Grid.DoubleTapped += ViewModel.Grid_DoubleTapped;
+            
         }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
@@ -77,6 +77,7 @@ namespace Dash
 
             if (parentDocument != MainPage.Instance.MainDocView)
             {
+                DoubleTapped += ViewModel.Grid_DoubleTapped;
                 parentDocument.SizeChanged += (ss, ee) =>
                 {
                     var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
@@ -152,173 +153,6 @@ namespace Dash
             (VisualTreeHelper.GetParent(contentPresentor) as Canvas)?.Children.Remove(this
                 .GetFirstAncestorOfType<ContentPresenter>());
         }
-
-       
-        #region Filter Methods: MOVE TO FILTERVIEW
-
-        ///// <summary>
-        ///// Animate fadeout of the xFieldBox and the collapsing of the xMainGrid
-        ///// when the "Has field" option is selected in the combobox
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void hasField_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    _isHasFieldPreviouslySelected = true;
-
-        //    ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.HasField;
-
-        //    // collapse only if the grid that the xFieldBox is located in is expanded
-        //    if (xFieldBoxColumn.Width > 0)
-        //    {
-        //        xHideFieldBox.Begin();
-        //        xCollapseMainGrid.Begin();
-        //    }
-
-        //    xSearchBox.Visibility = Visibility.Collapsed;
-        //    xSearchFieldBox.Visibility = Visibility.Visible;
-
-        //    // case where xSearchBox is filled in before user clicks on xHasField
-        //    if (xSearchFieldBox.Text != "")
-        //    {
-        //        xFilterButton.Visibility = Visibility.Visible;
-        //    }
-
-        //    if (xFieldBox.Text != "")
-        //    {
-        //        xSearchFieldBox.Text = xFieldBox.Text;
-        //        xFieldBox.Text = "";
-        //    }
-        //}
-        ///// <summary>
-        ///// Animate expansion of xMainGrid when the "Field contains" or "Field equals" option is
-        ///// selected in the combobox (and the previously selected option is "Has field")
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void fieldContainsOrEquals_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    // expand only if the grid that the xFieldBox is located in is collapsed
-        //    if (xFieldBoxColumn.Width == 0)
-        //    {
-        //        // resize actual grid column
-        //        xFieldBoxColumn.Width = 165;
-        //        xExpandMainGrid.Begin();
-        //    }
-
-        //    xSearchBox.Visibility = Visibility.Visible;
-        //    xSearchFieldBox.Visibility = Visibility.Collapsed;
-
-        //    // xFieldBox is cleared when xFieldContains or xFieldEquals is selected, button must be disabled
-        //    if (xFieldBox.Text == "")
-        //    {
-        //        xFilterButton.Visibility = Visibility.Collapsed;
-        //        // case where field option is selected after the text boxes are filled in
-        //    }
-        //    else if (xFieldBox.Text != "" && xSearchBox.Text != "")
-        //    {
-        //        xFilterButton.Visibility = Visibility.Visible;
-        //    }
-
-        //    if (xSearchFieldBox.Text != "" && _isHasFieldPreviouslySelected)
-        //    {
-        //        xFieldBox.Text = xSearchFieldBox.Text;
-        //        xSearchFieldBox.Text = "";
-        //    }
-
-        //    _isHasFieldPreviouslySelected = false;
-        //}
-
-        ///// <summary>
-        ///// Animate fadein of the xFieldBox when the animation that expands the xMainGrid finishes playing
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void xExpandMainGrid_Completed(object sender, object e)
-        //{
-        //    xShowFieldBox.Begin();
-        //}
-
-        ///// <summary>
-        ///// Ensure that the filter button is only responsive when all available combo and text boxes are filled in
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void xSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        //{
-        //    EnableOrDisableFilterButton();
-        //}
-
-        ///// <summary>
-        ///// Generate autosuggestions according to available fields when user types into the autosuggestionbox to prevent mispelling
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="args"></param>
-
-
-        ///// <summary>
-        ///// Specify conditions for the FILTER button to enable or disable
-        ///// </summary>
-        //private void EnableOrDisableFilterButton()
-        //{
-        //    if (xComboBox.SelectedItem == xHasField && xSearchFieldBox.Text != "" || xComboBox.SelectedItem != xHasField && xComboBox.SelectedItem != null && xSearchBox.Text != "" && xFieldBox.Text != "")
-        //    {
-        //        xFilterButton.Visibility = Visibility.Visible;
-        //    }
-        //    else
-        //    {
-        //        xFilterButton.Visibility = Visibility.Collapsed;
-        //    }
-        //}
-
-        ///// <summary>
-        ///// Remove entire filter view from its parent when the animation finishes playing
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void FadeOutThemeAnimation_Completed(object sender, object e)
-        //{
-        //    ((Grid)this.Parent).Children.Remove(this);
-        //}
-
-        ///// <summary>
-        ///// Resize the grid column that the xFieldBox is located in when the animation that collapses
-        ///// the xMainGrid and fades out the xFieldBox finishes playing
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void xCollapseMainGrid_Completed(object sender, object e)
-        //{
-        //    xFieldBoxColumn.Width = 0;
-        //}
-
-        //private void XFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        //{
-
-        //    // enable and disable button accordingly
-        //    EnableOrDisableFilterButton();
-        //}
-
-        //private void fieldContains_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldContains;
-        //    fieldContainsOrEquals_Tapped(sender, e);
-        //}
-
-        //private void fieldEquals_Tapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    ViewModel.CollectionFilterMode = CollectionViewModel.FilterMode.FieldEquals;
-        //    fieldContainsOrEquals_Tapped(sender, e);
-        //}
-
-        //private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        //{
-        //    var cvm = DataContext as CollectionViewModel;
-        //    //(sender as DocumentView).Manipulator.TurnOff();
-
-        //}
-
-        #endregion
 
         /// <summary>
         /// Helper class to detect cycles 

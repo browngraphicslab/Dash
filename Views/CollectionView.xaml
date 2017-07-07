@@ -19,7 +19,7 @@
         </Grid.ColumnDefinitions>
         <StackPanel x:Name="xStackPanel" Visibility="{Binding MenuVisibility}" Orientation="Vertical"  VerticalAlignment="Top">
             <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
-                        Width="50" Foreground="WhiteSmoke" FontSize="14" FontFamily="Rockwell">
+                        Width="70" Foreground="WhiteSmoke" FontSize="14" FontFamily="Rockwell" HorizontalAlignment="Right">
                 <Button.Flyout>
                     <MenuFlyout Placement="Bottom">
                         <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
@@ -31,16 +31,15 @@
                     Content ="Select" 
                     VerticalAlignment="Top" 
                     Height="30" 
-                    Width="50" 
+                    Width="70" 
                     Foreground="WhiteSmoke" 
                     FontSize="14" 
-                    FontFamily="Rockwell"/>
+                    FontFamily="Rockwell" HorizontalAlignment="Right"/>
             <Rectangle Height="5"></Rectangle>
-            <Button x:Name="DisplayButton" 
-                HorizontalAlignment="Left"
+            <Button x:Name="DisplayButton"
                     Style="{StaticResource xAccentButtonStyle}"
                 VerticalAlignment="Top"  
-                Content="Display" >
+                Content="Display" HorizontalAlignment="Right" >
                 <Button.Flyout>
                     <MenuFlyout>
                         <MenuFlyoutItem x:Name="GridViewOption" Text="Grid"/>
@@ -53,7 +52,7 @@
             <Button x:Name="CloseButton" 
                 Content ="X" 
                 Width="30"
-                VerticalAlignment="Stretch"/>
+                VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
         </StackPanel>
         <!--<Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
             
