@@ -155,12 +155,10 @@ namespace Dash
             /// Returns the <see cref="NumberFieldModelController"/> from the passed in <see cref="DocumentController"/>
             /// used to control that <see cref="DocumentController"/>'s height.
             /// </summary>
-            protected static NumberFieldModelController GetHeightFieldController(DocumentController docController)
+            protected static NumberFieldModelController GetHeightFieldController(DocumentController docController, IEnumerable<DocumentController> contextList)
             {
-
                 // make text height resize
-                var heightController =
-                    docController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+                var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, contextList) as NumberFieldModelController;
                 Debug.Assert(heightController != null);
                 return heightController;
             }
@@ -169,12 +167,12 @@ namespace Dash
             /// Returns the <see cref="NumberFieldModelController"/> from the passed in <see cref="DocumentController"/>
             /// used to control that <see cref="DocumentController"/>'s width.
             /// </summary>
-            protected static NumberFieldModelController GetWidthFieldController(DocumentController docController)
+            protected static NumberFieldModelController GetWidthFieldController(DocumentController docController, IEnumerable<DocumentController> contextList)
             {
 
                 // make text width resize
                 var widthController =
-                    docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, contextList) as NumberFieldModelController;
                 Debug.Assert(widthController != null);
                 return widthController;
             }
@@ -185,10 +183,10 @@ namespace Dash
             /// Returns the <see cref="NumberFieldModelController"/> from the passed in <see cref="DocumentController"/>
             /// used to control that <see cref="DocumentController"/>'s translation.
             /// </summary>
-            protected static PointFieldModelController GetTranslateFieldController(DocumentController docController)
+            protected static PointFieldModelController GetTranslateFieldController(DocumentController docController, IEnumerable<DocumentController> contextList)
             {
                 var translateController =
-                    docController.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                    docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, contextList) as PointFieldModelController;
                 Debug.Assert(translateController != null);
                 return translateController;
             }
@@ -201,11 +199,10 @@ namespace Dash
         {
             public DocumentController LayoutDocumentController = null;
 
-            public LayoutCourtesyDocument(DocumentController docController)
+            public LayoutCourtesyDocument(DocumentController docController, IEnumerable<DocumentController> contextList)
             {
                 Document = docController; // get the layout field on the document being displayed
-                var layoutField =
-                    docController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, contextList) as DocumentFieldModelController;
                 if (layoutField == null)
                 {
                     var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
@@ -222,8 +219,7 @@ namespace Dash
             public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList = null)
             {
                 var layoutDataField =
-                    ContentController.DereferenceToRootFieldModel(
-                        LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey), docContextList);
+                        LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
                 if (layoutDataField is DocumentCollectionFieldModelController)
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
                         yield return d;
@@ -274,7 +270,7 @@ namespace Dash
             public static FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList)
             {
-                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
+                var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) ?? null;
                 ReferenceFieldModel rfm = (data as ReferenceFieldModelController).ReferenceFieldModel;
                 OperatorView opView = new OperatorView {DataContext = rfm};
                 return opView;
@@ -319,10 +315,10 @@ namespace Dash
             }
 
             protected static NumberFieldModelController GetTextAlignmentFieldController(
-                DocumentController docController)
+                DocumentController docController, IEnumerable<DocumentController> docContextList)
             {
                 var textController =
-                    docController.GetField(TextAlignmentKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(TextAlignmentKey, docContextList) as NumberFieldModelController;
                 Debug.Assert(textController != null);
                 return textController;
             }
@@ -354,10 +350,10 @@ namespace Dash
 
             #region Font Weight Binding
 
-            protected static NumberFieldModelController GetFontWeightFieldController(DocumentController docController)
+            protected static NumberFieldModelController GetFontWeightFieldController(DocumentController docController, IEnumerable<DocumentController> contextList)
             {
                 var fontController =
-                    docController.GetField(FontWeightKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(FontWeightKey, contextList) as NumberFieldModelController;
                 Debug.Assert(fontController != null);
                 return fontController;
             }
@@ -391,10 +387,10 @@ namespace Dash
 
             #region Font Size Binding
 
-            protected static NumberFieldModelController GetFontSizeFieldController(DocumentController docController)
+            protected static NumberFieldModelController GetFontSizeFieldController(DocumentController docController, IEnumerable<DocumentController> docContextList)
             {
                 var fontController =
-                    docController.GetField(FontSizeKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(FontSizeKey, docContextList) as NumberFieldModelController;
                 Debug.Assert(fontController != null);
                 return fontController;
             }
@@ -474,20 +470,20 @@ namespace Dash
                 }
 
                 // bind the text height
-                var heightController = GetHeightFieldController(docController);
+                var heightController = GetHeightFieldController(docController, docContextList);
                 BindHeight(tb, heightController);
 
                 // bind the text width
-                var widthController = GetWidthFieldController(docController);
+                var widthController = GetWidthFieldController(docController, docContextList);
                 BindWidth(tb, widthController);
 
-                var fontWeightController = GetFontWeightFieldController(docController);
+                var fontWeightController = GetFontWeightFieldController(docController, docContextList);
                 BindFontWeight(tb, fontWeightController);
 
-                var fontSizeController = GetFontSizeFieldController(docController);
+                var fontSizeController = GetFontSizeFieldController(docController, docContextList);
                 BindFontSize(tb, fontSizeController);
 
-                var textAlignmentController = GetTextAlignmentFieldController(docController);
+                var textAlignmentController = GetTextAlignmentFieldController(docController, docContextList);
                 BindTextAlignment(tb, textAlignmentController);
 
                 // add bindings to work with operators
@@ -563,11 +559,11 @@ namespace Dash
                 image.SetBinding(Image.SourceProperty, sourceBinding);
 
                 // make image height resize
-                var heightController = GetHeightFieldController(docController);
+                var heightController = GetHeightFieldController(docController, docContextList);
                 BindHeight(image, heightController);
 
                 // make image width resize
-                var widthController = GetWidthFieldController(docController);
+                var widthController = GetWidthFieldController(docController, docContextList);
                 BindWidth(image, widthController);
 
                 // set up interactions with operations
@@ -575,7 +571,7 @@ namespace Dash
 
                 // make image opacity change
                 var opacityController =
-                    docController.GetField(OpacityKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(OpacityKey, docContextList) as NumberFieldModelController;
                 Debug.Assert(opacityController != null);
                 var opacityBinding = new Binding
                 {
@@ -652,16 +648,16 @@ namespace Dash
             static public FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList)
             {
-                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
+                var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) ?? null;
                 if (data != null)
                 {
                     // defaults to fill width of parent if no width is provided in the docController
-                    var w = docController.GetField(DashConstants.KeyStore.WidthFieldKey) != null
-                        ? (docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController)
+                    var w = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) != null
+                        ? (docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController)
                         .Data
                         : double.NaN;
-                    var h = docController.GetField(DashConstants.KeyStore.HeightFieldKey) != null
-                        ? (docController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController)
+                    var h = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) != null
+                        ? (docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController)
                         .Data
                         : double.NaN;
 
@@ -720,7 +716,7 @@ namespace Dash
                 stack.Orientation = Orientation.Horizontal;
 
                 var stackFieldData =
-                    docController.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+                    docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) as DocumentCollectionFieldModelController;
 
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments())
@@ -964,7 +960,7 @@ namespace Dash
                              parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
                 // fetch parameter list to add to
-                DocumentCollectionFieldModelController col =
+                var col =
                     (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
 
                 double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
@@ -1145,13 +1141,13 @@ namespace Dash
                 makeBinding(apiDisplay, docController);
 
                 // test bindings are working
-                Debug.WriteLine((docController.GetField(BaseUrlKey) as TextFieldModelController).Data);
+                Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, docContextList) as TextFieldModelController).Data);
                 apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
-                Debug.WriteLine((docController.GetField(BaseUrlKey) as TextFieldModelController).Data);
+                Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, docContextList) as TextFieldModelController).Data);
 
                 // generate collection view preview for results
                 var resultView =
-                    docController.GetField(DocumentCollectionFieldModelController.CollectionKey) as
+                    docController.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, docContextList) as
                         DocumentCollectionFieldModelController;
 
                 // make collection view display framework element

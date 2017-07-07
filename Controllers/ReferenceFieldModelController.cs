@@ -9,13 +9,12 @@ namespace Dash
     {
         public ReferenceFieldModelController(string docID, Key key) : base(new ReferenceFieldModel(docID, key))
         {
-            var fmc = (ContentController.GetController(ReferenceFieldModel.DocId) as DocumentController).GetField(ReferenceFieldModel.FieldKey);//TODO Change ContentController to dereference to FieldModelController and use dereference here
+            // bcz: TODO check DocContextList - maybe this should come from the constructor?
+            var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
 
             if (fmc != null)
                 fmc.FieldModelUpdatedEvent += Fmc_FieldModelUpdatedEvent;
         }
-
-        public List<DocumentController> DocContextList = null;
 
         public string DocId
         {

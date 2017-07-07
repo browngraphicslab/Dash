@@ -23,7 +23,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(DocumentController doc);
+        public abstract void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList);
 
         public abstract List<FieldModelController> GetNewInputFields();
 

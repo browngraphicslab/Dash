@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
+using System.Collections.Generic;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -54,8 +55,9 @@ namespace Dash
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var reference = DataContext as ReferenceFieldModel;
-            
-            var opCont = ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey) as OperatorFieldModelController;
+
+            var contextList = new List<DocumentController>(); // bcz: ??? Where do I get the context list from?
+            var opCont = ContentController.GetController<DocumentController>(reference.DocId).GetDereferencedField(reference.FieldKey, contextList) as OperatorFieldModelController;
             Debug.Assert(opCont != null);
             InputListView.ItemsSource = opCont.InputKeys;
             OutputListView.ItemsSource = opCont.OutputKeys;

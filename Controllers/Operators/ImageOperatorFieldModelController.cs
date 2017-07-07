@@ -35,7 +35,7 @@ namespace Dash
             };
         }
 
-        public override void Execute(DocumentController doc)
+        public override void Execute(DocumentController doc, IEnumerable<DocumentController> contextList)
         {
             throw new NotImplementedException();
 

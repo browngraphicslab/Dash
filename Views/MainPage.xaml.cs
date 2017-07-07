@@ -175,7 +175,7 @@ namespace Dash
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
-            var children = MainDocument.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+            var children = MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey, new List<DocumentController>()) as DocumentCollectionFieldModelController;
             if (children != null)
                 children.AddDocument(docModel);
         }

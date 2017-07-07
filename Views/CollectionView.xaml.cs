@@ -128,8 +128,8 @@ namespace Dash
                 {
                     var docVM = eNewItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
-                    OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                    var ofm =
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -155,7 +155,7 @@ namespace Dash
                     var docVM = eOldItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -175,7 +175,7 @@ namespace Dash
                 }
             }
         }
-
+        List<DocumentController> DocContextList {  get { return (DataContext as CollectionViewModel).DocContextList;  } }
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             RefreshItemsBinding();
@@ -183,7 +183,7 @@ namespace Dash
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as OperatorFieldModelController;
                 if (ofm != null)
                 {
                     foreach (var inputKey in ofm.InputKeys)

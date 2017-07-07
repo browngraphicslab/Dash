@@ -23,14 +23,14 @@ namespace Dash.Models.OperatorModels.Set
         {
         }
 
-        public override void Execute(DocumentController doc)
+        public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
         {
-            DocumentCollectionFieldModelController setA = doc.GetField(AKey) as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = doc.GetField(BKey) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
 
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 
-            (doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            (doc.GetDereferencedField(IntersectionKey, docContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
             Debug.WriteLine("intersection count :" + result.Count);
 
             // Intersect by Document ID 

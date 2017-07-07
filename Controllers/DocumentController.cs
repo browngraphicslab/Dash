@@ -151,7 +151,7 @@ namespace Dash
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key)
+        public FieldModelController GetField(Key key, List<DocumentController> contextList = null)
         {
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
@@ -236,7 +236,7 @@ namespace Dash
             //}
             reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             GetField(fieldKey).InputReference = reference;
-            ContentController.DereferenceToRootFieldModel(reference, contextList).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
+            GetDereferencedField(reference, contextList).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
             Execute();
         }
 
@@ -245,16 +245,28 @@ namespace Dash
             Execute();
         }
 
-        private void Execute()
+        public static FieldModelController GetDereferencedField(FieldModelController fieldModelController, IEnumerable<DocumentController> contextList)
         {
-            OperatorFieldModelController opField = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            return ContentController.DereferenceToRootFieldModel(fieldModelController, contextList);
+        }
+        public FieldModelController GetDereferencedField(Key key, IEnumerable<DocumentController> contextList)
+        {
+            var fieldController = GetField(key);
+            if (fieldController == null)
+                return null;
+            return ContentController.DereferenceToRootFieldModel(fieldController, contextList);
+        }
+
+        private void Execute(IEnumerable<DocumentController> contextList = null)
+        {
+            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, contextList) as OperatorFieldModelController;
             if (opField == null)
             {
                 return;
             }
             try
             {
-                opField.Execute(this);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
+                opField.Execute(this, contextList);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
             }
             catch (KeyNotFoundException e)
             {
@@ -364,10 +376,10 @@ namespace Dash
             } 
             else // if document is not a known UI View, then see if it contains any documents with known UI views
             {
-                var fieldModelController = GetField(DashConstants.KeyStore.LayoutKey);
+                var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList);
                 if (fieldModelController != null)
                 {
-                    var doc = ContentController.DereferenceToRootFieldModel<DocumentFieldModelController>(fieldModelController);
+                    var doc = GetDereferencedField(fieldModelController, docContextList) as DocumentFieldModelController;
                     Debug.Assert(doc != null);
                     return doc.Data.makeViewUI(docList);
                 }

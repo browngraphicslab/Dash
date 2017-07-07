@@ -38,18 +38,18 @@ namespace Dash
             };
         }
 
-        public override void Execute(DocumentController doc)
+        public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
         {
-            var numberA = doc.GetField(AKey) as NumberFieldModelController;
+            var numberA = doc.GetDereferencedField(AKey, docContextList) as NumberFieldModelController;
             Debug.Assert(numberA != null, "Input is not a number");
 
-            var numberB = doc.GetField(BKey) as NumberFieldModelController;
+            var numberB = doc.GetDereferencedField(BKey, docContextList) as NumberFieldModelController;
             Debug.Assert(numberB != null, "Input is not a number");
             
             double a = numberA.Data;
             double b = numberB.Data;
-            (doc.GetField(QuotientKey) as NumberFieldModelController).Data = a / b;
-            (doc.GetField(RemainderKey) as NumberFieldModelController).Data = a % b;
+            (doc.GetDereferencedField(QuotientKey, docContextList) as NumberFieldModelController).Data = a / b;
+            (doc.GetDereferencedField(RemainderKey, docContextList) as NumberFieldModelController).Data = a % b;
         }
     }
 }

@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -18,6 +19,9 @@ namespace Dash
         public FieldModel FieldModel { get; set; }
         public delegate void FieldModelUpdated(FieldModelController sender);
         public event FieldModelUpdated FieldModelUpdatedEvent;
+
+
+        public List<DocumentController> DocContextList = null;
 
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes

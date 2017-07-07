@@ -35,10 +35,10 @@ namespace Dash
             };
         }
 
-        public override void Execute(DocumentController doc)
+        public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
         {
-            DocumentCollectionFieldModelController setA = doc.GetField(AKey) as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = doc.GetField(BKey) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
 
             // Union by comparing all fields 
             List<DocumentController> bigSet = setA.GetDocuments();
@@ -46,7 +46,7 @@ namespace Dash
             HashSet<DocumentController> result = new HashSet<DocumentController>(bigSet);
             HashSet<DocumentController> same = Util.GetIntersection(setA, setB); 
             result.ExceptWith(same); 
-            (doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            (doc.GetDereferencedField(UnionKey, DocContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
             Debug.WriteLine("union count :" + result.Count);
 
             // Union by Document ID 
