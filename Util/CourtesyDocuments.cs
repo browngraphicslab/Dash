@@ -219,11 +219,11 @@ namespace Dash
                     LayoutDocumentController = layoutField?.Data;
             }
 
-            public IEnumerable<DocumentController> GetLayoutDocuments()
+            public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList = null)
             {
                 var layoutDataField =
                     ContentController.DereferenceToRootFieldModel(
-                        LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));
+                        LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey), docContextList);
                 if (layoutDataField is DocumentCollectionFieldModelController)
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
                         yield return d;

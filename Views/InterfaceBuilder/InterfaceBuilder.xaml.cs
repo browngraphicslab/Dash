@@ -61,13 +61,15 @@ namespace Dash
 
         private void ApplyEditable()
         {
-            List<FrameworkElement> editableElements = new List<FrameworkElement>();
+            var editableElements = new List<FrameworkElement>();
 
             // iterate over all the documents which define views
-            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
+            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel)?.DocContextList))
             {
+                var docContextList = new List<DocumentController>((_documentView.DataContext as DocumentViewModel)?.DocContextList);
+                docContextList.Add(LayoutCourtesyDocument.Document);
                 // use the layout document to generate a UI
-                var fieldView = layoutDocument.makeViewUI(new DocumentController[] { LayoutCourtesyDocument.Document });
+                var fieldView = layoutDocument.makeViewUI(docContextList);
 
                 var translationController = layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
                 if (translationController != null)
