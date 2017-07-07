@@ -15,63 +15,69 @@ namespace Dash
         static DocumentController JsonDocument = null;
         public static DocumentController RunTests()
         {
-            //ParseYoutube();
-            //var task = ParseCustomer();
-            //var task = RenderableJson();
-            //var task = ParseArrayOfNestedDocument();
-            //task.Wait();
+
+            var task = ParseYoutube();
+            task.Wait();
             return JsonDocument;
         }
-        /*
+
         public static async Task ParseYoutube()
         {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/RecipeReturn.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
             var jtoken = JToken.Parse(jsonString);
-            var documentModel = ParseJson(jtoken, null, true);
-            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+            JsonDocument = ParseJson(jtoken, null, true) as DocumentController;
         }
 
-        public static async Task ParseArrayOfNestedDocument()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            var jtoken = JToken.Parse(jsonString);
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            var documentModel = ParseJson(jtoken, null, true);
-            watch.Stop();
-            var elapsedMs = watch.ElapsedMilliseconds;
+        //public static async Task ParseYoutube()
+        //{
+        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
+        //    var jsonString = await FileIO.ReadTextAsync(file);
+        //    var jtoken = JToken.Parse(jsonString);
+        //    var documentModel = ParseJson(jtoken, null, true);
+        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+        //}
 
-            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        }
+        //public static async Task ParseArrayOfNestedDocument()
+        //{
+        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
+        //    var jsonString = await FileIO.ReadTextAsync(file);
+        //    var jtoken = JToken.Parse(jsonString);
+        //    var watch = System.Diagnostics.Stopwatch.StartNew();
+        //    var documentModel = ParseJson(jtoken, null, true);
+        //    watch.Stop();
+        //    var elapsedMs = watch.ElapsedMilliseconds;
 
-        public static async Task NestedArrayOfDocuments()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/nestedArraysOfDocumentsJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            var jtoken = JToken.Parse(jsonString);
-            var documentModel = ParseJson(jtoken, null, true);
-            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        }
+        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+        //}
 
-        public static async Task RenderableJson()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/renderableJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            var jtoken = JToken.Parse(jsonString);
-            var documentModel = ParseJson(jtoken, null, true);
-            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        }
+        //public static async Task NestedArrayOfDocuments()
+        //{
+        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/nestedArraysOfDocumentsJson.txt"));
+        //    var jsonString = await FileIO.ReadTextAsync(file);
+        //    var jtoken = JToken.Parse(jsonString);
+        //    var documentModel = ParseJson(jtoken, null, true);
+        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+        //}
 
-        public static async Task ParseCustomer()
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
-            var jtoken = JToken.Parse(jsonString);
-            var documentModel = ParseJson(jtoken, null, true);
-            JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        }
-        */
+        //public static async Task RenderableJson()
+        //{
+        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/renderableJson.txt"));
+        //    var jsonString = await FileIO.ReadTextAsync(file);
+        //    var jtoken = JToken.Parse(jsonString);
+        //    var documentModel = ParseJson(jtoken, null, true);
+        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+        //}
+
+        //public static async Task ParseCustomer()
+        //{
+        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
+        //    var jsonString = await FileIO.ReadTextAsync(file);
+        //    var jtoken = JToken.Parse(jsonString);
+        //    var documentModel = ParseJson(jtoken, null, true);
+        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
+        //}
+
         public static DocumentController Parse(string str) {
             var docController = ParseJson(JToken.Parse(str), null, true) as DocumentController;
             return docController;
@@ -141,12 +147,14 @@ namespace Dash
                         throw new NotImplementedException("We should have dealt with this earlier");
                     case JTokenType.Constructor:
                     case JTokenType.Comment:
-                    case JTokenType.Null:
+
                     case JTokenType.Raw:
                     case JTokenType.Undefined:
                     case JTokenType.Bytes:
                     case JTokenType.None:
                         throw new NotImplementedException();
+                    case JTokenType.Null: // occurs on null fields
+                        return new TextFieldModelController("");
                     case JTokenType.Integer:
                     case JTokenType.Float:
                         return new NumberFieldModelController(jToken.ToObject<double>());
@@ -166,7 +174,6 @@ namespace Dash
                 Console.WriteLine(e);
                 throw;
             }
-            return null;
         }
     }
 

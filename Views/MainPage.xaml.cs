@@ -59,11 +59,8 @@ namespace Dash
 
             //TODO this seriously slows down the document 
 
-            //var jsonDoc = JsonToDashUtil.RunTests();
-            //DisplayDocument(jsonDoc);
-            //RadialMenuView radialMenu = new RadialMenuView(xCanvas);
-            //Canvas.SetLeft(radialMenu, 200);
-            //Canvas.SetTop(radialMenu, 200);
+            var jsonDoc = JsonToDashUtil.RunTests();
+            DisplayDocument(jsonDoc);
 
         }
 

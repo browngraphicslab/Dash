@@ -266,6 +266,7 @@
     <Content Include="Assets\Leftlg.png" />
     <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
     <Content Include="Assets\ppsqft.txt" />
+    <Content Include="Assets\RecipeReturn.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />

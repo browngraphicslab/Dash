@@ -62,11 +62,11 @@ namespace Dash
         private void ApplyEditable()
         {
             var editableElements = new List<FrameworkElement>();
-
+            var contextList = (_documentView.DataContext as DocumentViewModel)?.DocContextList;
             // iterate over all the documents which define views
-            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel)?.DocContextList))
+            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments(contextList))
             {
-                var docContextList = new List<DocumentController>((_documentView.DataContext as DocumentViewModel)?.DocContextList);
+                var docContextList = contextList != null ? new List<DocumentController>(contextList) : new List<DocumentController>();
                 docContextList.Add(LayoutCourtesyDocument.Document);
                 // use the layout document to generate a UI
                 var fieldView = layoutDocument.makeViewUI(docContextList);
@@ -192,6 +192,9 @@ namespace Dash
             else if (fieldModel is NumberFieldModel)
             {
                 box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
+            } else if (fieldModel is DocumentModelFieldModel)
+            {
+                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentController>((fieldModel as DocumentModelFieldModel).Data.Id));
             }
 
             if (box != null)
