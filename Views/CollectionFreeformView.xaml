@@ -22,7 +22,11 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <dash:DocumentView
-                                    DataContext="{Binding}"></dash:DocumentView>
+                                    DataContext="{Binding}" Loaded="FrameworkElement_OnLoaded" ManipulationStarted="DocumentView_ManipulationStarted" 
+                                    ManipulationDelta="DocumentView_ManipulationDelta" 
+                                    IODragStarted="StartDrag" 
+                                    IODragEnded="EndDrag" 
+                                    RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

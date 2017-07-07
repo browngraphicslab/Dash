@@ -17,15 +17,10 @@ namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-       
-
-        private DocumentCollectionFieldModelController _collectionFieldModelController;
-
+        #region Properties
         public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
 
-        public CollectionView ParentCollection { get; set; }
-        public DocumentView ParentDocument { get; set; }
-
+        public bool IsEditorMode { get; set; } = true;
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
         /// </summary>
@@ -37,6 +32,7 @@ namespace Dash
                 SetProperty(ref _dataBindingSource, value);
             }
         }
+        private ObservableCollection<DocumentViewModel> _dataBindingSource;
 
         /// <summary>
         /// References the ItemsControl used to 
@@ -48,43 +44,6 @@ namespace Dash
         }
         private UIElement _documentDisplayView;
 
-        private bool _filtered;
-
-        public enum FilterMode
-        {
-            FieldContains,
-            FieldEquals,
-            HasField
-        }
-
-        public FilterMode CollectionFilterMode;
-        public string SearchFieldBoxText;
-        public string FieldBoxText;
-        public string SearchBoxText;
-
-        public bool IsEditorMode { get; set; } = true;
-
-
-        #region Private & Backing variables
-        
-
-        private double _cellSize;
-        private double _outerGridWidth;
-        private double _outerGridHeight;
-        private double _containerGridHeight;
-        private double _containerGridWidth;
-
-        private ListViewSelectionMode _itemSelectionMode;
-
-        //Not backing variable; used to keep track of which items selected in view
-        private ObservableCollection<DocumentViewModel> _selectedItems;
-
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        #endregion
-
-        #region Size Variables
-
         /// <summary>
         /// The size of each cell in the GridView.
         /// </summary>
@@ -93,21 +52,40 @@ namespace Dash
             get { return _cellSize; }
             set { SetProperty(ref _cellSize, value); }
         }
+        private double _cellSize;
 
-        #endregion
+        /// <summary>
+        /// Clips the grid containing the documents to the correct size
+        /// </summary>
+        public Rect ClipRect
+        {
+            get { return _clipRect; }
+            set { SetProperty(ref _clipRect, value); }
+        }
+        private Rect _clipRect;
 
-        #region Appearance & Location properties
-        
-
+        /// <summary>
+        /// Determines the selection mode of the control currently displaying the documents
+        /// </summary>
         public ListViewSelectionMode ItemSelectionMode
         {
             get { return _itemSelectionMode; }
             set { SetProperty(ref _itemSelectionMode, value); }
         }
-        
+        private ListViewSelectionMode _itemSelectionMode;
 
         #endregion
+        /// <summary>
+        /// The collection creates delegates for each document it displays so that it can associate display-specific
+        /// information on the documents.  This allows different collection views to save different views of the same
+        /// document collection.
+        /// </summary>
+        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
 
+        
+        private DocumentCollectionFieldModelController _collectionFieldModelController;
+        //Not backing variable; used to keep track of which items selected in view
+        private ObservableCollection<DocumentViewModel> _selectedItems;
 
         public CollectionViewModel(DocumentCollectionFieldModelController collection)
         {
@@ -115,10 +93,7 @@ namespace Dash
 
             SetInitialValues();
             UpdateViewModels(MakeViewModels(_collectionFieldModelController.DocumentCollectionFieldModel));
-            //SetDimensions();
-           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionFieldModelController.DocumentCollectionFieldModel.Id);
-            controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
-           // _collectionFieldModelController.Documents.CollectionChanged += Documents_CollectionChanged;
+            collection.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
         }
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
@@ -126,7 +101,6 @@ namespace Dash
             //AddDocuments(_collectionFieldModelController.Documents.Data);
             UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
-
 
         /// <summary>
         /// Sets initial values of instance variables required for the CollectionView to display nicely.
@@ -140,6 +114,14 @@ namespace Dash
         }
 
         #region Event Handlers
+
+        private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Thickness border = new Thickness(1);
+            ClipRect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
+        }
+
+        
 
         /// <summary>
         /// Deletes all of the Documents selected in the CollectionView by removing their DocumentViewModels from the data binding source. 
@@ -288,12 +270,7 @@ namespace Dash
         }
 
 
-        /// <summary>
-        /// The collection creates delegates for each document it displays so that it can associate display-specific
-        /// information on the documents.  This allows different collection views to save different views of the same
-        /// document collection.
-        /// </summary>
-        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+       
 
         #endregion
 

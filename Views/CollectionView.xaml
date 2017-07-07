@@ -9,6 +9,7 @@
     mc:Ignorable="d"
     d:DesignHeight="400"
     d:DesignWidth="670"
+    d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     Background="{StaticResource TranslucentWhite}">
 
     <Grid>
@@ -34,7 +35,7 @@
             </Button>
         </Grid>
         <Grid x:Name="Grid" BorderThickness="0" Margin="0,30,0,0" Style="{StaticResource xNodeContainerGrid}" Padding="0">
-        <Grid x:Name="DocumentViewContainerGrid"
+            <Grid x:Name="DocumentViewContainerGrid"
                   AllowDrop="True"
                   HorizontalAlignment="Stretch" 
                   Margin="0,0,0,30" 
@@ -43,42 +44,16 @@
                   ManipulationMode="All" 
                   Padding="0"
                   Style="{StaticResource xNodeContainerGrid}">
-
-            <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-            <ContentControl Background="Aqua" x:Name="xDocumentDisplayView" Content="{Binding DocumentDisplayView}"></ContentControl>
-        </Grid>
-
-        <!--<Grid Visibility="{Binding SoloDisplayVisibility}">
-                <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Grid.Background>
-                        <SolidColorBrush Color="White" Opacity="0.75"/>
-                    </Grid.Background>
-                    <Grid Width="{Binding SoloDisplaySize}" Height="{Binding SoloDisplaySize}">
-                        <ListView x:Name="SoloDisplayListView" x:FieldModifier="public" FlowDirection="LeftToRight" HorizontalAlignment="Center" 
-                              VerticalAlignment="Center"  
-                              ScrollViewer.HorizontalScrollMode="Disabled"
-                              ScrollViewer.VerticalScrollMode="Enabled"
-                              ScrollViewer.VerticalScrollBarVisibility="Auto"
-                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                              ItemsSource="{Binding SoloDisplayElements}"
-                              Background="LightSlateGray">
-                            <ListView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsStackPanel Background="Transparent" Orientation="Vertical"/>
-                                </ItemsPanelTemplate>
-                            </ListView.ItemsPanel>
-                        </ListView>
-                    </Grid>
-                </Grid>
-            </Grid>-->
+                <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
+                <ContentControl x:Name="xDocumentDisplayView" Content="{Binding DocumentDisplayView}"></ContentControl>
+            </Grid>
+            
             <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom">
                 <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
                         Width="70" Foreground="WhiteSmoke" Margin="10 0 0 0" FontSize="14" FontFamily="Rockwell">
                     <Button.Flyout>
                         <MenuFlyout Placement="Bottom">
                             <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
-                            <MenuFlyoutItem x:Name="Filter" Text="Filter"/>
-                            <MenuFlyoutItem x:Name="ClearFilter" Text="Clear Filter"/>
                         </MenuFlyout>
                     </Button.Flyout>
                 </Button>

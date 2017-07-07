@@ -68,26 +68,20 @@ namespace Dash
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
             DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
-
-            //xItemsControl.SelectionChanged += ViewModel.SelectionChanged;
-
-            //Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
-
         }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            var parentDocument = this.GetFirstAncestorOfType<DocumentView>();
 
-            if (ViewModel.ParentDocument != MainPage.Instance.MainDocView)
+            if (parentDocument != MainPage.Instance.MainDocView)
             {
-                ViewModel.ParentDocument.SizeChanged += (ss, ee) =>
+                parentDocument.SizeChanged += (ss, ee) =>
                 {
-                    var height = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.Height;
+                    var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
                     if (height != null)
                         Height = (double)height;
-                    var width = (ViewModel.ParentDocument.DataContext as DocumentViewModel)?.Width;
+                    var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
                     if (width != null)
                         Width = (double)width;
                 };
@@ -149,47 +143,7 @@ namespace Dash
                 }
             }
         }
-
-        //private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
-        //{
-        //    RefreshItemsBinding();
-        //    if (e.CollectionChange == CollectionChange.ItemInserted)
-        //    {
-        //        var docVM = sender[(int)e.Index] as DocumentViewModel;
-        //        Debug.Assert(docVM != null);
-        //        OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-        //        if (ofm != null)
-        //        {
-        //            foreach (var inputKey in ofm.InputKeys)
-        //            {
-        //                foreach (var outputKey in ofm.OutputKeys)
-        //                {
-        //                    ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-        //                    ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-        //                    _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id, ContentController.DereferenceToRootFieldModel(orfm).Id);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    //else if (e.CollectionChange == CollectionChange.ItemRemoved)
-        //    //{
-        //    //    var docVM = sender[(int)e.Index] as DocumentViewModel;
-        //    //    Debug.Assert(docVM != null);
-        //    //    OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-        //    //    if (ofm != null)
-        //    //    {
-        //    //        foreach (var inputKey in ofm.InputKeys)
-        //    //        {
-        //    //            foreach (var outputKey in ofm.OutputKeys)
-        //    //            {
-        //    //                ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-        //    //                ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-        //    //                _graph.RemoveEdge(irfm, orfm);
-        //    //            }
-        //    //        }
-        //    //    }
-        //    //}
-        //}
+        
 
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -198,20 +152,7 @@ namespace Dash
                 .GetFirstAncestorOfType<ContentPresenter>());
         }
 
-        //private void SoloDocument_OnTapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    e.Handled = true;
-        //}
-
-        //private void Grid_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        //{
-        //    if (e.Container is ScrollBar || e.Container is ScrollViewer)
-        //    {
-        //        e.Complete();
-        //        e.Handled = true;
-        //    }
-        //}
-
+       
         #region Filter Methods: MOVE TO FILTERVIEW
 
         ///// <summary>
@@ -476,11 +417,6 @@ namespace Dash
             {
                 throw new NotImplementedException();
             }
-        }
-
-
-        private void UIElement_OnPointerPressed(object sender, PointerRoutedEventArgs e)
-        {
         }
     }
 }

@@ -23,5 +23,31 @@ namespace Dash.Views
         {
             this.InitializeComponent();
         }
+
+        private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void StartDrag(OperatorView.IOReference ioreference)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void EndDrag(OperatorView.IOReference ioreference)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void FrameworkElement_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            DocumentView dv = sender as DocumentView;
+            ManipulationControls ctrl = new ManipulationControls(dv);
+        }
     }
 }

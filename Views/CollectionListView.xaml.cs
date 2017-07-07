@@ -22,6 +22,13 @@ namespace Dash
         public CollectionListView()
         {
             this.InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as CollectionViewModel;
+            HListView.SelectionChanged += vm.SelectionChanged;
         }
     }
 }
