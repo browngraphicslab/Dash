@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
+using Windows.Foundation;
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -107,6 +108,8 @@ namespace Dash
         public static readonly DependencyProperty EditableContentProperty = DependencyProperty.Register(
             "EditableContent", typeof(object), typeof(EditableFieldFrame), new PropertyMetadata(default(object)));
 
+        private ManipulationControls _manipulator;
+
         /// <summary>
         /// Create a new <see cref="EditableFieldFrame"/> for the UI described by the passed in <paramref name="documentId"/>
         /// </summary>
@@ -115,6 +118,19 @@ namespace Dash
         {
             DocumentId = documentId;
             DefaultStyleKey = typeof(EditableFieldFrame);
+        }
+
+        private void _manipulator_OnManipulatorTranslated(Point translationDelta)
+        {
+            // apply the position delta to the Container's render transform
+            var currentTranslateTransform = Container.RenderTransform as TranslateTransform;
+            Debug.Assert(currentTranslateTransform != null, "we assume the render transform is a translate transform, if that assumption is false we need to change this code.");
+
+            Container.RenderTransform = new TranslateTransform()
+            {
+                X = currentTranslateTransform.X + translationDelta.X,
+                Y = currentTranslateTransform.Y + translationDelta.Y
+            };
         }
 
         /// <summary>
@@ -152,25 +168,28 @@ namespace Dash
         /// </summary>
         private void InstantiateResizeHandles()
         {
-            var leftLowerResizeHandle = InstantiateThumb(18,18,1);
+            var leftLowerResizeHandle = InstantiateThumb(new Size(18, 18), 1);
             _overlayCanvas.Children.Add(leftLowerResizeHandle);
             _resizeHandleToPosition.Add(leftLowerResizeHandle, ResizeHandlePositions.LeftLower);
 
-            var leftUpperResizeHandle = InstantiateThumb(18,18,1);
+            var leftUpperResizeHandle = InstantiateThumb(new Size(18, 18), 1);
             _overlayCanvas.Children.Add(leftUpperResizeHandle);
             _resizeHandleToPosition.Add(leftUpperResizeHandle, ResizeHandlePositions.LeftUpper);
 
-            var rightLowerResizeHandle = InstantiateThumb(18,18,1);
+            var rightLowerResizeHandle = InstantiateThumb(new Size(18, 18), 1);
             _overlayCanvas.Children.Add(rightLowerResizeHandle);
             _resizeHandleToPosition.Add(rightLowerResizeHandle, ResizeHandlePositions.RightLower);
 
-            var rightUpperResizeHandle = InstantiateThumb(18,18,1);
+            var rightUpperResizeHandle = InstantiateThumb(new Size(18, 18), 1);
             _overlayCanvas.Children.Add(rightUpperResizeHandle);
             _resizeHandleToPosition.Add(rightUpperResizeHandle, ResizeHandlePositions.RightUpper);
 
-            var centerResizeHandle = InstantiateThumb(Width,Height,0.2);
+            var centerResizeHandle = InstantiateThumb(new Size(Width, Height), 0.2, false);
             _overlayCanvas.Children.Add(centerResizeHandle);
             _resizeHandleToPosition.Add(centerResizeHandle, ResizeHandlePositions.Center);
+
+            _manipulator = new ManipulationControls(centerResizeHandle);
+            _manipulator.OnManipulatorTranslated += _manipulator_OnManipulatorTranslated;
 
         }
 
@@ -250,7 +269,7 @@ namespace Dash
         /// Create a new <see cref="Thumb"/> to be used as a resize handle, using some xaml properties
         /// </summary>
         /// <returns></returns>
-        private Shape InstantiateThumb(double width, double height, double opacity)
+        private Shape InstantiateThumb(Size size, double opacity, bool IsResizeThumb = true)
         {
             // TODO this could be extracted to app.xaml
             Shape thumb = null;
@@ -258,8 +277,8 @@ namespace Dash
             {
                 thumb = new Ellipse()
                 {
-                    Height = height,
-                    Width = width,
+                    Height = size.Height,
+                    Width = size.Width,
                     Opacity = opacity,
                     Fill = new SolidColorBrush(Colors.AliceBlue),
                     Stroke = new SolidColorBrush(_visibleBorderColor),
@@ -270,16 +289,20 @@ namespace Dash
             {
                 thumb = new Rectangle()
                 {
-                    Height = height,
-                    Width = width,
+                    Height = size.Height,
+                    Width = size.Width,
                     Opacity = opacity,
                     Fill = new SolidColorBrush(Colors.AliceBlue),
                     Stroke = new SolidColorBrush(_visibleBorderColor),
                     Visibility = Windows.UI.Xaml.Visibility.Collapsed
                 };
             }
-            thumb.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            thumb.ManipulationDelta += ResizeHandleOnManipulationDelta;
+            if (IsResizeThumb)
+            {
+                thumb.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+                thumb.ManipulationDelta += ResizeHandleOnManipulationDelta;
+            }
+            
 
             return thumb;
         }

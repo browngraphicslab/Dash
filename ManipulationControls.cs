@@ -46,7 +46,7 @@ namespace Dash {
 
         // == METHODS ==
 
-        public void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
         }
@@ -54,7 +54,7 @@ namespace Dash {
         /// <summary>
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
-        public void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
+        private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
             TranslateAndScale(true, true, e);
         }
 
@@ -62,7 +62,7 @@ namespace Dash {
         /// Applies manipulation controls (translate) in the grid manipulation event. Typically,
         /// use this for elements that have a horizonal title bar that users use to drag.
         /// </summary>
-        public void ManipulateDeltaScale(object sender, ManipulationDeltaRoutedEventArgs e) {
+        private void ManipulateDeltaScale(object sender, ManipulationDeltaRoutedEventArgs e) {
             TranslateAndScale(false, true, e);
         }
 
@@ -115,57 +115,6 @@ namespace Dash {
                 group.Children.Add(translate);
                 OnManipulatorTranslated?.Invoke(new Point(translate.X, translate.Y));
             }
-
-
-            ////Get top left and bottom right points of documents in canvas space
-            //Point p1 = group.TransformPoint(new Point(0, 0));
-            //Point p2 = group.TransformPoint(new Point(_element.ActualWidth, _element.ActualHeight));
-            //Debug.Assert(_element.RenderTransform != null);
-            //Point oldP1 = _element.RenderTransform.TransformPoint(new Point(0, 0));
-            //Point oldP2 = _element.RenderTransform.TransformPoint(new Point(_element.ActualWidth, _element.ActualHeight));
-
-            ////Check if translating or scaling the document puts the view out of bounds of the canvas
-            ////Nullify scale or translate components accordingly
-            //bool outOfBounds = false;
-            //if (p1.X < 0)
-            //{
-            //    outOfBounds = true;
-            //    translate.X = -oldP1.X;
-            //    scale.CenterX = 0;
-            //}
-            //else if (p2.X > handleControl.ActualWidth)
-            //{
-            //    outOfBounds = true;
-            //    translate.X = handleControl.ActualWidth - oldP2.X;
-            //    scale.CenterX = _element.ActualWidth;
-            //}
-            //if (p1.Y < 0)
-            //{
-            //    outOfBounds = true;
-            //    translate.Y = -oldP1.Y;
-            //    scale.CenterY = 0;
-            //}
-            //else if (p2.Y > handleControl.ActualHeight)
-            //{
-            //    outOfBounds = true;
-            //    translate.Y = handleControl.ActualHeight - oldP2.Y;
-            //    scale.CenterY = _element.ActualHeight;
-            //}
-
-            ////If the view was out of bounds recalculate the composite matrix
-            //if (outOfBounds)
-            //{
-            //    group = new TransformGroup();
-            //    if (canScale)
-            //        group.Children.Add(scale);
-            //    group.Children.Add(_element.RenderTransform);
-            //    if (canTranslate)
-            //        group.Children.Add(translate);
-            //}
-
-            // apply the transformation group
-
-            //_element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
     }

@@ -256,12 +256,7 @@ namespace Dash
             DocumentModel docModel = null;
             string fieldModelId = null;
             FieldModel fieldModel = null;
-
-            var refDocId = reference.DocId;
-            if (contextList != null)
-                foreach (var doc in contextList)
-                    if (doc.IsDelegateOf(refDocId))
-                        refDocId = doc.GetId();
+            string refDocId = MapDocumentInstanceReference(reference, contextList);
 
             // check if the document exists
             if (_models.ContainsKey(refDocId))
@@ -297,6 +292,16 @@ namespace Dash
             Debug.Assert(fieldModel != null, "The field Model referenced by your ReferenceFieldModel does not exist in the local cache or on the server.");
 
             return fieldModel;
+        }
+
+        private static string MapDocumentInstanceReference(ReferenceFieldModel reference, List<DocumentController> contextList)
+        {
+            var refDocId = reference.DocId;
+            if (contextList != null)
+                foreach (var doc in contextList)
+                    if (doc.IsDelegateOf(refDocId))
+                        refDocId = doc.GetId();
+            return refDocId;
         }
 
 

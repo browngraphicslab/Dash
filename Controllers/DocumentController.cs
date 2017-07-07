@@ -234,6 +234,7 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
+            reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             GetField(fieldKey).InputReference = reference;
             ContentController.DereferenceToRootFieldModel(reference, contextList).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
             Execute();
