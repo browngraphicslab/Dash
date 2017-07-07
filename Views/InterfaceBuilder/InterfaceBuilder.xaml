@@ -12,15 +12,23 @@
     MinHeight="100">
 
     <local:WindowTemplate.InnerContent>
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Black">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <local:KeyValuePane x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300"></local:KeyValuePane>
-            <Grid x:Name="xDocumentHolder" Grid.Column="1" Margin="50" />
-            <Grid x:Name="xSettingsPane" Width="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
+            
+            <local:KeyValuePane x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValuePane>
+
+            <Grid x:Name="xDocumentPane" Grid.Column="1" Margin="10,5" Background="White">
+                <ScrollViewer  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" ZoomMode="Enabled" MaxZoomFactor="4"
+                              MinZoomFactor="1">
+                    <Viewbox x:Name="xDocumentHolder" Stretch="Uniform" MaxWidth="{Binding Path=ActualWidth, ElementName=xDocumentPane}" MaxHeight="{Binding Path=ActualHeight, ElementName=xDocumentPane}"/>
+                </ScrollViewer>
+            </Grid>
+
+            <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
                   Background="White" BorderBrush="Black" BorderThickness="1,0,0,0" />
         </Grid>
     </local:WindowTemplate.InnerContent>

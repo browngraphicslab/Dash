@@ -46,7 +46,7 @@ namespace Dash
 
             _documentController = viewModel.DocumentController;
 
-            xDocumentHolder.Children.Add(_documentView);
+            xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(_documentController);
 
