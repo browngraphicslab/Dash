@@ -917,12 +917,8 @@ namespace Dash
             }
             else
             {
-                var refDocId = ioReference.ReferenceFieldModel.DocId;
                 var contextList = (DataContext as CollectionViewModel).DocContextList;
-                if (contextList != null)
-                    foreach (var doc in contextList)
-                        if (doc.IsDelegateOf(refDocId))
-                            refDocId = doc.GetId();
+                var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModel.DocId, contextList);
                 ContentController.GetController<DocumentController>(refDocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel, contextList);
                 _connectionLine = null;
             }

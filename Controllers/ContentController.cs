@@ -256,7 +256,7 @@ namespace Dash
             DocumentModel docModel = null;
             string fieldModelId = null;
             FieldModel fieldModel = null;
-            string refDocId = MapDocumentInstanceReference(reference, contextList);
+            string refDocId = MapDocumentInstanceReference(reference.DocId, contextList);
 
             // check if the document exists
             if (_models.ContainsKey(refDocId))
@@ -294,14 +294,13 @@ namespace Dash
             return fieldModel;
         }
 
-        private static string MapDocumentInstanceReference(ReferenceFieldModel reference, List<DocumentController> contextList)
+        public static string MapDocumentInstanceReference(string referenceDocId, List<DocumentController> contextList)
         {
-            var refDocId = reference.DocId;
             if (contextList != null)
                 foreach (var doc in contextList)
-                    if (doc.IsDelegateOf(refDocId))
-                        refDocId = doc.GetId();
-            return refDocId;
+                    if (doc.IsDelegateOf(referenceDocId))
+                        referenceDocId = doc.GetId();
+            return referenceDocId;
         }
 
 
