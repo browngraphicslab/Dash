@@ -41,12 +41,12 @@ namespace Dash
         /// <summary>
         /// References the ItemsControl used to 
         /// </summary>
-        public UserControl DocumentDisplayView
+        public UIElement DocumentDisplayView
         {
             get { return _documentDisplayView; }
             set { SetProperty(ref _documentDisplayView, value); }
         }
-        private UserControl _documentDisplayView;
+        private UIElement _documentDisplayView;
 
         private bool _filtered;
 
@@ -217,13 +217,11 @@ namespace Dash
         {
             foreach (object item in e.AddedItems)
             {
-               
                 var dvm = item as DocumentViewModel;
                 if (dvm != null)
                 {
                     _selectedItems.Add(dvm);
                 }
-
             }
             foreach (object item in e.RemovedItems)
             {
@@ -315,129 +313,7 @@ namespace Dash
         //    ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
         //}
 
-        ///// <summary>
-        ///// Pans and zooms upon touch manipulation 
-        ///// </summary>
-        //private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        //{
-        //    Canvas canvas = xItemsControl.ItemsPanelRoot as Canvas;
-        //    Debug.Assert(canvas != null);
-        //    e.Handled = true;
-        //    ManipulationDelta delta = e.Delta;
 
-        //    //Create initial translate and scale transforms
-        //    //Translate is in screen space, scale is in canvas space
-        //    TranslateTransform translate = new TranslateTransform
-        //    {
-        //        X = delta.Translation.X,
-        //        Y = delta.Translation.Y
-        //    };
-
-        //    Point p = Util.PointTransformFromVisual(e.Position, canvas);
-        //    ScaleTransform scale = new ScaleTransform
-        //    {
-        //        CenterX = p.X,
-        //        CenterY = p.Y,
-        //        ScaleX = delta.Scale,
-        //        ScaleY = delta.Scale
-        //    };
-
-        //    //Clamp the zoom
-        //    CanvasScale *= delta.Scale;
-        //    if (CanvasScale > MaxScale)
-        //    {
-        //        CanvasScale = MaxScale;
-        //        scale.ScaleX = 1;
-        //        scale.ScaleY = 1;
-        //    }
-        //    if (CanvasScale < MinScale)
-        //    {
-        //        CanvasScale = MinScale;
-        //        scale.ScaleX = 1;
-        //        scale.ScaleY = 1;
-        //    }
-
-        //    //Create initial composite transform
-        //    TransformGroup composite = new TransformGroup();
-        //    composite.Children.Add(scale);
-        //    composite.Children.Add(canvas.RenderTransform);
-        //    composite.Children.Add(translate);
-
-        //    //Get top left and bottom right screen space points in canvas space
-        //    GeneralTransform inverse = composite.Inverse;
-        //    Debug.Assert(inverse != null);
-        //    Debug.Assert(canvas.RenderTransform != null);
-        //    GeneralTransform renderInverse = canvas.RenderTransform.Inverse;
-        //    Debug.Assert(renderInverse != null);
-        //    Point topLeft = inverse.TransformPoint(new Point(0, 0));
-        //    Point bottomRight = inverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
-        //    Point preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
-        //    Point preBottomRight = renderInverse.TransformPoint(new Point(Grid.ActualWidth, Grid.ActualHeight));
-
-        //    //Check if the panning or zooming puts the view out of bounds of the canvas
-        //    //Nullify scale or translate components accordingly
-        //    bool outOfBounds = false;
-        //    //Create a canvas space translation to correct the translation if necessary
-        //    TranslateTransform fixTranslate = new TranslateTransform();
-        //    if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
-        //    {
-        //        translate.X = 0;
-        //        fixTranslate.X = 0;
-        //        double scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
-        //        scale.ScaleY = scaleAmount;
-        //        scale.ScaleX = scaleAmount;
-        //        outOfBounds = true;
-        //    }
-        //    else if (topLeft.X < Bounds.Left)
-        //    {
-        //        translate.X = 0;
-        //        fixTranslate.X = preTopLeft.X;
-        //        scale.CenterX = Bounds.Left;
-        //        outOfBounds = true;
-        //    }
-        //    else if (bottomRight.X > Bounds.Right)
-        //    {
-        //        translate.X = 0;
-        //        fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
-        //        scale.CenterX = Bounds.Right;
-        //        outOfBounds = true;
-        //    }
-        //    if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
-        //    {
-        //        translate.Y = 0;
-        //        fixTranslate.Y = 0;
-        //        double scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
-        //        scale.ScaleX = scaleAmount;
-        //        scale.ScaleY = scaleAmount;
-        //        outOfBounds = true;
-        //    }
-        //    else if (topLeft.Y < Bounds.Top)
-        //    {
-        //        translate.Y = 0;
-        //        fixTranslate.Y = preTopLeft.Y;
-        //        scale.CenterY = Bounds.Top;
-        //        outOfBounds = true;
-        //    }
-        //    else if (bottomRight.Y > Bounds.Bottom)
-        //    {
-        //        translate.Y = 0;
-        //        fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
-        //        scale.CenterY = Bounds.Bottom;
-        //        outOfBounds = true;
-        //    }
-
-        //    //If the view was out of bounds recalculate the composite matrix
-        //    if (outOfBounds)
-        //    {
-        //        composite = new TransformGroup();
-        //        composite.Children.Add(fixTranslate);
-        //        composite.Children.Add(scale);
-        //        composite.Children.Add(canvas.RenderTransform);
-        //        composite.Children.Add(translate);
-        //    }
-
-        //    canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-        //}
 
         //public void StartDrag(OperatorView.IOReference ioReference)
         //{

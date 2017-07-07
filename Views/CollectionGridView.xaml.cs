@@ -22,6 +22,13 @@ namespace Dash
         public CollectionGridView()
         {
             this.InitializeComponent();
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            CollectionViewModel vm = DataContext as CollectionViewModel;
+            xGridView.SelectionChanged += vm.SelectionChanged;
         }
     }
 }

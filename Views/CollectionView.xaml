@@ -43,11 +43,9 @@
                   ManipulationMode="All" 
                   Padding="0"
                   Style="{StaticResource xNodeContainerGrid}">
-            <Grid.Clip>
-                <RectangleGeometry x:Name="ClipRect"/>
-            </Grid.Clip>
+
             <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-            <UserControl DataContext="{Binding DocumentDisplayView}"></UserControl>
+            <ContentControl Background="Aqua" x:Name="xDocumentDisplayView" Content="{Binding DocumentDisplayView}"></ContentControl>
         </Grid>
 
         <!--<Grid Visibility="{Binding SoloDisplayVisibility}">

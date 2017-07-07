@@ -34,38 +34,33 @@ namespace Dash
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
-        //private Canvas FreeformCanvas => xItemsControl.ItemsPanelRoot as Canvas;
-
         public CollectionViewModel ViewModel;
-        //private bool _isHasFieldPreviouslySelected;
-        //public Grid OuterGrid
-        //{
-        //    get { return Grid; }
-        //    set { Grid = value; }
-        //}
-
-        //public bool KeepItemsOnMove { get; set; } = true;
 
         public CollectionView(CollectionViewModel vm)
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
-            //docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
+            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-
+            xDocumentDisplayView.DataContextChanged += XDocumentDisplayView_DataContextChanged;
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
 
-        //private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
-        //{
-        //    DataContext = ViewModel;
-        //}
+        private void XDocumentDisplayView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            
+        }
+
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        {
+            DataContext = ViewModel;
+        }
 
         private void SetEventHandlers()
         {
             Loaded += CollectionView_Loaded;
-            //ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
+            ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
             FreeformOption.Tapped += ViewModel.FreeformButton_Tapped;
             GridViewOption.Tapped +=
                 ViewModel.GridViewButton_Tapped;
@@ -74,7 +69,7 @@ namespace Dash
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
             DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
 
-            // xItemsControl.SelectionChanged += ViewModel.SelectionChanged;
+            //xItemsControl.SelectionChanged += ViewModel.SelectionChanged;
 
             //Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
 
@@ -99,61 +94,61 @@ namespace Dash
             }
         }
 
-        //private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        //{
-        //    if (e.Action == NotifyCollectionChangedAction.Add)
-        //    {
-        //        foreach (var eNewItem in e.NewItems)
-        //        {
-        //            var docVM = eNewItem as DocumentViewModel;
-        //            Debug.Assert(docVM != null);
-        //            OperatorFieldModelController ofm =
-        //                docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
-        //                    OperatorFieldModelController;
-        //            if (ofm != null)
-        //            {
-        //                foreach (var inputKey in ofm.InputKeys)
-        //                {
-        //                    foreach (var outputKey in ofm.OutputKeys)
-        //                    {
-        //                        ReferenceFieldModel irfm =
-        //                            new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-        //                        ReferenceFieldModel orfm =
-        //                            new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-        //                        _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
-        //                            ContentController.DereferenceToRootFieldModel(orfm).Id);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    else if (e.Action == NotifyCollectionChangedAction.Remove)
-        //    {
-        //        foreach (var eOldItem in e.OldItems)
-        //        {
-        //            var docVM = eOldItem as DocumentViewModel;
-        //            Debug.Assert(docVM != null);
-        //            OperatorFieldModelController ofm =
-        //                docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
-        //                    OperatorFieldModelController;
-        //            if (ofm != null)
-        //            {
-        //                foreach (var inputKey in ofm.InputKeys)
-        //                {
-        //                    foreach (var outputKey in ofm.OutputKeys)
-        //                    {
-        //                        ReferenceFieldModel irfm =
-        //                            new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-        //                        ReferenceFieldModel orfm =
-        //                            new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-        //                        _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
-        //                            ContentController.DereferenceToRootFieldModel(orfm).Id);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //}
+        private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                foreach (var eNewItem in e.NewItems)
+                {
+                    var docVM = eNewItem as DocumentViewModel;
+                    Debug.Assert(docVM != null);
+                    OperatorFieldModelController ofm =
+                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                            OperatorFieldModelController;
+                    if (ofm != null)
+                    {
+                        foreach (var inputKey in ofm.InputKeys)
+                        {
+                            foreach (var outputKey in ofm.OutputKeys)
+                            {
+                                ReferenceFieldModel irfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                                ReferenceFieldModel orfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
+                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (var eOldItem in e.OldItems)
+                {
+                    var docVM = eOldItem as DocumentViewModel;
+                    Debug.Assert(docVM != null);
+                    OperatorFieldModelController ofm =
+                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                            OperatorFieldModelController;
+                    if (ofm != null)
+                    {
+                        foreach (var inputKey in ofm.InputKeys)
+                        {
+                            foreach (var outputKey in ofm.OutputKeys)
+                            {
+                                ReferenceFieldModel irfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
+                                ReferenceFieldModel orfm =
+                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
+                                _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
+                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         //private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         //{

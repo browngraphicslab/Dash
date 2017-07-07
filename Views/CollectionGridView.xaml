@@ -6,10 +6,8 @@
     xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
-    <Grid Visibility="{Binding GridViewVisibility}">
+    mc:Ignorable="d">
+    <Grid>
         <GridView x:Name="xGridView" 
                           x:FieldModifier="public" 
                           HorizontalAlignment="Stretch" 
@@ -20,9 +18,7 @@
                           ItemsSource="{Binding DataBindingSource}"
                           CanDragItems="True"
                           CanReorderItems="True"
-                          AllowDrop="True"
-                          DragItemsStarting="xGridView_OnDragItemsStarting"
-                          DragItemsCompleted="xGridView_OnDragItemsCompleted">
+                          AllowDrop="True">
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 

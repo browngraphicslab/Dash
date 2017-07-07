@@ -6,10 +6,8 @@
     xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400">
-    <Grid Visibility="{Binding ListViewVisibility}">
+    mc:Ignorable="d">
+    <Grid>
         <ListView x:Name="HListView" 
                           x:FieldModifier="public" 
                           FlowDirection="LeftToRight" 
@@ -21,8 +19,6 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           SelectionMode="{Binding ItemSelectionMode}"
                           ItemsSource="{Binding DataBindingSource}"
-                          DragItemsStarting="xGridView_OnDragItemsStarting"
-                          DragItemsCompleted="xGridView_OnDragItemsCompleted"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True">
