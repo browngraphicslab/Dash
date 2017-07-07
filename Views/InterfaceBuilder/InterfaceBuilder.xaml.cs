@@ -174,7 +174,7 @@ namespace Dash
             {
                 var textFieldModel= ContentController.DereferenceToRootFieldModel<TextFieldModel>(new ReferenceFieldModel(_documentController.GetId(), key));
                 var textFieldModelController = ContentController.GetController<TextFieldModelController>(textFieldModel.Id);
-                if (_documentController.GetPrototype().GetField(key) == null)
+                if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetField(key) == null)
                 {
                     _documentController.GetPrototype().SetField(key, _documentController.GetField(key), false);
                 }
