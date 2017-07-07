@@ -33,8 +33,7 @@
                         <dash:DocumentView 
                                     Width="250" 
                                     Height="250" 
-                                    DataContext="{Binding}"
-                                    IsHitTestVisible="False">
+                                    DataContext="{Binding}">
                         </dash:DocumentView>
                     </Border>
                 </DataTemplate>

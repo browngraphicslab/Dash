@@ -13,15 +13,31 @@
     Background="{StaticResource TranslucentWhite}">
 
     <Grid>
-        <Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
-            <Button x:Name="CloseButton" 
-                Content ="X" 
-                Width="30"                  
-                HorizontalAlignment="Right" 
-                VerticalAlignment="Stretch"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="{Binding MenuColumnWidth}"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel x:Name="xStackPanel" Visibility="{Binding MenuVisibility}" Orientation="Vertical"  VerticalAlignment="Top">
+            <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
+                        Width="50" Foreground="WhiteSmoke" FontSize="14" FontFamily="Rockwell">
+                <Button.Flyout>
+                    <MenuFlyout Placement="Bottom">
+                        <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
+                    </MenuFlyout>
+                </Button.Flyout>
+            </Button>
+            <Rectangle Height="5"></Rectangle>
+            <Button x:Name="SelectButton" 
+                    Content ="Select" 
+                    VerticalAlignment="Top" 
+                    Height="30" 
+                    Width="50" 
+                    Foreground="WhiteSmoke" 
+                    FontSize="14" 
+                    FontFamily="Rockwell"/>
+            <Rectangle Height="5"></Rectangle>
             <Button x:Name="DisplayButton" 
-                HorizontalAlignment="Left" 
-                Margin="20,0,0,0"
+                HorizontalAlignment="Left"
                     Style="{StaticResource xAccentButtonStyle}"
                 VerticalAlignment="Top"  
                 Content="Display" >
@@ -33,12 +49,20 @@
                     </MenuFlyout>
                 </Button.Flyout>
             </Button>
-        </Grid>
-        <Grid x:Name="Grid" BorderThickness="0" Margin="0,30,0,0" Style="{StaticResource xNodeContainerGrid}" Padding="0">
+            <Rectangle Height="5"></Rectangle>
+            <Button x:Name="CloseButton" 
+                Content ="X" 
+                Width="30"
+                VerticalAlignment="Stretch"/>
+        </StackPanel>
+        <!--<Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+            
+        </Grid>-->
+        <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
             <Grid x:Name="DocumentViewContainerGrid"
                   AllowDrop="True"
                   HorizontalAlignment="Stretch" 
-                  Margin="0,0,0,30" 
+                  Margin="5,5,5,5" 
                   VerticalAlignment="Stretch"   
                   BorderBrush="LightGray"
                   ManipulationMode="All" 
@@ -48,25 +72,7 @@
                 <ContentControl x:Name="xDocumentDisplayView" Content="{Binding DocumentDisplayView}"></ContentControl>
             </Grid>
             
-            <StackPanel Orientation="Horizontal"  VerticalAlignment="Bottom">
-                <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
-                        Width="70" Foreground="WhiteSmoke" Margin="10 0 0 0" FontSize="14" FontFamily="Rockwell">
-                    <Button.Flyout>
-                        <MenuFlyout Placement="Bottom">
-                            <MenuFlyoutItem x:Name="DeleteSelected" Text="Delete"/>
-                        </MenuFlyout>
-                    </Button.Flyout>
-                </Button>
-                <Button x:Name="SelectButton" 
-                    Content ="Select" 
-                    VerticalAlignment="Top" 
-                    Height="30" 
-                    Width="70" 
-                    Foreground="WhiteSmoke" 
-                    Margin="10,0,0,0" 
-                    FontSize="14" 
-                    FontFamily="Rockwell"/>
-            </StackPanel>
+            
             <Ellipse x:Name="ConnectionEllipse"
                  x:FieldModifier="public"
                  Width="20" 

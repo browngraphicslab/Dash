@@ -74,6 +74,21 @@ namespace Dash
         }
         private ListViewSelectionMode _itemSelectionMode;
 
+        public Visibility MenuVisibility
+        {
+            get { return _menuVisibility; }
+            set { SetProperty(ref _menuVisibility, value); }
+        }
+        private Visibility _menuVisibility;
+
+        public GridLength MenuColumnWidth
+        {
+            get { return _menuColumnWidth; }
+            set { SetProperty(ref _menuColumnWidth, value); }
+        }
+        private GridLength _menuColumnWidth;
+
+
         #endregion
         /// <summary>
         /// The collection creates delegates for each document it displays so that it can associate display-specific
@@ -81,11 +96,10 @@ namespace Dash
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-        
         private DocumentCollectionFieldModelController _collectionFieldModelController;
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
+
 
         public CollectionViewModel(DocumentCollectionFieldModelController collection)
         {
@@ -715,7 +729,20 @@ namespace Dash
         //}
 
 
-
+        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (MenuVisibility == Visibility.Visible)
+            {
+                MenuVisibility = Visibility.Collapsed;
+                MenuColumnWidth = new GridLength(0);
+            }
+            else
+            {
+                MenuVisibility = Visibility.Visible;
+                MenuColumnWidth = new GridLength(50);
+            }
+            e.Handled = true;
+        }
 
     }
 }

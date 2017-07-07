@@ -68,6 +68,7 @@ namespace Dash
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
             DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
+            Grid.DoubleTapped += ViewModel.Grid_DoubleTapped;
         }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)

@@ -23,7 +23,7 @@
                 <DataTemplate>
                     <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
                                     Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                        <dash:DocumentView  Width="250" Height="250" DataContext="{Binding}" IsHitTestVisible="False"/>
+                        <dash:DocumentView  Width="250" Height="250" DataContext="{Binding}"/>
                     </Border>
                 </DataTemplate>
             </GridView.ItemTemplate>
