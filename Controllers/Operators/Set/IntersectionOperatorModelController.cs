@@ -37,19 +37,19 @@ namespace Dash.Models.OperatorModels.Set
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
 
-        public override List<FieldModel> GetNewInputFields()
+        public override List<FieldModelController> GetNewInputFields()
         {
-            return new List<FieldModel>
+            return new List<FieldModelController>
             {
-                new DocumentCollectionFieldModel(new List<DocumentModel>()), new DocumentCollectionFieldModel(new List<DocumentModel>())
+                new DocumentCollectionFieldModelController(new List<DocumentController>()), new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
         }
 
-        public override List<FieldModel> GetNewOutputFields()
+        public override List<FieldModelController> GetNewOutputFields()
         {
-            return new List<FieldModel>
+            return new List<FieldModelController>
             {
-                new DocumentCollectionFieldModel(new List<DocumentModel>())
+                new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
         }
 

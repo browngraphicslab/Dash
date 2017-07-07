@@ -32,7 +32,6 @@ namespace Dash
 
         private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
 
-        private ObservableCollection<KeyValuePair<Key, string>> _keyValuePairs;
         private DocumentController _documentController;
 
         public InterfaceBuilder(DocumentViewModel viewModel, int width = 800, int height = 500)
@@ -48,15 +47,9 @@ namespace Dash
 
             _documentController = viewModel.DocumentController;
 
-            _keyValuePairs = new ObservableCollection<KeyValuePair<Key, string>>();
-            foreach (KeyValuePair<Key, FieldModelController> pair in _documentController.EnumFields())
-            {
-                _keyValuePairs.Add(new KeyValuePair<Key, string>(pair.Key, pair.Value.ToString()));
-            }
-            xKeyValueListView.ItemsSource = _keyValuePairs;
+            xDocumentHolder.Child = _documentView;
 
-
-            xDocumentHolder.Children.Add(_documentView);
+            xKeyValuePane.SetDataContextToDocumentController(_documentController);
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.Drop += DocumentViewOnDrop;
@@ -165,18 +158,6 @@ namespace Dash
             _selectedEditableFieldFrame = newlySelectedEditableFieldFrame;
         }
 
-        private void XKeyValueListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            Debug.WriteLine(e.Items.Count);
-            var pair = e.Items[0] is KeyValuePair<Key, string> ? (KeyValuePair<Key, string>)e.Items[0] : new KeyValuePair<Key, string>();
-            Debug.WriteLine(pair.Key.Name);
-            e.Data.RequestedOperation = DataPackageOperation.Move;
-            Debug.WriteLine(_documentController.GetField(pair.Key).GetType());
-            e.Data.Properties.Add("key", pair.Key);
-            //e.Items.Insert(0, );
-        }
-
-
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -184,7 +165,7 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
-            Key key = e.Data.Properties["key"] as Key;
+            var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
             var fieldModel = _documentController.GetField(key).FieldModel;
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModel is TextFieldModel)
@@ -199,24 +180,23 @@ namespace Dash
                 if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
                     layoutDoc = _documentController;
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                      box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(layoutDoc.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(layoutDoc.GetId(), key));
-                
+                      box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(layoutDoc.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(layoutDoc.GetId(), key));
             }
             else if (fieldModel is ImageFieldModel)
             {
-                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             }
             else if (fieldModel is NumberFieldModel)
             {
-                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             }
 
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                var pfmc = new PointFieldModelController(new PointFieldModel(e.GetPosition(_documentView).X,
-                        e.GetPosition(_documentView).Y));
+                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X,
+                        e.GetPosition(_documentView).Y);
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
                 ContentController.AddController(pfmc);
                 var layoutDataField = ContentController.DereferenceToRootFieldModel(LayoutCourtesyDocument.LayoutDocumentController?.GetField(DashConstants.KeyStore.DataKey));

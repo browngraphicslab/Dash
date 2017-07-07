@@ -266,7 +266,7 @@ namespace Dash
 
         #endregion
 
-        List<DocumentController> DocContextList;
+        public List<DocumentController> DocContextList;
         public CollectionViewModel(CollectionModel model, List<DocumentController> docContextList)
         {
             DocContextList = docContextList;

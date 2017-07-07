@@ -1,16 +1,43 @@
-﻿namespace Dash
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using DashShared;
+using System.Collections.Generic;
+
+namespace Dash
 {
     public class ReferenceFieldModelController : FieldModelController
     {
-        /// <summary>
-        ///     Create a new <see cref="ReferenceFieldModelController"/> associated with the passed in <see cref="ReferenceFieldModel" />
-        /// </summary>
-        /// <param name="referenceFieldModel">The model which this controller will be operating over</param>
-        public ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel)
+        public ReferenceFieldModelController(string docID, Key key) : base(new ReferenceFieldModel(docID, key))
         {
-            ReferenceFieldModel = referenceFieldModel;
-            var fmc = (ContentController.GetController(referenceFieldModel.DocId) as DocumentController).GetField(referenceFieldModel.FieldKey);
-            fmc.FieldModelUpdatedEvent += Fmc_FieldModelUpdatedEvent;
+            var fmc = (ContentController.GetController(ReferenceFieldModel.DocId) as DocumentController).GetField(ReferenceFieldModel.FieldKey);//TODO Change ContentController to dereference to FieldModelController and use dereference here
+            if (fmc != null)
+                fmc.FieldModelUpdatedEvent += Fmc_FieldModelUpdatedEvent;
+        }
+
+        public List<DocumentController> DocContextList = null;
+
+        public string DocId
+        {
+            get { return ReferenceFieldModel.DocId; }
+            set
+            {
+                if (SetProperty(ref ReferenceFieldModel.DocId, value))
+                {
+                    
+                }
+            }
+        }
+
+        public Key FieldKey
+        {
+            get { return ReferenceFieldModel.FieldKey; }
+            set
+            {
+                if (SetProperty(ref ReferenceFieldModel.FieldKey, value))
+                {
+
+                }
+            }
         }
 
         private void Fmc_FieldModelUpdatedEvent(FieldModelController sender)
@@ -22,7 +49,16 @@
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public ReferenceFieldModel ReferenceFieldModel { get; }
+        public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
+        public override FrameworkElement GetTableCellView()
+        {
+            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        private void BindTextOrSetOnce(TextBlock textBlock)
+        {
+            textBlock.Text = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";
+        }
     }
 }

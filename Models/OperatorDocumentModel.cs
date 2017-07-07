@@ -15,10 +15,10 @@ namespace Dash
         {
             List<Key> inputKeys = opController.InputKeys;
             List<Key> outputKeys = opController.OutputKeys;
-            List<FieldModel> inputs = opController.GetNewInputFields();
-            List<FieldModel> outputs = opController.GetNewOutputFields();
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-            fields[OperatorKey] = opController.FieldModel;
+            List<FieldModelController> inputs = opController.GetNewInputFields();
+            List<FieldModelController> outputs = opController.GetNewOutputFields();
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = opController;
             for (int i = 0; i < inputKeys.Count; ++i)
             {
                 fields[inputKeys[i]] = inputs[i];
@@ -28,15 +28,11 @@ namespace Dash
                 fields[outputKeys[i]] = outputs[i];
             }
             
-            var doc = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, OperatorType))
-                .GetReturnedDocumentController();
+            var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());
 
-            var layoutDoc = new CourtesyDocuments.OperatorBox(new ReferenceFieldModel(doc.GetId(), OperatorKey)).Document.DocumentModel;
-            var documentFieldModel = new DocumentModelFieldModel(layoutDoc);
-            var layoutController = new DocumentFieldModelController(documentFieldModel);
-            ContentController.AddModel(documentFieldModel);
-            ContentController.AddController(layoutController);
+            var layoutDoc = new CourtesyDocuments.OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutController = new DocumentFieldModelController(layoutDoc);
             doc.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
 
             return doc;

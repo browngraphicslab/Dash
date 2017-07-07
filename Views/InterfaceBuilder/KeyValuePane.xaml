@@ -1,0 +1,57 @@
+﻿<UserControl
+    x:Class="Dash.KeyValuePane"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:system="using:System"
+    xmlns:collections="using:System.Collections.Generic"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock TextAlignment="Center">Keys</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center">Values</TextBlock>
+        </Grid>
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch"
+                  CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
+                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}">
+            
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <!--Make the list view items stretch to the full width of the list view-->
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:KeyFieldContainer">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                            <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
+                        </ScrollViewer>
+                        <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+
+        </ListView>
+    </Grid>
+</UserControl>

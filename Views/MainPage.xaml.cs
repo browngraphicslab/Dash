@@ -41,7 +41,7 @@ namespace Dash
             xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
-            var collectionDocumentController = new CourtesyDocuments.CollectionBox(new DocumentCollectionFieldModel(new List<DocumentModel>())).Document;
+            var collectionDocumentController = new CourtesyDocuments.CollectionBox(new DocumentCollectionFieldModelController(new List<DocumentController>())).Document;
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(collectionDocumentController)
             {
@@ -189,17 +189,14 @@ namespace Dash
             var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
             var numbers = new CourtesyDocuments.Numbers().Document;
 
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModel(new DocumentModel[] {numbers.DocumentModel}) }
+                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModelController(new DocumentController[] {numbers}) }
             };
 
-            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
-            var layoutController = new DocumentFieldModelController(documentFieldModel);
-            ContentController.AddModel(documentFieldModel);
-            ContentController.AddController(layoutController);
+            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
 
@@ -217,27 +214,16 @@ namespace Dash
             var numbers = new CourtesyDocuments.Numbers().Document;
             var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
 
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>
             {
-                {
-                    DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModel(
-                                                        new DocumentModel[]
-                                                        {
-
-                                                            numbers.DocumentModel,
-                                                            twoImages2.DocumentModel
-                                                        }
-                                                    )
-                }
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new DocumentController[]
+                    {numbers, twoImages2})
             };
 
-            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("collection", "collection"))).GetReturnedDocumentController();
-            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModel(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var documentFieldModel = new DocumentModelFieldModel(layoutDoc.DocumentModel);
-            var layoutController = new DocumentFieldModelController(documentFieldModel);
-            ContentController.AddModel(documentFieldModel);
-            ContentController.AddController(layoutController);
+            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
         }
@@ -256,7 +242,6 @@ namespace Dash
             DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
             //DisplayDocument(new CourtesyDocuments.Numbers().Document);
         }
-
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -318,13 +303,13 @@ namespace Dash
 
             // make document
             // generate single-image document model
-            ImageFieldModel m = new ImageFieldModel(new Uri(url));
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>
+            ImageFieldModelController m = new ImageFieldModelController(new Uri(url));
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>
             {
                 [new Key("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
             };
 
-            var col = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, new DocumentType("dragimage", "dragimage"))).GetReturnedDocumentController();
+            var col = new DocumentController(fields, new DocumentType("dragimage", "dragimage"));
             DisplayDocument(col);
         }
 

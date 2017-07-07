@@ -19,19 +19,19 @@ namespace Dash
 
         public override List<Key> OutputKeys { get; } = new List<Key> { ImageKey };
 
-        public override List<FieldModel> GetNewInputFields()
+        public override List<FieldModelController> GetNewInputFields()
         {
-            return new List<FieldModel>
+            return new List<FieldModelController>
             {
-                new TextFieldModel("Uri")
+                new TextFieldModelController("Uri")
             };
         }
 
-        public override List<FieldModel> GetNewOutputFields()
+        public override List<FieldModelController> GetNewOutputFields()
         {
-            return new List<FieldModel>
+            return new List<FieldModelController>
             {
-                new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))
+                new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))
             };
         }
 

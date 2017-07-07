@@ -110,6 +110,7 @@
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
+    <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
     <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
     <Compile Include="Converters\DocumentToUIElementConverter.cs" />
@@ -156,17 +157,6 @@
     <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
     <Compile Include="ServerClient\Exceptions\ApiException.cs" />
     <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
-    <Compile Include="ServerClient\Requests\CreateNewDocumentRequest.cs" />
-    <Compile Include="ServerClient\Requests\FieldModelControllerFactory.cs" />
-    <Compile Include="ServerClient\Requests\Request.cs" />
-    <Compile Include="ServerClient\Requests\RequestArgs\RequestArgs.cs" />
-    <Compile Include="ServerClient\Requests\RequestArgs\CreateNewDocumentRequestArgs.cs" />
-    <Compile Include="ServerClient\SignalRClientExtensions\ActionDetail.cs" />
-    <Compile Include="ServerClient\SignalRClientExtensions\ExtensionsInternal.cs" />
-    <Compile Include="ServerClient\SignalRClientExtensions\HubProxy.cs" />
-    <Compile Include="ServerClient\SignalRClientExtensions\IHubProxy.cs" />
-    <Compile Include="ServerClient\SignalRClientExtensions\IHubProxyOneWay.cs" />
-    <Compile Include="ServerClient\SignalRClientExtensions\SignalRExtensions.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -204,7 +194,6 @@
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
-    <Compile Include="Util\ObservableConvertCollection.cs" />
     <Compile Include="Util\ObservableDictionary.cs" />
     <Compile Include="Util\Util.cs" />
     <Compile Include="ViewModels\CollectionViewModel.cs" />
@@ -226,8 +215,11 @@
     <Compile Include="Views\ImageSettings.xaml.cs">
       <DependentUpon>ImageSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder.xaml.cs">
+    <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
+      <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
@@ -348,7 +340,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\InterfaceBuilder.xaml">
+    <Page Include="Views\InterfaceBuilder\InterfaceBuilder.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\KeyValuePane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -396,7 +392,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\OperatorModels\Set\" />
-    <Folder Include="ServerClient\SignalRHubProxies\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

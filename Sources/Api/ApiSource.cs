@@ -250,31 +250,16 @@ namespace Dash {
                 // put a single document into the collection view
                 DocumentController documentModel = JsonToDashUtil.Parse(response.Content.ToString());
 
-                var layoutDocModel = new DocumentModel(new Dictionary<Key, FieldModel>(), CourtesyDocuments.CollectionBox.DocumentType);
-                var layDocCtrl = new DocumentController(layoutDocModel);
-                var dcfm = new DocumentCollectionFieldModel(new DocumentModel[] { });
-                ContentController.AddModel(dcfm);
-                ContentController.AddController(layDocCtrl);
-                var cbox = new CollectionBox(dcfm).Document;
-                var cfm = new DocumentModelFieldModel(cbox.DocumentModel);
-                ContentController.AddModel(cfm);
-                var cfmc = new DocumentFieldModelController(cfm);
-                ContentController.AddController(cfmc);
-                var widthField = new NumberFieldModel(200);
-                ContentController.AddModel(widthField);
-                var widthFieldCtrl = new NumberFieldModelController(widthField);
-                ContentController.AddController(widthFieldCtrl);
-                var heightField = new NumberFieldModel(200);
-                ContentController.AddModel(heightField);
-                var heightFieldCtrl = new NumberFieldModelController(heightField);
-                ContentController.AddController(heightFieldCtrl);
+                var layDocCtrl = new DocumentController(new Dictionary<Key, FieldModelController>(), CollectionBox.DocumentType);
+                var cbox = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[0]));
+                var cfmc = new DocumentFieldModelController(cbox.Document);
+                var widthFieldCtrl = new NumberFieldModelController(200);
+                var heightFieldCtrl = new NumberFieldModelController(200);
                 layDocCtrl.SetField(DashConstants.KeyStore.LayoutKey, cfmc, false);
                 layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
                 layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
-
-                var dataFieldModel = new DocumentCollectionFieldModel(new List<DocumentModel>());
-                ContentController.AddModel(dataFieldModel);
-                var dataFieldModelController = new DocumentCollectionFieldModelController(dataFieldModel);
+                
+                var dataFieldModelController = new DocumentCollectionFieldModelController(new DocumentController[] { });
                 ContentController.AddController(dataFieldModelController);
                 layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
 
@@ -286,7 +271,6 @@ namespace Dash {
                         ResponseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
                     if (f.Value is DocumentCollectionFieldModelController)
                         ResponseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
-                   
                 } 
 
                 if (ResponseAsDocuments.Count == 0)
@@ -296,16 +280,13 @@ namespace Dash {
                 foreach (var doc in ResponseAsDocuments)
                 {
                     // make doc a delegate of the response document and make that 
-                    var prototypeFieldModel = new DocumentModelFieldModel(layDocCtrl.DocumentModel);
-                    ContentController.AddModel(prototypeFieldModel);
-                    var prototypeFieldController = new DocumentFieldModelController(prototypeFieldModel);
-                    ContentController.AddController(prototypeFieldController);
+                    var prototypeFieldController = new DocumentFieldModelController(layDocCtrl);
                     doc.SetField(DashConstants.KeyStore.PrototypeKey, prototypeFieldController, true);
 
                     // add the delegate to our delegates field
                     var currentDelegates = layDocCtrl.GetDelegates();
                     currentDelegates.GetDocuments().Add(doc);
-                    CourtesyDocument.SetLayoutForDocument(doc, layDocCtrl.DocumentModel);
+                    CourtesyDocument.SetLayoutForDocument(doc, layDocCtrl);
 
                     newresponseDocs.Add(doc);
                 }
@@ -323,15 +304,15 @@ namespace Dash {
                 // then try and parse it as a single object
             } catch (InvalidOperationException e) {
                 JObject result = JObject.Parse(response.Content.ToString());
-                Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
+                Dictionary<Key, FieldModelController> toAdd = new Dictionary<Key, FieldModelController>();
                 foreach (JProperty property in result.Properties()) {
-                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
+                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModelController(property.Value.ToString()));
                 }
 
                 // at this point, resultAsDocument is a new document
                 //
                 // TODO: unique identifiers as above
-                DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
+                DocumentController Document = new DocumentController(toAdd, new DocumentType(apiURI.Host));
                 responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
             }
 
