@@ -229,7 +229,7 @@ namespace Dash
             }
             public static FrameworkElement MakeView(DocumentController docController, List<DocumentController> docContextList)
             {
-                var docViewModel = new DocumentViewModel(docController)
+                var docViewModel = new DocumentViewModel(docController, docContextList)
                 {
                     IsDetailedUserInterfaceVisible = false,
                     IsMoveable = false

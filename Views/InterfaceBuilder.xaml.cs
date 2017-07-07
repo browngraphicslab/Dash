@@ -74,7 +74,7 @@ namespace Dash
             foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments())
             {
                 // use the layout document to generate a UI
-                var fieldView = layoutDocument.MakeViewUI();
+                var fieldView = layoutDocument.makeViewUI(new DocumentController[] { LayoutCourtesyDocument.Document });
 
                 var translationController = layoutDocument.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
                 if (translationController != null)
@@ -191,9 +191,17 @@ namespace Dash
             {
                 var textFieldModel= ContentController.DereferenceToRootFieldModel<TextFieldModel>(new ReferenceFieldModel(_documentController.GetId(), key));
                 var textFieldModelController = ContentController.GetController<TextFieldModelController>(textFieldModel.Id);
+                if (_documentController.GetPrototype().GetField(key) == null)
+                {
+                    _documentController.GetPrototype().SetField(key, _documentController.GetField(key), false);
+                }
+                var layoutDoc = ContentController.GetController<DocumentController>((_documentController.GetField(DashConstants.KeyStore.LayoutKey)?.FieldModel as DocumentModelFieldModel)?.Data.Id);
+                if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
+                    layoutDoc = _documentController;
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                    box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(_documentController.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(_documentController.GetId(), key));
+                      box = new CourtesyDocuments.ImageBox(new ReferenceFieldModel(layoutDoc.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModel(layoutDoc.GetId(), key));
+                
             }
             else if (fieldModel is ImageFieldModel)
             {

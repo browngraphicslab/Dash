@@ -272,30 +272,45 @@ namespace Dash {
                 layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
                 layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
 
+                var dataFieldModel = new DocumentCollectionFieldModel(new List<DocumentModel>());
+                ContentController.AddModel(dataFieldModel);
+                var dataFieldModelController = new DocumentCollectionFieldModelController(dataFieldModel);
+                ContentController.AddController(dataFieldModelController);
+                layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
+
                 // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
                 // the parser should be reworked to auto do this or do it in a more user-friendly way
                 foreach (var f in documentModel.EnumFields()) {
                     Debug.WriteLine(f.Value.GetType().ToString());
                     if (f.Value is DocumentFieldModelController)
-                        responseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
+                        ResponseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
                     if (f.Value is DocumentCollectionFieldModelController)
-                        responseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
-                    foreach (var doc in ResponseAsDocuments)
-                    {
-                        var delg = layDocCtrl.MakeDelegate();
-                        CourtesyDocument.SetLayoutForDocument(doc, delg.DocumentModel);
-                        var dataFieldModel = new DocumentCollectionFieldModel(new List<DocumentModel>());
-                        ContentController.AddModel(dataFieldModel);
-                        var dataFieldModelController = new DocumentCollectionFieldModelController(dataFieldModel);
-                        ContentController.AddController(dataFieldModelController);
-                        layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
-                    }
+                        ResponseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
+                   
+                } 
+
+                if (ResponseAsDocuments.Count == 0)
+                    ResponseAsDocuments.Add(documentModel);
+
+                var newresponseDocs = new List<DocumentController>();
+                foreach (var doc in ResponseAsDocuments)
+                {
+                    // make doc a delegate of the response document and make that 
+                    var prototypeFieldModel = new DocumentModelFieldModel(layDocCtrl.DocumentModel);
+                    ContentController.AddModel(prototypeFieldModel);
+                    var prototypeFieldController = new DocumentFieldModelController(prototypeFieldModel);
+                    ContentController.AddController(prototypeFieldController);
+                    doc.SetField(DashConstants.KeyStore.PrototypeKey, prototypeFieldController, true);
+
+                    // add the delegate to our delegates field
+                    var currentDelegates = layDocCtrl.GetDelegates();
+                    currentDelegates.GetDocuments().Add(doc);
+                    CourtesyDocument.SetLayoutForDocument(doc, layDocCtrl.DocumentModel);
+
+                    newresponseDocs.Add(doc);
                 }
 
-                if (responseAsDocuments.Count == 0)
-                    ResponseAsDocuments.Add(documentModel);
-                
-                
+                ResponseAsDocuments = newresponseDocs;
 
 
                 // at this point resultAsDocuments contains a list of all JSON results formatted
