@@ -48,39 +48,11 @@
                   ManipulationDelta="UserControl_ManipulationDelta" 
                   ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting" 
                   Padding="0"
-                  PointerMoved="FreeformGrid_OnPointerMoved" 
-                  PointerReleased="FreeformGrid_OnPointerReleased"
                   Style="{StaticResource xNodeContainerGrid}">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect"/>
                 </Grid.Clip>
                 <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-                <Grid x:Name="FreeformGrid" Visibility="{Binding FreeformVisibility}">
-                    <ItemsControl x:Name="xItemsControl" 
-                              x:FieldModifier="public" 
-                              ItemsSource="{Binding DataBindingSource}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <Canvas x:Name="CollectionCanvas" 
-                                    x:FieldModifier="public"                              
-                                    Background="Transparent"
-                                    Width ="0" Height="0" VerticalAlignment="Top" HorizontalAlignment="Left">
-                                </Canvas>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <dash:DocumentView
-                                    DataContext="{Binding}" 
-                                    ManipulationStarted="DocumentView_ManipulationStarted" 
-                                    ManipulationDelta="DocumentView_ManipulationDelta" 
-                                    IODragStarted="StartDrag" 
-                                    IODragEnded="EndDrag" 
-                                    RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Grid>
             </Grid>
             <Grid Visibility="{Binding SoloDisplayVisibility}">
                 <Grid x:Name="SingleDocDisplayGrid" Width="{Binding OuterGridWidth}" Height="{Binding ContainerGridHeight}" HorizontalAlignment="Center" VerticalAlignment="Center">

@@ -8,7 +8,7 @@ namespace Dash
         /// Dictionary mapping input ReferenceFieldModel to the list of output ReferenceFieldModels
         /// </summary>
         private Dictionary<T, List<T>> _edges = new Dictionary<T, List<T>>(); 
-
+        
         public void AddEdge(T startNode, T endNode)
         {
             if (_edges.ContainsKey(startNode))
@@ -39,8 +39,6 @@ namespace Dash
 
             return false; 
         }
-
-
         private bool IsCyclicUtil(T startNode, ref HashSet<T> visited, ref HashSet<T> recStack)
         {
             if (!visited.Contains(startNode))

@@ -9,24 +9,21 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <Grid Visibility="{Binding GridViewVisibility}">
+    <Grid x:Name="Grid">
         <GridView x:Name="xGridView" 
                           x:FieldModifier="public" 
+                          ItemsSource="{Binding DataBindingSource}"
+                          SelectionMode="{Binding ItemSelectionMode}"
                           HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch"
                           ScrollViewer.VerticalScrollMode="Enabled"
                           ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                          SelectionMode="{Binding ItemSelectionMode}"
-                          ItemsSource="{Binding DataBindingSource}"
                           CanDragItems="True"
                           CanReorderItems="True"
-                          AllowDrop="True"
-                          DragItemsStarting="xGridView_OnDragItemsStarting"
-                          DragItemsCompleted="xGridView_OnDragItemsCompleted">
+                          AllowDrop="True">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" 
-                                    Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
+                    <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
                         <dash:DocumentView  Width="250" Height="250" DataContext="{Binding}" IsHitTestVisible="False"/>
                     </Border>
                 </DataTemplate>

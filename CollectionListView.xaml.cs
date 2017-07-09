@@ -19,9 +19,11 @@ namespace Dash
 {
     public sealed partial class CollectionListView : UserControl
     {
-        public CollectionListView()
+        public CollectionListView(CollectionView view)
         {
             this.InitializeComponent();
+            HListView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
+            HListView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
         }
     }
 }

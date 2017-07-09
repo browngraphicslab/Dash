@@ -9,9 +9,11 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <Grid Visibility="{Binding ListViewVisibility}">
+    <Grid x:Name="Grid">
         <ListView x:Name="HListView" 
                           x:FieldModifier="public" 
+                          ItemsSource="{Binding DataBindingSource}"
+                          SelectionMode="{Binding ItemSelectionMode}"
                           FlowDirection="LeftToRight" 
                           HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch" 
@@ -19,10 +21,6 @@
                           ScrollViewer.VerticalScrollMode="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          SelectionMode="{Binding ItemSelectionMode}"
-                          ItemsSource="{Binding DataBindingSource}"
-                          DragItemsStarting="xGridView_OnDragItemsStarting"
-                          DragItemsCompleted="xGridView_OnDragItemsCompleted"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True">

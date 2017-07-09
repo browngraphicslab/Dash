@@ -290,13 +290,13 @@ namespace Dash
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.StartDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, true, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    (view.CurrentView as CollectionFreeformView)?.StartDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, true, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
                 };
                 renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.EndDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, false, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    (view.CurrentView as CollectionFreeformView)?.EndDrag(new OperatorView.IOReference(refFieldModelController.ReferenceFieldModel, false, args, renderElement, renderElement.GetFirstAncestorOfType<DocumentView>()));
                 };
             }
 

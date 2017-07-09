@@ -15,13 +15,9 @@ using System.Linq;
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
-    {
-       
-
+    {    
         private CollectionModel _collectionModel;
-
         public CollectionModel CollectionModel { get { return _collectionModel; } }
-
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
@@ -36,68 +32,45 @@ namespace Dash
                 SetProperty(ref _dataBindingSource, value);
             }
         }
-
         public ObservableCollection<UIElement> SoloDisplayElements
         {
             get { return _soloDisplayElements; }
             set { SetProperty(ref _soloDisplayElements, value); }
         }
-
-        private bool _filtered;
-
         public enum FilterMode
         {
             FieldContains,
             FieldEquals,
             HasField
         }
-
         public FilterMode CollectionFilterMode;
         public string SearchFieldBoxText;
         public string FieldBoxText;
         public string SearchBoxText;
-
         public bool IsEditorMode { get; set; } = true;
-
-
-        #region Private & Backing variables
-        
-
+        #region Private & Backing variables   
         private double _cellSize;
         private double _outerGridWidth;
         private double _outerGridHeight;
         private double _containerGridHeight;
         private double _containerGridWidth;
-
         private Thickness _draggerMargin;
         private Thickness _proportionalDraggerMargin;
         private Thickness _closeButtonMargin;
         private Thickness _bottomBarMargin;
         private Thickness _selectButtonMargin;
         private Thickness _deleteButtonMargin;
-
         private SolidColorBrush _proportionalDraggerStroke;
         private SolidColorBrush _proportionalDraggerFill;
         private SolidColorBrush _draggerFill;
-
         private ListViewSelectionMode _itemSelectionMode;
-
-        private Visibility _freeformVisibility;
-        private Visibility _gridViewVisibility;
-        private Visibility _listViewVisibility;
         private Visibility _controlsVisibility;
         private Visibility _filterViewVisibility;
-
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
-
         private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        private DocumentViewModel _soloDisplayDocument;
         private Visibility _soloDisplayVisibility;
-
         private bool _viewIsEnabled;
-
         private double _soloDocDisplayGridWidth;
         private double _soloDocDisplayGridHeight;
         private double _soloDisplaySize;
@@ -166,24 +139,6 @@ namespace Dash
         {
             get { return _viewIsEnabled; }
             set { SetProperty(ref _viewIsEnabled, value); }
-        }
-
-        public Visibility FreeformVisibility
-        {
-            get { return _freeformVisibility; }
-            set { SetProperty(ref _freeformVisibility, value); }
-        }
-
-        public Visibility GridViewVisibility
-        {
-            get { return _gridViewVisibility; }
-            set { SetProperty(ref _gridViewVisibility, value); }
-        }
-
-        public Visibility ListViewVisibility
-        {
-            get { return _listViewVisibility; }
-            set { SetProperty(ref _listViewVisibility, value); }
         }
 
         public Visibility ControlsVisibility
@@ -296,29 +251,12 @@ namespace Dash
         private void SetInitialValues()
         {
             CellSize = 250;
-            GridViewVisibility = Visibility.Visible;
-            ListViewVisibility = Visibility.Collapsed;
             FilterViewVisibility = Visibility.Collapsed;
             SoloDisplayVisibility = Visibility.Collapsed;
-            GridViewVisibility = Visibility.Collapsed;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
             ViewIsEnabled = true;
         }
-
-        #region Size and Location methods
-
-        /// <summary>
-        /// Returns a bool indicating whether any of the grids used to diplay items are Visible.
-        /// </summary>
-        /// <returns></returns>
-        private bool DisplayingItems()
-        {
-            return (GridViewVisibility == Visibility.Visible || ListViewVisibility == Visibility.Visible);
-        }
-
-
-        #endregion
 
         #region Event Handlers
 
@@ -343,72 +281,6 @@ namespace Dash
         }
 
         /// <summary>
-        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (_filtered)
-            {
-                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
-                ListViewVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Collapsed;
-                DataBindingSource = filteredDocumentViewModels;
-                FreeformVisibility = Visibility.Visible;
-            }
-            else
-            {
-                ListViewVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Visible;
-            }
-        }
-
-        /// <summary>
-        /// Changes the view to the LIstView by making that Grid visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (_filtered)
-            {
-                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
-                GridViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Collapsed;
-                DataBindingSource = filteredDocumentViewModels;
-                ListViewVisibility = Visibility.Visible;
-            }
-            else
-            {
-                GridViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Collapsed;
-                ListViewVisibility = Visibility.Visible;
-            }                    
-            OuterGridHeight = CellSize + 44;
-            //SetDimensions();
-        }
-
-        public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (_filtered)
-            {
-                ObservableCollection<DocumentViewModel> filteredDocumentViewModels = DataBindingSource;
-                ListViewVisibility = Visibility.Collapsed;
-                FreeformVisibility = Visibility.Collapsed;
-                DataBindingSource = filteredDocumentViewModels;
-                GridViewVisibility = Visibility.Visible;
-            }
-            else
-            {
-                ListViewVisibility = Visibility.Collapsed;               
-                FreeformVisibility = Visibility.Collapsed;
-                GridViewVisibility = Visibility.Visible;
-            }
-        }
-
-        /// <summary>
         /// Changes the selection mode to reflect the tapped Select Button.
         /// </summary>
         /// <param name="sender"></param>
@@ -417,13 +289,11 @@ namespace Dash
         {
             if (ItemSelectionMode == ListViewSelectionMode.None)
             {
-                ItemSelectionMode = ListViewSelectionMode.Multiple;
-                
+                ItemSelectionMode = ListViewSelectionMode.Multiple;              
             }
             else
             {
-                ItemSelectionMode= ListViewSelectionMode.None;
-                
+                ItemSelectionMode= ListViewSelectionMode.None;               
             }
             e.Handled = true;
         }
@@ -744,7 +614,7 @@ namespace Dash
         public void ClearFilter_Tapped(object sender, TappedRoutedEventArgs e)
         {
             FilterViewVisibility = Visibility.Collapsed;
-            _filtered = false;
+            //_filtered = false;
         }
     }
 }
