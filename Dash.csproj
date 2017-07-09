@@ -95,13 +95,13 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CollectionFreeformView.xaml.cs">
+    <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CollectionGridView.xaml.cs">
+    <Compile Include="Views\CollectionGridView.xaml.cs">
       <DependentUpon>CollectionGridView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CollectionListView.xaml.cs">
+    <Compile Include="Views\CollectionListView.xaml.cs">
       <DependentUpon>CollectionListView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\ContentController.cs" />
@@ -301,15 +301,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="CollectionFreeformView.xaml">
+    <Page Include="Views\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CollectionGridView.xaml">
+    <Page Include="Views\CollectionGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CollectionListView.xaml">
+    <Page Include="Views\CollectionListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

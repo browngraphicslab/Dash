@@ -720,10 +720,8 @@ namespace Dash
         public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
-            {
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-                RefreshItemsBinding();
-            }
+            RefreshItemsBinding();
             KeepItemsOnMove = true;
             var carrier = ItemsCarrier.GetInstance();
             carrier.Payload.Clear();
