@@ -270,8 +270,8 @@ namespace Dash
             public static FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList)
             {
-                var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) ?? null;
-                OperatorFieldModelController opfmc = (data as OperatorFieldModelController);
+                var data = docController.GetField(DashConstants.KeyStore.DataKey, docContextList) ?? null;
+                var opfmc = (data as ReferenceFieldModelController);
                 OperatorView opView = new OperatorView {DataContext = opfmc};
                 return opView;
             }
