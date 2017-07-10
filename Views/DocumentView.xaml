@@ -12,23 +12,30 @@
     Height="{x:Bind ViewModel.Height}"
     d:DataContext="{d:DesignInstance local:DocumentViewModel }"
    >
-    <!--  Width="{Binding Width}" Height="{Binding Height}" add back in when done designing-->
-
+    
+    <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
+              Tapped="XGrid_Tapped"
+              DoubleTapped="XGrid_DoubleTapped"
+              SizeChanged="OuterGrid_SizeChanged"
             BorderBrush="{Binding BorderBrush}"
+          Background="Transparent"
             BorderThickness="0">
+        
+        <!-- Container for document fields view -->
         <Grid x:Name="XGrid"
-            SizeChanged="OuterGrid_SizeChanged"
-                ManipulationMode="{Binding ManipulationMode}"
-                Padding="0"
-                Style="{StaticResource xNodeContainerGrid}" Background="#E5FFFFFF" >
+              ManipulationMode="{Binding ManipulationMode}"
+              Padding="0"
+              Style="{StaticResource xNodeContainerGrid}" Background="#E5FFFFFF" >
 
             <Grid.Clip>
                 <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
             </Grid.Clip>
-            <!-- This controls the fields of the document -->
+            
+                <!-- This controls the fields of the document -->
             <ItemsControl x:Name="DocumentsControl"
+                          Canvas.ZIndex="2"
                           x:FieldModifier="public"
                           Padding="5">
                 <ItemsControl.ItemsPanel>
@@ -37,7 +44,26 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+
         </Grid>
+
+
+        <!-- Container for Icon view -->
+        <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Height="64" Width="64">
+            <Image Source="ms-appx:///Assets/if_11_1724127.png"></Image>
+        </Grid>
+        
+        <!-- Context Menu -->
+        <Grid x:Name="xContextMenu">
+            <StackPanel Orientation="Horizontal" >
+                <Image Tapped="XEditButton_OnTapped" Source="ms-appx:///Assets/layout.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <Image Source="ms-appx:///Assets/copy.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+            </StackPanel>
+            <Image Source="ms-appx:///Assets/delete.png" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        </Grid>
+        
+        <!-- Misc. Document Components-->
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
                 Background="Black"
@@ -50,26 +76,12 @@
             <Button.Template>
                 <ControlTemplate TargetType="Button">
                     <Border Padding="10" Background="Transparent">
-                        <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Margin="0,0,0,0" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
+                        <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
                     </Border>
                 </ControlTemplate>
             </Button.Template>
         </Button>
-        <Button x:Name="xEditButton" 
-                Width="35"
-                Height="35"
-                HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Tapped="XEditButton_OnTapped" Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
-            <TextBlock Text="&#xE7C3;" FontFamily="Segoe MDL2 Assets" />
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Grid>
-                        <Ellipse Fill="#DE0074FF" StrokeThickness="1" Stroke="#DE0074FF" />
-                        <ContentPresenter HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"/>
-                    </Grid>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
+
     </Grid>
 </UserControl>
 

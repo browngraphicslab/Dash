@@ -72,16 +72,33 @@ namespace Dash {
             protected static void BindOperationInteractions(ReferenceFieldModelController refFieldModelController,
                 FrameworkElement renderElement) {
                 renderElement.ManipulationMode = ManipulationModes.All;
-                renderElement.ManipulationStarted += (sender, args) =>
-                    args.Complete();
+                renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args) {
+                    var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                    if (view == null) return; // we can't always assume we're on a collection
+                    if (view.CanLink) {
+                        args.Complete();
+                        view.CanLink = false; // essential s.t. drag events don't get overriden
+                    }
+                };
+                renderElement.IsHoldingEnabled = true; // turn on holding
+
+                // must hold on element first to fetch link node
+                renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args) {
+                    var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                    if (view == null) return; // we can't always assume we're on a collection
+                    Debug.WriteLine("we are aholding!");
+                    view.CanLink = true;
+                    view.StartDrag(new OperatorView.IOReference(refFieldModelController, true, view.PointerArgs, renderElement,
+                        renderElement.GetFirstAncestorOfType<DocumentView>()));
+                };
                 renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.StartDrag(new OperatorView.IOReference(refFieldModelController, true, args, renderElement,
-                        renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    view.PointerArgs = args;
                 };
                 renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                    view.CanLink = false;
                     if (view == null) return; // we can't always assume we're on a collection
                     view.EndDrag(new OperatorView.IOReference(refFieldModelController, false, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));

@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
+using System.Threading.Tasks;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -31,6 +32,7 @@ namespace Dash
         public event OperatorView.IODragEventHandler IODragEnded;
 
         public ICollectionView View { get; set; }
+        private double startWidth, startHeight; // used for restoring on double click in icon view
 
         public DocumentView()
         {
@@ -43,8 +45,13 @@ namespace Dash
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 200;
-            MinHeight = 50;
+            MinWidth = 64;
+            MinHeight = 64;
+
+            startWidth = Width;
+            startHeight = Height;
+
+            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
@@ -88,6 +95,7 @@ namespace Dash
             // todo: remove this and replace with binding // debug why x:Bind fails
             Width = ActualWidth + dx;
             Height = ActualHeight + dy;
+
 
 
             //Width = ActualWidth + dx;
@@ -316,6 +324,17 @@ namespace Dash
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+
+            // update collapse info
+            // collapse to icon view on resize
+            int pad = 64;
+            if (Width < MinWidth + pad && Height < MinHeight + pad) {
+                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            } else {
+                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            }
         }
 
         private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -323,5 +342,47 @@ namespace Dash
             var position = e.GetPosition(OverlayCanvas.Instance);
             OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
         }
+
+        bool singleTap = false;
+
+        /// <summary>
+        /// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
+        /// on signle tap to prevent flickering.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+
+            // if in icon view expand to default size
+            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
+                Height = 300;
+                Width = 300;
+
+                var dvm = DataContext as DocumentViewModel;
+                dvm.Width = 300;
+                dvm.Height = 300;
+
+           // if in default view, show context menu
+            } else {
+                if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
+                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                else
+                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            }
+
+            singleTap = false;
+            e.Handled = true;
+        }
+
+        
+        // hides context menu on single tap
+        private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
+            singleTap = true;
+            await Task.Delay(150);
+            if (singleTap)
+                xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                
+        }
+        
     }
 }

@@ -35,6 +35,8 @@ namespace Dash
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
         private Canvas FreeformCanvas => xItemsControl.ItemsPanelRoot as Canvas;
+        public bool CanLink; // whether the user can draw links currently or not
+        public PointerRoutedEventArgs PointerArgs;
 
         public CollectionViewModel ViewModel;
         private bool _isHasFieldPreviouslySelected;
@@ -53,7 +55,7 @@ namespace Dash
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionModel.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             SetEventHandlers();
-
+            CanLink = false;
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
 
@@ -801,12 +803,23 @@ namespace Dash
                 throw new NotImplementedException();
             }
         }
+
+        /// <summary>
+        /// Starts drawing a link starting from the selected OIReference.
+        /// </summary>
+        /// <param name="ioReference"></param>
         public void StartDrag(OperatorView.IOReference ioReference)
         {
+            if (!CanLink) {
+                PointerArgs = ioReference.PointerArgs;
+                return;
+            }
+
             if (!ViewModel.IsEditorMode)
             {
                 return;
             }
+
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
             {
                 return;
@@ -969,7 +982,9 @@ namespace Dash
                 Point pos = e.GetCurrentPoint(FreeformCanvas).Position;
                 _converter.Pos2 = pos;
                 _lineBinding.ForceUpdate();
+                e.Handled = true;
             }
+
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
