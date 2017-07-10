@@ -54,11 +54,8 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var reference = DataContext as ReferenceFieldModel;
+            var opCont = DataContext as OperatorFieldModelController;
 
-            var contextList = new List<DocumentController>(); // bcz: ??? Where do I get the context list from?
-            var opCont = ContentController.GetController<DocumentController>(reference.DocId).GetDereferencedField(reference.FieldKey, contextList) as OperatorFieldModelController;
-            Debug.Assert(opCont != null);
             InputListView.ItemsSource = opCont.InputKeys;
             OutputListView.ItemsSource = opCont.OutputKeys;
         }

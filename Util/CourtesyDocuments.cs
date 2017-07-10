@@ -271,8 +271,8 @@ namespace Dash
                 List<DocumentController> docContextList)
             {
                 var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) ?? null;
-                ReferenceFieldModel rfm = (data as ReferenceFieldModelController).ReferenceFieldModel;
-                OperatorView opView = new OperatorView {DataContext = rfm};
+                OperatorFieldModelController opfmc = (data as OperatorFieldModelController);
+                OperatorView opView = new OperatorView {DataContext = opfmc};
                 return opView;
             }
         }
