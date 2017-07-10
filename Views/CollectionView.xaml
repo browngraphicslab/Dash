@@ -14,7 +14,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="{Binding MenuColumnWidth}"></ColumnDefinition>
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <StackPanel x:Name="xStackPanel" Visibility="{Binding MenuVisibility}" Orientation="Vertical"  VerticalAlignment="Top">
@@ -66,9 +66,16 @@
                   BorderBrush="LightGray"
                   ManipulationMode="All" 
                   Padding="0"
-                  Style="{StaticResource xNodeContainerGrid}">
+                  Style="{StaticResource xNodeContainerGrid}"
+                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged" 
+                  PointerWheelChanged="UserControl_PointerWheelChanged"
+                  ManipulationDelta="UserControl_ManipulationDelta" 
+                  ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting">
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="ClipRect"></RectangleGeometry>
+                </Grid.Clip>
                 <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-                <ContentControl x:Name="xDocumentDisplayView" Content="{Binding DocumentDisplayView}"></ContentControl>
+                <ContentControl x:Name="xContentControl"></ContentControl>
             </Grid>
             
             

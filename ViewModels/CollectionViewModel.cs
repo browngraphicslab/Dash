@@ -16,14 +16,14 @@ using Dash.Views;
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
+    { 
 
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
     
         #region Properties
         public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
-
-        public bool IsEditorMode { get; set; } = true;
+        
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
         /// </summary>
@@ -37,45 +37,7 @@ namespace Dash
         }
         private ObservableCollection<DocumentViewModel> _dataBindingSource;
 
-        /// <summary>
-        /// References the ItemsControl used to 
-        /// </summary>
-        public UIElement DocumentDisplayView
-        {
-            get { return _documentDisplayView; }
-            set { SetProperty(ref _documentDisplayView, value); }
-        }
-        public bool IsEditorMode { get; set; } = true;
-        #region Private & Backing variables   
-        private double _cellSize;
-        private double _outerGridWidth;
-        private double _outerGridHeight;
-        private double _containerGridHeight;
-        private double _containerGridWidth;
-        private Thickness _draggerMargin;
-        private Thickness _proportionalDraggerMargin;
-        private Thickness _closeButtonMargin;
-        private Thickness _bottomBarMargin;
-        private Thickness _selectButtonMargin;
-        private Thickness _deleteButtonMargin;
-        private SolidColorBrush _proportionalDraggerStroke;
-        private SolidColorBrush _proportionalDraggerFill;
-        private SolidColorBrush _draggerFill;
-        private ListViewSelectionMode _itemSelectionMode;
-        private Visibility _controlsVisibility;
-        private Visibility _filterViewVisibility;
-        //Not backing variable; used to keep track of which items selected in view
-        private ObservableCollection<DocumentViewModel> _selectedItems;
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
-        private Visibility _soloDisplayVisibility;
-        private bool _viewIsEnabled;
-        private double _soloDocDisplayGridWidth;
-        private double _soloDocDisplayGridHeight;
-        private double _soloDisplaySize;
-        private ObservableCollection<UIElement> _soloDisplayElements;
-
-
-        private UIElement _documentDisplayView;
+        public bool KeepItemsOnMove { get; set; } = true;
 
 
         /// <summary>
@@ -88,49 +50,6 @@ namespace Dash
         }
         private double _cellSize;
 
-
-        public double OuterGridWidth
-        {
-            get { return _outerGridWidth; }
-            set { SetProperty(ref _outerGridWidth, value); }
-        }
-
-        public double OuterGridHeight
-        {
-            get { return _outerGridHeight; }
-            set { SetProperty(ref _outerGridHeight, value); }
-        }
-
-        public double ContainerGridWidth
-        {
-            get { return _containerGridWidth; }
-            set { SetProperty(ref _containerGridWidth, value); }
-        }
-
-        public double ContainerGridHeight
-        {
-            get { return _containerGridHeight; }
-            set { SetProperty(ref _containerGridHeight, value); }
-        }
-
-
-        public bool ViewIsEnabled
-        {
-            get { return _viewIsEnabled; }
-            set { SetProperty(ref _viewIsEnabled, value); }
-        }
-
-        public Visibility ControlsVisibility
-        /// <summary>
-        /// Clips the grid containing the documents to the correct size
-        /// </summary>
-        public Rect ClipRect
-        {
-            get { return _clipRect; }
-            set { SetProperty(ref _clipRect, value); }
-        }
-        private Rect _clipRect;
-
         /// <summary>
         /// Determines the selection mode of the control currently displaying the documents
         /// </summary>
@@ -140,29 +59,16 @@ namespace Dash
             set { SetProperty(ref _itemSelectionMode, value); }
         }
         private ListViewSelectionMode _itemSelectionMode;
-
-        public Visibility MenuVisibility
-        {
-            get { return _menuVisibility; }
-            set { SetProperty(ref _menuVisibility, value); }
-        }
-        private Visibility _menuVisibility;
-
-        public GridLength MenuColumnWidth
-        {
-            get { return _menuColumnWidth; }
-            set { SetProperty(ref _menuColumnWidth, value); }
-        }
-        private GridLength _menuColumnWidth;
-
-
         #endregion
+
         /// <summary>
         /// The collection creates delegates for each document it displays so that it can associate display-specific
         /// information on the documents.  This allows different collection views to save different views of the same
         /// document collection.
         /// </summary>
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+
+
         private DocumentCollectionFieldModelController _collectionFieldModelController;
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
@@ -189,19 +95,11 @@ namespace Dash
         private void SetInitialValues()
         {
             CellSize = 250;
-            DocumentDisplayView = new CollectionFreeformView {DataContext = this};
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            MenuColumnWidth = new GridLength(80);
         }
 
         #region Event Handlers
-
-        private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Thickness border = new Thickness(1);
-            ClipRect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
-        }
 
         /// <summary>
         /// Deletes all of the Documents selected in the CollectionView by removing their DocumentViewModels from the data binding source. 
@@ -223,32 +121,7 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            DocumentDisplayView = new CollectionFreeformView { DataContext = this };
-        }
-
-        /// <summary>
-        /// Changes the view to the LIstView by making that Grid visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            DocumentDisplayView = new CollectionListView { DataContext = this };
-            //SetDimensions();
-        }
-
-        public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            DocumentDisplayView = new CollectionGridView {DataContext = this};
-        }
-
+       
         /// <summary>
         /// Changes the selection mode to reflect the tapped Select Button.
         /// </summary>
@@ -348,19 +221,6 @@ namespace Dash
         }
         #endregion
 
-        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (MenuVisibility == Visibility.Visible)
-            {
-                MenuVisibility = Visibility.Collapsed;
-                MenuColumnWidth = new GridLength(0);
-            }
-            else
-            {
-                MenuVisibility = Visibility.Visible;
-                MenuColumnWidth = new GridLength(80);
-            }
-            e.Handled = true;
-        }
+        
     }
 }

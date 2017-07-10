@@ -17,7 +17,7 @@
                           HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch"
                           ScrollViewer.VerticalScrollMode="Enabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True">

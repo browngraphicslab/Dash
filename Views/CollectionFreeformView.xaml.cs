@@ -34,13 +34,13 @@ namespace Dash
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
         private Dictionary<ReferenceFieldModel, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<ReferenceFieldModel, Windows.UI.Xaml.Shapes.Path>();
-        private CollectionView ParentCollection;
+        //private CollectionView ParentCollection;
         private Canvas parentCanvas;
-        public CollectionFreeformView(CollectionView view)
+        public CollectionFreeformView()
         {
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
-            ParentCollection = view;
+            //ParentCollection = view;
         }
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
@@ -67,8 +67,7 @@ namespace Dash
         public void StartDrag(OperatorView.IOReference ioReference)
         {
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
-            if (ParentCollection.CurrentView as CollectionFreeformView == null) return;
-            parentCanvas = (ParentCollection.CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
+            parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
 
@@ -131,10 +130,10 @@ namespace Dash
 
         public void EndDrag(OperatorView.IOReference ioReference)
         {
-            if (!(DataContext as CollectionViewModel).IsEditorMode)
-            {
-                return;
-            }
+            //if (!(DataContext as CollectionViewModel).IsEditorMode)
+            //{
+            //    return;
+            //}
             _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 

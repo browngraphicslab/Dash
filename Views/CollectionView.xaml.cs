@@ -21,6 +21,8 @@ using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -32,7 +34,6 @@ namespace Dash
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
-        public bool KeepItemsOnMove = true;
         //i think this belong elsewhere
         public static Graph<string> Graph = new Graph<string>();
         private Canvas FreeformCanvas; //TODO why we need this
@@ -47,10 +48,13 @@ namespace Dash
             DataContext = ViewModel = vm;
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
-            DocumentViewContainerGrid.Children.Add(CurrentView = new CollectionFreeformView(this) {DataContext = ViewModel});
+            CurrentView = new CollectionFreeformView {DataContext = ViewModel};
+            xContentControl.Content = CurrentView;
             FreeformCanvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
+            xMenuColumn.Width = new GridLength(80);
             SetEventHandlers();
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
+            ManipulationControls controls = new ManipulationControls(this);
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
         {
@@ -59,35 +63,33 @@ namespace Dash
         private void SetEventHandlers()
         {
             Loaded += CollectionView_Loaded;
-            //TODO figure out hwere these should be and if we need them ===============================
+            ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
             FreeformOption.Tapped += FreeformButton_Tapped;
             GridViewOption.Tapped += GridViewButton_Tapped;
             ListOption.Tapped += ListViewButton_Tapped;
             CloseButton.Tapped += CloseButton_Tapped;
             SelectButton.Tapped += ViewModel.SelectButton_Tapped;
             DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
-            Filter.Tapped += ViewModel.FilterSelection_Tapped;
-            ClearFilter.Tapped += ViewModel.ClearFilter_Tapped;
-            Grid.DoubleTapped += ViewModel.OuterGrid_DoubleTapped;
-            SingleDocDisplayGrid.Tapped += ViewModel.SingleDocDisplayGrid_Tapped;
-            xFilterExit.Tapped += ViewModel.FilterExit_Tapped;
-            xFilterButton.Tapped += ViewModel.FilterButton_Tapped;         
-            xSearchBox.TextCompositionEnded += ViewModel.SearchBox_TextEntered;
-            xSearchBox.TextChanged += ViewModel.xSearchBox_TextChanged;
-            xFieldBox.TextChanged += ViewModel.FilterFieldBox_OnTextChanged;
-            xFieldBox.SuggestionChosen += ViewModel.FilterFieldBox_SuggestionChosen;
-            xFieldBox.QuerySubmitted += ViewModel.FilterFieldBox_QuerySubmitted;           
-            xSearchFieldBox.TextChanged += ViewModel.xSearchFieldBox_TextChanged;
-            //=======================================
-            ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
-            FreeformOption.Tapped += ViewModel.FreeformButton_Tapped;
-            GridViewOption.Tapped +=
-                ViewModel.GridViewButton_Tapped;
-            ListOption.Tapped += ViewModel.ListViewButton_Tapped;
-            CloseButton.Tapped += CloseButton_Tapped;
-            SelectButton.Tapped += ViewModel.SelectButton_Tapped;
-            DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
+            DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
+            DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
+            ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
         }
+
+        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (xStackPanel.Visibility == Visibility.Visible)
+            {
+                xStackPanel.Visibility = Visibility.Collapsed;
+                xMenuColumn.Width = new GridLength(0);
+            }
+            else
+            {
+                xStackPanel.Visibility = Visibility.Visible;
+                xMenuColumn.Width = new GridLength(80);
+            }
+            e.Handled = true;
+        }
+
         /// <summary>
         /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
         /// </summary>
@@ -95,10 +97,10 @@ namespace Dash
         /// <param name="e"></param>
         public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            ClearDocumentContainerGrid();
-            CurrentView = new CollectionFreeformView(this) { DataContext = ViewModel };
+            if (CurrentView is CollectionFreeformView) return;
+            CurrentView = new CollectionFreeformView {DataContext = ViewModel};
             (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
-            DocumentViewContainerGrid.Children.Add(CurrentView);
+            xContentControl.Content = CurrentView;
         }
         /// <summary>
         /// Changes the view to the ListView by making that Grid visible in the CollectionView.
@@ -107,10 +109,10 @@ namespace Dash
         /// <param name="e"></param>
         public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            ClearDocumentContainerGrid();
+            if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView(this) { DataContext = ViewModel };
             (CurrentView as CollectionListView).HListView.SelectionChanged += ViewModel.SelectionChanged;
-            DocumentViewContainerGrid.Children.Add(CurrentView);
+            xContentControl.Content = CurrentView;
         }
         /// <summary>
         /// Changes the view to the GridView by making that Grid visible in the CollectionView.
@@ -119,24 +121,19 @@ namespace Dash
         /// <param name="e"></param>
         public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            ClearDocumentContainerGrid();
+            if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView(this) { DataContext = ViewModel };
             (CurrentView as CollectionGridView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
-            DocumentViewContainerGrid.Children.Add(CurrentView);
+            xContentControl.Content = CurrentView;
         }
-        private void ClearDocumentContainerGrid()
-        {
-            var ink = xInkCanvas;
-            DocumentViewContainerGrid.Children.Clear();
-            DocumentViewContainerGrid.Children.Add(xInkCanvas);
-        }
+
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             var parentDocument = this.GetFirstAncestorOfType<DocumentView>();
 
             if (parentDocument != MainPage.Instance.MainDocView)
             {
-                DoubleTapped += ViewModel.Grid_DoubleTapped;
+                DoubleTapped += Grid_DoubleTapped;
                 parentDocument.SizeChanged += (ss, ee) =>
                 {
                     var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
@@ -148,6 +145,7 @@ namespace Dash
                 };
             }
         }
+
         private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
@@ -251,20 +249,22 @@ namespace Dash
                 .GetFirstAncestorOfType<ContentPresenter>());
         }
 
-        private void Grid_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            if (e.Container is ScrollBar || e.Container is ScrollViewer)
-            {
-                e.Complete();
-                e.Handled = true;
-            }
-        }
+        //private void Grid_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //{
+        //    if (e.Container is ScrollBar || e.Container is ScrollViewer)
+        //    {
+        //        e.Complete();
+        //        e.Handled = true;
+        //    }
+        //}
 
         private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             Thickness border = DocumentViewContainerGrid.BorderThickness;
             ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
         }
+
+
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -579,7 +579,7 @@ namespace Dash
         {
             MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
-            carrier.Source = this;
+            carrier.Source = ViewModel;
             foreach(var item in e.Items)
                 carrier.Payload.Add(item as DocumentViewModel);
             e.Data.RequestedOperation = DataPackageOperation.Move;
@@ -587,10 +587,10 @@ namespace Dash
 
         public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            if (args.DropResult == DataPackageOperation.Move && !KeepItemsOnMove)
+            if (args.DropResult == DataPackageOperation.Move && !ViewModel.KeepItemsOnMove)
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
             RefreshItemsBinding();
-            KeepItemsOnMove = true;
+            ViewModel.KeepItemsOnMove = true;
             var carrier = ItemsCarrier.GetInstance();
             carrier.Payload.Clear();
             carrier.Source = null;
@@ -602,8 +602,7 @@ namespace Dash
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
         {
             var docControllers = docViewModels.Select(item => item.DocumentController);
-            var parentDoc = (ViewModel.ParentDocument.ViewModel)?.DocumentController;
-            var controller = ContentController.GetController<DocumentCollectionFieldModelController>(ViewModel.CollectionModel.DocumentCollectionFieldModel.Id);
+            var controller = ViewModel.CollectionFieldModelController;
             if (controller != null)
                 foreach (var item in docControllers)
                     if (add) controller.AddDocument(item);
@@ -620,7 +619,7 @@ namespace Dash
         {
             e.Handled = true;
             RefreshItemsBinding();
-            ItemsCarrier.GetInstance().Destination = this;
+            ItemsCarrier.GetInstance().Destination = ViewModel;
             ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
             ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
             ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
@@ -641,5 +640,6 @@ namespace Dash
                 listView.HListView.ItemsSource = ViewModel.DataBindingSource;
             }
         }
+        
     }
 }
