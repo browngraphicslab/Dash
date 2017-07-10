@@ -53,5 +53,10 @@ namespace Dash
                 FireFieldModelUpdated();
             }
         }
+
+        public override string ToString()
+        {
+            return $"({Data})";
+        }
     }
 }
