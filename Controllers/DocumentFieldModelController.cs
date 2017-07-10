@@ -35,6 +35,7 @@ namespace Dash
                 }
             }
         }
+        public override TypeInfo TypeInfo => TypeInfo.Document;
 
         public override FrameworkElement GetTableCellView()
         {

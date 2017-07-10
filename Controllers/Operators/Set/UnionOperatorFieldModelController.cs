@@ -15,30 +15,25 @@ namespace Dash
         //Output keys
         public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
-        public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
-
-        public override List<Key> OutputKeys { get; } = new List<Key> {UnionKey};
-
-        public override List<FieldModelController> GetNewInputFields()
+        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            return new List<FieldModelController>
-            {
-                new DocumentCollectionFieldModelController(new List<DocumentController>()), new DocumentCollectionFieldModelController(new List<DocumentController>())
-            };
-        }
+            [AKey] = TypeInfo.Collection,
+            [BKey] = TypeInfo.Collection
+        };
 
-        public override List<FieldModelController> GetNewOutputFields()
+        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            return new List<FieldModelController>
-            {
-                new DocumentCollectionFieldModelController(new List<DocumentController>())
-            };
-        }
+            [UnionKey] = TypeInfo.Collection
+        };
 
         public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
         {
             DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
+            if (setA == null || setB == null)//One or more of the inputs isn't set yet
+            {
+                return;
+            }
 
             // Union by comparing all fields 
             List<DocumentController> bigSet = setA.GetDocuments();

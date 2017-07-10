@@ -53,6 +53,7 @@ namespace Dash
                 FireFieldModelUpdated();
             }
         }
+        public override TypeInfo TypeInfo => TypeInfo.Point;
 
         public override string ToString()
         {

@@ -15,9 +15,16 @@ namespace Dash.Models.OperatorModels.Set
         //Output keys
         public static readonly Key IntersectionKey = new Key("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
 
-        public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
+        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        {
+            [AKey] = TypeInfo.Collection,
+            [BKey] = TypeInfo.Collection
+        };
 
-        public override List<Key> OutputKeys { get; } = new List<Key> {IntersectionKey};
+        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        {
+            [IntersectionKey] = TypeInfo.Collection
+        };
 
         public IntersectionOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -27,6 +34,10 @@ namespace Dash.Models.OperatorModels.Set
         {
             DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
+            if (setA == null || setB == null)//One or more of the inputs isn't set yet
+            {
+                return;
+            }
 
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 
@@ -36,23 +47,5 @@ namespace Dash.Models.OperatorModels.Set
             // Intersect by Document ID 
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
-
-        public override List<FieldModelController> GetNewInputFields()
-        {
-            return new List<FieldModelController>
-            {
-                new DocumentCollectionFieldModelController(new List<DocumentController>()), new DocumentCollectionFieldModelController(new List<DocumentController>())
-            };
-        }
-
-        public override List<FieldModelController> GetNewOutputFields()
-        {
-            return new List<FieldModelController>
-            {
-                new DocumentCollectionFieldModelController(new List<DocumentController>())
-            };
-        }
-
-        
     }
 }

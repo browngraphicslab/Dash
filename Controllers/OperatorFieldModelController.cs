@@ -12,26 +12,18 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract List<Key> InputKeys { get; }
+        public abstract ObservableDictionary<Key, TypeInfo> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract List<Key> OutputKeys { get; }
+        public abstract ObservableDictionary<Key, TypeInfo> Outputs { get; }
 
         /// <summary>
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
         public abstract void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList);
-
-        public abstract List<FieldModelController> GetNewInputFields();
-
-        /// <summary>
-        /// Returns a list of fieldmodels corresponsing to the keys of OutputKeys.
-        /// </summary>
-        /// <returns></returns>
-        public abstract List<FieldModelController> GetNewOutputFields();
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
@@ -47,6 +39,7 @@ namespace Dash
         /// You should only set values on the controller, never directly on the model!
         /// </summary>
         protected OperatorFieldModel OperatorFieldModel { get; set; }
+        public override TypeInfo TypeInfo => TypeInfo.Operator;
 
         public override FrameworkElement GetTableCellView()
         {

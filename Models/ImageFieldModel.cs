@@ -14,6 +14,13 @@ namespace Dash
         public Uri Data;
 
         /// <summary>
+        /// Create a new Image Field Model that does not represent an image
+        /// </summary>
+        public ImageFieldModel()//TODO Make this a default image?
+        {
+        }
+
+        /// <summary>
         /// Create a new Image Field Model which represents the image pointed to by the <paramref name="data"/>
         /// </summary>
         /// <param name="data">The uri that the image this field model encapsulates is sourced from</param>

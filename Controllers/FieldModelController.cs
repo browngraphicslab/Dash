@@ -56,6 +56,8 @@ namespace Dash
         /// </summary>
         public ObservableCollection<ReferenceFieldModelController> OutputReferences;
 
+        public abstract TypeInfo TypeInfo { get; }
+
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
         ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />

@@ -40,6 +40,8 @@ namespace Dash
             }
         }
 
+        public override TypeInfo TypeInfo => TypeInfo.Reference;
+
         private void Fmc_FieldModelUpdatedEvent(FieldModelController sender)
         {
             FireFieldModelUpdated();

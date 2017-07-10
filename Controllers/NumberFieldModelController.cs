@@ -59,6 +59,7 @@ namespace Dash
                 FireFieldModelUpdated();
             }
         }
+        public override TypeInfo TypeInfo => TypeInfo.Number;
 
         public override string ToString()
         {

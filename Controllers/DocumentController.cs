@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
@@ -235,8 +236,39 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
-            GetField(fieldKey).InputReference = reference;
-            GetDereferencedField(reference, contextList).FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
+            var field = GetField(fieldKey);
+            var refField = GetDereferencedField(reference, contextList);
+            if (field == null)
+            {
+                var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                if (op == null)
+                {
+                    throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
+                }
+                if (!op.Inputs.ContainsKey(fieldKey))
+                {
+                    throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
+                }
+                TypeInfo info = op.Inputs[fieldKey];
+                if ((info & refField.TypeInfo) == refField.TypeInfo)
+                {
+                    field = TypeInfoHelper.CreateFieldModelController(refField.TypeInfo);
+                    SetField(fieldKey, field, true);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid types");
+                }
+            }
+            else
+            {
+                if ((field.TypeInfo & refField.TypeInfo) == TypeInfo.None)
+                {
+                    throw new ArgumentException("Invalid types");
+                }
+            }
+            field.InputReference = reference;
+            refField.FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
             Execute();
         }
 
