@@ -33,11 +33,14 @@ namespace Dash
         public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
         {
             var numberA = doc.GetDereferencedField(AKey, docContextList) as NumberFieldModelController;
-            Debug.Assert(numberA != null, "Input is not a number");
 
             var numberB = doc.GetDereferencedField(BKey, docContextList) as NumberFieldModelController;
-            Debug.Assert(numberB != null, "Input is not a number");
-            
+
+            if (numberA == null || numberB == null)//One or more of the inputs isn't set yet
+            {
+                return;
+            }
+
             double a = numberA.Data;
             double b = numberB.Data;
             (doc.GetDereferencedField(QuotientKey, docContextList) as NumberFieldModelController).Data = a / b;

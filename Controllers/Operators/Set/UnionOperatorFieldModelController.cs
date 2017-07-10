@@ -30,6 +30,10 @@ namespace Dash
         {
             DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
+            if (setA == null || setB == null)//One or more of the inputs isn't set yet
+            {
+                return;
+            }
 
             // Union by comparing all fields 
             List<DocumentController> bigSet = setA.GetDocuments();

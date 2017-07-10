@@ -35,6 +35,11 @@ namespace Dash.Models.OperatorModels.Set
             DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
 
+            if (setA == null || setB == null)//One or more of the inputs isn't set yet
+            {
+                return;
+            }
+
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 
             (doc.GetDereferencedField(IntersectionKey, docContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
