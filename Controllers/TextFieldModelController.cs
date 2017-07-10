@@ -29,6 +29,8 @@ namespace Dash
             }
         }
 
+        public override TypeInfo TypeInfo => TypeInfo.Text;
+
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             Data = (fieldModel as TextFieldModelController).Data;

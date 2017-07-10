@@ -56,8 +56,8 @@ namespace Dash
         {
             var opCont = ContentController.DereferenceToRootFieldModel(DataContext as ReferenceFieldModelController) as OperatorFieldModelController;
 
-            InputListView.ItemsSource = opCont.InputKeys;
-            OutputListView.ItemsSource = opCont.OutputKeys;
+            InputListView.ItemsSource = opCont.Inputs.Keys;
+            OutputListView.ItemsSource = opCont.Outputs.Keys;
         }
 
         /// <summary>

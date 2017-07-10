@@ -108,6 +108,7 @@
     <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
+    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />

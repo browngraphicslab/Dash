@@ -8,6 +8,8 @@ namespace Dash
 {
     public class ImageFieldModelController : FieldModelController
     {
+        public ImageFieldModelController() : base(new ImageFieldModel()) { }
+
         public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data)) { }
 
         /// <summary>
@@ -64,7 +66,7 @@ namespace Dash
         /// </summary>
         public BitmapImage Data
         {
-            get { return UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data); }
+            get { return UriToBitmapImageConverter.Instance.ConvertDataToXaml(ImageFieldModel.Data); }//TODO We shouldn't create a new BitmapImage every time Data is accessed
             set
             {
                 if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
@@ -75,6 +77,7 @@ namespace Dash
                 }
             }
         }
+        public override TypeInfo TypeInfo => TypeInfo.Image;
 
         public override string ToString()
         {

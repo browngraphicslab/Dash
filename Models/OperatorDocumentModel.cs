@@ -13,19 +13,13 @@ namespace Dash
 
         public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController)
         {
-            List<Key> inputKeys = opController.InputKeys;
-            List<Key> outputKeys = opController.OutputKeys;
-            List<FieldModelController> inputs = opController.GetNewInputFields();
-            List<FieldModelController> outputs = opController.GetNewOutputFields();
+            Dictionary<Key, TypeInfo> inputs = opController.Inputs;
+            Dictionary<Key, TypeInfo> outputs = opController.Outputs;
             Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
             fields[OperatorKey] = opController;
-            for (int i = 0; i < inputKeys.Count; ++i)
+            foreach (var typeInfo in outputs)
             {
-                fields[inputKeys[i]] = inputs[i];
-            }
-            for (int i = 0; i < outputKeys.Count; ++i)
-            {
-                fields[outputKeys[i]] = outputs[i];
+                fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
             }
             
             var doc = new DocumentController(fields, OperatorType);

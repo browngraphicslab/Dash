@@ -40,6 +40,8 @@ namespace Dash
         /// </summary>
         public DocumentCollectionFieldModel DocumentCollectionFieldModel => FieldModel as DocumentCollectionFieldModel;
 
+        public override TypeInfo TypeInfo => TypeInfo.Collection;
+
         /// <summary>
         /// Adds a single document to the collection.
         /// </summary>

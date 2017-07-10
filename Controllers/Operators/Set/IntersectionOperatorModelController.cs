@@ -15,9 +15,16 @@ namespace Dash.Models.OperatorModels.Set
         //Output keys
         public static readonly Key IntersectionKey = new Key("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
 
-        public override List<Key> InputKeys { get; } = new List<Key> {AKey, BKey};
+        public override Dictionary<Key, TypeInfo> Inputs { get; } = new Dictionary<Key, TypeInfo>
+        {
+            [AKey] = TypeInfo.Collection,
+            [BKey] = TypeInfo.Collection
+        };
 
-        public override List<Key> OutputKeys { get; } = new List<Key> {IntersectionKey};
+        public override Dictionary<Key, TypeInfo> Outputs { get; } = new Dictionary<Key, TypeInfo>
+        {
+            [IntersectionKey] = TypeInfo.Collection
+        };
 
         public IntersectionOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
@@ -36,23 +43,5 @@ namespace Dash.Models.OperatorModels.Set
             // Intersect by Document ID 
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
-
-        public override List<FieldModelController> GetNewInputFields()
-        {
-            return new List<FieldModelController>
-            {
-                new DocumentCollectionFieldModelController(new List<DocumentController>()), new DocumentCollectionFieldModelController(new List<DocumentController>())
-            };
-        }
-
-        public override List<FieldModelController> GetNewOutputFields()
-        {
-            return new List<FieldModelController>
-            {
-                new DocumentCollectionFieldModelController(new List<DocumentController>())
-            };
-        }
-
-        
     }
 }
