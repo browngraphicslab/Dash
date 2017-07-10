@@ -17,7 +17,8 @@ namespace Dash
         Document = 0x10,
         Reference = 0x20,
         Operator = 0x40,
-        Point = 0x80
+        Point = 0x80,
+        List = 0x100
     }
 
     public class TypeInfoHelper

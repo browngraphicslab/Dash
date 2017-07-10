@@ -164,9 +164,12 @@ namespace Dash
             DataBindingSource.Add(documentController.DocumentModel);
 
             Content = documentController.makeViewUI(docContextList);
-            documentController.DocumentFieldUpdated += delegate
+            documentController.DocumentFieldUpdated += delegate(FieldModelController value, FieldModelController newValue, ReferenceFieldModelController reference)
             {
-                Content = DocumentController.makeViewUI(DocContextList);
+                if (reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
+                {
+                    Content = DocumentController.makeViewUI(DocContextList);
+                }
             };
         }
 
