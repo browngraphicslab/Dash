@@ -25,7 +25,7 @@ namespace Dash
 
     public class TypeInfoHelper
     {
-        public static FieldModelController CreateFieldModelController(TypeInfo t)
+        public static FieldModelController CreateFieldModelController(TypeInfo t, TypeInfo listType = TypeInfo.None)
         {
             switch (t)
             {
@@ -45,6 +45,26 @@ namespace Dash
                     return null;
                 case TypeInfo.Point:
                     return new PointFieldModelController(0, 0);
+                case TypeInfo.List:
+                    switch (listType)//TODO support list of list?
+                    {
+                        case TypeInfo.Number:
+                            return new ListFieldModelController<NumberFieldModelController>();
+                        case TypeInfo.Image:
+                            return new ListFieldModelController<ImageFieldModelController>();
+                        case TypeInfo.Document:
+                            return new ListFieldModelController<DocumentFieldModelController>();
+                        case TypeInfo.Point:
+                            return new ListFieldModelController<PointFieldModelController>();
+                        case TypeInfo.Text:
+                            return new ListFieldModelController<TextFieldModelController>();
+                        case TypeInfo.Reference:
+                            return new ListFieldModelController<ReferenceFieldModelController>();
+                        case TypeInfo.Collection:
+                            return new ListFieldModelController<DocumentCollectionFieldModelController>();
+                        default:
+                            return null;
+                    }
                 default:
                     return null;
             }

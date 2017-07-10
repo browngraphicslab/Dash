@@ -6,13 +6,16 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    class ListFieldModel<T> : FieldModel
+    class ListFieldModel : FieldModel
     {
-        public ListFieldModel(IEnumerable<T> l)
+        public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo)
         {
-            Data = new List<T>(l);
+            Data = new List<string>(l);
+            SubTypeInfo = subTypeInfo;
         }
 
-        public List<T> Data;
+        public List<string> Data;
+
+        public TypeInfo SubTypeInfo;
     }
 }

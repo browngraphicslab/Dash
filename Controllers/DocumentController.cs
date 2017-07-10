@@ -272,8 +272,9 @@ namespace Dash
             }
             else
             {
-                if ((field.TypeInfo & refField.TypeInfo) == TypeInfo.None)
+                if (!field.CheckType(refField))
                 {
+                    Debug.Assert(!refField.CheckType(field));
                     throw new ArgumentException("Invalid types");
                 }
             }
