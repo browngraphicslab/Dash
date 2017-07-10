@@ -3,14 +3,14 @@ using Windows.UI.Xaml;
 
 namespace Dash.Converters
 {
-    public class DocumentToUIElementConverter : SafeDataToXamlConverter<DocumentModel, FrameworkElement>
+    public class DocumentToUIElementConverter : SafeDataToXamlConverter<DocumentController, FrameworkElement>
     {
-        public override FrameworkElement ConvertDataToXaml(DocumentModel data, object parameter = null)
+        public override FrameworkElement ConvertDataToXaml(DocumentController data, object parameter = null)
         {
-            return new DocumentController(data).MakeViewUI()[0];
+            return data.MakeViewUI();
         }
 
-        public override DocumentModel ConvertXamlToData(FrameworkElement xaml, object parameter = null)
+        public override DocumentController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }

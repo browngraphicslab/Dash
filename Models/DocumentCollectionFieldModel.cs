@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using DashShared;
 
 namespace Dash
 {
@@ -10,7 +11,7 @@ namespace Dash
     public class DocumentCollectionFieldModel : FieldModel
     {
         /// <summary>
-        /// The list of <see cref="DocumentModel.Id"/> which the <see cref="DocumentCollectionFieldModel"/> is encapsulating
+        /// The list of <see cref="EntityBase.Id"/> which the <see cref="DocumentCollectionFieldModel"/> is encapsulating
         /// </summary>
         public IEnumerable<string> Data;
 

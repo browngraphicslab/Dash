@@ -13,30 +13,19 @@ namespace Dash
 
         public static DocumentController CreateOperatorDocumentModel(OperatorFieldModelController opController)
         {
-            List<Key> inputKeys = opController.InputKeys;
-            List<Key> outputKeys = opController.OutputKeys;
-            List<FieldModel> inputs = opController.GetNewInputFields();
-            List<FieldModel> outputs = opController.GetNewOutputFields();
-            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-            fields[OperatorKey] = opController.FieldModel;
-            for (int i = 0; i < inputKeys.Count; ++i)
+            IDictionary<Key, TypeInfo> outputs = opController.Outputs;
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = opController;
+            foreach (var typeInfo in outputs)
             {
-                fields[inputKeys[i]] = inputs[i];
-            }
-            for (int i = 0; i < outputKeys.Count; ++i)
-            {
-                fields[outputKeys[i]] = outputs[i];
+                fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
             }
             
-            var doc = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(fields, OperatorType))
-                .GetReturnedDocumentController();
+            var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());
 
-            var layoutDoc = new CourtesyDocuments.OperatorBox(new ReferenceFieldModel(doc.GetId(), OperatorKey)).Document.DocumentModel;
-            var documentFieldModel = new DocumentModelFieldModel(layoutDoc);
-            var layoutController = new DocumentFieldModelController(documentFieldModel);
-            ContentController.AddModel(documentFieldModel);
-            ContentController.AddController(layoutController);
+            var layoutDoc = new CourtesyDocuments.OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            var layoutController = new DocumentFieldModelController(layoutDoc);
             doc.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
 
             return doc;

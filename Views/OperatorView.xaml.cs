@@ -1,9 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System.Collections;
+using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
+using System.Collections.Generic;
+using Windows.UI.Xaml.Data;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -28,7 +31,7 @@ namespace Dash
         /// </summary>
         public class IOReference
         {
-            public ReferenceFieldModel ReferenceFieldModel { get; set; }
+            public ReferenceFieldModelController ReferenceFieldModel { get; set; }
             public bool IsOutput { get; set; }
 
             public PointerRoutedEventArgs PointerArgs { get; set; }
@@ -36,7 +39,7 @@ namespace Dash
             public FrameworkElement FrameworkElement { get; set; }
             public DocumentView ContainerView { get; set; }
 
-            public IOReference(ReferenceFieldModel referenceFieldModel, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+            public IOReference(ReferenceFieldModelController referenceFieldModel, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
             {
                 ReferenceFieldModel = referenceFieldModel;
                 IsOutput = isOutput;
@@ -53,12 +56,20 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var reference = DataContext as ReferenceFieldModel;
-            
-            var opCont = ContentController.GetController<DocumentController>(reference.DocId).GetField(reference.FieldKey) as OperatorFieldModelController;
-            Debug.Assert(opCont != null);
-            InputListView.ItemsSource = opCont.InputKeys;
-            OutputListView.ItemsSource = opCont.OutputKeys;
+            var opCont = ContentController.DereferenceToRootFieldModel(DataContext as ReferenceFieldModelController) as OperatorFieldModelController;
+
+            Binding inputsBinding = new Binding
+            {
+                Source = opCont.Inputs,
+            };
+            Binding outputsBinding = new Binding
+            {
+                Source = opCont.Outputs,
+            };
+            InputListView.SetBinding(ListView.ItemsSourceProperty, inputsBinding);
+            OutputListView.SetBinding(ListView.ItemsSourceProperty, outputsBinding);
+            //InputListView.ItemsSource = opCont.Inputs.Keys;
+            //OutputListView.ItemsSource = opCont.Outputs.Keys;
         }
 
         /// <summary>
@@ -69,10 +80,10 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                string docId = (DataContext as ReferenceFieldModel).DocId;
+                string docId = (DataContext as ReferenceFieldModelController).DocId;
                 Ellipse el = sender as Ellipse;
-                Key outputKey = el.DataContext as Key;
-                IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+                Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+                IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
                 CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
                 view.StartDrag(ioRef);
                 //OnIoDragStarted(ioRef);
@@ -87,10 +98,10 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                string docId = (DataContext as ReferenceFieldModel).DocId;
+                string docId = (DataContext as ReferenceFieldModelController).DocId;
                 Ellipse el = sender as Ellipse;
-                Key outputKey = el.DataContext as Key;
-                IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+                Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+                IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
                 CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
                 view.StartDrag(ioRef);
                 //OnIoDragStarted(ioRef);
@@ -118,10 +129,10 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as ReferenceFieldModel).DocId;
+            string docId = (DataContext as ReferenceFieldModelController).DocId;
             Ellipse el = sender as Ellipse;
-            Key outputKey = el.DataContext as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             view.EndDrag(ioRef);
             //OnIoDragEnded(ioRef);
@@ -129,10 +140,10 @@ namespace Dash
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as ReferenceFieldModel).DocId;
+            string docId = (DataContext as ReferenceFieldModelController).DocId;
             Ellipse el = sender as Ellipse;
-            Key outputKey = el.DataContext as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             view.EndDrag(ioRef);
             //OnIoDragEnded(ioRef);

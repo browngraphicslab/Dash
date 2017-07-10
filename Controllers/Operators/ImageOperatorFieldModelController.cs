@@ -15,27 +15,17 @@ namespace Dash
 
         public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
-        public override List<Key> InputKeys { get; } = new List<Key> { URIKey };
-
-        public override List<Key> OutputKeys { get; } = new List<Key> { ImageKey };
-
-        public override List<FieldModel> GetNewInputFields()
+        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            return new List<FieldModel>
-            {
-                new TextFieldModel("Uri")
-            };
-        }
+            [URIKey] = TypeInfo.Text
+        };
 
-        public override List<FieldModel> GetNewOutputFields()
+        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            return new List<FieldModel>
-            {
-                new ImageFieldModel(new Uri("ms-appx://Dash/Assets/cat2.jpeg"))
-            };
-        }
+            [ImageKey] = TypeInfo.Image
+        };
 
-        public override void Execute(DocumentController doc)
+        public override void Execute(DocumentController doc, IEnumerable<DocumentController> contextList)
         {
             throw new NotImplementedException();
 

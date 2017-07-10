@@ -5,6 +5,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using FontWeights = Windows.UI.Text.FontWeights;
+using System.Collections.Generic;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -20,7 +21,7 @@ namespace Dash
             this.InitializeComponent();
         }
 
-        public TextSettings(DocumentController editedLayoutDocument) : this()
+        public TextSettings(DocumentController editedLayoutDocument, IEnumerable<DocumentController> docContextList) : this()
         {
             this.editedLayoutDocument = editedLayoutDocument;
 
@@ -65,18 +66,18 @@ namespace Dash
             //    RightButton
             //};
 
-            BindWidth(editedLayoutDocument);
-            BindHeight(editedLayoutDocument);
-            BindPosition(editedLayoutDocument);
-            BindFontWeight(editedLayoutDocument);
-            BindFontSize(editedLayoutDocument);
-            BindFontAlignment(editedLayoutDocument);
+            BindWidth(editedLayoutDocument, docContextList);
+            BindHeight(editedLayoutDocument, docContextList);
+            BindPosition(editedLayoutDocument, docContextList);
+            BindFontWeight(editedLayoutDocument, docContextList);
+            BindFontSize(editedLayoutDocument, docContextList);
+            BindFontAlignment(editedLayoutDocument, docContextList);
         }
 
-        private void BindFontAlignment(DocumentController docController)
+        private void BindFontAlignment(DocumentController docController, IEnumerable<DocumentController> docContextList)
         {
             var textAlignmentController =
-                docController.GetField(CourtesyDocuments.TextingBox.TextAlignmentKey) as NumberFieldModelController;
+                docController.GetDereferencedField(CourtesyDocuments.TextingBox.TextAlignmentKey, docContextList) as NumberFieldModelController;
             Debug.Assert(textAlignmentController != null);
 
             var fontAlignmentBinding = new Binding()
@@ -90,10 +91,10 @@ namespace Dash
             xAlignmentListView.SelectionChanged += delegate(object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
         }
 
-        private void BindFontWeight(DocumentController docController)
+        private void BindFontWeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
         {
             var fontWeightController =
-                    docController.GetField(CourtesyDocuments.TextingBox.FontWeightKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(CourtesyDocuments.TextingBox.FontWeightKey, docContextList) as NumberFieldModelController;
             Debug.Assert(fontWeightController != null);
 
             _fontWeights = new ObservableCollection<double>()
@@ -115,10 +116,10 @@ namespace Dash
             xFontWeightBox.SetBinding(ComboBox.SelectedValueProperty, FontWeightBinding);
         }
 
-        private void BindFontSize(DocumentController docController)
+        private void BindFontSize(DocumentController docController, IEnumerable<DocumentController> docContextList)
         {
             var fontSizeController =
-                    docController.GetField(CourtesyDocuments.TextingBox.FontSizeKey) as NumberFieldModelController;
+                    docController.GetDereferencedField(CourtesyDocuments.TextingBox.FontSizeKey, docContextList) as NumberFieldModelController;
             Debug.Assert(fontSizeController != null);
 
             var fontSizeBinding = new Binding()
@@ -133,9 +134,9 @@ namespace Dash
             xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
         }
 
-        private void BindPosition(DocumentController docController)
+        private void BindPosition(DocumentController docController, IEnumerable<DocumentController> docContextList)
         {
-            var positionController = docController.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+            var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
             Debug.Assert(positionController != null);
 
             var converter = new StringCoordinateToPointConverter(positionController.Data);
@@ -163,9 +164,9 @@ namespace Dash
             xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
         }
 
-        private void BindHeight(DocumentController docController)
+        private void BindHeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
         {
-            var heightController = docController.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+            var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
             Debug.Assert(heightController != null);
 
             var heightBinding = new Binding
@@ -178,9 +179,9 @@ namespace Dash
             xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
         }
 
-        private void BindWidth(DocumentController docController)
+        private void BindWidth(DocumentController docController, IEnumerable<DocumentController> docContextList)
         {
-            var widthController = docController.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+            var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
             Debug.Assert(widthController != null);
 
             var widthBinding = new Binding

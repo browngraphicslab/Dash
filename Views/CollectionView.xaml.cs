@@ -131,21 +131,21 @@ namespace Dash
                 {
                     var docVM = eNewItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
-                    OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                    var ofm =
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
-                        foreach (var inputKey in ofm.InputKeys)
+                        foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                         {
-                            foreach (var outputKey in ofm.OutputKeys)
+                            foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
-                                ReferenceFieldModel irfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                                ReferenceFieldModel orfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
-                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                                ReferenceFieldModelController irfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
+                                ReferenceFieldModelController orfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
+                                //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
+                                    //ContentController.DereferenceToRootFieldModel(orfm).GetId());
                             }
                         }
                     }
@@ -158,27 +158,27 @@ namespace Dash
                     var docVM = eOldItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
-                        foreach (var inputKey in ofm.InputKeys)
+                        foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                         {
-                            foreach (var outputKey in ofm.OutputKeys)
+                            foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
-                                ReferenceFieldModel irfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                                ReferenceFieldModel orfm =
-                                    new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                                _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).Id,
-                                    ContentController.DereferenceToRootFieldModel(orfm).Id);
+                                ReferenceFieldModelController irfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
+                                ReferenceFieldModelController orfm =
+                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
+                                //_graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
+                                    //ContentController.DereferenceToRootFieldModel(orfm).GetId());
                             }
                         }
                     }
                 }
             }
         }
-
+        List<DocumentController> DocContextList {  get { return (DataContext as CollectionViewModel).DocContextList;  } }
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             RefreshItemsBinding();
@@ -186,16 +186,16 @@ namespace Dash
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as OperatorFieldModelController;
                 if (ofm != null)
                 {
-                    foreach (var inputKey in ofm.InputKeys)
+                    foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                     {
-                        foreach (var outputKey in ofm.OutputKeys)
+                        foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                         {
-                            ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-                            ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-                            _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).Id, ContentController.DereferenceToRootFieldModel(orfm).Id);
+                            ReferenceFieldModelController irfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
+                            ReferenceFieldModelController orfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
+                            //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(), ContentController.DereferenceToRootFieldModel(orfm).GetId());
                         }
                     }
                 }
@@ -719,7 +719,7 @@ namespace Dash
         /// </summary>
         private OperatorView.IOReference _currReference;
 
-        private Dictionary<ReferenceFieldModel, Path> _lineDict = new Dictionary<ReferenceFieldModel, Path>();
+        private Dictionary<ReferenceFieldModelController, Path> _lineDict = new Dictionary<ReferenceFieldModelController, Path>();
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -821,7 +821,7 @@ namespace Dash
                 Stroke = new SolidColorBrush(Colors.Orange),
                 IsHitTestVisible = false,
                 //CompositeMode =
-                //    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                    //ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                 //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
@@ -880,32 +880,28 @@ namespace Dash
             }
             if (_currReference.IsOutput)
             {
-                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
+                //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel, (DataContext as CollectionViewModel).DocContextList).GetId(), 
+                    //ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel, (DataContext as CollectionViewModel).DocContextList).GetId());
             }
             else
             {
-                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
+                //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId());
             }
             if (_graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id);
+                    //_graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId());
                 }
                 else
                 {
-                    _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).Id, ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).Id);
+                    //_graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId());
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
             }
 
-            if (!ioReference.IsOutput)
-            {
-                CheckLinePresence(ioReference.ReferenceFieldModel);
-                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
-            }
 
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
@@ -914,12 +910,30 @@ namespace Dash
 
             if (ioReference.IsOutput)
             {
-                ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModel.DocId).AddInputReference(_currReference.ReferenceFieldModel.FieldKey, ioReference.ReferenceFieldModel);
-                _connectionLine = null;
+                    ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModel.DocId)
+                        .AddInputReference(_currReference.ReferenceFieldModel.FieldKey,
+                            ioReference.ReferenceFieldModel);
             }
             else
             {
-                ContentController.GetController<DocumentController>(ioReference.ReferenceFieldModel.DocId).AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel);
+                var contextList = (DataContext as CollectionViewModel).DocContextList;
+                var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModel.DocId, contextList);
+                try
+                {
+                    ContentController.GetController<DocumentController>(refDocId)
+                        .AddInputReference(ioReference.ReferenceFieldModel.FieldKey, _currReference.ReferenceFieldModel,
+                            contextList);
+                }
+                catch (ArgumentException)
+                {
+                    CancelDrag(ioReference.PointerArgs.Pointer);
+                }
+            }
+
+            if (!ioReference.IsOutput && _connectionLine != null)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModel);
+                _lineDict.Add(ioReference.ReferenceFieldModel, _connectionLine);
                 _connectionLine = null;
             }
         }
@@ -929,7 +943,7 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(ReferenceFieldModel model)
+        private void CheckLinePresence(ReferenceFieldModelController model)
         {
             if (_lineDict.ContainsKey(model))
             {
@@ -982,7 +996,7 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, ViewModel.ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, ViewModel.ParentDocument);
             CollectionView view = ViewModel.ParentCollection;
             view?.StartDrag(ioRef);
         }
@@ -992,7 +1006,7 @@ namespace Dash
             string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, ViewModel.ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, ViewModel.ParentDocument);
             CollectionView view = ViewModel.ParentCollection;
             view?.EndDrag(ioRef);
         }

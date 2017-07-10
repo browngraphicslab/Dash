@@ -16,7 +16,7 @@ namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
     {
-       
+
 
         private CollectionModel _collectionModel;
 
@@ -61,7 +61,7 @@ namespace Dash
 
 
         #region Private & Backing variables
-        
+
 
         private double _cellSize;
         private double _outerGridWidth;
@@ -266,17 +266,18 @@ namespace Dash
 
         #endregion
 
-
-        public CollectionViewModel(CollectionModel model)
+        public List<DocumentController> DocContextList;
+        public CollectionViewModel(CollectionModel model, List<DocumentController> docContextList)
         {
+            DocContextList = docContextList;
             _collectionModel = model;
 
             SetInitialValues();
             UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
             //SetDimensions();
-           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
+            var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
             controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
-           // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
+            // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
         }
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
@@ -287,7 +288,7 @@ namespace Dash
 
         private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-           // AddDocuments(_collectionModel.Documents);
+            // AddDocuments(_collectionModel.Documents);
         }
 
         /// <summary>
@@ -385,7 +386,7 @@ namespace Dash
                 GridViewVisibility = Visibility.Collapsed;
                 FreeformVisibility = Visibility.Collapsed;
                 ListViewVisibility = Visibility.Visible;
-            }                    
+            }
             OuterGridHeight = CellSize + 44;
             //SetDimensions();
         }
@@ -402,7 +403,7 @@ namespace Dash
             }
             else
             {
-                ListViewVisibility = Visibility.Collapsed;               
+                ListViewVisibility = Visibility.Collapsed;
                 FreeformVisibility = Visibility.Collapsed;
                 GridViewVisibility = Visibility.Visible;
             }
@@ -418,12 +419,12 @@ namespace Dash
             if (ItemSelectionMode == ListViewSelectionMode.None)
             {
                 ItemSelectionMode = ListViewSelectionMode.Multiple;
-                
+
             }
             else
             {
-                ItemSelectionMode= ListViewSelectionMode.None;
-                
+                ItemSelectionMode = ListViewSelectionMode.None;
+
             }
             e.Handled = true;
         }
@@ -438,7 +439,7 @@ namespace Dash
         {
             foreach (object item in e.AddedItems)
             {
-               
+
                 var dvm = item as DocumentViewModel;
                 if (dvm != null)
                 {
@@ -469,12 +470,12 @@ namespace Dash
             //Resize();
             e.Handled = true;
         }
-        
+
         #endregion
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        
+
         /// <summary>
         /// Adds a collection of new documents to the CollectionModel, and adds new 
         /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
@@ -497,7 +498,7 @@ namespace Dash
         /// </summary>
         /// <param name="documents"></param>
         public void RemoveDocuments(ObservableCollection<DocumentController> documents)
-        { 
+        {
             foreach (var document in documents)
             {
                 if (new List<string>(_collectionModel.DocumentCollectionFieldModel.Data).Contains(document.GetId()))
@@ -536,13 +537,13 @@ namespace Dash
         /// <param name="documents"></param>
         /// <returns></returns>
         public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
-         {
+        {
             ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
             var offset = 0;
-            for (int i = 0; i<documents.Data.ToList().Count; i++)
+            for (int i = 0; i < documents.Data.ToList().Count; i++)
             {
                 var controller = ContentController.GetController(documents.Data.ToList()[i]) as DocumentController;
-                var viewModel = new DocumentViewModel(controller);
+                var viewModel = new DocumentViewModel(controller, DocContextList);
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
@@ -670,7 +671,7 @@ namespace Dash
 
             //var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
 
-            
+
             //ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
             //foreach (var dvm in DocumentViewModels)
             //{
