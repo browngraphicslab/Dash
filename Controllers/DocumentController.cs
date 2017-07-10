@@ -260,6 +260,13 @@ namespace Dash
                     throw new ArgumentException("Invalid types");
                 }
             }
+            else
+            {
+                if ((field.TypeInfo & refField.TypeInfo) == TypeInfo.None)
+                {
+                    throw new ArgumentException("Invalid types");
+                }
+            }
             field.InputReference = reference;
             refField.FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
             Execute();

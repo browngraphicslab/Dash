@@ -15,13 +15,13 @@ namespace Dash
         //Output keys
         public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
-        public override Dictionary<Key, TypeInfo> Inputs { get; } = new Dictionary<Key, TypeInfo>
+        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
             [AKey] = TypeInfo.Collection,
             [BKey] = TypeInfo.Collection
         };
 
-        public override Dictionary<Key, TypeInfo> Outputs { get; } = new Dictionary<Key, TypeInfo>
+        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
             [UnionKey] = TypeInfo.Collection
         };

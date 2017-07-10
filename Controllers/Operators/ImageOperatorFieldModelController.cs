@@ -15,12 +15,12 @@ namespace Dash
 
         public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
 
-        public override Dictionary<Key, TypeInfo> Inputs { get; } = new Dictionary<Key, TypeInfo>
+        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
             [URIKey] = TypeInfo.Text
         };
 
-        public override Dictionary<Key, TypeInfo> Outputs { get; } = new Dictionary<Key, TypeInfo>
+        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
             [ImageKey] = TypeInfo.Image
         };

@@ -15,13 +15,13 @@ namespace Dash.Models.OperatorModels.Set
         //Output keys
         public static readonly Key IntersectionKey = new Key("95E14D4F-362A-4B4F-B0CD-78A4F5B47A92", "Intersection");
 
-        public override Dictionary<Key, TypeInfo> Inputs { get; } = new Dictionary<Key, TypeInfo>
+        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
             [AKey] = TypeInfo.Collection,
             [BKey] = TypeInfo.Collection
         };
 
-        public override Dictionary<Key, TypeInfo> Outputs { get; } = new Dictionary<Key, TypeInfo>
+        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
             [IntersectionKey] = TypeInfo.Collection
         };
@@ -34,7 +34,6 @@ namespace Dash.Models.OperatorModels.Set
         {
             DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
-
             if (setA == null || setB == null)//One or more of the inputs isn't set yet
             {
                 return;

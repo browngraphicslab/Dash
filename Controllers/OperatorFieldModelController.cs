@@ -12,12 +12,12 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract Dictionary<Key, TypeInfo> Inputs { get; }
+        public abstract ObservableDictionary<Key, TypeInfo> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract Dictionary<Key, TypeInfo> Outputs { get; }
+        public abstract ObservableDictionary<Key, TypeInfo> Outputs { get; }
 
         /// <summary>
         /// Abstract method to execute the operator.

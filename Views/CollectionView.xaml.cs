@@ -133,9 +133,9 @@ namespace Dash
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
-                        foreach (var inputKey in ofm.Inputs)
+                        foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                         {
-                            foreach (var outputKey in ofm.Outputs)
+                            foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
                                 ReferenceFieldModelController irfm =
                                     new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
@@ -159,9 +159,9 @@ namespace Dash
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
-                        foreach (var inputKey in ofm.Inputs)
+                        foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                         {
-                            foreach (var outputKey in ofm.Outputs)
+                            foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
                                 ReferenceFieldModelController irfm =
                                     new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
@@ -186,9 +186,9 @@ namespace Dash
                 OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as OperatorFieldModelController;
                 if (ofm != null)
                 {
-                    foreach (var inputKey in ofm.Inputs)
+                    foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                     {
-                        foreach (var outputKey in ofm.Outputs)
+                        foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                         {
                             ReferenceFieldModelController irfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
                             ReferenceFieldModelController orfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
@@ -818,7 +818,7 @@ namespace Dash
                 Stroke = new SolidColorBrush(Colors.Orange),
                 IsHitTestVisible = false,
                 //CompositeMode =
-                //    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                    //ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                 //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
