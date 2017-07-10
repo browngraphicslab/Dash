@@ -30,5 +30,10 @@ namespace DashShared
             Id = guid;
             Type = type;
         }
+
+        public override string ToString()
+        {
+            return Type;
+        }
     }
 }

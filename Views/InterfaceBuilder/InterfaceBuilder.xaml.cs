@@ -203,7 +203,6 @@ namespace Dash
                 var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X,
                         e.GetPosition(_documentView).Y);
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
-                ContentController.AddController(pfmc);
                 var layoutDataField = LayoutCourtesyDocument.LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
 
                 ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);

@@ -68,7 +68,7 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                string docId = (DataContext as ReferenceFieldModel).DocId;
+                string docId = (DataContext as ReferenceFieldModelController).DocId;
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
@@ -86,7 +86,7 @@ namespace Dash
         {
             if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
             {
-                string docId = (DataContext as ReferenceFieldModel).DocId;
+                string docId = (DataContext as ReferenceFieldModelController).DocId;
                 Ellipse el = sender as Ellipse;
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
@@ -117,7 +117,7 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as ReferenceFieldModel).DocId;
+            string docId = (DataContext as ReferenceFieldModelController).DocId;
             Ellipse el = sender as Ellipse;
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
@@ -128,7 +128,7 @@ namespace Dash
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as ReferenceFieldModel).DocId;
+            string docId = (DataContext as ReferenceFieldModelController).DocId;
             Ellipse el = sender as Ellipse;
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
