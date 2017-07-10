@@ -130,7 +130,7 @@ namespace Dash
                 editableElements.Add(editableBorder);
             }
 
-            _documentView.SetUIElements(editableElements);
+            //_documentView.SetUIElements(editableElements);
         }
 
         private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)

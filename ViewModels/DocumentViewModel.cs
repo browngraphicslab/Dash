@@ -23,10 +23,6 @@ namespace Dash
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
 
-        public delegate void OnLayoutChangedHandler(DocumentViewModel sender);
-
-        public event OnLayoutChangedHandler OnLayoutChanged;
-
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
 
@@ -158,10 +154,6 @@ namespace Dash
             Height = heightFieldModelController.Data;
             heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent; ;
 
-            var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController;
-            if (documentFieldModelController != null)
-                documentFieldModelController.Data.OnLayoutChanged += DocumentController_OnLayoutChanged;
-
             DataBindingSource.Add(documentController.DocumentModel);
 
             Content = documentController.makeViewUI(docContextList);
@@ -199,11 +191,6 @@ namespace Dash
             {
                 Position = posFieldModelController.Data;
             }
-        }
-
-        private void DocumentController_OnLayoutChanged(DocumentController sender)
-        {
-            OnLayoutChanged?.Invoke(this);
         }
     }
 }

@@ -10,10 +10,6 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
-        public delegate void OnLayoutChangedHandler(DocumentController sender);
-
-        public event OnLayoutChangedHandler OnLayoutChanged;
-
         public delegate void OnDocumentFieldUpdatedHandler(FieldModelController oldValue, FieldModelController newValue,
             ReferenceFieldModelController reference);
 
@@ -429,11 +425,6 @@ namespace Dash
             }
 
             return makeAllViewUI(docList);
-        }
-
-        public void FireOnLayoutChanged()
-        {
-            OnLayoutChanged?.Invoke(this);
         }
 
         protected virtual void OnDocumentFieldUpdated(FieldModelController oldvalue, FieldModelController newvalue, ReferenceFieldModelController reference)
