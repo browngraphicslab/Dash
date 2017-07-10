@@ -40,9 +40,9 @@
     <Application.Resources>
         <!-- COLORS -->
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
-        <SolidColorBrush x:Key="TranslucentWhite" Color="#F7FFFFFF"/>
+        <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
-        <SolidColorBrush x:Key="CollectionViewBackground" Color="#fbfbfb"/>
+        <SolidColorBrush x:Key="CollectionViewBackground" Color="#E5e7e4ee"/>
         
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->
@@ -73,26 +73,19 @@
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
         </Style>
 
-
         <!-- GLOBAL STYLES -->
         <!-- border & padding on node-containing elements-->
         <Style TargetType="Grid" x:Name="xNodeContainerGrid">
-            <Setter Property="BorderBrush" Value="#FF0078D7"/>
             <Setter Property="Padding" Value="0,0,0,0"/>
-            <Setter Property="Background" Value="#AAFFFFFF"/>
-            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Background" Value="{StaticResource TranslucentWhite}"/>
         </Style>
         <Style TargetType="StackPanel" x:Name="xNodeContainerStackPanel">
-            <Setter Property="BorderBrush" Value="#FF0078D7"/>
             <Setter Property="Padding" Value="20,10,20,20"/>
             <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
-            <Setter Property="BorderThickness" Value="2" />
         </Style>
         <Style TargetType="UserControl" x:Name="xNodeContainerUserControl">
-            <Setter Property="BorderBrush" Value="#FF0078D7"/>
             <Setter Property="Padding" Value="20,10,20,20"/>
             <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
-            <Setter Property="BorderThickness" Value="2" />
         </Style>
 
         <!-- app Titles -->

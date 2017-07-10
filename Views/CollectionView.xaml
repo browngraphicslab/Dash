@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     d:DesignHeight="400"
     d:DesignWidth="670"
-    Background="{StaticResource TranslucentWhite}"
+    Background="{StaticResource CollectionViewBackground}"
     ManipulationStarted="Grid_OnManipulationStarted">
     <Grid>
         <Grid Background="{StaticResource AccentGreen}" Height="30" VerticalAlignment="Top" HorizontalAlignment="Stretch">
@@ -57,7 +57,7 @@
                 <RectangleGeometry x:Name="ClipRect"/>
             </Grid.Clip>
             <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-            <Grid x:Name="FreeformGrid" Visibility="{Binding FreeformVisibility}">
+            <Grid x:Name="FreeformGrid" Visibility="{Binding FreeformVisibility}" Background="{StaticResource CollectionViewBackground}">
                 <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">
@@ -84,6 +84,7 @@
                 </ItemsControl>
             </Grid>
 
+                
             <Grid Visibility="{Binding GridViewVisibility}">
                 <GridView x:Name="xGridView" 
                           x:FieldModifier="public" 

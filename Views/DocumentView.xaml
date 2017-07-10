@@ -8,8 +8,11 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
+    Width="{x:Bind Width}" 
+    Height="{x:Bind Height}"
     d:DataContext="{d:DesignInstance local:DocumentViewModel }"
-    Width="{Binding Width}" Height="{Binding Height}">
+   >
+    <!--  Width="{Binding Width}" Height="{Binding Height}" add back in when done designing-->
 
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
@@ -22,8 +25,9 @@
         <Grid x:Name="XGrid"
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
-                Style="{StaticResource xNodeContainerGrid}">
+                Style="{StaticResource xNodeContainerGrid}" Background="#E5FFFFFF" >
 
+            <!-- This controls the fields of the document -->
             <ItemsControl x:Name="DocumentsControl"
                           x:FieldModifier="public"
                           Padding="5">
@@ -36,9 +40,9 @@
         </Grid>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
-                Width="40"
+                Width="50"
                 Background="Transparent"
-                Height="40"
+                Height="50"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom" 
                 ManipulationMode="TranslateX, TranslateY"
