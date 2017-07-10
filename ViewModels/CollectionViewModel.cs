@@ -295,7 +295,7 @@ namespace Dash
             else
             {
                 MenuVisibility = Visibility.Visible;
-                MenuColumnWidth = new GridLength(50);
+                MenuColumnWidth = new GridLength(80);
             }
             e.Handled = true;
         }
