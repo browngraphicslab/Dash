@@ -219,10 +219,10 @@ namespace Dash
         {
             //clear any current children (fields)and then add them over again
 
-            XGrid.Children.Clear();
-            var element = documentViewModel.DocumentController.makeViewUI(documentViewModel.DocContextList);
+            //XGrid.Children.Clear();
+            //var element = documentViewModel.DocumentController.makeViewUI(documentViewModel.DocContextList);
 
-            XGrid.Children.Add(element);
+            //XGrid.Children.Add(element);
         }
 
         /// <summary>
@@ -231,10 +231,10 @@ namespace Dash
         /// <param name="uiElements"></param>
         public void SetUIElements(List<FrameworkElement> uiElements)
         {
-            XGrid.Children.Clear();
+            //XGrid.Children.Clear();
             foreach (var element in uiElements)
             {
-                XGrid.Children.Add(element);
+                //XGrid.Children.Add(element);
             }
         }
 

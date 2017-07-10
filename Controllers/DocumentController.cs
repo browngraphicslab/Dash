@@ -14,6 +14,11 @@ namespace Dash
 
         public event OnLayoutChangedHandler OnLayoutChanged;
 
+        public delegate void OnDocumentFieldUpdatedHandler(FieldModelController oldValue, FieldModelController newValue,
+            ReferenceFieldModelController reference);
+
+        public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
@@ -137,8 +142,13 @@ namespace Dash
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
+            FieldModelController oldValue;
+            _fields.TryGetValue(key, out oldValue);
+
             proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
+
+            OnDocumentFieldUpdated(oldValue, field, new ReferenceFieldModelController(GetId(), key));
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
@@ -423,6 +433,11 @@ namespace Dash
         public void FireOnLayoutChanged()
         {
             OnLayoutChanged?.Invoke(this);
+        }
+
+        protected virtual void OnDocumentFieldUpdated(FieldModelController oldvalue, FieldModelController newvalue, ReferenceFieldModelController reference)
+        {
+            DocumentFieldUpdated?.Invoke(oldvalue, newvalue, reference);
         }
     }
 }

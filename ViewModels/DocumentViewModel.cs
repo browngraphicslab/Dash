@@ -29,6 +29,16 @@ namespace Dash
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
 
+        private FrameworkElement _content;
+        public FrameworkElement Content
+        {
+            get { return _content; }
+            set
+            {
+                SetProperty(ref _content, value);
+            }
+        }
+
         public double Width
         {
             get { return _width; }
@@ -152,6 +162,12 @@ namespace Dash
                 documentFieldModelController.Data.OnLayoutChanged += DocumentController_OnLayoutChanged;
 
             DataBindingSource.Add(documentController.DocumentModel);
+
+            Content = documentController.makeViewUI(docContextList);
+            documentController.DocumentFieldUpdated += delegate
+            {
+                Content = DocumentController.makeViewUI(DocContextList);
+            };
         }
 
         private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
