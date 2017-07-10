@@ -36,11 +36,10 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
-
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            
             // add manipulation code
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             manipulator = new ManipulationControls(this);
-
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
@@ -50,8 +49,13 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            
         }
-
+        
+        /// <summary>
+        /// Update viewmodel when manipulator moves document
+        /// </summary>
+        /// <param name="translationDelta"></param>
         private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
         {
             var documentViewModel = this.DataContext as DocumentViewModel;
@@ -80,6 +84,10 @@ namespace Dash
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = ActualWidth + dx;
             dvm.Height = ActualHeight + dy;
+
+            // todo: remove this and replace with binding // debug why x:Bind fails
+            Width = ActualWidth + dx;
+            Height = ActualHeight + dy;
 
 
             //Width = ActualWidth + dx;
@@ -256,9 +264,11 @@ namespace Dash
         /// <param name="args"></param>
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
+            Debug.WriteLine("datacontext changed");
             // if _vm has already been set return
-            if (ViewModel != null)
+            if (ViewModel != null) {
                 return;
+            }
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)

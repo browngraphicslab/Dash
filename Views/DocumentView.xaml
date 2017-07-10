@@ -8,25 +8,25 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    Width="{x:Bind Width}" 
-    Height="{x:Bind Height}"
+    Width="{x:Bind ViewModel.Width}" 
+    Height="{x:Bind ViewModel.Height}"
     d:DataContext="{d:DesignInstance local:DocumentViewModel }"
    >
     <!--  Width="{Binding Width}" Height="{Binding Height}" add back in when done designing-->
 
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
-            SizeChanged="OuterGrid_SizeChanged"
             BorderBrush="{Binding BorderBrush}"
             BorderThickness="0">
-        <Grid.Clip>
-            <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
-        </Grid.Clip>
         <Grid x:Name="XGrid"
+            SizeChanged="OuterGrid_SizeChanged"
                 ManipulationMode="{Binding ManipulationMode}"
                 Padding="0"
                 Style="{StaticResource xNodeContainerGrid}" Background="#E5FFFFFF" >
 
+            <Grid.Clip>
+                <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
+            </Grid.Clip>
             <!-- This controls the fields of the document -->
             <ItemsControl x:Name="DocumentsControl"
                           x:FieldModifier="public"
@@ -40,9 +40,8 @@
         </Grid>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
-                Width="50"
-                Background="Transparent"
-                Height="50"
+                Background="Black"
+                Margin="0,0,-10,-10"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom" 
                 ManipulationMode="TranslateX, TranslateY"
@@ -50,7 +49,9 @@
                 >
             <Button.Template>
                 <ControlTemplate TargetType="Button">
-                    <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
+                    <Border Padding="10" Background="Transparent">
+                        <Image Source="ms-appx:///Assets/resizehandle.png" Height="20" Margin="0,0,0,0" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
+                    </Border>
                 </ControlTemplate>
             </Button.Template>
         </Button>
