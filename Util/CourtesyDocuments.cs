@@ -803,8 +803,8 @@ namespace Dash
                 }
                 else
                 {
-                    Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpg")), true);
-                    Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpeg")), true);
+                    Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
+                    Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                     Document.SetField(TextFieldKey, new TextFieldModelController("Bye World!"), true);
                     Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
                 }
