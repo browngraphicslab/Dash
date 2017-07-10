@@ -141,8 +141,8 @@ namespace Dash
                                     new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
-                                //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
-                                    //ContentController.DereferenceToRootFieldModel(orfm).GetId());
+                                _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
+                                    ContentController.DereferenceToRootFieldModel(orfm).GetId());
                             }
                         }
                     }
@@ -167,8 +167,8 @@ namespace Dash
                                     new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
-                                //_graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
-                                    //ContentController.DereferenceToRootFieldModel(orfm).GetId());
+                                _graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
+                                    ContentController.DereferenceToRootFieldModel(orfm).GetId());
                             }
                         }
                     }
@@ -192,7 +192,7 @@ namespace Dash
                         {
                             ReferenceFieldModelController irfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
                             ReferenceFieldModelController orfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
-                            //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(), ContentController.DereferenceToRootFieldModel(orfm).GetId());
+                            _graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(), ContentController.DereferenceToRootFieldModel(orfm).GetId());
                         }
                     }
                 }
@@ -875,24 +875,29 @@ namespace Dash
                 UndoLine();
                 return;
             }
+            List<DocumentController> context = (DataContext as CollectionViewModel).DocContextList;
+            string outId;
+            string inId;
             if (_currReference.IsOutput)
             {
-                //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel, (DataContext as CollectionViewModel).DocContextList).GetId(), 
-                    //ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel, (DataContext as CollectionViewModel).DocContextList).GetId());
+                outId = ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel, context).GetId();
+                inId = ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel, context).GetId();
             }
             else
             {
-                //_graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId());
+                outId = ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel, context).GetId();
+                inId = ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel, context).GetId();
             }
+            _graph.AddEdge(outId, inId);
             if (_graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    //_graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId());
+                    _graph.RemoveEdge(outId, inId);
                 }
                 else
                 {
-                    //_graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModel).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModel).GetId());
+                    _graph.RemoveEdge(outId, inId);
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");

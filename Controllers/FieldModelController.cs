@@ -73,10 +73,8 @@ namespace Dash
             FieldModel = fieldModel;
             ContentController.AddModel(fieldModel);
             ContentController.AddController(this);
-            OutputReferences = new ObservableCollection<ReferenceFieldModelController>(fieldModel.OutputReferences);
 
             // Add Events
-            OutputReferences.CollectionChanged += OutputReferences_CollectionChanged;
         }
 
         private void OutputReferences_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -99,7 +97,6 @@ namespace Dash
             //}
             var freshList = sender as ObservableCollection<ReferenceFieldModelController>;
             Debug.Assert(freshList != null);
-            FieldModel.OutputReferences = freshList.ToList();
 
             // Update Local
             // Update Server

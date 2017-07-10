@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Foundation;
 
 namespace Dash
 {
@@ -46,6 +48,21 @@ namespace Dash
                 default:
                     return null;
             }
+        }
+
+        private static readonly Dictionary<Type, TypeInfo> TypeDict = new Dictionary<Type, TypeInfo>
+        {
+            [typeof(NumberFieldModelController)] = TypeInfo.Number,
+            [typeof(TextFieldModelController)] = TypeInfo.Text,
+            [typeof(PointFieldModelController)] = TypeInfo.Point,
+            [typeof(ListFieldModelController<>)] = TypeInfo.List,
+            [typeof(DocumentCollectionFieldModelController)] = TypeInfo.Collection,
+            [typeof(DocumentFieldModelController)] = TypeInfo.Document
+        };
+
+        public static TypeInfo TypeToTypeInfo(Type type)
+        {
+            return TypeDict[type];
         }
     }
 }
