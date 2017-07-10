@@ -603,8 +603,7 @@ namespace Dash
 
                     var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                     Debug.Assert(collectionFieldModelController != null);
-                    var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                    var collectionViewModel = new CollectionViewModel(collectionModel);
+                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                     var view = new CollectionView(collectionViewModel);
 
                     //if (w > 0)
@@ -1041,8 +1040,7 @@ namespace Dash
                 var data = resultView;
                 var collectionFieldModelController = ContentController.DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data);
                 Debug.Assert(collectionFieldModelController != null);
-                var collectionModel = new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                var collectionViewModel = new CollectionViewModel(collectionModel);
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 

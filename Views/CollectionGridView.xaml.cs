@@ -24,6 +24,13 @@ namespace Dash
             this.InitializeComponent();
             xGridView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
             xGridView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            CollectionViewModel vm = DataContext as CollectionViewModel;
+            xGridView.SelectionChanged += vm.SelectionChanged;
         }
     }
 }

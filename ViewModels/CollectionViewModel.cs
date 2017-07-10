@@ -11,16 +11,19 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
+using Dash.Views;
 
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
-    {    
-        private CollectionModel _collectionModel;
-        public CollectionModel CollectionModel { get { return _collectionModel; } }
+
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
+    
+        #region Properties
+        public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
 
+        public bool IsEditorMode { get; set; } = true;
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
         /// </summary>
@@ -32,21 +35,16 @@ namespace Dash
                 SetProperty(ref _dataBindingSource, value);
             }
         }
-        public ObservableCollection<UIElement> SoloDisplayElements
+        private ObservableCollection<DocumentViewModel> _dataBindingSource;
+
+        /// <summary>
+        /// References the ItemsControl used to 
+        /// </summary>
+        public UIElement DocumentDisplayView
         {
-            get { return _soloDisplayElements; }
-            set { SetProperty(ref _soloDisplayElements, value); }
+            get { return _documentDisplayView; }
+            set { SetProperty(ref _documentDisplayView, value); }
         }
-        public enum FilterMode
-        {
-            FieldContains,
-            FieldEquals,
-            HasField
-        }
-        public FilterMode CollectionFilterMode;
-        public string SearchFieldBoxText;
-        public string FieldBoxText;
-        public string SearchBoxText;
         public bool IsEditorMode { get; set; } = true;
         #region Private & Backing variables   
         private double _cellSize;
@@ -76,9 +74,9 @@ namespace Dash
         private double _soloDisplaySize;
         private ObservableCollection<UIElement> _soloDisplayElements;
 
-        #endregion
 
-        #region Size Variables
+        private UIElement _documentDisplayView;
+
 
         /// <summary>
         /// The size of each cell in the GridView.
@@ -88,6 +86,8 @@ namespace Dash
             get { return _cellSize; }
             set { SetProperty(ref _cellSize, value); }
         }
+        private double _cellSize;
+
 
         public double OuterGridWidth
         {
@@ -113,27 +113,6 @@ namespace Dash
             set { SetProperty(ref _containerGridHeight, value); }
         }
 
-        #endregion
-
-        #region Appearance & Location properties
-
-        public double SoloDisplaySize
-        {
-            get { return _soloDisplaySize; }
-            set { SetProperty(ref _soloDisplaySize, value); }
-        }
-
-        public Visibility FilterViewVisibility
-        {
-            get { return _filterViewVisibility; }
-            set { SetProperty(ref _filterViewVisibility, value); }
-        }
-
-        public Visibility SoloDisplayVisibility
-        {
-            get { return _soloDisplayVisibility; }
-            set { SetProperty(ref _soloDisplayVisibility, value); }
-        }
 
         public bool ViewIsEnabled
         {
@@ -142,107 +121,66 @@ namespace Dash
         }
 
         public Visibility ControlsVisibility
+        /// <summary>
+        /// Clips the grid containing the documents to the correct size
+        /// </summary>
+        public Rect ClipRect
         {
-            get { return _controlsVisibility; }
-            set { SetProperty(ref _controlsVisibility, value); }
+            get { return _clipRect; }
+            set { SetProperty(ref _clipRect, value); }
         }
+        private Rect _clipRect;
 
+        /// <summary>
+        /// Determines the selection mode of the control currently displaying the documents
+        /// </summary>
         public ListViewSelectionMode ItemSelectionMode
         {
             get { return _itemSelectionMode; }
             set { SetProperty(ref _itemSelectionMode, value); }
         }
+        private ListViewSelectionMode _itemSelectionMode;
 
-        public Thickness SelectButtonMargin
+        public Visibility MenuVisibility
         {
-            get { return _selectButtonMargin; }
-            set { SetProperty(ref _selectButtonMargin, value); }
+            get { return _menuVisibility; }
+            set { SetProperty(ref _menuVisibility, value); }
         }
+        private Visibility _menuVisibility;
 
-        public Thickness DeleteButtonMargin
+        public GridLength MenuColumnWidth
         {
-            get { return _deleteButtonMargin; }
-            set { SetProperty(ref _deleteButtonMargin, value); }
+            get { return _menuColumnWidth; }
+            set { SetProperty(ref _menuColumnWidth, value); }
         }
+        private GridLength _menuColumnWidth;
 
-        public Thickness DraggerMargin
-        {
-            get { return _draggerMargin; }
-            set { SetProperty(ref _draggerMargin, value); }
-        }
-
-        public Thickness ProportionalDraggerMargin
-        {
-            get { return _proportionalDraggerMargin; }
-            set { SetProperty(ref _proportionalDraggerMargin, value); }
-        }
-
-        public Thickness CloseButtonMargin
-        {
-            get { return _closeButtonMargin; }
-            set { SetProperty(ref _closeButtonMargin, value); }
-        }
-
-        public SolidColorBrush ProportionalDraggerStroke
-        {
-            get { return _proportionalDraggerStroke; }
-            set { SetProperty(ref _proportionalDraggerStroke, value); }
-        }
-
-        public SolidColorBrush ProportionalDraggerFill
-        {
-            get { return _proportionalDraggerFill; }
-            set { SetProperty(ref _proportionalDraggerFill, value); }
-        }
-
-        public SolidColorBrush DraggerFill
-        {
-            get { return _draggerFill; }
-            set { SetProperty(ref _draggerFill, value); }
-        }
-
-        public Thickness BottomBarMargin
-        {
-            get { return _bottomBarMargin; }
-            set { SetProperty(ref _bottomBarMargin, value); }
-        }
-
-        public double SoloDocDisplayGridWidth
-        {
-            get { return _soloDocDisplayGridWidth; }
-            set { SetProperty(ref _soloDocDisplayGridWidth, value); }
-        }
-
-        public double SoloDocDisplayGridHeight
-        {
-            get { return _soloDocDisplayGridHeight; }
-            set { SetProperty(ref _soloDocDisplayGridHeight, value); }
-        }
 
         #endregion
+        /// <summary>
+        /// The collection creates delegates for each document it displays so that it can associate display-specific
+        /// information on the documents.  This allows different collection views to save different views of the same
+        /// document collection.
+        /// </summary>
+        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
+        private DocumentCollectionFieldModelController _collectionFieldModelController;
+        //Not backing variable; used to keep track of which items selected in view
+        private ObservableCollection<DocumentViewModel> _selectedItems;
 
 
-        public CollectionViewModel(CollectionModel model)
+        public CollectionViewModel(DocumentCollectionFieldModelController collection)
         {
-            _collectionModel = model;
+            _collectionFieldModelController = collection;
 
             SetInitialValues();
-            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
-            //SetDimensions();
-           var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
-            controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
-           // _collectionModel.Documents.CollectionChanged += Documents_CollectionChanged;
+            UpdateViewModels(MakeViewModels(_collectionFieldModelController.DocumentCollectionFieldModel));
+            collection.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
         }
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
         {
-            //AddDocuments(_collectionModel.Documents.Data);
+            //AddDocuments(_collectionFieldModelController.Documents.Data);
             UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
-        }
-
-        private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-           // AddDocuments(_collectionModel.Documents);
         }
 
         /// <summary>
@@ -251,14 +189,19 @@ namespace Dash
         private void SetInitialValues()
         {
             CellSize = 250;
-            FilterViewVisibility = Visibility.Collapsed;
-            SoloDisplayVisibility = Visibility.Collapsed;
+            DocumentDisplayView = new CollectionFreeformView {DataContext = this};
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            ViewIsEnabled = true;
+            MenuColumnWidth = new GridLength(80);
         }
 
         #region Event Handlers
+
+        private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Thickness border = new Thickness(1);
+            ClipRect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
+        }
 
         /// <summary>
         /// Deletes all of the Documents selected in the CollectionView by removing their DocumentViewModels from the data binding source. 
@@ -278,6 +221,32 @@ namespace Dash
             {
                 DataBindingSource.Remove(vm);
             }
+        }
+
+        /// <summary>
+        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            DocumentDisplayView = new CollectionFreeformView { DataContext = this };
+        }
+
+        /// <summary>
+        /// Changes the view to the LIstView by making that Grid visible in the CollectionView.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            DocumentDisplayView = new CollectionListView { DataContext = this };
+            //SetDimensions();
+        }
+
+        public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            DocumentDisplayView = new CollectionGridView {DataContext = this};
         }
 
         /// <summary>
@@ -308,13 +277,11 @@ namespace Dash
         {
             foreach (object item in e.AddedItems)
             {
-               
                 var dvm = item as DocumentViewModel;
                 if (dvm != null)
                 {
                     _selectedItems.Add(dvm);
                 }
-
             }
             foreach (object item in e.RemovedItems)
             {
@@ -326,55 +293,10 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Called when the user double taps on the document being displayed in the 
-        /// enlarged view; closes that view and returns to the normal display.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SingleDocDisplayGrid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            ViewIsEnabled = true;
-            SoloDisplayVisibility = Visibility.Collapsed;
-            //Resize();
-            e.Handled = true;
-        }
-        
         #endregion
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        
-        /// <summary>
-        /// Adds a collection of new documents to the CollectionModel, and adds new 
-        /// DocumentViewModels for each new DocumentModel to the CollectionViewModel
-        /// </summary>
-        /// <param name="documents"></param>
-        public void AddDocuments(List<DocumentController> documents)
-        {
-            var docList = new List<string>(_collectionModel.DocumentCollectionFieldModel.Data);
-            foreach (var document in documents)
-            {
-                if (!docList.Contains(document.GetId()))
-                    docList.Add(document.GetId());
-            }
-            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
-        }
-
-        /// <summary>
-        /// Removes DocumentModels from the Collection and removes all DocumentViewModels 
-        /// that no longer reference DocumentModels in the Collection.
-        /// </summary>
-        /// <param name="documents"></param>
-        public void RemoveDocuments(ObservableCollection<DocumentController> documents)
-        { 
-            foreach (var document in documents)
-            {
-                if (new List<string>(_collectionModel.DocumentCollectionFieldModel.Data).Contains(document.GetId()))
-                    ;//_collectionModel.DocumentCollectionFieldModel.Remove(document);
-            }
-            RemoveDefunctViewModels();
-        }
 
         private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
         {
@@ -424,197 +346,21 @@ namespace Dash
             }
             return viewModels;
         }
-
-        /// <summary>
-        /// Adds a collection of DocumentViewModels to the Collection, and thus displays their corresponding views.
-        /// </summary>
-        /// <param name="viewModels"></param>
-        private void AddViewModels(ObservableCollection<DocumentViewModel> viewModels)
-        {
-            foreach (var viewModel in viewModels)
-            {
-                bool found = false;
-                foreach (var vm in DataBindingSource)
-                    if (vm.DocumentController.GetId() == viewModel.DocumentController.GetId())
-                        found = true;
-                if (!found)
-                {
-                    //viewModel.DefaultViewVisibility = Visibility.Collapsed;
-                    //viewModel.ListViewVisibility = Visibility.Visible;
-                    Debug.WriteLine($"{viewModel.ManipulationMode}, {ManipulationModes.None}");
-                    viewModel.ManipulationMode = ManipulationModes.System;
-                    viewModel.DoubleTapEnabled = false;
-                    //viewModel.CanMoveControl = false;
-                    DataBindingSource.Add(viewModel);
-                }
-            }
-            //ScaleDocumentsToFitCell();
-        }
-
-        /// <summary>
-        /// Removes the selected DocumentViewModels (but not their DocumentModels) from the collection
-        /// </summary>
-        /// <param name="viewModels"></param>
-        public void RemoveViewModels(ObservableCollection<DocumentViewModel> viewModels)
-        {
-            foreach (DocumentViewModel viewModel in viewModels)
-            {
-                DataBindingSource.Remove(viewModel);
-            }
-        }
-
-        /// <summary>
-        /// The collection creates delegates for each document it displays so that it can associate display-specific
-        /// information on the documents.  This allows different collection views to save different views of the same
-        /// document collection.
-        /// </summary>
-        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-        /// <summary>
-        /// Removes all DocumentViewModels whose DocumentModels are no longer contained in the CollectionModel.
-        /// </summary>
-        public void RemoveDefunctViewModels()
-        {
-            throw new NotImplementedException();
-            //ObservableCollection<DocumentViewModel> toRemove = new ObservableCollection<DocumentViewModel>();
-            //foreach (DocumentViewModel vm in DocumentViewModels)
-            //{
-            //    if (!_collectionModel.Documents.Contains(vm.DocumentModel))
-            //    {
-            //        toRemove.Add(vm);
-            //    }
-            //}
-            //RemoveViewModels(toRemove);
-        }
-
         #endregion
 
-        public void OuterGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            //Debug.WriteLine("hi");
-        }
-
-        public void SelectAll_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        #region Filtering Methods
-
-        public void FilterSelection_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            FilterViewVisibility = Visibility.Visible;
-
-            if (OuterGridHeight < 350) OuterGridHeight = 350;
-            if (OuterGridWidth < 605)
+            if (MenuVisibility == Visibility.Visible)
             {
-                OuterGridWidth = 650;
+                MenuVisibility = Visibility.Collapsed;
+                MenuColumnWidth = new GridLength(0);
             }
-            //SetDimensions();
-        }
-
-        public void FilterExit_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            FilterViewVisibility = Visibility.Collapsed;
-            //Resize();
-        }
-
-        public void FilterButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-            //FilterModel filterModel = null;
-
-            //// generate FilterModels accordingly
-            //if (CollectionFilterMode == FilterMode.HasField)
-            //{
-            //    filterModel = new FilterModel(FilterModel.FilterType.containsKey, SearchFieldBoxText, string.Empty);
-            //}
-            //else if (CollectionFilterMode == FilterMode.FieldContains)
-            //{
-            //    filterModel = new FilterModel(FilterModel.FilterType.valueContains, FieldBoxText, SearchBoxText);
-            //}
-            //else if (CollectionFilterMode == FilterMode.FieldEquals)
-            //{
-            //    filterModel = new FilterModel(FilterModel.FilterType.valueEquals, FieldBoxText, SearchBoxText);
-            //}
-
-            //var list = FilterUtils.Filter(new List<DocumentModel>(_collectionModel.Documents), filterModel);
-
-            
-            //ObservableCollection<DocumentViewModel> ViewModels = new ObservableCollection<DocumentViewModel>();
-            //foreach (var dvm in DocumentViewModels)
-            //{
-            //    if (list.Contains(dvm.DocumentModel))
-            //    {
-            //        ViewModels.Add(dvm);
-            //    }
-            //}
-            //DataBindingSource = ViewModels;
-            //_filtered = true;
-        }
-
-        public void FilterFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            else
             {
-                if (sender.Text.Length > 0)
-                {
-                    FieldBoxText = sender.Text;
-                    throw new Exception();
-                    //sender.ItemsSource = FilterUtils.GetKeySuggestions(new List<DocumentController>(
-                    //    _collectionModel.DocumentCollectionFieldModel.Data), sender.Text.ToLower());
-                }
-                else
-                {
-                    sender.ItemsSource = new string[] { "No suggestions..." };
-                }
+                MenuVisibility = Visibility.Visible;
+                MenuColumnWidth = new GridLength(80);
             }
-        }
-
-        public void xSearchBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox textBox = sender as TextBox;
-            if (textBox != null)
-            {
-                SearchBoxText = textBox.Text;
-            }
-        }
-
-        public void xSearchFieldBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            SearchFieldBoxText = sender.Text;
-        }
-
-        public void xFieldBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-        {
-            FieldBoxText = sender.Text;
-        }
-
-        #endregion
-
-        public void SearchBox_TextEntered(TextBox sender, TextCompositionEndedEventArgs args)
-        {
-            TextBox textBox = sender as TextBox;
-            if (textBox != null)
-            {
-                SearchBoxText = textBox.Text;
-            }
-        }
-
-        public void FilterFieldBox_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            //
-        }
-
-        public void FilterFieldBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
-        {
-            FieldBoxText = args.QueryText;
-        }
-
-        public void ClearFilter_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            FilterViewVisibility = Visibility.Collapsed;
-            //_filtered = false;
+            e.Handled = true;
         }
     }
 }
