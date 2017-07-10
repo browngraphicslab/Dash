@@ -58,20 +58,20 @@ namespace DocumentMenu
 
         private void MakeDocumentMenu(double width, double height, Point position)
         {
-            xMenuGrid.Width = width + 60;
+            xMenuGrid.Width = width;
             xMenuGrid.Height = height;
             foreach(var button in _documentButtons)
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }
-            Canvas.SetLeft(this, position.X - 120);
+            Canvas.SetLeft(this, position.X);
             Canvas.SetTop(this, position.Y);
             xCollectionButtonsStackPanel.Visibility = Visibility.Collapsed;
         }
 
         private void MakeCollectionMenu(double width, double height, Point position)
         {
-            xMenuGrid.Width = width + 60;
+            xMenuGrid.Width = width;
             xMenuGrid.Height = height;
             foreach(var button in _collectionButtons)
             {
