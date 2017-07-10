@@ -17,7 +17,7 @@
             <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <StackPanel x:Name="xStackPanel" Visibility="{Binding MenuVisibility}" Orientation="Vertical"  VerticalAlignment="Top">
+        <StackPanel x:Name="xMenuStackPanel" Visibility="{Binding MenuVisibility}" Orientation="Vertical"  VerticalAlignment="Top">
             <Button x:Name="DeleteButton" x:FieldModifier="public" Content="Options" VerticalAlignment="Top" Height="30" 
                         Width="70" Foreground="WhiteSmoke" FontSize="14" FontFamily="Rockwell" HorizontalAlignment="Right">
                 <Button.Flyout>

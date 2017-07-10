@@ -48,7 +48,7 @@ namespace Dash
             DataContext = ViewModel = vm;
             var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
-            CurrentView = new CollectionFreeformView {DataContext = ViewModel};
+            CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             FreeformCanvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
             xMenuColumn.Width = new GridLength(80);
@@ -77,14 +77,14 @@ namespace Dash
 
         public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (xStackPanel.Visibility == Visibility.Visible)
+            if (xMenuStackPanel.Visibility == Visibility.Visible)
             {
-                xStackPanel.Visibility = Visibility.Collapsed;
+                xMenuStackPanel.Visibility = Visibility.Collapsed;
                 xMenuColumn.Width = new GridLength(0);
             }
             else
             {
-                xStackPanel.Visibility = Visibility.Visible;
+                xMenuStackPanel.Visibility = Visibility.Visible;
                 xMenuColumn.Width = new GridLength(80);
             }
             e.Handled = true;
@@ -98,7 +98,7 @@ namespace Dash
         public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView {DataContext = ViewModel};
+            CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
             xContentControl.Content = CurrentView;
         }
@@ -129,7 +129,8 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            var parentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            var parentDocument = ViewModel.ParentDocument;
 
             if (parentDocument != MainPage.Instance.MainDocView)
             {
@@ -201,7 +202,7 @@ namespace Dash
                 }
             }
         }
-        
+
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             RefreshItemsBinding();
@@ -264,6 +265,22 @@ namespace Dash
             ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
         }
 
+        private void ClampScale(ScaleTransform scale)
+        {
+            if (CanvasScale > MaxScale)
+            {
+                CanvasScale = MaxScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+            if (CanvasScale < MinScale)
+            {
+                CanvasScale = MinScale;
+                scale.ScaleX = 1;
+                scale.ScaleY = 1;
+            }
+        }
+
 
 
         /// <summary>
@@ -296,18 +313,8 @@ namespace Dash
 
             //Clamp the zoom
             CanvasScale *= delta.Scale;
-            if (CanvasScale > MaxScale)
-            {
-                CanvasScale = MaxScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
-            }
-            if (CanvasScale < MinScale)
-            {
-                CanvasScale = MinScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
-            }
+            ClampScale(scale);
+            
 
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
@@ -418,18 +425,7 @@ namespace Dash
             };
 
             //Clamp scale
-            if (CanvasScale > MaxScale)
-            {
-                CanvasScale = MaxScale;
-                scale.ScaleX = MaxScale / CanvasScale;
-                scale.ScaleY = MaxScale / CanvasScale;
-            }
-            if (CanvasScale < MinScale)
-            {
-                CanvasScale = MinScale;
-                scale.ScaleX = MinScale / CanvasScale;
-                scale.ScaleY = MinScale / CanvasScale;
-            }
+            ClampScale(scale);
 
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
@@ -511,45 +507,6 @@ namespace Dash
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
 
-        /// <summary>
-        /// Make sure the canvas is still in bounds after resize
-        /// </summary>
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            TranslateTransform translate = new TranslateTransform();
-
-            //Calculate bottomRight corner of screen in canvas space before and after resize 
-            Debug.Assert(DocumentViewContainerGrid.RenderTransform != null);
-            Debug.Assert(DocumentViewContainerGrid.RenderTransform.Inverse != null);
-            Point oldBottomRight =
-                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
-            Point bottomRight =
-                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
-
-            //Check if new bottom right is out of bounds
-            bool outOfBounds = false;
-            if (bottomRight.X > Grid.ActualWidth - 1)
-            {
-                translate.X = -(oldBottomRight.X - bottomRight.X);
-                outOfBounds = true;
-            }
-            if (bottomRight.Y > Grid.ActualHeight - 1)
-            {
-                translate.Y = -(oldBottomRight.Y - bottomRight.Y);
-                outOfBounds = true;
-            }
-            //If it is out of bounds, translate so that is is in bounds
-            if (outOfBounds)
-            {
-                TransformGroup composite = new TransformGroup();
-                composite.Children.Add(translate);
-                composite.Children.Add(DocumentViewContainerGrid.RenderTransform);
-                DocumentViewContainerGrid.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            }
-
-            Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
-        }
-
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -580,7 +537,7 @@ namespace Dash
             MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = ViewModel;
-            foreach(var item in e.Items)
+            foreach (var item in e.Items)
                 carrier.Payload.Add(item as DocumentViewModel);
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
@@ -630,7 +587,7 @@ namespace Dash
             var gridView = CurrentView as CollectionGridView;
             var listView = CurrentView as CollectionListView;
             if (gridView != null)
-            {            
+            {
                 gridView.xGridView.ItemsSource = null;
                 gridView.xGridView.ItemsSource = ViewModel.DataBindingSource;
             }
@@ -640,6 +597,6 @@ namespace Dash
                 listView.HListView.ItemsSource = ViewModel.DataBindingSource;
             }
         }
-        
+
     }
 }
