@@ -11,6 +11,27 @@ namespace Dash
     // TODO: name this to something more descriptive
     public static class Util
     {
+        private static CollectionView _selectedCollectionView;
+
+        public static CollectionView SelectedCollectionView
+        {
+            get { return _selectedCollectionView; }
+            set
+            {
+                if (_selectedCollectionView != null && _selectedCollectionView.ViewModel.ParentDocument != MainPage.Instance.MainDocView)
+                {
+                    _selectedCollectionView.SetEnabled(false);
+                    foreach (CollectionView view in _selectedCollectionView.GetDescendantsOfType<CollectionView>())
+                    {
+                        view.SetEnabled(false);
+                    }
+                }
+                _selectedCollectionView = value;
+                _selectedCollectionView?.SetEnabled(true);
+            }
+        }
+
+
         /// <summary>
         /// Transforms point p to relative point in Window.Current.Content 
         /// </summary>

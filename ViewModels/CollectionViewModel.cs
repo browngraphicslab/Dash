@@ -40,15 +40,7 @@ namespace Dash
         public bool KeepItemsOnMove { get; set; } = true;
 
 
-        /// <summary>
-        /// The size of each cell in the GridView.
-        /// </summary>
-        public double CellSize
-        {
-            get { return _cellSize; }
-            set { SetProperty(ref _cellSize, value); }
-        }
-        private double _cellSize;
+        
 
         /// <summary>
         /// Determines the selection mode of the control currently displaying the documents
@@ -73,32 +65,26 @@ namespace Dash
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
 
+        /// <summary>
+        /// The size of each cell in the GridView.
+        /// </summary>
+        public double CellSize { get; set; }
+
 
         public CollectionViewModel(DocumentCollectionFieldModelController collection)
         {
             _collectionFieldModelController = collection;
-
-            SetInitialValues();
+            _selectedItems = new ObservableCollection<DocumentViewModel>();
+            DataBindingSource = new ObservableCollection<DocumentViewModel>();
             UpdateViewModels(MakeViewModels(_collectionFieldModelController.DocumentCollectionFieldModel));
             collection.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
+            CellSize = 250;
         }
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
         {
-            //AddDocuments(_collectionFieldModelController.Documents.Data);
             UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
-
-        /// <summary>
-        /// Sets initial values of instance variables required for the CollectionView to display nicely.
-        /// </summary>
-        private void SetInitialValues()
-        {
-            CellSize = 250;
-            _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DataBindingSource = new ObservableCollection<DocumentViewModel>();
-        }
-
         #region Event Handlers
 
         /// <summary>
@@ -122,23 +108,7 @@ namespace Dash
         }
 
        
-        /// <summary>
-        /// Changes the selection mode to reflect the tapped Select Button.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SelectButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (ItemSelectionMode == ListViewSelectionMode.None)
-            {
-                ItemSelectionMode = ListViewSelectionMode.Multiple;              
-            }
-            else
-            {
-                ItemSelectionMode= ListViewSelectionMode.None;               
-            }
-            e.Handled = true;
-        }
+        
 
         /// <summary>
         /// Updates an ObservableCollection of DocumentViewModels to contain 

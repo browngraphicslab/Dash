@@ -23,6 +23,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using DocumentMenu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -39,8 +40,12 @@ namespace Dash
         private Canvas FreeformCanvas; //TODO why we need this
         private bool _isHasFieldPreviouslySelected; //TODO what this do
         public UserControl CurrentView { get; set; }
+        private OverlayMenu _colMenu = null;
+        private bool _enabled;
+        private bool _allItemsSelected;
 
         public CollectionViewModel ViewModel;
+
 
         public CollectionView(CollectionViewModel vm)
         {
@@ -51,10 +56,8 @@ namespace Dash
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             FreeformCanvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
-            xMenuColumn.Width = new GridLength(80);
             SetEventHandlers();
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
-            ManipulationControls controls = new ManipulationControls(this);
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
         {
@@ -64,12 +67,11 @@ namespace Dash
         {
             Loaded += CollectionView_Loaded;
             ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
-            FreeformOption.Tapped += FreeformButton_Tapped;
-            GridViewOption.Tapped += GridViewButton_Tapped;
-            ListOption.Tapped += ListViewButton_Tapped;
-            CloseButton.Tapped += CloseButton_Tapped;
-            SelectButton.Tapped += ViewModel.SelectButton_Tapped;
-            DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
+            //FreeformOption.Tapped += FreeformButton_Tapped;
+            //GridViewOption.Tapped += GridViewButton_Tapped;
+            //ListOption.Tapped += ListViewButton_Tapped;
+            //CloseButton.Tapped += CloseButton_Tapped;
+            //DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
             DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
             DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
             ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
@@ -77,15 +79,15 @@ namespace Dash
 
         public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (xMenuStackPanel.Visibility == Visibility.Visible)
+            if (_colMenu != null)
             {
-                xMenuStackPanel.Visibility = Visibility.Collapsed;
-                xMenuColumn.Width = new GridLength(0);
+                CloseMenu();
+                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
             }
             else
             {
-                xMenuStackPanel.Visibility = Visibility.Visible;
-                xMenuColumn.Width = new GridLength(80);
+                OpenMenu();
+                SetEnabled(true);
             }
             e.Handled = true;
         }
@@ -95,7 +97,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void FreeformButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
@@ -107,7 +109,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void ListViewButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SetListView()
         {
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView(this) { DataContext = ViewModel };
@@ -119,7 +121,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void GridViewButton_Tapped(object sender, TappedRoutedEventArgs e)
+        public void SetGridView()
         {
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView(this) { DataContext = ViewModel };
@@ -130,6 +132,7 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             var parentDocument = ViewModel.ParentDocument;
 
             if (parentDocument != MainPage.Instance.MainDocView)
@@ -139,11 +142,18 @@ namespace Dash
                 {
                     var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
                     if (height != null)
-                        Height = (double)height;
+                        Height = (double) height;
                     var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
                     if (width != null)
-                        Width = (double)width;
+                        Width = (double) width;
                 };
+                SetEnabled(false);
+            }
+            else
+            {
+                OpenMenu();
+                Util.SelectedCollectionView = this;
+                //xCoverGrid.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -243,12 +253,6 @@ namespace Dash
             //    }
             //}
         }
-        private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            var contentPresentor = this.GetFirstAncestorOfType<ContentPresenter>();
-            (VisualTreeHelper.GetParent(contentPresentor) as Canvas)?.Children.Remove(this
-                .GetFirstAncestorOfType<ContentPresenter>());
-        }
 
         //private void Grid_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         //{
@@ -288,7 +292,7 @@ namespace Dash
         /// </summary>
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (!(CurrentView is CollectionFreeformView)) return;
+            if (!(CurrentView is CollectionFreeformView) || !CurrentView.IsEnabled) return;
             Canvas canvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
             e.Handled = true;
@@ -403,7 +407,7 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (!(CurrentView is CollectionFreeformView)) return;
+            if (!(CurrentView is CollectionFreeformView) || !CurrentView.IsEnabled) return;
             Canvas canvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
             e.Handled = true;
@@ -598,5 +602,122 @@ namespace Dash
             }
         }
 
+        public void SetEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                CurrentView.IsHitTestVisible = true;
+                CurrentView.IsEnabled = true;
+            }
+            else
+            {
+                CurrentView.IsHitTestVisible = false;
+                CurrentView.IsEnabled = false;
+                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                if (_colMenu != null)
+                    CloseMenu();
+            }
+        }
+
+        private void MakeSelectionModeMultiple()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
+            _colMenu.GoToDocumentMenu();
+        }
+
+        private void CloseMenu()
+        {
+            var panel = _colMenu.Parent as Panel;
+            if (panel != null) panel.Children.Remove(_colMenu);
+            _colMenu = null;
+        }
+
+        private void SelectAllItems()
+        {
+            
+            if (CurrentView is CollectionGridView)
+            {
+                var gridView = (CurrentView as CollectionGridView).xGridView;
+                if (gridView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
+                    gridView.SelectAll();
+                else gridView.SelectedItems.Clear();
+            }
+            if (CurrentView is CollectionListView)
+            {
+                var listView = (CurrentView as CollectionListView).HListView;
+                if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
+                {
+                    listView.SelectAll();
+                }
+                else
+                {
+                    listView.SelectedItems.Clear();
+                }
+            }
+        }
+
+        private void MakeSelectionModeSingle()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
+            _colMenu.BackToCollectionMenu();
+        }
+
+        private void DeleteCollection()
+        {
+            var contentPresentor = this.GetFirstAncestorOfType<ContentPresenter>();
+            (VisualTreeHelper.GetParent(contentPresentor) as Canvas)?.Children.Remove(this
+                .GetFirstAncestorOfType<ContentPresenter>());
+        }
+
+        private void DeleteSelection()
+        {
+            ViewModel.DeleteSelected_Tapped(null, null);
+        }
+        
+
+        private void OpenMenu()
+        {
+            var multipleSelection = new Action(MakeSelectionModeMultiple);
+            var deleteCollection = new Action(DeleteCollection);
+            var deleteSelection = new Action(DeleteSelection);
+            var singleSelection = new Action(MakeSelectionModeSingle);
+            var selectAll = new Action(SelectAllItems);
+            var setGrid = new Action(SetGridView);
+            var setList = new Action(SetListView);
+            var setFreeform = new Action(SetFreeformView);
+            var collectionButtons = new List<MenuButton>()
+            {
+                new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
+                {
+                    RotateOnTap = true
+                },
+                new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
+                new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
+                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
+                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection)
+            };
+            var documentButtons = new List<MenuButton>()
+            {
+                new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
+                {
+                    RotateOnTap = true
+                },
+                new MenuButton(Symbol.Edit, "Interface", Colors.SteelBlue, null),
+                new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
+                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
+            };
+            _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0,0),
+                collectionButtons, documentButtons);
+            xMenuCanvas.Children.Add(_colMenu);
+        }
+
+        private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (Util.SelectedCollectionView != this)
+            {
+                Util.SelectedCollectionView = this;
+            }
+            e.Handled = true;
+        }
     }
 }

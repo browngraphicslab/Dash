@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="300"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
-    Width="{Binding Width}" Height="{Binding Height}">
+    Width="{Binding Width}" Height="{Binding Height}" Tapped="DocumentView_OnTapped">
 
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"

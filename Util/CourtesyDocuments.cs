@@ -428,6 +428,10 @@ namespace Dash
                     };
                     tb.SetBinding(TextBox.TextProperty, sourceBinding);
                     textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
+                    tb.Tapped += delegate(object sender, TappedRoutedEventArgs args)
+                    {
+                        Util.SelectedCollectionView = null;
+                    };
 
                 }
                 else if (fieldModelController is NumberFieldModelController)

@@ -247,12 +247,14 @@
     <Compile Include="Views\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\MenuButton.xaml.cs" />
     <Compile Include="Views\OperatorView.xaml.cs">
       <DependentUpon>OperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\OverlayMenu.xaml.cs" />
     <Compile Include="Views\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
@@ -385,11 +387,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\MenuButton.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\OperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OverlayCanvas.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OverlayMenu.xaml">
+      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TextSettings.xaml">

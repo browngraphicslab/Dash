@@ -25,6 +25,13 @@ namespace Dash
             xGridView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
             xGridView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
             DataContextChanged += OnDataContextChanged;
+            Binding selectionBinding = new Binding
+            {
+                Source = view.ViewModel,
+                Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
+                Mode = BindingMode.OneWay,
+            };
+            xGridView.SetBinding(GridView.SelectionModeProperty, selectionBinding);
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
