@@ -19,9 +19,11 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl
     {
-        public CollectionGridView()
+        public CollectionGridView(CollectionView view)
         {
             this.InitializeComponent();
+            xGridView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
             DataContextChanged += OnDataContextChanged;
         }
 

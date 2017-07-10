@@ -6,10 +6,14 @@
     xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-    <Grid>
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+    <Grid x:Name="Grid">
         <ListView x:Name="HListView" 
                           x:FieldModifier="public" 
+                          ItemsSource="{Binding DataBindingSource}"
+                          SelectionMode="{Binding ItemSelectionMode}"
                           FlowDirection="LeftToRight" 
                           HorizontalAlignment="Stretch" 
                           VerticalAlignment="Stretch" 
@@ -17,8 +21,6 @@
                           ScrollViewer.VerticalScrollMode="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          SelectionMode="{Binding ItemSelectionMode}"
-                          ItemsSource="{Binding DataBindingSource}"
                           CanDragItems="True"
                           CanReorderItems="True"
                           AllowDrop="True">
@@ -33,7 +35,8 @@
                         <dash:DocumentView 
                                     Width="250" 
                                     Height="250" 
-                                    DataContext="{Binding}">
+                                    DataContext="{Binding}"
+                                    IsHitTestVisible="False">
                         </dash:DocumentView>
                     </Border>
                 </DataTemplate>

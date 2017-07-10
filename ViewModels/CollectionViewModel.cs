@@ -16,7 +16,10 @@ using Dash.Views;
 namespace Dash
 {
     public class CollectionViewModel : ViewModelBase
-    {
+
+        public CollectionView ParentCollection { get; set; }
+        public DocumentView ParentDocument { get; set; }
+    
         #region Properties
         public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
 
@@ -42,7 +45,38 @@ namespace Dash
             get { return _documentDisplayView; }
             set { SetProperty(ref _documentDisplayView, value); }
         }
+        public bool IsEditorMode { get; set; } = true;
+        #region Private & Backing variables   
+        private double _cellSize;
+        private double _outerGridWidth;
+        private double _outerGridHeight;
+        private double _containerGridHeight;
+        private double _containerGridWidth;
+        private Thickness _draggerMargin;
+        private Thickness _proportionalDraggerMargin;
+        private Thickness _closeButtonMargin;
+        private Thickness _bottomBarMargin;
+        private Thickness _selectButtonMargin;
+        private Thickness _deleteButtonMargin;
+        private SolidColorBrush _proportionalDraggerStroke;
+        private SolidColorBrush _proportionalDraggerFill;
+        private SolidColorBrush _draggerFill;
+        private ListViewSelectionMode _itemSelectionMode;
+        private Visibility _controlsVisibility;
+        private Visibility _filterViewVisibility;
+        //Not backing variable; used to keep track of which items selected in view
+        private ObservableCollection<DocumentViewModel> _selectedItems;
+        private ObservableCollection<DocumentViewModel> _dataBindingSource;
+        private Visibility _soloDisplayVisibility;
+        private bool _viewIsEnabled;
+        private double _soloDocDisplayGridWidth;
+        private double _soloDocDisplayGridHeight;
+        private double _soloDisplaySize;
+        private ObservableCollection<UIElement> _soloDisplayElements;
+
+
         private UIElement _documentDisplayView;
+
 
         /// <summary>
         /// The size of each cell in the GridView.
@@ -54,6 +88,39 @@ namespace Dash
         }
         private double _cellSize;
 
+
+        public double OuterGridWidth
+        {
+            get { return _outerGridWidth; }
+            set { SetProperty(ref _outerGridWidth, value); }
+        }
+
+        public double OuterGridHeight
+        {
+            get { return _outerGridHeight; }
+            set { SetProperty(ref _outerGridHeight, value); }
+        }
+
+        public double ContainerGridWidth
+        {
+            get { return _containerGridWidth; }
+            set { SetProperty(ref _containerGridWidth, value); }
+        }
+
+        public double ContainerGridHeight
+        {
+            get { return _containerGridHeight; }
+            set { SetProperty(ref _containerGridHeight, value); }
+        }
+
+
+        public bool ViewIsEnabled
+        {
+            get { return _viewIsEnabled; }
+            set { SetProperty(ref _viewIsEnabled, value); }
+        }
+
+        public Visibility ControlsVisibility
         /// <summary>
         /// Clips the grid containing the documents to the correct size
         /// </summary>
@@ -136,8 +203,6 @@ namespace Dash
             ClipRect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
         }
 
-        
-
         /// <summary>
         /// Deletes all of the Documents selected in the CollectionView by removing their DocumentViewModels from the data binding source. 
         /// **Note that this removes the DocumentModel as well, and any other associated DocumentViewModels.
@@ -193,13 +258,11 @@ namespace Dash
         {
             if (ItemSelectionMode == ListViewSelectionMode.None)
             {
-                ItemSelectionMode = ListViewSelectionMode.Multiple;
-                
+                ItemSelectionMode = ListViewSelectionMode.Multiple;              
             }
             else
             {
-                ItemSelectionMode= ListViewSelectionMode.None;
-                
+                ItemSelectionMode= ListViewSelectionMode.None;               
             }
             e.Handled = true;
         }
@@ -299,6 +362,5 @@ namespace Dash
             }
             e.Handled = true;
         }
-
     }
 }

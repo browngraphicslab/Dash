@@ -74,7 +74,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
                 CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                //view.StartDrag(ioRef);
+                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
                 //OnIoDragStarted(ioRef);
             }
         }
@@ -92,7 +92,7 @@ namespace Dash
                 Key outputKey = el.DataContext as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
                 CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                //view.StartDrag(ioRef); TODO fix this
+                (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
                 //OnIoDragStarted(ioRef);
             }
         }
@@ -123,7 +123,7 @@ namespace Dash
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            //view.EndDrag(ioRef); // TODO fix this
+            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
             //OnIoDragEnded(ioRef);
         }
 
@@ -134,7 +134,7 @@ namespace Dash
             Key outputKey = el.DataContext as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModel(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            //view.EndDrag(ioRef); //TODO fix this
+            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
             //OnIoDragEnded(ioRef);
         }
     }
