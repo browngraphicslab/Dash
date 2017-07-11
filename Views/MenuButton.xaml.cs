@@ -59,9 +59,9 @@ namespace DocumentMenu
             // create rounded(circular) border to hold the symbol
             var border = new Border()
             {
-                Height = 45,
-                Width = 45,
-                CornerRadius = new CornerRadius(22.5),
+                Height = 40,
+                Width = 40,
+                CornerRadius = new CornerRadius(20),
                 Background = new SolidColorBrush(background),
                 BorderBrush = new SolidColorBrush(background),
                 Child = symbol
@@ -107,14 +107,13 @@ namespace DocumentMenu
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
             var rotationTransform = new RotateTransform();
-            rotationTransform.CenterX = 22.5;
-            rotationTransform.CenterY = 22.5;
             _button.RenderTransform = rotationTransform;
+            _button.RenderTransformOrigin = new Point(0.5,0.5);
 
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
-            doubleAnimation.SpeedRatio = 1.3;
+            doubleAnimation.SpeedRatio = 1.5;
             doubleAnimation.EnableDependentAnimation = true;
             doubleAnimation.From = 0;
             doubleAnimation.To = 360;
