@@ -406,12 +406,13 @@ namespace Dash
             {
                 return CourtesyDocuments.ApiDocumentModel.MakeView(this, docList);
             } 
-            else // if document is not a known UI View, then see if it contains any documents with known UI views
+            else // if document is not a known UI View, then see if it contains a Layout view field
             {
                 var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList);
                 if (fieldModelController != null)
                 {
-                    var doc = GetDereferencedField(fieldModelController, docContextList) as DocumentFieldModelController;
+                    newDocContextList.Add(this);
+                    var doc = GetDereferencedField(fieldModelController, newDocContextList) as DocumentFieldModelController;
                     Debug.Assert(doc != null);
                     return doc.Data.makeViewUI(docList);
                 }
