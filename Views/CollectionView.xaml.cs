@@ -779,8 +779,7 @@ namespace Dash
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
                 new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
             };
-            _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0, 0),
-                collectionButtons, documentButtons);
+            _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
         }

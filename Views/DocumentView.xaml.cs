@@ -9,7 +9,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Xaml.Media.Imaging;
+using DocumentMenu;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -23,6 +25,8 @@ namespace Dash
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
         private ManipulationControls manipulator;
+
+        private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
 
 
@@ -52,14 +56,15 @@ namespace Dash
             startWidth = Width;
             startHeight = Height;
 
-            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            //xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped += OnDoubleTapped;
             
         }
-        
+
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
@@ -214,6 +219,7 @@ namespace Dash
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                if (_docMenu != null) this.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
@@ -229,24 +235,24 @@ namespace Dash
 
         bool singleTap = false;
 
-        /// <summary>
-        /// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
-        /// on signle tap to prevent flickering.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+        ///// <summary>
+        ///// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
+        ///// on signle tap to prevent flickering.
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
 
             
-                if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
-                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                else
-                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        //        if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
+        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+        //        else
+        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
             
 
-            singleTap = false;
-            e.Handled = true;
-        }
+        //    singleTap = false;
+        //    e.Handled = true;
+        //}
         
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
@@ -272,14 +278,70 @@ namespace Dash
         }
 
 
-        // hides context menu on single tap
-        private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
-            singleTap = true;
-            await Task.Delay(150);
-            if (singleTap)
-                xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                
+        //// hides context menu on single tap
+        //private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
+        //    singleTap = true;
+        //    await Task.Delay(150);
+        //    if (singleTap)
+        //        xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
+        //}
+
+        #region Menu
+
+        private void OpenMenu()
+        {
+            var layout = new Action(OpenLayout);
+            var copy = new Action(CopyDocument);
+            var delete = new Action(DeleteDocument);
+            var documentButtons = new List<MenuButton>()
+            {
+                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
+                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+            };
+            _docMenu = new OverlayMenu(null, documentButtons);
+            xMenuCanvas.Children.Add(_docMenu);
+            xMenuColumn.Width = new GridLength(50);
         }
-        
+
+        private void CloseMenu()
+        {
+            var panel = _docMenu.Parent as Panel;
+            if (panel != null) panel.Children.Remove(_docMenu);
+            _docMenu = null;
+            xMenuColumn.Width = new GridLength(0);
+        }
+
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (_docMenu != null)
+            {
+                this.CloseMenu();
+            }
+            else
+            {
+                OpenMenu();
+            }
+            e.Handled = true;
+        }
+
+        private void DeleteDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CopyDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OpenLayout()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
     }
 }

@@ -16,29 +16,34 @@
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
-              Tapped="XGrid_Tapped"
-              DoubleTapped="XGrid_DoubleTapped"
+              
               SizeChanged="OuterGrid_SizeChanged"
             BorderBrush="{Binding BorderBrush}"
           Background="Transparent"
             BorderThickness="1"
             CornerRadius="3">
-        
-        <!-- Container for document fields view -->
-        <Grid x:Name="XGrid">
-            <Grid.Clip>
-                <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
-            </Grid.Clip>
-            <ContentPresenter Content="{Binding Content}"></ContentPresenter>
-        </Grid>
-        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="0,0,-10,-10"></Border>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
+        <Grid Grid.Column="1">
+            <!-- Container for document fields view -->
+            <Grid x:Name="XGrid">
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
+                </Grid.Clip>
+                <ContentPresenter Content="{Binding Content}"></ContentPresenter>
+            </Grid>
+            <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="0,0,-10,-10"></Border>
 
-        <!-- Container for Icon view -->
-        <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png"></Image>
-        </Grid>
-        
-        <!-- Context Menu -->
+            <!-- Container for Icon view -->
+            <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png"></Image>
+            </Grid>
+
+            <!-- Context Menu -->
+            <!--
         <Grid x:Name="xContextMenu">
             <StackPanel Orientation="Horizontal" >
                 <Image Tapped="XEditButton_OnTapped" Source="ms-appx:///Assets/layout.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
@@ -46,10 +51,10 @@
 
             </StackPanel>
             <Image Source="ms-appx:///Assets/delete.png" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-        </Grid>
-        
-        <!-- Misc. Document Components-->
-        <Button x:Name="DraggerButton" 
+        </Grid>-->
+
+            <!-- Misc. Document Components-->
+            <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
                 Background="Black"
                 Margin="0,0,-20,-20"
@@ -59,14 +64,15 @@
                 ManipulationMode="TranslateX, TranslateY"
                 Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                 >
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Border Padding="10,10,20,20" Background="Transparent">
-                        <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
-                    </Border>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Padding="10,10,20,20" Background="Transparent">
+                            <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
+        </Grid>
     </Grid>
 </UserControl>
 
