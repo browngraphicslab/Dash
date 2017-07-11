@@ -122,7 +122,9 @@
             <Setter Property="Foreground" Value="#DE0074FF"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Padding" Value="0"></Setter>
-            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontSize" Value="16"></Setter>
+            <Setter Property="Height" Value="25"></Setter>
+            <Setter Property="HorizontalContentAlignment" Value="Right"></Setter>
         </Style>
 
         <Style TargetType="TextBlock" x:Name="xBlueTextBoxStyle">

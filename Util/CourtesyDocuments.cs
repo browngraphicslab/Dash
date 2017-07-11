@@ -88,15 +88,21 @@ namespace Dash
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.StartDrag(new OperatorView.IOReference(refFieldModelController, true, args, renderElement,
+
+                    (view.CurrentView as CollectionFreeformView)?.StartDrag(
+                        new OperatorView.IOReference(refFieldModelController, true, args, renderElement, 
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
+
                 };
                 renderElement.PointerReleased += delegate(object sender, PointerRoutedEventArgs args)
                 {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.EndDrag(new OperatorView.IOReference(refFieldModelController, false, args, renderElement,
+
+                    (view.CurrentView as CollectionFreeformView)?.EndDrag(
+                        new OperatorView.IOReference(refFieldModelController, false, args, renderElement, 
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
+
                 };
             }
 
@@ -658,9 +664,9 @@ namespace Dash
                     var collectionFieldModelController = ContentController
                         .DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data, docContextList);
                     Debug.Assert(collectionFieldModelController != null);
-                    var collectionModel =
-                        new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                    var collectionViewModel = new CollectionViewModel(collectionModel, docContextList);
+
+                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController, docContextList);
+
                     var view = new CollectionView(collectionViewModel);
                     view.Opacity = opacityValue;
                     return view;
@@ -761,10 +767,12 @@ namespace Dash
             static DocumentController CreatePrototype2Images()
             {
                 // bcz: default values for data fields can be added, but should not be needed
-                //fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
-                //fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
-                //fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+                Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+                fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
+                fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
+                fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
 
+                //return new DocumentController(fields, TwoImagesType);
                 return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
             }
             /// <summary>
@@ -1148,9 +1156,8 @@ namespace Dash
                 var collectionFieldModelController = ContentController
                     .DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data, docContextList);
                 Debug.Assert(collectionFieldModelController != null);
-                var collectionModel =
-                    new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                var collectionViewModel = new CollectionViewModel(collectionModel, docContextList);
+
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController, docContextList);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 

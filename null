@@ -2013,6 +2013,7 @@ C:\Users\Test\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\ua
 C:\Users\Test\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\PieSlice.xbf
 C:\Users\Test\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\RadialMenu.xbf
 14 File(s) copied
+<<<<<<< HEAD
 C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.dll
 C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.pdb
 C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.pri
@@ -2042,4 +2043,20 @@ C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap
 C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\Pie.xbf
 C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\PieSlice.xbf
 C:\Users\bcz\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\RadialMenu.xbf
+=======
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.dll
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.pdb
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.pri
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl.xr.xml
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\Components\CenterButton.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\Components\RadialMenuButton.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\RadialMenuControl\RadialMenuControl.xr.xml
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\Themes\Generic.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\Themes\Styles.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\ListSubMenu.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\MeterSubMenu.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\Pie.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\PieSlice.xbf
+C:\Users\Administrator\.nuget\packages\RadialMenuControl\0.2.1\build\uap10.0\..\..\lib\uap10.0\UserControl\RadialMenu.xbf
+>>>>>>> origin/CollectionUIChange
 14 File(s) copied

@@ -31,7 +31,7 @@ namespace Dash
         /// </summary>
         public class IOReference
         {
-            public ReferenceFieldModelController ReferenceFieldModel { get; set; }
+            public ReferenceFieldModelController ReferenceFieldModelController { get; set; }
             public bool IsOutput { get; set; }
 
             public PointerRoutedEventArgs PointerArgs { get; set; }
@@ -39,9 +39,9 @@ namespace Dash
             public FrameworkElement FrameworkElement { get; set; }
             public DocumentView ContainerView { get; set; }
 
-            public IOReference(ReferenceFieldModelController referenceFieldModel, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+            public IOReference(ReferenceFieldModelController referenceFieldModelController, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
             {
-                ReferenceFieldModel = referenceFieldModel;
+                ReferenceFieldModelController = referenceFieldModelController;
                 IsOutput = isOutput;
                 PointerArgs = args;
                 FrameworkElement = e;
@@ -85,7 +85,7 @@ namespace Dash
                 Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
                 CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                view.StartDrag(ioRef);
+                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
                 //OnIoDragStarted(ioRef);
             }
         }
@@ -103,7 +103,7 @@ namespace Dash
                 Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
                 IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
                 CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                view.StartDrag(ioRef);
+                (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
                 //OnIoDragStarted(ioRef);
             }
         }
@@ -134,7 +134,7 @@ namespace Dash
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            view.EndDrag(ioRef);
+            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
             //OnIoDragEnded(ioRef);
         }
 
@@ -145,7 +145,7 @@ namespace Dash
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            view.EndDrag(ioRef);
+            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
             //OnIoDragEnded(ioRef);
         }
     }

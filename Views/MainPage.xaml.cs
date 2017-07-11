@@ -250,7 +250,7 @@ namespace Dash
             }
         }
 
-        // FILE DRAG AND DROP
+        //// FILE DRAG AND DROP
 
         /// <summary>
         /// Handles drop events onto the canvas, usually by creating a copy document of the original and
