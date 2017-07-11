@@ -104,7 +104,8 @@ namespace Dash
             _selectedItems.Clear();
             foreach (var vm in itemsToDelete)
             {
-                DataBindingSource.Remove(vm);
+                //DataBindingSource.Remove(vm);
+                CollectionFieldModelController.RemoveDocument(vm.DocumentController);
             }
         }
 

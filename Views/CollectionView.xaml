@@ -16,15 +16,16 @@
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
     Tapped="CollectionView_OnTapped">
 
-    <Grid x:Name="xOuterGrid">
+    <Grid x:Name="xOuterGrid" BorderBrush="{StaticResource AccentGreen}">
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
-        <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
-            <Grid x:Name="DocumentViewContainerGrid"
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition x:Name="xMenuColumn" Width="0"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
+            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
+                <Grid x:Name="DocumentViewContainerGrid"
                   AllowDrop="True"
                   HorizontalAlignment="Stretch"
                   Margin="5,5,5,5"
@@ -34,13 +35,13 @@
                   Padding="0"
                   Style="{StaticResource xNodeContainerGrid}"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
-                <Grid.Clip>
-                    <RectangleGeometry x:Name="ClipRect"></RectangleGeometry>
-                </Grid.Clip>
-                <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-                <ContentControl x:Name="xContentControl"></ContentControl>
-            </Grid>
-            <Ellipse x:Name="ConnectionEllipse"
+                    <Grid.Clip>
+                        <RectangleGeometry x:Name="ClipRect"></RectangleGeometry>
+                    </Grid.Clip>
+                    <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
+                    <ContentControl x:Name="xContentControl"></ContentControl>
+                </Grid>
+                <Ellipse x:Name="ConnectionEllipse"
                      x:FieldModifier="public"
                      Width="20"
                      Height="20"
@@ -51,9 +52,11 @@
                      ManipulationMode="All"
                      PointerPressed="ConnectionEllipse_OnPointerPressed"
                      PointerReleased="ConnectionEllipse_OnPointerReleased">
-            </Ellipse>
+                </Ellipse>
+            </Grid>
         </Grid>
-        </Grid>
+    </Grid>
+        
 </UserControl>
 
 

@@ -73,17 +73,21 @@ namespace Dash
 
         public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (_colMenu != null)
+            if (CurrentView.IsEnabled)
             {
-                CloseMenu();
-                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                if (_colMenu != null)
+                {
+                    CloseMenu();
+                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                }
+                else
+                {
+                    OpenMenu();
+                    SetEnabled(true);
+                }
+                e.Handled = true;
             }
-            else
-            {
-                OpenMenu();
-                SetEnabled(true);
-            }
-            e.Handled = true;
+            
         }
 
         
@@ -111,6 +115,7 @@ namespace Dash
             else
             {
                 OpenMenu();
+                SetEnabled(true);
             }
         }
 
@@ -608,6 +613,7 @@ namespace Dash
             var panel = _colMenu.Parent as Panel;
             if (panel != null) panel.Children.Remove(_colMenu);
             _colMenu = null;
+            xMenuColumn.Width = new GridLength(0);
         }
 
         private void SelectAllItems()
@@ -678,6 +684,7 @@ namespace Dash
             _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0, 0),
                 collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
+            xMenuColumn.Width = new GridLength(50);
         }
 
 
@@ -689,39 +696,49 @@ namespace Dash
         {
             if (enabled)
             {
-                CurrentView.IsHitTestVisible = true;
                 CurrentView.IsEnabled = true;
-                xOuterGrid.Background = new SolidColorBrush(Colors.White);
+                xOuterGrid.BorderThickness = new Thickness(3);
             }
             else
             {
-                CurrentView.IsHitTestVisible = false;
                 CurrentView.IsEnabled = false;
+                xOuterGrid.BorderThickness = new Thickness(0);
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 if (_colMenu != null)
                     CloseMenu();
-                xOuterGrid.Background = new SolidColorBrush(Colors.AliceBlue);
             }
         }
 
         private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            ViewModel.ParentCollection?.SetActiveCollection(this);
+            if (ViewModel.ParentCollection?.GetActiveCollection() != this)
+            {
+                ViewModel.ParentCollection?.SetActiveCollection(this);
+            }
+            SetActiveCollection(null);
             e.Handled = true;
         }
 
         public void SetActiveCollection(CollectionView collection)
         {
-            if (_activeCollection != null)
+            if (_activeCollection != null && _activeCollection != collection)
             {
                 _activeCollection.SetEnabled(false);
-                foreach (var col in _activeCollection.GetDescendantsOfType<CollectionView>())
+                if (_activeCollection.GetActiveCollection() != null)
                 {
-                    col.SetEnabled(false);
+                    _activeCollection.SetActiveCollection(null);
                 }
             }
             _activeCollection = collection;
-            _activeCollection.SetEnabled(true);
+            if (collection != null)
+            {
+                _activeCollection.SetEnabled(true);
+            }
+        }
+
+        public CollectionView GetActiveCollection()
+        {
+            return _activeCollection;
         }
 
         #endregion
