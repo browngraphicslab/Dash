@@ -22,12 +22,12 @@
             BorderBrush="{Binding BorderBrush}"
           Background="Transparent"
             BorderThickness="0">
+        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="10,10,-10,-10"></Border>
         
         <!-- Container for document fields view -->
         <Grid x:Name="XGrid"
               ManipulationMode="{Binding ManipulationMode}"
-              Padding="0"
-              Style="{StaticResource xNodeContainerGrid}" Background="#E5FFFFFF" >
+              Padding="0" Background="{Binding BackgroundBrush}" >
 
             <Grid.Clip>
                 <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
@@ -49,8 +49,8 @@
 
 
         <!-- Container for Icon view -->
-        <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Height="64" Width="64">
-            <Image Source="ms-appx:///Assets/if_11_1724127.png"></Image>
+        <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png"></Image>
         </Grid>
         
         <!-- Context Menu -->
@@ -67,7 +67,8 @@
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
                 Background="Black"
-                Margin="0,0,-10,-10"
+                Margin="0,0,-20,-20"
+                DoubleTapped="ExpandContract_DoubleTapped"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom" 
                 ManipulationMode="TranslateX, TranslateY"
@@ -75,13 +76,12 @@
                 >
             <Button.Template>
                 <ControlTemplate TargetType="Button">
-                    <Border Padding="10" Background="Transparent">
+                    <Border Padding="10,10,20,20" Background="Transparent">
                         <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
                     </Border>
                 </ControlTemplate>
             </Button.Template>
         </Button>
-
     </Grid>
 </UserControl>
 

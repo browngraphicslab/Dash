@@ -7,9 +7,12 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml.Data;
+using System.Diagnostics;
 
 namespace Dash
 {
+    public enum IconTypeEnum { Document, Collection, Api } // on super-collapse, what icon is displayed?
+
     public class DocumentViewModel : ViewModelBase
     {
         // == MEMBERS, GETTERS, SETTERS ==
@@ -19,11 +22,12 @@ namespace Dash
         private Point _pos;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
+        private IconTypeEnum iconType;
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
 
+        public IconTypeEnum IconType { get { return iconType; } }
         public delegate void OnLayoutChangedHandler(DocumentViewModel sender);
-
         public event OnLayoutChangedHandler OnLayoutChanged;
 
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
@@ -119,6 +123,8 @@ namespace Dash
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Color.FromArgb(50, 34, 34, 34));
        
+            // FIELD FETCHERS
+            // overrides defaults with document fields if layout-relevant fields are set
             var posFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
             if (posFieldModelController == null)
             {
@@ -147,12 +153,25 @@ namespace Dash
             Height = heightFieldModelController.Data;
             heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent; ;
 
+            // set icon via field 
+            var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, docContextList) as NumberFieldModelController;
+            if (iconFieldModelController == null) {
+                Debug.WriteLine("just use default then");
+                iconFieldModelController = new NumberFieldModelController((int)IconTypeEnum.Document);
+                DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
+            } else Debug.WriteLine("we did it right: " + iconFieldModelController.Data);
+            iconType = (IconTypeEnum)iconFieldModelController.Data;
+            iconFieldModelController.FieldModelUpdatedEvent += IconFieldModelController_FieldModelUpdatedEvent;
+
             var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController;
             if (documentFieldModelController != null)
                 documentFieldModelController.Data.OnLayoutChanged += DocumentController_OnLayoutChanged;
 
             DataBindingSource.Add(documentController.DocumentModel);
         }
+
+        // == FIELD UPDATED EVENT HANDLERS == 
+        // these update the view model's variables when the document's corresponding fields update
 
         private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
         {
@@ -169,6 +188,13 @@ namespace Dash
             if (widthFieldModelController != null)
             {
                 Width = widthFieldModelController.Data;
+            }
+        }
+        
+        private void IconFieldModelController_FieldModelUpdatedEvent(FieldModelController sender) {
+            var iconFieldModelController = sender as NumberFieldModelController;
+            if (iconFieldModelController != null) {
+                iconType = (IconTypeEnum)iconFieldModelController.Data;
             }
         }
 

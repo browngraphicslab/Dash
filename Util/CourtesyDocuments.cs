@@ -558,6 +558,7 @@ namespace Dash {
             void Initialize(FieldModelController fieldModel) {
                 var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, fieldModel);
                 Document = new DocumentController(fields, DocumentType);
+                Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
                 SetLayoutForDocument(Document, Document);
             }
 
@@ -713,11 +714,13 @@ namespace Dash {
                     Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                     Document.SetField(TextFieldKey, new TextFieldModelController("Hello World!"), true);
                     Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
+                    Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
                 } else {
                     Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                     Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                     Document.SetField(TextFieldKey, new TextFieldModelController("Bye World!"), true);
                     Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
+                    Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
                 }
 
                 if (displayFieldsAsDocuments) {
@@ -845,6 +848,7 @@ namespace Dash {
                     new DocumentCollectionFieldModelController(new List<DocumentController>())
                 };
                 Document = new DocumentController(fields, DocumentType);
+                Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
             }
 
             /// <summary>
@@ -1062,22 +1066,22 @@ namespace Dash {
                 sourceDisplay.SetBinding(ApiSourceDisplay.VisibilityProperty, sourceBinding);
 
                 // set up grid to hold UI elements: api size is fixed, results display resizes w/ document container
-                Grid g = new Grid();
-                g.HorizontalAlignment = HorizontalAlignment.Stretch;
-                g.VerticalAlignment = VerticalAlignment.Stretch;
-                g.RowDefinitions.Add(new RowDefinition());
-                g.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(450) });
-                g.ColumnDefinitions.Add(new ColumnDefinition());
+                Grid containerGrid = new Grid();
+                containerGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
+                containerGrid.VerticalAlignment = VerticalAlignment.Stretch;
+                containerGrid.RowDefinitions.Add(new RowDefinition());
+                containerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(450) });
+                containerGrid.ColumnDefinitions.Add(new ColumnDefinition());
                 Grid.SetColumn(collectionDisplay, 1);
-                g.Children.Add(apiDisplay);
-                g.Children.Add(sourceDisplay);
-                g.Children.Add(collectionDisplay);
+                containerGrid.Children.Add(apiDisplay);
+                containerGrid.Children.Add(sourceDisplay);
+                containerGrid.Children.Add(collectionDisplay);
 
                 collectionDisplay.MaxWidth = 550;
                 collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
 
                 // return all results
-                return g;
+                return containerGrid;
             }
         }
 
