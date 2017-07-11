@@ -14,26 +14,11 @@
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
             SizeChanged="OuterGrid_SizeChanged"
-            BorderBrush="{Binding BorderBrush}"
-            BorderThickness="0">
+          Style="{StaticResource xNodeContainerGrid}">
         <Grid.Clip>
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
         </Grid.Clip>
-        <Grid x:Name="XGrid"
-                ManipulationMode="{Binding ManipulationMode}"
-                Padding="0"
-                Style="{StaticResource xNodeContainerGrid}">
-
-            <ItemsControl x:Name="DocumentsControl"
-                          x:FieldModifier="public"
-                          Padding="5">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas x:Name="DocumentsCanvas" x:FieldModifier="public"></Canvas>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
-        </Grid>
+        <ContentPresenter Content="{Binding Content}"></ContentPresenter>
         <Button x:Name="DraggerButton" 
                 x:FieldModifier="public"
                 Width="40"

@@ -11,6 +11,7 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
+using Windows.ApplicationModel.Core;
 
 namespace Dash
 {
@@ -273,7 +274,7 @@ namespace Dash
             _collectionModel = model;
 
             SetInitialValues();
-            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
+            UpdateViewModels(_collectionModel.DocumentCollectionFieldModel);
             //SetDimensions();
             var controller = ContentController.GetController<DocumentCollectionFieldModelController>(_collectionModel.DocumentCollectionFieldModel.Id);
             controller.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
@@ -283,7 +284,7 @@ namespace Dash
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
         {
             //AddDocuments(_collectionModel.Documents.Data);
-            UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
+            UpdateViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel);
         }
 
         private void Documents_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -489,7 +490,7 @@ namespace Dash
                 if (!docList.Contains(document.GetId()))
                     docList.Add(document.GetId());
             }
-            UpdateViewModels(MakeViewModels(_collectionModel.DocumentCollectionFieldModel));
+            UpdateViewModels(_collectionModel.DocumentCollectionFieldModel);
         }
 
         /// <summary>
@@ -507,42 +508,29 @@ namespace Dash
             RemoveDefunctViewModels();
         }
 
-        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentViewModel vm)
+        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, string id)
         {
             foreach (var viewModel in col)
-                if (viewModel.DocumentController.GetId() == vm.DocumentController.GetId())
+                if (viewModel.DocumentController.GetId() == id)
                     return true;
             return false;
         }
 
-        public void UpdateViewModels(ObservableCollection<DocumentViewModel> viewModels)
+        private bool ViewModelContains(IEnumerable<string> l, DocumentViewModel vm)
         {
-            foreach (var viewModel in viewModels)
-            {
-                if (ViewModelContains(DataBindingSource, viewModel)) continue;
-                viewModel.ManipulationMode = ManipulationModes.System;
-                viewModel.DoubleTapEnabled = false;
-                DataBindingSource.Add(viewModel);
-            }
-            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
-            {
-                if (ViewModelContains(viewModels, DataBindingSource[i])) continue;
-                DataBindingSource.RemoveAt(i);
-            }
+            foreach (var s in l)
+                if (vm.DocumentController.GetId() == s)
+                    return true;
+            return false;
         }
 
-        /// <summary>
-        /// Constructs standard DocumentViewModels from the passed in DocumentModels
-        /// </summary>
-        /// <param name="documents"></param>
-        /// <returns></returns>
-        public ObservableCollection<DocumentViewModel> MakeViewModels(DocumentCollectionFieldModel documents)
+        public void UpdateViewModels(DocumentCollectionFieldModel documents)
         {
-            ObservableCollection<DocumentViewModel> viewModels = new ObservableCollection<DocumentViewModel>();
             var offset = 0;
-            for (int i = 0; i < documents.Data.ToList().Count; i++)
+            foreach (var id in documents.Data)
             {
-                var controller = ContentController.GetController(documents.Data.ToList()[i]) as DocumentController;
+                var controller = ContentController.GetController(id) as DocumentController;
+                if(ViewModelContains(DataBindingSource, id)) continue;
                 var viewModel = new DocumentViewModel(controller, DocContextList);
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
                 {
@@ -551,9 +539,15 @@ namespace Dash
                     viewModel.Position = new Point(x, y);
                     offset += 15;
                 }
-                viewModels.Add(viewModel);
+                viewModel.ManipulationMode = ManipulationModes.System;
+                viewModel.DoubleTapEnabled = false;
+                DataBindingSource.Add(viewModel);
             }
-            return viewModels;
+            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
+            {
+                if (ViewModelContains(documents.Data, DataBindingSource[i])) continue;
+                DataBindingSource.RemoveAt(i);
+            }
         }
 
         /// <summary>

@@ -102,12 +102,14 @@
     <Compile Include="Controllers\DocumentFieldModelController.cs" />
     <Compile Include="Controllers\FieldModelController.cs" />
     <Compile Include="Controllers\ImageFieldModelController.cs" />
+    <Compile Include="Controllers\ListFieldModelController.cs" />
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
     <Compile Include="Controllers\Operators\ApiSourceOperatorController.cs" />
     <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
+    <Compile Include="Models\ListFieldModel.cs" />
     <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />

@@ -270,7 +270,7 @@ namespace Dash {
                     if (f.Value is DocumentFieldModelController)
                         ResponseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
                     if (f.Value is DocumentCollectionFieldModelController)
-                        ResponseAsDocuments = (f.Value as DocumentCollectionFieldModelController).Documents;
+                        ResponseAsDocuments = (f.Value as DocumentCollectionFieldModelController).GetDocuments();
                 } 
 
                 if (ResponseAsDocuments.Count == 0)

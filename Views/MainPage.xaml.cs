@@ -235,9 +235,9 @@ namespace Dash
 
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            //DisplayDocument(new CourtesyDocuments.PostitNote().Document);
+            DisplayDocument(new CourtesyDocuments.PostitNote().Document);
             DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
-            //DisplayDocument(new CourtesyDocuments.Numbers().Document);
+            DisplayDocument(new CourtesyDocuments.Numbers().Document);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

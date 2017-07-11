@@ -12,7 +12,6 @@ namespace Dash
         public FieldModel()
         {
             // Initialize Local Variables
-            OutputReferences = new List<ReferenceFieldModelController>();
 
             // Add Any Events
         }
@@ -23,9 +22,5 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModelController InputReference;
 
-        /// <summary>
-        ///     List of references to fields that take this field as input
-        /// </summary>
-        public List<ReferenceFieldModelController> OutputReferences;
     }
 }

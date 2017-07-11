@@ -58,6 +58,11 @@ namespace Dash
 
         public abstract TypeInfo TypeInfo { get; }
 
+        public virtual bool CheckType(FieldModelController fmc)
+        {
+            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
+        }
+
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
         ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
@@ -73,10 +78,8 @@ namespace Dash
             FieldModel = fieldModel;
             ContentController.AddModel(fieldModel);
             ContentController.AddController(this);
-            OutputReferences = new ObservableCollection<ReferenceFieldModelController>(fieldModel.OutputReferences);
 
             // Add Events
-            OutputReferences.CollectionChanged += OutputReferences_CollectionChanged;
         }
 
         private void OutputReferences_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -99,7 +102,6 @@ namespace Dash
             //}
             var freshList = sender as ObservableCollection<ReferenceFieldModelController>;
             Debug.Assert(freshList != null);
-            FieldModel.OutputReferences = freshList.ToList();
 
             // Update Local
             // Update Server

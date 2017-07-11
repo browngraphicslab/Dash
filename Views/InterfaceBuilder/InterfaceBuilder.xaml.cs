@@ -130,7 +130,13 @@ namespace Dash
                 editableElements.Add(editableBorder);
             }
 
-            _documentView.SetUIElements(editableElements);
+            var canvas = new Canvas();
+            foreach (var frameworkElement in editableElements)
+            {
+                canvas.Children.Add(frameworkElement);
+            }
+
+            _documentView.ViewModel.Content = canvas;
         }
 
         private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)
