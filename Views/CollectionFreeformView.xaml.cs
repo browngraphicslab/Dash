@@ -37,7 +37,7 @@ namespace Dash
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
 
-        private Dictionary<ReferenceFieldModel, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<ReferenceFieldModel, Windows.UI.Xaml.Shapes.Path>();
+        private Dictionary<ReferenceFieldModelController, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<ReferenceFieldModelController, Windows.UI.Xaml.Shapes.Path>();
         //private CollectionView ParentCollection;
         private Canvas parentCanvas;
         public CollectionFreeformView()
@@ -121,8 +121,8 @@ namespace Dash
 
             if (!ioReference.IsOutput)
             {
-                CheckLinePresence(ioReference.ReferenceFieldModelController.ReferenceFieldModel);
-                _lineDict.Add(ioReference.ReferenceFieldModelController.ReferenceFieldModel, _connectionLine);
+                CheckLinePresence(ioReference.ReferenceFieldModelController);
+                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
             }
         }
 
@@ -152,23 +152,29 @@ namespace Dash
                 UndoLine();
                 return;
             }
+            List<DocumentController> context = (DataContext as CollectionViewModel).DocContextList;
+            string outId;
+            string inId;
             if (_currReference.IsOutput)
             {
-                CollectionView.Graph.AddEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController).GetId(), ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController).GetId());
+                outId = ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController, context).GetId();
+                inId = ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController, context).GetId();
             }
             else
             {
-                CollectionView.Graph.AddEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController).GetId());
+                outId = ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController, context).GetId();
+                inId = ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController, context).GetId();
             }
+            CollectionView.Graph.AddEdge(outId, inId);
             if (CollectionView.Graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    CollectionView.Graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController).GetId(), ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController).GetId());
+                    CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 else
                 {
-                    CollectionView.Graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController).GetId(), ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController).GetId());
+                    CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
@@ -177,8 +183,8 @@ namespace Dash
 
             if (!ioReference.IsOutput)
             {
-                CheckLinePresence(ioReference.ReferenceFieldModelController.ReferenceFieldModel);
-                _lineDict.Add(ioReference.ReferenceFieldModelController.ReferenceFieldModel, _connectionLine);
+                CheckLinePresence(ioReference.ReferenceFieldModelController);
+                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
             }
 
             _converter.Element2 = ioReference.FrameworkElement;
@@ -188,12 +194,30 @@ namespace Dash
 
             if (ioReference.IsOutput)
             {
-                ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModelController.DocId).AddInputReference(_currReference.ReferenceFieldModelController.FieldKey, ioReference.ReferenceFieldModelController);
-                _connectionLine = null;
+                ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModelController.DocId)
+                    .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
+                        ioReference.ReferenceFieldModelController);
             }
             else
             {
-                ContentController.GetController<DocumentController>(ioReference.ReferenceFieldModelController.DocId).AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController);
+                var contextList = (DataContext as CollectionViewModel).DocContextList;
+                var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
+                try
+                {
+                    ContentController.GetController<DocumentController>(refDocId)
+                        .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
+                            contextList);
+                }
+                catch (ArgumentException)
+                {
+                    CancelDrag(ioReference.PointerArgs.Pointer);
+                }
+            }
+
+            if (!ioReference.IsOutput && _connectionLine != null)
+            {
+                CheckLinePresence(ioReference.ReferenceFieldModelController);
+                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
                 _connectionLine = null;
             }
         }
@@ -203,7 +227,7 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(ReferenceFieldModel model)
+        private void CheckLinePresence(ReferenceFieldModelController model)
         {
             if (_lineDict.ContainsKey(model))
             {
