@@ -411,6 +411,7 @@ namespace Dash
                 var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList);
                 if (fieldModelController != null)
                 {
+                    var newDocContextList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);
                     newDocContextList.Add(this);
                     var doc = GetDereferencedField(fieldModelController, newDocContextList) as DocumentFieldModelController;
                     Debug.Assert(doc != null);
