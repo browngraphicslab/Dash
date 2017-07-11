@@ -16,7 +16,7 @@
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
     Tapped="CollectionView_OnTapped">
 
-    <Grid x:Name="xOuterGrid" BorderBrush="Transparent" BorderThickness="3">
+    <Grid x:Name="xOuterGrid" BorderBrush="Transparent" BorderThickness="3" CornerRadius="3">
 
         <Grid>
             <Grid.ColumnDefinitions>
