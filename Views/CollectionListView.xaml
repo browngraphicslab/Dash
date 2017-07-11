@@ -22,7 +22,8 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           CanDragItems="True"
                           CanReorderItems="True"
-                          AllowDrop="True">
+                          AllowDrop="True"
+                  ManipulationMode="None">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>

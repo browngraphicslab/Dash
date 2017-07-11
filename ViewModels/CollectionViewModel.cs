@@ -85,6 +85,7 @@ namespace Dash
         {
             UpdateViewModels(MakeViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel));
         }
+
         #region Event Handlers
 
         /// <summary>
@@ -189,6 +190,8 @@ namespace Dash
             }
             return viewModels;
         }
+
+
         #endregion
 
         

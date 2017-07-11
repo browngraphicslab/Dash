@@ -19,7 +19,8 @@
                   ScrollViewer.VerticalScrollBarVisibility="Disabled"
                   CanDragItems="True"
                   CanReorderItems="True"
-                  AllowDrop="True">
+                  AllowDrop="True"
+                  ManipulationMode="None">
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"

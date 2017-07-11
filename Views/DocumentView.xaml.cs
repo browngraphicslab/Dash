@@ -311,10 +311,5 @@ namespace Dash
             var position = e.GetPosition(OverlayCanvas.Instance);
             OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
         }
-
-        private void DocumentView_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            Util.SelectedCollectionView = null;
-        }
     }
 }

@@ -35,16 +35,16 @@ namespace Dash
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
+
         //i think this belong elsewhere
         public static Graph<string> Graph = new Graph<string>();
-        private Canvas FreeformCanvas; //TODO why we need this
-        private bool _isHasFieldPreviouslySelected; //TODO what this do
+
         public UserControl CurrentView { get; set; }
         private OverlayMenu _colMenu = null;
-        private bool _enabled;
-        private bool _allItemsSelected;
 
         public CollectionViewModel ViewModel;
+
+        private CollectionView _activeCollection;
 
 
         public CollectionView(CollectionViewModel vm)
@@ -55,7 +55,6 @@ namespace Dash
             docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
-            FreeformCanvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
             SetEventHandlers();
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
@@ -67,11 +66,6 @@ namespace Dash
         {
             Loaded += CollectionView_Loaded;
             ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
-            //FreeformOption.Tapped += FreeformButton_Tapped;
-            //GridViewOption.Tapped += GridViewButton_Tapped;
-            //ListOption.Tapped += ListViewButton_Tapped;
-            //CloseButton.Tapped += CloseButton_Tapped;
-            //DeleteSelected.Tapped += ViewModel.DeleteSelected_Tapped;
             DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
             DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
             ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
@@ -92,42 +86,7 @@ namespace Dash
             e.Handled = true;
         }
 
-        /// <summary>
-        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SetFreeformView()
-        {
-            if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView { DataContext = ViewModel };
-            (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
-            xContentControl.Content = CurrentView;
-        }
-        /// <summary>
-        /// Changes the view to the ListView by making that Grid visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SetListView()
-        {
-            if (CurrentView is CollectionListView) return;
-            CurrentView = new CollectionListView(this) { DataContext = ViewModel };
-            (CurrentView as CollectionListView).HListView.SelectionChanged += ViewModel.SelectionChanged;
-            xContentControl.Content = CurrentView;
-        }
-        /// <summary>
-        /// Changes the view to the GridView by making that Grid visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SetGridView()
-        {
-            if (CurrentView is CollectionGridView) return;
-            CurrentView = new CollectionGridView(this) { DataContext = ViewModel };
-            (CurrentView as CollectionGridView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
-            xContentControl.Content = CurrentView;
-        }
+        
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -152,8 +111,6 @@ namespace Dash
             else
             {
                 OpenMenu();
-                Util.SelectedCollectionView = this;
-                //xCoverGrid.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -284,8 +241,6 @@ namespace Dash
                 scale.ScaleY = 1;
             }
         }
-
-
 
         /// <summary>
         /// Pans and zooms upon touch manipulation 
@@ -602,21 +557,44 @@ namespace Dash
             }
         }
 
-        public void SetEnabled(bool enabled)
+        
+
+        #region Menu
+        /// <summary>
+        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void SetFreeformView()
         {
-            if (enabled)
-            {
-                CurrentView.IsHitTestVisible = true;
-                CurrentView.IsEnabled = true;
-            }
-            else
-            {
-                CurrentView.IsHitTestVisible = false;
-                CurrentView.IsEnabled = false;
-                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                if (_colMenu != null)
-                    CloseMenu();
-            }
+            if (CurrentView is CollectionFreeformView) return;
+            CurrentView = new CollectionFreeformView { DataContext = ViewModel };
+            (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
+            xContentControl.Content = CurrentView;
+        }
+        /// <summary>
+        /// Changes the view to the ListView by making that Grid visible in the CollectionView.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void SetListView()
+        {
+            if (CurrentView is CollectionListView) return;
+            CurrentView = new CollectionListView(this) { DataContext = ViewModel };
+            (CurrentView as CollectionListView).HListView.SelectionChanged += ViewModel.SelectionChanged;
+            xContentControl.Content = CurrentView;
+        }
+        /// <summary>
+        /// Changes the view to the GridView by making that Grid visible in the CollectionView.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void SetGridView()
+        {
+            if (CurrentView is CollectionGridView) return;
+            CurrentView = new CollectionGridView(this) { DataContext = ViewModel };
+            (CurrentView as CollectionGridView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
+            xContentControl.Content = CurrentView;
         }
 
         private void MakeSelectionModeMultiple()
@@ -634,7 +612,7 @@ namespace Dash
 
         private void SelectAllItems()
         {
-            
+
             if (CurrentView is CollectionGridView)
             {
                 var gridView = (CurrentView as CollectionGridView).xGridView;
@@ -662,23 +640,15 @@ namespace Dash
             _colMenu.BackToCollectionMenu();
         }
 
-        private void DeleteCollection()
-        {
-            var contentPresentor = this.GetFirstAncestorOfType<ContentPresenter>();
-            (VisualTreeHelper.GetParent(contentPresentor) as Canvas)?.Children.Remove(this
-                .GetFirstAncestorOfType<ContentPresenter>());
-        }
-
         private void DeleteSelection()
         {
             ViewModel.DeleteSelected_Tapped(null, null);
         }
-        
+
 
         private void OpenMenu()
         {
             var multipleSelection = new Action(MakeSelectionModeMultiple);
-            var deleteCollection = new Action(DeleteCollection);
             var deleteSelection = new Action(DeleteSelection);
             var singleSelection = new Action(MakeSelectionModeSingle);
             var selectAll = new Action(SelectAllItems);
@@ -693,8 +663,7 @@ namespace Dash
                 },
                 new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
                 new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
-                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
-                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection)
+                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform)
             };
             var documentButtons = new List<MenuButton>()
             {
@@ -706,18 +675,55 @@ namespace Dash
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
                 new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
             };
-            _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0,0),
+            _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0, 0),
                 collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
         }
 
+
+        #endregion
+
+        #region Collection Activation
+
+        public void SetEnabled(bool enabled)
+        {
+            if (enabled)
+            {
+                CurrentView.IsHitTestVisible = true;
+                CurrentView.IsEnabled = true;
+                xOuterGrid.Background = new SolidColorBrush(Colors.White);
+            }
+            else
+            {
+                CurrentView.IsHitTestVisible = false;
+                CurrentView.IsEnabled = false;
+                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                if (_colMenu != null)
+                    CloseMenu();
+                xOuterGrid.Background = new SolidColorBrush(Colors.AliceBlue);
+            }
+        }
+
         private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (Util.SelectedCollectionView != this)
-            {
-                Util.SelectedCollectionView = this;
-            }
+            ViewModel.ParentCollection?.SetActiveCollection(this);
             e.Handled = true;
         }
+
+        public void SetActiveCollection(CollectionView collection)
+        {
+            if (_activeCollection != null)
+            {
+                _activeCollection.SetEnabled(false);
+                foreach (var col in _activeCollection.GetDescendantsOfType<CollectionView>())
+                {
+                    col.SetEnabled(false);
+                }
+            }
+            _activeCollection = collection;
+            _activeCollection.SetEnabled(true);
+        }
+
+        #endregion
     }
 }
