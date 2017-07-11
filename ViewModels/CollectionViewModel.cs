@@ -18,8 +18,7 @@ namespace Dash
     public class CollectionViewModel : ViewModelBase
     { 
 
-        public CollectionView ParentCollection { get; set; }
-        public DocumentView ParentDocument { get; set; }
+
     
         #region Properties
         public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }

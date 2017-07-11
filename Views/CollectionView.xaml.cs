@@ -46,6 +46,9 @@ namespace Dash
 
         private CollectionView _activeCollection;
 
+        public CollectionView ParentCollection { get; set; }
+        public DocumentView ParentDocument { get; set; }
+
 
         public CollectionView(CollectionViewModel vm)
         {
@@ -94,9 +97,9 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            ViewModel.ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            ViewModel.ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            var parentDocument = ViewModel.ParentDocument;
+            ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            var parentDocument = ParentDocument;
 
             if (parentDocument != MainPage.Instance.MainDocView)
             {
@@ -105,10 +108,10 @@ namespace Dash
                 {
                     var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
                     if (height != null)
-                        Height = (double) height;
+                        Height = (double) height - 3;
                     var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
                     if (width != null)
-                        Width = (double) width;
+                        Width = (double) width - 3;
                 };
                 SetEnabled(false);
             }
@@ -252,7 +255,7 @@ namespace Dash
         /// </summary>
         private void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            if (!(CurrentView is CollectionFreeformView) || !CurrentView.IsEnabled) return;
+            if (!(CurrentView is CollectionFreeformView) || !CurrentView.IsHitTestVisible) return;
             Canvas canvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
             e.Handled = true;
@@ -367,7 +370,7 @@ namespace Dash
         /// </summary>
         private void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            if (!(CurrentView is CollectionFreeformView) || !CurrentView.IsEnabled) return;
+            if (!(CurrentView is CollectionFreeformView) || !CurrentView.IsHitTestVisible) return;
             Canvas canvas = (CurrentView as CollectionFreeformView).xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
             e.Handled = true;
@@ -478,21 +481,21 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, ViewModel.ParentDocument);
-            CollectionView view = ViewModel.ParentCollection;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, ParentDocument);
+            CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (ViewModel.ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, ViewModel.ParentDocument);
-            CollectionView view = ViewModel.ParentCollection;
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, ParentDocument);
+            CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
 
@@ -696,13 +699,13 @@ namespace Dash
         {
             if (enabled)
             {
-                CurrentView.IsEnabled = true;
-                xOuterGrid.BorderThickness = new Thickness(3);
+                CurrentView.IsHitTestVisible = true;
+                xOuterGrid.BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush; 
             }
             else
             {
-                CurrentView.IsEnabled = false;
-                xOuterGrid.BorderThickness = new Thickness(0);
+                CurrentView.IsHitTestVisible = false;
+                xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 if (_colMenu != null)
                     CloseMenu();
@@ -711,9 +714,9 @@ namespace Dash
 
         private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ViewModel.ParentCollection?.GetActiveCollection() != this)
+            if (ParentCollection?.GetActiveCollection() != this)
             {
-                ViewModel.ParentCollection?.SetActiveCollection(this);
+                ParentCollection?.SetActiveCollection(this);
             }
             SetActiveCollection(null);
             e.Handled = true;
