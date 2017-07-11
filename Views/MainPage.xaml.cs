@@ -59,8 +59,8 @@ namespace Dash
 
             //TODO this seriously slows down the document 
 
-            var jsonDoc = JsonToDashUtil.RunTests();
-            DisplayDocument(jsonDoc);
+           // var jsonDoc = JsonToDashUtil.RunTests();
+           // DisplayDocument(jsonDoc);
 
         }
 
@@ -313,6 +313,10 @@ namespace Dash
         public void XCanvas_DragOver_1(object sender, DragEventArgs e)
         {
             //e.AcceptedOperation = DataPackageOperation.Copy;
+        }
+
+        private void xOverlayCanvas_Loaded(object sender, RoutedEventArgs e) {
+
         }
     }
 }

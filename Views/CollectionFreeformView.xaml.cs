@@ -22,6 +22,9 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView : UserControl
     {
+        public bool CanLink;
+        public PointerRoutedEventArgs PointerArgs;
+
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
         /// </summary>
@@ -33,6 +36,7 @@ namespace Dash
         private Windows.UI.Xaml.Shapes.Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
+
         private Dictionary<ReferenceFieldModel, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<ReferenceFieldModel, Windows.UI.Xaml.Shapes.Path>();
         //private CollectionView ParentCollection;
         private Canvas parentCanvas;
@@ -66,6 +70,12 @@ namespace Dash
 
         public void StartDrag(OperatorView.IOReference ioReference)
         {
+
+            if (!CanLink) {
+                PointerArgs = ioReference.PointerArgs;
+                return;
+            }
+
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
             parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 

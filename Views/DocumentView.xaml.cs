@@ -8,6 +8,8 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
+using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -31,27 +33,37 @@ namespace Dash
         public event OperatorView.IODragEventHandler IODragEnded;
 
         public ICollectionView View { get; set; }
+        private double startWidth, startHeight; // used for restoring on double click in icon view
 
         public DocumentView()
         {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
-
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            
             // add manipulation code
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             manipulator = new ManipulationControls(this);
-
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 200;
-            MinHeight = 50;
+            MinWidth = 64;
+            MinHeight = 64;
+
+            startWidth = Width;
+            startHeight = Height;
+
+            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            
         }
-
+        
+        /// <summary>
+        /// Update viewmodel when manipulator moves document
+        /// </summary>
+        /// <param name="translationDelta"></param>
         private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
         {
             var documentViewModel = this.DataContext as DocumentViewModel;
@@ -78,91 +90,11 @@ namespace Dash
             dvm.Width = ActualWidth + dx;
             dvm.Height = ActualHeight + dy;
 
-
-            //Width = ActualWidth + dx;
-            //Height = ActualHeight + dy;
-            ////Changes width if permissible within size constraints.
-            //if (OuterGridWidth + dx > CellSize || dx > 0)
-            //{
-            //    OuterGridWidth += dx;
-            //    if (ProportionalScaling && DisplayingItems())
-            //    {
-            //        var scaleFactor = OuterGridWidth / (OuterGridWidth - dx);
-            //        CellSize = CellSize * scaleFactor;
-            //        ScaleDocumentsToFitCell();
-
-            //        //Takes care of proportional height resizing if proportional dragger is used
-            //        if (ListViewVisibility == Visibility.Visible)
-            //        {
-            //            OuterGridHeight = CellSize + 44;
-
-            //        }
-            //        else if (GridViewVisibility == Visibility.Visible)
-            //        {
-            //            var aspectRatio = OuterGridHeight / OuterGridWidth;
-            //            OuterGridHeight += dx * aspectRatio;
-            //        }
-            //    }
-            //}
-
-            ////Changes height if permissible within size constraints; makes the height of the Grid track the height of the ListView if the ListView is showing and proportional scaling is allowed.
-            //if ((OuterGridHeight + dy > CellSize + 50 || dy > 0) && (!ProportionalScaling || !DisplayingItems()))
-            //{
-            //    if (DisplayingItems() && ListViewVisibility == Visibility.Visible)
-            //    {
-            //        OuterGridHeight = CellSize + 44;
-            //    }
-            //    else
-            //    {
-            //        OuterGridHeight += dy;
-            //    }
-            //}
-
-            //SetDimensions();
+            // todo: remove this and replace with binding // debug why x:Bind fails
+            Width = ActualWidth + dx;
+            Height = ActualHeight + dy;
+            
         }
-
-        ///// <summary>
-        ///// Sets the sizes and/or locations of all of the components of the CollectionView correspoding to the size of the Grid.
-        ///// </summary>
-        //public void SetDimensions()
-        //{
-        //    ContainerGridHeight = OuterGridHeight - 45;
-        //    ContainerGridWidth = OuterGridWidth - 2;
-
-        //    DraggerMargin = new Thickness(OuterGridWidth - 62, OuterGridHeight - 20, 0, 0);
-        //    ProportionalDraggerMargin = new Thickness(OuterGridWidth - 22, OuterGridHeight - 20, 0, 0);
-        //    CloseButtonMargin = new Thickness(OuterGridWidth - 34, 0, 0, 0);
-
-        //    SelectButtonMargin = new Thickness(0, OuterGridHeight - 23, 0, 0);
-
-        //    BottomBarMargin = new Thickness(0, OuterGridHeight - 21, 0, 0);
-
-        //    DeleteButtonMargin = new Thickness(42, OuterGridHeight - 23, 0, 0);
-        //}
-
-
-        /// <summary>
-        /// Resizes all of the documents to fit the CellSize, mainting their aspect ratios.
-        /// </summary>
-        //private void ScaleDocumentsToFitCell()
-        //{
-        //    foreach (var dvm in DocumentViewModels)
-        //    {
-        //        var aspectRatio = dvm.Width / dvm.Height;
-        //        if (dvm.Width > dvm.Height)
-        //        {
-        //            //dvm.Width = CellSize;
-        //            //dvm.Height = CellSize / aspectRatio;
-        //        }
-        //        else
-        //        {
-        //            //dvm.Height = CellSize;
-        //            //dvm.Width = CellSize * aspectRatio;
-        //        }
-        //    }
-
-        //}
-
 
         /// <summary>
         /// Called when the user holds the dragger button, or finishes holding it; 
@@ -209,6 +141,28 @@ namespace Dash
         }
 
         /// <summary>
+        /// Called whenever a field is changed on the document
+        /// </summary>
+        /// <param name="fieldReference"></param>
+        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
+        {
+            // ResetFields(_vm);
+            // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
+        }
+
+        private void updateIcon() {
+            // when you want a new icon, you have to add a check for it here!
+            if (ViewModel.IconType == IconTypeEnum.Document) {
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
+            } else if (ViewModel.IconType == IconTypeEnum.Collection) {
+                Debug.WriteLine("here!");
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
+            } else if (ViewModel.IconType == IconTypeEnum.Api) {
+                xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
+            }
+        }
+
+        /// <summary>
         /// The first time the local DocumentViewModel _vm can be set to the new datacontext
         /// this resets the fields otherwise does nothing
         /// </summary>
@@ -217,8 +171,9 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null)
+            if (ViewModel != null) {
                 return;
+            }
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)
@@ -250,6 +205,20 @@ namespace Dash
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+
+            // update collapse info
+            // collapse to icon view on resize
+            int pad = 32;
+            if (Width < MinWidth + pad && Height < MinHeight + pad) {
+                updateIcon();
+                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            } else {
+                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            }
         }
 
         private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -257,5 +226,60 @@ namespace Dash
             var position = e.GetPosition(OverlayCanvas.Instance);
             OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
         }
+
+        bool singleTap = false;
+
+        /// <summary>
+        /// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
+        /// on signle tap to prevent flickering.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+
+            
+                if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
+                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                else
+                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            
+
+            singleTap = false;
+            e.Handled = true;
+        }
+        
+        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+            // if in icon view expand to default size
+            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
+                Height = 300;
+                Width = 300;
+
+                var dvm = DataContext as DocumentViewModel;
+                dvm.Width = 300;
+                dvm.Height = 300;
+
+                // if in default view, show context menu
+            } else {
+                Height = MinWidth;
+                Width = MinHeight;
+
+                var dvm = DataContext as DocumentViewModel;
+                dvm.Width = MinWidth;
+                dvm.Height = MinHeight;
+            }
+
+            e.Handled = true; // prevent propagating
+        }
+
+
+        // hides context menu on single tap
+        private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
+            singleTap = true;
+            await Task.Delay(150);
+            if (singleTap)
+                xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                
+        }
+        
     }
 }

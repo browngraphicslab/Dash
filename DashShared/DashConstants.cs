@@ -111,6 +111,7 @@ namespace DashShared
             public static Key HeightFieldKey = new Key("9ED34365-C821-4FB2-A955-A8C0B10C77C5", "HeightFieldKey");
             public static Key DataKey = new Key("3B1BD1C3-1BCD-469D-B847-835B565B53EB", "Data");
             public static Key PositionFieldKey = new Key("E2AB7D27-FA81-4D88-B2FA-42B7888525AF", "PositionFieldKey");
+            public static Key IconTypeFieldKey = new Key("ICON7D27-FA81-4D88-B2FA-42B7888525AF", "Icon Type FieldKey");
         }
 
         public static class DocumentTypeStore

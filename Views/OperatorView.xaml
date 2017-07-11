@@ -9,42 +9,45 @@
     d:DesignHeight="300"
     d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" >
 
-    <Grid x:Name="XGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-            <ColumnDefinition Width="*"></ColumnDefinition>
-            <ColumnDefinition Width="Auto"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <ListView x:Name="InputListView" Grid.Column="0" SelectionMode="None">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding Key.Name}" Grid.Column="1"></TextBlock>
-                        <!-- This is the draggable node handle -->
-                        <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="0" 
+    <Grid>
+        <Image Source="ms-appx:///Assets/operator_bg.png"/>
+        <Grid x:Name="XGrid" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition Width="Auto"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <ListView x:Name="InputListView" Grid.Column="0" SelectionMode="None">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Key.Name}" Grid.Column="1"></TextBlock>
+                            <!-- This is the draggable node handle -->
+                            <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="0" 
                                  PointerPressed="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ListView>
-        <ListView x:Name="OutputListView" Grid.Column="2" SelectionMode="None">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                            <ColumnDefinition Width="Auto"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{Binding Key.Name}" Grid.Column="0"></TextBlock>
-                        <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="1" 
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListView>
+            <ListView x:Name="OutputListView" Grid.Column="2" SelectionMode="None">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Key.Name}" Grid.Column="0"></TextBlock>
+                            <Ellipse Width="20" Height="20" Fill="Black" Grid.Column="1" 
                                  PointerPressed="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ListView>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ListView>
+        </Grid>
     </Grid>
 </UserControl>

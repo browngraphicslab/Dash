@@ -36,6 +36,33 @@ namespace Dash
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
+        // whether the user can draw links currently or not
+        public bool CanLink {
+            get {
+                if (CurrentView is CollectionFreeformView)
+                    return (CurrentView as CollectionFreeformView).CanLink;
+                else
+                    return false;
+            } set {
+                if (CurrentView is CollectionFreeformView)
+                    (CurrentView as CollectionFreeformView).CanLink = value;
+            }
+        }
+
+        public PointerRoutedEventArgs PointerArgs {
+            get {
+                if (CurrentView is CollectionFreeformView)
+                    return (CurrentView as CollectionFreeformView).PointerArgs;
+                else
+                    return null;
+            }
+            set {
+                if (CurrentView is CollectionFreeformView)
+                    (CurrentView as CollectionFreeformView).PointerArgs = value;
+            }
+
+        }
+
         //i think this belong elsewhere
         public static Graph<string> Graph = new Graph<string>();
 
@@ -59,6 +86,8 @@ namespace Dash
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();
+
+            CanLink = false;
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
@@ -473,7 +502,149 @@ namespace Dash
         {
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
+        
+        /// <summary>
+        /// Make sure the canvas is still in bounds after resize
+        /// </summary>
+        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            TranslateTransform translate = new TranslateTransform();
 
+            //Calculate bottomRight corner of screen in canvas space before and after resize 
+            Debug.Assert(DocumentViewContainerGrid.RenderTransform != null);
+            Debug.Assert(DocumentViewContainerGrid.RenderTransform.Inverse != null);
+            Point oldBottomRight =
+                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
+            Point bottomRight =
+                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
+
+            //Check if new bottom right is out of bounds
+            bool outOfBounds = false;
+            if (bottomRight.X > Grid.ActualWidth - 1)
+            {
+                translate.X = -(oldBottomRight.X - bottomRight.X);
+                outOfBounds = true;
+            }
+            if (bottomRight.Y > Grid.ActualHeight - 1)
+            {
+                translate.Y = -(oldBottomRight.Y - bottomRight.Y);
+                outOfBounds = true;
+            }
+            //If it is out of bounds, translate so that is is in bounds
+            if (outOfBounds)
+            {
+                TransformGroup composite = new TransformGroup();
+                composite.Children.Add(translate);
+                composite.Children.Add(DocumentViewContainerGrid.RenderTransform);
+                DocumentViewContainerGrid.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            }
+
+            Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
+        }
+
+        #region Operator connection stuff
+        /// <summary>
+        /// Helper class to detect cycles 
+        /// </summary>
+        private Graph<string> _graph = new Graph<string>();
+        /// <summary>
+        /// Line to create and display connection lines between OperationView fields and Document fields 
+        /// </summary>
+        private Path _connectionLine;
+
+        private MultiBinding<PathFigureCollection> _lineBinding;
+        private BezierConverter _converter;
+
+        /// <summary>
+        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
+        /// </summary>
+        private OperatorView.IOReference _currReference;
+
+        private Dictionary<ReferenceFieldModelController, Path> _lineDict = new Dictionary<ReferenceFieldModelController, Path>();
+
+        /// <summary>
+        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
+        /// </summary>
+        private HashSet<uint> _currentPointers = new HashSet<uint>();
+
+        /// <summary>
+        /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
+        /// </summary>
+        //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
+
+        private class BezierConverter : IValueConverter
+        {
+            public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
+            {
+                Element1 = element1;
+                Element2 = element2;
+                ToElement = toElement;
+                _figure = new PathFigure();
+                _bezier = new BezierSegment();
+                _figure.Segments.Add(_bezier);
+                _col.Add(_figure);
+            }
+
+            public FrameworkElement Element1 { get; set; }
+            public FrameworkElement Element2 { get; set; }
+
+            public FrameworkElement ToElement { get; set; }
+
+            public Point Pos2 { get; set; }
+
+            private PathFigureCollection _col = new PathFigureCollection();
+            private PathFigure _figure;
+            private BezierSegment _bezier;
+
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                var pos1 = Element1.TransformToVisual(ToElement)
+                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
+                var pos2 = Element2?.TransformToVisual(ToElement)
+                               .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+
+                double offset = Math.Abs((pos1.X - pos2.X) / 3);
+                if (pos1.X < pos2.X)
+                {
+                    _figure.StartPoint = new Point(pos1.X + Element1.ActualWidth / 2, pos1.Y);
+                    _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
+                    _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
+                    _bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                }
+                else
+                {
+                    _figure.StartPoint = new Point(pos1.X - Element1.ActualWidth / 2, pos1.Y);
+                    _bezier.Point1 = new Point(pos1.X - offset, pos1.Y);
+                    _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
+                    _bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                }
+
+                return _col;
+            }
+            
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class VisibilityConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                bool isEditorMode = (bool)value;
+                return isEditorMode ? Visibility.Visible : Visibility.Collapsed;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        #endregion
+
+        
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
