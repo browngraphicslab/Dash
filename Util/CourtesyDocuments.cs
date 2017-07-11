@@ -88,8 +88,10 @@ namespace Dash {
                     if (view == null) return; // we can't always assume we're on a collection
                     Debug.WriteLine("we are aholding!");
                     view.CanLink = true;
-                    view.StartDrag(new OperatorView.IOReference(refFieldModelController, true, view.PointerArgs, renderElement,
+                    if (view.CurrentView is CollectionFreeformView)
+                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(refFieldModelController, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
+
                 };
                 renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
@@ -100,8 +102,11 @@ namespace Dash {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     view.CanLink = false;
                     if (view == null) return; // we can't always assume we're on a collection
-                    view.EndDrag(new OperatorView.IOReference(refFieldModelController, false, args, renderElement,
+
+                    (view.CurrentView as CollectionFreeformView)?.EndDrag(
+                        new OperatorView.IOReference(refFieldModelController, false, args, renderElement, 
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
+
                 };
             }
 
@@ -208,7 +213,9 @@ namespace Dash {
                     LayoutDocumentController = layoutField?.Data;
             }
 
-            public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList = null) {
+            public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList)
+            {
+
                 var layoutDataField =
                         LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
                 if (layoutDataField is DocumentCollectionFieldModelController)
@@ -578,30 +585,21 @@ namespace Dash {
             static public FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList) {
                 var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) ?? null;
-                if (data != null) {
-                    // defaults to fill width of parent if no width is provided in the docController
-                    var w = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) != null
-                        ? (docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController)
-                        .Data
-                        : double.NaN;
-                    var h = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) != null
-                        ? (docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController)
-                        .Data
-                        : double.NaN;
+
+                if (data != null)
+                {
+                    var opacity = (docController.GetDereferencedField(new Key("opacity", "opacity"), docContextList) as NumberFieldModelController)?.Data;
+                  
+                    double opacityValue = opacity.HasValue ? (double)opacity :1;
 
                     var collectionFieldModelController = ContentController
                         .DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data, docContextList);
                     Debug.Assert(collectionFieldModelController != null);
-                    var collectionModel =
-                        new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                    var collectionViewModel = new CollectionViewModel(collectionModel, docContextList);
+
+                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController, docContextList);
+
                     var view = new CollectionView(collectionViewModel);
-
-                    //if (w > 0)
-                    //    view.Width = w;
-                    //if (h > 0)
-                    //    view.Height = h;
-
+                    view.Opacity = opacityValue;
                     return view;
                 }
                 return new Grid();
@@ -683,45 +681,57 @@ namespace Dash {
             public static Key Image1FieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField1");
             public static Key Image2FieldKey = new Key("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
             public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
-            static DocumentController _prototypeLayout = CreatePrototypeLayout();
+            static DocumentController _prototypeTwoImages = CreatePrototype2Images();
+            static DocumentController _prototypeLayout   = CreatePrototypeLayout();
 
-            static DocumentController CreatePrototypeLayout() {
-                var fields = DefaultLayoutFields(0, 0, 400, 400, null);
-                //fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
-                //fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
-                //fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+            static DocumentController CreatePrototype2Images()
+            {
+                // bcz: default values for data fields can be added, but should not be needed
+                Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+                fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
+                fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
+                fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
 
-                var layout = new DocumentController(fields, TwoImagesType);
-
+                //return new DocumentController(fields, TwoImagesType);
+                return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
+            }
+            /// <summary>
+            /// Creates a default Layout for a Two Images document.  This requires that a prototype of a Two Images document exist so that
+            /// this layout can reference the fields of the prototype.  When a delegate is made of a Two Images document,  this layout's 
+            /// field references will automatically point to the delegate's (not the prototype's) values for those fields because of the
+            /// context list used in MakeView().
+            /// </summary>
+            /// <returns></returns>
+            static DocumentController CreatePrototypeLayout()
+            {
                 // set the default layout parameters on prototypes of field layout documents
                 // these prototypes will be overridden by delegates when an instance is created
-                var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(layout.GetId(), Image1FieldKey), 0, 20, 200, 200);
-                var prototypeImage2Layout = new ImageBox(new ReferenceFieldModelController(layout.GetId(), Image2FieldKey), 0, 220, 200, 200);
-                var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(layout.GetId(), TextFieldKey), 0, 0, 200, 50);
-
-                var cBox = new CollectionBox(new DocumentCollectionFieldModelController(new[] { prototypeTextLayout.Document,
-                                                                                                prototypeImage1Layout.Document,
-                                                                                                prototypeImage2Layout.Document })).Document;
-                SetLayoutForDocument(layout, cBox);
-                return layout;
+                var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), Image1FieldKey),   0, 50, 200, 200);
+                var prototypeImage2Layout = new ImageBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), Image2FieldKey),   0, 250, 200, 200);
+                var prototypeTextLayout   = new TextingBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), TextFieldKey),   0, 0, 200, 50);
+                var prototypeLayout       = new CollectionBox(new DocumentCollectionFieldModelController(new[] { prototypeTextLayout.Document,
+                                                                                                                 prototypeImage1Layout.Document,
+                                                                                                                 prototypeImage2Layout.Document }));
+                prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(500), true);
+                prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+                return prototypeLayout.Document;
             }
-            static int times = 0;
-            public TwoImages(bool displayFieldsAsDocuments) {
-                Document = _prototypeLayout.MakeDelegate();
 
-                if (times++ % 2 == 1) {
-                    Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
-                    Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
-                    Document.SetField(TextFieldKey, new TextFieldModelController("Hello World!"), true);
-                    Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
-                    Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
-                } else {
-                    Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
-                    Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
-                    Document.SetField(TextFieldKey, new TextFieldModelController("Bye World!"), true);
-                    Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
-                    Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
-                }
+            public TwoImages(bool displayFieldsAsDocuments)
+            {
+                Document = _prototypeTwoImages.MakeDelegate();
+                
+                Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
+                Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
+                Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
+                Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
+
+                var docLayout = _prototypeLayout.MakeDelegate();
+                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point(0,0)), true);
+                docLayout.SetField(new Key("opacity", "opacity"), new NumberFieldModelController(0.8), true);
+                SetLayoutForDocument(Document, docLayout);
+                Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
+
 
                 if (displayFieldsAsDocuments) {
                     //var documentFieldModel = new DocumentCollectionFieldModel(new DocumentModel[] { tBox.DocumentModel, imBox1.DocumentModel, imBox2.DocumentModel });
@@ -1046,9 +1056,8 @@ namespace Dash {
                 var collectionFieldModelController = ContentController
                     .DereferenceToRootFieldModel<DocumentCollectionFieldModelController>(data, docContextList);
                 Debug.Assert(collectionFieldModelController != null);
-                var collectionModel =
-                    new CollectionModel(collectionFieldModelController.DocumentCollectionFieldModel, docController);
-                var collectionViewModel = new CollectionViewModel(collectionModel, docContextList);
+
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController, docContextList);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 

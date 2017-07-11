@@ -73,9 +73,6 @@ namespace Dash
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
             DataContext = documentViewModel;
-            
-            // reset the fields on the documetn to be those displayed by the documentViewModel
-            ResetFields(documentViewModel);
         }
 
 
@@ -144,33 +141,6 @@ namespace Dash
         }
 
         /// <summary>
-        /// Resets the fields on the document to exactly resemble the fields the DocumentViewModel wants to display
-        /// </summary>
-        /// <param name="documentViewModel"></param>
-        public void ResetFields(DocumentViewModel documentViewModel)
-        {
-            //clear any current children (fields)and then add them over again
-
-            XGrid.Children.Clear();
-            var element = documentViewModel.DocumentController.makeViewUI(documentViewModel.DocContextList);
-
-            XGrid.Children.Add(element);
-        }
-
-        /// <summary>
-        /// Hacky way of adding the editable fields to the document in the interface builder
-        /// </summary>
-        /// <param name="uiElements"></param>
-        public void SetUIElements(List<FrameworkElement> uiElements)
-        {
-            XGrid.Children.Clear();
-            foreach (var element in uiElements)
-            {
-                XGrid.Children.Add(element);
-            }
-        }
-
-        /// <summary>
         /// Called whenever a field is changed on the document
         /// </summary>
         /// <param name="fieldReference"></param>
@@ -208,25 +178,6 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
-
-            // update icon
-
-
-            //ObservableConvertCollection collection = new ObservableConvertCollection(_vm.DataBindingSource, this);
-            //DocumentsControl.SetBinding(ItemsControl.ItemsSourceProperty, new Binding
-            //{
-            //    Source = collection,
-            //});
-            //collection.CollectionChanged += delegate { Debug.WriteLine("hi"); }; 
-
-
-            ViewModel.OnLayoutChanged += delegate
-            {
-                ResetFields(ViewModel);
-            };
-
-            // otherwise layout the document according to the _vm
-            ResetFields(ViewModel);
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
