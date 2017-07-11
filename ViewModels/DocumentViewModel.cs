@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -22,12 +23,18 @@ namespace Dash
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
 
-        public delegate void OnLayoutChangedHandler(DocumentViewModel sender);
-
-        public event OnLayoutChangedHandler OnLayoutChanged;
-
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
+
+        private FrameworkElement _content;
+        public FrameworkElement Content
+        {
+            get { return _content; }
+            set
+            {
+                SetProperty(ref _content, value);
+            }
+        }
 
         public double Width
         {
@@ -160,12 +167,18 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldModelController, true);
             }
             Height = heightFieldModelController.Data;
-            heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent; ;
-
-            if (layoutDocController != null)
-                layoutDocController.OnLayoutChanged += DocumentController_OnLayoutChanged;
+            heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent;
 
             DataBindingSource.Add(documentController.DocumentModel);
+
+            Content = documentController.makeViewUI(docContextList);
+            documentController.DocumentFieldUpdated += delegate(FieldModelController value, FieldModelController newValue, ReferenceFieldModelController reference)
+            {
+                if (reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
+                {
+                    Content = DocumentController.makeViewUI(DocContextList);
+                }
+            };
         }
 
         private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
@@ -193,11 +206,6 @@ namespace Dash
             {
                 Position = posFieldModelController.Data;
             }
-        }
-
-        private void DocumentController_OnLayoutChanged(DocumentController sender)
-        {
-            OnLayoutChanged?.Invoke(this);
         }
     }
 }

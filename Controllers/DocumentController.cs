@@ -10,9 +10,10 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
-        public delegate void OnLayoutChangedHandler(DocumentController sender);
+        public delegate void OnDocumentFieldUpdatedHandler(FieldModelController oldValue, FieldModelController newValue,
+            ReferenceFieldModelController reference);
 
-        public event OnLayoutChangedHandler OnLayoutChanged;
+        public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
 
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
@@ -137,8 +138,13 @@ namespace Dash
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
+            FieldModelController oldValue;
+            _fields.TryGetValue(key, out oldValue);
+
             proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
+
+            OnDocumentFieldUpdated(oldValue, field, new ReferenceFieldModelController(GetId(), key));
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
@@ -262,8 +268,9 @@ namespace Dash
             }
             else
             {
-                if ((field.TypeInfo & refField.TypeInfo) == TypeInfo.None)
+                if (!field.CheckType(refField))
                 {
+                    Debug.Assert(!refField.CheckType(field));
                     throw new ArgumentException("Invalid types");
                 }
             }
@@ -422,9 +429,9 @@ namespace Dash
             return makeAllViewUI(docList);
         }
 
-        public void FireOnLayoutChanged()
+        protected virtual void OnDocumentFieldUpdated(FieldModelController oldvalue, FieldModelController newvalue, ReferenceFieldModelController reference)
         {
-            OnLayoutChanged?.Invoke(this);
+            DocumentFieldUpdated?.Invoke(oldvalue, newvalue, reference);
         }
     }
 }

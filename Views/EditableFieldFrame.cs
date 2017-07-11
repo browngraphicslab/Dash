@@ -110,14 +110,17 @@ namespace Dash
 
         private ManipulationControls _manipulator;
 
+        bool _allowTranslation = true;
+
         /// <summary>
         /// Create a new <see cref="EditableFieldFrame"/> for the UI described by the passed in <paramref name="documentId"/>
         /// </summary>
         /// <param name="documentId"></param>
-        public EditableFieldFrame(string documentId)
+        public EditableFieldFrame(string documentId, bool allowTranslation = true)
         {
             DocumentId = documentId;
             DefaultStyleKey = typeof(EditableFieldFrame);
+            _allowTranslation = allowTranslation;
         }
 
         private void _manipulator_OnManipulatorTranslated(Point translationDelta)
@@ -188,8 +191,11 @@ namespace Dash
             _overlayCanvas.Children.Add(centerResizeHandle);
             _resizeHandleToPosition.Add(centerResizeHandle, ResizeHandlePositions.Center);
 
-            _manipulator = new ManipulationControls(centerResizeHandle);
-            _manipulator.OnManipulatorTranslated += _manipulator_OnManipulatorTranslated;
+            if (_allowTranslation)
+            {
+                _manipulator = new ManipulationControls(centerResizeHandle);
+                _manipulator.OnManipulatorTranslated += _manipulator_OnManipulatorTranslated;
+            }
 
         }
 

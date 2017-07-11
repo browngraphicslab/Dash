@@ -38,7 +38,7 @@ namespace Dash
 
             var numberB = doc.GetDereferencedField(BKey, docContextList) as NumberFieldModelController;
 
-            if (numberA == null || numberB == null)//One or more of the inputs isn't set yet
+            if (numberA.InputReference == null || numberB.InputReference == null)//One or more of the inputs isn't set yet
             {
                 return;
             }

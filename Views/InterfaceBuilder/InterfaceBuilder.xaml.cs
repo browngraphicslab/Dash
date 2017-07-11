@@ -81,7 +81,7 @@ namespace Dash
                 }
 
                 // generate an editable border
-                var editableBorder = new EditableFieldFrame(layoutDocument.GetId())
+                var editableBorder = new EditableFieldFrame(layoutDocument.GetId(), layoutDocument.GetId() != LayoutCourtesyDocument.Document.GetId())
                 {
                     EditableContent = fieldView,
                     HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
@@ -135,7 +135,13 @@ namespace Dash
                 editableElements.Add(editableBorder);
             }
 
-            _documentView.SetUIElements(editableElements);
+            var canvas = new Canvas();
+            foreach (var frameworkElement in editableElements)
+            {
+                canvas.Children.Add(frameworkElement);
+            }
+
+            _documentView.ViewModel.Content = canvas;
         }
 
         private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)
