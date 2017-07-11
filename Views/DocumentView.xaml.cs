@@ -219,11 +219,13 @@ namespace Dash
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                DoubleTapped -= OnDoubleTapped;
                 if (_docMenu != null) this.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                DoubleTapped += OnDoubleTapped;
             }
         }
 

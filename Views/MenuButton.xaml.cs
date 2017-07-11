@@ -157,6 +157,11 @@ namespace DocumentMenu
             this.CreateAndRunRotationAnimation();
         }
 
+        public void AddAndRunDeleteAnimation()
+        {
+            this.CreateAndRunOpacityAnimation(_button,1,0);
+            this.CreateAndRunOpacityAnimation(_descriptionText,1,0);
+        }
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
@@ -231,6 +236,7 @@ namespace DocumentMenu
             {
                 SpeedRatio = 0.9,
                 FromHorizontalOffset = horizontalOffset,
+                FromVerticalOffset = verticalOffset,
                 Duration = duration,
             };
             Storyboard repositionStoryboard = new Storyboard()

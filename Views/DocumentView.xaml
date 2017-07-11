@@ -18,16 +18,13 @@
           x:FieldModifier="public"
               
               SizeChanged="OuterGrid_SizeChanged"
-            BorderBrush="{Binding BorderBrush}"
-          Background="Transparent"
-            BorderThickness="1"
-            CornerRadius="3">
+          Background="Transparent">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" BorderBrush="{Binding BorderBrush}" BorderThickness="1" CornerRadius="3">
             <!-- Container for document fields view -->
             <Grid x:Name="XGrid">
                 <Grid.Clip>

@@ -112,5 +112,19 @@ namespace DocumentMenu
             }
         }
 
+        public void AddAndPlayCloseMenuAnimation()
+        {
+            foreach (var button in _documentButtons)
+            {
+                button.AddAndRunDeleteAnimation();
+            }
+            if (_collectionButtons != null)
+            {
+                foreach (var button in _collectionButtons)
+                {
+                    button.AddAndRunDeleteAnimation();
+                }
+            }
+        }
     }
 }
