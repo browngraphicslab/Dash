@@ -8,6 +8,7 @@ using DashShared;
 using System.Collections.Generic;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -148,6 +149,11 @@ namespace Dash
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
             //OnIoDragEnded(ioRef);
+        }
+
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+            Debug.WriteLine(xViewbox.ActualWidth);
+            xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
         }
     }
 }

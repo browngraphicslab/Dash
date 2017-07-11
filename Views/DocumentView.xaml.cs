@@ -10,6 +10,8 @@ using Windows.UI.Xaml.Input;
 using DashShared;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -31,6 +33,8 @@ namespace Dash
 
         public event OperatorView.IODragEventHandler IODragStarted;
         public event OperatorView.IODragEventHandler IODragEnded;
+
+        public void setBG(SolidColorBrush s) { XGrid.Background = s; }
 
         public ICollectionView View { get; set; }
         private double startWidth, startHeight; // used for restoring on double click in icon view
@@ -155,7 +159,6 @@ namespace Dash
             if (ViewModel.IconType == IconTypeEnum.Document) {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
             } else if (ViewModel.IconType == IconTypeEnum.Collection) {
-                Debug.WriteLine("here!");
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
             } else if (ViewModel.IconType == IconTypeEnum.Api) {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
@@ -178,6 +181,11 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
+            
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
+                XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                xBorder.Opacity = 0;
+            }
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 

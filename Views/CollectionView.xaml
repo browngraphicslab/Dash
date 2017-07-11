@@ -10,7 +10,6 @@
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
-    Background="{StaticResource TranslucentWhite}"
     PointerWheelChanged="UserControl_PointerWheelChanged"
     ManipulationDelta="UserControl_ManipulationDelta"
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
@@ -24,7 +23,7 @@
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
-            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
+            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Background="{StaticResource CollectionViewBackground}" Padding="0">
                 <Grid x:Name="DocumentViewContainerGrid"
                   AllowDrop="True"
                   HorizontalAlignment="Stretch"
@@ -33,7 +32,6 @@
                   BorderBrush="LightGray"
                   ManipulationMode="All"
                   Padding="0"
-                  Style="{StaticResource xNodeContainerGrid}"
                   SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
                     <Grid.Clip>
                         <RectangleGeometry x:Name="ClipRect"></RectangleGeometry>

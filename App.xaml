@@ -42,13 +42,13 @@
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
-        <SolidColorBrush x:Key="CollectionViewBackground" Color="#e6eaed"/>
+        <SolidColorBrush x:Key="CollectionViewBackground" Color="#E5FFFFFF"/>
         
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">
             <!-- prevents node from moving while mouse is over UI element-->
-            <Setter Property="ManipulationMode" Value="Scale"></Setter>
+            <Setter Property="ManipulationMode" Value="None"></Setter>
             <Setter Property="BorderBrush" Value="#FF474747"/>
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#FF656973"></Setter>

@@ -274,6 +274,7 @@
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
     <Content Include="Assets\Centerlg.png" />
+    <Content Include="Assets\circle.png" />
     <Content Include="Assets\col-icon.png" />
     <Content Include="Assets\copy.png" />
     <Content Include="Assets\customerJson.txt" />
