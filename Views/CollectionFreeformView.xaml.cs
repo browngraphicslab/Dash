@@ -239,6 +239,7 @@ namespace Dash
                 _lineDict.Remove(model);
             }
         }
+        
 
         private class BezierConverter : IValueConverter
         {

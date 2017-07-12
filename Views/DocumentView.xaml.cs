@@ -186,6 +186,10 @@ namespace Dash
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
                 xBorder.Opacity = 0;
             }
+            Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
+                xBorder.Opacity = 0;
+            }
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 

@@ -89,6 +89,7 @@ namespace Dash
 
             CanLink = false;
             InkSource.Presenters.Add(xInkCanvas.InkPresenter);
+
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
         {
@@ -103,6 +104,11 @@ namespace Dash
             ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
         }
 
+        /// <summary>
+        /// Show / hide context menu for collections
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (CurrentView.IsEnabled)
@@ -121,8 +127,6 @@ namespace Dash
             }
             
         }
-
-        
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -152,6 +156,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Update document view model representatino of items on internal collection change.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (e.Action == NotifyCollectionChangedAction.Add)
@@ -208,6 +217,7 @@ namespace Dash
             }
         }
         List<DocumentController> DocContextList {  get { return (DataContext as CollectionViewModel).DocContextList;  } }
+
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             RefreshItemsBinding();
@@ -847,13 +857,18 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            
             xBackgroundTileContainer.Children.Clear();
-            var width = xTileSource.Width;
-            var height = xTileSource.Height;
-            for (double x = 0; x < xBackgroundTileContainer.Width; x += width) {
-                for (double y = 0; y < xBackgroundTileContainer.Height; y += height) {
+            new ManipulationControls(xBackgroundTileContainer);
+            Debug.WriteLine("hello" + Grid.ActualWidth + " " + Grid.ActualHeight);
+            var width = 100;
+            var height = 100;
+            for (double x = 0; x < Grid.ActualWidth; x += width) {
+                for (double y = 0; y < Grid.ActualHeight; y += height) {
                     var image = new Image { Source = xTileSource.Source };
+                    image.Height = height;
+                    image.Width = width;
+                    image.Opacity = .5;
+                    image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);
                     xBackgroundTileContainer.Children.Add(image);
