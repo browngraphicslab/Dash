@@ -99,12 +99,24 @@ namespace Dash {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
                     view.PointerArgs = args;
+                    if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
+                    {
+
+                    }
+                    else if(args.GetCurrentPoint(view).Properties.IsRightButtonPressed)
+                    {
+                        view.CanLink = true;
+                        if (view.CurrentView is CollectionFreeformView)
+                            (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(refFieldModelController, true, args, renderElement,
+                                renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    }  
                 };
                 renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                    view.CanLink = false;
                     if (view == null) return; // we can't always assume we're on a collection
+                    view.CanLink = false;
 
+                    args.Handled = true;
                     (view.CurrentView as CollectionFreeformView)?.EndDrag(
                         new OperatorView.IOReference(refFieldModelController, false, args, renderElement, 
                         renderElement.GetFirstAncestorOfType<DocumentView>()));

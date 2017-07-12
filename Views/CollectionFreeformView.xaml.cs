@@ -185,12 +185,6 @@ namespace Dash
                 return;
             }
 
-            if (!ioReference.IsOutput)
-            {
-                CheckLinePresence(ioReference.ReferenceFieldModelController);
-                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
-            }
-
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
