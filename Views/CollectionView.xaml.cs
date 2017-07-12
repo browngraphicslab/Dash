@@ -32,6 +32,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public double CanvasScale { get; set; } = 1;
+        public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
@@ -104,24 +105,15 @@ namespace Dash
             Tapped += CollectionView_Tapped;
         }
 
-    
-
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            var parentDocument = ParentDocument;
-
-            if (parentDocument != MainPage.Instance.MainDocView)
+            ParentDocument.HasCollection = true;
+            if (ParentDocument != MainPage.Instance.MainDocView)
             {
-                parentDocument.SizeChanged += (ss, ee) =>
+                ParentDocument.SizeChanged += (ss, ee) =>
                 {
-                    //var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
-                    //if (height != null)
-                    //    Height = (double)height - 3;
-                    //var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
-                    //if (width != null)
-                    //    Width = (double)width - 3;
                     Height = ee.NewSize.Height;
                     Width = ee.NewSize.Width;
                 };

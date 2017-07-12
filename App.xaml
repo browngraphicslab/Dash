@@ -44,6 +44,7 @@
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
         <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"></SolidColorBrush>
         <SolidColorBrush x:Key="CollectionViewBackground" Color="#e6eaed"/>
+
         
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->

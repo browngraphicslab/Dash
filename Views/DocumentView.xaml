@@ -10,21 +10,20 @@
     d:DesignWidth="300"
     Width="{x:Bind ViewModel.Width}" 
     Height="{x:Bind ViewModel.Height}"
-    d:DataContext="{d:DesignInstance local:DocumentViewModel }"
-   >
+    d:DataContext="{d:DesignInstance local:DocumentViewModel}"
+    PointerPressed="UserControl_PointerPressed">
     
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public"
-              
-              SizeChanged="OuterGrid_SizeChanged"
+          x:FieldModifier="public"           
+          SizeChanged="OuterGrid_SizeChanged"
           Background="Transparent">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Canvas x:Name="xMenuCanvas" Background="Transparent"></Canvas>
-        <Grid Grid.Column="1" BorderBrush="{Binding BorderBrush}" BorderThickness="1" CornerRadius="3">
+        <Grid Grid.Column="1">
             <!-- Container for document fields view -->
             <Grid x:Name="XGrid">
                 <Grid.Clip>
@@ -32,7 +31,7 @@
                 </Grid.Clip>
                 <ContentPresenter Content="{Binding Content}"></ContentPresenter>
             </Grid>
-            <Border x:Name="xBorder" BorderThickness="0,0,10,10" CornerRadius="3" BorderBrush="#0F000000" Margin="0,0,-10,-10"></Border>
+            <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="10,10,-10,-10"></Border>
 
             <!-- Container for Icon view -->
             <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">

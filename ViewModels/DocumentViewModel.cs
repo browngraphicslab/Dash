@@ -161,7 +161,7 @@ namespace Dash
             DocContextList = docContextList == null ? null : new List<DocumentController>(docContextList);
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
-            BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
+            BorderBrush = new SolidColorBrush(Colors.LightGray);
 
 
             // FIELD FETCHERS

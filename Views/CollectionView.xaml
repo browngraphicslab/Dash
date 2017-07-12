@@ -22,7 +22,7 @@
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
             <Canvas x:Name="xMenuCanvas" Background="Transparent"></Canvas>
-            <Grid x:Name="Grid" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
+            <Grid x:Name="Grid" Grid.Column="1" Padding="0">
                 <Grid x:Name="DocumentViewContainerGrid"
                   AllowDrop="True"
                   HorizontalAlignment="Stretch"
