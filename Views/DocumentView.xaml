@@ -19,18 +19,16 @@
               Tapped="XGrid_Tapped"
               DoubleTapped="XGrid_DoubleTapped"
               SizeChanged="OuterGrid_SizeChanged"
-            BorderBrush="{Binding BorderBrush}"
-          Background="Transparent"
-            BorderThickness="0">
+              Background="Transparent">
         
         <!-- Container for document fields view -->
-        <Grid x:Name="XGrid">
+        <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
             <Grid.Clip>
                 <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
             </Grid.Clip>
             <ContentPresenter Content="{Binding Content}"></ContentPresenter>
         </Grid>
-        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="0,0,-10,-10"></Border>
+        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="10,10,-10,-10"></Border>
 
         <!-- Container for Icon view -->
         <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
