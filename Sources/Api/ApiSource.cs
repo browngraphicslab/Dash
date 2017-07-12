@@ -248,7 +248,8 @@ namespace Dash {
 
                 // parse JSON result. place first-tier documents in collection view. if there are none, simply
                 // put a single document into the collection view
-                DocumentController documentModel = JsonToDashUtil.Parse(response.Content.ToString());
+                throw new NotImplementedException();
+                DocumentController documentModel = null; //JsonToDashUtil.Parse(response.Content.ToString());
 
                 var layDocCtrl = new DocumentController(new Dictionary<Key, FieldModelController>(), CollectionBox.DocumentType);
                 var cbox = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[0]));
