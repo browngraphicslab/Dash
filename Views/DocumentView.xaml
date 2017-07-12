@@ -8,8 +8,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    Width="{x:Bind ViewModel.Width}" 
-    Height="{x:Bind ViewModel.Height}"
+    Width="{x:Bind Width}" 
+    Height="{x:Bind Height}"
     d:DataContext="{d:DesignInstance local:DocumentViewModel }"
    >
     
