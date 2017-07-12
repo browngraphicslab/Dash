@@ -9,6 +9,7 @@ using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
@@ -135,7 +136,23 @@ namespace Dash
             set { SetProperty(ref _isMoveable, value); }
         }
 
+        private Visibility _docMenuVisibility;
+        public Visibility DocMenuVisibility
+        {
+            get { return _docMenuVisibility; }
+            set { SetProperty(ref _docMenuVisibility, value); }
+        }
+
+        private GridLength _menuColumnWidth;
+        public GridLength MenuColumnWidth
+        {
+            get { return _menuColumnWidth; }
+            set { SetProperty(ref _menuColumnWidth, value); }
+        }
+
         public List<DocumentController> DocContextList = null;
+        
+
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
@@ -239,6 +256,30 @@ namespace Dash
             {
                 Position = posFieldModelController.Data;
             }
+        }
+
+        public void ToggleMenuVisibility()
+        {
+            if (DocMenuVisibility == Visibility.Collapsed)
+            {
+                OpenMenu();
+            }
+            else
+            {
+                CloseMenu();
+            }
+        }
+
+        public void CloseMenu()
+        {
+            DocMenuVisibility = Visibility.Collapsed;
+            MenuColumnWidth = new GridLength(0);
+        }
+
+        public void OpenMenu()
+        {
+            DocMenuVisibility = Visibility.Visible;
+            MenuColumnWidth = new GridLength(50);
         }
     }
 }

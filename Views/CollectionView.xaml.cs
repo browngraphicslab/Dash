@@ -101,26 +101,10 @@ namespace Dash
             DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
             DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
             ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
+            Tapped += CollectionView_Tapped;
         }
 
-        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (CurrentView.IsEnabled)
-            {
-                if (_colMenu != null)
-                {
-                    CloseMenu();
-                    SetEnabled(false);
-                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                }
-                else
-                {
-                    OpenMenu();
-                    SetEnabled(true);
-                }
-                e.Handled = true;
-            }    
-        }       
+    
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -130,7 +114,6 @@ namespace Dash
 
             if (parentDocument != MainPage.Instance.MainDocView)
             {
-                DoubleTapped += Grid_DoubleTapped;
                 parentDocument.SizeChanged += (ss, ee) =>
                 {
                     //var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
@@ -729,13 +712,9 @@ namespace Dash
             {
                 var listView = (CurrentView as CollectionListView).HListView;
                 if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
-                {
                     listView.SelectAll();
-                }
                 else
-                {
                     listView.SelectedItems.Clear();
-                }
             }
         }
 
@@ -791,6 +770,26 @@ namespace Dash
 
         #region Collection Activation
 
+        public void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ParentDocument != MainPage.Instance.MainDocView)
+            {
+                if (_colMenu != null)
+                {
+                    CloseMenu();
+                    SetEnabled(false);
+                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                }
+                else
+                {
+                    OpenMenu();
+                    ParentCollection.SetActiveCollection(this);
+                }
+            }
+            SetActiveCollection(null);
+            e.Handled = true;
+        }
+
         public void SetEnabled(bool enabled)
         {
             if (enabled)
@@ -804,6 +803,10 @@ namespace Dash
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 if (_colMenu != null)
                     CloseMenu();
+                foreach (var dvm in ViewModel.DataBindingSource)
+                {
+                    dvm.CloseMenu();
+                }
             }
         }
 
