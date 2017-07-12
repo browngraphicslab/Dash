@@ -209,7 +209,7 @@ namespace Dash
                 box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentController>(fieldModelController.GetId()), docContextList);
+                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data, docContextList);
             }
 
             if (box != null)
