@@ -274,6 +274,7 @@
     <Content Include="Assets\cat.jpg" />
     <Content Include="Assets\cat2.jpeg" />
     <Content Include="Assets\Centerlg.png" />
+    <Content Include="Assets\circle.png" />
     <Content Include="Assets\col-icon.png" />
     <Content Include="Assets\copy.png" />
     <Content Include="Assets\customerJson.txt" />
@@ -282,6 +283,7 @@
     <Content Include="Assets\dashlogo.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
+    <Content Include="Assets\gridbg.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\layout.png" />
     <Content Include="Assets\Leftlg.png" />

@@ -70,19 +70,22 @@ namespace Dash
 
         public void StartDrag(OperatorView.IOReference ioReference)
         {
-
+            Debug.Write("1");
             if (!CanLink) {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
+            Debug.Write("2");
+
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
             parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
+
+            Debug.Write("3");
+
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
-
             _currReference = ioReference;
-
             _connectionLine = new Windows.UI.Xaml.Shapes.Path
             {
                 StrokeThickness = 5,

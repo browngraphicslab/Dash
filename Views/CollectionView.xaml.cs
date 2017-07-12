@@ -840,5 +840,25 @@ namespace Dash
         }
 
         #endregion
+
+        /// <summary>
+        /// Retiles the BG
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+            
+            xBackgroundTileContainer.Children.Clear();
+            var width = xTileSource.Width;
+            var height = xTileSource.Height;
+            for (double x = 0; x < xBackgroundTileContainer.Width; x += width) {
+                for (double y = 0; y < xBackgroundTileContainer.Height; y += height) {
+                    var image = new Image { Source = xTileSource.Source };
+                    Canvas.SetLeft(image, x);
+                    Canvas.SetTop(image, y);
+                    xBackgroundTileContainer.Children.Add(image);
+                }
+            }
+        }
     }
 }
