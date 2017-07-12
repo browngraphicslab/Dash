@@ -200,7 +200,6 @@ namespace Dash
             // set icon via field 
             var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, docContextList) as NumberFieldModelController;
             if (iconFieldModelController == null) {
-                Debug.WriteLine("just use default then");
                 iconFieldModelController = new NumberFieldModelController((int)IconTypeEnum.Document);
                 DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
             } else Debug.WriteLine("we did it right: " + iconFieldModelController.Data);

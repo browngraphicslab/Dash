@@ -8,8 +8,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    Width="{Binding ViewModel.Width}"
-    Height="{Binding ViewModel.Height}"
+    Width="{Binding Width}"
+    Height="{Binding Height}"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     PointerPressed="UserControl_PointerPressed">
 
