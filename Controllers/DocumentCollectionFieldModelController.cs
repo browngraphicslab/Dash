@@ -71,6 +71,10 @@ namespace Dash
 
         }
 
+        /// <summary>
+        /// YOU CANNOT ADD DOCUMENTS TO THIS LIST
+        /// </summary>
+        /// <returns></returns>
         public List<DocumentController> GetDocuments()
         {
             // since we want people to set the documents through methods lets just pass a copy of the model's list
@@ -85,6 +89,11 @@ namespace Dash
         public override FrameworkElement GetTableCellView()
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        public override FieldModelController GetDefaultController()
+        {
+            return new DocumentCollectionFieldModelController(new List<DocumentController>());
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)

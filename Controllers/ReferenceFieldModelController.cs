@@ -58,6 +58,11 @@ namespace Dash
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }
 
+        public override FieldModelController GetDefaultController()
+        {
+            throw new System.NotImplementedException();
+        }
+
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
             textBlock.Text = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";

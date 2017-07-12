@@ -35,6 +35,11 @@ namespace Dash
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }
 
+        public override FieldModelController GetDefaultController()
+        {
+            return new NumberFieldModelController(0);
+        }
+
         protected void BindTextOrSetOnce(TextBlock textBlock)
         {
             var textBinding = new Binding

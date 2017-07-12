@@ -148,5 +148,7 @@ namespace Dash
 
             return scrollViewer;
         }
+
+        public abstract FieldModelController GetDefaultController();
     }
 }
