@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -22,6 +23,7 @@ namespace Dash
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
+        public bool HasCollection { get; set; }
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -62,8 +64,31 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += OnDoubleTapped;
+
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            Tapped += OnTapped;         
+        }
+
+        private void SetUpMenu()
+        {
+            var layout = new Action(OpenLayout);
+            var copy = new Action(CopyDocument);
+            var delete = new Action(DeleteDocument);
+            var documentButtons = new List<MenuButton>()
+            {
+                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
+                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+            };
+            _docMenu = new OverlayMenu(null, documentButtons);
+            Binding visibilityBinding = new Binding()
+            {
+                Source = ViewModel,
+                Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
+                Mode = BindingMode.OneWay
+            };
+            _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
+            xMenuCanvas.Children.Add(_docMenu);
         }
 
         /// <summary>
@@ -79,6 +104,7 @@ namespace Dash
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
             DataContext = documentViewModel;
+            
         }
 
 
@@ -185,6 +211,9 @@ namespace Dash
             if (ViewModel == null)
                 return;
 
+            SetUpMenu();
+            ViewModel.CloseMenu();
+
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
             ViewModel.PropertyChanged += (o, eventArgs) =>
@@ -220,13 +249,13 @@ namespace Dash
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                DoubleTapped -= OnDoubleTapped;
-                if (_docMenu != null) this.CloseMenu();
+                Tapped -= OnTapped;
+                if (_docMenu != null) ViewModel.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                DoubleTapped += OnDoubleTapped;
+                Tapped += OnTapped;
             }
         }
 
@@ -292,42 +321,12 @@ namespace Dash
 
         #region Menu
 
-        private void OpenMenu()
+        public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            var layout = new Action(OpenLayout);
-            var copy = new Action(CopyDocument);
-            var delete = new Action(DeleteDocument);
-            var documentButtons = new List<MenuButton>()
-            {
-                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
-                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
-            };
-            _docMenu = new OverlayMenu(null, documentButtons);
-            xMenuCanvas.Children.Add(_docMenu);
-            xMenuColumn.Width = new GridLength(50);
-            Width += 50;
-        }
-
-        private void CloseMenu()
-        {
-            var panel = _docMenu.Parent as Panel;
-            if (panel != null) panel.Children.Remove(_docMenu);
-            _docMenu = null;
-            xMenuColumn.Width = new GridLength(0);
-            Width -= 50;
-        }
-
-        public void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (_docMenu != null)
-            {
-                this.CloseMenu();
-            }
+            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection)
+                ViewModel.OpenMenu();
             else
-            {
-                OpenMenu();
-            }
+                ViewModel.CloseMenu();
             e.Handled = true;
         }
 
@@ -339,6 +338,13 @@ namespace Dash
         private void CopyDocument()
         {
             throw new NotImplementedException();
+        }
+
+        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (ParentCollection == null) return;
+            ParentCollection.MaxZ += 1;
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
         private void OpenLayout()

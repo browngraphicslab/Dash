@@ -400,8 +400,8 @@ namespace Dash {
                     var textBox = new TextBox();
                     textBox.ManipulationDelta += (s, e) => e.Handled = true;
                     textBox.Loaded += (s, e) =>
-                        textBox.AddHandler(UIElement.DoubleTappedEvent, new DoubleTappedEventHandler((ss, ee)=>
-                        textBox.GetFirstAncestorOfType<DocumentView>().OnDoubleTapped(ss, ee)), true);
+                        textBox.AddHandler(UIElement.TappedEvent, new TappedEventHandler((ss, ee)=>
+                        textBox.GetFirstAncestorOfType<DocumentView>().OnTapped(ss, ee)), true);
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
