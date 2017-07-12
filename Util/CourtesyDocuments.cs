@@ -398,6 +398,10 @@ namespace Dash {
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText, docContextList);
                 if (fieldModelController is TextFieldModelController) {
                     var textBox = new TextBox();
+                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
+                    textBox.Loaded += (s, e) =>
+                        textBox.AddHandler(UIElement.DoubleTappedEvent, new DoubleTappedEventHandler((ss, ee)=>
+                        textBox.GetFirstAncestorOfType<DocumentView>().OnDoubleTapped(ss, ee)), true);
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;

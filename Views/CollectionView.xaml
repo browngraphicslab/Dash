@@ -13,18 +13,16 @@
     Background="{StaticResource TranslucentWhite}"
     PointerWheelChanged="UserControl_PointerWheelChanged"
     ManipulationDelta="UserControl_ManipulationDelta"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    Tapped="CollectionView_OnTapped">
+    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting">
 
-    <Grid x:Name="xOuterGrid" BorderBrush="Transparent" BorderThickness="3" CornerRadius="3">
-
+    <Grid x:Name="xOuterGrid">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
-            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
+            <Canvas x:Name="xMenuCanvas" Background="Transparent"></Canvas>
+            <Grid x:Name="Grid" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" Grid.Column="1" Style="{StaticResource xNodeContainerGrid}" Padding="0">
                 <Grid x:Name="DocumentViewContainerGrid"
                   AllowDrop="True"
                   HorizontalAlignment="Stretch"

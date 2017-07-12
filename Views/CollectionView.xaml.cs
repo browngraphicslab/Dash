@@ -110,6 +110,7 @@ namespace Dash
                 if (_colMenu != null)
                 {
                     CloseMenu();
+                    SetEnabled(false);
                     ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 }
                 else
@@ -118,11 +119,8 @@ namespace Dash
                     SetEnabled(true);
                 }
                 e.Handled = true;
-            }
-            
-        }
-
-        
+            }    
+        }       
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -135,12 +133,14 @@ namespace Dash
                 DoubleTapped += Grid_DoubleTapped;
                 parentDocument.SizeChanged += (ss, ee) =>
                 {
-                    var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
-                    if (height != null)
-                        Height = (double) height - 3;
-                    var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
-                    if (width != null)
-                        Width = (double) width - 3;
+                    //var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
+                    //if (height != null)
+                    //    Height = (double)height - 3;
+                    //var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
+                    //if (width != null)
+                    //    Width = (double)width - 3;
+                    Height = ee.NewSize.Height;
+                    Width = ee.NewSize.Width;
                 };
                 SetEnabled(false);
             }
@@ -712,6 +712,7 @@ namespace Dash
             if (panel != null) panel.Children.Remove(_colMenu);
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
+            ParentDocument.Width -= 50;
         }
 
         private void SelectAllItems()
@@ -782,6 +783,7 @@ namespace Dash
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
+            ParentDocument.Width += 50;
         }
 
 
@@ -794,7 +796,6 @@ namespace Dash
             if (enabled)
             {
                 CurrentView.IsHitTestVisible = true;
-                xOuterGrid.BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush; 
             }
             else
             {
@@ -806,15 +807,13 @@ namespace Dash
             }
         }
 
-        private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (ParentCollection?.GetActiveCollection() != this)
-            {
-                ParentCollection?.SetActiveCollection(this);
-            }
-            SetActiveCollection(null);
-            e.Handled = true;
-        }
+        //private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (ParentCollection?.GetActiveCollection() != this)
+        //        ParentCollection?.SetActiveCollection(this);
+        //    SetActiveCollection(null);
+        //    e.Handled = true;
+        //}
 
         public void SetActiveCollection(CollectionView collection)
         {

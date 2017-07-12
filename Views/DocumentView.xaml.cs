@@ -305,6 +305,7 @@ namespace Dash
             _docMenu = new OverlayMenu(null, documentButtons);
             xMenuCanvas.Children.Add(_docMenu);
             xMenuColumn.Width = new GridLength(50);
+            Width += 50;
         }
 
         private void CloseMenu()
@@ -313,9 +314,10 @@ namespace Dash
             if (panel != null) panel.Children.Remove(_docMenu);
             _docMenu = null;
             xMenuColumn.Width = new GridLength(0);
+            Width -= 50;
         }
 
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        public void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             if (_docMenu != null)
             {
