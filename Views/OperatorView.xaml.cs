@@ -75,39 +75,33 @@ namespace Dash
         }
 
         /// <summary>
-        /// Can return the position of the click in screen space;
-        /// Gets the OperatorFieldModel associated with the input ellipse that is clicked 
+        /// Envokes handler for starting a link by dragging on a link ellipse handle.
         /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e) {
+
+            Debug.WriteLine("yooo");
+            string docId = (DataContext as ReferenceFieldModelController).DocId;
+            FrameworkElement el = sender as FrameworkElement;
+            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
+                Debug.WriteLine("bbbboo");
+                (view.CurrentView as CollectionFreeformView).CanLink = true;
+                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
+
+        }
+        
+
         private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            {
-                string docId = (DataContext as ReferenceFieldModelController).DocId;
-                Ellipse el = sender as Ellipse;
-                Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-                IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
-                CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
-                //OnIoDragStarted(ioRef);
-            }
+            holdPointerOnEllipse(sender, e);
         }
-
-        /// <summary>
-        /// Can return the position of the click in screen space;
-        /// Gets the OperatorFieldModel associated with the output ellipse that is clicked 
-        /// </summary>
+        
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
-            {
-                string docId = (DataContext as ReferenceFieldModelController).DocId;
-                Ellipse el = sender as Ellipse;
-                Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-                IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-                CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
-                //OnIoDragStarted(ioRef);
-            }
+            holdPointerOnEllipse(sender, e);
         }
 
         /// <summary>
@@ -128,31 +122,37 @@ namespace Dash
             IoDragEnded?.Invoke(ioreference);
         }
 
-
-        private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
+        /// <summary>
+        /// Envokes code to handle pointer released events on the link handle.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e) {
             string docId = (DataContext as ReferenceFieldModelController).DocId;
-            Ellipse el = sender as Ellipse;
+            FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
-            //OnIoDragEnded(ioRef);
+
+        }
+
+        private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            releasePointerOnEllipse(sender, e);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (DataContext as ReferenceFieldModelController).DocId;
-            Ellipse el = sender as Ellipse;
-            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
-            //OnIoDragEnded(ioRef);
+            releasePointerOnEllipse(sender, e);
         }
 
+        /// <summary>
+        /// Updates the background circle and rectangle height to accomodate new sizes.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            Debug.WriteLine(xViewbox.ActualWidth);
             xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
         }
     }

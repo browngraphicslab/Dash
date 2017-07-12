@@ -45,7 +45,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
             
             // add manipulation code
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY ;
             manipulator = new ManipulationControls(this);
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 

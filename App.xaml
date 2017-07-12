@@ -42,7 +42,7 @@
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
-        <SolidColorBrush x:Key="CollectionViewBackground" Color="#E5FFFFFF"/>
+        <SolidColorBrush x:Key="CollectionViewBackground" Color="#E5CBCBCB"/>
         
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->
@@ -113,8 +113,17 @@
         </Style>
 
         <!-- NODE SPECIFIC STYLES -->
-        <!-- Collection View -->
 
+        <!-- Operator View (& Links)-->
+        <Style TargetType="Ellipse" x:Name="xLinkHandle">
+            <Setter Property="Fill" Value="{StaticResource AccentGreen}" />
+            <Setter Property="Height" Value="20"></Setter>
+            <Setter Property="Width" Value="20"></Setter>
+            <Setter Property="ManipulationMode" Value="All"></Setter>
+            <Setter Property="Stroke" Value="Transparent"></Setter>
+        </Style>
+        
+        <!-- Collection View -->
         <Style TargetType="Button" x:Name="xBlueTextButtonStyle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#DE0074FF"/>

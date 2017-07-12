@@ -283,6 +283,7 @@
     <Content Include="Assets\dashlogo.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
+    <Content Include="Assets\gridbg.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\layout.png" />
     <Content Include="Assets\Leftlg.png" />

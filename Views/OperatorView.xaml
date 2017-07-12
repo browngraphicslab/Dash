@@ -42,33 +42,42 @@
                 <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
-            <ListView x:Name="InputListView" Grid.Column="0" SelectionMode="None">
+            
+            <!-- Input Operator Handles & Labels-->
+            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="Margin" Value="0"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
+                        <Grid Padding="10" Background="Transparent">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
+                            
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" Grid.Column="1"></TextBlock>
-                            <!-- This is the draggable node handle -->
-                            <Ellipse Width="20" Height="20"  Fill="{StaticResource AccentGreen}" Grid.Column="0" 
-                                 PointerPressed="InputEllipse_OnPointerExited" PointerReleased="InputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
+                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipse_OnPointerExited" 
+                                     PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"></Ellipse>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
-            <ListView x:Name="OutputListView" Grid.Column="2" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,-23,0" >
+            
+            <!-- Output link handles and labels -->
+            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,-23,0" >
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid VerticalAlignment="Center">
+                        <Grid VerticalAlignment="Center" Background="Transparent">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                             </Grid.ColumnDefinitions>
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0"  Grid.Column="0" VerticalAlignment="Center"></TextBlock>
-                            <Ellipse Width="20" Height="20" Fill="{StaticResource AccentGreen}" Grid.Column="1" 
-                                 PointerPressed="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased" ManipulationMode="All" ManipulationStarted="Ellipse_ManipulationStarted"/>
+                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="1" PointerPressed="OutputEllipse_OnPointerExited" PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
