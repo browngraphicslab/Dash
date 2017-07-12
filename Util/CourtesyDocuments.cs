@@ -692,8 +692,8 @@ namespace Dash {
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
 
-                //return new DocumentController(fields, TwoImagesType);
-                return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
+                return new DocumentController(fields, TwoImagesType);
+                //return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
             }
             /// <summary>
             /// Creates a default Layout for a Two Images document.  This requires that a prototype of a Two Images document exist so that

@@ -21,7 +21,8 @@
               SizeChanged="OuterGrid_SizeChanged"
             BorderBrush="{Binding BorderBrush}"
           Background="Transparent"
-            BorderThickness="0">
+            BorderThickness="1"
+            CornerRadius="3">
         
         <!-- Container for document fields view -->
         <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">

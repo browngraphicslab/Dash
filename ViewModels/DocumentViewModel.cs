@@ -144,9 +144,9 @@ namespace Dash
             DocContextList = docContextList == null ? null : new List<DocumentController>(docContextList);
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
-            BorderBrush = new SolidColorBrush(Color.FromArgb(50, 34, 34, 34));
+            BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
 
-       
+
             // FIELD FETCHERS
             // overrides defaults with document fields if layout-relevant fields are set
             var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController)?.Data;
