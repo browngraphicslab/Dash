@@ -13,48 +13,42 @@
     PointerWheelChanged="UserControl_PointerWheelChanged"
     ManipulationDelta="UserControl_ManipulationDelta"
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    Tapped="CollectionView_OnTapped">
-
-    <Grid x:Name="xOuterGrid" BorderThickness="3" >
-
+    >
+    <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="xMenuColumn" Width="0"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
+                <ColumnDefinition x:Name="xMenuColumn" Width="0" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <!-- Options Menu-->
-            <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}"></Canvas>
-            
+            <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}" />
+
             <!-- Collectionview Content-->
-            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1" Background="{StaticResource CollectionViewBackground}" Padding="0">
-                <Canvas x:Name="xBackgroundTileContainer" SizeChanged="Grid_SizeChanged"></Canvas>
-                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Stretch="None"></Image>
+            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1"
+                  Background="{StaticResource CollectionViewBackground}" Padding="0">
+                <Canvas x:Name="xBackgroundTileContainer" SizeChanged="Grid_SizeChanged" />
+                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Stretch="None" />
                 <Grid x:Name="DocumentViewContainerGrid"
-                  AllowDrop="True"
-                  HorizontalAlignment="Stretch"
-                  Margin="5,5,5,5"
-                  VerticalAlignment="Stretch"
-                  ManipulationMode="All"
-                  Padding="0"
-                  SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
+                      AllowDrop="True"
+                      HorizontalAlignment="Stretch"
+                      Margin="5,5,5,5"
+                      VerticalAlignment="Stretch"
+                      ManipulationMode="All"
+                      Padding="0"
+                      SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
                     <Grid.Clip>
-                        <RectangleGeometry x:Name="ClipRect"></RectangleGeometry>
+                        <RectangleGeometry x:Name="ClipRect" />
                     </Grid.Clip>
-                    <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
-                    <ContentControl x:Name="xContentControl"></ContentControl>
+                    <ContentControl x:Name="xContentControl" />
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"
-                     x:FieldModifier="public"
-                     Style="{StaticResource xLinkHandle}"
-                     HorizontalAlignment="Right"
-                     PointerPressed="ConnectionEllipse_OnPointerPressed"
-                     PointerReleased="ConnectionEllipse_OnPointerReleased">
-                </Ellipse>
+                         x:FieldModifier="public"
+                         Style="{StaticResource xLinkHandle}"
+                         HorizontalAlignment="Right"
+                         PointerPressed="ConnectionEllipse_OnPointerPressed"
+                         PointerReleased="ConnectionEllipse_OnPointerReleased" />
             </Grid>
         </Grid>
     </Grid>
-        
+
 </UserControl>
-
-
-

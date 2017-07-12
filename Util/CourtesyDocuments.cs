@@ -400,6 +400,7 @@ namespace Dash {
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText, docContextList);
                 if (fieldModelController is TextFieldModelController) {
                     var textBox = new TextBox();
+                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;

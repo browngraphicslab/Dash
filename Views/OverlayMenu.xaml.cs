@@ -24,17 +24,17 @@ namespace DocumentMenu
 
         private List<MenuButton> _collectionButtons;
         private List<MenuButton> _documentButtons;
-        public OverlayMenu(double width, double height, Point position, List<MenuButton> collectionButtons, List<MenuButton> documentButtons)
+        public OverlayMenu(List<MenuButton> collectionButtons, List<MenuButton> documentButtons)
         {
             this.InitializeComponent();
             _collectionButtons = collectionButtons;
             _documentButtons = documentButtons;
             if (collectionButtons == null)
             {
-                this.MakeDocumentMenu(width, height, position);
+                this.MakeDocumentMenu();
             } else
             {
-                this.MakeCollectionMenu(width, height, position);
+                this.MakeCollectionMenu();
             }
         }
 
@@ -56,23 +56,17 @@ namespace DocumentMenu
             this.ExpandMenu(_collectionButtons, xCollectionButtonsStackPanel);
         }
 
-        private void MakeDocumentMenu(double width, double height, Point position)
+        private void MakeDocumentMenu()
         {
-            xMenuGrid.Width = width;
-            xMenuGrid.Height = height;
             foreach(var button in _documentButtons)
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }
-            Canvas.SetLeft(this, position.X);
-            Canvas.SetTop(this, position.Y);
             xCollectionButtonsStackPanel.Visibility = Visibility.Collapsed;
         }
 
-        private void MakeCollectionMenu(double width, double height, Point position)
+        private void MakeCollectionMenu()
         {
-            xMenuGrid.Width = width;
-            xMenuGrid.Height = height;
             foreach(var button in _collectionButtons)
             {
                 xCollectionButtonsStackPanel.Children.Add(button);
@@ -81,8 +75,6 @@ namespace DocumentMenu
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }
-            Canvas.SetLeft(this, position.X);
-            Canvas.SetTop(this, position.Y);
             //this.CollapseMenu(_documentButtons,xDocumentButtonsStackPanel);
             xDocumentButtonsStackPanel.Visibility = Visibility.Collapsed;
         }
@@ -120,5 +112,19 @@ namespace DocumentMenu
             }
         }
 
+        public void AddAndPlayCloseMenuAnimation()
+        {
+            foreach (var button in _documentButtons)
+            {
+                button.AddAndRunDeleteAnimation();
+            }
+            if (_collectionButtons != null)
+            {
+                foreach (var button in _collectionButtons)
+                {
+                    button.AddAndRunDeleteAnimation();
+                }
+            }
+        }
     }
 }

@@ -1,20 +1,18 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
+using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
-using Dash.Models.OperatorModels.Set;
-using DashShared;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Models.OperatorModels.Set;
 using Dash.Views;
+using DashShared;
+using Microsoft.Extensions.DependencyInjection;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -22,26 +20,32 @@ using Dash.Views;
 namespace Dash
 {
     /// <summary>
-    /// Zoomable pannable canvas. Has an overlay canvas unaffected by pan / zoom. 
+    ///     Zoomable pannable canvas. Has an overlay canvas unaffected by pan / zoom.
     /// </summary>
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance;
+
+
+        public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
+
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
 
             // adds items from the overlay canvas onto the freeform canvas
-            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
-            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
-            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
-            xOverlayCanvas.OnAddImageTapped += AddImage;
-            xOverlayCanvas.OnAddShapeTapped += AddShape;
-            xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
-            xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
+            //xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
+            //xOverlayCanvas.OnAddCollectionTapped += AddCollection;
+            //xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
+            //xOverlayCanvas.OnAddImageTapped += AddImage;
+            //xOverlayCanvas.OnAddShapeTapped += AddShape;
+            //xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
+            //xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
-            var collectionDocumentController = new CourtesyDocuments.CollectionBox(new DocumentCollectionFieldModelController(new List<DocumentController>())).Document;
+            var collectionDocumentController =
+                new CourtesyDocuments.CollectionBox(
+                    new DocumentCollectionFieldModelController(new List<DocumentController>())).Document;
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(collectionDocumentController)
             {
@@ -54,14 +58,15 @@ namespace Dash
             MainDocView.Height = MyGrid.ActualHeight;
 
             // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Debug.Assert(Instance == null,
+                "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
             //TODO this seriously slows down the document 
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
-
+            var radialMenu = new RadialMenuView(xCanvas);
         }
 
         private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -79,13 +84,14 @@ namespace Dash
         {
             //Create Operator document
             var opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            DocumentView view = new DocumentView
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
+            var view = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            DocumentViewModel opvm = new DocumentViewModel(opModel);
+            var opvm = new DocumentViewModel(opModel);
             //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
             view.DataContext = opvm;
 
@@ -95,37 +101,40 @@ namespace Dash
             //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
-            DocumentController intersectOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            DocumentView intersectView = new DocumentView
+            var intersectOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
+            var intersectView = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            DocumentViewModel intersectOpvm = new DocumentViewModel(intersectOpModel);
+            var intersectOpvm = new DocumentViewModel(intersectOpModel);
             intersectView.DataContext = intersectOpvm;
             DisplayDocument(intersectOpModel);
 
-            DocumentController unionOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            DocumentView unionView = new DocumentView
+            var unionOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
+            var unionView = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            DocumentViewModel unionOpvm = new DocumentViewModel(unionOpModel);
+            var unionOpvm = new DocumentViewModel(unionOpModel);
             unionView.DataContext = unionOpvm;
             DisplayDocument(unionOpModel);
 
             // add image url -> image operator for testing
-            DocumentController imgOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            DocumentView imgOpView = new DocumentView
+            var imgOpModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
+            var imgOpView = new DocumentView
             {
                 Width = 200,
                 Height = 200
             };
-            DocumentViewModel imgOpvm = new DocumentViewModel(imgOpModel);
+            var imgOpvm = new DocumentViewModel(imgOpModel);
             imgOpView.DataContext = imgOpvm;
             DisplayDocument(imgOpModel);
         }
@@ -165,17 +174,16 @@ namespace Dash
             //  xFreeformView.Canvas.Children.Add(shapeView);
         }
 
-
-        public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
-
         /// <summary>
-        /// Adds new documents to the MainView document. New documents are added as children of the Main document.
+        ///     Adds new documents to the MainView document. New documents are added as children of the Main document.
         /// </summary>
         /// <param name="docModel"></param>
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
-            var children = MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey, new List<DocumentController>()) as DocumentCollectionFieldModelController;
+            var children =
+                MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey,
+                    new List<DocumentController>()) as DocumentCollectionFieldModelController;
             if (children != null)
                 children.AddDocument(docModel);
         }
@@ -186,13 +194,18 @@ namespace Dash
             var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
             var numbers = new CourtesyDocuments.Numbers().Document;
 
-            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<Key, FieldModelController>
             {
-                {DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModelController(new DocumentController[] {numbers}) }
+                {
+                    DocumentCollectionFieldModelController.CollectionKey,
+                    new DocumentCollectionFieldModelController(new[] {numbers})
+                }
             };
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutDoc =
+                new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
@@ -211,15 +224,17 @@ namespace Dash
             var numbers = new CourtesyDocuments.Numbers().Document;
             var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
 
-            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<Key, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(new DocumentController[]
+                new DocumentCollectionFieldModelController(new[]
                     {numbers, twoImages2})
             };
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc = new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutDoc =
+                new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
             DisplayDocument(col);
@@ -253,15 +268,15 @@ namespace Dash
         //// FILE DRAG AND DROP
 
         /// <summary>
-        /// Handles drop events onto the canvas, usually by creating a copy document of the original and
-        /// placing it into the canvas.
+        ///     Handles drop events onto the canvas, usually by creating a copy document of the original and
+        ///     placing it into the canvas.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
         private async void XCanvas_Drop(object sender, DragEventArgs e)
         {
-            Image dragged = new Image();
-            string url = "";
+            var dragged = new Image();
+            var url = "";
 
             // load items dragged from solution explorer
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
@@ -273,14 +288,15 @@ namespace Dash
                     var storageFile = items[0] as StorageFile;
                     var contentType = storageFile.ContentType;
 
-                    StorageFolder folder = ApplicationData.Current.LocalFolder;
+                    var folder = ApplicationData.Current.LocalFolder;
 
                     // parse images dropped in
                     if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg")
                     {
-                        StorageFile newFile = await storageFile.CopyAsync(folder, storageFile.Name, NameCollisionOption.GenerateUniqueName);
+                        var newFile = await storageFile.CopyAsync(folder, storageFile.Name,
+                            NameCollisionOption.GenerateUniqueName);
                         url = newFile.Path;
-                        BitmapImage bitmapImg = new BitmapImage();
+                        var bitmapImg = new BitmapImage();
 
                         bitmapImg.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
                         dragged.Source = bitmapImg;
@@ -288,10 +304,7 @@ namespace Dash
 
                     // parse text files dropped in
                     if (contentType == "text/plain")
-                    {
-                        // TODO: TEXT FILES
                         return;
-                    }
                 }
             }
 
@@ -300,8 +313,8 @@ namespace Dash
 
             // make document
             // generate single-image document model
-            ImageFieldModelController m = new ImageFieldModelController(new Uri(url));
-            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>
+            var m = new ImageFieldModelController(new Uri(url));
+            var fields = new Dictionary<Key, FieldModelController>
             {
                 [new Key("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
             };
@@ -315,8 +328,8 @@ namespace Dash
             //e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
-        private void xOverlayCanvas_Loaded(object sender, RoutedEventArgs e) {
-
+        private void xOverlayCanvas_Loaded(object sender, RoutedEventArgs e)
+        {
         }
     }
 }
