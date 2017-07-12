@@ -17,8 +17,8 @@ namespace Dash
         ///     on the fieldModel!
         /// </summary>
         public FieldModel FieldModel { get; set; }
-        public delegate void FieldModelUpdated(FieldModelController sender);
-        public event FieldModelUpdated FieldModelUpdatedEvent;
+        public delegate void FieldModelUpdatedHandler(FieldModelController sender);
+        public event FieldModelUpdatedHandler FieldModelUpdated;
 
 
         public List<DocumentController> DocContextList = null;
@@ -35,9 +35,17 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    var cont = ContentController.DereferenceToRootFieldModel(value, value.DocContextList);
-                    cont.FieldModelUpdatedEvent += UpdateValue;
-                    UpdateValue(cont);
+                    string id = ContentController.MapDocumentInstanceReference(value.DocId, value.DocContextList);
+                    var cont = ContentController.GetController<DocumentController>(id);
+                    Debug.WriteLine($"listening to doc field updated on {id}, {value.FieldKey.Name}");
+                    cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        if (args.Reference.FieldKey.Equals(value.FieldKey))
+                        {
+                            UpdateValue(args.NewValue);
+                        }
+                    };
+                    UpdateValue(cont.GetDereferencedField(value.FieldKey, value.DocContextList));
 
                     // update server
                 }
@@ -47,7 +55,7 @@ namespace Dash
 
         public void FireFieldModelUpdated()
         {
-            FieldModelUpdatedEvent?.Invoke(this);
+            FieldModelUpdated?.Invoke(this);
         }
 
         /// <summary>

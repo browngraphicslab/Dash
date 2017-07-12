@@ -824,7 +824,7 @@ namespace Dash {
                 var tBox = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
                     0, 50, 20).Document;
 
-                var stackPan = new StackingPanel(new[] { tBox, imBox1, imBox2 }).Document;
+                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }).Document;
 
                 SetLayoutForDocument(Document, stackPan);
             }
