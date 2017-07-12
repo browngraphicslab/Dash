@@ -9,20 +9,11 @@ using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
-using Windows.UI.Core;
 using DashShared;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.Storage;
-using Windows.UI.Xaml.Media.Imaging;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using DocumentMenu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -82,8 +73,7 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
-            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
-            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
+            vm.CollectionFieldModelController.FieldModelUpdated += DocFieldCtrler_FieldModelUpdatedEvent;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();

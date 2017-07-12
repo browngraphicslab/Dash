@@ -176,7 +176,7 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.PositionFieldKey, posFieldModelController, true);
             }
             Position = posFieldModelController.Data;
-            posFieldModelController.FieldModelUpdatedEvent += PosFieldModelController_FieldModelUpdatedEvent;
+            posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
 
             var widthFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
             if (widthFieldModelController == null)
@@ -185,7 +185,7 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldModelController, true);
             }
             Width = widthFieldModelController.Data;
-            widthFieldModelController.FieldModelUpdatedEvent += WidthFieldModelController_FieldModelUpdatedEvent;
+            widthFieldModelController.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
 
 
             var heightFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
@@ -195,7 +195,7 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldModelController, true);
             }
             Height = heightFieldModelController.Data;
-            heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent; ;
+            heightFieldModelController.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent; ;
 
             // set icon via field 
             var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, docContextList) as NumberFieldModelController;
@@ -204,16 +204,16 @@ namespace Dash
                 DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
             } else Debug.WriteLine("we did it right: " + iconFieldModelController.Data);
             iconType = (IconTypeEnum)iconFieldModelController.Data;
-            iconFieldModelController.FieldModelUpdatedEvent += IconFieldModelController_FieldModelUpdatedEvent;
+            iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
 
             var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController;
 
             DataBindingSource.Add(documentController.DocumentModel);
 
             Content = documentController.makeViewUI(docContextList);
-            documentController.DocumentFieldUpdated += delegate(FieldModelController value, FieldModelController newValue, ReferenceFieldModelController reference)
+            documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
+                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
                 {
                     Content = DocumentController.makeViewUI(DocContextList);
                 }

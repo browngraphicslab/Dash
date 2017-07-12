@@ -47,8 +47,8 @@ namespace Dash
 
             double a = numberA.Data;
             double b = numberB.Data;
-            (doc.GetDereferencedField(QuotientKey, docContextList) as NumberFieldModelController).Data = a / b;
-            (doc.GetDereferencedField(RemainderKey, docContextList) as NumberFieldModelController).Data = a % b;
+            doc.SetField(QuotientKey, new NumberFieldModelController(a / b), true);
+            doc.SetField(RemainderKey, new NumberFieldModelController(a % b), true);
         }
     }
 }
