@@ -32,6 +32,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public double CanvasScale { get; set; } = 1;
+        public double MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
@@ -111,6 +112,7 @@ namespace Dash
                 {
                     CloseMenu();
                     SetEnabled(false);
+                    
                     ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 }
                 else

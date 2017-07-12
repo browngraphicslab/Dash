@@ -10,8 +10,7 @@
     d:DesignWidth="300"
     Width="{x:Bind ViewModel.Width}" 
     Height="{x:Bind ViewModel.Height}"
-    d:DataContext="{d:DesignInstance local:DocumentViewModel }"
-   >
+    d:DataContext="{d:DesignInstance local:DocumentViewModel}">
     
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"

@@ -21,6 +21,7 @@ namespace Dash
     public sealed partial class DocumentView : UserControl
     {
         public string DebugName = "";
+        public CollectionView ParentCollection;
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -62,7 +63,7 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             DoubleTapped += OnDoubleTapped;
-            
+            Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
         }
 
         /// <summary>
