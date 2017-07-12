@@ -280,6 +280,7 @@
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\dashlogo.png" />
+    <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\if_11_1724127.png" />
