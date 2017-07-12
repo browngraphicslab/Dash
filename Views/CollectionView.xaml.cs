@@ -88,7 +88,7 @@ namespace Dash
             SetEventHandlers();
 
             CanLink = false;
-            InkSource.Presenters.Add(xInkCanvas.InkPresenter);
+            
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
         {

@@ -36,7 +36,6 @@
                     <Grid.Clip>
                         <RectangleGeometry x:Name="ClipRect"></RectangleGeometry>
                     </Grid.Clip>
-                    <InkCanvas x:Name="xInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
                     <ContentControl x:Name="xContentControl"></ContentControl>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"

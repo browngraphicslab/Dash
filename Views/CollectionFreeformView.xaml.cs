@@ -45,6 +45,7 @@ namespace Dash
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
             //ParentCollection = view;
+            
         }
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
