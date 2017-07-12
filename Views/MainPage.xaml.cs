@@ -59,8 +59,8 @@ namespace Dash
 
             //TODO this seriously slows down the document 
 
-           // var jsonDoc = JsonToDashUtil.RunTests();
-           // DisplayDocument(jsonDoc);
+            var jsonDoc = JsonToDashUtil.RunTests();
+            DisplayDocument(jsonDoc);
 
         }
 
