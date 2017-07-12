@@ -859,7 +859,6 @@ namespace Dash
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
             xBackgroundTileContainer.Children.Clear();
             new ManipulationControls(xBackgroundTileContainer);
-            Debug.WriteLine("hello" + Grid.ActualWidth + " " + Grid.ActualHeight);
             var width = 100;
             var height = 100;
             for (double x = 0; x < Grid.ActualWidth; x += width) {
@@ -867,7 +866,7 @@ namespace Dash
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .5;
+                    image.Opacity = .9;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);
