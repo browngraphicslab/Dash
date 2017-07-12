@@ -18,7 +18,7 @@
             <Grid x:Name="xTitle" Width="230" Tapped="XTitle_OnTapped">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="35"/>
+                    <ColumnDefinition Width="40"/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0">
                     <TextBlock Text="POSITION" Foreground="WhiteSmoke" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"></TextBlock>
@@ -38,7 +38,7 @@
                 <Grid Grid.Column="0" Margin="10,5,5,0">
                     <TextBox x:Name="xHorizontalPositionTextBox" Header="X" Height="55" BorderBrush="WhiteSmoke" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
                 </Grid>
-                <Grid Grid.Column="1" Margin="15,5,0,0">
+                <Grid Grid.Column="1" Margin="5,5,10,0">
                     <TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="55" BorderBrush="WhiteSmoke" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
                 </Grid>
             </Grid>
