@@ -10,6 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <Grid x:Name="FreeformGrid">
+
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">

@@ -125,9 +125,10 @@ namespace Dash
             dvm.Width = ActualWidth + dx;
             dvm.Height = ActualHeight + dy;
 
+
             // todo: remove this and replace with binding // debug why x:Bind fails
-            //Width = ActualWidth + dx;
-            //Height = ActualHeight + dy;
+            Width = ActualWidth + dx;
+            Height = ActualHeight + dy;
             
         }
 
@@ -215,6 +216,10 @@ namespace Dash
             
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                xBorder.Opacity = 0;
+            }
+            Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
                 xBorder.Opacity = 0;
             }
 
@@ -352,6 +357,10 @@ namespace Dash
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+        }
+
+        private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
+
         }
 
         private void OpenLayout()

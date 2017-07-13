@@ -34,13 +34,13 @@ namespace Dash
             InitializeComponent();
 
             // adds items from the overlay canvas onto the freeform canvas
-            //xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
-            //xOverlayCanvas.OnAddCollectionTapped += AddCollection;
-            //xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
-            //xOverlayCanvas.OnAddImageTapped += AddImage;
-            //xOverlayCanvas.OnAddShapeTapped += AddShape;
-            //xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
-            //xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
+            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
+            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
+            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
+            xOverlayCanvas.OnAddImageTapped += AddImage;
+            xOverlayCanvas.OnAddShapeTapped += AddShape;
+            xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
+            xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
             var collectionDocumentController =

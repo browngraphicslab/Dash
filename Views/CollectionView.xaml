@@ -27,7 +27,7 @@
             <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1"
                   Background="{StaticResource CollectionViewBackground}" Padding="0">
                 <Canvas x:Name="xBackgroundTileContainer" SizeChanged="Grid_SizeChanged" />
-                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Stretch="None" />
+                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None" />
                 <Grid x:Name="DocumentViewContainerGrid"
                       Background="Transparent"
                       AllowDrop="True"

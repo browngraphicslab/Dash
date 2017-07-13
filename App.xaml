@@ -87,11 +87,11 @@
             <Setter Property="Background" Value="{StaticResource TranslucentWhite}"/>
         </Style>
         <Style TargetType="StackPanel" x:Name="xNodeContainerStackPanel">
-            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
         </Style>
         <Style TargetType="UserControl" x:Name="xNodeContainerUserControl">
-            <Setter Property="Padding" Value="20,10,20,20"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
         </Style>
 
