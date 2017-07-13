@@ -45,6 +45,7 @@ namespace Dash
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
             //ParentCollection = view;
+            
         }
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
@@ -182,12 +183,6 @@ namespace Dash
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
                 return;
-            }
-
-            if (!ioReference.IsOutput)
-            {
-                CheckLinePresence(ioReference.ReferenceFieldModelController);
-                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
             }
 
             _converter.Element2 = ioReference.FrameworkElement;

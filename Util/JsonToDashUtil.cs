@@ -162,7 +162,7 @@ namespace Dash
                     case JTokenType.Boolean:
                     case JTokenType.Date:
                     case JTokenType.Uri:
-                    case JTokenType.Guid:
+                    case JTokenType.Guid:  
                     case JTokenType.TimeSpan:
                         return new TextFieldModelController(jToken.ToObject<string>());
                     default:

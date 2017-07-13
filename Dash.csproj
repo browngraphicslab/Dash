@@ -95,6 +95,27 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Models\RadialActionModel.cs" />
+    <Compile Include="Models\RadialItemModel.cs" />
+    <Compile Include="Models\RadialSubmenuModel.cs" />
+    <Compile Include="RadialMenu\CenterButton.xaml.cs" />
+    <Compile Include="RadialMenu\ColorExtensions.cs" />
+    <Compile Include="RadialMenu\Colors.cs" />
+    <Compile Include="RadialMenu\Floating.cs" />
+    <Compile Include="RadialMenu\InnerPieSlicePath.cs" />
+    <Compile Include="RadialMenu\ListSubMenu.xaml.cs" />
+    <Compile Include="RadialMenu\MenuBase.cs" />
+    <Compile Include="RadialMenu\MeterSubmenu.xaml.cs" />
+    <Compile Include="RadialMenu\MeterSubmenuPath.cs" />
+    <Compile Include="RadialMenu\OuterPieSlicePath.cs" />
+    <Compile Include="RadialMenu\PathBase.cs" />
+    <Compile Include="RadialMenu\Pie.xaml.cs" />
+    <Compile Include="RadialMenu\PieSlice.xaml.cs" />
+    <Compile Include="RadialMenu\RadialMenu.xaml.cs" />
+    <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
+    <Compile Include="RadialMenu\Shims.cs" />
+    <Compile Include="RadialMenu\StoryboardExtension.cs" />
+    <Compile Include="Util\Actions.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>
@@ -250,6 +271,7 @@
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OverlayMenu.xaml.cs" />
+    <Compile Include="Views\RadialMenuView.xaml.cs" />
     <Compile Include="Views\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
@@ -311,6 +333,38 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="RadialMenu\CenterButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\ListSubMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\MeterSubMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\Pie.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\PieSlice.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\RadialMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\RadialMenuButton.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="RadialMenu\Styles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -413,6 +467,10 @@
     <Page Include="Views\OverlayMenu.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RadialMenuView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TextSettings.xaml">
     </Page>

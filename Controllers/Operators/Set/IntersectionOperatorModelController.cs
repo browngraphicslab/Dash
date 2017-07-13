@@ -41,7 +41,8 @@ namespace Dash.Models.OperatorModels.Set
 
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 
-            (doc.GetDereferencedField(IntersectionKey, docContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            //(doc.GetDereferencedField(IntersectionKey, docContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            doc.SetField(IntersectionKey, new DocumentCollectionFieldModelController(result), true);
             Debug.WriteLine("intersection count :" + result.Count);
 
             // Intersect by Document ID 

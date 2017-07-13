@@ -5,7 +5,7 @@ using DashShared;
 
 namespace Dash
 {
-    
+
     class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
@@ -39,9 +39,10 @@ namespace Dash
             List<DocumentController> bigSet = setA.GetDocuments();
             bigSet.AddRange(setB.GetDocuments());
             HashSet<DocumentController> result = new HashSet<DocumentController>(bigSet);
-            HashSet<DocumentController> same = Util.GetIntersection(setA, setB); 
-            result.ExceptWith(same); 
-            (doc.GetDereferencedField(UnionKey, DocContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            HashSet<DocumentController> same = Util.GetIntersection(setA, setB);
+            result.ExceptWith(same);
+            //(doc.GetDereferencedField(UnionKey, DocContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
+            doc.SetField(UnionKey, new DocumentCollectionFieldModelController(result), true);
             Debug.WriteLine("union count :" + result.Count);
 
             // Union by Document ID 
@@ -54,5 +55,5 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
     }
-    
+
 }

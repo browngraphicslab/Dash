@@ -9,6 +9,7 @@ using DashShared;
 using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 using System.Diagnostics;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
@@ -135,7 +136,23 @@ namespace Dash
             set { SetProperty(ref _isMoveable, value); }
         }
 
+        private Visibility _docMenuVisibility;
+        public Visibility DocMenuVisibility
+        {
+            get { return _docMenuVisibility; }
+            set { SetProperty(ref _docMenuVisibility, value); }
+        }
+
+        private GridLength _menuColumnWidth;
+        public GridLength MenuColumnWidth
+        {
+            get { return _menuColumnWidth; }
+            set { SetProperty(ref _menuColumnWidth, value); }
+        }
+
         public List<DocumentController> DocContextList = null;
+        
+
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
@@ -144,7 +161,7 @@ namespace Dash
             DocContextList = docContextList == null ? null : new List<DocumentController>(docContextList);
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
-            BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush;
+            BorderBrush = new SolidColorBrush(Colors.LightGray);
 
 
             // FIELD FETCHERS
@@ -159,7 +176,7 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.PositionFieldKey, posFieldModelController, true);
             }
             Position = posFieldModelController.Data;
-            posFieldModelController.FieldModelUpdatedEvent += PosFieldModelController_FieldModelUpdatedEvent;
+            posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
 
             var widthFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
             if (widthFieldModelController == null)
@@ -168,7 +185,7 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldModelController, true);
             }
             Width = widthFieldModelController.Data;
-            widthFieldModelController.FieldModelUpdatedEvent += WidthFieldModelController_FieldModelUpdatedEvent;
+            widthFieldModelController.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
 
 
             var heightFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
@@ -178,26 +195,25 @@ namespace Dash
                 layoutDocController.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldModelController, true);
             }
             Height = heightFieldModelController.Data;
-            heightFieldModelController.FieldModelUpdatedEvent += HeightFieldModelController_FieldModelUpdatedEvent; ;
+            heightFieldModelController.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent; ;
 
             // set icon via field 
             var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, docContextList) as NumberFieldModelController;
             if (iconFieldModelController == null) {
-                Debug.WriteLine("just use default then");
                 iconFieldModelController = new NumberFieldModelController((int)IconTypeEnum.Document);
                 DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
             } else Debug.WriteLine("we did it right: " + iconFieldModelController.Data);
             iconType = (IconTypeEnum)iconFieldModelController.Data;
-            iconFieldModelController.FieldModelUpdatedEvent += IconFieldModelController_FieldModelUpdatedEvent;
+            iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
 
             var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController;
 
             DataBindingSource.Add(documentController.DocumentModel);
 
             Content = documentController.makeViewUI(docContextList);
-            documentController.DocumentFieldUpdated += delegate(FieldModelController value, FieldModelController newValue, ReferenceFieldModelController reference)
+            documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
+                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
                 {
                     Content = DocumentController.makeViewUI(DocContextList);
                 }
@@ -239,6 +255,30 @@ namespace Dash
             {
                 Position = posFieldModelController.Data;
             }
+        }
+
+        public void ToggleMenuVisibility()
+        {
+            if (DocMenuVisibility == Visibility.Collapsed)
+            {
+                OpenMenu();
+            }
+            else
+            {
+                CloseMenu();
+            }
+        }
+
+        public void CloseMenu()
+        {
+            DocMenuVisibility = Visibility.Collapsed;
+            MenuColumnWidth = new GridLength(0);
+        }
+
+        public void OpenMenu()
+        {
+            DocMenuVisibility = Visibility.Visible;
+            MenuColumnWidth = new GridLength(50);
         }
     }
 }

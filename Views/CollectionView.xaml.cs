@@ -9,20 +9,11 @@ using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
-using Windows.UI.Core;
 using DashShared;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.Storage;
-using Windows.UI.Xaml.Media.Imaging;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using DocumentMenu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -32,6 +23,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public double CanvasScale { get; set; } = 1;
+        public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
@@ -81,15 +73,12 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
-            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
-            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
+            vm.CollectionFieldModelController.FieldModelUpdated += DocFieldCtrler_FieldModelUpdatedEvent;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();
 
             CanLink = false;
-            InkSource.Presenters.Add(xInkCanvas.InkPresenter);
-
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
         {
@@ -102,49 +91,20 @@ namespace Dash
             DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
             DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
             ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
-        }
-
-        /// <summary>
-        /// Show / hide context menu for collections
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (CurrentView.IsEnabled)
-            {
-                if (_colMenu != null)
-                {
-                    CloseMenu();
-                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                }
-                else
-                {
-                    OpenMenu();
-                    SetEnabled(true);
-                }
-                e.Handled = true;
-            }
-            
+            Tapped += CollectionView_Tapped;
         }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            var parentDocument = ParentDocument;
-
-            if (parentDocument != MainPage.Instance.MainDocView)
+            ParentDocument.HasCollection = true;
+            if (ParentDocument != MainPage.Instance.MainDocView)
             {
-                DoubleTapped += Grid_DoubleTapped;
-                parentDocument.SizeChanged += (ss, ee) =>
+                ParentDocument.SizeChanged += (ss, ee) =>
                 {
-                    var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
-                    if (height != null)
-                        Height = (double) height - 3;
-                    var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
-                    if (width != null)
-                        Width = (double) width - 3;
+                    Height = ee.NewSize.Height;
+                    Width = ee.NewSize.Width;
                 };
                 SetEnabled(false);
             }
@@ -722,6 +682,7 @@ namespace Dash
             if (panel != null) panel.Children.Remove(_colMenu);
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
+            ParentDocument.Width -= 50;
         }
 
         private void SelectAllItems()
@@ -738,13 +699,9 @@ namespace Dash
             {
                 var listView = (CurrentView as CollectionListView).HListView;
                 if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
-                {
                     listView.SelectAll();
-                }
                 else
-                {
                     listView.SelectedItems.Clear();
-                }
             }
         }
 
@@ -789,10 +746,10 @@ namespace Dash
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
                 new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
             };
-            _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0, 0),
-                collectionButtons, documentButtons);
+            _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
+            ParentDocument.Width += 50;
         }
 
 
@@ -800,12 +757,31 @@ namespace Dash
 
         #region Collection Activation
 
+        public void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ParentDocument != MainPage.Instance.MainDocView)
+            {
+                if (_colMenu != null)
+                {
+                    CloseMenu();
+                    SetEnabled(false);
+                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                }
+                else
+                {
+                    OpenMenu();
+                    ParentCollection.SetActiveCollection(this);
+                }
+            }
+            SetActiveCollection(null);
+            e.Handled = true;
+        }
+
         public void SetEnabled(bool enabled)
         {
             if (enabled)
             {
                 CurrentView.IsHitTestVisible = true;
-                xOuterGrid.BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush; 
             }
             else
             {
@@ -814,18 +790,20 @@ namespace Dash
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 if (_colMenu != null)
                     CloseMenu();
+                foreach (var dvm in ViewModel.DataBindingSource)
+                {
+                    dvm.CloseMenu();
+                }
             }
         }
 
-        private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (ParentCollection?.GetActiveCollection() != this)
-            {
-                ParentCollection?.SetActiveCollection(this);
-            }
-            SetActiveCollection(null);
-            e.Handled = true;
-        }
+        //private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (ParentCollection?.GetActiveCollection() != this)
+        //        ParentCollection?.SetActiveCollection(this);
+        //    SetActiveCollection(null);
+        //    e.Handled = true;
+        //}
 
         public void SetActiveCollection(CollectionView collection)
         {

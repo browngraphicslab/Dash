@@ -19,6 +19,22 @@ namespace Dash
             return start.GetDescendants().OfType<T>();
         }
 
+        public static IEnumerable<T> GetDescentantsOfNextGenerationOfType<T>(this DependencyObject start) where T : DependencyObject
+        {
+            return start.GetDescendantsOfNextGeneration().OfType<T>();
+        }
+
+        public static IEnumerable<DependencyObject> GetDescendantsOfNextGeneration(this DependencyObject start)
+        {
+            var queue = new Queue<DependencyObject>();
+            var count = VisualTreeHelper.GetChildrenCount(start);
+            for (int i = 0; i < count; i++)
+            {
+                var child = VisualTreeHelper.GetChild(start, i);
+                yield return child;
+            }
+        }
+
         public static IEnumerable<DependencyObject> GetDescendants(this DependencyObject start)
         {
             var queue = new Queue<DependencyObject>();

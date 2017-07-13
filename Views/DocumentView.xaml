@@ -8,68 +8,51 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    Width="{x:Bind ViewModel.Width}" 
-    Height="{x:Bind ViewModel.Height}"
-    d:DataContext="{d:DesignInstance local:DocumentViewModel }"
-   >
-    
+    d:DataContext="{d:DesignInstance local:DocumentViewModel}"
+    PointerPressed="UserControl_PointerPressed">
+
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
-              Tapped="XGrid_Tapped"
-              DoubleTapped="XGrid_DoubleTapped"
               SizeChanged="OuterGrid_SizeChanged"
               Background="Transparent">
-        
-        <!-- Container for document fields view -->
-        <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
-            <Grid.Clip>
-                <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
-            </Grid.Clip>
-            <ContentPresenter Content="{Binding Content}"></ContentPresenter>
-        </Grid>
-        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="10,10,-10,-10" Visibility="Visible"></Border>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" MaxWidth="50"/>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+            <Border x:Name="xBorder" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="5,5,-10,-10" />
+            <!-- Container for Icon view -->
+            <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png" />
+            </Grid>
+        <Canvas x:Name="xMenuCanvas" Background="Transparent" />
+        <Grid Grid.Column="1">
+            <!-- Container for document fields view -->
+            <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
+                </Grid.Clip>
+                <ContentPresenter Content="{Binding Content}" />
+            </Grid>
 
-        <!-- Container for Icon view -->
-        <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
-            <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png"></Image>
+            <!-- Misc. Document Components-->
+            <Button x:Name="DraggerButton"
+                    x:FieldModifier="public"
+                    Background="Black"
+                    Margin="0,0,-20,-20"
+                    DoubleTapped="ExpandContract_DoubleTapped"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    ManipulationMode="TranslateX, TranslateY">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border Padding="10,10,20,20" Background="Transparent">
+                            <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
+                                   HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
         </Grid>
-        
-        <!-- Context Menu -->
-        <Grid x:Name="xContextMenu">
-            <StackPanel Orientation="Horizontal" >
-                <Image Tapped="XEditButton_OnTapped" Source="ms-appx:///Assets/layout.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                <Image Source="ms-appx:///Assets/copy.png" Stretch="None" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-
-            </StackPanel>
-            <Image Source="ms-appx:///Assets/delete.png" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-        </Grid>
-        
-        <!-- Misc. Document Components-->
-        <Button x:Name="DraggerButton" 
-                x:FieldModifier="public"
-                Background="Black"
-                Margin="0,0,-20,-20"
-                DoubleTapped="ExpandContract_DoubleTapped"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom" 
-                ManipulationMode="TranslateX, TranslateY"
-                Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                >
-            <Button.Template>
-                <ControlTemplate TargetType="Button">
-                    <Border Padding="10,10,20,20" Background="Transparent">
-                        <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None" HorizontalAlignment="Right" VerticalAlignment="Bottom"></Image>
-                    </Border>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
     </Grid>
 </UserControl>
-
-
-
-
-
-
-

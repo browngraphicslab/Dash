@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -18,6 +19,7 @@ namespace Dash {
         public class CourtesyDocument {
 
             public List<DocumentModel> ContextList;
+
             public virtual DocumentController Document { get; set; }
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
@@ -97,12 +99,24 @@ namespace Dash {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
                     view.PointerArgs = args;
+                    if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
+                    {
+
+                    }
+                    else if(args.GetCurrentPoint(view).Properties.IsRightButtonPressed)
+                    {
+                        view.CanLink = true;
+                        if (view.CurrentView is CollectionFreeformView)
+                            (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(refFieldModelController, true, args, renderElement,
+                                renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    }  
                 };
                 renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                    view.CanLink = false;
                     if (view == null) return; // we can't always assume we're on a collection
+                    view.CanLink = false;
 
+                    args.Handled = true;
                     (view.CurrentView as CollectionFreeformView)?.EndDrag(
                         new OperatorView.IOReference(refFieldModelController, false, args, renderElement, 
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
@@ -398,6 +412,7 @@ namespace Dash {
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText, docContextList);
                 if (fieldModelController is TextFieldModelController) {
                     var textBox = new TextBox();
+                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
@@ -692,9 +707,13 @@ namespace Dash {
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
 
-                return new DocumentController(fields, TwoImagesType);
+
+                //return new DocumentController(fields, TwoImagesType); 
+                return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
+                //return new DocumentController(fields, TwoImagesType);
                 //return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
             }
+            
             /// <summary>
             /// Creates a default Layout for a Two Images document.  This requires that a prototype of a Two Images document exist so that
             /// this layout can reference the fields of the prototype.  When a delegate is made of a Two Images document,  this layout's 
@@ -724,13 +743,14 @@ namespace Dash {
                 Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                 Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                 Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
-                Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
+                //Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
+                //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
+
 
                 var docLayout = _prototypeLayout.MakeDelegate();
-                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point(0,0)), true);
+                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0,0)), true);
                 docLayout.SetField(new Key("opacity", "opacity"), new NumberFieldModelController(0.8), true);
                 SetLayoutForDocument(Document, docLayout);
-                Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
 
 
                 if (displayFieldsAsDocuments) {
@@ -804,7 +824,7 @@ namespace Dash {
                 var tBox = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
                     0, 50, 20).Document;
 
-                var stackPan = new StackingPanel(new[] { tBox, imBox1, imBox2 }).Document;
+                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }).Document;
 
                 SetLayoutForDocument(Document, stackPan);
             }
