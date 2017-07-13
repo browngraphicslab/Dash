@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -22,6 +23,8 @@ namespace Dash.Views
 {
     public sealed partial class SizeSettings : UserControl
     {
+        private TextBox _heightTextBox;
+        private TextBox _widthTextBox;
         public SizeSettings()
         {
             this.InitializeComponent();
@@ -31,19 +34,6 @@ namespace Dash.Views
         {
             BindWidth(editedLayoutDocument, docContextList);
             BindHeight(editedLayoutDocument, docContextList);
-        }
-
-        private void XTitle_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            xContentGridColumn.Visibility = xContentGridColumn.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            xCollapse.Visibility = xCollapse.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            xExpand.Visibility = xExpand.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
         }
 
         private void BindHeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
@@ -59,6 +49,7 @@ namespace Dash.Views
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
+
         }
 
         private void BindWidth(DocumentController docController, IEnumerable<DocumentController> docContextList)

@@ -1,11 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -13,6 +15,8 @@ namespace Dash.Views
 {
     public sealed partial class PositionSettings : UserControl
     {
+        private TextBox _horizontalPositionTextBox;
+        private TextBox _verticalPositionTextBox;
         public PositionSettings()
         {
             this.InitializeComponent();
@@ -40,7 +44,7 @@ namespace Dash.Views
                 ConverterParameter = Coordinate.X,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty, xPositionBinding);
+            xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty,xPositionBinding);
 
             var yPositionBinding = new Binding
             {
@@ -52,19 +56,6 @@ namespace Dash.Views
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
-        }
-
-        private void XTitle_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            xContentGridColumn.Visibility = xContentGridColumn.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            xCollapse.Visibility = xCollapse.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            xExpand.Visibility = xExpand.Visibility == Visibility.Collapsed
-                ? Visibility.Visible
-                : Visibility.Collapsed;
         }
     }
 }

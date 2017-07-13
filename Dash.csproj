@@ -214,6 +214,9 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\CollectionSettings.xaml.cs">
+      <DependentUpon>CollectionSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
@@ -252,6 +255,9 @@
     <Compile Include="Views\OverlayMenu.xaml.cs" />
     <Compile Include="Views\PositionSettings.xaml.cs">
       <DependentUpon>PositionSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingsPaneBlock.xaml.cs">
+      <DependentUpon>SettingsPaneBlock.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SizeSettings.xaml.cs">
       <DependentUpon>SizeSettings.xaml</DependentUpon>
@@ -368,6 +374,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\CollectionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -420,6 +430,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\PositionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingsPaneBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

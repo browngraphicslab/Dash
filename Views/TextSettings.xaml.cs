@@ -17,6 +17,10 @@ namespace Dash
         private DocumentController editedLayoutDocument;
         private ObservableCollection<double> _fontWeights = new ObservableCollection<double>();
 
+        private Slider _fontSlider;
+        private TextBox _fontTextBox;
+        private ComboBox _fontWeightBox;
+
         public TextSettings()
         {
             this.InitializeComponent();
@@ -91,7 +95,7 @@ namespace Dash
             };
 
             xAlignmentListView.SetBinding(ListView.SelectedIndexProperty, fontAlignmentBinding);
-            xAlignmentListView.SelectionChanged += delegate(object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
+            xAlignmentListView.SelectionChanged += delegate (object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
         }
 
         private void BindFontWeight(DocumentController docController, IEnumerable<DocumentController> docContextList)

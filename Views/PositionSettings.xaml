@@ -9,7 +9,27 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Width="230" Padding="0">
+    <!--<Grid x:Name="xMainGrid"></Grid>-->
+    <Grid Height="Auto" Width="230">
+        <local:SettingsPaneBlock>
+            <local:SettingsPaneBlock.MainContent>
+                <Grid Width="230">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.Column="0" Margin="10,5,5,0">
+                        <TextBox x:Name="xHorizontalPositionTextBox" Header="X" Height="Auto" BorderBrush="White" Background="White"  VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10"/>
+                    </Grid>
+                    <Grid Grid.Column="1" Margin="5,5,10,0">
+                        <TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10"/>
+                    </Grid>
+                </Grid>
+            </local:SettingsPaneBlock.MainContent>
+            <local:SettingsPaneBlock.Title>POSITION</local:SettingsPaneBlock.Title>
+        </local:SettingsPaneBlock>
+    </Grid>
+    <!--<Grid Width="230" Padding="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="2.5*"/>
@@ -46,5 +66,5 @@
                 </Grid>
             </Grid>
         </Grid>
-    </Grid>
+    </Grid>-->
 </UserControl>
