@@ -482,7 +482,6 @@ namespace Dash {
             public static FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList)
             {
-                return new InkCanvasControl(MainPage.InkFieldModelController);
                 var controller = docController.GetField(InkDataKey);
                 if (controller != null && controller is InkFieldModelController)
                 {

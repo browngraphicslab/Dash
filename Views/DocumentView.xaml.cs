@@ -12,7 +12,10 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views;
 using DocumentMenu;
+using Binding = Windows.UI.Xaml.Data.Binding;
+using UserControl = Windows.UI.Xaml.Controls.UserControl;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -44,6 +47,7 @@ namespace Dash
 
         public ICollectionView View { get; set; }
         private double startWidth, startHeight; // used for restoring on double click in icon view
+        private InkCanvasControl _inkCanvasControl;
 
         public DocumentView()
         {
@@ -77,11 +81,13 @@ namespace Dash
             var layout = new Action(OpenLayout);
             var copy = new Action(CopyDocument);
             var delete = new Action(DeleteDocument);
+            var draw = new Action(ToggleDraw);
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
                 new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete),
+                new MenuButton(Symbol.Edit, "Draw", Colors.LightBlue, draw)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -92,6 +98,18 @@ namespace Dash
             };
             _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
+        }
+
+        private void ToggleDraw()
+        {
+            if (_inkCanvasControl.Visibility == Visibility.Visible)
+            {
+                _inkCanvasControl.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                _inkCanvasControl.Visibility = Visibility.Visible;
+            }
         }
 
         /// <summary>
@@ -221,6 +239,17 @@ namespace Dash
             Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
                 xBorder.Opacity = 0;
+            }
+
+            if (!ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator"))
+            {
+                if (_inkCanvasControl != null) XGrid.Children.Remove(_inkCanvasControl);
+                _inkCanvasControl =
+                    new InkCanvasControl(
+                        ViewModel.DocumentController.GetField(CourtesyDocuments.InkBox.InkDataKey) as
+                            InkFieldModelController);
+                _inkCanvasControl.Visibility = Visibility.Collapsed;
+                XGrid.Children.Add(_inkCanvasControl);
             }
 
             SetUpMenu();

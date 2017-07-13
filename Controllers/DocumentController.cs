@@ -46,6 +46,9 @@ namespace Dash
 
         public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type)
         {
+            //Adds an ink field to every document
+            fields[CourtesyDocuments.InkBox.InkDataKey] = new InkFieldModelController();
+
             DocumentModel model = new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type);
             ContentController.AddModel(model);
             // Initialize Local Variables

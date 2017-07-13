@@ -34,6 +34,7 @@ namespace Dash.Views
             this.InitializeComponent();
             InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
             InkSettings.SetAttributes();
+            XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
             _inkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
