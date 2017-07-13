@@ -88,7 +88,6 @@ namespace Dash {
                 renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
-                    Debug.WriteLine("we are aholding!");
                     view.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
                         (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(refFieldModelController, true, view.PointerArgs, renderElement,

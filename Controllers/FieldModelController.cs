@@ -37,7 +37,6 @@ namespace Dash
                     // update local
                     string id = ContentController.MapDocumentInstanceReference(value.DocId, value.DocContextList);
                     var cont = ContentController.GetController<DocumentController>(id);
-                    Debug.WriteLine($"listening to doc field updated on {id}, {value.FieldKey.Name}");
                     cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
                         if (args.Reference.FieldKey.Equals(value.FieldKey))

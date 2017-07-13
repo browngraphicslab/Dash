@@ -81,13 +81,11 @@ namespace Dash
         /// <param name="e"></param>
         void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e) {
 
-            Debug.WriteLine("yooo");
             string docId = (DataContext as ReferenceFieldModelController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                Debug.WriteLine("bbbboo");
                 (view.CurrentView as CollectionFreeformView).CanLink = true;
                 (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
 
