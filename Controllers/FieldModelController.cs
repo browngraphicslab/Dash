@@ -21,7 +21,7 @@ namespace Dash
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
 
-        public List<DocumentController> DocContextList = null;
+        public Context Context = null;
 
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
@@ -35,8 +35,9 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    string id = ContentController.MapDocumentInstanceReference(value.DocId, value.DocContextList);
-                    var cont = ContentController.GetController<DocumentController>(id);
+                    //string id = ContentController.MapDocumentInstanceReference(value.DocId, value.DocContextList);
+                    //var cont = ContentController.GetController<DocumentController>(id);
+                    var cont = value.GetDocumentController();//TODO Use context here
                     cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
                         if (args.Reference.FieldKey.Equals(value.FieldKey))
@@ -44,7 +45,7 @@ namespace Dash
                             UpdateValue(args.NewValue);
                         }
                     };
-                    UpdateValue(cont.GetDereferencedField(value.FieldKey, value.DocContextList));
+                    UpdateValue(cont.GetDereferencedField(value.FieldKey, value.Context));
 
                     // update server
                 }
@@ -122,17 +123,17 @@ namespace Dash
             return FieldModel.Id;
         }
 
-        public virtual FieldModelController Dereference()
+        public virtual FieldModelController Dereference(Context context = null)
         {
             return this;
         }
 
-        public virtual FieldModelController DereferenceToRoot()
+        public virtual FieldModelController DereferenceToRoot(Context context = null)
         {
             return this;
         }
 
-        public virtual T DereferenceToRoot<T>() where T : FieldModelController
+        public virtual T DereferenceToRoot<T>(Context context = null) where T : FieldModelController
         {
             return this as T;
         }

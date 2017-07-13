@@ -17,9 +17,9 @@ namespace Dash
             DocReference = docReference;
         }
 
-        public override DocumentController GetDocumentController()
+        public override DocumentController GetDocumentController(Context context = null)
         {
-            return DocReference.DereferenceToRoot<DocumentFieldModelController>()?.Data;
+            return DocReference.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
         }
 
         public DocumentPointerReferenceFieldModel DocumentPointerReferenceFieldModel => FieldModel as DocumentPointerReferenceFieldModel;

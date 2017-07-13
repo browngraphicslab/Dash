@@ -31,32 +31,39 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
-        public abstract DocumentController GetDocumentController();
-
         /// <summary>
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
-        public override FieldModelController Dereference()
+        public abstract DocumentController GetDocumentController(Context context = null);
+
+        public override FieldModelController Dereference(Context context = null)
         {
-            return GetDocumentController().GetField(FieldKey);
+            if (context != null)
+            {
+                if (context.TryDereferenceToRoot(this, out FieldModelController controller))
+                {
+                    return controller;
+                }
+            }
+            return GetDocumentController(context).GetField(FieldKey);
         }
 
-        public override FieldModelController DereferenceToRoot()
+        public override FieldModelController DereferenceToRoot(Context context = null)
         {
             FieldModelController reference = this;
             while (reference is ReferenceFieldModelController)
             {
-                reference = reference.Dereference();
+                reference = reference.Dereference(context);
             }
             return reference;
         }
 
-        public override T DereferenceToRoot<T>()
+        public override T DereferenceToRoot<T>(Context context = null)
         {
-            return DereferenceToRoot() as T;
+            return DereferenceToRoot(context) as T;
         }
 
         public override FrameworkElement GetTableCellView()
