@@ -39,6 +39,26 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
+        public override FieldModelController Dereference()
+        {
+            return GetDocumentController().GetField(FieldKey);
+        }
+
+        public override FieldModelController DereferenceToRoot()
+        {
+            FieldModelController reference = this;
+            while (reference is ReferenceFieldModelController)
+            {
+                reference = reference.Dereference();
+            }
+            return reference;
+        }
+
+        public override T DereferenceToRoot<T>()
+        {
+            return DereferenceToRoot() as T;
+        }
+
         public override FrameworkElement GetTableCellView()
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);

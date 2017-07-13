@@ -122,6 +122,21 @@ namespace Dash
             return FieldModel.Id;
         }
 
+        public virtual FieldModelController Dereference()
+        {
+            return this;
+        }
+
+        public virtual FieldModelController DereferenceToRoot()
+        {
+            return this;
+        }
+
+        public virtual T DereferenceToRoot<T>() where T : FieldModelController
+        {
+            return this as T;
+        }
+
         /// <summary>
         /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
@@ -154,6 +169,21 @@ namespace Dash
             };
 
             return scrollViewer;
+        }
+
+        public override bool Equals(object obj)
+        {
+            FieldModelController cont = obj as FieldModelController;
+            if (cont == null)
+            {
+                return false;
+            }
+            return FieldModel.Equals(cont.FieldModel);
+        }
+
+        public override int GetHashCode()
+        {
+            return FieldModel.GetHashCode();
         }
 
         public abstract FieldModelController GetDefaultController();
