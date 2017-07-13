@@ -439,9 +439,18 @@ namespace Dash
                     PointFieldModelController cont = pair.Value as PointFieldModelController;
                     data = cont.Data.ToString();
                 } 
-                else if (pair.Value is DocumentCollectionFieldModelController)
+                // TODO refactor the CollectionKey here into DashConstants
+                else if (pair.Key == DocumentCollectionFieldModelController.CollectionKey)
                 {
-                    DocumentCollectionFieldModelController cont = pair.Value as DocumentCollectionFieldModelController;
+                    data = "["; 
+                    DocumentCollectionFieldModelController collectionCont = pair.Value as DocumentCollectionFieldModelController;
+                    foreach(DocumentController cont in collectionCont.GetDocuments())
+                    {
+                        data += JsonSerializeHelper(cont.EnumFields());
+                        data += ", "; 
+                    }
+                    data += "]";
+                    Debug.WriteLine(data);  
                 }
                 else
                 {
