@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using DashShared;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Dash {
     public static class CourtesyDocuments {
@@ -657,10 +658,9 @@ namespace Dash {
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
                     var stackDoc = stack.GetFirstAncestorOfType<DocumentView>();
-                    stackViewer.ViewChanging += (ss, ee) => 
-                        stackDoc.Manipulator.RemoveAllButHandle();
-                    stackViewer.ViewChanged += (ss, ee) => 
-                        stackDoc.Manipulator.AddAllAndHandle();
+                    var stackScrollBar = stackViewer.GetFirstDescendantOfType<ScrollBar>();
+                    stackScrollBar.ManipulationMode = ManipulationModes.All;
+                    stackScrollBar.ManipulationDelta += (ss, ee) => { ee.Handled = true; };
                 };
                 var stackFieldData =
                     docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) 
