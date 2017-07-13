@@ -75,5 +75,10 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
+
+        public override FieldModelController GetDefaultController()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using DashShared;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -219,7 +219,6 @@ namespace Dash
         /// <returns></returns>
         public DocumentController MakeDelegate()
         {
-            // TODO WE NEED TO STORE THESE CONTROLLERS SOMEWHERE
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
 
@@ -229,7 +228,7 @@ namespace Dash
 
             // add the delegate to our delegates field
             var currentDelegates = GetDelegates();
-            currentDelegates.GetDocuments().Add(delegateController);
+            currentDelegates.AddDocument(delegateController);
 
             // return the now fully populated delegate
             return delegateController;
@@ -259,8 +258,11 @@ namespace Dash
 
             // if not then populate it with a new list of documents
             if (currentDelegates == null)
+            {
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
+                _fields[DashConstants.KeyStore.DelegatesKey] = currentDelegates;
+            }                
 
             return currentDelegates;
         }
@@ -379,6 +381,11 @@ namespace Dash
             var sp = new StackPanel();
             foreach (var f in EnumFields())
             {
+                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) || f.Key.Equals(DashConstants.KeyStore.PrototypeKey))
+                {
+                    continue;
+                }
+
                 if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
                 {
                     var hstack = new StackPanel() { Orientation = Orientation.Horizontal };

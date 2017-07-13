@@ -60,6 +60,11 @@ namespace Dash
             return image;
         }
 
+        public override FieldModelController GetDefaultController()
+        {
+            return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
+        }
+
         /// <summary>
         ///     The image which this image controller is attached to. This is the <see cref="BitmapImage" /> representation of
         ///     the <see cref="ImageFieldModel.Data" />

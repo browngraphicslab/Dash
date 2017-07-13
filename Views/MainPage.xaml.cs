@@ -38,9 +38,6 @@ namespace Dash
             xOverlayCanvas.OnAddCollectionTapped += AddCollection;
             xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
             xOverlayCanvas.OnAddImageTapped += AddImage;
-            xOverlayCanvas.OnAddShapeTapped += AddShape;
-            xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
-            xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
             var collectionDocumentController =
@@ -69,17 +66,6 @@ namespace Dash
             var radialMenu = new RadialMenuView(xCanvas);
         }
 
-        private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            //xFreeformView.ToggleEditMode();
-        }
-
-
-        private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            AddOperator();
-        }
-
         public void AddOperator()
         {
             //Create Operator document
@@ -96,9 +82,6 @@ namespace Dash
             view.DataContext = opvm;
 
             DisplayDocument(opModel);
-
-
-            //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
             var intersectOpModel =
@@ -137,41 +120,6 @@ namespace Dash
             var imgOpvm = new DocumentViewModel(imgOpModel);
             imgOpView.DataContext = imgOpvm;
             DisplayDocument(imgOpModel);
-        }
-
-        private async void AddShape(object sender, TappedRoutedEventArgs e)
-        {
-            var shapeModel = new ShapeModel
-            {
-                Width = 300,
-                Height = 300,
-                X = 300,
-                Y = 300,
-                Id = $"{Guid.NewGuid()}"
-            };
-
-            var shapeEndpoint = App.Instance.Container.GetRequiredService<ShapeEndpoint>();
-            var result = await shapeEndpoint.CreateNewShape(shapeModel);
-            if (result.IsSuccess)
-            {
-                shapeModel = result.Content;
-            }
-            else
-            {
-                Debug.WriteLine(result.ErrorMessage);
-                return;
-            }
-
-            throw new NotImplementedException();
-            //var shapeController = new ShapeController(shapeModel);
-            //throw new NotImplementedException("The shape controller has not been updated to work with controllers");
-            ////ContentController.AddShapeController(shapeController);
-
-            //var shapeVM = new ShapeViewModel(shapeController);
-            //var shapeView = new ShapeView(shapeVM);
-
-
-            //  xFreeformView.Canvas.Children.Add(shapeView);
         }
 
         /// <summary>
@@ -323,13 +271,18 @@ namespace Dash
             DisplayDocument(col);
         }
 
-        public void XCanvas_DragOver_1(object sender, DragEventArgs e)
+        public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
             //e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
-        private void xOverlayCanvas_Loaded(object sender, RoutedEventArgs e)
+        public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
+            var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
+
+            xCanvas.Children.Add(elementToDisplay);
+            Canvas.SetLeft(elementToDisplay, dropPoint.X);
+            Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
     }
 }
