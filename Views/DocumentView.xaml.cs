@@ -19,7 +19,6 @@ using Newtonsoft.Json;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 
-
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
@@ -395,7 +394,33 @@ namespace Dash
 
             // test exporting 
             ExportAsJson(); 
+
+            //send email 
+
+
             e.Handled = true;
+        }
+
+        private async Task SendEmail(Windows.ApplicationModel.Contacts.Contact recipient, string message, StorageFile attachmentFile)
+        {
+            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage();
+            emailMessage.Body = message; 
+
+            if (attachmentFile != null)
+            {
+                var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile); 
+                var attachment = new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream);
+                emailMessage.Attachments.Add(attachment); 
+            }
+
+            //var email = recipient.Emails.FirstOrDefault<Windows.ApplicationModel.Contacts.ContactEmail>();
+            //if (email != null)
+            //{
+                //var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
+                //emailMessage.To.Add(emailRecipient);
+            //}
+
+            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);  
         }
 
         private async void ExportAsImage()
@@ -458,6 +483,7 @@ namespace Dash
                     //throw new NotImplementedException(); 
                 }
                 jsonDict[pair.Key.Name] = data;
+                Debug.Write(""); 
             }
             return JsonConvert.SerializeObject(jsonDict);
         }
