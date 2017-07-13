@@ -103,6 +103,9 @@ namespace Dash
                                     equal = false;
                                     break;
                                 }
+                            } else
+                            {
+                                throw new NotImplementedException(); 
                             }
                         }
                     }

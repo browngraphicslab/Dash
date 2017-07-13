@@ -16,6 +16,8 @@ using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using Windows.Storage;
+using Windows.Storage.Pickers;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -51,9 +53,9 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
-            
+
             // add manipulation code
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY ;
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             manipulator = new ManipulationControls(this);
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
@@ -72,7 +74,7 @@ namespace Dash
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             Tapped += OnTapped;
-            DoubleTapped += OnDoubleTapped;      
+            DoubleTapped += OnDoubleTapped;
         }
 
         private void SetUpMenu()
@@ -110,7 +112,7 @@ namespace Dash
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
             DataContext = documentViewModel;
-            
+
         }
 
 
@@ -132,7 +134,7 @@ namespace Dash
             // todo: remove this and replace with binding // debug why x:Bind fails
             Width = ActualWidth + dx;
             Height = ActualHeight + dy;
-            
+
         }
 
         /// <summary>
@@ -189,13 +191,19 @@ namespace Dash
             // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
         }
 
-        private void updateIcon() {
+        private void updateIcon()
+        {
             // when you want a new icon, you have to add a check for it here!
-            if (ViewModel.IconType == IconTypeEnum.Document) {
+            if (ViewModel.IconType == IconTypeEnum.Document)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            } else if (ViewModel.IconType == IconTypeEnum.Collection) {
+            }
+            else if (ViewModel.IconType == IconTypeEnum.Collection)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            } else if (ViewModel.IconType == IconTypeEnum.Api) {
+            }
+            else if (ViewModel.IconType == IconTypeEnum.Api)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
             }
         }
@@ -209,20 +217,23 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null) {
+            if (ViewModel != null)
+            {
                 return;
             }
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
-            
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
+
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator"))
+            {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
                 xBorder.Opacity = 0;
             }
             Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection"))
+            {
                 xBorder.Opacity = 0;
             }
 
@@ -259,14 +270,17 @@ namespace Dash
             // update collapse info
             // collapse to icon view on resize
             int pad = 32;
-            if (Width < MinWidth + pad && Height < MinHeight + pad) {
+            if (Width < MinWidth + pad && Height < MinHeight + pad)
+            {
                 updateIcon();
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
-            } else {
+            }
+            else
+            {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -290,20 +304,22 @@ namespace Dash
         ///// <param name="e"></param>
         //private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
 
-            
+
         //        if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
         //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
         //        else
         //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            
+
 
         //    singleTap = false;
         //    e.Handled = true;
         //}
-        
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+
+        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
             // if in icon view expand to default size
-            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
+            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible)
+            {
                 Height = 300;
                 Width = 300;
 
@@ -312,7 +328,9 @@ namespace Dash
                 dvm.Height = 300;
 
                 // if in default view, show context menu
-            } else {
+            }
+            else
+            {
                 Height = MinWidth;
                 Width = MinHeight;
 
@@ -362,7 +380,8 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
-        private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
+        private void XGrid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
 
         }
 
@@ -375,9 +394,81 @@ namespace Dash
             */
 
             // test exporting 
-            string json = JsonConvert.SerializeObject(ViewModel.DocumentController.DocumentModel.Fields.ToString()); 
-            //System.IO.File.WriteAllText("something.txt)
+            ExportAsJson(); 
             e.Handled = true;
+        }
+
+        private async void ExportAsImage()
+        {
+            FolderPicker picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            if (folder != null)
+            {
+                StorageFile file = await folder.CreateFileAsync("img.jpg", CreationCollisionOption.ReplaceExisting);
+                //await FileIO.WriteTextAsync(file, json);
+            }
+        }
+
+        private string JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
+        {
+            Dictionary<string, string> jsonDict = new Dictionary<string, string>();
+            foreach (KeyValuePair<Key, FieldModelController> pair in fields)
+            {
+                string data = "";
+                if (pair.Value is TextFieldModelController)
+                {
+                    TextFieldModelController cont = pair.Value as TextFieldModelController;
+                    data = cont.Data;
+                }
+                else if (pair.Value is NumberFieldModelController)
+                {
+                    NumberFieldModelController cont = pair.Value as NumberFieldModelController;
+                    data = cont.Data.ToString();
+                }
+                else if (pair.Value is ImageFieldModelController)
+                {
+                    ImageFieldModelController cont = pair.Value as ImageFieldModelController;
+                    data = cont.Data.ToString();
+                }
+                else if (pair.Value is PointFieldModelController)
+                {
+                    PointFieldModelController cont = pair.Value as PointFieldModelController;
+                    data = cont.Data.ToString();
+                } 
+                else if (pair.Value is DocumentCollectionFieldModelController)
+                {
+                    DocumentCollectionFieldModelController cont = pair.Value as DocumentCollectionFieldModelController;
+                }
+                else
+                {
+                    // TODO throw this at some point 
+                    //throw new NotImplementedException(); 
+                }
+                jsonDict[pair.Key.Name] = data;
+            }
+            return JsonConvert.SerializeObject(jsonDict);
+        }
+
+        private async void ExportAsJson()
+        {
+            string json = JsonSerializeHelper(ViewModel.DocumentController.EnumFields()); 
+            Debug.WriteLine(json);
+
+            FolderPicker picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            if (folder != null)
+            {
+            StorageFile file = await folder.CreateFileAsync("sample.json", CreationCollisionOption.ReplaceExisting);
+            await FileIO.WriteTextAsync(file, json);
+            }
         }
 
         private void OpenLayout()
