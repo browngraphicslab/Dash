@@ -13,6 +13,7 @@ using Dash.Models.OperatorModels.Set;
 using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -25,6 +26,7 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance;
+        private RadialMenuView _radialMenu;
 
 
         public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
@@ -63,7 +65,7 @@ namespace Dash
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
-            var radialMenu = new RadialMenuView(xCanvas);
+            _radialMenu = new RadialMenuView(xCanvas);
         }
 
         public void AddOperator()
@@ -282,6 +284,14 @@ namespace Dash
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
+        }
+
+        private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (!_radialMenu.IsVisible)
+                _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
+            else _radialMenu.IsVisible = false;
+            e.Handled = true;
         }
     }
 }
