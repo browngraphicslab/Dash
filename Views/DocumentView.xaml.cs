@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -367,14 +368,15 @@ namespace Dash
 
         private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
+            // TODO KB made to test doccontextlist, delete later 
+            /* 
             ObservableCollection<DocumentController> docList = ViewModel.DocumentController.DocContextList; 
             Debug.WriteLine("count in this list is " + ViewModel.DocumentController.DocContextList.Count); 
-            
-            foreach(DocumentController cont in docList)
-            {
-                Debug.WriteLine("docType : " + cont.IsDelegateOf(ViewModel.DocumentController.DocumentModel.DocumentType.Type)); 
-                Debug.WriteLine("is this a delegate? : " + cont.IsDelegateOf(ViewModel.DocumentController.DocumentModel.Id)); 
-            }
+            */
+
+            // test exporting 
+            string json = JsonConvert.SerializeObject(ViewModel.DocumentController.DocumentModel.Fields.ToString()); 
+            //System.IO.File.WriteAllText("something.txt)
             e.Handled = true;
         }
 

@@ -27,17 +27,20 @@ namespace Dash {
                 document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
 
                 // TODO KB 
-                var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey);
+                var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
                 if (layoutList == null)
                 {
                     document.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
                 }
                 else
                 {
-                    var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey); 
-                    layoutList.AddDocument(layoutDoc); 
-                    document.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, true);
+                    if (! new HashSet<DocumentController>(layoutList.GetDocuments()).Contains(layoutDoc))
+                    {
+                        layoutList.AddDocument(layoutDoc);
+                        document.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, true);
+                    }
                 }
+
             }
 
             /// <summary>
