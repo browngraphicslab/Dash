@@ -166,7 +166,7 @@ namespace Dash
             foreach (var docController in documents.GetDocuments())
             {
                 if (ViewModelContains(DataBindingSource, docController)) continue;
-                var viewModel = new DocumentViewModel(docController, DocContextList);  // TODO LSM: why are we passing the DocContextList Here to the documents
+                var viewModel = new DocumentViewModel(docController);
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(docController))
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
