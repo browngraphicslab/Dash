@@ -184,9 +184,9 @@ namespace Dash
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
             FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            ReferenceFieldModelController reference = new ReferenceFieldModelController(GetId(), key);
+            ReferenceFieldModelController reference = new DocumentReferenceController(GetId(), key);
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference));
-            field.FieldModelUpdated += delegate(FieldModelController sender)
+            field.FieldModelUpdated += delegate (FieldModelController sender)
             {
                 OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference));
             };
@@ -204,7 +204,7 @@ namespace Dash
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key, IList<DocumentController> contextList = null)
+        public FieldModelController GetField(Key key, Context context = null)
         {
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
@@ -279,21 +279,49 @@ namespace Dash
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
                 _fields[DashConstants.KeyStore.DelegatesKey] = currentDelegates;
-            }                
+            }
 
             return currentDelegates;
         }
 
 
-        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, List<DocumentController> contextList = null)
+        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, Context context = null)
         {
             //TODO Remove existing output references and add new output reference
-
-            reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
+            //if (InputReferences.ContainsKey(fieldKey))
+            //{
+            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
+            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
+            //}
+            //reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
+            reference.Context = context;
             var field = GetField(fieldKey);
-            var refField = GetDereferencedField(reference, contextList);
-            DocumentController controller = ContentController.GetController<DocumentController>(reference.DocId);
-
+            var refField = GetDereferencedField(reference, context);
+            DocumentController controller = reference.GetDocumentController();
+            //if (field == null)
+            //{
+            //    var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            //    if (op == null)
+            //    {
+            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
+            //    }
+            //    if (!op.Inputs.ContainsKey(fieldKey))
+            //    {
+            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
+            //    }
+            //    TypeInfo info = op.Inputs[fieldKey];
+            //    if ((info & refField.TypeInfo) == refField.TypeInfo)
+            //    {
+            //        field = TypeInfoHelper.CreateFieldModelController(refField.TypeInfo);
+            //        SetField(fieldKey, field, true);
+            //    }
+            //    else
+            //    {
+            //        throw new ArgumentException("Invalid types");
+            //    }
+            //}
+            //else
+            //{
             if (!field.CheckType(refField))
             {
                 Debug.Assert(!refField.CheckType(field));
@@ -301,7 +329,7 @@ namespace Dash
             }
 
             field.InputReference = reference;
-            controller.DocumentFieldUpdated += delegate(DocumentFieldUpdatedEventArgs args)
+            controller.DocumentFieldUpdated += delegate (DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(reference.FieldKey))
                 {
@@ -312,31 +340,28 @@ namespace Dash
         }
 
 
-        public static FieldModelController GetDereferencedField(FieldModelController fieldModelController, IEnumerable<DocumentController> contextList)
+        public static FieldModelController GetDereferencedField(FieldModelController fieldModelController, Context context)
         {
-            return ContentController.DereferenceToRootFieldModel(fieldModelController, contextList);
+            return fieldModelController.DereferenceToRoot(context);
         }
 
-
-        public FieldModelController GetDereferencedField(Key key, IEnumerable<DocumentController> contextList)
+        public FieldModelController GetDereferencedField(Key key, Context context)
         {
             var fieldController = GetField(key);
-            if (fieldController == null)
-                return null;
-            return ContentController.DereferenceToRootFieldModel(fieldController, contextList);
+            return fieldController?.DereferenceToRoot(context);
         }
 
 
-        private void Execute(IEnumerable<DocumentController> contextList = null)
+        private void Execute(Context context = null)
         {
-            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, contextList) as OperatorFieldModelController;
+            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
                 return;
             }
             try
             {
-                opField.Execute(this, contextList);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
+                opField.Execute(this, context);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
             }
             catch (KeyNotFoundException e)
             {
@@ -374,7 +399,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement RenderDefaultView(List<DocumentController> docList)
+        private FrameworkElement makeAllViewUI(Context context = null)
         {
             var sp = new StackPanel();
             foreach (var f in EnumFields())
@@ -388,10 +413,12 @@ namespace Dash
                 {
                     var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
                     var label = new TextBlock() { Text = f.Key.Name + ": " };
-                    var dBox = new CourtesyDocuments.DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var dBox = new CourtesyDocuments.DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
-                    var ele = dBox.MakeViewUI(docList);
+
+                    var ele = dBox.makeViewUI(context);
+
                     ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
 
@@ -418,48 +445,53 @@ namespace Dash
         }
 
 
-        public FrameworkElement MakeViewUI(IList<DocumentController> docContextList = null)
+        public FrameworkElement MakeViewUI()
         {
-            var docList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);
-            docList.Add(this);
+            return makeViewUI(new Context());
+        }
 
-            DocContextList = new ObservableCollection<DocumentController>(docList);
+        public FrameworkElement makeViewUI(Context context = null)
+        {
+            context = context == null ? new Context() : context;
+            context.AddDocumentContext(this);
+            var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
             {
-                return CourtesyDocuments.TextingBox.MakeView(this, docList);
+                return CourtesyDocuments.TextingBox.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
             {
-                return CourtesyDocuments.ImageBox.MakeView(this, docList);
+                return CourtesyDocuments.ImageBox.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
-                return CourtesyDocuments.StackingPanel.MakeView(this, docList);
+                return CourtesyDocuments.StackingPanel.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
             {
-                return CourtesyDocuments.CollectionBox.MakeView(this, docList);
+                return CourtesyDocuments.CollectionBox.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
-                return CourtesyDocuments.OperatorBox.MakeView(this, docList);
+                return CourtesyDocuments.OperatorBox.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
             {
-                return CourtesyDocuments.ApiDocumentModel.MakeView(this, docList);
+                return CourtesyDocuments.ApiDocumentModel.MakeView(this, context);
             }
 
 
-            // if document is not a known UI View, then try to render it's layout field
-            var fieldModelController = this.GetActiveLayout(DocContextList);
+            // if document is not a known UI View, then see if it contains a Layout view field
+            var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
-                return fieldModelController.Data.MakeViewUI();
+                var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+                Debug.Assert(doc != null);
+                return doc.Data.makeViewUI(context);
             }
 
-            // otherwise render it as a default view
-            return RenderDefaultView(docList);
+            return makeAllViewUI(context);
         }
 
 

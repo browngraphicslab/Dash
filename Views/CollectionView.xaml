@@ -10,24 +10,23 @@
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
-    PointerWheelChanged="UserControl_PointerWheelChanged"
     ManipulationDelta="UserControl_ManipulationDelta"
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    >
+    PointerWheelChanged="UserControl_PointerWheelChanged">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="xMenuColumn" Width="0" />
+                <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <!-- Options Menu-->
-            <Canvas x:Name="xMenuCanvas" Background="{StaticResource TranslucentWhite}" />
+            <Canvas x:Name="xMenuCanvas"/>
 
             <!-- Collectionview Content-->
             <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1"
                   Background="{StaticResource CollectionViewBackground}" Padding="0">
                 <Canvas x:Name="xBackgroundTileContainer" SizeChanged="Grid_SizeChanged" />
-                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None" />
+                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None"/>
                 <Grid x:Name="DocumentViewContainerGrid"
                       Background="Transparent"
                       AllowDrop="True"

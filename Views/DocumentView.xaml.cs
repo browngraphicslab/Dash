@@ -16,6 +16,7 @@ using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Collections.ObjectModel;
 using Newtonsoft.Json;
+using Windows.UI.Xaml.Media.Animation;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -72,7 +73,6 @@ namespace Dash
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             Tapped += OnTapped;
-            DoubleTapped += OnDoubleTapped;      
         }
 
         private void SetUpMenu()
@@ -80,11 +80,12 @@ namespace Dash
             var layout = new Action(OpenLayout);
             var copy = new Action(CopyDocument);
             var delete = new Action(DeleteDocument);
+            var deleteButton = new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete);
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
                 new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+                deleteButton
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -219,12 +220,10 @@ namespace Dash
             
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                xBorder.Opacity = 0;
             }
             Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
-                xBorder.Opacity = 0;
             }
 
             SetUpMenu();
@@ -232,23 +231,23 @@ namespace Dash
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
-            ViewModel.PropertyChanged += (o, eventArgs) =>
-            {
-                if (eventArgs.PropertyName == "IsMoveable")
-                {
-                    if (ViewModel.IsMoveable)
-                    {
-                        manipulator.AddAllAndHandle();
-                    }
-                    else
-                    {
-                        manipulator.RemoveAllButHandle();
-                    }
-                }
-            };
+            //ViewModel.PropertyChanged += (o, eventArgs) =>
+            //{
+            //    if (eventArgs.PropertyName == "IsMoveable")
+            //    {
+            //        if (ViewModel.IsMoveable)
+            //        {
+            //            manipulator.AddAllAndHandle();
+            //        }
+            //        else
+            //        {
+            //            manipulator.RemoveAllButHandle();
+            //        }
+            //    }
+            //};
 
-            if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            else manipulator.RemoveAllButHandle();
+            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
+            //else manipulator.RemoveAllButHandle();
 
             #endregion
         }
@@ -302,16 +301,16 @@ namespace Dash
 
         public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection)
+            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
                 ViewModel.OpenMenu();
             else
                 ViewModel.CloseMenu();
             e.Handled = true;
         }
 
-        private void DeleteDocument()
+        public void DeleteDocument()
         {
-            throw new NotImplementedException();
+            FadeOut.Begin();
         }
 
         private void CopyDocument()
@@ -330,18 +329,10 @@ namespace Dash
 
         }
 
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            // TODO KB made to test doccontextlist, delete later 
-            /* 
-            ObservableCollection<DocumentController> docList = ViewModel.DocumentController.DocContextList; 
-            Debug.WriteLine("count in this list is " + ViewModel.DocumentController.DocContextList.Count); 
-            */
 
-            // test exporting 
-            string json = JsonConvert.SerializeObject(ViewModel.DocumentController.DocumentModel.Fields.ToString()); 
-            //System.IO.File.WriteAllText("something.txt)
-            e.Handled = true;
+        private void FadeOut_Completed(object sender, object e)
+        {
+            ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void OpenLayout()

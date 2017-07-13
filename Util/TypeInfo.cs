@@ -40,7 +40,7 @@ namespace Dash
                 case TypeInfo.Document:
                     return new DocumentFieldModelController(null);
                 case TypeInfo.Reference:
-                    return new ReferenceFieldModelController("", null);
+                    return new DocumentReferenceController("", null);
                 case TypeInfo.Operator://TODO What should this do?
                     return null;
                 case TypeInfo.Point:

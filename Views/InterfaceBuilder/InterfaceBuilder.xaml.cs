@@ -39,10 +39,12 @@ namespace Dash
             this.InitializeComponent();
             Width = width;
             Height = height;
-            
-            _layoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController, viewModel.DocContextList);
-           
-            _documentView = LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document, viewModel.DocContextList) as DocumentView;
+
+            _layoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController, viewModel.DocumentContext);
+
+            _documentView =
+                LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document,
+                    viewModel.DocumentContext) as DocumentView;
 
 
             _documentController = viewModel.DocumentController;
@@ -62,16 +64,17 @@ namespace Dash
         private void ApplyEditable()
         {
             var editableElements = new List<FrameworkElement>();
-            var contextList = (_documentView.DataContext as DocumentViewModel)?.DocContextList;
+            var context = (_documentView.DataContext as DocumentViewModel)?.DocumentContext;
             // iterate over all the documents which define views
-            foreach (var layoutDocument in _layoutCourtesyDocument.GetLayoutDocuments(contextList))
-            {
-                var docContextList = contextList != null ? new List<DocumentController>(contextList) : new List<DocumentController>();
-                docContextList.Add(_layoutCourtesyDocument.Document);
-                // use the layout document to generate a UI
-                var fieldView = layoutDocument.MakeViewUI(docContextList);
 
-                var translationController = layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
+            foreach (var layoutDocument in _layoutCourtesyDocument.GetLayoutDocuments(context))
+            {
+                var docContext = context != null ? new Context(context) : new Context();
+                docContext.AddDocumentContext(_layoutCourtesyDocument.Document);
+                // use the layout document to generate a UI
+                var fieldView = layoutDocument.makeViewUI(docContext);
+
+                var translationController = layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContext) as PointFieldModelController;
                 if (translationController != null)
                 {
                     if (layoutDocument.GetId() != _layoutCourtesyDocument.Document.GetId()) // only bind translation when the layoutDocument isn't the entire layout
@@ -90,7 +93,7 @@ namespace Dash
 
                 // bind the editable border width to the layout width
                 var widthController =
-                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
+                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContext) as NumberFieldModelController;
                 Debug.Assert(widthController != null);
                 var widthBinding = new Binding
                 {
@@ -102,7 +105,7 @@ namespace Dash
 
                 // bind the editable border height to the layout height
                 var heightController =
-                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
+                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContext) as NumberFieldModelController;
                 Debug.Assert(heightController != null);
                 var heightBinding = new Binding
                 {
@@ -119,7 +122,7 @@ namespace Dash
                     editableBorder.Loaded += delegate
                     {
                         translationController =
-                                layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
+                                layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContext) as PointFieldModelController;
                         Debug.Assert(translationController != null);
                         var translateBinding = new Binding
                         {
@@ -155,7 +158,8 @@ namespace Dash
 
             var layoutDocumentId = editableFieldFrame.DocumentId;
 
-            var editedLayoutDocument = _layoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel).DocContextList).FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
+
+            var editedLayoutDocument = _layoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel).DocumentContext).FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
             Debug.Assert(editedLayoutDocument != null);
 
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument);
@@ -182,38 +186,40 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
-            var docContextList = (_documentView.DataContext as DocumentViewModel).DocContextList;
+            var docContext = (_documentView.DataContext as DocumentViewModel).DocumentContext;
             var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
-            var fieldModelController = _documentController.GetDereferencedField(key, docContextList);
+            var fieldModelController = _documentController.GetDereferencedField(key, docContext);
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-                var textFieldModelController = _documentController.GetDereferencedField(key, docContextList) as TextFieldModelController;
-               if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetDereferencedField(key, docContextList) == null)
+                var textFieldModelController = _documentController.GetDereferencedField(key, docContext) as TextFieldModelController;
+               if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetDereferencedField(key, docContext) == null)
                 {
-                    _documentController.GetPrototype().SetField(key, _documentController.GetDereferencedField(key, docContextList), false);
+                    _documentController.GetPrototype().SetField(key, _documentController.GetDereferencedField(key, docContext), false);
                 }
-                var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContextList) as DocumentFieldModelController)?.Data;
+
+                var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContext) as DocumentFieldModelController)?.Data;
+
                 if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
                     layoutDoc = _documentController;
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                      box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(layoutDoc.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(layoutDoc.GetId(), key));
+                      box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDoc.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDoc.GetId(), key));
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                box = new CourtesyDocuments.ImageBox(new ReferenceFieldModelController(_documentController.GetId(), key));
+                box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(_documentController.GetId(), key));
             }
             else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                box = new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(_documentController.GetId(), key));
+                box = new CourtesyDocuments.CollectionBox(new DocumentReferenceController(_documentController.GetId(), key));
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
+                box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(_documentController.GetId(), key));
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data, docContextList);
+                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data, docContext);
             }
 
             if (box != null)
@@ -222,7 +228,8 @@ namespace Dash
                 var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X,
                         e.GetPosition(_documentView).Y);
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
-                var layoutDataField = _layoutCourtesyDocument.ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
+
+                var layoutDataField = _layoutCourtesyDocument.ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContext);
 
                 ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);
             }
@@ -250,14 +257,14 @@ namespace Dash
 
         private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)
         {
-            var docContextList = new List<DocumentController>(); // bcz: ??? Is this right?
-            return new ImageSettings(editedLayoutDocument, docContextList);
+            var context = new Context(); // bcz: ??? Is this right?
+            return new ImageSettings(editedLayoutDocument, context);
         }
 
         private static UIElement CreateTextSettingsLayout(DocumentController editedLayoutDocument)
         {
-            var docContextList = new List<DocumentController>(); // bcz: ??? Is this right?
-            return new TextSettings(editedLayoutDocument, docContextList);
+            var context = new Context(); // bcz: ??? Is this right?
+            return new TextSettings(editedLayoutDocument, context);
         }
 
     }

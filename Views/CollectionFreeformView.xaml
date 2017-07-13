@@ -20,7 +20,11 @@
                     <Canvas x:Name="CollectionCanvas" 
                                     x:FieldModifier="public"
                                     Background="Transparent"
-                                    Width ="0" Height="0" VerticalAlignment="Top" HorizontalAlignment="Left">
+                                    Width ="0" 
+                                    Height="0" 
+                                    VerticalAlignment="Top" 
+                                    HorizontalAlignment="Left"
+                                    >
                     </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
@@ -28,11 +32,11 @@
                 <DataTemplate>
                     <dash:DocumentView
                                     DataContext="{Binding}" 
-                                    ManipulationStarted="DocumentView_ManipulationStarted" 
-                                    ManipulationDelta="DocumentView_ManipulationDelta" 
                                     IODragStarted="StartDrag" 
                                     IODragEnded="EndDrag" 
                                     RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
+                                    <!--ManipulationStarted="DocumentView_ManipulationStarted" 
+                                    ManipulationDelta="DocumentView_ManipulationDelta"--> 
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

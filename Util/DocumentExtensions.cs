@@ -24,9 +24,9 @@ namespace Dash
         }
 
 
-        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, List<DocumentController> contextList = null)
+        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context = null)
         {
-            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey, contextList) as DocumentCollectionFieldModelController;
+            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey, context) as DocumentCollectionFieldModelController;
             // if the layout list is null create it on the deepest prototype
             if (layoutList == null)
             {
@@ -47,9 +47,9 @@ namespace Dash
         }
 
 
-        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, IList<DocumentController> contextList)
+        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context)
         {
-            return doc.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, contextList) as DocumentFieldModelController;
+            return doc.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }
     }
 }

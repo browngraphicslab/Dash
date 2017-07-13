@@ -16,19 +16,19 @@ namespace Dash
             this.InitializeComponent();
         }
 
-        public ImageSettings(DocumentController docController, IEnumerable<DocumentController> docContextList) : this()
+        public ImageSettings(DocumentController docController, Context context) : this()
         {
             Debug.Assert(docController.DocumentType == CourtesyDocuments.ImageBox.DocumentType, "You can only create image settings for an ImageBox");
 
-            BindOpacity(docController, docContextList);
-            BindWidth(docController, docContextList);
-            BindHeight(docController, docContextList);
-            BindPosition(docController, docContextList);
+            BindOpacity(docController, context);
+            BindWidth(docController, context);
+            BindHeight(docController, context);
+            BindPosition(docController, context);
         }
 
-        private void BindPosition(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindPosition(DocumentController docController, Context context)
         {
-            var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
+            var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
             Debug.Assert(positionController != null);
 
             var converter = new StringCoordinateToPointConverter(positionController.Data);
@@ -56,9 +56,9 @@ namespace Dash
             xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
         }
 
-        private void BindHeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindHeight(DocumentController docController, Context context)
         {
-            var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
+            var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as NumberFieldModelController;
             Debug.Assert(heightController != null);
 
             var heightBinding = new Binding
@@ -71,9 +71,9 @@ namespace Dash
             xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
         }
 
-        private void BindWidth(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindWidth(DocumentController docController, Context context)
         {
-            var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
+            var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
             Debug.Assert(widthController != null);
 
             var widthBinding = new Binding
@@ -86,10 +86,10 @@ namespace Dash
             xWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
         }
 
-        private void BindOpacity(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindOpacity(DocumentController docController, Context context)
         {
             var opacityController =
-                    docController.GetDereferencedField(CourtesyDocuments.ImageBox.OpacityKey, docContextList) as NumberFieldModelController;
+                    docController.GetDereferencedField(CourtesyDocuments.ImageBox.OpacityKey, context) as NumberFieldModelController;
             Debug.Assert(opacityController != null);
 
             var opacityBinding = new Binding()
