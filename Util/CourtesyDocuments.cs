@@ -19,8 +19,6 @@ namespace Dash {
         /// </summary>
         public class CourtesyDocument {
 
-            public List<DocumentModel> context;
-
             public virtual DocumentController Document { get; set; }
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
@@ -68,16 +66,15 @@ namespace Dash {
             }
 
             public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null) {
-                // assign the defautl fields
+                // assign the default fields
                 var fields = new Dictionary<Key, FieldModelController> {
                     [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
                     [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
                     [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos)
                 };
-                if (data != null)
-                    fields.Add(DashConstants.KeyStore.DataKey, data);
-                else
-                    fields.Add(DashConstants.KeyStore.DataKey, new DocumentCollectionFieldModelController(new List<DocumentController>()));
+
+                //TODO determine what the data key should point to if no field is provided
+                fields.Add(DashConstants.KeyStore.DataKey, data ?? new DocumentCollectionFieldModelController(new List<DocumentController>()));
                 return fields;
             }
 
@@ -236,37 +233,22 @@ namespace Dash {
 
             public LayoutCourtesyDocument(DocumentController docController, Context context) {
                 Document = docController;      
-                var activeLayout = Document.GetActiveLayout(context);
 
-                // if the document doens't have an active layout create one
-                if (activeLayout == null)
-                {
-                    var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
-                    ActiveLayoutDocController =
-                        new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormLayout);
-                    // since this is the first view of the document, set the prototype active layout to the new layout
-                    Document.SetActiveLayout(ActiveLayoutDocController, false);
-                }
-                else
-                {
-                    ActiveLayoutDocController = activeLayout.Data;
-                    Document.SetActiveLayout(ActiveLayoutDocController);
-                }
+                var activeLayout = Document.GetActiveLayout(context);
+                ActiveLayoutDocController = activeLayout == null ? InstantiateActiveLayout(Document) : activeLayout.Data;
             }
 
             public IEnumerable<DocumentController> GetLayoutDocuments(Context context)
             {
-
                 var layoutDataField =
                         ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
 
-                if (layoutDataField is DocumentCollectionFieldModelController)
+                if (layoutDataField is DocumentCollectionFieldModelController) // layout data is a collection of documents each referencing some field
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
                         yield return d;
-                else if (layoutDataField.FieldModel is DocumentModelFieldModel)
-                    yield return ContentController.GetController<DocumentController>(
-                        (layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
-                else yield return ActiveLayoutDocController;
+                else if (layoutDataField is DocumentFieldModelController) // layout data is a document referencing some field
+                    yield return (layoutDataField as DocumentFieldModelController).Data;
+                else yield return ActiveLayoutDocController; // TODO why would the layout be any other type of field model controller
             }
 
             public override FrameworkElement makeView(DocumentController docController,
@@ -282,6 +264,18 @@ namespace Dash {
                 };
                 return new DocumentView(docViewModel);
             }
+
+
+            private DocumentController InstantiateActiveLayout(DocumentController doc)
+            {
+                // instantiate default fields
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
+                var newLayout = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormLayout);
+                // since this is the first view of the document, set the prototype active layout to the new layout
+                doc.SetActiveLayout(newLayout, false);
+                return newLayout;
+            }
+
         }
 
         /// <summary>

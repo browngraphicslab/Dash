@@ -296,8 +296,8 @@ namespace Dash
             //reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             reference.Context = context;
             var field = GetField(fieldKey);
-            var refField = GetDereferencedField(reference, context);
-            DocumentController controller = reference.GetDocumentController();
+            var refField = reference.DereferenceToRoot(context);
+            var controller = reference.GetDocumentController();
             //if (field == null)
             //{
             //    var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
@@ -337,12 +337,6 @@ namespace Dash
                 }
             };
             Execute();
-        }
-
-
-        public static FieldModelController GetDereferencedField(FieldModelController fieldModelController, Context context)
-        {
-            return fieldModelController.DereferenceToRoot(context);
         }
 
         public FieldModelController GetDereferencedField(Key key, Context context)
