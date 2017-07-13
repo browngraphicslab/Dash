@@ -116,6 +116,7 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Util\Actions.cs" />
+    <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>

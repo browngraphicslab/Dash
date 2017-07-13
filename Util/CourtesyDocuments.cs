@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -23,24 +24,8 @@ namespace Dash {
             public virtual DocumentController Document { get; set; }
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
-                var layoutController = new DocumentFieldModelController(layoutDoc);
-                document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
-
-                // TODO KB 
-                var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
-                if (layoutList == null)
-                {
-                    document.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-                }
-                else
-                {
-                    if (! new HashSet<DocumentController>(layoutList.GetDocuments()).Contains(layoutDoc))
-                    {
-                        layoutList.AddDocument(layoutDoc);
-                        document.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, true);
-                    }
-                }
-
+                document.AddLayoutToLayoutList(layoutDoc);
+                document.SetActiveLayout(layoutDoc);
             }
 
             /// <summary>
@@ -68,6 +53,7 @@ namespace Dash {
                 return deleg;
             }
 
+            [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
             public static Dictionary<Key, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
                 FieldModelController data) {
                 // create a layout for the image
@@ -78,6 +64,20 @@ namespace Dash {
                 };
                 if (data != null)
                     fields.Add(DashConstants.KeyStore.DataKey, data);
+                return fields;
+            }
+
+            public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null) {
+                // assign the defautl fields
+                var fields = new Dictionary<Key, FieldModelController> {
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos)
+                };
+                if (data != null)
+                    fields.Add(DashConstants.KeyStore.DataKey, data);
+                else
+                    fields.Add(DashConstants.KeyStore.DataKey, new DocumentCollectionFieldModelController(new List<DocumentController>()));
                 return fields;
             }
 
@@ -218,7 +218,7 @@ namespace Dash {
             /// Returns the <see cref="NumberFieldModelController"/> from the passed in <see cref="DocumentController"/>
             /// used to control that <see cref="DocumentController"/>'s translation.
             /// </summary>
-            protected static PointFieldModelController GetTranslateFieldController(DocumentController docController, IEnumerable<DocumentController> contextList) {
+            protected static PointFieldModelController GetTranslateFieldController(DocumentController docController, IList<DocumentController> contextList) {
                 var translateController =
                     docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, contextList) as PointFieldModelController;
                 Debug.Assert(translateController != null);
@@ -230,34 +230,42 @@ namespace Dash {
         /// Given a document, this provides an API for getting all of the layout documents that define it's view.
         /// </summary>
         public class LayoutCourtesyDocument : CourtesyDocument {
-            public DocumentController LayoutDocumentController = null;
 
-            public LayoutCourtesyDocument(DocumentController docController, IEnumerable<DocumentController> contextList) {
-                Document = docController; // get the layout field on the document being displayed
-                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, contextList) as DocumentFieldModelController;
-                if (layoutField == null) {
-                    var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
-                        new DocumentCollectionFieldModelController(new DocumentController[] { }));
-                    LayoutDocumentController =
-                        new DocumentController(fields, CourtesyDocuments.CollectionBox.DocumentType);
+            // the active layout for the doc that was passed in
+            public DocumentController ActiveLayoutDocController = null;
 
-                    SetLayoutForDocument(Document, LayoutDocumentController);
-                } else
-                    LayoutDocumentController = layoutField.Data;
+            public LayoutCourtesyDocument(DocumentController docController, IList<DocumentController> contextList) {
+                Document = docController;      
+                var activeLayout = Document.GetActiveLayout(contextList);
+
+                // if the document doens't have an active layout create one
+                if (activeLayout == null)
+                {
+                    var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
+                    ActiveLayoutDocController =
+                        new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormLayout);
+                    // since this is the first view of the document, set the prototype active layout to the new layout
+                    Document.SetActiveLayout(ActiveLayoutDocController, false);
+                }
+                else
+                {
+                    ActiveLayoutDocController = activeLayout.Data;
+                    Document.SetActiveLayout(ActiveLayoutDocController);
+                }
             }
 
             public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList)
             {
 
                 var layoutDataField =
-                        LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
+                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
                 if (layoutDataField is DocumentCollectionFieldModelController)
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
                         yield return d;
                 else if (layoutDataField.FieldModel is DocumentModelFieldModel)
                     yield return ContentController.GetController<DocumentController>(
                         (layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
-                else yield return LayoutDocumentController;
+                else yield return ActiveLayoutDocController;
             }
 
             public override FrameworkElement makeView(DocumentController docController,
@@ -673,7 +681,7 @@ namespace Dash {
 
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments()) {
-                        stack.Items.Add(stackDoc.makeViewUI(docContextList));
+                        stack.Items.Add(stackDoc.MakeViewUI(docContextList));
                     }
                 return stack;
             }

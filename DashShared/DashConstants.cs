@@ -123,6 +123,7 @@ namespace DashShared
 
             public static DocumentType TextBoxDocumentType = new DocumentType("D63DDB00-1A66-4E3A-A19B-6B06BBD6DAC8", "Text Box");
             public static DocumentType FreeFormCollectionDocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Free Form Collection");
+            public static DocumentType FreeFormLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Layout");
         }
 
 

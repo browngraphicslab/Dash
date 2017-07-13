@@ -156,7 +156,7 @@ namespace Dash
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
-        public DocumentViewModel(DocumentController documentController, IEnumerable<DocumentController> docContextList = null)
+        public DocumentViewModel(DocumentController documentController, IList<DocumentController> docContextList = null)
         {
             DocContextList = docContextList == null ? null : new List<DocumentController>(docContextList);
             DocumentController = documentController;
@@ -210,12 +210,12 @@ namespace Dash
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.makeViewUI(docContextList);
+            Content = documentController.MakeViewUI(docContextList);
             documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
-                    Content = DocumentController.makeViewUI(DocContextList);
+                    Content = DocumentController.MakeViewUI(DocContextList);
                 }
             };
 
