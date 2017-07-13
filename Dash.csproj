@@ -95,6 +95,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
+    <Compile Include="Controllers\DocumentReferenceController.cs" />
+    <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
+    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
