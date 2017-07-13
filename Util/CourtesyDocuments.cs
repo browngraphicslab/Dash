@@ -24,7 +24,23 @@ namespace Dash {
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
                 var layoutController = new DocumentFieldModelController(layoutDoc);
-                document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
+                document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
+
+                // TODO KB 
+                var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
+                if (layoutList == null)
+                {
+                    document.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
+                }
+                else
+                {
+                    if (! new HashSet<DocumentController>(layoutList.GetDocuments()).Contains(layoutDoc))
+                    {
+                        layoutList.AddDocument(layoutDoc);
+                        document.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, true);
+                    }
+                }
+
             }
 
             /// <summary>
@@ -44,7 +60,11 @@ namespace Dash {
                 deleg.SetField(DashConstants.KeyStore.DataKey, fmc, true);
 
                 var selfFmc = new DocumentFieldModelController(deleg);
-                deleg.SetField(DashConstants.KeyStore.LayoutKey, selfFmc, true);
+                deleg.SetField(DashConstants.KeyStore.ActiveLayoutKey, selfFmc, true);
+
+                // TODO KB delegates... but this method is never called so ????? 
+                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController).AddDocument(deleg); 
+
                 return deleg;
             }
 
@@ -214,7 +234,7 @@ namespace Dash {
 
             public LayoutCourtesyDocument(DocumentController docController, IEnumerable<DocumentController> contextList) {
                 Document = docController; // get the layout field on the document being displayed
-                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, contextList) as DocumentFieldModelController;
+                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, contextList) as DocumentFieldModelController;
                 if (layoutField == null) {
                     var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
                         new DocumentCollectionFieldModelController(new DocumentController[] { }));
@@ -223,7 +243,7 @@ namespace Dash {
 
                     SetLayoutForDocument(Document, LayoutDocumentController);
                 } else
-                    LayoutDocumentController = layoutField?.Data;
+                    LayoutDocumentController = layoutField.Data;
             }
 
             public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList)

@@ -52,7 +52,7 @@ namespace Dash
             {
                 if (SetProperty(ref _width, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocContextList) as DocumentFieldModelController)?.Data;
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, DocContextList) as DocumentFieldModelController)?.Data;
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
@@ -71,7 +71,7 @@ namespace Dash
             {
                 if (SetProperty(ref _height, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocContextList) as DocumentFieldModelController)?.Data;
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, DocContextList) as DocumentFieldModelController)?.Data;
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
@@ -89,7 +89,7 @@ namespace Dash
             set {
                 if (SetProperty(ref _pos, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocContextList) as DocumentFieldModelController)?.Data;
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, DocContextList) as DocumentFieldModelController)?.Data;
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
@@ -166,7 +166,7 @@ namespace Dash
 
             // FIELD FETCHERS
             // overrides defaults with document fields if layout-relevant fields are set
-            var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController)?.Data;
+            var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContextList) as DocumentFieldModelController)?.Data;
             if (layoutDocController == null)
                 layoutDocController = documentController;
             var posFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
@@ -206,19 +206,25 @@ namespace Dash
             iconType = (IconTypeEnum)iconFieldModelController.Data;
             iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
 
-            var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController;
+            var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContextList) as DocumentFieldModelController;
 
             DataBindingSource.Add(documentController.DocumentModel);
 
             Content = documentController.makeViewUI(docContextList);
             documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
+                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
                     Content = DocumentController.makeViewUI(DocContextList);
                 }
             };
+
+            //DocContextViewModelList = new ObservableCollection<DocumentViewModel> { this } ;
         }
+
+        // TODO KB what. 
+        //public ObservableCollection<DocumentViewModel> DocContextViewModelList;
+
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update

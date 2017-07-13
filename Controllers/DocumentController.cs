@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.Collections.ObjectModel; 
 
 namespace Dash
 {
@@ -424,10 +425,15 @@ namespace Dash
             return makeViewUI(new List<DocumentController>());
         }
 
+        public ObservableCollection<DocumentController> DocContextList;
+
         public FrameworkElement makeViewUI(IEnumerable<DocumentController> docContextList)
         {
             var docList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);
             docList.Add(this);
+
+            DocContextList = new ObservableCollection<DocumentController>(docList);
+
             var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
@@ -456,7 +462,7 @@ namespace Dash
             }
             else // if document is not a known UI View, then see if it contains a Layout view field
             {
-                var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList);
+                var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContextList);
                 if (fieldModelController != null)
                 {
                     var newDocContextList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);

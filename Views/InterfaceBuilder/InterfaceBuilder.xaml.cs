@@ -193,7 +193,7 @@ namespace Dash
                 {
                     _documentController.GetPrototype().SetField(key, _documentController.GetDereferencedField(key, docContextList), false);
                 }
-                var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController)?.Data;
+                var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContextList) as DocumentFieldModelController)?.Data;
                 if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
                     layoutDoc = _documentController;
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))

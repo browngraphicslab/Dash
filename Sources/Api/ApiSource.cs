@@ -256,7 +256,7 @@ namespace Dash {
                 var cfmc = new DocumentFieldModelController(cbox.Document);
                 var widthFieldCtrl = new NumberFieldModelController(200);
                 var heightFieldCtrl = new NumberFieldModelController(200);
-                layDocCtrl.SetField(DashConstants.KeyStore.LayoutKey, cfmc, false);
+                layDocCtrl.SetField(DashConstants.KeyStore.ActiveLayoutKey, cfmc, false);
                 layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
                 layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
                 
@@ -286,7 +286,7 @@ namespace Dash {
                     // make a delegate of the prototype layout that each visual doc will use and mask the Position field so that each 
                     // document can be moved independently
                     var layoutDelegate = layDocCtrl.MakeDelegate();
-                    visualDoc.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(layoutDelegate), true);
+                    visualDoc.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDelegate), true);
                     layoutDelegate.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
                     newresponseDocs.Add(visualDoc);
                 }
