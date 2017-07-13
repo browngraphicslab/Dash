@@ -126,8 +126,8 @@ namespace Dash
             dvm.Height = ActualHeight + dy;
 
             // todo: remove this and replace with binding // debug why x:Bind fails
-            Width = ActualWidth + dx;
-            Height = ActualHeight + dy;
+            //Width = ActualWidth + dx;
+            //Height = ActualHeight + dy;
             
         }
 
