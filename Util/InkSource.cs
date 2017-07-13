@@ -97,6 +97,7 @@ namespace Dash
                 foreach (var presenter in _presenters)
                 {
                     presenter.UpdateDefaultDrawingAttributes(_attributes);
+                    presenter.InputDeviceTypes = InkInputType;
                 }
             }
         }

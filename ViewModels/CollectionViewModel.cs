@@ -79,7 +79,7 @@ namespace Dash
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
             UpdateViewModels(_collectionFieldModelController.DocumentCollectionFieldModel);
-            collection.FieldModelUpdatedEvent += Controller_FieldModelUpdatedEvent;
+            collection.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
             CellSize = 250;
         }
 

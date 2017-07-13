@@ -99,12 +99,24 @@ namespace Dash {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                     if (view == null) return; // we can't always assume we're on a collection
                     view.PointerArgs = args;
+                    if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
+                    {
+
+                    }
+                    else if(args.GetCurrentPoint(view).Properties.IsRightButtonPressed)
+                    {
+                        view.CanLink = true;
+                        if (view.CurrentView is CollectionFreeformView)
+                            (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(refFieldModelController, true, args, renderElement,
+                                renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    }  
                 };
                 renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args) {
                     var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                    view.CanLink = false;
                     if (view == null) return; // we can't always assume we're on a collection
+                    view.CanLink = false;
 
+                    args.Handled = true;
                     (view.CurrentView as CollectionFreeformView)?.EndDrag(
                         new OperatorView.IOReference(refFieldModelController, false, args, renderElement, 
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
@@ -400,6 +412,7 @@ namespace Dash {
                 var fieldModelController = ContentController.DereferenceToRootFieldModel(retToText, docContextList);
                 if (fieldModelController is TextFieldModelController) {
                     var textBox = new TextBox();
+                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
@@ -694,8 +707,11 @@ namespace Dash {
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
 
+
                 //return new DocumentController(fields, TwoImagesType); 
                 return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
+                //return new DocumentController(fields, TwoImagesType);
+                //return new DocumentController(new Dictionary<Key,FieldModelController>(), TwoImagesType);
             }
             
             /// <summary>
@@ -808,7 +824,7 @@ namespace Dash {
                 var tBox = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
                     0, 50, 20).Document;
 
-                var stackPan = new StackingPanel(new[] { tBox, imBox1, imBox2 }).Document;
+                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }).Document;
 
                 SetLayoutForDocument(Document, stackPan);
             }

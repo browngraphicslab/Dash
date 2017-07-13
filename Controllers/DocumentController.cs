@@ -10,8 +10,31 @@ namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
     {
-        public delegate void OnDocumentFieldUpdatedHandler(FieldModelController oldValue, FieldModelController newValue,
-            ReferenceFieldModelController reference);
+        public enum FieldUpdatedAction
+        {
+            Add,
+            Remove,
+            Replace
+        }
+
+        public class DocumentFieldUpdatedEventArgs
+        {
+            public readonly FieldUpdatedAction Action;
+            public readonly FieldModelController OldValue;
+            public readonly FieldModelController NewValue;
+            public readonly ReferenceFieldModelController Reference;
+
+            public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
+                FieldUpdatedAction action, ReferenceFieldModelController reference)
+            {
+                Action = action;
+                OldValue = oldValue;
+                NewValue = newValue;
+                Reference = reference;
+            }
+        }
+
+        public delegate void OnDocumentFieldUpdatedHandler(DocumentFieldUpdatedEventArgs args);
 
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
 
@@ -19,7 +42,7 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        private Dictionary<Key, FieldModelController> _fields;
+        private Dictionary<Key, FieldModelController> _fields = new Dictionary<Key, FieldModelController>();
 
         public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type)
         {
@@ -29,8 +52,11 @@ namespace Dash
             DocumentModel = model;
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
-            _fields = new Dictionary<Key, FieldModelController>(fields);
             ContentController.AddController(this);
+            foreach (var fieldModelController in fields)
+            {
+                SetField(fieldModelController.Key, fieldModelController.Value, true);
+            }
             // Add Events
         }
 
@@ -144,7 +170,14 @@ namespace Dash
             proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
-            OnDocumentFieldUpdated(oldValue, field, new ReferenceFieldModelController(GetId(), key));
+            FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            ReferenceFieldModelController reference = new ReferenceFieldModelController(GetId(), key);
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference));
+            field.FieldModelUpdated += delegate(FieldModelController sender)
+            {
+                Debug.WriteLine($"Document field updated {GetId()}, {key.Name}");
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference));
+            };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
@@ -243,46 +276,49 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
+            Debug.WriteLine($"Add input ref from {reference.DocId}, {reference.FieldKey.Name} to {GetId()}, {fieldKey.Name}");
             reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             var field = GetField(fieldKey);
             var refField = GetDereferencedField(reference, contextList);
-            if (field == null)
+            DocumentController controller = ContentController.GetController<DocumentController>(reference.DocId);
+            //if (field == null)
+            //{
+            //    var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            //    if (op == null)
+            //    {
+            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
+            //    }
+            //    if (!op.Inputs.ContainsKey(fieldKey))
+            //    {
+            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
+            //    }
+            //    TypeInfo info = op.Inputs[fieldKey];
+            //    if ((info & refField.TypeInfo) == refField.TypeInfo)
+            //    {
+            //        field = TypeInfoHelper.CreateFieldModelController(refField.TypeInfo);
+            //        SetField(fieldKey, field, true);
+            //    }
+            //    else
+            //    {
+            //        throw new ArgumentException("Invalid types");
+            //    }
+            //}
+            //else
+            //{
+            if (!field.CheckType(refField))
             {
-                var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-                if (op == null)
-                {
-                    throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
-                }
-                if (!op.Inputs.ContainsKey(fieldKey))
-                {
-                    throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
-                }
-                TypeInfo info = op.Inputs[fieldKey];
-                if ((info & refField.TypeInfo) == refField.TypeInfo)
-                {
-                    field = TypeInfoHelper.CreateFieldModelController(refField.TypeInfo);
-                    SetField(fieldKey, field, true);
-                }
-                else
-                {
-                    throw new ArgumentException("Invalid types");
-                }
+                Debug.Assert(!refField.CheckType(field));
+                throw new ArgumentException("Invalid types");
             }
-            else
-            {
-                if (!field.CheckType(refField))
-                {
-                    Debug.Assert(!refField.CheckType(field));
-                    throw new ArgumentException("Invalid types");
-                }
-            }
+            //}
             field.InputReference = reference;
-            refField.FieldModelUpdatedEvent += DocumentController_FieldModelUpdatedEvent;//TODO should this dereference to root?
-            Execute();
-        }
-
-        private void DocumentController_FieldModelUpdatedEvent(FieldModelController sender)
-        {
+            controller.DocumentFieldUpdated += delegate(DocumentFieldUpdatedEventArgs args)
+            {
+                if (args.Reference.FieldKey.Equals(reference.FieldKey))
+                {
+                    Execute();
+                }
+            };
             Execute();
         }
 
@@ -415,11 +451,11 @@ namespace Dash
             if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
             {
                 return CourtesyDocuments.OperatorBox.MakeView(this, docList);
-            } 
-            else if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType) 
+            }
+            else if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
             {
                 return CourtesyDocuments.ApiDocumentModel.MakeView(this, docList);
-            } 
+            }
             else // if document is not a known UI View, then see if it contains a Layout view field
             {
                 var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList);
@@ -436,9 +472,9 @@ namespace Dash
             return makeAllViewUI(docList);
         }
 
-        protected virtual void OnDocumentFieldUpdated(FieldModelController oldvalue, FieldModelController newvalue, ReferenceFieldModelController reference)
+        protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
-            DocumentFieldUpdated?.Invoke(oldvalue, newvalue, reference);
+            DocumentFieldUpdated?.Invoke(args);
         }
     }
 }

@@ -9,20 +9,11 @@ using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
-using Windows.UI.Core;
 using DashShared;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.Storage;
-using Windows.UI.Xaml.Media.Imaging;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using DocumentMenu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -32,6 +23,7 @@ namespace Dash
     public sealed partial class CollectionView : UserControl
     {
         public double CanvasScale { get; set; } = 1;
+        public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.5f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
@@ -81,14 +73,13 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
-            var docFieldCtrler = ContentController.GetController<FieldModelController>(vm.CollectionFieldModelController.DocumentCollectionFieldModel.Id);
-            docFieldCtrler.FieldModelUpdatedEvent += DocFieldCtrler_FieldModelUpdatedEvent;
+            vm.CollectionFieldModelController.FieldModelUpdated += DocFieldCtrler_FieldModelUpdatedEvent;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();
 
             CanLink = false;
-            InkSource.Presenters.Add(xInkCanvas.InkPresenter);
+            
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
         {
@@ -101,46 +92,20 @@ namespace Dash
             DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
             DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
             ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
+            Tapped += CollectionView_Tapped;
         }
-
-        public void Grid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (CurrentView.IsEnabled)
-            {
-                if (_colMenu != null)
-                {
-                    CloseMenu();
-                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                }
-                else
-                {
-                    OpenMenu();
-                    SetEnabled(true);
-                }
-                e.Handled = true;
-            }
-            
-        }
-
-        
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            var parentDocument = ParentDocument;
-
-            if (parentDocument != MainPage.Instance.MainDocView)
+            ParentDocument.HasCollection = true;
+            if (ParentDocument != MainPage.Instance.MainDocView)
             {
-                DoubleTapped += Grid_DoubleTapped;
-                parentDocument.SizeChanged += (ss, ee) =>
+                ParentDocument.SizeChanged += (ss, ee) =>
                 {
-                    var height = (parentDocument.DataContext as DocumentViewModel)?.Height;
-                    if (height != null)
-                        Height = (double) height - 3;
-                    var width = (parentDocument.DataContext as DocumentViewModel)?.Width;
-                    if (width != null)
-                        Width = (double) width - 3;
+                    Height = ee.NewSize.Height;
+                    Width = ee.NewSize.Width;
                 };
                 SetEnabled(false);
             }
@@ -148,6 +113,7 @@ namespace Dash
             {
                 OpenMenu();
                 SetEnabled(true);
+                xOuterGrid.BorderThickness = new Thickness(0);
             }
         }
 
@@ -553,7 +519,6 @@ namespace Dash
         private Path _connectionLine;
 
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private BezierConverter _converter;
 
         /// <summary>
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
@@ -567,83 +532,7 @@ namespace Dash
         /// </summary>
         private HashSet<uint> _currentPointers = new HashSet<uint>();
 
-        /// <summary>
-        /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
-        /// </summary>
-        //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
-
-        private class BezierConverter : IValueConverter
-        {
-            public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
-            {
-                Element1 = element1;
-                Element2 = element2;
-                ToElement = toElement;
-                _figure = new PathFigure();
-                _bezier = new BezierSegment();
-                _figure.Segments.Add(_bezier);
-                _col.Add(_figure);
-            }
-
-            public FrameworkElement Element1 { get; set; }
-            public FrameworkElement Element2 { get; set; }
-
-            public FrameworkElement ToElement { get; set; }
-
-            public Point Pos2 { get; set; }
-
-            private PathFigureCollection _col = new PathFigureCollection();
-            private PathFigure _figure;
-            private BezierSegment _bezier;
-
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                var pos1 = Element1.TransformToVisual(ToElement)
-                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
-                var pos2 = Element2?.TransformToVisual(ToElement)
-                               .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
-
-                double offset = Math.Abs((pos1.X - pos2.X) / 3);
-                if (pos1.X < pos2.X)
-                {
-                    _figure.StartPoint = new Point(pos1.X + Element1.ActualWidth / 2, pos1.Y);
-                    _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
-                    _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
-                    _bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
-                }
-                else
-                {
-                    _figure.StartPoint = new Point(pos1.X - Element1.ActualWidth / 2, pos1.Y);
-                    _bezier.Point1 = new Point(pos1.X - offset, pos1.Y);
-                    _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
-                    _bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
-                }
-
-                return _col;
-            }
-            
-
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class VisibilityConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                bool isEditorMode = (bool)value;
-                return isEditorMode ? Visibility.Visible : Visibility.Collapsed;
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                throw new NotImplementedException();
-            }
-        }
         #endregion
-
         
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -788,6 +677,7 @@ namespace Dash
             if (panel != null) panel.Children.Remove(_colMenu);
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
+            ParentDocument.Width -= 50;
         }
 
         private void SelectAllItems()
@@ -804,13 +694,9 @@ namespace Dash
             {
                 var listView = (CurrentView as CollectionListView).HListView;
                 if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
-                {
                     listView.SelectAll();
-                }
                 else
-                {
                     listView.SelectedItems.Clear();
-                }
             }
         }
 
@@ -855,10 +741,10 @@ namespace Dash
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
                 new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
             };
-            _colMenu = new OverlayMenu(this.Width, this.Height, new Point(0, 0),
-                collectionButtons, documentButtons);
+            _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
+            ParentDocument.Width += 50;
         }
 
 
@@ -866,12 +752,31 @@ namespace Dash
 
         #region Collection Activation
 
+        public void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ParentDocument != MainPage.Instance.MainDocView)
+            {
+                if (_colMenu != null)
+                {
+                    CloseMenu();
+                    SetEnabled(false);
+                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                }
+                else
+                {
+                    OpenMenu();
+                    ParentCollection.SetActiveCollection(this);
+                }
+            }
+            SetActiveCollection(null);
+            e.Handled = true;
+        }
+
         public void SetEnabled(bool enabled)
         {
             if (enabled)
             {
                 CurrentView.IsHitTestVisible = true;
-                xOuterGrid.BorderBrush = Application.Current.Resources["WindowsBlue"] as SolidColorBrush; 
             }
             else
             {
@@ -880,18 +785,20 @@ namespace Dash
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
                 if (_colMenu != null)
                     CloseMenu();
+                foreach (var dvm in ViewModel.DataBindingSource)
+                {
+                    dvm.CloseMenu();
+                }
             }
         }
 
-        private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (ParentCollection?.GetActiveCollection() != this)
-            {
-                ParentCollection?.SetActiveCollection(this);
-            }
-            SetActiveCollection(null);
-            e.Handled = true;
-        }
+        //private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
+        //{
+        //    if (ParentCollection?.GetActiveCollection() != this)
+        //        ParentCollection?.SetActiveCollection(this);
+        //    SetActiveCollection(null);
+        //    e.Handled = true;
+        //}
 
         public void SetActiveCollection(CollectionView collection)
         {
@@ -916,5 +823,25 @@ namespace Dash
         }
 
         #endregion
+
+        /// <summary>
+        /// Retiles the BG
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+            
+            xBackgroundTileContainer.Children.Clear();
+            var width = xTileSource.Width;
+            var height = xTileSource.Height;
+            for (double x = 0; x < xBackgroundTileContainer.Width; x += width) {
+                for (double y = 0; y < xBackgroundTileContainer.Height; y += height) {
+                    var image = new Image { Source = xTileSource.Source };
+                    Canvas.SetLeft(image, x);
+                    Canvas.SetTop(image, y);
+                    xBackgroundTileContainer.Children.Add(image);
+                }
+            }
+        }
     }
 }

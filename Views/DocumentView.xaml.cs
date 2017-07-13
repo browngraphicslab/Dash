@@ -9,7 +9,11 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using System.Threading.Tasks;
+using Windows.UI;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using DocumentMenu;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -19,10 +23,14 @@ namespace Dash
     public sealed partial class DocumentView : UserControl
     {
         public string DebugName = "";
+        public CollectionView ParentCollection;
+        public bool HasCollection { get; set; }
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
         private ManipulationControls manipulator;
+
+        private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
 
 
@@ -31,6 +39,8 @@ namespace Dash
 
         public event OperatorView.IODragEventHandler IODragStarted;
         public event OperatorView.IODragEventHandler IODragEnded;
+
+        public void setBG(SolidColorBrush s) { XGrid.Background = s; }
 
         public ICollectionView View { get; set; }
         private double startWidth, startHeight; // used for restoring on double click in icon view
@@ -41,7 +51,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
             
             // add manipulation code
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY ;
             manipulator = new ManipulationControls(this);
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
@@ -52,14 +62,38 @@ namespace Dash
             startWidth = Width;
             startHeight = Height;
 
-            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            //xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            
+
+            Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            Tapped += OnTapped;         
         }
-        
+
+        private void SetUpMenu()
+        {
+            var layout = new Action(OpenLayout);
+            var copy = new Action(CopyDocument);
+            var delete = new Action(DeleteDocument);
+            var documentButtons = new List<MenuButton>()
+            {
+                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
+                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+            };
+            _docMenu = new OverlayMenu(null, documentButtons);
+            Binding visibilityBinding = new Binding()
+            {
+                Source = ViewModel,
+                Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
+                Mode = BindingMode.OneWay
+            };
+            _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
+            xMenuCanvas.Children.Add(_docMenu);
+        }
+
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
@@ -73,6 +107,7 @@ namespace Dash
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
             DataContext = documentViewModel;
+            
         }
 
 
@@ -155,7 +190,6 @@ namespace Dash
             if (ViewModel.IconType == IconTypeEnum.Document) {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
             } else if (ViewModel.IconType == IconTypeEnum.Collection) {
-                Debug.WriteLine("here!");
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
             } else if (ViewModel.IconType == IconTypeEnum.Api) {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
@@ -178,6 +212,14 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
+            
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
+                XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                xBorder.Opacity = 0;
+            }
+
+            SetUpMenu();
+            ViewModel.CloseMenu();
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
@@ -214,10 +256,13 @@ namespace Dash
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                Tapped -= OnTapped;
+                if (_docMenu != null) ViewModel.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                Tapped += OnTapped;
             }
         }
 
@@ -229,24 +274,24 @@ namespace Dash
 
         bool singleTap = false;
 
-        /// <summary>
-        /// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
-        /// on signle tap to prevent flickering.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+        ///// <summary>
+        ///// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
+        ///// on signle tap to prevent flickering.
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
 
             
-                if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
-                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                else
-                    xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
+        //        if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
+        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+        //        else
+        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
             
 
-            singleTap = false;
-            e.Handled = true;
-        }
+        //    singleTap = false;
+        //    e.Handled = true;
+        //}
         
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
@@ -272,14 +317,49 @@ namespace Dash
         }
 
 
-        // hides context menu on single tap
-        private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
-            singleTap = true;
-            await Task.Delay(150);
-            if (singleTap)
-                xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                
+        //// hides context menu on single tap
+        //private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
+        //    singleTap = true;
+        //    await Task.Delay(150);
+        //    if (singleTap)
+        //        xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+
+        //}
+
+        #region Menu
+
+        public void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection)
+                ViewModel.OpenMenu();
+            else
+                ViewModel.CloseMenu();
+            e.Handled = true;
         }
-        
+
+        private void DeleteDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void CopyDocument()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (ParentCollection == null) return;
+            ParentCollection.MaxZ += 1;
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+        }
+
+        private void OpenLayout()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
     }
 }

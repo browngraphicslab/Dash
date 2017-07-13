@@ -9,17 +9,11 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid x:Name="xMenuGrid">
-        <!--<Grid.RowDefinitions>
-            <RowDefinition x:Name="xCollectionRow"/>
-            <RowDefinition x:Name="xDocumentRow" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <StackPanel x:Name="xCollectionButtonsStackPanel" HorizontalAlignment="Left" Margin="0,0,10,0"></StackPanel>
-        </Grid>
-        <Grid Grid.Row="1">-->
-        <StackPanel x:Name="xCollectionButtonsStackPanel" HorizontalAlignment="Left" Margin="{Binding ElementName=xDocumentButtonsStackPanel, Path=Margin}" Width="{Binding ElementName=xDocumentButtonsStackPanel, Path=Width}"></StackPanel>
-            <StackPanel x:Name="xDocumentButtonsStackPanel" HorizontalAlignment="Left" Margin="0,0,10,0"></StackPanel>
-        <!--</Grid>-->
+    <Grid>
+        <StackPanel x:Name="xCollectionButtonsStackPanel" HorizontalAlignment="Left"
+                    Margin="{Binding ElementName=xDocumentButtonsStackPanel, Path=Margin}"
+                    Width="{Binding ElementName=xDocumentButtonsStackPanel, Path=Width}">
+        </StackPanel>
+        <StackPanel x:Name="xDocumentButtonsStackPanel" HorizontalAlignment="Left" Margin="0,0,10,0"></StackPanel>
     </Grid>
 </UserControl>
