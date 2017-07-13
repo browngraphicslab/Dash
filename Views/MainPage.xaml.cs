@@ -33,6 +33,12 @@ namespace Dash
         {
             InitializeComponent();
 
+            // adds items from the overlay canvas onto the freeform canvas
+            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
+            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
+            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
+            xOverlayCanvas.OnAddImageTapped += AddImage;
+
             // create the collection document model using a request
             var collectionDocumentController =
                 new CourtesyDocuments.CollectionBox(

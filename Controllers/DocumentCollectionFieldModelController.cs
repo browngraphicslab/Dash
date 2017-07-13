@@ -63,7 +63,6 @@ namespace Dash
         public void SetDocuments(List<DocumentController> docControllers)
         {
             _documents = docControllers;
-            Debug.WriteLine(_documents.Count);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
             FireFieldModelUpdated();

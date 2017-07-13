@@ -269,6 +269,9 @@
     <Compile Include="Views\OperatorView.xaml.cs">
       <DependentUpon>OperatorView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\OverlayCanvas.xaml.cs">
+      <DependentUpon>OverlayCanvas.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OverlayMenu.xaml.cs">
       <DependentUpon>OverlayMenu.xaml</DependentUpon>
     </Compile>
@@ -311,6 +314,7 @@
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.png" />
     <Content Include="Assets\if_11_1724127.png" />
+    <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
     <Content Include="Assets\Leftlg.png" />
     <Content Include="Assets\nestedArraysOfDocumentsJson.txt" />
@@ -463,6 +467,10 @@
     <Page Include="Views\OperatorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OverlayCanvas.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\OverlayMenu.xaml">
       <Generator>MSBuild:Compile</Generator>

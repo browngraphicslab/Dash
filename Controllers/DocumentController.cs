@@ -175,7 +175,6 @@ namespace Dash
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference));
             field.FieldModelUpdated += delegate(FieldModelController sender)
             {
-                Debug.WriteLine($"Document field updated {GetId()}, {key.Name}");
                 OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference));
             };
 
@@ -276,7 +275,6 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
-            Debug.WriteLine($"Add input ref from {reference.DocId}, {reference.FieldKey.Name} to {GetId()}, {fieldKey.Name}");
             reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             var field = GetField(fieldKey);
             var refField = GetDereferencedField(reference, contextList);

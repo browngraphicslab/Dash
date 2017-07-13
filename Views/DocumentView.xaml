@@ -8,21 +8,24 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="300"
-    Width="{Binding Width}"
-    Height="{Binding Height}"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     PointerPressed="UserControl_PointerPressed">
 
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
-          SizeChanged="OuterGrid_SizeChanged"
-          Background="Transparent">
+              SizeChanged="OuterGrid_SizeChanged"
+              Background="Transparent">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" />
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" MaxWidth="50"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Canvas x:Name="xMenuCanvas" Background="Transparent" />
+            <Border x:Name="xBorder" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="5,5,-10,-10" />
+            <!-- Container for Icon view -->
+            <Grid x:Name="xIcon" Grid.Column="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png" />
+            </Grid>
+        <Canvas x:Name="xMenuCanvas" Grid.Column="0"  />
         <Grid Grid.Column="1">
             <!-- Container for document fields view -->
             <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
@@ -30,11 +33,6 @@
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>
                 <ContentPresenter Content="{Binding Content}" />
-            </Grid>
-            <Border x:Name="xBorder" BorderThickness="1,1,10,10" BorderBrush="#0F000000" Margin="0,0,-10,-10" />
-            <!-- Container for Icon view -->
-            <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png" />
             </Grid>
 
             <!-- Misc. Document Components-->
@@ -45,8 +43,7 @@
                     DoubleTapped="ExpandContract_DoubleTapped"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
-                    ManipulationMode="TranslateX, TranslateY"
-                    Visibility="{Binding IsDetailedUserInterfaceVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+                    ManipulationMode="TranslateX, TranslateY">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
                         <Border Padding="10,10,20,20" Background="Transparent">

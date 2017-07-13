@@ -280,16 +280,15 @@ namespace Dash {
                 var newresponseDocs = new List<DocumentController>();
                 foreach (var doc in ResponseAsDocuments)
                 {
-                    // make doc a delegate of the response document and make that 
+                    // make a delegate of each response document that will handle its visual display
+                    var visualDoc = doc.MakeDelegate();
                     var prototypeFieldController = new DocumentFieldModelController(layDocCtrl);
-                    doc.SetField(DashConstants.KeyStore.PrototypeKey, prototypeFieldController, true);
-
-                    // add the delegate to our delegates field
-                    var currentDelegates = layDocCtrl.GetDelegates();
-                    currentDelegates.GetDocuments().Add(doc);
-                    CourtesyDocument.SetLayoutForDocument(doc, layDocCtrl);
-
-                    newresponseDocs.Add(doc);
+                    // make a delegate of the prototype layout that each visual doc will use and mask the Position field so that each 
+                    // document can be moved independently
+                    var layoutDelegate = layDocCtrl.MakeDelegate();
+                    visualDoc.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(layoutDelegate), true);
+                    layoutDelegate.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
+                    newresponseDocs.Add(visualDoc);
                 }
 
                 ResponseAsDocuments = newresponseDocs;
