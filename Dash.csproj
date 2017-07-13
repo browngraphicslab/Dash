@@ -263,15 +263,21 @@
     <Compile Include="Views\HomePage.xaml.cs">
       <DependentUpon>HomePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\MenuButton.xaml.cs" />
+    <Compile Include="Views\MenuButton.xaml.cs">
+      <DependentUpon>MenuButton.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OperatorView.xaml.cs">
       <DependentUpon>OperatorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OverlayMenu.xaml.cs" />
-    <Compile Include="Views\RadialMenuView.xaml.cs" />
+    <Compile Include="Views\OverlayMenu.xaml.cs">
+      <DependentUpon>OverlayMenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RadialMenuView.xaml.cs">
+      <DependentUpon>RadialMenuView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
@@ -303,6 +309,7 @@
     <Content Include="Assets\addApi.png" />
     <Content Include="Assets\addPhoto.png" />
     <Content Include="Assets\dashlogo.png" />
+    <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.png" />
@@ -463,16 +470,18 @@
     </Page>
     <Page Include="Views\OverlayCanvas.xaml">
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\OverlayMenu.xaml">
-      <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\RadialMenuView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\TextSettings.xaml">
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SearchView.xaml">
       <Generator>MSBuild:Compile</Generator>

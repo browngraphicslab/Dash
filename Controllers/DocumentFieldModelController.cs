@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using DashShared;
 
 namespace Dash
 {
@@ -40,6 +42,12 @@ namespace Dash
         public override FrameworkElement GetTableCellView()
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        public override FieldModelController GetDefaultController()
+        {
+            return new DocumentFieldModelController(Data.GetPrototype() ?? 
+                new DocumentController(new Dictionary<Key, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)

@@ -158,7 +158,11 @@ namespace Dash
             var editedLayoutDocument = LayoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel).DocContextList).FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
             Debug.Assert(editedLayoutDocument != null);
 
-            xSettingsPane.Children.Add(SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument));
+            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument);
+            if (newSettingsPane != null)
+            {
+                xSettingsPane.Children.Add(newSettingsPane);
+            }
         }
 
         private void UpdateEditableFieldFrameSelection(EditableFieldFrame newlySelectedEditableFieldFrame)
@@ -209,7 +213,7 @@ namespace Dash
                 box = new CourtesyDocuments.TextingBox(new ReferenceFieldModelController(_documentController.GetId(), key));
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentController>(fieldModelController.GetId()), docContextList);
+                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data, docContextList);
             }
 
             if (box != null)
@@ -240,8 +244,7 @@ namespace Dash
                 return CreateTextSettingsLayout(editedLayoutDocument);
             }
 
-            Debug.Assert(false,
-                $"We do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
+            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
             return null;
         }
 

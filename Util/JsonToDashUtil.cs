@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
@@ -16,12 +18,12 @@ namespace Dash
         public static DocumentController RunTests()
         {
 
-            var task = ParseYoutube();
+            var task = ParseCustomer();
             task.Wait();
             return JsonDocument;
         }
 
-        public static async Task ParseYoutube()
+        public static async Task ParseRecipes()
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/RecipeReturn.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
@@ -29,63 +31,113 @@ namespace Dash
             JsonDocument = ParseJson(jtoken, null, true) as DocumentController;
         }
 
-        //public static async Task ParseYoutube()
-        //{
-        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
-        //    var jsonString = await FileIO.ReadTextAsync(file);
-        //    var jtoken = JToken.Parse(jsonString);
-        //    var documentModel = ParseJson(jtoken, null, true);
-        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        //}
 
-        //public static async Task ParseArrayOfNestedDocument()
-        //{
-        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
-        //    var jsonString = await FileIO.ReadTextAsync(file);
-        //    var jtoken = JToken.Parse(jsonString);
-        //    var watch = System.Diagnostics.Stopwatch.StartNew();
-        //    var documentModel = ParseJson(jtoken, null, true);
-        //    watch.Stop();
-        //    var elapsedMs = watch.ElapsedMilliseconds;
-
-        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        //}
-
-        //public static async Task NestedArrayOfDocuments()
-        //{
-        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/nestedArraysOfDocumentsJson.txt"));
-        //    var jsonString = await FileIO.ReadTextAsync(file);
-        //    var jtoken = JToken.Parse(jsonString);
-        //    var documentModel = ParseJson(jtoken, null, true);
-        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        //}
-
-        //public static async Task RenderableJson()
-        //{
-        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/renderableJson.txt"));
-        //    var jsonString = await FileIO.ReadTextAsync(file);
-        //    var jtoken = JToken.Parse(jsonString);
-        //    var documentModel = ParseJson(jtoken, null, true);
-        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        //}
-
-        //public static async Task ParseCustomer()
-        //{
-        //    var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
-        //    var jsonString = await FileIO.ReadTextAsync(file);
-        //    var jtoken = JToken.Parse(jsonString);
-        //    var documentModel = ParseJson(jtoken, null, true);
-        //    JsonDocument = ContentController.GetController(documentModel.Id) as DocumentController;
-        //}
-
-        public static DocumentController Parse(string str) {
-            var docController = ParseJson(JToken.Parse(str), null, true) as DocumentController;
-            return docController;
+        public static async Task ParseCustomer()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/customerJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            JsonDocument = Parse(jsonString, file.Path);
         }
 
-        public static DocumentController Parse(JToken t) {
-            var docController = ParseJson(t, null, true) as DocumentController;
-            return docController;
+        private static DocumentController Parse(string json, string path)
+        {
+            var jtoken = JToken.Parse(json);
+            var newSchema = new NewDocumentSchema(path);
+            return ParseRoot(jtoken, newSchema);
+        }
+
+        private static DocumentController ParseRoot(JToken jtoken, NewDocumentSchema newSchema)
+        {
+            if (jtoken.Type == JTokenType.Object)
+            {
+                var obj = ParseObject(jtoken, newSchema);
+                return obj;
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<Key, FieldModelController> fields)
+        {
+            foreach (var field in fields)
+            {
+                if (prototype.GetField(field.Key) == null)
+                {
+                    var defaultField = field.Value.GetDefaultController();
+                    prototype.SetField(field.Key, defaultField, true);
+                }
+            }
+        }
+
+        private static FieldModelController ParseChild(JToken jtoken, NewDocumentSchema parentSchema)
+        {
+            if (jtoken.Type == JTokenType.Object)
+            {
+                // create a schema for the document we just found
+                var childSchema = parentSchema.AddChildSchemaOrReturnCurrentChild(jtoken);
+                var protoInstance = ParseObject(jtoken, childSchema);
+
+                // wrap the document we found in a field model since it is not a root
+                var docFieldModelController = new DocumentFieldModelController(protoInstance);
+                return docFieldModelController;
+            } else if (jtoken.Type == JTokenType.Array)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                try
+                {
+                    var myValue = jtoken as JValue;
+                    var type = myValue.Type;
+                    switch (type)
+                    {
+                        case JTokenType.Null: // occurs on null fields
+                            return new TextFieldModelController("");
+                        case JTokenType.Integer:
+                        case JTokenType.Float:
+                            return new NumberFieldModelController(jtoken.ToObject<double>());
+                        case JTokenType.String:
+                        case JTokenType.Boolean:
+                        case JTokenType.Date:
+                        case JTokenType.Uri:
+                        case JTokenType.Guid:
+                        case JTokenType.TimeSpan:
+                            return new TextFieldModelController(jtoken.ToObject<string>());
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+        }
+
+
+        private static DocumentController ParseObject(JToken jtoken, NewDocumentSchema schema)
+        {
+            var jObject = jtoken as JObject;
+
+            // parse each of the fields on the object into a field model controller
+            var fields = new Dictionary<Key, FieldModelController>();
+            foreach (var jProperty in jObject)
+            {
+                var key = schema.GetKey(jProperty.Value);
+                var fmc = ParseChild(jProperty.Value, schema);
+                fields[key] = fmc;
+            }
+
+            // update the prototype to contain default versions of all the parsed fields
+            SetDefaultFieldsOnPrototype(schema.Prototype, fields);
+
+            var protoInstance = schema.Prototype.MakeDelegate();
+            protoInstance.SetFields(fields, true);
+            return protoInstance;
         }
 
         public static IController ParseJson(JToken jToken, DocumentSchema parentSchema, bool isRoot, bool isChildOfArray = false)
@@ -174,6 +226,43 @@ namespace Dash
                 Console.WriteLine(e);
                 throw;
             }
+        }
+    }
+
+    internal class NewDocumentSchema 
+    {
+        public readonly string BasePath;
+
+        private List<NewDocumentSchema> _schemas;
+
+        public NewDocumentSchema(string basePath)
+        {
+            BasePath = basePath;
+            Prototype = new DocumentController(new Dictionary<Key, FieldModelController>(), 
+                new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath)));
+            _schemas = new List<NewDocumentSchema>();
+        }
+
+        public DocumentController Prototype { get; set; }
+
+        public Key GetKey(JToken jToken)
+        {
+            return new Key(DashShared.Util.GetDeterministicGuid(BasePath + jToken.Path))
+            {
+                Name = BasePath + jToken.Path
+            };
+        }
+
+        public NewDocumentSchema AddChildSchemaOrReturnCurrentChild(JToken jtoken)
+        {
+            var newPath = BasePath + jtoken.Path;
+            var currentSchema = _schemas.FirstOrDefault(s => s.BasePath == newPath);
+            if (currentSchema == null)
+            {
+                currentSchema = new NewDocumentSchema(newPath);
+                _schemas.Add(currentSchema);
+            }
+            return currentSchema;
         }
     }
 

@@ -40,6 +40,11 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
+        public override FieldModelController GetDefaultController()
+        {
+            return new PointFieldModelController(0, 0);
+        }
+
         public Point Data
         {
             get { return PointFieldModel.Data; }

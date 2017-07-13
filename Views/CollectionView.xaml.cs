@@ -25,7 +25,7 @@ namespace Dash
         public double CanvasScale { get; set; } = 1;
         public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
-        public const float MinScale = 0.5f;
+        public const float MinScale = 0.001f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
         // whether the user can draw links currently or not
@@ -99,6 +99,15 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             ParentDocument.HasCollection = true;
+
+            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
+                                                ParentDocument.xBorder.Margin.Top + 5,
+                                                ParentDocument.xBorder.Margin.Right,
+                                                ParentDocument.xBorder.Margin.Bottom);
+            //=====================================================================================
+
             if (ParentDocument != MainPage.Instance.MainDocView)
             {
                 ParentDocument.SizeChanged += (ss, ee) =>
@@ -566,7 +575,7 @@ namespace Dash
 
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
+            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = ViewModel;
             foreach (var item in e.Items)
@@ -585,7 +594,7 @@ namespace Dash
             carrier.Source = null;
             carrier.Destination = null;
             carrier.Translate = new Point();
-            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
+            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.xCanvas_DragOver;
         }
 
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
@@ -683,11 +692,16 @@ namespace Dash
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
             ParentDocument.Width -= 50;
+            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left - 50,
+                                                            ParentDocument.xBorder.Margin.Top,
+                                                            ParentDocument.xBorder.Margin.Right,
+                                                            ParentDocument.xBorder.Margin.Bottom);
+            //=====================================================================================
         }
 
         private void SelectAllItems()
         {
-
             if (CurrentView is CollectionGridView)
             {
                 var gridView = (CurrentView as CollectionGridView).xGridView;
@@ -716,6 +730,10 @@ namespace Dash
             ViewModel.DeleteSelected_Tapped(null, null);
         }
 
+        private void DeleteCollection()
+        {
+            ParentDocument.DeleteDocument();
+        }
 
         private void OpenMenu()
         {
@@ -726,6 +744,7 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
+            var deleteCollection = new Action(DeleteCollection);
             var collectionButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
@@ -734,8 +753,10 @@ namespace Dash
                 },
                 new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
                 new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
-                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform)
+                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
             };
+            if (ParentDocument != MainPage.Instance.MainDocView)
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
@@ -750,6 +771,12 @@ namespace Dash
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
             ParentDocument.Width += 50;
+            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50, 
+                                                            ParentDocument.xBorder.Margin.Top, 
+                                                            ParentDocument.xBorder.Margin.Right, 
+                                                            ParentDocument.xBorder.Margin.Bottom);
+            //====================================================================================
         }
 
 
@@ -844,7 +871,7 @@ namespace Dash
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .9;
+                    image.Opacity = .2;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);

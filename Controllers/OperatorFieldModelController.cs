@@ -50,5 +50,10 @@ namespace Dash
         {
             textBlock.Text = $"Operator of type: {OperatorFieldModel.Type}";
         }
+
+        public override FieldModelController GetDefaultController()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
