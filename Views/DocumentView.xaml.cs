@@ -307,7 +307,7 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void DeleteDocument()
+        public void DeleteDocument()
         {
             FadeOut.Begin();
         }

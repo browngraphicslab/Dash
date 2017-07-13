@@ -730,6 +730,10 @@ namespace Dash
             ViewModel.DeleteSelected_Tapped(null, null);
         }
 
+        private void DeleteCollection()
+        {
+            ParentDocument.DeleteDocument();
+        }
 
         private void OpenMenu()
         {
@@ -740,6 +744,7 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
+            var deleteCollection = new Action(DeleteCollection);
             var collectionButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
@@ -748,8 +753,10 @@ namespace Dash
                 },
                 new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
                 new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
-                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform)
+                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
             };
+            if (ParentDocument != MainPage.Instance.MainDocView)
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)

@@ -12,8 +12,7 @@
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationDelta="UserControl_ManipulationDelta"
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    PointerWheelChanged="UserControl_PointerWheelChanged"
-    >
+    PointerWheelChanged="UserControl_PointerWheelChanged">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
