@@ -644,17 +644,35 @@ namespace Dash {
                 return StackingPanel.MakeView(docController, docContextList);
             }
 
+            /// <summary>
+            /// Genereates the grid view to contain the stacked elements.
+            /// </summary>
+            /// <param name="docController"></param>
+            /// <param name="docContextList"></param>
+            /// <returns></returns>
             public static FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList) {
                 var stack = new GridView();
 
                 var stackFieldData =
-                    docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) as DocumentCollectionFieldModelController;
+                    docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) 
+                    as DocumentCollectionFieldModelController;
 
+                // create a dynamic gridview that wraps content in borders
+                double maxHeight = 0;
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments()) {
-                        stack.Items.Add(stackDoc.makeViewUI(docContextList));
+                        Border b = new Border();
+                        FrameworkElement item = stackDoc.makeViewUI(docContextList);
+                        b.Child = item;
+                        maxHeight = Math.Max(maxHeight, item.Height);
+                        stack.Items.Add(b);
                     }
+
+                // format gridview s.t. rows and columns automatically have the largest cell size to fit content
+                foreach (Border b in stack.Items) {
+                    b.Height = maxHeight;
+                }
                 return stack;
             }
         }

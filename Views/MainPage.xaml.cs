@@ -327,9 +327,6 @@ namespace Dash
         {
             //e.AcceptedOperation = DataPackageOperation.Copy;
         }
-
-        private void xOverlayCanvas_Loaded(object sender, RoutedEventArgs e)
-        {
-        }
+        
     }
 }
