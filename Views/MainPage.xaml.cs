@@ -133,9 +133,8 @@ namespace Dash
         {
             var children =
                 MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey,
-                    new List<DocumentController>()) as DocumentCollectionFieldModelController;
-            if (children != null)
-                children.AddDocument(docModel);
+                    new Context()) as DocumentCollectionFieldModelController;
+            children?.AddDocument(docModel);
         }
 
         public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -154,7 +153,7 @@ namespace Dash
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
             var layoutDoc =
-                new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
@@ -183,7 +182,7 @@ namespace Dash
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
             var layoutDoc =
-                new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);

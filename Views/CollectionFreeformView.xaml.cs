@@ -93,8 +93,8 @@ namespace Dash
                 StrokeThickness = 5,
                 Stroke = new SolidColorBrush(Colors.Orange),
                 IsHitTestVisible = false,
-                //CompositeMode =
-                //    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                CompositeMode =
+                    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                 //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
@@ -157,18 +157,18 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            List<DocumentController> context = (DataContext as CollectionViewModel).DocContextList;
+            Context context = (DataContext as CollectionViewModel).DocumentContext;
             string outId;
             string inId;
             if (_currReference.IsOutput)
             {
-                outId = ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController, context).GetId();
-                inId = ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController, context).GetId();
+                outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
             }
             else
             {
-                outId = ContentController.DereferenceToRootFieldModel(ioReference.ReferenceFieldModelController, context).GetId();
-                inId = ContentController.DereferenceToRootFieldModel(_currReference.ReferenceFieldModelController, context).GetId();
+                outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
             }
             CollectionView.Graph.AddEdge(outId, inId);
             if (CollectionView.Graph.IsCyclic())
@@ -193,17 +193,18 @@ namespace Dash
 
             if (ioReference.IsOutput)
             {
-                ContentController.GetController<DocumentController>(_currReference.ReferenceFieldModelController.DocId)
+                _currReference.ReferenceFieldModelController.GetDocumentController(context)
                     .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
                         ioReference.ReferenceFieldModelController);
             }
             else
             {
-                var contextList = (DataContext as CollectionViewModel).DocContextList;
-                var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
+                var contextList = (DataContext as CollectionViewModel).DocumentContext;
+                //var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
                 try
                 {
-                    ContentController.GetController<DocumentController>(refDocId)
+                    //ContentController.GetController<DocumentController>(refDocId)
+                    ioReference.ReferenceFieldModelController.GetDocumentController(context)//TODO Use context here
                         .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
                             contextList);
                 }

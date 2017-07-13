@@ -30,10 +30,10 @@ namespace Dash.Models.OperatorModels.Set
         {
         }
 
-        public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
+        public override void Execute(DocumentController doc, Context context)
         {
-            DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, docContextList) as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, docContextList) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, context) as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, context) as DocumentCollectionFieldModelController;
             if (setA.InputReference == null || setB.InputReference == null)//One or more of the inputs isn't set yet
             {
                 return;
