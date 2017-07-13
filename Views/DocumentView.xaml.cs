@@ -213,7 +213,7 @@ namespace Dash
             if (ViewModel == null)
                 return;
             
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
                 xBorder.Opacity = 0;
             }
@@ -266,33 +266,6 @@ namespace Dash
             }
         }
 
-        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var position = e.GetPosition(OverlayCanvas.Instance);
-            OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
-        }
-
-        bool singleTap = false;
-
-        ///// <summary>
-        ///// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
-        ///// on signle tap to prevent flickering.
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
-
-            
-        //        if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
-        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-        //        else
-        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
-            
-
-        //    singleTap = false;
-        //    e.Handled = true;
-        //}
-        
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
             if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
@@ -316,17 +289,7 @@ namespace Dash
             e.Handled = true; // prevent propagating
         }
 
-
-        //// hides context menu on single tap
-        //private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
-        //    singleTap = true;
-        //    await Task.Delay(150);
-        //    if (singleTap)
-        //        xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
-        //}
-
-        #region Menu
+  #region Menu
 
         public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
@@ -356,7 +319,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            throw new NotImplementedException();
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel), new Point(0,0), this);
         }
 
         #endregion

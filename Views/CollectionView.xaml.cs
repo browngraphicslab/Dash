@@ -561,7 +561,7 @@ namespace Dash
 
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
+            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = ViewModel;
             foreach (var item in e.Items)
@@ -580,7 +580,7 @@ namespace Dash
             carrier.Source = null;
             carrier.Destination = null;
             carrier.Translate = new Point();
-            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
+            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.xCanvas_DragOver;
         }
 
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)

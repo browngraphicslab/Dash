@@ -158,7 +158,11 @@ namespace Dash
             var editedLayoutDocument = LayoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel).DocContextList).FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
             Debug.Assert(editedLayoutDocument != null);
 
-            xSettingsPane.Children.Add(SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument));
+            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument);
+            if (newSettingsPane != null)
+            {
+                xSettingsPane.Children.Add(newSettingsPane);
+            }
         }
 
         private void UpdateEditableFieldFrameSelection(EditableFieldFrame newlySelectedEditableFieldFrame)
@@ -240,8 +244,7 @@ namespace Dash
                 return CreateTextSettingsLayout(editedLayoutDocument);
             }
 
-            Debug.Assert(false,
-                $"We do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
+            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
             return null;
         }
 
