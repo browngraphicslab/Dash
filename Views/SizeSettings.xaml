@@ -9,12 +9,15 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     
-    <Grid Height="100" Width="230" Padding="0">
+    <Grid Width="230" Padding="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="2.5*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Background="SteelBlue">
+        <Grid Grid.Row="0">
+            <Grid.Background>
+                <SolidColorBrush Color="SteelBlue" Opacity="0.75"></SolidColorBrush>
+            </Grid.Background>
             <Grid x:Name="xTitle" Width="230" Tapped="XTitle_OnTapped">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -24,22 +27,22 @@
                     <TextBlock Text="SIZE" Foreground="WhiteSmoke" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"></TextBlock>
                 </Grid>
                 <Grid Grid.Column="1">
-                    <Button x:Name="xCollapse" FontFamily="Marlett" Content="5" Foreground="WhiteSmoke" Margin="5,0,0,0" Background="Transparent"/>
-                    <Button x:Name="xExpand" FontFamily="Marlett" Content="6" Foreground="WhiteSmoke" Margin="5,0,0,0" Background="Transparent" Visibility="Collapsed"/>
+                    <Button x:Name="xCollapse" FontFamily="Marlett" Content="5" Foreground="WhiteSmoke" Margin="5,0,0,0" Background="Transparent" Visibility="Collapsed"/>
+                    <Button x:Name="xExpand" FontFamily="Marlett" Content="6" Foreground="WhiteSmoke" Margin="5,0,0,0" Background="Transparent"/>
                 </Grid>
             </Grid>
         </Grid>
-        <Grid x:Name="xContentGridColumn" Grid.Row="1" Background="LightBlue">
+        <Grid x:Name="xContentGridColumn" Grid.Row="1" Background="Transparent" Visibility="Collapsed">
             <Grid Width="230">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <Grid Grid.Column="0" Margin="10,5,5,0">
-                    <TextBox x:Name="xWidthTextBox" Header="Width" Height="55" BorderBrush="WhiteSmoke" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
+                    <TextBox x:Name="xWidthTextBox" Header="Width" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top" Margin="0,0,0,10"/>
                     </Grid>
-                    <Grid Grid.Column="1" Margin="5,5,10,0"> 
-                        <TextBox x:Name="xHeightTextBox" Header="Height" Height="55" BorderBrush="WhiteSmoke" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
+                    <Grid Grid.Column="1" Margin="5,5,10,0">
+                    <TextBox x:Name="xHeightTextBox" Header="Height" Height="Auto" BorderBrush="White" Background="White" VerticalContentAlignment="Center" VerticalAlignment="Top"  Margin="0,0,0,10"/>
                     </Grid>
             </Grid>
         </Grid>

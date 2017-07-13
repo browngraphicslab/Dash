@@ -9,7 +9,10 @@
     d:DesignHeight="800"
     d:DesignWidth="300">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" Background="LightBlue" BorderBrush="Transparent">
+    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" BorderBrush="Transparent">
+        <Grid.Background>
+            <SolidColorBrush Color="LightBlue" Opacity="0.75"></SolidColorBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
@@ -40,9 +43,9 @@
                         <RowDefinition Height="25"/>
                         <RowDefinition Height="35"/>
                         <RowDefinition Height="35"/>
-                        <RowDefinition Height="40"/>
-                        <RowDefinition Height="100"></RowDefinition>
-                        <RowDefinition Height="100"></RowDefinition>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="Auto"></RowDefinition>
+                        <RowDefinition Height="Auto"></RowDefinition>
                         <!--<RowDefinition Height="35"/>
                         <RowDefinition Height="60"/>
                         <RowDefinition Height="35"/>
@@ -120,8 +123,8 @@
                         <ComboBox x:Name="xFontWeightBox" Width="{Binding Width, ElementName=xComboBoxRow}" />
                     </Grid>
                     <Grid x:Name="xSizeRow" Grid.Row="6"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <!--<local:SizeSettings></local:SizeSettings>
-                        <TextBlock FontWeight="SemiBold" FontSize="16">
+                        <!--<local:SizeSettings></local:SizeSettings>-->
+                        <!--<TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="SIZE"/>
                         </TextBlock>
                     </Grid>
@@ -140,6 +143,7 @@
                         </Grid>-->
                     </Grid>
                     <Grid x:Name="xPositionRow" Grid.Row="7"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <!--<local:PositionSettings></local:PositionSettings>-->
                         <!--<TextBlock FontWeight="SemiBold" FontSize="16">
                             <Run Text="POSITION"/>
                         </TextBlock>
@@ -156,8 +160,7 @@
                             <Grid Grid.Column="1" Margin="15,0,0,0">
                                 <TextBox x:Name="xVerticalPositionTextBox" Header="Y" Height="60"/>
                             </Grid>
-                        </Grid>
-                        <local:PositionSettings></local:PositionSettings>-->
+                        </Grid>-->
                     </Grid>
                 </Grid>
             </ScrollViewer>
