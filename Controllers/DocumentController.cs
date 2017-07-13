@@ -418,7 +418,6 @@ namespace Dash
             return makeViewUI(new List<DocumentController>());
         }
 
-        // TODO KB delete this 
         public ObservableCollection<DocumentController> DocContextList;
 
         public FrameworkElement makeViewUI(IEnumerable<DocumentController> docContextList)
@@ -426,7 +425,6 @@ namespace Dash
             var docList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);
             docList.Add(this);
 
-            // TODO KB delete this 
             DocContextList = new ObservableCollection<DocumentController>(docList);
 
             var uieles = new List<FrameworkElement>();
@@ -457,7 +455,7 @@ namespace Dash
             }
             else // if document is not a known UI View, then see if it contains a Layout view field
             {
-                var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList);
+                var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContextList);
                 if (fieldModelController != null)
                 {
                     var newDocContextList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);

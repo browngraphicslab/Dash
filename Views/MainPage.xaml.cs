@@ -207,7 +207,8 @@ namespace Dash
                 new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
             DisplayDocument(col);
 
             AddAnotherLol();
@@ -236,7 +237,8 @@ namespace Dash
                 new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.LayoutKey, layoutController, true);
+            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true); 
             DisplayDocument(col);
         }
 

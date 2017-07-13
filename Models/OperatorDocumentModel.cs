@@ -32,7 +32,7 @@ namespace Dash
 
             var layoutDoc = new CourtesyDocuments.OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            doc.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
+            doc.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
 
             return doc;
         }

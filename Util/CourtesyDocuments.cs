@@ -24,7 +24,7 @@ namespace Dash {
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
                 var layoutController = new DocumentFieldModelController(layoutDoc);
-                document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
+                document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
             }
 
             /// <summary>
@@ -44,7 +44,11 @@ namespace Dash {
                 deleg.SetField(DashConstants.KeyStore.DataKey, fmc, true);
 
                 var selfFmc = new DocumentFieldModelController(deleg);
-                deleg.SetField(DashConstants.KeyStore.LayoutKey, selfFmc, true);
+                deleg.SetField(DashConstants.KeyStore.ActiveLayoutKey, selfFmc, true);
+
+                // TODO KB delegates? 
+                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController).AddDocument(deleg); 
+
                 return deleg;
             }
 
@@ -214,7 +218,7 @@ namespace Dash {
 
             public LayoutCourtesyDocument(DocumentController docController, IEnumerable<DocumentController> contextList) {
                 Document = docController; // get the layout field on the document being displayed
-                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, contextList) as DocumentFieldModelController;
+                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, contextList) as DocumentFieldModelController;
                 if (layoutField == null) {
                     var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
                         new DocumentCollectionFieldModelController(new DocumentController[] { }));
