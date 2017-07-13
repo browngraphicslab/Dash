@@ -5,6 +5,7 @@ using System.Linq;
 using DashShared;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.Collections.ObjectModel; 
 
 namespace Dash
 {
@@ -417,10 +418,17 @@ namespace Dash
             return makeViewUI(new List<DocumentController>());
         }
 
+        // TODO KB delete this 
+        public ObservableCollection<DocumentController> DocContextList;
+
         public FrameworkElement makeViewUI(IEnumerable<DocumentController> docContextList)
         {
             var docList = docContextList == null ? new List<DocumentController>() : new List<DocumentController>(docContextList);
             docList.Add(this);
+
+            // TODO KB delete this 
+            DocContextList = new ObservableCollection<DocumentController>(docList);
+
             var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)

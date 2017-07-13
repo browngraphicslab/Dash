@@ -218,7 +218,13 @@ namespace Dash
                     Content = DocumentController.makeViewUI(DocContextList);
                 }
             };
+
+            //DocContextViewModelList = new ObservableCollection<DocumentViewModel> { this } ;
         }
+
+        // TODO KB what. 
+        //public ObservableCollection<DocumentViewModel> DocContextViewModelList;
+
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update

@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Collections.ObjectModel;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -69,7 +70,8 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            Tapped += OnTapped;         
+            Tapped += OnTapped;
+            DoubleTapped += OnDoubleTapped;      
         }
 
         private void SetUpMenu()
@@ -361,6 +363,19 @@ namespace Dash
 
         private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
 
+        }
+
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            ObservableCollection<DocumentController> docList = ViewModel.DocumentController.DocContextList; 
+            Debug.WriteLine("count in this list is " + ViewModel.DocumentController.DocContextList.Count); 
+            
+            foreach(DocumentController cont in docList)
+            {
+                Debug.WriteLine("docType : " + cont.IsDelegateOf(ViewModel.DocumentController.DocumentModel.DocumentType.Type)); 
+                Debug.WriteLine("is this a delegate? : " + cont.IsDelegateOf(ViewModel.DocumentController.DocumentModel.Id)); 
+            }
+            e.Handled = true;
         }
 
         private void OpenLayout()
