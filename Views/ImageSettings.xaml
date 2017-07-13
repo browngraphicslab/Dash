@@ -32,7 +32,7 @@
             </StackPanel>
         </Grid>
         <Grid Grid.Row="2" Width="250">
-            <ScrollViewer VerticalScrollMode="Enabled"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
+            <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -44,7 +44,7 @@
                     <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
-                                <Grid Margin="10,5,10,5">
+                                <Grid Margin="0,5,0,5">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="1.2*"/>
                                         <ColumnDefinition Width="0.8*"/>
@@ -53,7 +53,7 @@
                                         <Slider x:Name="xOpacitySlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="1" StepFrequency="0.1" Foreground="SteelBlue"/>
                                     </Grid>
                                     <Grid Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBox x:Name="xOpacitySliderTextbox" Height="20" Width="Auto" BorderBrush="White"/>
+                                        <TextBox x:Name="xOpacitySliderTextbox" Height="15" Width="Auto" BorderBrush="White" FontSize="12"/>
                                     </Grid>
                                 </Grid>
                             </local:SettingsPaneBlock.MainContent>

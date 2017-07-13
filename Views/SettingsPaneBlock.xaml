@@ -13,25 +13,22 @@
             <RowDefinition Height="1*"/>
             <RowDefinition Height="2.5*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.Background>
-                <SolidColorBrush Color="SteelBlue" Opacity="0.75"></SolidColorBrush>
-            </Grid.Background>
+        <Grid Grid.Row="0" Background="Transparent">
             <Grid x:Name="xTitle" Width="230" Tapped="XTitle_OnTapped">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="40"/>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0">
-                    <TextBlock x:Name="xTitleTextBlock" Text="{x:Bind Title}" Foreground="WhiteSmoke" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"></TextBlock>
+                    <TextBlock x:Name="xTitleTextBlock" Text="{x:Bind Title}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,5,0,5" FontSize="12"></TextBlock>
                 </Grid>
                 <Grid Grid.Column="1">
-                    <Button x:Name="xCollapse" FontFamily="Marlett" Content="5" Foreground="WhiteSmoke" Margin="5,0,0,0" Background="Transparent" Visibility="Collapsed"/>
-                    <Button x:Name="xExpand" FontFamily="Marlett" Content="6" Foreground="WhiteSmoke" Margin="5,0,0,0" Background="Transparent"/>
+                    <Button x:Name="xCollapse" FontFamily="Marlett" Content="5" Foreground="DimGray" Margin="35,0,0,0" Padding="-5" Background="Transparent" Visibility="Collapsed"/>
+                    <Button x:Name="xExpand" FontFamily="Marlett" Content="6" Foreground="DimGray" Margin="35,0,0,0" Padding="-5" Background="Transparent"/>
                 </Grid>
             </Grid>
         </Grid>
-        <Grid x:Name="xContentGridColumn" Grid.Row="1" Background="Transparent" Visibility="Collapsed">
+        <Grid x:Name="xContentGrid" Grid.Row="1" Background="Transparent" Visibility="Collapsed">
             <ContentPresenter Content="{x:Bind MainContent}"></ContentPresenter>
         </Grid>
     </Grid>

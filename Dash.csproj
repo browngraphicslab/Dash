@@ -220,6 +220,9 @@
     <Compile Include="Views\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\DocumentSettings.xaml.cs">
+      <DependentUpon>DocumentSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
@@ -381,6 +384,10 @@
     <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DocumentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>

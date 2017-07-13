@@ -52,7 +52,7 @@ namespace Dash.Views
 
         private void XTitle_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            xContentGridColumn.Visibility = xContentGridColumn.Visibility == Visibility.Collapsed
+            xContentGrid.Visibility = xContentGrid.Visibility == Visibility.Collapsed
                 ? Visibility.Visible
                 : Visibility.Collapsed;
             xCollapse.Visibility = xCollapse.Visibility == Visibility.Collapsed
