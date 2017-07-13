@@ -93,8 +93,8 @@ namespace Dash
                 StrokeThickness = 5,
                 Stroke = new SolidColorBrush(Colors.Orange),
                 IsHitTestVisible = false,
-                //CompositeMode =
-                //    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                CompositeMode =
+                    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                 //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
@@ -162,13 +162,13 @@ namespace Dash
             string inId;
             if (_currReference.IsOutput)
             {
-                outId = _currReference.ReferenceFieldModelController.DereferenceToRoot().GetId();
-                inId = ioReference.ReferenceFieldModelController.DereferenceToRoot().GetId();
+                outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
             }
             else
             {
-                outId = ioReference.ReferenceFieldModelController.DereferenceToRoot().GetId();
-                inId = _currReference.ReferenceFieldModelController.DereferenceToRoot().GetId();
+                outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
             }
             CollectionView.Graph.AddEdge(outId, inId);
             if (CollectionView.Graph.IsCyclic())
@@ -193,7 +193,7 @@ namespace Dash
 
             if (ioReference.IsOutput)
             {
-                _currReference.ReferenceFieldModelController.GetDocumentController()
+                _currReference.ReferenceFieldModelController.GetDocumentController(context)
                     .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
                         ioReference.ReferenceFieldModelController);
             }
@@ -204,7 +204,7 @@ namespace Dash
                 try
                 {
                     //ContentController.GetController<DocumentController>(refDocId)
-                    ioReference.ReferenceFieldModelController.GetDocumentController()//TODO Use context here
+                    ioReference.ReferenceFieldModelController.GetDocumentController(context)//TODO Use context here
                         .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
                             contextList);
                 }

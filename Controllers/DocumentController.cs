@@ -276,6 +276,7 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             //reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
+            reference.Context = context;
             var field = GetField(fieldKey);
             var refField = GetDereferencedField(reference, context);
             DocumentController controller = reference.GetDocumentController();

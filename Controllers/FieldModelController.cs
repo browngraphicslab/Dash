@@ -35,9 +35,7 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    //string id = ContentController.MapDocumentInstanceReference(value.DocId, value.DocContextList);
-                    //var cont = ContentController.GetController<DocumentController>(id);
-                    var cont = value.GetDocumentController();//TODO Use context here
+                    var cont = value.GetDocumentController(value.Context);
                     cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
                         if (args.Reference.FieldKey.Equals(value.FieldKey))
@@ -45,7 +43,7 @@ namespace Dash
                             UpdateValue(args.NewValue);
                         }
                     };
-                    UpdateValue(cont.GetDereferencedField(value.FieldKey, value.Context));
+                    UpdateValue(value.DereferenceToRoot(value.Context));
 
                     // update server
                 }

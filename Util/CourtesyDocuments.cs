@@ -746,7 +746,6 @@ namespace Dash {
                 var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image1FieldKey),   0, 50, 200, 200);
                 var prototypeImage2Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),   0, 250, 200, 200);
                 var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),   0, 0, 200, 50);
-                Debug.WriteLine("Prototype 2Images ID = " + _prototypeTwoImages.GetId());
                 var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document });
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(500), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
@@ -756,7 +755,6 @@ namespace Dash {
             public TwoImages(bool displayFieldsAsDocuments)
             {
                 Document = _prototypeTwoImages.MakeDelegate();
-                Debug.WriteLine(Document.GetId());
                 Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                 Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                 Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
