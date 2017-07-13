@@ -25,6 +25,19 @@ namespace Dash {
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
                 var layoutController = new DocumentFieldModelController(layoutDoc);
                 document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
+
+                // TODO KB 
+                var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey);
+                if (layoutList == null)
+                {
+                    document.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
+                }
+                else
+                {
+                    var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey); 
+                    layoutList.AddDocument(layoutDoc); 
+                    document.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, true);
+                }
             }
 
             /// <summary>
@@ -46,7 +59,7 @@ namespace Dash {
                 var selfFmc = new DocumentFieldModelController(deleg);
                 deleg.SetField(DashConstants.KeyStore.ActiveLayoutKey, selfFmc, true);
 
-                // TODO KB delegates? 
+                // TODO KB delegates... but this method is never called so ????? 
                 (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController).AddDocument(deleg); 
 
                 return deleg;
@@ -227,7 +240,7 @@ namespace Dash {
 
                     SetLayoutForDocument(Document, LayoutDocumentController);
                 } else
-                    LayoutDocumentController = layoutField?.Data;
+                    LayoutDocumentController = layoutField.Data;
             }
 
             public IEnumerable<DocumentController> GetLayoutDocuments(List<DocumentController> docContextList)
