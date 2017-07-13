@@ -28,7 +28,7 @@
             </Grid.Clip>
             <ContentPresenter Content="{Binding Content}"></ContentPresenter>
         </Grid>
-        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="10,10,-10,-10"></Border>
+        <Border x:Name="xBorder" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="10,10,-10,-10" Visibility="Visible"></Border>
 
         <!-- Container for Icon view -->
         <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
