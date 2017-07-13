@@ -443,9 +443,13 @@ namespace Dash
             {
                 return CourtesyDocuments.OperatorBox.MakeView(this, docList);
             }
-            else if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
+            if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
             {
                 return CourtesyDocuments.ApiDocumentModel.MakeView(this, docList);
+            }
+            if (DocumentType == CourtesyDocuments.InkBox.DocumentType)
+            {
+                return CourtesyDocuments.InkBox.MakeView(this, docList);
             }
             else // if document is not a known UI View, then see if it contains a Layout view field
             {

@@ -43,33 +43,39 @@ namespace Dash
 
         public static void ChangeInkColor(Color color, RadialMenu menu=null)
         {
-            InkSource.Color = color;
-            InkSource.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSource.Attributes.Color);
+            InkSettings.Color = color;
+            InkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSettings.Attributes.Color);
         }
 
         public static void ChoosePen(object o)
         {
-            InkSource.StrokeType = InkSource.StrokeTypes.Pen;
-            InkSource.SetAttributes();
+            InkSettings.StrokeType = InkSettings.StrokeTypes.Pen;
+            InkSettings.SetAttributes();
         }
 
         public static void ChoosePencil(object o)
         {
-            InkSource.StrokeType = InkSource.StrokeTypes.Pencil;
-            InkSource.SetAttributes();
+            InkSettings.StrokeType = InkSettings.StrokeTypes.Pencil;
+            InkSettings.SetAttributes();
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            InkSettings.StrokeType = InkSettings.StrokeTypes.Eraser;
+            InkSettings.SetAttributes();
         }
 
         public static void SetOpacity(double opacity)
         {
-            InkSource.Opacity = opacity;
-            InkSource.SetAttributes();
+            InkSettings.Opacity = opacity;
+            InkSettings.SetAttributes();
         }
 
         public static void SetSize(double size)
         {
-            InkSource.Size = size;
-            InkSource.SetAttributes();
+            InkSettings.Size = size;
+            InkSettings.SetAttributes();
         }
 
 
@@ -86,9 +92,9 @@ namespace Dash
 
         public static void SetBrightness(double brightness, RadialMenu menu)
         {
-            InkSource.BrightnessFactor = brightness;
-            InkSource.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSource.Attributes.Color);
+            InkSettings.BrightnessFactor = brightness;
+            InkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSettings.Attributes.Color);
         }
 
 
@@ -121,22 +127,22 @@ namespace Dash
 
         public static void SetTouchInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Touch;
+            InkSettings.InkInputType = CoreInputDeviceTypes.Touch;
         }
 
         public static void SetPenInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Pen;
+            InkSettings.InkInputType = CoreInputDeviceTypes.Pen;
         }
 
         public static void SetMouseInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Mouse;
+            InkSettings.InkInputType = CoreInputDeviceTypes.Mouse;
         }
 
         public static void SetNoInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.None;
+            InkSettings.InkInputType = CoreInputDeviceTypes.None;
         }
     }
 }

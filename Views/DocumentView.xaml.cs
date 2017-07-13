@@ -362,7 +362,7 @@ namespace Dash
         private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
 
         }
-
+         
         private void OpenLayout()
         {
             throw new NotImplementedException();

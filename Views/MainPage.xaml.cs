@@ -29,6 +29,8 @@ namespace Dash
 
         public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
 
+        public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
+
         public MainPage()
         {
             InitializeComponent();
@@ -253,6 +255,7 @@ namespace Dash
             DisplayDocument(new CourtesyDocuments.PostitNote().Document);
             DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
             DisplayDocument(new CourtesyDocuments.Numbers().Document);
+            DisplayDocument(new CourtesyDocuments.InkBox().Document);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

@@ -97,6 +97,7 @@ namespace DocumentMenu
         private void Button_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _buttonAction?.Invoke();
+            e.Handled = true;
         }
 
         /// <summary>

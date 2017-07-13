@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
+using Dash.Views;
 using DashShared;
 
 namespace Dash {
@@ -461,6 +462,37 @@ namespace Dash {
                 return tb;
             }
         }
+
+        public class InkBox : CourtesyDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("ACDF5539-656B-44B5-AC0A-BA6E1875A4C2", "Ink Box");
+
+            public static Key InkDataKey = new Key("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "Ink Data Key");
+
+            public InkBox()
+            {
+                var fields = new Dictionary<Key, FieldModelController>
+                {
+                    [InkDataKey] = new InkFieldModelController()
+                };
+                Document = new DocumentController(fields, DocumentType);
+                SetLayoutForDocument(Document, Document);
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController,
+                List<DocumentController> docContextList)
+            {
+                return new InkCanvasControl(MainPage.InkFieldModelController);
+                var controller = docController.GetField(InkDataKey);
+                if (controller != null && controller is InkFieldModelController)
+                {
+                    var inkController = controller as InkFieldModelController;
+                    return new InkCanvasControl(inkController);
+                }
+                return new InkCanvasControl(new InkFieldModelController());
+            }
+        }
+
 
         /// <summary>
         /// A generic document type containing a single image.

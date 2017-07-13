@@ -229,7 +229,6 @@ namespace Dash.Views
             _mainMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             _mainMenu.OuterThickness = 15;
             _mainMenu.CenterButtonSize = 60;
-            _mainMenu.Margin = new Thickness(500,500,0,0);
         }
 
 
@@ -378,6 +377,7 @@ namespace Dash.Views
             Action<object> setTouchInput = Actions.SetTouchInput;
             Action<object> setMouseInput = Actions.SetMouseInput;
             Action<object> setNoInput = Actions.SetNoInput;
+            Action<object> chooseEraser = Actions.ChooseEraser;
             this.InitializeColors();
 
             var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
@@ -404,6 +404,10 @@ namespace Dash.Views
                     new RadialActionModel("Pencil", "✏️")
                     {
                         GenericAction = choosePencil
+                    },
+                    new RadialActionModel("Eraser", "")
+                    {
+                        GenericAction = chooseEraser
                     }
                 });
 
