@@ -653,7 +653,15 @@ namespace Dash {
             public static FrameworkElement MakeView(DocumentController docController,
                 List<DocumentController> docContextList) {
                 var stack = new GridView();
-
+                stack.Loaded += (s, e) =>
+                {
+                    var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
+                    var stackDoc = stack.GetFirstAncestorOfType<DocumentView>();
+                    stackViewer.ViewChanging += (ss, ee) => 
+                        stackDoc.Manipulator.RemoveAllButHandle();
+                    stackViewer.ViewChanged += (ss, ee) => 
+                        stackDoc.Manipulator.AddAllAndHandle();
+                };
                 var stackFieldData =
                     docController.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList) 
                     as DocumentCollectionFieldModelController;
