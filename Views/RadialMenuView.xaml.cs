@@ -229,7 +229,7 @@ namespace Dash.Views
             _mainMenu.OuterTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             _mainMenu.OuterThickness = 15;
             _mainMenu.CenterButtonSize = 60;
-            _mainMenu.Margin = new Thickness(500,500,0,0);
+            //_mainMenu.Margin = new Thickness(500,500,0,0); // comment this out to fix top right drag?
         }
 
 

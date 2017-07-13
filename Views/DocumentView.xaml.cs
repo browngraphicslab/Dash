@@ -69,7 +69,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            Tapped += OnTapped;         
+            DoubleTapped += OnTapped;         
         }
 
         private void SetUpMenu()
@@ -261,17 +261,17 @@ namespace Dash
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                Tapped -= OnTapped;
+                DoubleTapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                Tapped += OnTapped;
+                DoubleTapped += OnTapped;
             }
         }
 
-        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void XEditButton_OnTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             var position = e.GetPosition(OverlayCanvas.Instance);
             OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
@@ -333,12 +333,13 @@ namespace Dash
 
         #region Menu
 
-        public void OnTapped(object sender, TappedRoutedEventArgs e)
+        public void OnTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection)
+            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection) {
                 ViewModel.OpenMenu();
-            else
+            } else {
                 ViewModel.CloseMenu();
+            }
             e.Handled = true;
         }
 

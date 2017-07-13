@@ -669,11 +669,19 @@ namespace Dash {
                         stack.Items.Add(b);
                     }
 
+                stack.IsItemClickEnabled = false;
+                stack.CanDragItems = false;
+                stack.CanReorderItems = false;
+                stack.ItemClick += Stack_ItemClick;
                 // format gridview s.t. rows and columns automatically have the largest cell size to fit content
                 foreach (Border b in stack.Items) {
                     b.Height = maxHeight;
                 }
                 return stack;
+            }
+
+            private static void Stack_ItemClick(object sender, ItemClickEventArgs e) {
+                Debug.WriteLine(sender.GetType().ToString());
             }
         }
 
