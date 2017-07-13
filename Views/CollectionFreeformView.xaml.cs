@@ -53,21 +53,22 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
-        private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        {
-            var cvm = DataContext as CollectionViewModel;
-            //(sender as DocumentView).Manipulator.TurnOff();
 
-        }
-        private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var cvm = DataContext as CollectionViewModel;
-            var dv = (sender as DocumentView);
-            var dvm = dv.DataContext as DocumentViewModel;
-            var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-            dvm.Position = where;
-            e.Handled = true;
-        }
+        //private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        //{
+        //    var cvm = DataContext as CollectionViewModel;
+        //    //(sender as DocumentView).Manipulator.TurnOff();
+
+        //}
+        //private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        //{
+        //    //var cvm = DataContext as CollectionViewModel;
+        //    //var dv = (sender as DocumentView);
+        //    //var dvm = dv.DataContext as DocumentViewModel;
+        //    //var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
+        //    //dvm.Position = where;
+        //    //e.Handled = true;
+        //}
 
         public void StartDrag(OperatorView.IOReference ioReference)
         {

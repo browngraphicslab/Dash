@@ -1,4 +1,5 @@
-﻿using Windows.Foundation;
+﻿using System.Diagnostics;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
@@ -33,8 +34,9 @@ namespace Dash {
         public void AddAllAndHandle()
         {
             if (!_disabled) return;
-            _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
             _element.ManipulationDelta -= EmptyManipulationDelta;
+            _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            _disabled = false;
         }
 
         public void RemoveAllButHandle()
@@ -42,6 +44,7 @@ namespace Dash {
             if (_disabled) return;
             _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
             _element.ManipulationDelta += EmptyManipulationDelta;
+            _disabled = true;
         }
 
         // == METHODS ==

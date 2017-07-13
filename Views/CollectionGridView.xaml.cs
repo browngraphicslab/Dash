@@ -32,6 +32,7 @@ namespace Dash
                 Mode = BindingMode.OneWay,
             };
             xGridView.SetBinding(GridView.SelectionModeProperty, selectionBinding);
+
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)

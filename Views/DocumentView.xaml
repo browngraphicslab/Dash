@@ -39,7 +39,6 @@
                 </Grid.Clip>
                 <ContentPresenter Content="{Binding Content}" />
             </Grid>
-
             <!-- Misc. Document Components-->
             <Button x:Name="DraggerButton"
                     x:FieldModifier="public"

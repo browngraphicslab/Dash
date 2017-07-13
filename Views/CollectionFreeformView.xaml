@@ -32,11 +32,11 @@
                 <DataTemplate>
                     <dash:DocumentView
                                     DataContext="{Binding}" 
-                                    ManipulationStarted="DocumentView_ManipulationStarted" 
-                                    ManipulationDelta="DocumentView_ManipulationDelta" 
                                     IODragStarted="StartDrag" 
                                     IODragEnded="EndDrag" 
                                     RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
+                                    <!--ManipulationStarted="DocumentView_ManipulationStarted" 
+                                    ManipulationDelta="DocumentView_ManipulationDelta"--> 
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

@@ -259,7 +259,7 @@ namespace Dash.Views
             {
                 Label = item.Description,
                 FontFamily = new FontFamily("Century Gothic"),
-                IconForegroundBrush = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
+                IconForegroundBrush = (SolidColorBrush)App.Instance.Resources["WindowsBlue"],
                 IconFontFamily = new FontFamily("Segoe UI Symbol"),
                 IconSize = 5,
             };

@@ -75,7 +75,6 @@ namespace Dash
 
         private void SetUpMenu()
         {
-
             var layout = new Action(OpenLayout);
             var copy = new Action(CopyDocument);
             var delete = new Action(DeleteDocument);
@@ -230,23 +229,23 @@ namespace Dash
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
-            ViewModel.PropertyChanged += (o, eventArgs) =>
-            {
-                if (eventArgs.PropertyName == "IsMoveable")
-                {
-                    if (ViewModel.IsMoveable)
-                    {
-                        manipulator.AddAllAndHandle();
-                    }
-                    else
-                    {
-                        manipulator.RemoveAllButHandle();
-                    }
-                }
-            };
+            //ViewModel.PropertyChanged += (o, eventArgs) =>
+            //{
+            //    if (eventArgs.PropertyName == "IsMoveable")
+            //    {
+            //        if (ViewModel.IsMoveable)
+            //        {
+            //            manipulator.AddAllAndHandle();
+            //        }
+            //        else
+            //        {
+            //            manipulator.RemoveAllButHandle();
+            //        }
+            //    }
+            //};
 
-            if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            else manipulator.RemoveAllButHandle();
+            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
+            //else manipulator.RemoveAllButHandle();
 
             #endregion
         }
@@ -300,7 +299,7 @@ namespace Dash
 
         public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection)
+            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
                 ViewModel.OpenMenu();
             else
                 ViewModel.CloseMenu();

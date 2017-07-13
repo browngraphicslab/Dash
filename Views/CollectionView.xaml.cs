@@ -77,7 +77,6 @@ namespace Dash
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();
-
             CanLink = false;
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
@@ -99,7 +98,6 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             ParentDocument.HasCollection = true;
-
             //Temporary graphical hax. to be removed when collectionview menu moved to its document.
             ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
             ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
