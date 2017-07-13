@@ -22,10 +22,10 @@
         </Grid.ColumnDefinitions>
             <Border x:Name="xBorder" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="5,5,-10,-10" />
             <!-- Container for Icon view -->
-            <Grid x:Name="xIcon" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid x:Name="xIcon" Grid.Column="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png" />
             </Grid>
-        <Canvas x:Name="xMenuCanvas" Background="Transparent" />
+        <Canvas x:Name="xMenuCanvas" Grid.Column="0"  />
         <Grid Grid.Column="1">
             <!-- Container for document fields view -->
             <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
