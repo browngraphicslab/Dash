@@ -58,7 +58,7 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var opCont = ContentController.DereferenceToRootFieldModel(DataContext as ReferenceFieldModelController) as OperatorFieldModelController;
+            var opCont = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>();
 
             Binding inputsBinding = new Binding
             {
@@ -81,10 +81,10 @@ namespace Dash
         /// <param name="e"></param>
         void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e) {
 
-            string docId = (DataContext as ReferenceFieldModelController).DocId;
+            string docId = (DataContext as DocumentReferenceController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
                 (view.CurrentView as CollectionFreeformView).CanLink = true;
                 (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
@@ -126,10 +126,10 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e) {
-            string docId = (DataContext as ReferenceFieldModelController).DocId;
+            string docId = (DataContext as DocumentReferenceController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
 
