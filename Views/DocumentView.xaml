@@ -1,4 +1,5 @@
 ﻿<UserControl
+    x:Name="This"
     x:Class="Dash.DocumentView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -10,7 +11,11 @@
     d:DesignWidth="300"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     PointerPressed="UserControl_PointerPressed">
-
+    <UserControl.Resources>
+        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
+            <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
+        </Storyboard>
+    </UserControl.Resources>
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
@@ -20,15 +25,15 @@
             <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" MaxWidth="50"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-            <Border x:Name="xBorder" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="5,5,-10,-10" />
-            <!-- Container for Icon view -->
+        <!-- Container for Icon view -->
             <Grid x:Name="xIcon" Grid.Column="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png" />
             </Grid>
         <Canvas x:Name="xMenuCanvas" Grid.Column="0"  />
         <Grid Grid.Column="1">
+            <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="5,5,-10,-10" />
             <!-- Container for document fields view -->
-            <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
+            <Grid x:Name="XGrid" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>

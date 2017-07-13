@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Media.Animation;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -74,14 +75,16 @@ namespace Dash
 
         private void SetUpMenu()
         {
+
             var layout = new Action(OpenLayout);
             var copy = new Action(CopyDocument);
             var delete = new Action(DeleteDocument);
+            var deleteButton = new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete);
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
                 new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+                deleteButton
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -216,12 +219,10 @@ namespace Dash
             
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                xBorder.Opacity = 0;
             }
             Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
-                xBorder.Opacity = 0;
             }
 
             SetUpMenu();
@@ -308,7 +309,7 @@ namespace Dash
 
         private void DeleteDocument()
         {
-            throw new NotImplementedException();
+            FadeOut.Begin();
         }
 
         private void CopyDocument()
@@ -325,6 +326,11 @@ namespace Dash
 
         private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
 
+        }
+
+        private void FadeOut_Completed(object sender, object e)
+        {
+            ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void OpenLayout()
