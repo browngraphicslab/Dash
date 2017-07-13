@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using System.Collections.Generic;
+using Windows.ApplicationModel;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
@@ -35,19 +36,21 @@ namespace Dash
         {
             public ReferenceFieldModelController ReferenceFieldModelController { get; set; }
             public bool IsOutput { get; set; }
+            public bool IsReference { get; set; }
 
             public PointerRoutedEventArgs PointerArgs { get; set; }
 
             public FrameworkElement FrameworkElement { get; set; }
             public DocumentView ContainerView { get; set; }
 
-            public IOReference(ReferenceFieldModelController referenceFieldModelController, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+            public IOReference(ReferenceFieldModelController referenceFieldModelController, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container, bool isReference = false)
             {
                 ReferenceFieldModelController = referenceFieldModelController;
                 IsOutput = isOutput;
                 PointerArgs = args;
                 FrameworkElement = e;
                 ContainerView = container;
+                IsReference = isReference;
             }
         }
 
@@ -79,12 +82,12 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e) {
+        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput) {
 
             string docId = (DataContext as DocumentReferenceController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), !isOutput);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
                 (view.CurrentView as CollectionFreeformView).CanLink = true;
                 (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
@@ -94,12 +97,12 @@ namespace Dash
 
         private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e);
+            holdPointerOnEllipse(sender, e, false);
         }
         
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e);
+            holdPointerOnEllipse(sender, e, true);
         }
 
         /// <summary>
@@ -125,11 +128,11 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e) {
+        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput) {
             string docId = (DataContext as DocumentReferenceController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), !isOutput);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
 
@@ -137,12 +140,12 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e);
+            releasePointerOnEllipse(sender, e, false);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e);
+            releasePointerOnEllipse(sender, e, true);
         }
 
         /// <summary>

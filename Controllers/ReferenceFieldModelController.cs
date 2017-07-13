@@ -12,9 +12,9 @@ namespace Dash
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
-
-            //if (fmc != null)
-                //fmc.FieldModelUpdated += Fmc_FieldModelUpdatedEvent;
+            var fmc = DereferenceToRoot();
+            if (fmc != null)
+                fmc.FieldModelUpdated += sender => FireFieldModelUpdated();
         }
 
         public Key FieldKey
@@ -39,7 +39,7 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context = null);
 
-        public override FieldModelController Dereference(Context context = null)
+        public sealed override FieldModelController Dereference(Context context = null)
         {
             if (context != null)
             {
@@ -51,7 +51,7 @@ namespace Dash
             return GetDocumentController(context).GetField(FieldKey);
         }
 
-        public override FieldModelController DereferenceToRoot(Context context = null)
+        public sealed override FieldModelController DereferenceToRoot(Context context = null)
         {
             FieldModelController reference = this;
             while (reference is ReferenceFieldModelController)
@@ -61,9 +61,21 @@ namespace Dash
             return reference;
         }
 
-        public override T DereferenceToRoot<T>(Context context = null)
+        public sealed override T DereferenceToRoot<T>(Context context = null)
         {
             return DereferenceToRoot(context) as T;
+        }
+
+        public override ReferenceFieldModelController InputReference
+        {
+            get { return FieldModel.InputReference; }
+            set
+            {
+                if (SetProperty(ref FieldModel.InputReference, value))
+                {
+                    
+                }
+            }
         }
 
         public override FrameworkElement GetTableCellView()

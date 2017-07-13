@@ -162,24 +162,24 @@ namespace Dash
             string inId;
             if (_currReference.IsOutput)
             {
-                outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
-                inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
             }
             else
             {
-                outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
-                inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
             }
-            CollectionView.Graph.AddEdge(outId, inId);
+            //CollectionView.Graph.AddEdge(outId, inId);
             if (CollectionView.Graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    CollectionView.Graph.RemoveEdge(outId, inId);
+              //      CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 else
                 {
-                    CollectionView.Graph.RemoveEdge(outId, inId);
+                //    CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
@@ -193,20 +193,27 @@ namespace Dash
 
             if (ioReference.IsOutput)
             {
+                if (_currReference.IsReference)
+                {
+                    _currReference.ReferenceFieldModelController.GetDocumentController(context).SetField(_currReference.ReferenceFieldModelController.FieldKey, ioReference.ReferenceFieldModelController, true);
+                }
                 _currReference.ReferenceFieldModelController.GetDocumentController(context)
                     .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
                         ioReference.ReferenceFieldModelController);
             }
             else
             {
-                var contextList = (DataContext as CollectionViewModel).DocumentContext;
+                if (ioReference.IsReference)
+                {
+                    ioReference.ReferenceFieldModelController.GetDocumentController(context).SetField(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController, true);
+                }
                 //var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
                 try
                 {
                     //ContentController.GetController<DocumentController>(refDocId)
                     ioReference.ReferenceFieldModelController.GetDocumentController(context)//TODO Use context here
                         .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
-                            contextList);
+                            context);
                 }
                 catch (ArgumentException)
                 {

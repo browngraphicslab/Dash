@@ -9,19 +9,25 @@ namespace Dash
 {
     public class Context
     {
-        private readonly List<DocumentController> _documentContextList;
+        private readonly HashSet<DocumentController> _documentContextList;
 
         private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
 
         public Context()
         {
-            _documentContextList = new List<DocumentController>();
+            _documentContextList = new HashSet<DocumentController>();
+            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+        }
+
+        public Context(DocumentController initialContext)
+        {
+            _documentContextList = new HashSet<DocumentController>{initialContext};
             _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
         }
 
         public Context(Context copyFrom)
         {
-            _documentContextList = new List<DocumentController>(copyFrom._documentContextList);
+            _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
             _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
         }
 

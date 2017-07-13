@@ -27,7 +27,7 @@ namespace Dash
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ReferenceFieldModelController InputReference
+        public virtual ReferenceFieldModelController InputReference
         {
             get { return FieldModel.InputReference; }
             set

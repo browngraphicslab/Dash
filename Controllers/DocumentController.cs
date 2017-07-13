@@ -23,14 +23,16 @@ namespace Dash
             public readonly FieldModelController OldValue;
             public readonly FieldModelController NewValue;
             public readonly ReferenceFieldModelController Reference;
+            public readonly Context Context;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, ReferenceFieldModelController reference)
+                FieldUpdatedAction action, ReferenceFieldModelController reference, Context context)
             {
                 Action = action;
                 OldValue = oldValue;
                 NewValue = newValue;
                 Reference = reference;
+                Context = context;
             }
         }
 
@@ -172,10 +174,10 @@ namespace Dash
 
             FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             ReferenceFieldModelController reference = new DocumentReferenceController(GetId(), key);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference));
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference, new Context(this)));
             field.FieldModelUpdated += delegate (FieldModelController sender)
             {
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference));
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, new Context(this)));
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -275,10 +277,10 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
-            //reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
-            reference.Context = context;
+            reference.Context = context;//bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             var field = GetField(fieldKey);
-            var refField = GetDereferencedField(reference, context);
+            var dereferencedField = field.DereferenceToRoot(context);
+            var refField = reference.DereferenceToRoot(context);
             DocumentController controller = reference.GetDocumentController();
             //if (field == null)
             //{
@@ -304,9 +306,9 @@ namespace Dash
             //}
             //else
             //{
-            if (!field.CheckType(refField))
+            if (!dereferencedField.CheckType(refField))
             {
-                Debug.Assert(!refField.CheckType(field));
+                Debug.Assert(!refField.CheckType(dereferencedField));//Make sure check field is commutative
                 throw new ArgumentException("Invalid types");
             }
             //}
@@ -315,10 +317,10 @@ namespace Dash
             {
                 if (args.Reference.FieldKey.Equals(reference.FieldKey))
                 {
-                    Execute();
+                    Execute(args.Context);
                 }
             };
-            Execute();
+            Execute(context);
         }
 
         public static FieldModelController GetDereferencedField(FieldModelController fieldModelController, Context context)
@@ -333,6 +335,7 @@ namespace Dash
 
         private void Execute(Context context = null)
         {
+            context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
@@ -340,16 +343,27 @@ namespace Dash
             }
             try
             {
-                opField.Execute(this, context);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
+                Dictionary<Key, FieldModelController> inputs = new Dictionary<Key, FieldModelController>(opField.Inputs.Count);
+                Dictionary<Key, FieldModelController> outputs = new Dictionary<Key, FieldModelController>(opField.Outputs.Count);
+                foreach (var opFieldInput in opField.Inputs.Keys)
+                {
+                    var field = GetField(opFieldInput, context);
+                    if (field != null)
+                    {
+                        inputs[opFieldInput] = field.DereferenceToRoot(context);
+                    }
+                }
+                opField.Execute(inputs, outputs);
+                foreach (var fieldModel in outputs)
+                {
+                    SetField(fieldModel.Key, fieldModel.Value, true);
+                    context.AddData(new DocumentReferenceController(GetId(), fieldModel.Key), fieldModel.Value);
+                }
             }
             catch (KeyNotFoundException e)
             {
                 return;
             }
-            //foreach (var fieldModel in results)
-            //{
-            //    SetField(fieldModel.Key, fieldModel.Value);
-            //}
         }
 
         public IEnumerable<KeyValuePair<Key, FieldModelController>> PropFields => EnumFields();

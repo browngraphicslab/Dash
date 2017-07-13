@@ -149,8 +149,8 @@ namespace Dash
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
-                                    orfm.DereferenceToRoot().GetId());
+                                //Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
+                                //    orfm.DereferenceToRoot().GetId());
                             }
                         }
                     }

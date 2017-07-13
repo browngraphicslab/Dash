@@ -25,7 +25,7 @@ namespace Dash
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void Execute(DocumentController doc, Context context)
+        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             throw new NotImplementedException();
 
