@@ -47,7 +47,7 @@ namespace Dash
         }
 
 
-        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context)
+        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context=null)
         {
             return doc.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }

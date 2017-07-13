@@ -231,17 +231,17 @@ namespace Dash {
             // the active layout for the doc that was passed in
             public DocumentController ActiveLayoutDocController = null;
 
-            public LayoutCourtesyDocument(DocumentController docController, Context context) {
+            public LayoutCourtesyDocument(DocumentController docController) {
                 Document = docController;      
 
-                var activeLayout = Document.GetActiveLayout(context);
+                var activeLayout = Document.GetActiveLayout();
                 ActiveLayoutDocController = activeLayout == null ? InstantiateActiveLayout(Document) : activeLayout.Data;
             }
 
-            public IEnumerable<DocumentController> GetLayoutDocuments(Context context)
+            public IEnumerable<DocumentController> GetLayoutDocuments()
             {
                 var layoutDataField =
-                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey);
 
                 if (layoutDataField is DocumentCollectionFieldModelController) // layout data is a collection of documents each referencing some field
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
@@ -251,14 +251,12 @@ namespace Dash {
                 else yield return ActiveLayoutDocController; // TODO why would the layout be any other type of field model controller
             }
 
-            public override FrameworkElement makeView(DocumentController docController,
-                Context context) {
-                return LayoutCourtesyDocument.MakeView(docController, context);
+            public override FrameworkElement makeView(DocumentController docController, Context context) {
+                return MakeView(docController);
             }
 
-            public static FrameworkElement MakeView(DocumentController docController,
-                Context context) {
-                var docViewModel = new DocumentViewModel(docController, context) {
+            public static FrameworkElement MakeView(DocumentController docController) {
+                var docViewModel = new DocumentViewModel(docController) {
                     IsDetailedUserInterfaceVisible = false,
                     IsMoveable = false
                 };
@@ -693,7 +691,7 @@ namespace Dash {
                     foreach (var stackDoc in stackFieldData.GetDocuments()) {
 
                         Border b = new Border();
-                        FrameworkElement item = stackDoc.makeViewUI(context);
+                        FrameworkElement item = stackDoc.MakeViewUI(context);
                         b.Child = item;
                         maxHeight = Math.Max(maxHeight, item.Height);
                         stack.Items.Add(b);

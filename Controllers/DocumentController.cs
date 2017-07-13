@@ -339,8 +339,10 @@ namespace Dash
             Execute();
         }
 
-        public FieldModelController GetDereferencedField(Key key, Context context)
+        public FieldModelController GetDereferencedField(Key key, Context context = null)
         {
+            context = context ?? new Context();
+            context.AddDocumentContext(this);
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
         }
@@ -411,7 +413,7 @@ namespace Dash
 
                     hstack.Children.Add(label);
 
-                    var ele = dBox.makeViewUI(context);
+                    var ele = dBox.MakeViewUI(context);
 
                     ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
@@ -439,16 +441,10 @@ namespace Dash
         }
 
 
-        public FrameworkElement MakeViewUI()
+        public FrameworkElement MakeViewUI(Context context = null)
         {
-            return makeViewUI(new Context());
-        }
-
-        public FrameworkElement makeViewUI(Context context = null)
-        {
-            context = context == null ? new Context() : context;
+            context = context ?? new Context();
             context.AddDocumentContext(this);
-            var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
             {
@@ -482,7 +478,7 @@ namespace Dash
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
                 Debug.Assert(doc != null);
-                return doc.Data.makeViewUI(context);
+                return doc.Data.MakeViewUI(context);
             }
 
             return makeAllViewUI(context);
