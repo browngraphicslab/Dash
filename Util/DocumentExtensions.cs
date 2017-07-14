@@ -1,10 +1,5 @@
-﻿using System;
+﻿using DashShared;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DashShared;
 
 namespace Dash
 {
@@ -26,14 +21,31 @@ namespace Dash
 
         private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context = null)
         {
+            context = Context.SafeInitAndAddDocument(context, doc);
             var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey, context) as DocumentCollectionFieldModelController;
-            // if the layout list is null create it on the deepest prototype
+            
             if (layoutList == null)
             {
-                layoutList = new DocumentCollectionFieldModelController(new List<DocumentController>());
-                doc.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, false);
+                layoutList = InitializeLayoutList();
+                var deepestPrototype = doc.GetDeepestPrototype(); // layout list has to be treated like a global field for each document hierarchy
+                deepestPrototype.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, false);
             }
             return layoutList;
+        }
+
+        private static DocumentCollectionFieldModelController InitializeLayoutList()
+        {
+            return new DocumentCollectionFieldModelController(new List<DocumentController>());
+        }
+
+        private static DocumentController GetDeepestPrototype(this DocumentController doc)
+        {
+            DocumentController nextPrototype;
+            while ((nextPrototype = doc.GetPrototype()) != null)
+            {
+                doc = nextPrototype;
+            }
+            return doc;
         }
 
 
@@ -49,6 +61,7 @@ namespace Dash
 
         public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context=null)
         {
+            context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
         }
     }

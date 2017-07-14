@@ -9,19 +9,19 @@ namespace Dash
 {
     public class Context
     {
-        private readonly List<DocumentController> _documentContextList;
+        private readonly HashSet<DocumentController> _documentContextList;
 
         private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
 
         public Context()
         {
-            _documentContextList = new List<DocumentController>();
+            _documentContextList = new HashSet<DocumentController>();
             _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
         }
 
         public Context(Context copyFrom)
         {
-            _documentContextList = new List<DocumentController>(copyFrom._documentContextList);
+            _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
             _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
         }
 
@@ -57,6 +57,18 @@ namespace Dash
         public void PrintContextList()
         {
             Debug.WriteLine(string.Join(", ",_documentContextList.Select(dc => dc.GetId())));
+        }
+
+        public static Context SafeInit(Context context)
+        {
+            return context ?? new Context();
+        }
+
+        public static Context SafeInitAndAddDocument(Context context, DocumentController doc)
+        {
+            context = context ?? new Context();
+            context.AddDocumentContext(doc);
+            return context;
         }
     }
 }

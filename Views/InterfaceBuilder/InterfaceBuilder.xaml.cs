@@ -32,25 +32,21 @@ namespace Dash
 
         private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
 
-        private DocumentController _documentController;
 
-        public InterfaceBuilder(DocumentViewModel viewModel, int width = 800, int height = 500)
+        public InterfaceBuilder(DocumentController docController, int width = 800, int height = 500)
         {
             this.InitializeComponent();
             Width = width;
             Height = height;
 
-            _layoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController);
+            _layoutCourtesyDocument = new LayoutCourtesyDocument(docController);
 
             _documentView =
                 LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document) as DocumentView;
 
-
-            _documentController = viewModel.DocumentController;
-
             xDocumentHolder.Child = _documentView;
 
-            xKeyValuePane.SetDataContextToDocumentController(_documentController);
+            xKeyValuePane.SetDataContextToDocumentController(_layoutCourtesyDocument.Document);
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.Drop += DocumentViewOnDrop;
@@ -110,7 +106,7 @@ namespace Dash
                     Mode = BindingMode.TwoWay
                 };
                 editableBorder.SetBinding(HeightProperty, heightBinding);
-
+                  
                 if (layoutDocument.GetId() != _layoutCourtesyDocument.Document.GetId())
                 {
                     // when the editable border is loaded bind it's translation to the layout's translation
@@ -182,36 +178,38 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
+            var docController = _layoutCourtesyDocument.Document;
+
             var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
-            var fieldModelController = _documentController.GetDereferencedField(key);
+            var fieldModelController = docController.GetDereferencedField(key);
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-                var textFieldModelController = _documentController.GetDereferencedField(key) as TextFieldModelController;
-               if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetDereferencedField(key) == null)
+                var textFieldModelController = docController.GetDereferencedField(key) as TextFieldModelController;
+               if (docController.GetPrototype() != null && docController.GetPrototype().GetDereferencedField(key) == null)
                 {
-                    _documentController.GetPrototype().SetField(key, _documentController.GetDereferencedField(key), false);
+                    docController.GetPrototype().SetField(key, docController.GetDereferencedField(key), false);
                 }
 
-                var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+                var layoutDoc = (docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
 
-                if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
-                    layoutDoc = _documentController;
+                if (layoutDoc == null || !docController.IsDelegateOf(layoutDoc.GetId()))
+                    layoutDoc = docController;
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
                       box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDoc.GetId(), key));
                 else  box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDoc.GetId(), key));
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(_documentController.GetId(), key));
+                box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(docController.GetId(), key));
             }
             else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                box = new CourtesyDocuments.CollectionBox(new DocumentReferenceController(_documentController.GetId(), key));
+                box = new CourtesyDocuments.CollectionBox(new DocumentReferenceController(docController.GetId(), key));
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(_documentController.GetId(), key));
+                box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(docController.GetId(), key));
             } else if (fieldModelController is DocumentFieldModelController)
             {
                 box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data);

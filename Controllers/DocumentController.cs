@@ -156,6 +156,8 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
+            
+
             // if the field contained a DocumentFieldModelController return it's data, otherwise return null
             return documentFieldModelController?.Data;
         }
@@ -206,6 +208,7 @@ namespace Dash
         /// <returns></returns>
         public FieldModelController GetField(Key key, Context context = null)
         {
+            context = Context.SafeInitAndAddDocument(context, this);
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
 
@@ -341,8 +344,7 @@ namespace Dash
 
         public FieldModelController GetDereferencedField(Key key, Context context = null)
         {
-            context = context ?? new Context();
-            context.AddDocumentContext(this);
+            context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
         }

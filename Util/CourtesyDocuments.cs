@@ -268,7 +268,7 @@ namespace Dash {
             {
                 // instantiate default fields
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
-                var newLayout = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormLayout);
+                var newLayout = new DocumentController(fields, DashConstants.DocumentTypeStore.DynamicInterfaceLayout);
                 // since this is the first view of the document, set the prototype active layout to the new layout
                 doc.SetActiveLayout(newLayout, false);
                 return newLayout;
