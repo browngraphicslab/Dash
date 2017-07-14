@@ -154,14 +154,15 @@ namespace Dash
         public DocumentViewModel() { }
 
 
-        public DocumentViewModel(DocumentController documentController)
+        public DocumentViewModel(DocumentController documentController, Context context = null)
         {
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
 
 
-            var c = new Context(DocumentController);
+            var c = context == null ? new Context() : new Context(context);
+            c.AddDocumentContext(DocumentController);
             // FIELD FETCHERS
             // overrides defaults with document fields if layout-relevant fields are set
             var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, c) as DocumentFieldModelController)?.Data;
@@ -210,14 +211,15 @@ namespace Dash
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.MakeViewUI(new Context(DocumentController));
+            Content = documentController.MakeViewUI(c);
 
             documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
-
-                    Content = DocumentController.MakeViewUI(new Context(DocumentController));
+                    Context c2 = new Context(context);
+                    c2.AddDocumentContext(DocumentController);
+                    Content = DocumentController.MakeViewUI(c2);
                 }
             };
 

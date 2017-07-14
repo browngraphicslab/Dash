@@ -23,11 +23,11 @@ namespace Dash
             public readonly FieldUpdatedAction Action;
             public readonly FieldModelController OldValue;
             public readonly FieldModelController NewValue;
-            public readonly ReferenceFieldModelController Reference;
+            public readonly DocumentReferenceController Reference;
             public readonly Context Context;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, ReferenceFieldModelController reference, Context context)
+                FieldUpdatedAction action, DocumentReferenceController reference, Context context)
             {
                 Action = action;
                 OldValue = oldValue;
@@ -40,8 +40,7 @@ namespace Dash
         public delegate void OnDocumentFieldUpdatedHandler(DocumentFieldUpdatedEventArgs args);
 
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
-
-        public ObservableCollection<DocumentController> DocContextList;
+        public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
 
         /// <summary>
@@ -188,7 +187,7 @@ namespace Dash
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
             FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            ReferenceFieldModelController reference = new DocumentReferenceController(GetId(), key);
+            DocumentReferenceController reference = new DocumentReferenceController(GetId(), key);
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference, new Context(this)));
             field.FieldModelUpdated += delegate (FieldModelController sender)
             {
@@ -241,6 +240,8 @@ namespace Dash
         {
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
+            delegateController.DocumentFieldUpdated += delegate(DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(args); };
+            PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = new DocumentFieldModelController(this);
@@ -252,6 +253,18 @@ namespace Dash
 
             // return the now fully populated delegate
             return delegateController;
+        }
+
+        private void OnPrototypeDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
+        {
+            if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
+            {
+                return;
+            }
+            Context c = new Context(args.Context);
+            c.AddDocumentContext(this);
+            DocumentReferenceController reference = new DocumentReferenceController(GetId(), args.Reference.FieldKey);
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, args.Action, reference, c));
         }
 
 
@@ -283,7 +296,7 @@ namespace Dash
             {
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
-                _fields[DashConstants.KeyStore.DelegatesKey] = currentDelegates;
+                SetField(DashConstants.KeyStore.DelegatesKey, currentDelegates, true);
             }
 
             return currentDelegates;
@@ -298,6 +311,9 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
+            Debug.WriteLine($"adding reference to {GetId()}");
+            Debug.WriteLine($"reference w/o context is {reference.GetDocumentController(null).GetId()}");
+            Debug.WriteLine($"reference is {reference.GetDocumentController(context).GetId()}");
             reference.Context = context;//bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
             var field = GetField(fieldKey, context);
             var dereferencedField = field.DereferenceToRoot(context);
@@ -478,6 +494,7 @@ namespace Dash
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
             DocumentFieldUpdated?.Invoke(args);
+            PrototypeFieldUpdated?.Invoke(args);
         }
     }
 }

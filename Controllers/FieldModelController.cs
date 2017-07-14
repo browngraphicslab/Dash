@@ -43,7 +43,7 @@ namespace Dash
                     {
                         if (args.Reference.FieldKey.Equals(value.FieldKey))
                         {
-                            UpdateValue(args.NewValue);
+                            UpdateValue(args.Reference.DereferenceToRoot(args.Context));
                         }
                     };
                     UpdateValue(value.DereferenceToRoot(value.Context));

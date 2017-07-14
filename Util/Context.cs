@@ -27,8 +27,16 @@ namespace Dash
 
         public Context(Context copyFrom)
         {
-            _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
-            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
+            if (copyFrom == null)
+            {
+                _documentContextList = new HashSet<DocumentController>();
+                _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+            }
+            else
+            {
+                _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
+                _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
+            }
         }
 
         public void AddDocumentContext(DocumentController document)

@@ -69,12 +69,12 @@ namespace Dash
         /// </summary>
         public double CellSize { get; set; }
 
-        public CollectionViewModel(DocumentCollectionFieldModelController collection)
+        public CollectionViewModel(DocumentCollectionFieldModelController collection, Context context = null)
         {
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            UpdateViewModels(_collectionFieldModelController);
+            UpdateViewModels(_collectionFieldModelController, context);
             collection.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
             CellSize = 250;
         }
@@ -156,14 +156,15 @@ namespace Dash
             return false;
         }
 
-        public void UpdateViewModels(DocumentCollectionFieldModelController documents)
+        public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context = null)
         {
             var offset = 0;
             foreach (var docController in documents.GetDocuments())
             {
                 if (ViewModelContains(DataBindingSource, docController)) continue;
-
-                var viewModel = new DocumentViewModel(docController);
+                Context c = context == null ? new Context() : new Context(context);
+                c.AddDocumentContext(docController);
+                var viewModel = new DocumentViewModel(docController, c);
 
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(docController))
                 {

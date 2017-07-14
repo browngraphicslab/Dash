@@ -649,7 +649,7 @@ namespace Dash {
                         .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                     Debug.Assert(collectionFieldModelController != null);
 
-                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
+                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
 
                     var view = new CollectionView(collectionViewModel);
                     view.Opacity = opacityValue;
