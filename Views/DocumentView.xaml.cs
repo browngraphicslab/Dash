@@ -7,22 +7,14 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using DashShared;
-using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
-using System.Collections.ObjectModel;
-using Newtonsoft.Json;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using System.Linq;
-using Windows.Graphics.Imaging;
-using Windows.Storage.Streams;
-using System.IO;
-using System.Runtime.InteropServices.WindowsRuntime;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -81,6 +73,16 @@ namespace Dash
             DoubleTapped += OnDoubleTapped;
         }
 
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(OuterGrid); 
+        }
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
+        }
+
         private void SetUpMenu()
         {
             var layout = new Action(OpenLayout);
@@ -90,7 +92,9 @@ namespace Dash
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
                 new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete)
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete),
+                new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, new Action(ScreenCap)),
+                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, new Action(GetJson))
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -398,181 +402,15 @@ namespace Dash
             */
 
             //test exporting as json 
-            Task<StorageFile> jsonFileTask = ExportAsJson();
+            //Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
 
             //test exporting as image 
-            //ExportAsImage(); 
-            
+            //Util.ExportAsImage(OuterGrid);
+
             //test sending email 
-            //TODO this is weird bc it requires that default app is the Mail thingy and if you choose anything else you're fucked 
-            //SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
+            //Util.SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
 
             e.Handled = true;
-        }
-
-        /// <summary>
-        /// Helper method that creates Contact instance with parameters 
-        /// </summary>
-        private Windows.ApplicationModel.Contacts.Contact makeContact(string emailAddress)
-        {
-            var contact = new Windows.ApplicationModel.Contacts.Contact();
-            var email = new Windows.ApplicationModel.Contacts.ContactEmail
-            {
-                Address = emailAddress, Kind = Windows.ApplicationModel.Contacts.ContactEmailKind.Personal 
-            };
-            contact.Emails.Add(email); 
-            return contact; 
-        }
-
-        /// <summary>
-        /// Method that launches the Windows mail store app, shows the dialogue with selected attachment file, message body and subject 
-        /// </summary>
-        private async void SendEmail(string recipientAddress, string message, string subject)
-        {
-            Windows.ApplicationModel.Contacts.Contact recipient = makeContact(recipientAddress);
-
-            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage
-            {
-                Body = message, Subject = subject 
-            };
-
-            FileOpenPicker picker = new FileOpenPicker();
-            picker.FileTypeFilter.Add("*");
-            StorageFile attachmentFile = await picker.PickSingleFileAsync(); 
-            if (attachmentFile != null)
-            {
-                var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile); 
-                var attachment = new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream);
-                emailMessage.Attachments.Add(attachment); 
-            }
-
-            var email = recipient.Emails.FirstOrDefault(); 
-            if (email != null)
-            {
-                var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
-                emailMessage.To.Add(emailRecipient);
-            }
-            
-            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
-        }
-
-        /// <summary>
-        /// Saves the document view as .png in a specified directory 
-        /// </summary>
-        private async void ExportAsImage()
-        {
-            RenderTargetBitmap bitmap = new RenderTargetBitmap();
-            await bitmap.RenderAsync(OuterGrid);
-
-            FolderPicker picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
-            StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
-
-            StorageFile file = null;
-            if (folder != null)
-            {
-                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
-
-                var pixels = await bitmap.GetPixelsAsync();
-                byte[] byteArray = pixels.ToArray();
-
-                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
-                {
-                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
-
-                    var displayInformation = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
-
-                    encoder.SetPixelData(
-                            BitmapPixelFormat.Bgra8,
-                            BitmapAlphaMode.Ignore,
-                            (uint)bitmap.PixelWidth,
-                            (uint)bitmap.PixelHeight,
-                            displayInformation.LogicalDpi,
-                            displayInformation.LogicalDpi,
-                            pixels.ToArray());
-
-                    await encoder.FlushAsync();
-                }
-            }
-        }
-        
-
-        /// <summary>
-        /// Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController 
-        /// If there is a nested collection, nests the json recursively 
-        /// </summary>
-        /// <returns></returns>
-        private Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
-        {
-            Dictionary<string, object> jsonDict = new Dictionary<string, object>();
-            foreach (KeyValuePair<Key, FieldModelController> pair in fields)
-            {
-                object data = null;
-                if (pair.Value is TextFieldModelController)
-                {
-                    TextFieldModelController cont = pair.Value as TextFieldModelController;
-                    data = cont.Data;
-                }
-                else if (pair.Value is NumberFieldModelController)
-                {
-                    NumberFieldModelController cont = pair.Value as NumberFieldModelController;
-                    data = cont.Data;
-                }
-                else if (pair.Value is ImageFieldModelController)
-                {
-                    ImageFieldModelController cont = pair.Value as ImageFieldModelController;
-                    data = cont.Data.UriSource.AbsoluteUri; 
-                }
-                else if (pair.Value is PointFieldModelController)
-                {
-                    PointFieldModelController cont = pair.Value as PointFieldModelController;
-                    data = cont.Data;
-                } 
-                // TODO refactor the CollectionKey here into DashConstants
-                else if (pair.Key == DocumentCollectionFieldModelController.CollectionKey)
-                {
-                    var collectionList = new List<Dictionary<string, object>>(); 
-                    DocumentCollectionFieldModelController collectionCont = pair.Value as DocumentCollectionFieldModelController;
-                    foreach (DocumentController cont in collectionCont.GetDocuments())
-                    {
-                        collectionList.Add(JsonSerializeHelper(cont.EnumFields()));
-                    }
-                    jsonDict[pair.Key.Name] = collectionList;
-                    continue;  
-                }
-                else
-                {
-                    // TODO throw this at some point 
-                    //throw new NotImplementedException(); 
-                }
-                jsonDict[pair.Key.Name] = data;
-            }
-            return jsonDict; 
-        }
-
-        /// <summary>
-        /// Exports the document's key to field as json object and saves it locally as .txt 
-        /// </summary>
-        private async Task<StorageFile> ExportAsJson()
-        {
-            Dictionary<string, object> jsonDict = JsonSerializeHelper(ViewModel.DocumentController.EnumFields());
-            string json = JsonConvert.SerializeObject(jsonDict);
-
-            FolderPicker picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
-            StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
-
-            StorageFile file = null; 
-            if (folder != null)
-            {
-            file = await folder.CreateFileAsync("sample.json", CreationCollisionOption.ReplaceExisting);
-            await FileIO.WriteTextAsync(file, json);
-            }
-            return file; 
         }
 
         private void OpenLayout()

@@ -7,14 +7,18 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media;
 using DashShared;
+using Newtonsoft.Json;
+using Windows.Storage.Pickers;
+using Windows.Storage;
+using Windows.UI.Xaml.Media.Imaging;
+using System.Runtime.InteropServices.WindowsRuntime;
+using Windows.Graphics.Imaging;
 
 namespace Dash
 {
     // TODO: name this to something more descriptive
     public static class Util
     {
-        
-
 
         /// <summary>
         /// Transforms point p to relative point in Window.Current.Content 
@@ -103,16 +107,198 @@ namespace Dash
                                     equal = false;
                                     break;
                                 }
-                            } else
+                            }
+                            else
                             {
-                                throw new NotImplementedException(); 
+                                throw new NotImplementedException();
                             }
                         }
                     }
                     if (equal) result.Add(contB);
                 }
             }
-            return result; 
+            return result;
+        }
+
+
+        /// <summary>
+        /// Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController 
+        /// If there is a nested collection, nests the json recursively 
+        /// </summary>
+        /// <returns></returns>
+        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
+        {
+            Dictionary<string, object> jsonDict = new Dictionary<string, object>();
+            foreach (KeyValuePair<Key, FieldModelController> pair in fields)
+            {
+                object data = null;
+                if (pair.Value is TextFieldModelController)
+                {
+                    TextFieldModelController cont = pair.Value as TextFieldModelController;
+                    data = cont.Data;
+                }
+                else if (pair.Value is NumberFieldModelController)
+                {
+                    NumberFieldModelController cont = pair.Value as NumberFieldModelController;
+                    data = cont.Data;
+                }
+                else if (pair.Value is ImageFieldModelController)
+                {
+                    ImageFieldModelController cont = pair.Value as ImageFieldModelController;
+                    data = cont.Data.UriSource.AbsoluteUri;
+                }
+                else if (pair.Value is PointFieldModelController)
+                {
+                    PointFieldModelController cont = pair.Value as PointFieldModelController;
+                    data = cont.Data;
+                }
+                // TODO refactor the CollectionKey here into DashConstants
+                else if (pair.Key == DocumentCollectionFieldModelController.CollectionKey)
+                {
+                    var collectionList = new List<Dictionary<string, object>>();
+                    DocumentCollectionFieldModelController collectionCont = pair.Value as DocumentCollectionFieldModelController;
+                    foreach (DocumentController cont in collectionCont.GetDocuments())
+                    {
+                        collectionList.Add(JsonSerializeHelper(cont.EnumFields()));
+                    }
+                    jsonDict[pair.Key.Name] = collectionList;
+                    continue;
+                }
+                else
+                {
+                    // TODO throw this at some point 
+                    data = "";
+                }
+                jsonDict[pair.Key.Name] = data;
+            }
+            return jsonDict;
+        }
+
+        /// <summary>
+        /// Exports the document's key to field as json object and saves it locally as .txt 
+        /// </summary>
+        public static async void ExportAsJson(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
+        {
+            Dictionary<string, object> jsonDict = JsonSerializeHelper(fields);
+            string json = JsonConvert.SerializeObject(jsonDict);
+
+            FolderPicker picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            StorageFile file = null;
+            if (folder != null)
+            {
+                file = await folder.CreateFileAsync("sample.json", CreationCollisionOption.ReplaceExisting);
+                await FileIO.WriteTextAsync(file, json);
+            }
+        }
+
+        public static async void ExportAsJson(List<DocumentController> docContextList)
+        {
+            List<Dictionary<string, object>> controllerList = new List<Dictionary<string, object>>();
+            foreach (DocumentController cont in docContextList)
+            {
+                controllerList.Add(JsonSerializeHelper(cont.EnumFields()));
+            }
+            string json = JsonConvert.SerializeObject(controllerList);
+
+            FolderPicker picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            StorageFile file = null;
+            if (folder != null)
+            {
+                file = await folder.CreateFileAsync("sample.json", CreationCollisionOption.ReplaceExisting);
+                await FileIO.WriteTextAsync(file, json);
+            }
+        }
+
+        /// <summary>
+        /// Saves everything within given UIelement as .png in a specified directory 
+        /// </summary>
+        public static async void ExportAsImage(UIElement element)
+        {
+            RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            await bitmap.RenderAsync(element);
+
+            FolderPicker picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            StorageFile file = null;
+            if (folder != null)
+            {
+                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
+
+                var pixels = await bitmap.GetPixelsAsync();
+                byte[] byteArray = pixels.ToArray();
+
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
+
+                    var displayInformation = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
+
+                    encoder.SetPixelData(
+                            BitmapPixelFormat.Bgra8,
+                            BitmapAlphaMode.Ignore,
+                            (uint)bitmap.PixelWidth,
+                            (uint)bitmap.PixelHeight,
+                            displayInformation.RawDpiX,
+                            displayInformation.RawDpiY,
+                            pixels.ToArray());
+
+                    await encoder.FlushAsync();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Method that launches the Windows mail store app, shows the dialogue with selected attachment file, message body and subject 
+        /// </summary>
+        ///             //TODO this is weird bc it requires that default app is the mail store app and if you choose anything else then it doesn't work 
+        public static async void SendEmail()
+        {
+            // TODO remove these hardcoded things idk if we even need this but maybe we do in the future  
+            string recipientAddress = "help@brown.edu";
+            string subject = "send help";
+            string message = "brown cit 4th floor graphics lab";
+
+            var email = new Windows.ApplicationModel.Contacts.ContactEmail
+            {
+                Address = recipientAddress,
+                Kind = Windows.ApplicationModel.Contacts.ContactEmailKind.Personal
+            };
+
+            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage
+            {
+                Body = message,
+                Subject = subject
+            };
+
+            FileOpenPicker picker = new FileOpenPicker();
+            picker.FileTypeFilter.Add("*");
+            StorageFile attachmentFile = await picker.PickSingleFileAsync();
+            if (attachmentFile != null)
+            {
+                var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile);
+                var attachment = new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream);
+                emailMessage.Attachments.Add(attachment);
+            }
+
+            var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
+            emailMessage.To.Add(emailRecipient);
+
+
+            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
     }
 }

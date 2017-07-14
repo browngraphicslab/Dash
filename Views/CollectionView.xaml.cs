@@ -726,6 +726,7 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
+
             var collectionButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
@@ -734,8 +735,11 @@ namespace Dash
                 },
                 new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
                 new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
-                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform)
+                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
+                new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
+                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
             };
+
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
@@ -744,7 +748,7 @@ namespace Dash
                 },
                 new MenuButton(Symbol.Edit, "Interface", Colors.SteelBlue, null),
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
-                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
+                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection),
             };
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
@@ -754,6 +758,15 @@ namespace Dash
 
 
         #endregion
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocContextList); 
+        }
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(xOuterGrid); 
+        }
 
         #region Collection Activation
 

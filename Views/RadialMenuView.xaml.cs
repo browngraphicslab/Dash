@@ -472,17 +472,28 @@ namespace Dash.Views
                 documentButton,
                 collectionButton,
             });
-            
+
+            //TODO maybe this shouldn't go here 
+            Action<object> sendEmail = sendEmailHelper;
+            var emailButton = new RadialActionModel("Email", "📧")
+            {
+                GenericAction = sendEmail
+            };
 
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
                 inkOptions,
-                addOptionsMenu
-                
+                addOptionsMenu,
+                emailButton
             });
 
             
+        }
+
+        private void sendEmailHelper(object obj)
+        {
+            Util.SendEmail(); 
         }
 
         private void InitializeColors()
