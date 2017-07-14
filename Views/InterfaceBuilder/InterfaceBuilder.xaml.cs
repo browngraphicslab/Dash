@@ -189,7 +189,7 @@ namespace Dash
             if (fieldModelController is TextFieldModelController)
             {
                 var textFieldModelController = _documentController.GetDereferencedField(key, docContextList) as TextFieldModelController;
-               if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetDereferencedField(key, docContextList) == null)
+               if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetDereferencedField(key, docContextList) == null && _documentController.GetDereferencedField(key,docContextList) == null)
                 {
                     _documentController.GetPrototype().SetField(key, _documentController.GetDereferencedField(key, docContextList), false);
                 }
@@ -224,10 +224,20 @@ namespace Dash
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
                 var layoutDataField = LayoutCourtesyDocument.LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContextList);
 
-                ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);
+                if (layoutDataField is DocumentCollectionFieldModelController)
+                {
+                    var collection = ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId());
+                    collection.AddDocument(box.Document);
+                }
+                else
+                {
+                    var newLayoutDoc = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[] { (_documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContextList) as DocumentFieldModelController).Data, box.Document }));
+                    _documentController.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(newLayoutDoc.Document), true);
+                }
             }
 
             ApplyEditable();
+            _documentController.SetField(DashConstants.KeyStore.LayoutKey, _documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, null), false);
         }
     }
 
