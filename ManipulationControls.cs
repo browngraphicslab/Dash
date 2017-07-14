@@ -70,7 +70,6 @@ namespace Dash {
         }
 
         public delegate void OnManipulatorTranslatedHandler(Point translationDelta);
-
         public event OnManipulatorTranslatedHandler OnManipulatorTranslated;
 
 

@@ -655,10 +655,9 @@ namespace Dash {
                 stack.Loaded += (s, e) =>
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
-                    var stackDoc = stack.GetFirstAncestorOfType<DocumentView>();
                     var stackScrollBar = stackViewer.GetFirstDescendantOfType<ScrollBar>();
                     stackScrollBar.ManipulationMode = ManipulationModes.All;
-                    stackScrollBar.ManipulationDelta += (ss, ee) => { ee.Handled = true; };
+                    stackScrollBar.ManipulationDelta += (ss, ee) => ee.Handled = true;
                 };
                 var stackFieldData =
                     docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) 

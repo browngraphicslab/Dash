@@ -102,14 +102,12 @@ namespace Dash
         /// <param name="translationDelta"></param>
         private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
         {
-            var documentViewModel = this.DataContext as DocumentViewModel;
-            documentViewModel.Position = new Point(documentViewModel.Position.X + translationDelta.X, documentViewModel.Position.Y + translationDelta.Y);
+            ViewModel.Position = new Point(ViewModel.Position.X + translationDelta.X, ViewModel.Position.Y + translationDelta.Y);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
-            DataContext = documentViewModel;
-            
+            DataContext = documentViewModel;          
         }
 
 
