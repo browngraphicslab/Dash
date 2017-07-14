@@ -157,18 +157,17 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            Context context = (DataContext as CollectionViewModel).DocumentContext;
             string outId;
             string inId;
             if (_currReference.IsOutput)
             {
-                //outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
-                //inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
+                //inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
             }
             else
             {
-                //outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
-                //inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
+                //inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
             }
             //CollectionView.Graph.AddEdge(outId, inId);
             if (CollectionView.Graph.IsCyclic())
@@ -195,25 +194,25 @@ namespace Dash
             {
                 if (_currReference.IsReference)
                 {
-                    _currReference.ReferenceFieldModelController.GetDocumentController(context).SetField(_currReference.ReferenceFieldModelController.FieldKey, ioReference.ReferenceFieldModelController, true);
+                    _currReference.ReferenceFieldModelController.GetDocumentController(null).SetField(_currReference.ReferenceFieldModelController.FieldKey, ioReference.ReferenceFieldModelController, true);
                 }
-                _currReference.ReferenceFieldModelController.GetDocumentController(context)
+                _currReference.ReferenceFieldModelController.GetDocumentController(null)
                     .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
-                        ioReference.ReferenceFieldModelController, (DataContext as CollectionViewModel).DocumentContext);
+                        ioReference.ReferenceFieldModelController, null);
             }
             else
             {
                 if (ioReference.IsReference)
                 {
-                    ioReference.ReferenceFieldModelController.GetDocumentController(context).SetField(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController, true);
+                    ioReference.ReferenceFieldModelController.GetDocumentController(null).SetField(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController, true);
                 }
                 //var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
                 try
                 {
                     //ContentController.GetController<DocumentController>(refDocId)
-                    ioReference.ReferenceFieldModelController.GetDocumentController(context)//TODO Use context here
+                    ioReference.ReferenceFieldModelController.GetDocumentController(null)
                         .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
-                            context);
+                            null);
                 }
                 catch (ArgumentException)
                 {

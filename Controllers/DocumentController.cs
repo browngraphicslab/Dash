@@ -433,6 +433,7 @@ namespace Dash
         public FrameworkElement MakeViewUI(Context context)
         {
             context = context ?? new Context();
+            //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
             context.AddDocumentContext(this);
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)

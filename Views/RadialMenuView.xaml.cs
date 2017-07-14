@@ -74,12 +74,15 @@ namespace Dash.Views
             }
             set
             {
-                _mainMenu.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
                 _mainMenu.CenterButtonLeft = 95;
                 _mainMenu.CenterButtonTop = 95;
-                if (_mainMenu.Pie.Visibility == Visibility.Visible)
+                if (!value)
                 {
-                    _mainMenu.Pie.Visibility = Visibility.Collapsed;
+                    _mainMenu.Collapse();
+                }
+                else
+                {
+                    _mainMenu.Expand();
                 }
             }
         }
@@ -155,8 +158,7 @@ namespace Dash.Views
         public void JumpToPosition(double x, double y)
         {
             IsVisible = true;
-            _floatingMenu.SetControlPosition(x - 15, y - 15);
-            _mainMenu.TogglePie();
+            _floatingMenu.SetControlPosition(x - 15 - Diameter/2, y - 15 - Diameter/2);
         }
 
         /// <summary>

@@ -43,7 +43,8 @@ namespace Dash
         {
             if (context != null)
             {
-                if (context.TryDereferenceToRoot(this, out FieldModelController controller))
+                FieldModelController controller;
+                if (context.TryDereferenceToRoot(this, out controller))
                 {
                     return controller;
                 }

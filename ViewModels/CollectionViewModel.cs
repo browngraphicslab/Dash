@@ -69,12 +69,8 @@ namespace Dash
         /// </summary>
         public double CellSize { get; set; }
 
-        public Context DocumentContext { get; }
-
-
-        public CollectionViewModel(DocumentCollectionFieldModelController collection, Context context)
+        public CollectionViewModel(DocumentCollectionFieldModelController collection)
         {
-            DocumentContext = context;
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();

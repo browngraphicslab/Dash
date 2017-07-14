@@ -11,6 +11,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using DashShared;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Dash {
     public static class CourtesyDocuments {
@@ -433,6 +434,7 @@ namespace Dash {
                     var textBox = new TextBox();
                     textBox.ManipulationDelta += (s, e) => e.Handled = true;
                     tb = textBox;
+                    textBox.AcceptsReturn = true;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
                     var textFieldModelController = fieldModelController as TextFieldModelController;
@@ -445,6 +447,8 @@ namespace Dash {
                     };
                     tb.SetBinding(TextBox.TextProperty, sourceBinding);
                     textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
+                    textBox.TextChanged += TextBox_TextChanged;
+                    textBox.Tag = retToText.GetDocumentController(context);
 
                 } else if (fieldModelController is NumberFieldModelController) {
                     tb = new TextBlock();
@@ -479,6 +483,22 @@ namespace Dash {
                 BindOperationInteractions(retToText, tb);
 
                 return tb;
+            }
+
+            private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+            {
+                var tb = sender as TextBox;
+                var docController = tb.Tag as DocumentController;
+                foreach (var tag in (sender as TextBox).Text.Split('#'))
+                    if (tag.Contains("=")) {
+                        var eqPos = tag.IndexOfAny(new char[] { '=' });
+                        var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                        var valu = tag.Substring(eqPos+1, Math.Max(0,tag.Length - eqPos -1)).TrimEnd(' ').TrimStart(' ');
+                        var tagField = docController.GetDereferencedField(new Key(word, word), null);
+                        if (tagField is TextFieldModelController)
+                            (tagField as TextFieldModelController).Data = valu;
+                        else  docController.SetField(new Key(word, word), new TextFieldModelController(valu), true);
+                    }
             }
         }
 
@@ -629,7 +649,7 @@ namespace Dash {
                         .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                     Debug.Assert(collectionFieldModelController != null);
 
-                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
+                    var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
 
                     var view = new CollectionView(collectionViewModel);
                     view.Opacity = opacityValue;
@@ -676,10 +696,9 @@ namespace Dash {
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
                     var stackDoc = stack.GetFirstAncestorOfType<DocumentView>();
-                    stackViewer.ViewChanging += (ss, ee) => 
-                        stackDoc.Manipulator.RemoveAllButHandle();
-                    stackViewer.ViewChanged += (ss, ee) => 
-                        stackDoc.Manipulator.AddAllAndHandle();
+                    var stackScrollBar = stackViewer.GetFirstDescendantOfType<ScrollBar>();
+                    stackScrollBar.ManipulationMode = ManipulationModes.All;
+                    stackScrollBar.ManipulationDelta += (ss, ee) => { ee.Handled = true; };
                 };
                 var stackFieldData =
                     docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) 
@@ -710,27 +729,36 @@ namespace Dash {
                 new DocumentType("A5FEFB00-EA2C-4B64-9230-BBA41BACCAFC", "Post It");
 
             public static Key NotesFieldKey = new Key("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
+            static DocumentController _prototypePostit = CreatePrototypePostit();
             static DocumentController _prototypeLayout = CreatePrototypeLayout();
-            static TextingBox _prototypeTextLayout;
 
+            static DocumentController CreatePrototypePostit()
+            {
+                // bcz: default values for data fields can be added, but should not be needed
+                var fields = new Dictionary<Key, FieldModelController>();
+                fields.Add(NotesFieldKey, new TextFieldModelController("Prototype Text"));
+                return new DocumentController(new Dictionary<Key, FieldModelController>(), PostitNoteType);
+            }
             static DocumentController CreatePrototypeLayout() {
-                _prototypeTextLayout = new TextingBox(new TextFieldModelController("Text"), 0, 0, double.NaN,
-                    double.NaN);
+                var prototypeTextLayout =
+                    //new StackingPanel(new DocumentController[] {
+                    new TextingBox(new DocumentReferenceController(_prototypePostit.GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                    //});
 
-                return _prototypeTextLayout.Document;
+                return prototypeTextLayout.Document;
             }
 
             public PostitNote() {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
-                fields.Add(NotesFieldKey, new TextFieldModelController("<your note>"));
 
-                Document = new DocumentController(fields, PostitNoteType);
+                Document = _prototypePostit.MakeDelegate();
+                Document.SetField(NotesFieldKey, new TextFieldModelController("Hello World!"), true);
+                
+                var docLayout = _prototypeLayout.MakeDelegate();
+                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                
+               // SetLayoutForDocument(docLayout, docLayout); // bcz: do we need this line?
 
-                var tBox = _prototypeTextLayout.MakeDelegate(
-                    new DocumentReferenceController(Document.GetId(), NotesFieldKey));
-                SetLayoutForDocument(tBox, tBox);
-
-                SetLayoutForDocument(Document, tBox);
+                SetLayoutForDocument(Document, docLayout);
             }
 
         }
@@ -1101,7 +1129,7 @@ namespace Dash {
                 var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
-                var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 

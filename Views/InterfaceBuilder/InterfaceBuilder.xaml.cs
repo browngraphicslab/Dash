@@ -185,10 +185,10 @@ namespace Dash
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-                var textFieldModelController = docController.GetDereferencedField(key, null) as TextFieldModelController;
+               var textFieldModelController = fieldModelController as TextFieldModelController;
                if (docController.GetPrototype() != null && docController.GetPrototype().GetDereferencedField(key, null) == null)
                 {
-                    docController.GetPrototype().SetField(key, docController.GetDereferencedField(key, null), false);
+                    docController.GetPrototype().SetField(key, textFieldModelController, false);
                 }
 
                 var layoutDoc = (docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, null) as DocumentFieldModelController)?.Data;
@@ -215,6 +215,7 @@ namespace Dash
                 box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data);
             }
 
+            var layoutDocFieldController = docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, null);
             if (box != null)
             {
                 //Sets the point position of the image/text box
@@ -224,10 +225,22 @@ namespace Dash
 
                 var layoutDataField = _layoutCourtesyDocument.ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, null);
 
-                ContentController.GetController<DocumentCollectionFieldModelController>(layoutDataField.GetId()).AddDocument(box.Document);
+                if (layoutDataField is DocumentCollectionFieldModelController)
+                {
+                    (layoutDataField as DocumentCollectionFieldModelController).AddDocument(box.Document);
+                }
+                else
+                {
+                    var newLayoutCollection = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[] { (docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, null) as DocumentFieldModelController).Data, box.Document }));
+                    var oldPt = ((layoutDocFieldController as DocumentFieldModelController).Data.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey,null) as PointFieldModelController).Data;
+                    (layoutDocFieldController as DocumentFieldModelController).Data.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), false);
+                    layoutDocFieldController = new DocumentFieldModelController(newLayoutCollection.Document);
+                    (layoutDocFieldController as DocumentFieldModelController).Data.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(oldPt), false);
+                }
             }
 
             ApplyEditable();
+             docController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
     }
 

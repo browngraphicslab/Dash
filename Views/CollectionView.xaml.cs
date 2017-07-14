@@ -137,7 +137,7 @@ namespace Dash
                     var docVM = eNewItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     var ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -163,7 +163,7 @@ namespace Dash
                     var docVM = eOldItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -175,16 +175,14 @@ namespace Dash
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.RemoveEdge(irfm.DereferenceToRoot(DocumentContext).GetId(),
-                                    orfm.DereferenceToRoot(DocumentContext).GetId());
+                                Graph.RemoveEdge(irfm.DereferenceToRoot(null).GetId(),
+                                    orfm.DereferenceToRoot(null).GetId());
                             }
                         }
                     }
                 }
             }
         }
-
-        public Context DocumentContext => (DataContext as CollectionViewModel).DocumentContext;
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
@@ -193,7 +191,7 @@ namespace Dash
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as OperatorFieldModelController;
+                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController;
                 if (ofm != null)
                 {
                     foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
@@ -202,7 +200,7 @@ namespace Dash
                         {
                             ReferenceFieldModelController irfm = new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                             ReferenceFieldModelController orfm = new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                            Graph.AddEdge(irfm.DereferenceToRoot(DocumentContext).GetId(), orfm.DereferenceToRoot(DocumentContext).GetId());
+                            Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
                         }
                     }
                 }
