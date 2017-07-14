@@ -21,7 +21,7 @@ namespace Dash
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
 
-        public List<DocumentController> DocContextList = null;
+        public Context Context = null;
 
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
@@ -35,8 +35,7 @@ namespace Dash
                 if (SetProperty(ref FieldModel.InputReference, value))
                 {
                     // update local
-                    string id = ContentController.MapDocumentInstanceReference(value.DocId, value.DocContextList);
-                    var cont = ContentController.GetController<DocumentController>(id);
+                    var cont = value.GetDocumentController(value.Context);
                     cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
                         if (args.Reference.FieldKey.Equals(value.FieldKey))
@@ -44,7 +43,7 @@ namespace Dash
                             UpdateValue(args.NewValue);
                         }
                     };
-                    UpdateValue(cont.GetDereferencedField(value.FieldKey, value.DocContextList));
+                    UpdateValue(value.DereferenceToRoot(value.Context));
 
                     // update server
                 }
@@ -122,6 +121,21 @@ namespace Dash
             return FieldModel.Id;
         }
 
+        public virtual FieldModelController Dereference(Context context = null)
+        {
+            return this;
+        }
+
+        public virtual FieldModelController DereferenceToRoot(Context context = null)
+        {
+            return this;
+        }
+
+        public virtual T DereferenceToRoot<T>(Context context = null) where T : FieldModelController
+        {
+            return this as T;
+        }
+
         /// <summary>
         /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
@@ -154,6 +168,21 @@ namespace Dash
             };
 
             return scrollViewer;
+        }
+
+        public override bool Equals(object obj)
+        {
+            FieldModelController cont = obj as FieldModelController;
+            if (cont == null)
+            {
+                return false;
+            }
+            return FieldModel.Equals(cont.FieldModel);
+        }
+
+        public override int GetHashCode()
+        {
+            return FieldModel.GetHashCode();
         }
 
         public abstract FieldModelController GetDefaultController();

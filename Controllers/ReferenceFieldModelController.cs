@@ -5,9 +5,9 @@ using System.Collections.Generic;
 
 namespace Dash
 {
-    public class ReferenceFieldModelController : FieldModelController
+    public abstract class ReferenceFieldModelController : FieldModelController
     {
-        public ReferenceFieldModelController(string docID, Key key) : base(new ReferenceFieldModel(docID, key))
+        protected ReferenceFieldModelController(ReferenceFieldModel model) : base(model)
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
@@ -15,18 +15,6 @@ namespace Dash
 
             //if (fmc != null)
                 //fmc.FieldModelUpdated += Fmc_FieldModelUpdatedEvent;
-        }
-
-        public string DocId
-        {
-            get { return ReferenceFieldModel.DocId; }
-            set
-            {
-                if (SetProperty(ref ReferenceFieldModel.DocId, value))
-                {
-                    
-                }
-            }
         }
 
         public Key FieldKey
@@ -43,16 +31,41 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
-        private void Fmc_FieldModelUpdatedEvent(FieldModelController sender)
-        {
-            FireFieldModelUpdated();
-        }
-
         /// <summary>
         ///     The <see cref="ReferenceFieldModel" /> associated with this <see cref="ReferenceFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
+
+        public abstract DocumentController GetDocumentController(Context context = null);
+
+        public override FieldModelController Dereference(Context context = null)
+        {
+            if (context != null)
+            {
+                FieldModelController controller;
+                if (context.TryDereferenceToRoot(this, out controller))
+                {
+                    return controller;
+                }
+            }
+            return GetDocumentController(context).GetField(FieldKey);
+        }
+
+        public override FieldModelController DereferenceToRoot(Context context = null)
+        {
+            FieldModelController reference = this;
+            while (reference is ReferenceFieldModelController)
+            {
+                reference = reference.Dereference(context);
+            }
+            return reference;
+        }
+
+        public override T DereferenceToRoot<T>(Context context = null)
+        {
+            return DereferenceToRoot(context) as T;
+        }
 
         public override FrameworkElement GetTableCellView()
         {

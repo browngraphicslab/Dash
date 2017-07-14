@@ -95,6 +95,10 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
+    <Compile Include="Controllers\DocumentReferenceController.cs" />
+    <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
+    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
@@ -116,6 +120,7 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Util\Actions.cs" />
+    <Compile Include="Util\Context.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>

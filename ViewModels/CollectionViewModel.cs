@@ -69,12 +69,12 @@ namespace Dash
         /// </summary>
         public double CellSize { get; set; }
 
-        public List<DocumentController> DocContextList { get; }
+        public Context DocumentContext { get; }
 
 
-        public CollectionViewModel(DocumentCollectionFieldModelController collection, List<DocumentController> docContextList)
+        public CollectionViewModel(DocumentCollectionFieldModelController collection, Context context)
         {
-            DocContextList = docContextList;
+            DocumentContext = context;
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
@@ -166,9 +166,11 @@ namespace Dash
             foreach (var docController in documents.GetDocuments())
             {
                 if (ViewModelContains(DataBindingSource, docController)) continue;
-                var contextList = new List<DocumentController>(DocContextList);
-                contextList.Add(docController);
-                var viewModel = new DocumentViewModel(docController, contextList);  // TODO LSM: why are we passing the DocContextList Here to the documents
+
+                var context = new Context(DocumentContext);
+                context.AddDocumentContext(docController);
+                var viewModel = new DocumentViewModel(docController, context);  // TODO LSM: why are we passing the DocContextList Here to the documents
+
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(docController))
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
