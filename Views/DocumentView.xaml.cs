@@ -57,8 +57,8 @@ namespace Dash
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 64;
-            MinHeight = 64;
+            MinWidth = 120;
+            MinHeight = 96;
 
             startWidth = Width;
             startHeight = Height;
@@ -73,17 +73,20 @@ namespace Dash
             DoubleTapped += OnTapped;         
         }
 
+        /// <summary>
+        /// Creates the context menu for the document.
+        /// </summary>
         private void SetUpMenu()
         {
-
-            var layout = new Action(OpenLayout);
-            var copy = new Action(CopyDocument);
-            var delete = new Action(DeleteDocument);
-            var deleteButton = new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete);
+            Action layout = new Action(OpenLayout);
+            Action copy = new Action(CopyDocument);
+            Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
+            Action delete = new Action(DeleteDocument);
+            MenuButton deleteButton = new MenuButton(Symbol.Delete, "Delete", bgcolor, delete);
             var documentButtons = new List<MenuButton>()
             {
-                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
-                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
+                new MenuButton(Symbol.Pictures, "Layout", bgcolor, layout),
+                new MenuButton(Symbol.Copy, "Copy", bgcolor, copy),
                 deleteButton
             };
             _docMenu = new OverlayMenu(null, documentButtons);
@@ -112,8 +115,6 @@ namespace Dash
             DataContext = documentViewModel;
             
         }
-
-
 
         /// <summary>
         /// Resizes the CollectionView according to the increments in width and height. 
@@ -216,37 +217,66 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
-            
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
-                XGrid.Background = new SolidColorBrush(Colors.Transparent);
+
+            // this gets called once when the datacontext is initially set!
+            initDocumentOnDataContext();
+        }
+
+        /// <summary>
+        /// Called when the DataContext of a document is initially set.
+        /// </summary>
+        void initDocumentOnDataContext() {
+
+            // document type specific styles >> use VERY sparringly
+            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            if (docType.Type != null) {
+                // hide white background & drop shadow on operator views
+                if (docType.Type.Equals("operator")) {
+                    XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                    xBorder.Opacity = 0;
+                }
+            } else {
+
+                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
             }
-            Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
-            }
+
+            // if there is a readable document type, use that as label
+            var sourceBinding = new Binding {
+                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
+
+
+            Debug.WriteLine("view: " + ViewModel.DocumentController.DocumentModel.DocumentType.Type);
+
+            Debug.WriteLine("text: " + xIconLabel.Text);
+
 
             SetUpMenu();
             ViewModel.CloseMenu();
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
-            ViewModel.PropertyChanged += (o, eventArgs) =>
-            {
-                if (eventArgs.PropertyName == "IsMoveable")
-                {
-                    if (ViewModel.IsMoveable)
-                    {
-                        manipulator.AddAllAndHandle();
-                    }
-                    else
-                    {
-                        manipulator.RemoveAllButHandle();
-                    }
-                }
-            };
+            //ViewModel.PropertyChanged += (o, eventArgs) =>
+            //{
+            //    if (eventArgs.PropertyName == "IsMoveable")
+            //    {
+            //        if (ViewModel.IsMoveable)
+            //        {
+            //            manipulator.AddAllAndHandle();
+            //        }
+            //        else
+            //        {
+            //            manipulator.RemoveAllButHandle();
+            //        }
+            //    }
+            //};
 
-            if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            else manipulator.RemoveAllButHandle();
+            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
+            //else manipulator.RemoveAllButHandle();
 
             #endregion
         }
@@ -257,18 +287,20 @@ namespace Dash
 
             // update collapse info
             // collapse to icon view on resize
-            int pad = 32;
-            if (Width < MinWidth + pad && Height < MinHeight + pad) {
+            int pad = 1;
+            if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight) {
                 updateIcon();
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xDragImage.Opacity = 0;
                 DoubleTapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xDragImage.Opacity = 1;
                 DoubleTapped += OnTapped;
             }
         }
@@ -299,7 +331,13 @@ namespace Dash
 
         public void OnTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection) {
+            // expand into full view on doubletap
+            if (xIcon.Visibility == Visibility.Visible) {
+                ExpandContract_DoubleTapped(sender, e);
+                e.Handled = true;
+                return;
+            }
+            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection) { 
                 ViewModel.OpenMenu();
             } else {
                 ViewModel.CloseMenu();

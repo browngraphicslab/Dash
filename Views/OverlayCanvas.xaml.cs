@@ -25,7 +25,6 @@ namespace Dash
         public OverlayCanvas()
         {
             this.InitializeComponent();
-
             Debug.Assert(Instance == null);
             Instance = this;
         }
