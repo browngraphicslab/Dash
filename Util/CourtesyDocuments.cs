@@ -705,24 +705,36 @@ namespace Dash {
                     as DocumentCollectionFieldModelController;
 
                 // create a dynamic gridview that wraps content in borders
-                double maxHeight = 0;
                 if (stackFieldData != null)
-                    foreach (var stackDoc in stackFieldData.GetDocuments())
+                {
+                    CreateStack(context, stack, stackFieldData);
+                    stackFieldData.OnDocumentsChanged += delegate (IEnumerable<DocumentController> documents)
                     {
-                        Border b = new Border();
-                        FrameworkElement item = stackDoc.makeViewUI(context);
-                        b.Child = item;
-                        maxHeight = Math.Max(maxHeight, item.Height);
-                        stack.Items.Add(b);
-                    }
+                        CreateStack(context, stack, stackFieldData);
+                    };
+                }
+                
+                return stack;
+            }
 
-                // format gridview s.t. rows and columns automatically have the largest cell size to fit content
+            private static void CreateStack(Context context, GridView stack, DocumentCollectionFieldModelController stackFieldData)
+            {
+                double maxHeight = 0;
+                stack.Items.Clear();
+                foreach (var stackDoc in stackFieldData.GetDocuments())
+                {
+                    Border b = new Border();
+                    FrameworkElement item = stackDoc.makeViewUI(context);
+                    b.Child = item;
+                    maxHeight = Math.Max(maxHeight, item.Height);
+                    stack.Items.Add(b);
+                }
                 foreach (Border b in stack.Items)
                 {
                     b.Height = maxHeight;
                 }
-                return stack;
             }
+
             public static FrameworkElement MakeFreeFormView(DocumentController docController, Context context)
             {
                 var stack = new Grid();
