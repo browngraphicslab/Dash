@@ -78,7 +78,7 @@ namespace Dash
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            UpdateViewModels(_collectionFieldModelController);
+            UpdateViewModels(_collectionFieldModelController, context);
             collection.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
             CellSize = 250;
         }
@@ -160,16 +160,16 @@ namespace Dash
             return false;
         }
 
-        public void UpdateViewModels(DocumentCollectionFieldModelController documents)
+        public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context=null)
         {
             var offset = 0;
             foreach (var docController in documents.GetDocuments())
             {
                 if (ViewModelContains(DataBindingSource, docController)) continue;
 
-                var context = new Context(DocumentContext);
-                context.AddDocumentContext(docController);
-                var viewModel = new DocumentViewModel(docController, context);  // TODO LSM: why are we passing the DocContextList Here to the documents
+                var doccontext = context != null ? new Context(context) : new Context();
+                doccontext.AddDocumentContext(docController);
+                var viewModel = new DocumentViewModel(docController, doccontext);  // TODO LSM: why are we passing the DocContextList Here to the documents
 
                 if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(docController))
                 {
