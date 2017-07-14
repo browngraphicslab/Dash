@@ -792,7 +792,7 @@ namespace Dash
 
         public void GetJson()
         {
-            //Util.ExportAsJson(ViewModel.DocumentContext);
+            Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
         }
         public void ScreenCap()
         {
