@@ -389,7 +389,7 @@ namespace Dash
 
         }
 
-        private async void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             // TODO KB made to test doccontextlist, delete later 
             /* 
@@ -398,13 +398,13 @@ namespace Dash
             */
 
             //test exporting as json 
-            //Task<StorageFile> jsonFileTask = ExportAsJson();
+            Task<StorageFile> jsonFileTask = ExportAsJson();
 
             //test exporting as image 
-            ExportAsImage(); 
+            //ExportAsImage(); 
             
             //test sending email 
-            // TODO this is weird bc it requires that default app is the Mail thingy and if you choose anything else you're fucked 
+            //TODO this is weird bc it requires that default app is the Mail thingy and if you choose anything else you're fucked 
             //SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
 
             e.Handled = true;
@@ -497,10 +497,7 @@ namespace Dash
                 }
             }
         }
-
-
-
-
+        
 
         /// <summary>
         /// Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController 
@@ -543,8 +540,8 @@ namespace Dash
                         data += JsonSerializeHelper(cont.EnumFields());
                         data += ", "; 
                     }
+                    data = data.Remove(data.Length - 2); 
                     data += "]";
-                    Debug.WriteLine(data);  
                 }
                 else
                 {
@@ -552,7 +549,6 @@ namespace Dash
                     //throw new NotImplementedException(); 
                 }
                 jsonDict[pair.Key.Name] = data;
-                Debug.Write(""); 
             }
             return JsonConvert.SerializeObject(jsonDict);
         }
@@ -562,7 +558,7 @@ namespace Dash
         /// </summary>
         private async Task<StorageFile> ExportAsJson()
         {
-            string json = JsonSerializeHelper(ViewModel.DocumentController.EnumFields()); 
+            string json = JsonSerializeHelper(ViewModel.DocumentController.EnumFields());
 
             FolderPicker picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.Desktop;
