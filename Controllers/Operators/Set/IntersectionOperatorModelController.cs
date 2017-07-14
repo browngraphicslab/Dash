@@ -49,5 +49,10 @@ namespace Dash.Models.OperatorModels.Set
             // Intersect by Document ID 
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
         }
+
+        public override FieldModelController Copy()
+        {
+            return new IntersectionOperatorModelController(OperatorFieldModel);
+        }
     }
 }

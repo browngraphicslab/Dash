@@ -52,5 +52,10 @@ namespace Dash
             outputs[QuotientKey] = new NumberFieldModelController(a / b);
             outputs[RemainderKey] = new NumberFieldModelController(a % b);
         }
+
+        public override FieldModelController Copy()
+        {
+            return new DivideOperatorFieldModelController(OperatorFieldModel);
+        }
     }
 }

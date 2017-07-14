@@ -39,6 +39,8 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context);
 
+        public abstract ReferenceFieldModelController Resolve(Context context);
+
         public sealed override FieldModelController Dereference(Context context)
         {
             if (context != null)

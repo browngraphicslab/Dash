@@ -64,5 +64,10 @@ namespace Dash
         {
             return $"({Data})";
         }
+
+        public override FieldModelController Copy()
+        {
+            return new PointFieldModelController(Data);
+        }
     }
 }

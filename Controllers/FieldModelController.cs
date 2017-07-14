@@ -188,6 +188,13 @@ namespace Dash
             return FieldModel.GetHashCode();
         }
 
+        public abstract FieldModelController Copy();
+
+        public T Copy<T>() where T : FieldModelController
+        {
+            return Copy() as T;
+        }
+
         public abstract FieldModelController GetDefaultController();
     }
 }

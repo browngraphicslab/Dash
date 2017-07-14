@@ -27,5 +27,16 @@ namespace Dash
             }
             return ContentController.GetController<DocumentController>(docId);
         }
+
+        public override ReferenceFieldModelController Resolve(Context context)
+        {
+            string docId = context.GetDeepestDelegateOf(DocId);
+            return new DocumentReferenceController(docId, FieldKey);
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new DocumentReferenceController(DocId, FieldKey);
+        }
     }
 }

@@ -88,5 +88,10 @@ namespace Dash
         {
             return ImageSource.ToString();
         }
+
+        public override FieldModelController Copy()
+        {
+            return new ImageFieldModelController(Data.UriSource);
+        }
     }
 }

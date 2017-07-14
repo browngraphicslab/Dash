@@ -70,5 +70,10 @@ namespace Dash
         {
             return Data.ToString();
         }
+
+        public override FieldModelController Copy()
+        {
+            return new NumberFieldModelController(Data);
+        }
     }
 }

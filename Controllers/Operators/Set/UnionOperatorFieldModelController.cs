@@ -55,6 +55,11 @@ namespace Dash
         {
             OperatorFieldModel = operatorFieldModel;
         }
+
+        public override FieldModelController Copy()
+        {
+            return new UnionOperatorFieldModelController(OperatorFieldModel);
+        }
     }
 
 }

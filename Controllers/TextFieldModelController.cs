@@ -61,5 +61,10 @@ namespace Dash
         {
             return Data;
         }
+
+        public override FieldModelController Copy()
+        {
+            return new TextFieldModelController(Data);
+        }
     }
 }

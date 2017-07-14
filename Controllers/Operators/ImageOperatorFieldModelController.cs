@@ -34,6 +34,11 @@ namespace Dash
 
             //(doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
         }
+        
+        public override FieldModelController Copy()
+        {
+            return new ImageOperatorFieldModelController(OperatorFieldModel);
+        }
     }
     /* 
     public class ImageOperatorModel : OperatorFieldModel

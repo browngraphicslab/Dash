@@ -99,5 +99,11 @@ namespace Dash
         {
             textBlock.Text = "A Collection of Documents";
         }
+
+
+        public override FieldModelController Copy()
+        {
+            return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));
+        }
     }
 }

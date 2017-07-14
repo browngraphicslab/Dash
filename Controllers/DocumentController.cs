@@ -207,14 +207,18 @@ namespace Dash
         ///     key is not found then it returns null.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="context"></param>
+        /// <param name="ignorePrototype"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key, Context context)
+        public FieldModelController GetField(Key key, Context context, bool ignorePrototype = false)
         {
             context = Context.SafeInitAndAddDocument(context, this);
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
-            var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
+            var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
 
-            return firstProtoWithKeyOrNull?._fields[key];
+            FieldModelController field = null;
+            firstProtoWithKeyOrNull?._fields.TryGetValue(key, out field);
+            return field;
         }
 
 
@@ -328,15 +332,21 @@ namespace Dash
             Debug.WriteLine($"reference w/o context is {reference.GetDocumentController(null).GetId()}");
             Debug.WriteLine($"reference is {reference.GetDocumentController(context).GetId()}");
             reference.Context = context;//bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
-            var field = GetField(fieldKey, context);
-            var dereferencedField = field.DereferenceToRoot(context);
+            var field = GetField(fieldKey, context, true);
+            var protoField = GetField(fieldKey, context);
             var refField = reference.DereferenceToRoot(context);
+            var dereferencedField = protoField.DereferenceToRoot(context);
             DocumentController controller = reference.GetDocumentController(context);
 
             if (!dereferencedField.CheckType(refField))
             {
                 Debug.Assert(!refField.CheckType(dereferencedField));//Make sure check field is commutative
                 throw new ArgumentException("Invalid types");
+            }
+            if (field == null)
+            {
+                field = protoField.Copy();
+                SetField(fieldKey, field, true);
             }
             field.InputReference = reference;
             controller.DocumentFieldUpdated += delegate (DocumentFieldUpdatedEventArgs args)

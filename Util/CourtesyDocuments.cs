@@ -503,7 +503,7 @@ namespace Dash {
                 BindTextAlignment(tb, textAlignmentController);
 
                 // add bindings to work with operators
-                BindOperationInteractions(retToText, tb);
+                BindOperationInteractions(retToText.Resolve(context), tb);
 
                 return tb;
             }
@@ -590,7 +590,7 @@ namespace Dash {
                 BindWidth(image, widthController);
 
                 // set up interactions with operations
-                BindOperationInteractions(refToImage, image);
+                BindOperationInteractions(refToImage.Resolve(context), image);
 
                 // make image opacity change
                 var opacityController =
