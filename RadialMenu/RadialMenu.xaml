@@ -16,21 +16,21 @@
     <Canvas x:Name="LayoutRoot">
         <Canvas.Resources>
             <Storyboard x:Name="OpenStoryboard" SpeedRatio="1.5">
-                <DoubleAnimation Duration="0:0:0.4"
+                <DoubleAnimation Duration="0:0:0.2"
                                  Storyboard.TargetProperty="Rotation"
                                  Storyboard.TargetName="PieCompositeTransform">
                     <DoubleAnimation.EasingFunction>
                         <CircleEase EasingMode="EaseOut" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Duration="0:0:0.4"
+                <DoubleAnimation Duration="0:0:0.2"
                                  Storyboard.TargetProperty="ScaleX"
                                  Storyboard.TargetName="PieCompositeTransform">
                     <DoubleAnimation.EasingFunction>
                         <CubicEase EasingMode="EaseOut" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Duration="0:0:0.4"
+                <DoubleAnimation Duration="0:0:0.2"
                                  Storyboard.TargetProperty="ScaleY"
                                  Storyboard.TargetName="PieCompositeTransform">
                     <DoubleAnimation.EasingFunction>
@@ -43,7 +43,7 @@
                                  BeginTime="0:0:0.1" />
             </Storyboard>
             <Storyboard x:Name="CloseStoryboard" SpeedRatio="2">
-                <DoubleAnimation Duration="0:0:0.4"
+                <DoubleAnimation Duration="0:0:0.2"
                                  Storyboard.TargetProperty="Rotation"
                                  Storyboard.TargetName="PieCompositeTransform"
                                  To="-180">
@@ -51,7 +51,7 @@
                         <CircleEase EasingMode="EaseIn" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Duration="0:0:0.4"
+                <DoubleAnimation Duration="0:0:0.2"
                                  To="0"
                                  Storyboard.TargetProperty="ScaleX"
                                  Storyboard.TargetName="PieCompositeTransform">
@@ -59,7 +59,7 @@
                         <CubicEase EasingMode="EaseIn" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Duration="0:0:0.4"
+                <DoubleAnimation Duration="0:0:0.2"
                                  To="0"
                                  Storyboard.TargetProperty="ScaleY"
                                  Storyboard.TargetName="PieCompositeTransform">
@@ -124,7 +124,7 @@
                                  Storyboard.TargetName="CustomRadialControlRoot" />
             </Storyboard>
             <Storyboard x:Name="PieEnterForChangeStoryboard">
-                <DoubleAnimation Duration="0:0:0.3"
+                <DoubleAnimation Duration="0:0:0.2"
                                  From="0"
                                  To="1"
                                  Storyboard.TargetProperty="ScaleX"
@@ -133,7 +133,7 @@
                         <CubicEase EasingMode="EaseOut" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Duration="0:0:0.3"
+                <DoubleAnimation Duration="0:0:0.2"
                                  From="0"
                                  To="1"
                                  Storyboard.TargetProperty="ScaleY"
@@ -150,7 +150,7 @@
                                  BeginTime="0:0:0.1" />
             </Storyboard>
             <Storyboard x:Name="CustomPieEnterForChangeStoryboard">
-                <DoubleAnimation Duration="0:0:0.3"
+                <DoubleAnimation Duration="0:0:0.2"
                                  From="0"
                                  To="1"
                                  Storyboard.TargetProperty="ScaleX"
@@ -159,7 +159,7 @@
                         <CubicEase EasingMode="EaseOut" />
                     </DoubleAnimation.EasingFunction>
                 </DoubleAnimation>
-                <DoubleAnimation Duration="0:0:0.3"
+                <DoubleAnimation Duration="0:0:0.2"
                                  From="0"
                                  To="1"
                                  Storyboard.TargetProperty="ScaleY"
