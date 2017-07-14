@@ -18,7 +18,11 @@ using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using Windows.Storage;
 using Windows.Storage.Pickers;
-using System.Linq; 
+using System.Linq;
+using Windows.Graphics.Imaging;
+using Windows.Storage.Streams;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -397,11 +401,11 @@ namespace Dash
             //Task<StorageFile> jsonFileTask = ExportAsJson();
 
             //test exporting as image 
-
+            ExportAsImage(); 
             
             //test sending email 
             // TODO this is weird bc it requires that default app is the Mail thingy and if you choose anything else you're fucked 
-            SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
+            //SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
 
             e.Handled = true;
         }
@@ -452,9 +456,51 @@ namespace Dash
             await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
+        /// <summary>
+        /// Saves the document view as .png in a specified directory 
+        /// </summary>
         private async void ExportAsImage()
         {
+            RenderTargetBitmap bitmap = new RenderTargetBitmap();
+            await bitmap.RenderAsync(OuterGrid);
+
+            FolderPicker picker = new FolderPicker();
+            picker.SuggestedStartLocation = PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            StorageFolder folder = null;
+            folder = await picker.PickSingleFolderAsync();
+
+            StorageFile file = null;
+            if (folder != null)
+            {
+                file = await folder.CreateFileAsync("pic.png", CreationCollisionOption.ReplaceExisting);
+
+                var pixels = await bitmap.GetPixelsAsync();
+                byte[] byteArray = pixels.ToArray();
+
+                using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.PngEncoderId, fileStream);
+
+                    var displayInformation = Windows.Graphics.Display.DisplayInformation.GetForCurrentView();
+
+                    encoder.SetPixelData(
+                            BitmapPixelFormat.Bgra8,
+                            BitmapAlphaMode.Ignore,
+                            (uint)bitmap.PixelWidth,
+                            (uint)bitmap.PixelHeight,
+                            displayInformation.LogicalDpi,
+                            displayInformation.LogicalDpi,
+                            pixels.ToArray());
+
+                    await encoder.FlushAsync();
+                }
+            }
         }
+
+
+
+
 
         /// <summary>
         /// Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController 
@@ -517,7 +563,6 @@ namespace Dash
         private async Task<StorageFile> ExportAsJson()
         {
             string json = JsonSerializeHelper(ViewModel.DocumentController.EnumFields()); 
-            Debug.WriteLine(json);
 
             FolderPicker picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.Desktop;
