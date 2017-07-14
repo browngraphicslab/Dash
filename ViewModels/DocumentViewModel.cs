@@ -285,6 +285,7 @@ namespace Dash
             {
                 fields[kvp.Key] = kvp.Value;
             }
+            copy.SetFields(fields, true);
             var documentFieldModelController = fields[DashConstants.KeyStore.LayoutKey] as DocumentFieldModelController;
             if (documentFieldModelController != null)
             {
@@ -293,11 +294,36 @@ namespace Dash
                 if (pointFieldModelController != null)
                 {
                     var pos = pointFieldModelController.Data;
-                    layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(pos.X, pos.Y), true);
+                    var layoutDel = layout.MakeDelegate();
+                    layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(pos.X + 15, pos.Y + 15), true);
+                    copy.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(layoutDel), true);
                 }
             }
-            copy.SetFields(fields, true);
+            
             return copy;
+        }
+
+        public DocumentController GetDelegate()
+        {
+            var del = DocumentController.MakeDelegate();
+            var documentFieldModelController = DocumentController.GetField(DashConstants.KeyStore.LayoutKey) as DocumentFieldModelController;
+            if (documentFieldModelController != null)
+            {
+                var layout = documentFieldModelController.Data;
+                var pointFieldModelController = layout.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                if (pointFieldModelController != null)
+                {
+                    var pos = pointFieldModelController.Data;
+                    var layoutDel = layout.MakeDelegate();
+                    layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(pos.X + 15, pos.Y + 15), true);
+                    //var docs =
+                    //    (layoutDel.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController)
+                    //    .GetDocuments();
+                    //layoutDel.SetField(DashConstants.KeyStore.DataKey, new DocumentCollectionFieldModelController(docs), true); TODO should we copy the collection over or leave it as original? -GH
+                    del.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(layoutDel), true);
+                }
+            }
+            return del;
         }
     }
 }

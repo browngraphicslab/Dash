@@ -320,7 +320,7 @@ namespace Dash
 
         private void MakeDelegate()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.DocumentController.MakeDelegate());
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
         }
 
 
