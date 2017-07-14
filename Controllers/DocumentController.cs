@@ -15,7 +15,8 @@ namespace Dash
         {
             Add,
             Remove,
-            Replace
+            Replace,
+            Update
         }
 
         public class DocumentFieldUpdatedEventArgs
@@ -191,7 +192,7 @@ namespace Dash
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference, new Context(this)));
             field.FieldModelUpdated += delegate (FieldModelController sender)
             {
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, new Context(this)));
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, new Context(this)));
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -241,6 +242,7 @@ namespace Dash
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
             delegateController.DocumentFieldUpdated += delegate(DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(args); };
+            DocumentFieldUpdated += delegateController.DocumentController_DocumentFieldUpdated;
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
@@ -255,6 +257,17 @@ namespace Dash
             return delegateController;
         }
 
+        private void DocumentController_DocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
+        {
+            if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
+            {
+                return;
+            }
+            Context c = new Context(args.Context);
+            c.AddDocumentContext(this);
+            //SetField(args.Reference.FieldKey, args.Reference.DereferenceToRoot(c), true);
+        }
+
         private void OnPrototypeDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
             if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
@@ -264,7 +277,7 @@ namespace Dash
             Context c = new Context(args.Context);
             c.AddDocumentContext(this);
             DocumentReferenceController reference = new DocumentReferenceController(GetId(), args.Reference.FieldKey);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, args.Action, reference, c));
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c));
         }
 
 

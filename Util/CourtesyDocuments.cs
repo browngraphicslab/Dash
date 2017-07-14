@@ -430,6 +430,7 @@ namespace Dash {
                 var retToText = docController.GetField(DashConstants.KeyStore.DataKey, context) as ReferenceFieldModelController;
                 Debug.Assert(retToText != null);
                 var fieldModelController = retToText.DereferenceToRoot(context);
+                var doc = retToText.GetDocumentController(context);
                 if (fieldModelController is TextFieldModelController) {
                     var textBox = new TextBox();
                     textBox.ManipulationDelta += (s, e) => e.Handled = true;
@@ -461,6 +462,28 @@ namespace Dash {
                     };
                     tb.SetBinding(TextBlock.TextProperty, sourceBinding);
                 }
+
+                doc.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    string s = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
+                    if (args.Action == DocumentController.FieldUpdatedAction.Add && s.Equals(retToText.GetDocumentController(context).GetId()) && args.Reference.FieldKey.Equals(retToText.FieldKey))
+                    {
+                        var fmc = args.Reference.DereferenceToRoot(new Context(args.Context));
+                        var sourceBinding = new Binding
+                        {
+                            Source = fmc,
+                            Path = new PropertyPath("Data")
+                        };
+                        if (fmc is TextFieldModelController)
+                        {
+                            sourceBinding.Mode = BindingMode.TwoWay;
+                            tb.SetBinding(TextBox.TextProperty, sourceBinding);
+                        } else if (fmc is NumberFieldModelController)
+                        {
+                            tb.SetBinding(TextBlock.TextProperty, sourceBinding);
+                        }
+                    }
+                };
 
                 // bind the text height
                 var heightController = GetHeightFieldController(docController, context);

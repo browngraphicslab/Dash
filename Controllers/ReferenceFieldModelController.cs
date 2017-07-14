@@ -59,6 +59,14 @@ namespace Dash
             {
                 reference = reference.Dereference(context);
             }
+            if (reference == null)
+            {
+                return null;
+            }
+            if (reference.InputReference != null)
+            {
+                return reference.InputReference.DereferenceToRoot(context);
+            }
             return reference;
         }
 

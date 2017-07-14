@@ -131,12 +131,12 @@ namespace Dash
 
         public virtual FieldModelController DereferenceToRoot(Context context)
         {
-            return this;
+            return InputReference != null ? InputReference.DereferenceToRoot(context) : this;
         }
 
         public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
         {
-            return this as T;
+            return DereferenceToRoot(context) as T;
         }
 
         /// <summary>
