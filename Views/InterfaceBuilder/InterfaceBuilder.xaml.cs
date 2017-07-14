@@ -39,13 +39,23 @@ namespace Dash
             this.InitializeComponent();
             Width = width;
             Height = height;
-            
-            LayoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController, viewModel.DocumentContext);
-           
-            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document, viewModel.DocumentContext) as DocumentView;
 
+            SetUpInterfaceBuilder(viewModel.DocumentController, viewModel.DocumentContext); 
 
-            _documentController = viewModel.DocumentController;
+            Binding listBinding = new Binding
+            {
+                Source = viewModel.DocumentContext.DocContextList
+            }; 
+            BreadcrumbListView.SetBinding(ListView.ItemsSourceProperty, listBinding);
+        }
+
+        private void SetUpInterfaceBuilder(DocumentController docCont, Context docContext)
+        {
+            LayoutCourtesyDocument = new LayoutCourtesyDocument(docCont, docContext);
+
+            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document, docContext) as DocumentView;
+
+            _documentController = docCont;
 
             xDocumentHolder.Child = _documentView;
 
@@ -55,8 +65,13 @@ namespace Dash
             _documentView.Drop += DocumentViewOnDrop;
             _documentView.AllowDrop = true;
 
-
             ApplyEditable();
+        }
+
+        private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            DocumentController cont = e.ClickedItem as DocumentController; 
+            SetUpInterfaceBuilder(cont, cont.Context); 
         }
 
         private void ApplyEditable()
@@ -243,6 +258,9 @@ namespace Dash
             ApplyEditable();
              _documentController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
+
+       
+        
     }
 
     public static class SettingsPaneFromDocumentControllerFactory
