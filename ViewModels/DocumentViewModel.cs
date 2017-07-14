@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -274,6 +275,29 @@ namespace Dash
         {
             DocMenuVisibility = Visibility.Visible;
             MenuColumnWidth = new GridLength(50);
+        }
+
+        public DocumentController GetCopy()
+        {
+            var copy = DocumentController.GetPrototype().MakeDelegate();
+            var fields = new ObservableDictionary<Key, FieldModelController>();
+            foreach (var kvp in DocumentController.EnumFields())
+            {
+                fields[kvp.Key] = kvp.Value;
+            }
+            var documentFieldModelController = fields[DashConstants.KeyStore.LayoutKey] as DocumentFieldModelController;
+            if (documentFieldModelController != null)
+            {
+                var layout = documentFieldModelController.Data;
+                var pointFieldModelController = layout.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
+                if (pointFieldModelController != null)
+                {
+                    var pos = pointFieldModelController.Data;
+                    layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(pos.X, pos.Y), true);
+                }
+            }
+            copy.SetFields(fields, true);
+            return copy;
         }
     }
 }
