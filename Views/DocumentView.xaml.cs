@@ -18,6 +18,7 @@ using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 using Windows.Storage;
 using Windows.Storage.Pickers;
+using System.Linq; 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -384,7 +385,7 @@ namespace Dash
 
         }
 
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private async void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             // TODO KB made to test doccontextlist, delete later 
             /* 
@@ -392,20 +393,48 @@ namespace Dash
             Debug.WriteLine("count in this list is " + ViewModel.DocumentController.DocContextList.Count); 
             */
 
-            // test exporting 
-            ExportAsJson(); 
+            //test exporting as json 
+            //Task<StorageFile> jsonFileTask = ExportAsJson();
 
-            //send email 
+            //test exporting as image 
 
+            
+            //test sending email 
+            // TODO this is weird bc it requires that default app is the Mail thingy and if you choose anything else you're fucked 
+            SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
 
             e.Handled = true;
         }
 
-        private async Task SendEmail(Windows.ApplicationModel.Contacts.Contact recipient, string message, StorageFile attachmentFile)
+        /// <summary>
+        /// Helper method that creates Contact instance with parameters 
+        /// </summary>
+        private Windows.ApplicationModel.Contacts.Contact makeContact(string emailAddress)
         {
-            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage();
-            emailMessage.Body = message; 
+            var contact = new Windows.ApplicationModel.Contacts.Contact();
+            var email = new Windows.ApplicationModel.Contacts.ContactEmail
+            {
+                Address = emailAddress, Kind = Windows.ApplicationModel.Contacts.ContactEmailKind.Personal 
+            };
+            contact.Emails.Add(email); 
+            return contact; 
+        }
 
+        /// <summary>
+        /// Method that launches the Windows mail store app, shows the dialogue with selected attachment file, message body and subject 
+        /// </summary>
+        private async void SendEmail(string recipientAddress, string message, string subject)
+        {
+            Windows.ApplicationModel.Contacts.Contact recipient = makeContact(recipientAddress);
+
+            var emailMessage = new Windows.ApplicationModel.Email.EmailMessage
+            {
+                Body = message, Subject = subject 
+            };
+
+            FileOpenPicker picker = new FileOpenPicker();
+            picker.FileTypeFilter.Add("*");
+            StorageFile attachmentFile = await picker.PickSingleFileAsync(); 
             if (attachmentFile != null)
             {
                 var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile); 
@@ -413,31 +442,25 @@ namespace Dash
                 emailMessage.Attachments.Add(attachment); 
             }
 
-            //var email = recipient.Emails.FirstOrDefault<Windows.ApplicationModel.Contacts.ContactEmail>();
-            //if (email != null)
-            //{
-                //var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
-                //emailMessage.To.Add(emailRecipient);
-            //}
-
-            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);  
+            var email = recipient.Emails.FirstOrDefault(); 
+            if (email != null)
+            {
+                var emailRecipient = new Windows.ApplicationModel.Email.EmailRecipient(email.Address);
+                emailMessage.To.Add(emailRecipient);
+            }
+            
+            await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
         private async void ExportAsImage()
         {
-            FolderPicker picker = new FolderPicker();
-            picker.SuggestedStartLocation = PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
-            StorageFolder folder = null;
-            folder = await picker.PickSingleFolderAsync();
-
-            if (folder != null)
-            {
-                StorageFile file = await folder.CreateFileAsync("img.jpg", CreationCollisionOption.ReplaceExisting);
-                //await FileIO.WriteTextAsync(file, json);
-            }
         }
 
+        /// <summary>
+        /// Serializes KeyValuePairs mapping Key to FieldModelController to json; extracts the data from FieldModelController 
+        /// If there is a nested collection, nests the json recursively 
+        /// </summary>
+        /// <returns></returns>
         private string JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
         {
             Dictionary<string, string> jsonDict = new Dictionary<string, string>();
@@ -488,7 +511,10 @@ namespace Dash
             return JsonConvert.SerializeObject(jsonDict);
         }
 
-        private async void ExportAsJson()
+        /// <summary>
+        /// Exports the document's key to field as json object and saves it locally as .txt 
+        /// </summary>
+        private async Task<StorageFile> ExportAsJson()
         {
             string json = JsonSerializeHelper(ViewModel.DocumentController.EnumFields()); 
             Debug.WriteLine(json);
@@ -499,11 +525,13 @@ namespace Dash
             StorageFolder folder = null;
             folder = await picker.PickSingleFolderAsync();
 
+            StorageFile file = null; 
             if (folder != null)
             {
-            StorageFile file = await folder.CreateFileAsync("sample.json", CreationCollisionOption.ReplaceExisting);
+            file = await folder.CreateFileAsync("sample.json", CreationCollisionOption.ReplaceExisting);
             await FileIO.WriteTextAsync(file, json);
             }
+            return file; 
         }
 
         private void OpenLayout()
