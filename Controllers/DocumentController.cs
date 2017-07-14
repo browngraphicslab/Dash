@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using System.Collections.ObjectModel; 
 
 namespace Dash
 {
@@ -40,11 +41,15 @@ namespace Dash
 
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
 
+        public ObservableCollection<DocumentController> DocContextList;
+
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         private Dictionary<Key, FieldModelController> _fields = new Dictionary<Key, FieldModelController>();
+
 
         public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type)
         {
@@ -62,11 +67,13 @@ namespace Dash
             // Add Events
         }
 
+
         /// <summary>
         ///     The <see cref="DocumentModel" /> associated with this <see cref="DocumentController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
         public DocumentModel DocumentModel { get; }
+
 
         /// <summary>
         ///     A wrapper for <see cref="Dash.DocumentModel.DocumentType" />. Change this to propogate changes
@@ -85,6 +92,7 @@ namespace Dash
             }
         }
 
+
         /// <summary>
         ///     Returns the <see cref="Dash.DocumentModel.Id" /> for the document which this controller encapsulates
         /// </summary>
@@ -92,6 +100,7 @@ namespace Dash
         {
             return DocumentModel.Id;
         }
+
 
         public override bool Equals(object obj)
         {
@@ -107,10 +116,12 @@ namespace Dash
             return GetId().Equals(controller.GetId());
         }
 
+
         public override int GetHashCode()
         {
             return GetId().GetHashCode();
         }
+
 
         /// <summary>
         ///     Returns the first level of inheritance which references the passed in <see cref="Key" /> or
@@ -132,6 +143,7 @@ namespace Dash
             return proto?.GetPrototypeWithFieldKey(key);
         }
 
+
         /// <summary>
         ///     Tries to get the Prototype of this <see cref="DocumentController" /> and associated <see cref="DocumentModel" />,
         ///     and returns null if no prototype exists
@@ -146,9 +158,12 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
+            
+
             // if the field contained a DocumentFieldModelController return it's data, otherwise return null
             return documentFieldModelController?.Data;
         }
+
 
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="Key" /> at the first
@@ -184,6 +199,7 @@ namespace Dash
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
         }
 
+
         /// <summary>
         ///     returns the <see cref="FieldModelController" /> for the specified <see cref="Key" /> by looking first in this
         ///     <see cref="DocumentController" />
@@ -194,11 +210,13 @@ namespace Dash
         /// <returns></returns>
         public FieldModelController GetField(Key key, Context context = null)
         {
+            context = Context.SafeInitAndAddDocument(context, this);
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
 
             return firstProtoWithKeyOrNull?._fields[key];
         }
+
 
         /// <summary>
         ///     Sets all of the document's fields to a given Dictionary of Key FieldModel
@@ -236,6 +254,7 @@ namespace Dash
             return delegateController;
         }
 
+
         public bool IsDelegateOf(string id)
         {
             var proto = GetPrototype();
@@ -245,6 +264,7 @@ namespace Dash
                 else return proto.IsDelegateOf(id);
             return false;
         }
+
 
         /// <summary>
         ///     Gets the delegates for this <see cref="DocumentController" /> or creates a delegates field
@@ -268,6 +288,7 @@ namespace Dash
 
             return currentDelegates;
         }
+
 
         public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, Context context = null)
         {
@@ -299,15 +320,13 @@ namespace Dash
             Execute(context);
         }
 
-        public static FieldModelController GetDereferencedField(FieldModelController fieldModelController, Context context)
+        public FieldModelController GetDereferencedField(Key key, Context context = null)
         {
-            return fieldModelController.DereferenceToRoot(context);
-        }
-        public FieldModelController GetDereferencedField(Key key, Context context)
-        {
+            context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
         }
+
 
         private void Execute(Context context = null)
         {
@@ -339,7 +358,9 @@ namespace Dash
             }
         }
 
+
         public IEnumerable<KeyValuePair<Key, FieldModelController>> PropFields => EnumFields();
+
 
         public IEnumerable<KeyValuePair<Key, FieldModelController>> EnumFields(bool ignorePrototype = false)
         {
@@ -357,6 +378,7 @@ namespace Dash
             }
         }
 
+        
         /// <summary>
         /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
         /// string key of the field and value is the rendered UI element representing the value.
@@ -379,7 +401,9 @@ namespace Dash
                     var dBox = new CourtesyDocuments.DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
-                    var ele = dBox.makeViewUI(context);
+
+                    var ele = dBox.MakeViewUI(context);
+
                     ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
 
@@ -405,16 +429,11 @@ namespace Dash
             return sp;
         }
 
-        public FrameworkElement MakeViewUI()
-        {
-            return makeViewUI(new Context());
-        }
 
-        public FrameworkElement makeViewUI(Context context = null)
+        public FrameworkElement MakeViewUI(Context context = null)
         {
-            context = context == null ? new Context() : context;
+            context = context ?? new Context();
             context.AddDocumentContext(this);
-            var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
             {
@@ -441,17 +460,19 @@ namespace Dash
                 return CourtesyDocuments.ApiDocumentModel.MakeView(this, context);
             }
 
+
             // if document is not a known UI View, then see if it contains a Layout view field
-            var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, context);
+            var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
                 Debug.Assert(doc != null);
-                return doc.Data.makeViewUI(context);
+                return doc.Data.MakeViewUI(context);
             }
 
             return makeAllViewUI(context);
         }
+
 
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {

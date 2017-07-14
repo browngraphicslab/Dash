@@ -64,5 +64,17 @@ namespace Dash
         {
             Debug.WriteLine(string.Join(", ",_documentContextList.Select(dc => dc.GetId())));
         }
+
+        public static Context SafeInit(Context context)
+        {
+            return context ?? new Context();
+        }
+
+        public static Context SafeInitAndAddDocument(Context context, DocumentController doc)
+        {
+            context = context ?? new Context();
+            context.AddDocumentContext(doc);
+            return context;
+        }
     }
 }

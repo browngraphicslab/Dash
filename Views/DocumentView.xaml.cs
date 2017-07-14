@@ -14,6 +14,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
+using System.Collections.ObjectModel;
+using Newtonsoft.Json;
 using Windows.UI.Xaml.Media.Animation;
 
 
@@ -70,7 +72,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            Tapped += OnTapped;         
+            Tapped += OnTapped;
         }
 
         private void SetUpMenu()
@@ -327,6 +329,7 @@ namespace Dash
 
         }
 
+
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
@@ -334,7 +337,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel), new Point(0,0), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);
         }
 
         #endregion

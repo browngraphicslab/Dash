@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -18,13 +19,11 @@ namespace Dash {
         /// </summary>
         public class CourtesyDocument {
 
-            public List<DocumentModel> context;
-
             public virtual DocumentController Document { get; set; }
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
-                var layoutController = new DocumentFieldModelController(layoutDoc);
-                document.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
+                document.AddLayoutToLayoutList(layoutDoc);
+                document.SetActiveLayout(layoutDoc);
             }
 
             /// <summary>
@@ -44,10 +43,15 @@ namespace Dash {
                 deleg.SetField(DashConstants.KeyStore.DataKey, fmc, true);
 
                 var selfFmc = new DocumentFieldModelController(deleg);
-                deleg.SetField(DashConstants.KeyStore.LayoutKey, selfFmc, true);
+                deleg.SetField(DashConstants.KeyStore.ActiveLayoutKey, selfFmc, true);
+
+                // TODO KB delegates... but this method is never called so ????? 
+                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController).AddDocument(deleg); 
+
                 return deleg;
             }
 
+            [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
             public static Dictionary<Key, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
                 FieldModelController data) {
                 // create a layout for the image
@@ -58,6 +62,19 @@ namespace Dash {
                 };
                 if (data != null)
                     fields.Add(DashConstants.KeyStore.DataKey, data);
+                return fields;
+            }
+
+            public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null) {
+                // assign the default fields
+                var fields = new Dictionary<Key, FieldModelController> {
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos)
+                };
+
+                //TODO determine what the data key should point to if no field is provided
+                fields.Add(DashConstants.KeyStore.DataKey, data ?? new DocumentCollectionFieldModelController(new List<DocumentController>()));
                 return fields;
             }
 
@@ -210,49 +227,53 @@ namespace Dash {
         /// Given a document, this provides an API for getting all of the layout documents that define it's view.
         /// </summary>
         public class LayoutCourtesyDocument : CourtesyDocument {
-            public DocumentController LayoutDocumentController = null;
 
-            public LayoutCourtesyDocument(DocumentController docController, Context context) {
-                Document = docController; // get the layout field on the document being displayed
-                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, context) as DocumentFieldModelController;
-                if (layoutField == null) {
-                    var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
-                        new DocumentCollectionFieldModelController(new DocumentController[] { }));
-                    LayoutDocumentController =
-                        new DocumentController(fields, CourtesyDocuments.CollectionBox.DocumentType);
+            // the active layout for the doc that was passed in
+            public DocumentController ActiveLayoutDocController = null;
 
-                    SetLayoutForDocument(Document, LayoutDocumentController);
-                } else
-                    LayoutDocumentController = layoutField?.Data;
+            public LayoutCourtesyDocument(DocumentController docController) {
+                Document = docController;      
+
+                var activeLayout = Document.GetActiveLayout();
+                ActiveLayoutDocController = activeLayout == null ? InstantiateActiveLayout(Document) : activeLayout.Data;
             }
 
-            public IEnumerable<DocumentController> GetLayoutDocuments(Context context)
+            public IEnumerable<DocumentController> GetLayoutDocuments()
             {
-
                 var layoutDataField =
-                        LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
-                if (layoutDataField is DocumentCollectionFieldModelController)
+                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey);
+
+                if (layoutDataField is DocumentCollectionFieldModelController) // layout data is a collection of documents each referencing some field
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
                         yield return d;
-                else if (layoutDataField.FieldModel is DocumentModelFieldModel)
-                    yield return ContentController.GetController<DocumentController>(
-                        (layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
-                else yield return LayoutDocumentController;
+                else if (layoutDataField is DocumentFieldModelController) // layout data is a document referencing some field
+                    yield return (layoutDataField as DocumentFieldModelController).Data;
+                else yield return ActiveLayoutDocController; // TODO why would the layout be any other type of field model controller
             }
 
-            public override FrameworkElement makeView(DocumentController docController,
-                Context context) {
-                return LayoutCourtesyDocument.MakeView(docController, context);
+            public override FrameworkElement makeView(DocumentController docController, Context context) {
+                return MakeView(docController);
             }
 
-            public static FrameworkElement MakeView(DocumentController docController,
-                Context context) {
-                var docViewModel = new DocumentViewModel(docController, context) {
+            public static FrameworkElement MakeView(DocumentController docController) {
+                var docViewModel = new DocumentViewModel(docController) {
                     IsDetailedUserInterfaceVisible = false,
                     IsMoveable = false
                 };
                 return new DocumentView(docViewModel);
             }
+
+
+            private DocumentController InstantiateActiveLayout(DocumentController doc)
+            {
+                // instantiate default fields
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
+                var newLayout = new DocumentController(fields, DashConstants.DocumentTypeStore.DynamicInterfaceLayout);
+                // since this is the first view of the document, set the prototype active layout to the new layout
+                doc.SetActiveLayout(newLayout, false);
+                return newLayout;
+            }
+
         }
 
         /// <summary>
@@ -668,8 +689,9 @@ namespace Dash {
                 double maxHeight = 0;
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments()) {
+
                         Border b = new Border();
-                        FrameworkElement item = stackDoc.makeViewUI(context);
+                        FrameworkElement item = stackDoc.MakeViewUI(context);
                         b.Child = item;
                         maxHeight = Math.Max(maxHeight, item.Height);
                         stack.Items.Add(b);

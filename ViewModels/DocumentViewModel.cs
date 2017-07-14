@@ -47,12 +47,14 @@ namespace Dash
             {
                 if (SetProperty(ref _width, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocumentContext) as DocumentFieldModelController)?.Data;
+
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
                     var widthFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, DocumentContext) as
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey) as
                             NumberFieldModelController;
                     widthFieldModelController.Data = value;
                 }
@@ -66,12 +68,14 @@ namespace Dash
             {
                 if (SetProperty(ref _height, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocumentContext) as DocumentFieldModelController)?.Data;
+
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
                     var heightFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, DocumentContext) as
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey) as
                             NumberFieldModelController;
                     heightFieldModelController.Data = value;
                 }
@@ -84,12 +88,13 @@ namespace Dash
             set {
                 if (SetProperty(ref _pos, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocumentContext) as DocumentFieldModelController)?.Data;
+
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
                     var posFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, DocumentContext) as
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey) as
                             PointFieldModelController;
                     posFieldModelController.Data = value;
                 }
@@ -145,15 +150,12 @@ namespace Dash
             set { SetProperty(ref _menuColumnWidth, value); }
         }
 
-        public Context DocumentContext = null;
-        
-
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
-        public DocumentViewModel(DocumentController documentController, Context context = null)
+
+        public DocumentViewModel(DocumentController documentController)
         {
-            DocumentContext = context ?? new Context();
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
@@ -161,10 +163,11 @@ namespace Dash
 
             // FIELD FETCHERS
             // overrides defaults with document fields if layout-relevant fields are set
-            var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, context) as DocumentFieldModelController)?.Data;
+            var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+
             if (layoutDocController == null)
                 layoutDocController = documentController;
-            var posFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
+            var posFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
             if (posFieldModelController == null)
             {
                 posFieldModelController = new PointFieldModelController(0, 0);
@@ -173,7 +176,7 @@ namespace Dash
             Position = posFieldModelController.Data;
             posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
 
-            var widthFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+            var widthFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
             if (widthFieldModelController == null)
             {
                 widthFieldModelController = new NumberFieldModelController(double.NaN);
@@ -183,7 +186,7 @@ namespace Dash
             widthFieldModelController.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
 
 
-            var heightFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as NumberFieldModelController;
+            var heightFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
             if (heightFieldModelController == null)
             {
                 heightFieldModelController = new NumberFieldModelController(double.NaN);
@@ -193,7 +196,7 @@ namespace Dash
             heightFieldModelController.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent; ;
 
             // set icon via field 
-            var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, context) as NumberFieldModelController;
+            var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey) as NumberFieldModelController;
             if (iconFieldModelController == null) {
                 iconFieldModelController = new NumberFieldModelController((int)IconTypeEnum.Document);
                 DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
@@ -201,19 +204,24 @@ namespace Dash
             iconType = (IconTypeEnum)iconFieldModelController.Data;
             iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
 
-            var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, context) as DocumentFieldModelController;
+
+            var documentFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.makeViewUI(context);
+            Content = documentController.MakeViewUI();
+
             documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.LayoutKey))
+                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
-                    Content = DocumentController.makeViewUI(context);
+
+                    Content = DocumentController.MakeViewUI();
                 }
             };
+
         }
+
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update
