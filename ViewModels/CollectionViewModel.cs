@@ -171,7 +171,9 @@ namespace Dash
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
                     var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
-                    viewModel.Position = new Point(x, y);
+                    viewModel.GroupTransform = new TransformGroupData(new Point(x, y), 
+                                                                      new Point(viewModel.GroupTransform.ScaleCenter.X, viewModel.GroupTransform.ScaleCenter.Y), 
+                                                                      new Point(viewModel.GroupTransform.ScaleAmount.X, viewModel.GroupTransform.ScaleAmount.Y));
                     offset += 15;
                 }
                 viewModel.ManipulationMode = ManipulationModes.System;

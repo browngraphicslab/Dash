@@ -99,10 +99,21 @@ namespace Dash
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
-        /// <param name="translationDelta"></param>
-        private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
+        /// <param name="delta"></param>
+        private void ManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
         {
-            ViewModel.Position = new Point(ViewModel.Position.X + translationDelta.X, ViewModel.Position.Y + translationDelta.Y);
+            var currentTranslate = ViewModel.GroupTransform.Translate;
+            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleCenter = delta.ScaleCenter;
+            var deltaScaleAmount = delta.ScaleAmount;
+
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+            var scaleCenter = new Point(currentTranslate.X + deltaScaleCenter.X, currentTranslate.Y + deltaScaleCenter.Y);
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+
+            ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()

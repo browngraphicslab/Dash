@@ -30,7 +30,7 @@
                     <dash:DocumentView DataContext="{Binding}" 
                                        IODragStarted="StartDrag" 
                                        IODragEnded="EndDrag" 
-                                       RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
+                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"/>
                                        <!--ManipulationStarted="DocumentView_ManipulationStarted" 
                                        ManipulationDelta="DocumentView_ManipulationDelta"--> 
                 </DataTemplate>

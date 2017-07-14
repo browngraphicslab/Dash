@@ -69,7 +69,7 @@ namespace Dash {
             TranslateAndScale(false, true, e);
         }
 
-        public delegate void OnManipulatorTranslatedHandler(Point translationDelta);
+        public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslated;
 
 
@@ -115,7 +115,9 @@ namespace Dash {
             if (canTranslate)
             {
                 group.Children.Add(translate);
-                OnManipulatorTranslated?.Invoke(new Point(translate.X, translate.Y));
+                OnManipulatorTranslated?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y), 
+                                                                        new Point(scale.CenterX, scale.CenterY),
+                                                                        new Point(scale.ScaleX, scale.ScaleY)));
             }
         }
 

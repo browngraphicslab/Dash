@@ -119,8 +119,10 @@
     <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
+    <Compile Include="Util\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\Context.cs" />
+    <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>

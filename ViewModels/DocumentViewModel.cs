@@ -18,7 +18,7 @@ namespace Dash
         private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
-        private Point _pos;
+        private TransformGroupData _trans;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
@@ -78,20 +78,25 @@ namespace Dash
             }
         }
 
-        public Point Position
+        public TransformGroupData GroupTransform
         {
-            get { return _pos; }
+            get { return _trans; }
             set {
-                if (SetProperty(ref _pos, value))
+                if (SetProperty(ref _trans, value))
                 {
                     var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocumentContext) as DocumentFieldModelController)?.Data;
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
-                    var posFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, DocumentContext) as
-                            PointFieldModelController;
-                    posFieldModelController.Data = value;
+
+                    //TODO: need to make new fieldmodelcontrollers for all transform info
+
+                    //var posFieldModelController =
+                    //    layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, DocumentContext) as
+                    //        PointFieldModelController;
+                    //posFieldModelController.Data = value.Translate;
+
+                    //===================================================================
                 }
             }
         }
@@ -170,7 +175,10 @@ namespace Dash
                 posFieldModelController = new PointFieldModelController(0, 0);
                 layoutDocController.SetField(DashConstants.KeyStore.PositionFieldKey, posFieldModelController, true);
             }
-            Position = posFieldModelController.Data;
+
+            //TODO: when field thingy mentioned above is done pass in proper parameters
+            GroupTransform = new TransformGroupData(posFieldModelController.Data, new Point(), new Point(1,1));
+
             posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
 
             var widthFieldModelController = layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
@@ -248,7 +256,8 @@ namespace Dash
             var posFieldModelController = sender as PointFieldModelController;
             if (posFieldModelController != null)
             {
-                Position = posFieldModelController.Data;
+                //TODO: when field thingy mentioned above is done pass in proper parameters
+                GroupTransform = new TransformGroupData(posFieldModelController.Data, new Point(), new Point(1,1));
             }
         }
 
