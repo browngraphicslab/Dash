@@ -68,12 +68,12 @@ namespace Dash
 
         public override ReferenceFieldModelController InputReference
         {
-            get { return FieldModel.InputReference; }
+            get { return _inputReference; }
             set
             {
-                if (SetProperty(ref FieldModel.InputReference, value))
+                if (SetProperty(ref FieldModel.InputReference, value.ReferenceFieldModel))
                 {
-                    
+                    _inputReference = value;
                 }
             }
         }

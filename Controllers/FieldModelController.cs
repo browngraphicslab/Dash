@@ -23,17 +23,20 @@ namespace Dash
 
         public Context Context = null;
 
+
+        protected ReferenceFieldModelController _inputReference;
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         public virtual ReferenceFieldModelController InputReference
         {
-            get { return FieldModel.InputReference; }
+            get { return _inputReference; }
             set
             {
-                if (SetProperty(ref FieldModel.InputReference, value))
+                if (SetProperty(ref FieldModel.InputReference, value.ReferenceFieldModel))
                 {
+                    _inputReference = value;
                     // update local
                     var cont = value.GetDocumentController(value.Context);
                     cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
