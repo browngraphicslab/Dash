@@ -36,6 +36,7 @@ namespace Dash.Views
         private Slider _slider;
         private TextBlock _sliderHeader;
         private StackPanel _stackPanel;
+        private Floating _floatingMenu;
 
         /// <summary>
         /// Get or set the Diameter of the radial menu
@@ -73,9 +74,16 @@ namespace Dash.Views
             }
             set
             {
-                _mainMenu.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
                 _mainMenu.CenterButtonLeft = 95;
                 _mainMenu.CenterButtonTop = 95;
+                if (!value)
+                {
+                    _mainMenu.Collapse();
+                }
+                else
+                {
+                    _mainMenu.Expand();
+                }
             }
         }
 
@@ -114,13 +122,13 @@ namespace Dash.Views
         private void SetUpBaseMenu()
         {
             var border = new Border();
-            var floatingMenu = new Floating
+            _floatingMenu = new Floating
             {
                 IsBoundByParent = true,
                 IsBoundByScreen = true,
                 Content = border
             };
-            _parentCanvas.Children.Add(floatingMenu);
+            _parentCanvas.Children.Add(_floatingMenu);
             var grid = new Grid();
             border.Child = grid;
             _stackPanel = new StackPanel()
@@ -145,6 +153,12 @@ namespace Dash.Views
             _stackPanel.Children.Add(_sliderPanel);
             _stackPanel.Children.Add(_mainMenu);
 
+        }
+
+        public void JumpToPosition(double x, double y)
+        {
+            IsVisible = true;
+            _floatingMenu.SetControlPosition(x - 15 - Diameter/2, y - 15 - Diameter/2);
         }
 
         /// <summary>
@@ -258,7 +272,7 @@ namespace Dash.Views
             {
                 Label = item.Description,
                 FontFamily = new FontFamily("Century Gothic"),
-                IconForegroundBrush = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
+                IconForegroundBrush = (SolidColorBrush)App.Instance.Resources["WindowsBlue"],
                 IconFontFamily = new FontFamily("Segoe UI Symbol"),
                 IconSize = 5,
             };

@@ -13,6 +13,7 @@ using Dash.Models.OperatorModels.Set;
 using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -25,6 +26,7 @@ namespace Dash
     public sealed partial class MainPage : Page
     {
         public static MainPage Instance;
+        private RadialMenuView _radialMenu;
 
 
         public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
@@ -38,9 +40,6 @@ namespace Dash
             xOverlayCanvas.OnAddCollectionTapped += AddCollection;
             xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
             xOverlayCanvas.OnAddImageTapped += AddImage;
-            xOverlayCanvas.OnAddShapeTapped += AddShape;
-            xOverlayCanvas.OnOperatorAdd += OnOperatorAdd;
-            xOverlayCanvas.OnToggleEditMode += OnToggleEditMode;
 
             // create the collection document model using a request
             var collectionDocumentController =
@@ -66,18 +65,7 @@ namespace Dash
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
-            var radialMenu = new RadialMenuView(xCanvas);
-        }
-
-        private void OnToggleEditMode(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            //xFreeformView.ToggleEditMode();
-        }
-
-
-        private void OnOperatorAdd(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            AddOperator();
+            _radialMenu = new RadialMenuView(xCanvas);
         }
 
         public void AddOperator()
@@ -96,9 +84,6 @@ namespace Dash
             view.DataContext = opvm;
 
             DisplayDocument(opModel);
-
-
-            //xFreeformView.AddOperatorView(opvm, view, 50, 50);
 
             //// add union operator for testing 
             var intersectOpModel =
@@ -139,41 +124,6 @@ namespace Dash
             DisplayDocument(imgOpModel);
         }
 
-        private async void AddShape(object sender, TappedRoutedEventArgs e)
-        {
-            var shapeModel = new ShapeModel
-            {
-                Width = 300,
-                Height = 300,
-                X = 300,
-                Y = 300,
-                Id = $"{Guid.NewGuid()}"
-            };
-
-            var shapeEndpoint = App.Instance.Container.GetRequiredService<ShapeEndpoint>();
-            var result = await shapeEndpoint.CreateNewShape(shapeModel);
-            if (result.IsSuccess)
-            {
-                shapeModel = result.Content;
-            }
-            else
-            {
-                Debug.WriteLine(result.ErrorMessage);
-                return;
-            }
-
-            throw new NotImplementedException();
-            //var shapeController = new ShapeController(shapeModel);
-            //throw new NotImplementedException("The shape controller has not been updated to work with controllers");
-            ////ContentController.AddShapeController(shapeController);
-
-            //var shapeVM = new ShapeViewModel(shapeController);
-            //var shapeView = new ShapeView(shapeVM);
-
-
-            //  xFreeformView.Canvas.Children.Add(shapeView);
-        }
-
         /// <summary>
         ///     Adds new documents to the MainView document. New documents are added as children of the Main document.
         /// </summary>
@@ -183,9 +133,8 @@ namespace Dash
         {
             var children =
                 MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey,
-                    new List<DocumentController>()) as DocumentCollectionFieldModelController;
-            if (children != null)
-                children.AddDocument(docModel);
+                    new Context()) as DocumentCollectionFieldModelController;
+            children?.AddDocument(docModel);
         }
 
         public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
@@ -204,7 +153,7 @@ namespace Dash
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
             var layoutDoc =
-                new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
@@ -234,7 +183,7 @@ namespace Dash
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
             var layoutDoc =
-                new CourtesyDocuments.CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
@@ -325,13 +274,26 @@ namespace Dash
             DisplayDocument(col);
         }
 
-        public void XCanvas_DragOver_1(object sender, DragEventArgs e)
+        public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
             //e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
-        private void xOverlayCanvas_Loaded(object sender, RoutedEventArgs e)
+        public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
+            var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
+
+            xCanvas.Children.Add(elementToDisplay);
+            Canvas.SetLeft(elementToDisplay, dropPoint.X);
+            Canvas.SetTop(elementToDisplay, dropPoint.Y);
+        }
+
+        private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (!_radialMenu.IsVisible)
+                _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
+            else _radialMenu.IsVisible = false;
+            e.Handled = true;
         }
     }
 }

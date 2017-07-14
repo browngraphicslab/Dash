@@ -39,10 +39,10 @@
     -->
     <Application.Resources>
         <!-- COLORS -->
-        <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
+        <SolidColorBrush x:Key="WindowsBlue" Color="SteelBlue"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
-        <SolidColorBrush x:Key="CollectionViewBackground" Color="#E5CBCBCB"/>
+        <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
         <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"></SolidColorBrush>
 
         

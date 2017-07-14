@@ -25,30 +25,37 @@ namespace Dash
         public double CanvasScale { get; set; } = 1;
         public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
-        public const float MinScale = 0.5f;
+        public const float MinScale = 0.001f;
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
         // whether the user can draw links currently or not
-        public bool CanLink {
-            get {
+        public bool CanLink
+        {
+            get
+            {
                 if (CurrentView is CollectionFreeformView)
                     return (CurrentView as CollectionFreeformView).CanLink;
                 else
                     return false;
-            } set {
+            }
+            set
+            {
                 if (CurrentView is CollectionFreeformView)
                     (CurrentView as CollectionFreeformView).CanLink = value;
             }
         }
 
-        public PointerRoutedEventArgs PointerArgs {
-            get {
+        public PointerRoutedEventArgs PointerArgs
+        {
+            get
+            {
                 if (CurrentView is CollectionFreeformView)
                     return (CurrentView as CollectionFreeformView).PointerArgs;
                 else
                     return null;
             }
-            set {
+            set
+            {
                 if (CurrentView is CollectionFreeformView)
                     (CurrentView as CollectionFreeformView).PointerArgs = value;
             }
@@ -77,7 +84,6 @@ namespace Dash
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();
-
             CanLink = false;
         }
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
@@ -99,6 +105,13 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             ParentDocument.HasCollection = true;
+            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
+                                                ParentDocument.xBorder.Margin.Top + 5,
+                                                ParentDocument.xBorder.Margin.Right,
+                                                ParentDocument.xBorder.Margin.Bottom);
+
             if (ParentDocument != MainPage.Instance.MainDocView)
             {
                 ParentDocument.SizeChanged += (ss, ee) =>
@@ -130,7 +143,7 @@ namespace Dash
                     var docVM = eNewItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     var ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -139,11 +152,11 @@ namespace Dash
                             foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
                                 ReferenceFieldModelController irfm =
-                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
+                                    new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
-                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
-                                    ContentController.DereferenceToRootFieldModel(orfm).GetId());
+                                    new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
+                                Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
+                                    orfm.DereferenceToRoot().GetId());
                             }
                         }
                     }
@@ -156,7 +169,7 @@ namespace Dash
                     var docVM = eOldItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -165,18 +178,19 @@ namespace Dash
                             foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
                                 ReferenceFieldModelController irfm =
-                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
+                                    new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
-                                    new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.RemoveEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(),
-                                    ContentController.DereferenceToRootFieldModel(orfm).GetId());
+                                    new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
+                                Graph.RemoveEdge(irfm.DereferenceToRoot().GetId(),
+                                    orfm.DereferenceToRoot().GetId());
                             }
                         }
                     }
                 }
             }
         }
-        List<DocumentController> DocContextList {  get { return (DataContext as CollectionViewModel).DocContextList;  } }
+
+        public Context DocumentContext => (DataContext as CollectionViewModel).DocumentContext;
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
@@ -185,16 +199,16 @@ namespace Dash
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocContextList) as OperatorFieldModelController;
+                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as OperatorFieldModelController;
                 if (ofm != null)
                 {
                     foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                     {
                         foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                         {
-                            ReferenceFieldModelController irfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), inputKey.Key);
-                            ReferenceFieldModelController orfm = new ReferenceFieldModelController(docVM.DocumentController.GetId(), outputKey.Key);
-                            Graph.AddEdge(ContentController.DereferenceToRootFieldModel(irfm).GetId(), ContentController.DereferenceToRootFieldModel(orfm).GetId());
+                            ReferenceFieldModelController irfm = new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
+                            ReferenceFieldModelController orfm = new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
+                            Graph.AddEdge(irfm.DereferenceToRoot().GetId(), orfm.DereferenceToRoot().GetId());
                         }
                     }
                 }
@@ -281,7 +295,7 @@ namespace Dash
             //Clamp the zoom
             CanvasScale *= delta.Scale;
             ClampScale(scale);
-            
+
 
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
@@ -473,7 +487,7 @@ namespace Dash
         {
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
-        
+
         /// <summary>
         /// Make sure the canvas is still in bounds after resize
         /// </summary>
@@ -538,7 +552,7 @@ namespace Dash
         private HashSet<uint> _currentPointers = new HashSet<uint>();
 
         #endregion
-        
+
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -549,7 +563,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentReferenceController(docId, outputKey), true, e, el, ParentDocument);
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
@@ -559,14 +573,14 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentReferenceController(docId, outputKey), false, e, el, ParentDocument);
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
 
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.XCanvas_DragOver_1;
+            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
             ItemsCarrier carrier = ItemsCarrier.GetInstance();
             carrier.Source = ViewModel;
             foreach (var item in e.Items)
@@ -585,7 +599,7 @@ namespace Dash
             carrier.Source = null;
             carrier.Destination = null;
             carrier.Translate = new Point();
-            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.XCanvas_DragOver_1;
+            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.xCanvas_DragOver;
         }
 
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
@@ -630,7 +644,7 @@ namespace Dash
             }
         }
 
-        
+
 
         #region Menu
         /// <summary>
@@ -683,11 +697,15 @@ namespace Dash
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
             ParentDocument.Width -= 50;
+            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left - 50,
+                                                            ParentDocument.xBorder.Margin.Top,
+                                                            ParentDocument.xBorder.Margin.Right,
+                                                            ParentDocument.xBorder.Margin.Bottom);
         }
 
         private void SelectAllItems()
         {
-
             if (CurrentView is CollectionGridView)
             {
                 var gridView = (CurrentView as CollectionGridView).xGridView;
@@ -716,6 +734,10 @@ namespace Dash
             ViewModel.DeleteSelected_Tapped(null, null);
         }
 
+        private void DeleteCollection()
+        {
+            ParentDocument.DeleteDocument();
+        }
 
         private void OpenMenu()
         {
@@ -726,6 +748,7 @@ namespace Dash
             var setGrid = new Action(SetGridView);
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
+            var deleteCollection = new Action(DeleteCollection);
 
             var collectionButtons = new List<MenuButton>()
             {
@@ -739,6 +762,9 @@ namespace Dash
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
                 new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
             };
+
+            if (ParentDocument != MainPage.Instance.MainDocView)
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
 
             var documentButtons = new List<MenuButton>()
             {
@@ -754,6 +780,11 @@ namespace Dash
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
             ParentDocument.Width += 50;
+            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50,
+                                                            ParentDocument.xBorder.Margin.Top,
+                                                            ParentDocument.xBorder.Margin.Right,
+                                                            ParentDocument.xBorder.Margin.Bottom);
         }
 
 
@@ -761,11 +792,11 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocContextList); 
+            //Util.ExportAsJson(ViewModel.DocumentContext);
         }
         public void ScreenCap()
         {
-            Util.ExportAsImage(xOuterGrid); 
+            Util.ExportAsImage(xOuterGrid);
         }
 
         #region Collection Activation
@@ -847,17 +878,20 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
             xBackgroundTileContainer.Children.Clear();
             new ManipulationControls(xBackgroundTileContainer);
             var width = 100;
             var height = 100;
-            for (double x = 0; x < Grid.ActualWidth; x += width) {
-                for (double y = 0; y < Grid.ActualHeight; y += height) {
+            for (double x = 0; x < Grid.ActualWidth; x += width)
+            {
+                for (double y = 0; y < Grid.ActualHeight; y += height)
+                {
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .9;
+                    image.Opacity = .2;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);

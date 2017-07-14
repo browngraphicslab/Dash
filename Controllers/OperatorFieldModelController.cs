@@ -23,7 +23,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList);
+        public abstract void Execute(DocumentController doc, Context context);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
@@ -49,6 +49,11 @@ namespace Dash
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
             textBlock.Text = $"Operator of type: {OperatorFieldModel.Type}";
+        }
+
+        public override FieldModelController GetDefaultController()
+        {
+            throw new NotImplementedException();
         }
     }
 }

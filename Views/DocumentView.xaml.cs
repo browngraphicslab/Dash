@@ -12,9 +12,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.Storage;
-using Windows.Storage.Pickers;
-using System.Linq;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
@@ -88,13 +85,15 @@ namespace Dash
             var layout = new Action(OpenLayout);
             var copy = new Action(CopyDocument);
             var delete = new Action(DeleteDocument);
+            var deleteButton = new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete);
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
                 new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,copy),
                 new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, new Action(ScreenCap)),
-                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, new Action(GetJson))
+                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, new Action(GetJson)),
+                deleteButton
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -233,16 +232,14 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
-
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator"))
-            {
+ 
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                xBorder.Opacity = 0;
             }
             Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection"))
-            {
-                xBorder.Opacity = 0;
+
+            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
+                ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
             }
 
             SetUpMenu();
@@ -250,23 +247,23 @@ namespace Dash
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
-            ViewModel.PropertyChanged += (o, eventArgs) =>
-            {
-                if (eventArgs.PropertyName == "IsMoveable")
-                {
-                    if (ViewModel.IsMoveable)
-                    {
-                        manipulator.AddAllAndHandle();
-                    }
-                    else
-                    {
-                        manipulator.RemoveAllButHandle();
-                    }
-                }
-            };
+            //ViewModel.PropertyChanged += (o, eventArgs) =>
+            //{
+            //    if (eventArgs.PropertyName == "IsMoveable")
+            //    {
+            //        if (ViewModel.IsMoveable)
+            //        {
+            //            manipulator.AddAllAndHandle();
+            //        }
+            //        else
+            //        {
+            //            manipulator.RemoveAllButHandle();
+            //        }
+            //    }
+            //};
 
-            if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            else manipulator.RemoveAllButHandle();
+            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
+            //else manipulator.RemoveAllButHandle();
 
             #endregion
         }
@@ -296,35 +293,7 @@ namespace Dash
             }
         }
 
-        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            var position = e.GetPosition(OverlayCanvas.Instance);
-            OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
-        }
-
-        //bool singleTap = false;
-
-        ///// <summary>
-        ///// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
-        ///// on signle tap to prevent flickering.
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="e"></param>
-        //private void XGrid_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
-
-
-        //        if (xContextMenu.Visibility == Windows.UI.Xaml.Visibility.Visible)
-        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-        //        else
-        //            xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Visible;
-
-
-        //    singleTap = false;
-        //    e.Handled = true;
-        //}
-
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
+        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
             if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible)
             {
@@ -350,30 +319,20 @@ namespace Dash
             e.Handled = true; // prevent propagating
         }
 
-
-        //// hides context menu on single tap
-        //private async void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
-        //    singleTap = true;
-        //    await Task.Delay(150);
-        //    if (singleTap)
-        //        xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-
-        //}
-
-        #region Menu
+  #region Menu
 
         public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection)
+            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
                 ViewModel.OpenMenu();
             else
                 ViewModel.CloseMenu();
             e.Handled = true;
         }
 
-        private void DeleteDocument()
+        public void DeleteDocument()
         {
-            throw new NotImplementedException();
+            FadeOut.Begin();
         }
 
         private void CopyDocument()
@@ -413,9 +372,14 @@ namespace Dash
             e.Handled = true;
         }
 
+        private void FadeOut_Completed(object sender, object e)
+        {
+            ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
+        }
+
         private void OpenLayout()
         {
-            throw new NotImplementedException();
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel), new Point(0,0), this);
         }
 
         #endregion

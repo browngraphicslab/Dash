@@ -69,23 +69,23 @@ namespace Dash
         /// </summary>
         public double CellSize { get; set; }
 
-        public List<DocumentController> DocContextList { get; }
+        public Context DocumentContext { get; }
 
 
-        public CollectionViewModel(DocumentCollectionFieldModelController collection, List<DocumentController> docContextList)
+        public CollectionViewModel(DocumentCollectionFieldModelController collection, Context context)
         {
-            DocContextList = docContextList;
+            DocumentContext = context;
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            UpdateViewModels(_collectionFieldModelController.DocumentCollectionFieldModel);
+            UpdateViewModels(_collectionFieldModelController, context);
             collection.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
             CellSize = 250;
         }
 
         private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
         {
-            UpdateViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel);
+            UpdateViewModels(sender as DocumentCollectionFieldModelController);
         }
 
         #region Event Handlers
@@ -144,31 +144,34 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, string id)
+        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentController docController)
         {
             foreach (var viewModel in col)
-                if (viewModel.DocumentController.GetId() == id)
+                if (viewModel.DocumentController.GetId() == docController.GetId())
                     return true;
             return false;
         }
 
-        private bool ViewModelContains(IEnumerable<string> l, DocumentViewModel vm)
+        private bool ViewModelContains(List<DocumentController> documentControllerList, DocumentViewModel vm)
         {
-            foreach (var s in l)
-                if (vm.DocumentController.GetId() == s)
+            foreach (var docController in documentControllerList)
+                if (vm.DocumentController.GetId() == docController.GetId())
                     return true;
             return false;
         }
 
-        public void UpdateViewModels(DocumentCollectionFieldModel documents)
+        public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context=null)
         {
             var offset = 0;
-            foreach (var id in documents.Data)
+            foreach (var docController in documents.GetDocuments())
             {
-                var controller = ContentController.GetController(id) as DocumentController;
-                if (ViewModelContains(DataBindingSource, id)) continue;
-                var viewModel = new DocumentViewModel(controller, DocContextList);
-                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
+                if (ViewModelContains(DataBindingSource, docController)) continue;
+
+                var doccontext = context != null ? new Context(context) : new Context();
+                doccontext.AddDocumentContext(docController);
+                var viewModel = new DocumentViewModel(docController, doccontext);  // TODO LSM: why are we passing the DocContextList Here to the documents
+
+                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(docController))
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
                     var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
@@ -181,7 +184,7 @@ namespace Dash
             }
             for (int i = DataBindingSource.Count - 1; i >= 0; --i)
             {
-                if (ViewModelContains(documents.Data, DataBindingSource[i])) continue;
+                if (ViewModelContains(documents.GetDocuments(), DataBindingSource[i])) continue;
                 DataBindingSource.RemoveAt(i);
             }
         }

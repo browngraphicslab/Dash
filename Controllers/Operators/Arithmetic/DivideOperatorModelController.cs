@@ -32,11 +32,11 @@ namespace Dash
 
         private int nextChar = 'C';
 
-        public override void Execute(DocumentController doc, IEnumerable<DocumentController> docContextList)
+        public override void Execute(DocumentController doc, Context context)
         {
-            var numberA = doc.GetDereferencedField(AKey, docContextList) as NumberFieldModelController;
+            var numberA = doc.GetDereferencedField(AKey, context) as NumberFieldModelController;
 
-            var numberB = doc.GetDereferencedField(BKey, docContextList) as NumberFieldModelController;
+            var numberB = doc.GetDereferencedField(BKey, context) as NumberFieldModelController;
 
             if (numberA.InputReference == null || numberB.InputReference == null)//One or more of the inputs isn't set yet
             {
