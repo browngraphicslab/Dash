@@ -298,7 +298,7 @@ namespace Dash
             OverlayCanvas.Instance.OpenInterfaceBuilder(ViewModel, position);
         }
 
-        bool singleTap = false;
+        //bool singleTap = false;
 
         ///// <summary>
         ///// Shows context menu on doubletap. Some fancy recognition: hides on either double tap or
@@ -504,12 +504,12 @@ namespace Dash
         /// If there is a nested collection, nests the json recursively 
         /// </summary>
         /// <returns></returns>
-        private string JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
+        private Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
         {
-            Dictionary<string, string> jsonDict = new Dictionary<string, string>();
+            Dictionary<string, object> jsonDict = new Dictionary<string, object>();
             foreach (KeyValuePair<Key, FieldModelController> pair in fields)
             {
-                string data = "";
+                object data = null;
                 if (pair.Value is TextFieldModelController)
                 {
                     TextFieldModelController cont = pair.Value as TextFieldModelController;
@@ -518,30 +518,29 @@ namespace Dash
                 else if (pair.Value is NumberFieldModelController)
                 {
                     NumberFieldModelController cont = pair.Value as NumberFieldModelController;
-                    data = cont.Data.ToString();
+                    data = cont.Data;
                 }
                 else if (pair.Value is ImageFieldModelController)
                 {
                     ImageFieldModelController cont = pair.Value as ImageFieldModelController;
-                    data = cont.Data.ToString();
+                    data = cont.Data.UriSource.AbsoluteUri; 
                 }
                 else if (pair.Value is PointFieldModelController)
                 {
                     PointFieldModelController cont = pair.Value as PointFieldModelController;
-                    data = cont.Data.ToString();
+                    data = cont.Data;
                 } 
                 // TODO refactor the CollectionKey here into DashConstants
                 else if (pair.Key == DocumentCollectionFieldModelController.CollectionKey)
                 {
-                    data = "["; 
+                    var collectionList = new List<Dictionary<string, object>>(); 
                     DocumentCollectionFieldModelController collectionCont = pair.Value as DocumentCollectionFieldModelController;
-                    foreach(DocumentController cont in collectionCont.GetDocuments())
+                    foreach (DocumentController cont in collectionCont.GetDocuments())
                     {
-                        data += JsonSerializeHelper(cont.EnumFields());
-                        data += ", "; 
+                        collectionList.Add(JsonSerializeHelper(cont.EnumFields()));
                     }
-                    data = data.Remove(data.Length - 2); 
-                    data += "]";
+                    jsonDict[pair.Key.Name] = collectionList;
+                    continue;  
                 }
                 else
                 {
@@ -550,7 +549,7 @@ namespace Dash
                 }
                 jsonDict[pair.Key.Name] = data;
             }
-            return JsonConvert.SerializeObject(jsonDict);
+            return jsonDict; 
         }
 
         /// <summary>
@@ -558,7 +557,8 @@ namespace Dash
         /// </summary>
         private async Task<StorageFile> ExportAsJson()
         {
-            string json = JsonSerializeHelper(ViewModel.DocumentController.EnumFields());
+            Dictionary<string, object> jsonDict = JsonSerializeHelper(ViewModel.DocumentController.EnumFields());
+            string json = JsonConvert.SerializeObject(jsonDict);
 
             FolderPicker picker = new FolderPicker();
             picker.SuggestedStartLocation = PickerLocationId.Desktop;
