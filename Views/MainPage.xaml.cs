@@ -201,7 +201,12 @@ namespace Dash
         {
             DisplayDocument(new CourtesyDocuments.PostitNote().Document);
             DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
-            DisplayDocument(new CourtesyDocuments.Numbers().Document);
+            DocumentController numbersProto = new CourtesyDocuments.Numbers().Document;
+            DisplayDocument(numbersProto);
+            DocumentController del = numbersProto.MakeDelegate();
+            del.SetField(CourtesyDocuments.Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
+            del.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            DisplayDocument(del);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

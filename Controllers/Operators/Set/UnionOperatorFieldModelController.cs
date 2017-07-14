@@ -29,7 +29,12 @@ namespace Dash
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             DocumentCollectionFieldModelController setA = inputs[AKey] as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = inputs[AKey] as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setB = inputs[BKey] as DocumentCollectionFieldModelController;
+            if (setA == null || setB == null)
+            {
+                outputs[UnionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                return;
+            }
 
             // Union by comparing all fields 
             List<DocumentController> bigSet = setA.GetDocuments();

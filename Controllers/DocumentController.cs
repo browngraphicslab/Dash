@@ -282,36 +282,12 @@ namespace Dash
             var dereferencedField = field.DereferenceToRoot(context);
             var refField = reference.DereferenceToRoot(context);
             DocumentController controller = reference.GetDocumentController();
-            //if (field == null)
-            //{
-            //    var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-            //    if (op == null)
-            //    {
-            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
-            //    }
-            //    if (!op.Inputs.ContainsKey(fieldKey))
-            //    {
-            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
-            //    }
-            //    TypeInfo info = op.Inputs[fieldKey];
-            //    if ((info & refField.TypeInfo) == refField.TypeInfo)
-            //    {
-            //        field = TypeInfoHelper.CreateFieldModelController(refField.TypeInfo);
-            //        SetField(fieldKey, field, true);
-            //    }
-            //    else
-            //    {
-            //        throw new ArgumentException("Invalid types");
-            //    }
-            //}
-            //else
-            //{
+
             if (!dereferencedField.CheckType(refField))
             {
                 Debug.Assert(!refField.CheckType(dereferencedField));//Make sure check field is commutative
                 throw new ArgumentException("Invalid types");
             }
-            //}
             field.InputReference = reference;
             controller.DocumentFieldUpdated += delegate (DocumentFieldUpdatedEventArgs args)
             {
@@ -348,10 +324,7 @@ namespace Dash
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
                     var field = GetField(opFieldInput, context);
-                    if (field != null)
-                    {
-                        inputs[opFieldInput] = field.DereferenceToRoot(context);
-                    }
+                    inputs[opFieldInput] = field?.DereferenceToRoot(context);
                 }
                 opField.Execute(inputs, outputs);
                 foreach (var fieldModel in outputs)

@@ -34,6 +34,11 @@ namespace Dash.Models.OperatorModels.Set
         {
             DocumentCollectionFieldModelController setA = inputs[AKey] as DocumentCollectionFieldModelController;
             DocumentCollectionFieldModelController setB = inputs[BKey] as DocumentCollectionFieldModelController;
+            if (setA == null || setB == null)
+            {
+                outputs[IntersectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                return;
+            }
 
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 

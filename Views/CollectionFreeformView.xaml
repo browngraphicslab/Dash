@@ -23,8 +23,7 @@
                                     Width ="0" 
                                     Height="0" 
                                     VerticalAlignment="Top" 
-                                    HorizontalAlignment="Left"
-                                    >
+                                    HorizontalAlignment="Left">
                     </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>

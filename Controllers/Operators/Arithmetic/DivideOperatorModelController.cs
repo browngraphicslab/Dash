@@ -37,6 +37,12 @@ namespace Dash
             var numberA = inputs[AKey] as NumberFieldModelController;
 
             var numberB = inputs[BKey] as NumberFieldModelController;
+            if (numberA == null || numberB == null)
+            {
+                outputs[QuotientKey] = new NumberFieldModelController();
+                outputs[RemainderKey] = new NumberFieldModelController();
+                return;
+            }
 
             string s = new string((char)nextChar++, 1);
             Inputs.Add(new Key(s, s), TypeInfo.Number);
