@@ -175,8 +175,8 @@ namespace Dash
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.RemoveEdge(irfm.DereferenceToRoot().GetId(),
-                                    orfm.DereferenceToRoot().GetId());
+                                Graph.RemoveEdge(irfm.DereferenceToRoot(DocumentContext).GetId(),
+                                    orfm.DereferenceToRoot(DocumentContext).GetId());
                             }
                         }
                     }
@@ -188,7 +188,7 @@ namespace Dash
 
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
-            RefreshItemsBinding();
+            //RefreshItemsBinding();
             if (e.CollectionChange == CollectionChange.ItemInserted)
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
@@ -202,7 +202,7 @@ namespace Dash
                         {
                             ReferenceFieldModelController irfm = new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                             ReferenceFieldModelController orfm = new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                            Graph.AddEdge(irfm.DereferenceToRoot().GetId(), orfm.DereferenceToRoot().GetId());
+                            Graph.AddEdge(irfm.DereferenceToRoot(DocumentContext).GetId(), orfm.DereferenceToRoot(DocumentContext).GetId());
                         }
                     }
                 }
@@ -586,7 +586,7 @@ namespace Dash
         {
             if (args.DropResult == DataPackageOperation.Move && !ViewModel.KeepItemsOnMove)
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-            RefreshItemsBinding();
+            //RefreshItemsBinding();
             ViewModel.KeepItemsOnMove = true;
             var carrier = ItemsCarrier.GetInstance();
             carrier.Payload.Clear();
@@ -615,7 +615,7 @@ namespace Dash
         private void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
             e.Handled = true;
-            RefreshItemsBinding();
+            //RefreshItemsBinding();
             ItemsCarrier.GetInstance().Destination = ViewModel;
             ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
             ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);

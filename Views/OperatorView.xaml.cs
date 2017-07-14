@@ -61,7 +61,7 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var opCont = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>();
+            var opCont = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>(null);
 
             Binding inputsBinding = new Binding
             {

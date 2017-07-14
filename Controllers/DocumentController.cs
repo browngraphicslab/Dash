@@ -208,7 +208,7 @@ namespace Dash
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key, Context context = null)
+        public FieldModelController GetField(Key key, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, this);
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
@@ -290,7 +290,7 @@ namespace Dash
         }
 
 
-        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, Context context = null)
+        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, Context context)
         {
             //TODO Remove existing output references and add new output reference
             //if (InputReferences.ContainsKey(fieldKey))
@@ -299,10 +299,10 @@ namespace Dash
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
             reference.Context = context;//bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
-            var field = GetField(fieldKey);
+            var field = GetField(fieldKey, context);
             var dereferencedField = field.DereferenceToRoot(context);
             var refField = reference.DereferenceToRoot(context);
-            DocumentController controller = reference.GetDocumentController();
+            DocumentController controller = reference.GetDocumentController(context);
 
             if (!dereferencedField.CheckType(refField))
             {
@@ -320,15 +320,15 @@ namespace Dash
             Execute(context);
         }
 
-        public FieldModelController GetDereferencedField(Key key, Context context = null)
+        public FieldModelController GetDereferencedField(Key key, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, this);
-            var fieldController = GetField(key);
+            var fieldController = GetField(key, context);
             return fieldController?.DereferenceToRoot(context);
         }
 
 
-        private void Execute(Context context = null)
+        private void Execute(Context context)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
@@ -384,7 +384,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context = null)
+        private FrameworkElement makeAllViewUI(Context context)
         {
             var sp = new StackPanel();
             foreach (var f in EnumFields())
@@ -430,7 +430,7 @@ namespace Dash
         }
 
 
-        public FrameworkElement MakeViewUI(Context context = null)
+        public FrameworkElement MakeViewUI(Context context)
         {
             context = context ?? new Context();
             context.AddDocumentContext(this);

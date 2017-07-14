@@ -153,7 +153,7 @@ namespace Dash
         {
             foreach (var field in fields)
             {
-                if (prototype.GetField(field.Key) == null)
+                if (prototype.GetField(field.Key, null) == null)
                 {
                     var defaultField = field.Value.GetDefaultController();
                     prototype.SetField(field.Key, defaultField, true);

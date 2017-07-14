@@ -199,7 +199,7 @@ namespace Dash
                 }
                 _currReference.ReferenceFieldModelController.GetDocumentController(context)
                     .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
-                        ioReference.ReferenceFieldModelController);
+                        ioReference.ReferenceFieldModelController, (DataContext as CollectionViewModel).DocumentContext);
             }
             else
             {

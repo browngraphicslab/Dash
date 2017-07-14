@@ -121,17 +121,17 @@ namespace Dash
             return FieldModel.Id;
         }
 
-        public virtual FieldModelController Dereference(Context context = null)
+        public virtual FieldModelController Dereference(Context context)
         {
             return this;
         }
 
-        public virtual FieldModelController DereferenceToRoot(Context context = null)
+        public virtual FieldModelController DereferenceToRoot(Context context)
         {
             return this;
         }
 
-        public virtual T DereferenceToRoot<T>(Context context = null) where T : FieldModelController
+        public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
         {
             return this as T;
         }

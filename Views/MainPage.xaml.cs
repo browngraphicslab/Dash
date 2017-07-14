@@ -207,7 +207,10 @@ namespace Dash
             DisplayDocument(numbersProto);
             DocumentController del = numbersProto.MakeDelegate();
             del.SetField(CourtesyDocuments.Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
-            del.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey, null) as DocumentFieldModelController;
+            var layoutDel = layout.Data.MakeDelegate();
+            layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
             DisplayDocument(del);
         }
 

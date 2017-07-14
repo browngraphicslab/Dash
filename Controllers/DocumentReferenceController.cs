@@ -18,7 +18,7 @@ namespace Dash
 
         public DocumentReferenceFieldModel DocumentReferenceFieldModel => FieldModel as DocumentReferenceFieldModel;
 
-        public override DocumentController GetDocumentController(Context context = null)
+        public override DocumentController GetDocumentController(Context context)
         {
             string docId = DocId;
             if (context != null)

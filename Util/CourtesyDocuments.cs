@@ -46,7 +46,7 @@ namespace Dash {
                 deleg.SetField(DashConstants.KeyStore.ActiveLayoutKey, selfFmc, true);
 
                 // TODO KB delegates... but this method is never called so ????? 
-                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController).AddDocument(deleg); 
+                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey, null) as DocumentCollectionFieldModelController).AddDocument(deleg); 
 
                 return deleg;
             }
@@ -241,7 +241,7 @@ namespace Dash {
             public IEnumerable<DocumentController> GetLayoutDocuments()
             {
                 var layoutDataField =
-                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey);
+                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, null);
 
                 if (layoutDataField is DocumentCollectionFieldModelController) // layout data is a collection of documents each referencing some field
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
@@ -426,7 +426,7 @@ namespace Dash {
                 FrameworkElement tb = null;
 
                 // use the reference to the text to get the text field model controller
-                var retToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                var retToText = docController.GetField(DashConstants.KeyStore.DataKey, context) as ReferenceFieldModelController;
                 Debug.Assert(retToText != null);
                 var fieldModelController = retToText.DereferenceToRoot(context);
                 if (fieldModelController is TextFieldModelController) {
@@ -510,7 +510,7 @@ namespace Dash {
                 Context context) {
                 // use the reference to the image to get the image field model controller
                 var refToImage =
-                    docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                    docController.GetField(DashConstants.KeyStore.DataKey, context) as ReferenceFieldModelController;
                 Debug.Assert(refToImage != null);
                 var fieldModelController = refToImage.DereferenceToRoot(context);
                 var imFieldModelController = fieldModelController as ImageFieldModelController;
@@ -626,7 +626,7 @@ namespace Dash {
                     double opacityValue = opacity.HasValue ? (double)opacity :1;
 
                     var collectionFieldModelController = data
-                        .DereferenceToRoot<DocumentCollectionFieldModelController>();
+                        .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                     Debug.Assert(collectionFieldModelController != null);
 
                     var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
@@ -921,7 +921,7 @@ namespace Dash {
 
                 // fetch parameter list to add to
                 var col =
-                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
+                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey, null);
 
                 double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
                 double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
@@ -938,12 +938,12 @@ namespace Dash {
                 var ret = new DocumentController(fields, DocumentType);
 
                 // apply textbox bindings
-                bindToTextBox(key, ret.GetField(KeyTextKey));
-                bindToTextBox(value, ret.GetField(ValueTextKey));
+                bindToTextBox(key, ret.GetField(KeyTextKey, null));
+                bindToTextBox(value, ret.GetField(ValueTextKey, null));
 
                 // apply checkbox bindings
-                bindToCheckBox(display, ret.GetField(DisplayKey));
-                bindToCheckBox(required, ret.GetField(RequiredKey));
+                bindToCheckBox(display, ret.GetField(DisplayKey, null));
+                bindToCheckBox(required, ret.GetField(RequiredKey, null));
 
                 // get the property's type
                 ApiProperty.ApiPropertyType type = ApiProperty.ApiPropertyType.Parameter;
@@ -961,7 +961,7 @@ namespace Dash {
 
                 // bind source's fields to those of the editor (key, value)
                 TextFieldModelController textFieldModelController =
-                    ret.GetField(KeyTextKey) as TextFieldModelController;
+                    ret.GetField(KeyTextKey, null) as TextFieldModelController;
                 var sourceBinding = new Binding {
                     Source = textFieldModelController,
                     Path = new PropertyPath(nameof(textFieldModelController.Data)),
@@ -969,7 +969,7 @@ namespace Dash {
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
                 apiprop.XKey.SetBinding(TextBlock.TextProperty, sourceBinding);
-                bindToTextBox(apiprop.XValue, ret.GetField(ValueTextKey));
+                bindToTextBox(apiprop.XValue, ret.GetField(ValueTextKey, null));
 
                 // bind source visibility to display checkbox which is bound to backend display field of param document
                 var binding = new Binding {
@@ -1007,7 +1007,7 @@ namespace Dash {
                              parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
                 DocumentCollectionFieldModelController col =
-                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
+                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey, null);
                 col.RemoveDocument(docModelToRemove);
 
             }
@@ -1056,14 +1056,14 @@ namespace Dash {
             private static void makeBinding(ApiCreatorDisplay apiDisplay, DocumentController docController) {
 
                 // set up text bindings
-                bindToTextBox(apiDisplay.UrlTB, docController.GetField(BaseUrlKey));
-                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.GetField(AuthBaseUrlKey));
-                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.GetField(AuthKey));
+                bindToTextBox(apiDisplay.UrlTB, docController.GetField(BaseUrlKey, null));
+                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.GetField(AuthBaseUrlKey, null));
+                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.GetField(AuthKey, null));
                 // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey));
 
                 // bind drop down list
                 NumberFieldModelController fmcontroller =
-                    docController.GetField(HttpMethodKey) as NumberFieldModelController;
+                    docController.GetField(HttpMethodKey, null) as NumberFieldModelController;
                 var sourceBinding = new Binding {
                     Source = fmcontroller,
                     Path = new PropertyPath(nameof(fmcontroller.Data)),
@@ -1075,7 +1075,7 @@ namespace Dash {
             }
 
             public static void setResults(DocumentController docController, List<DocumentController> documents) {
-                (docController.GetField(DocumentCollectionFieldModelController.CollectionKey) as
+                (docController.GetField(DocumentCollectionFieldModelController.CollectionKey, null) as
                     DocumentCollectionFieldModelController).SetDocuments(documents);
             }
 
@@ -1098,7 +1098,7 @@ namespace Dash {
 
                 // make collection view display framework element
                 var data = resultView;
-                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>();
+                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
                 var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);

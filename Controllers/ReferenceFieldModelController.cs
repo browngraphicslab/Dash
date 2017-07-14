@@ -12,7 +12,7 @@ namespace Dash
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
-            var fmc = DereferenceToRoot();
+            var fmc = DereferenceToRoot(null);
             if (fmc != null)
                 fmc.FieldModelUpdated += sender => FireFieldModelUpdated();
         }
@@ -37,9 +37,9 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
-        public abstract DocumentController GetDocumentController(Context context = null);
+        public abstract DocumentController GetDocumentController(Context context);
 
-        public sealed override FieldModelController Dereference(Context context = null)
+        public sealed override FieldModelController Dereference(Context context)
         {
             if (context != null)
             {
@@ -48,10 +48,10 @@ namespace Dash
                     return controller;
                 }
             }
-            return GetDocumentController(context).GetField(FieldKey);
+            return GetDocumentController(context).GetField(FieldKey, context);
         }
 
-        public sealed override FieldModelController DereferenceToRoot(Context context = null)
+        public sealed override FieldModelController DereferenceToRoot(Context context)
         {
             FieldModelController reference = this;
             while (reference is ReferenceFieldModelController)
@@ -61,7 +61,7 @@ namespace Dash
             return reference;
         }
 
-        public sealed override T DereferenceToRoot<T>(Context context = null)
+        public sealed override T DereferenceToRoot<T>(Context context)
         {
             return DereferenceToRoot(context) as T;
         }
