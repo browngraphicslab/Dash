@@ -46,7 +46,7 @@ namespace Dash
         private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
             var richText = string.Empty;
-                xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
+            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
             _richTextFieldModelController.RichTextData = richText;
         }
 
@@ -55,6 +55,47 @@ namespace Dash
             var richText = string.Empty;
             xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
             _richTextFieldModelController.RichTextData = richText;
+        }
+
+        private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            // TODO: place break point in textchanged to see if format changes trigger textchange event
+            ITextSelection selectedText = xRichEitBox.Document.Selection;
+            if (selectedText != null)
+            {
+                ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
+                charFormatting.Bold = FormatEffect.Toggle;
+                selectedText.CharacterFormat = charFormatting;
+            }
+        }
+
+        private void ItalicButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ITextSelection selectedText = xRichEitBox.Document.Selection;
+            if (selectedText != null)
+            {
+                ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
+                charFormatting.Italic = FormatEffect.Toggle;
+                selectedText.CharacterFormat = charFormatting;
+            }
+        }
+
+        private void UnderlineButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            ITextSelection selectedText = xRichEitBox.Document.Selection;
+            if (selectedText != null)
+            {
+                ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
+                if (charFormatting.Underline == UnderlineType.None)
+                {
+                    charFormatting.Underline = UnderlineType.Single;
+                }
+                else
+                {
+                    charFormatting.Underline = UnderlineType.None;
+                }
+                selectedText.CharacterFormat = charFormatting;
+            }
         }
     }
 }

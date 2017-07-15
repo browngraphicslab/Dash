@@ -10,6 +10,43 @@
     d:DesignWidth="400">
 
     <Grid>
-        <RichEditBox x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></RichEditBox>
+        <Grid.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="LightSteelBlue"></Setter>
+                <Setter Property="Foreground" Value="DarkSlateBlue"></Setter>
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
+                        <SymbolIcon Symbol="Bold"></SymbolIcon>
+                    </Button>
+                </Grid>
+                <Grid Grid.Column="1">
+                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="ItalicButton_Tapped">
+                        <SymbolIcon Symbol="Italic"></SymbolIcon>
+                    </Button>
+                </Grid>
+                <Grid Grid.Column="2">
+                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="UnderlineButton_Tapped">
+                        <SymbolIcon Symbol="Underline"></SymbolIcon>
+                    </Button>
+                </Grid>
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="1">
+            <RichEditBox x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="LightSteelBlue" IsColorFontEnabled="True" SelectionHighlightColor="LightSteelBlue"></RichEditBox>
+        </Grid>
     </Grid>
+
 </UserControl>

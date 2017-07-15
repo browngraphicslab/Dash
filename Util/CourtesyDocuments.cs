@@ -619,6 +619,36 @@ namespace Dash {
             }
         }
 
+        public class RichTextBox : CourtesyDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("?","Rich Text");
+            public static Key RichTextDataKey = new Key("?","Rich Text Data Key");
+
+            public RichTextBox(FieldModelController refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
+            {
+                var fields = new Dictionary<Key, FieldModelController>
+                {
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(w),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(h),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(x, y),
+                    [RichTextDataKey] = new RichTextFieldModelController()
+                };
+                Document = new DocumentController(fields, DocumentType);
+                SetLayoutForDocument(Document, Document);
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController,
+                Context context)
+            {
+                var controller = docController.GetField(RichTextDataKey);
+                if (controller != null && controller is RichTextFieldModelController)
+                {
+                    var richTextController = controller as RichTextFieldModelController;
+                    return new RichTextView(richTextController);
+                }
+                return new RichTextView(new RichTextFieldModelController());
+            }
+        }
 
         /// <summary>
         /// Constructs a nested stackpanel that displays the fields of all documents in the list

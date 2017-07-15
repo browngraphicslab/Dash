@@ -119,6 +119,11 @@
     <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
+    <Compile Include="Models\RichTextFieldModel.cs" />
+    <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Views\RichTextView.xaml.cs">
+      <DependentUpon>RichTextView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\Context.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
@@ -376,6 +381,10 @@
     <Page Include="RadialMenu\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RichTextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>
