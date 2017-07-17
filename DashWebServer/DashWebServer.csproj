@@ -35,4 +35,8 @@
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DashShared\DashShared.csproj" />
+  </ItemGroup>
+
 </Project>

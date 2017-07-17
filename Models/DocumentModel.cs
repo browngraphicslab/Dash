@@ -11,6 +11,7 @@ namespace Dash
     public class DocumentModel : AuthorizableEntityBase
     {
         static public Dictionary<string, DocumentModel> Map = new Dictionary<string, DocumentModel>();
+
         /// <summary>
         /// A dictionary of <see cref="Key"/> to <see cref="FieldModel.Id"/>. These fields represent all the 
         /// data that is stored in the document model

@@ -43,6 +43,7 @@
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AuthenticationTokenModel.cs" />
+    <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\EntityBase.cs" />
     <Compile Include="Models\AuthorizableEntityBase.cs" />
