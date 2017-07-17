@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
 using DashShared;
 using DocumentMenu;
+using static Dash.CourtesyDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -618,14 +619,39 @@ namespace Dash
             e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        private void CollectionGrid_Drop(object sender, DragEventArgs e)
+        private async void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
             e.Handled = true;
             RefreshItemsBinding();
-            ItemsCarrier.GetInstance().Destination = ViewModel;
-            ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
-            ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
-            ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
+            foreach (var s in e.DataView.AvailableFormats)
+                Debug.Write("" + s);
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+                if (items.Count > 0)
+                {
+                    foreach (var i in items)
+                        if (i is Windows.Storage.StorageFile)
+                        {
+                            var storageFile = i as Windows.Storage.StorageFile;
+                            if (storageFile.ContentType.Contains("image"))
+                            {
+                                var bitmapImage = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                                bitmapImage.SetSource(await storageFile.OpenAsync(Windows.Storage.FileAccessMode.Read));
+                                var doc = new AnnotatedImage(new Uri(i.Path), i.Name);
+                                (DataContext as CollectionViewModel).CollectionFieldModelController.AddDocument(doc.Document);
+                            }
+                        }
+                }
+            }
+            else
+            {
+                var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
+                ItemsCarrier.GetInstance().Destination = ViewModel;
+                ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
+                ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
+                ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
+            }
         }
 
         private void RefreshItemsBinding()
