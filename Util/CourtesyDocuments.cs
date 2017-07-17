@@ -431,6 +431,7 @@ namespace Dash {
                 Debug.Assert(retToText != null);
                 var fieldModelController = retToText.DereferenceToRoot(context);
                 var doc = retToText.GetDocumentController(context);
+                Debug.WriteLine(doc.GetId());
                 if (fieldModelController is TextFieldModelController) {
                     var textBox = new TextBox();
                     textBox.ManipulationDelta += (s, e) => e.Handled = true;

@@ -16,7 +16,7 @@ namespace Dash
             var docController = GetDocumentController(null);
             if (docController != null)
             {
-                docController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
+                docController.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
                     if (args.Reference.FieldKey.Equals(FieldKey))
                     {
@@ -38,6 +38,11 @@ namespace Dash
             }
         }
 
+        public string GetDocumentId(Context context = null)
+        {
+            return GetDocumentController(context).GetId();
+        }
+
         public override TypeInfo TypeInfo => TypeInfo.Reference;
 
         /// <summary>
@@ -57,15 +62,23 @@ namespace Dash
 
         public sealed override FieldModelController Dereference(Context context)
         {
+            FieldModelController controller;
             if (context != null)
             {
-                FieldModelController controller;
                 if (context.TryDereferenceToRoot(this, out controller))
                 {
                     return controller;
                 }
             }
-            return GetDocumentController(context).GetField(FieldKey);
+            DocumentController doc = GetDocumentController(context);
+            context = context ?? new Context();
+            doc.Execute(context, false);
+            if (context.TryDereferenceToRoot(this, out controller))
+            {
+                return controller;
+            }
+            var fmc = GetDocumentController(context).GetField(FieldKey);
+            return fmc;
         }
 
         public sealed override FieldModelController DereferenceToRoot(Context context)
@@ -75,14 +88,14 @@ namespace Dash
             {
                 reference = reference.Dereference(context);
             }
-            if (reference == null)
-            {
-                return null;
-            }
-            if (reference.InputReference != null)
-            {
-                return reference.InputReference.DereferenceToRoot(context);
-            }
+            //if (reference == null)
+            //{
+            //    return null;
+            //}
+            //if (reference.InputReference != null)
+            //{
+            //    return reference.InputReference.DereferenceToRoot(context);
+            //}
             return reference;
         }
 

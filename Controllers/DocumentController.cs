@@ -277,8 +277,8 @@ namespace Dash
             {
                 return;
             }
-            Context c = new Context(args.Context);
-            c.AddDocumentContext(this);
+            Context c = new Context(this);
+            //c.AddDocumentContext(this);
             DocumentReferenceController reference = new DocumentReferenceController(GetId(), args.Reference.FieldKey);
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c));
         }
@@ -351,11 +351,11 @@ namespace Dash
             {
                 if (args.Reference.FieldKey.Equals(reference.FieldKey))
                 {
-                    Execute(args.Context);
+                    Execute(args.Context, true);
                 }
             };
-            controller.Execute(context);
-            Execute(context);
+            controller.Execute(context, false);
+            Execute(context, true);
         }
 
         public FieldModelController GetDereferencedField(Key key, Context context)
@@ -366,7 +366,7 @@ namespace Dash
         }
 
 
-        private void Execute(Context context)
+        public void Execute(Context context, bool update)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;

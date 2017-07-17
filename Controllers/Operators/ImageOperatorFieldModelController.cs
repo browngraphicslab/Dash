@@ -27,7 +27,7 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
             //TextFieldModel uri = doc.Field(URIKey) as TextFieldModel;
             //Debug.Assert(uri != null, "Input is not a string");

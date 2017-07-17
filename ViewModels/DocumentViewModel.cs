@@ -215,7 +215,7 @@ namespace Dash
 
             documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
+                if (args.Reference.DocId.Equals(DocumentController.GetId()) && args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
                     Context c2 = new Context(context);
                     c2.AddDocumentContext(DocumentController);

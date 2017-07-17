@@ -26,7 +26,8 @@ namespace Dash
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public ReferenceFieldModelController InputReference {
+        public ReferenceFieldModelController InputReference
+        {
             get { return _inputReference; }
             protected set
             {
@@ -39,27 +40,24 @@ namespace Dash
 
         public virtual void SetInputReference(ReferenceFieldModelController reference, Context context)
         {
-            if (SetProperty(ref FieldModel.InputReference, reference.ReferenceFieldModel, nameof(InputReference)))
+            var c = new Context(context);
+            InputReference = reference;
+            // update local
+            var cont = reference.GetDocumentController(c);
+            cont.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                var c = new Context(context);
-                InputReference = reference;
-                // update local
-                var cont = reference.GetDocumentController(c);
-                cont.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
+                if (args.Reference.FieldKey.Equals(reference.FieldKey))
                 {
-                    if (args.Reference.FieldKey.Equals(reference.FieldKey))
-                    {
-                        UpdateValue(args.Reference.DereferenceToRoot(args.Context));
-                    }
-                };
-                var fmc = reference.DereferenceToRoot(c);
-                if (fmc != null)
-                {
-                    UpdateValue(fmc);
+                    UpdateValue(args.Reference.DereferenceToRoot(args.Context));
                 }
-
-                // update server
+            };
+            var fmc = reference.DereferenceToRoot(c);
+            if (fmc != null)
+            {
+                UpdateValue(fmc);
             }
+
+            // update server
         }
 
 
