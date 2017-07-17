@@ -39,11 +39,22 @@ namespace Dash
             Width = width;
             Height = height;
 
-            _layoutCourtesyDocument = new LayoutCourtesyDocument(docController);
+            SetUpInterfaceBuilder(docController);
 
-            _documentView =
-                LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document) as DocumentView;
+            Binding listBinding = new Binding
+            {
+                Source = docController.GetAllPrototypes() 
+            }; 
+            BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
+        }
 
+        private void SetUpInterfaceBuilder(DocumentController docCont)
+        {
+            _layoutCourtesyDocument = new LayoutCourtesyDocument(docCont);
+
+            _documentView = LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document) as DocumentView;
+
+            // set the middle pane to hold the document view
             xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(_layoutCourtesyDocument.Document);
@@ -52,10 +63,12 @@ namespace Dash
             _documentView.Drop += DocumentViewOnDrop;
             _documentView.AllowDrop = true;
 
-            //ApplyEditable();
-            //var layoutDocFieldController = _documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, viewModel.DocumentContext);
-            //_documentController.SetField(DashConstants.KeyStore.LayoutKey, layoutDocFieldController, false);
+        }
 
+        private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            DocumentController cont = e.ClickedItem as DocumentController;
+            SetUpInterfaceBuilder(cont); 
         }
 
         private void ApplyEditable()
@@ -198,6 +211,7 @@ namespace Dash
                 }
 
                 var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContext) as DocumentFieldModelController)?.Data;
+
                 if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
                     layoutDoc = _documentController;
                 // bcz: hack -- the idea is that if we're dropping a field on a prototype layout, then the layout should reference the prototype of
@@ -249,6 +263,9 @@ namespace Dash
             ApplyEditable();
              _documentController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
+
+       
+        
     }
 
     public static class SettingsPaneFromDocumentControllerFactory

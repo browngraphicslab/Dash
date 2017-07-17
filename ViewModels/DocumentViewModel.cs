@@ -69,7 +69,6 @@ namespace Dash
             {
                 if (SetProperty(ref _height, value))
                 {
-
                     var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
 
                     if (layoutDocController == null)
@@ -89,8 +88,8 @@ namespace Dash
             set {
                 if (SetProperty(ref _pos, value))
                 {
-
                     var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
@@ -173,7 +172,6 @@ namespace Dash
                     Content = DocumentController.MakeViewUI();
                 }
             };
-
         }
 
 

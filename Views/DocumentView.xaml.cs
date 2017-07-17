@@ -7,8 +7,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using DashShared;
-using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
@@ -52,9 +50,9 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
-            
+
             // add manipulation code
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY ;
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             manipulator = new ManipulationControls(this);
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
@@ -77,16 +75,14 @@ namespace Dash
 
         private void SetUpMenu()
         {
-            var layout = new Action(OpenLayout);
-            var copy = new Action(CopyDocument);
-            var delete = new Action(DeleteDocument);
-            var makeDelegate = new Action(MakeDelegate);
             var documentButtons = new List<MenuButton>()
             {
-                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue, layout),
-                new MenuButton(Symbol.Copy, "GetCopy", Colors.LightBlue, copy),
-                new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, makeDelegate),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue, delete)
+                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,OpenLayout),
+                new MenuButton(Symbol.Copy, "GetCopy", Colors.LightBlue,CopyDocument),
+                new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, MakeDelegate),
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,DeleteDocument),
+                new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, ScreenCap),
+                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, GetJson)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -113,7 +109,7 @@ namespace Dash
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
             DataContext = documentViewModel;
-            
+
         }
 
 
@@ -135,7 +131,7 @@ namespace Dash
             // todo: remove this and replace with binding // debug why x:Bind fails
             Width = ActualWidth + dx;
             Height = ActualHeight + dy;
-            
+
         }
 
         /// <summary>
@@ -192,13 +188,19 @@ namespace Dash
             // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
         }
 
-        private void updateIcon() {
+        private void updateIcon()
+        {
             // when you want a new icon, you have to add a check for it here!
-            if (ViewModel.IconType == IconTypeEnum.Document) {
+            if (ViewModel.IconType == IconTypeEnum.Document)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            } else if (ViewModel.IconType == IconTypeEnum.Collection) {
+            }
+            else if (ViewModel.IconType == IconTypeEnum.Collection)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            } else if (ViewModel.IconType == IconTypeEnum.Api) {
+            }
+            else if (ViewModel.IconType == IconTypeEnum.Api)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
             }
         }
@@ -212,18 +214,20 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null) {
+            if (ViewModel != null)
+            {
                 return;
             }
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
-            
+ 
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
             }
             Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
+
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
             }
@@ -261,24 +265,28 @@ namespace Dash
             // update collapse info
             // collapse to icon view on resize
             int pad = 32;
-            if (Width < MinWidth + pad && Height < MinHeight + pad) {
+            if (Width < MinWidth + pad && Height < MinHeight + pad)
+            {
                 updateIcon();
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                XGrid.Visibility = Visibility.Collapsed;
+                xIcon.Visibility = Visibility.Visible;
+                xBorder.Visibility = Visibility.Collapsed;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
-            } else {
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            }
+            else
+            {
+                XGrid.Visibility = Visibility.Visible;
+                xIcon.Visibility = Visibility.Collapsed;
+                xBorder.Visibility = Visibility.Visible;
                 Tapped += OnTapped;
             }
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
-            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
+            if (xIcon.Visibility == Visibility.Visible)
+            {
                 Height = 300;
                 Width = 300;
 
@@ -287,7 +295,9 @@ namespace Dash
                 dvm.Height = 300;
 
                 // if in default view, show context menu
-            } else {
+            }
+            else
+            {
                 Height = MinWidth;
                 Width = MinHeight;
 
@@ -325,6 +335,16 @@ namespace Dash
             ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
         }
 
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(OuterGrid);
+        }
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
+        }
+
 
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -332,11 +352,6 @@ namespace Dash
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
-
-        private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
-
-        }
-
 
         private void FadeOut_Completed(object sender, object e)
         {

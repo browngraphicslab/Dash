@@ -28,7 +28,6 @@ namespace Dash {
 
             protected abstract DocumentController InstantiatePrototype();
 
-
             protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
             {
                 refToData = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
@@ -335,6 +334,7 @@ namespace Dash {
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
                 // X, Y, Width, and Height etc....
                 
+                ///* 
                 ReferenceFieldModelController refToData;
                 var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<Key,FieldModelController>(), DashConstants.DocumentTypeStore.TextBoxDocumentType)), out refToData);
 
@@ -355,6 +355,9 @@ namespace Dash {
                     BindWidth(docView, docwidthController);
 
                 return docView;
+                //*/ 
+
+                return new TextBox(); 
             }
 
             protected override DocumentController GetPrototype()
@@ -1131,8 +1134,9 @@ namespace Dash {
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
                 fields.Add(AnnotatedFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
-                return new DocumentController(new Dictionary<Key, FieldModelController>(), TwoImagesType);
-                //return new DocumentController(fields, TwoImagesType);
+
+                return new DocumentController(fields, TwoImagesType); 
+
             }
             
             /// <summary>
@@ -1150,9 +1154,12 @@ namespace Dash {
                 var prototypeImage2Layout    = new ImageBox   (new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),    0, 250, 200, 200);
                 var prototypeAnnotatedLayout = new DocumentBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
                 var prototypeTextLayout      = new TextingBox (new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),      0, 0, 200, 50);
-                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeAnnotatedLayout.Document, prototypeImage2Layout.Document }, true);
+                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+
+                //SetLayoutForDocument(_prototypeTwoImages, prototypeLayout.Document);
+
                 return prototypeLayout.Document;
             }
 

@@ -66,6 +66,7 @@ namespace Dash
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
             _radialMenu = new RadialMenuView(xCanvas);
+            xCanvas.Children.Add(_radialMenu);
         }
 
         public void AddOperator()
@@ -295,5 +296,6 @@ namespace Dash
             else _radialMenu.IsVisible = false;
             e.Handled = true;
         }
+
     }
 }

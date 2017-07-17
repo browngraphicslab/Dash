@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using System.Collections.ObjectModel; 
 using static Dash.CourtesyDocuments;
 
+
 namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
@@ -158,12 +159,27 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
-            
-
             // if the field contained a DocumentFieldModelController return it's data, otherwise return null
             return documentFieldModelController?.Data;
         }
 
+
+        /// <summary>
+        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// </summary>
+        public LinkedList<DocumentController> GetAllPrototypes()
+        {
+            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
+
+            var prototype = GetPrototype(); 
+            while (prototype != null)
+            {
+                result.AddFirst(prototype); 
+                prototype = prototype.GetPrototype(); 
+            }
+            result.AddLast(this); 
+            return result; 
+        }
 
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="Key" /> at the first
@@ -491,6 +507,7 @@ namespace Dash
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+
                 if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultLayout)
                 {
                     return makeAllViewUI(context);

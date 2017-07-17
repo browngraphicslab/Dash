@@ -30,26 +30,33 @@ namespace Dash
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
         // whether the user can draw links currently or not
-        public bool CanLink {
-            get {
+        public bool CanLink
+        {
+            get
+            {
                 if (CurrentView is CollectionFreeformView)
                     return (CurrentView as CollectionFreeformView).CanLink;
                 else
                     return false;
-            } set {
+            }
+            set
+            {
                 if (CurrentView is CollectionFreeformView)
                     (CurrentView as CollectionFreeformView).CanLink = value;
             }
         }
 
-        public PointerRoutedEventArgs PointerArgs {
-            get {
+        public PointerRoutedEventArgs PointerArgs
+        {
+            get
+            {
                 if (CurrentView is CollectionFreeformView)
                     return (CurrentView as CollectionFreeformView).PointerArgs;
                 else
                     return null;
             }
-            set {
+            set
+            {
                 if (CurrentView is CollectionFreeformView)
                     (CurrentView as CollectionFreeformView).PointerArgs = value;
             }
@@ -105,7 +112,6 @@ namespace Dash
                                                 ParentDocument.xBorder.Margin.Top + 5,
                                                 ParentDocument.xBorder.Margin.Right,
                                                 ParentDocument.xBorder.Margin.Bottom);
-            //=====================================================================================
 
             if (ParentDocument != MainPage.Instance.MainDocView)
             {
@@ -290,7 +296,7 @@ namespace Dash
             //Clamp the zoom
             CanvasScale *= delta.Scale;
             ClampScale(scale);
-            
+
 
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
@@ -482,7 +488,7 @@ namespace Dash
         {
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
-        
+
         /// <summary>
         /// Make sure the canvas is still in bounds after resize
         /// </summary>
@@ -547,7 +553,7 @@ namespace Dash
         private HashSet<uint> _currentPointers = new HashSet<uint>();
 
         #endregion
-        
+
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -664,7 +670,7 @@ namespace Dash
             }
         }
 
-        
+
 
         #region Menu
         /// <summary>
@@ -722,7 +728,6 @@ namespace Dash
                                                             ParentDocument.xBorder.Margin.Top,
                                                             ParentDocument.xBorder.Margin.Right,
                                                             ParentDocument.xBorder.Margin.Bottom);
-            //=====================================================================================
         }
 
         private void SelectAllItems()
@@ -770,6 +775,7 @@ namespace Dash
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
+
             var collectionButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
@@ -779,9 +785,13 @@ namespace Dash
                 new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
                 new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
                 new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
+                new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
+                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
             };
+
             if (ParentDocument != MainPage.Instance.MainDocView)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
+
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
@@ -790,22 +800,30 @@ namespace Dash
                 },
                 new MenuButton(Symbol.Edit, "Interface", Colors.SteelBlue, null),
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
-                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
+                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection),
             };
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
             ParentDocument.Width += 50;
             //Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50, 
-                                                            ParentDocument.xBorder.Margin.Top, 
-                                                            ParentDocument.xBorder.Margin.Right, 
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50,
+                                                            ParentDocument.xBorder.Margin.Top,
+                                                            ParentDocument.xBorder.Margin.Right,
                                                             ParentDocument.xBorder.Margin.Bottom);
-            //====================================================================================
         }
 
 
         #endregion
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
+        }
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(xOuterGrid);
+        }
 
         #region Collection Activation
 
@@ -886,13 +904,16 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
             xBackgroundTileContainer.Children.Clear();
             new ManipulationControls(xBackgroundTileContainer);
             var width = 100;
             var height = 100;
-            for (double x = 0; x < Grid.ActualWidth; x += width) {
-                for (double y = 0; y < Grid.ActualHeight; y += height) {
+            for (double x = 0; x < Grid.ActualWidth; x += width)
+            {
+                for (double y = 0; y < Grid.ActualHeight; y += height)
+                {
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;

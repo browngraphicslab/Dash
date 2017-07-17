@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,8 @@ namespace Dash
         private readonly HashSet<DocumentController> _documentContextList;
 
         private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
+
+        public List<DocumentController> DocContextList { get { return _documentContextList.ToList(); } }
 
         public Context()
         {
