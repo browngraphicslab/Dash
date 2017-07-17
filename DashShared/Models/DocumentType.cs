@@ -21,7 +21,7 @@ namespace DashShared
         private string type;
 
         /// <summary>
-        /// The actual name of the type which is displayed but can change
+        /// The actual name of the type which is displayed 
         /// </summary>
         public string Type { get {
                 return type;

@@ -426,7 +426,7 @@ namespace Dash
 
         public FrameworkElement makeViewUI(Context context = null)
         {
-            context = context == null ? new Context() : context;
+            context = context == null ? new Context() : new Context(context);
             context.AddDocumentContext(this);
             var uieles = new List<FrameworkElement>();
 

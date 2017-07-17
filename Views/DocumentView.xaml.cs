@@ -78,16 +78,18 @@ namespace Dash
         /// </summary>
         private void SetUpMenu()
         {
-            Action layout = new Action(OpenLayout);
-            Action copy = new Action(CopyDocument);
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
-            Action delete = new Action(DeleteDocument);
-            MenuButton deleteButton = new MenuButton(Symbol.Delete, "Delete", bgcolor, delete);
+
+            var layout = new Action(OpenLayout);
+            var copy = new Action(CopyDocument);
+            var delete = new Action(DeleteDocument);
+            var makeDelegate = new Action(MakeDelegate);
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", bgcolor, layout),
-                new MenuButton(Symbol.Copy, "Copy", bgcolor, copy),
-                deleteButton
+                new MenuButton(Symbol.Copy, "GetCopy", bgcolor, copy),
+                new MenuButton(Symbol.SetTile, "Delegate", bgcolor, makeDelegate),
+                new MenuButton(Symbol.Delete, "Delete", bgcolor, delete)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -99,6 +101,7 @@ namespace Dash
             _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
         }
+
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
@@ -352,8 +355,14 @@ namespace Dash
 
         private void CopyDocument()
         {
-            throw new NotImplementedException();
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetCopy());
         }
+
+        private void MakeDelegate()
+        {
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
+        }
+
 
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
