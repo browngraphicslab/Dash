@@ -190,9 +190,12 @@ namespace Dash
             FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             DocumentReferenceController reference = new DocumentReferenceController(GetId(), key);
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference, new Context(this)));
-            field.FieldModelUpdated += delegate (FieldModelController sender)
+            field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Update, reference, new Context(this)));
+                context = context ?? new Context();
+                context.AddDocumentContext(this);
+                Execute(context, true);
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context));
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -354,7 +357,6 @@ namespace Dash
                     Execute(args.Context, true);
                 }
             };
-            controller.Execute(context, false);
             Execute(context, true);
         }
 
@@ -388,7 +390,11 @@ namespace Dash
                 {
                     DocumentReferenceController reference = new DocumentReferenceController(GetId(), fieldModel.Key);
                     context.AddData(reference, fieldModel.Value);
-                    OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, fieldModel.Value, FieldUpdatedAction.Add, reference, context));
+                    if (update)
+                    {
+                        OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
+                            FieldUpdatedAction.Add, reference, context));
+                    }
                 }
             }
             catch (KeyNotFoundException e)

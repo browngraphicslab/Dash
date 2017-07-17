@@ -79,7 +79,7 @@ namespace Dash
             SetEventHandlers();
             CanLink = false;
         }
-        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             DataContext = ViewModel;
         }

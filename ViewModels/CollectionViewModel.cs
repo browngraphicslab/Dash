@@ -79,7 +79,7 @@ namespace Dash
             CellSize = 250;
         }
 
-        private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
+        private void Controller_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             UpdateViewModels(sender as DocumentCollectionFieldModelController);
         }

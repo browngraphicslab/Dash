@@ -17,7 +17,7 @@ namespace Dash
         ///     on the fieldModel!
         /// </summary>
         public FieldModel FieldModel { get; set; }
-        public delegate void FieldModelUpdatedHandler(FieldModelController sender);
+        public delegate void FieldModelUpdatedHandler(FieldModelController sender, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
 
@@ -61,9 +61,9 @@ namespace Dash
         }
 
 
-        protected void OnFieldModelUpdated()
+        protected void OnFieldModelUpdated(Context context = null)
         {
-            FieldModelUpdated?.Invoke(this);
+            FieldModelUpdated?.Invoke(this, context);
         }
 
         /// <summary>

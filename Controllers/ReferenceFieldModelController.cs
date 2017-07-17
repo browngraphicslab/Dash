@@ -20,7 +20,7 @@ namespace Dash
                 {
                     if (args.Reference.FieldKey.Equals(FieldKey))
                     {
-                        OnFieldModelUpdated();
+                        OnFieldModelUpdated(args.Context);
                     }
                 };
             }
