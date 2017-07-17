@@ -64,7 +64,7 @@ namespace Dash
             {
                 // TODO try and get the controller from the server
             }
-            Debug.Assert(false, "No controller exists with the passed in id");
+            //Debug.Assert(false, "No controller exists with the passed in id");
             return null;
         }
 

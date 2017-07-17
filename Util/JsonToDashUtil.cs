@@ -261,6 +261,7 @@ namespace Dash
             BasePath = basePath;
             Prototype = new DocumentController(new Dictionary<Key, FieldModelController>(), 
                 new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath)));
+            SetDefaultLayoutOnPrototype(Prototype);
             _schemas = new List<NewDocumentSchema>();
         }
 
@@ -284,6 +285,11 @@ namespace Dash
                 _schemas.Add(currentSchema);
             }
             return currentSchema;
+        }
+
+        public void SetDefaultLayoutOnPrototype(DocumentController prototype)
+        {
+            var _ = new CourtesyDocuments.LayoutCourtesyDocument(prototype);
         }
     }
 

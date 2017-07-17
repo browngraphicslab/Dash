@@ -49,9 +49,10 @@ namespace Dash
         private Dictionary<Key, FieldModelController> _fields = new Dictionary<Key, FieldModelController>();
 
 
-        public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type)
+        public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type, string id = null)
         {
-            DocumentModel model = new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type);
+            DocumentModel model =
+                new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type, id);
             ContentController.AddModel(model);
             // Initialize Local Variables
             DocumentModel = model;
@@ -179,15 +180,21 @@ namespace Dash
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
-            FieldModelController oldValue;
-            _fields.TryGetValue(key, out oldValue);
+            FieldModelController oldField;
+            proto._fields.TryGetValue(key, out oldField);
+            
+            // if the fields are reference equal just return
+            if (ReferenceEquals(oldField, field))
+            {
+                return;
+            }
 
             proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
-            FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             ReferenceFieldModelController reference = new DocumentReferenceController(GetId(), key);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference));
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference));
             field.FieldModelUpdated += delegate (FieldModelController sender)
             {
                 OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference));
@@ -479,6 +486,10 @@ namespace Dash
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+                if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultLayout)
+                {
+                    return makeAllViewUI(context);
+                }
                 Debug.Assert(doc != null);
                 return doc.Data.MakeViewUI(context);
             }

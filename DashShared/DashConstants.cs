@@ -124,6 +124,7 @@ namespace DashShared
             public static DocumentType TextBoxDocumentType = new DocumentType("D63DDB00-1A66-4E3A-A19B-6B06BBD6DAC8", "Text Box");
             public static DocumentType FreeFormCollectionDocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Free Form Collection");
             public static DocumentType DynamicInterfaceLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Layout");
+            public static DocumentType DefaultLayout = new DocumentType("5226FDA9-268A-4325-8090-C1100EE6AB50", "Default Layout");
         }
 
 
