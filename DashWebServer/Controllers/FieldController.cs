@@ -37,13 +37,13 @@ namespace DashWebServer.Controllers
 
         // POST api/document, adds a document with a given 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]FieldModel docModel)
+        public async Task<IActionResult> Post([FromBody]FieldModel fieldModel)
         {
-            FieldModel DocModel;
+            FieldModel fieldModel;
             try
             {
                 // add the shape model to the documentRepository
-                DocModel = await _documentRepository.AddItemAsync(docModel);
+                fieldModel = await _documentRepository.AddItemAsync(fieldModel);
             }
             catch (DocumentClientException e)
             {
@@ -57,18 +57,18 @@ namespace DashWebServer.Controllers
                //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return Ok(DocModel);
+            return Ok(fieldModel);
         }
 
         // PUT api/document/5, updates a given document field
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody]FieldModel docModel)
+        public async Task<IActionResult> Put(int id, [FromBody]FieldModel fieldModel)
         {
-            FieldModel DocModel;
+            FieldModel fieldModel;
             try
             {
                 // add the shape model to the documentRepository
-                DocModel = await _documentRepository.UpdateItemAsync(docModel);
+                fieldModel = await _documentRepository.UpdateItemAsync(fieldModel);
             }
             catch (DocumentClientException e) // TODO: verify this is the right error to check for
             {
@@ -82,16 +82,16 @@ namespace DashWebServer.Controllers
                 //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return Ok(DocModel);
+            return Ok(fieldModel);
         }
 
         // DELETE api/document/5, sends OK on success
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(FieldModel docModel)
+        public async Task<IActionResult> Delete(FieldModel fieldModel)
         {
             try
             {
-               await _documentRepository.DeleteItemAsync<FieldModel>(docModel);
+               await _documentRepository.DeleteItemAsync<FieldModel>(fieldModel);
             }
             catch (DocumentClientException e)
             {
