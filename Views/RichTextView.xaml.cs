@@ -4,8 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -31,8 +33,10 @@ namespace Dash
             Loaded += OnLoaded;
             xRichEitBox.LostFocus += XRichEitBox_LostFocus;
             xRichEitBox.GotFocus += XRichEitBox_GotFocus;
+            xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
             _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
             this.AddFonts();
+
         }
 
         private void XRichEitBox_GotFocus(object sender, RoutedEventArgs e)
@@ -98,13 +102,27 @@ namespace Dash
             xFormatRow.Height = new GridLength(0);
         }
 
-        private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
+        private async Task<string> LoadText()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/rtf.txt"));
+            var rtfString = await FileIO.ReadTextAsync(file);
+            return rtfString;
+        }
+
+        private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             if (_richTextFieldModelController.RichTextData != null)
             {
                 xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData);
             }
+            else
+            {
+                var rtfString = await LoadText();
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, rtfString);
+            }
+
         }
+
 
         private void RichTextFieldModelControllerOnFieldModelUpdated(FieldModelController sender)
         {
@@ -117,12 +135,14 @@ namespace Dash
         }
 
         // freezes the app
-        //private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
-        //{
-        //    var richText = string.Empty;
-        //    xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
-        //    _richTextFieldModelController.RichTextData = richText;
-        //}
+        private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
+        {
+
+            //var richText = string.Empty;
+            //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
+            //_richTextFieldModelController.RichTextData = richText;
+
+        }
 
         private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
