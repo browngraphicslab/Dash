@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace DashWebServer.Controllers
 {
     [Route("api/[controller]")]
-    public class DocumentController : Controller
+    public class FieldController : Controller
     {
 
         private readonly IDocumentRepository _documentRepository;
@@ -22,24 +22,24 @@ namespace DashWebServer.Controllers
         /// Constructs a new DocumentController endpoint with a reference to the Document Repository.
         /// </summary>
         /// <param name="documentRepository"></param>
-        public DocumentController(IDocumentRepository documentRepository)
+        public FieldController(IDocumentRepository documentRepository)
         {
             _documentRepository = documentRepository;
         }
-
+        
 
         // GET api/document/5, returns the document with the given ID
         [HttpGet("{id}")]
-        public async Task<DocumentModel> Get(string id)
+        public async Task<FieldModel> Get(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
+            return await _documentRepository.GetItemByIdAsync<FieldModel>(id);
         }
 
         // POST api/document, adds a document with a given 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]DocumentModel docModel)
+        public async Task<IActionResult> Post([FromBody]FieldModel docModel)
         {
-            DocumentModel DocModel;
+            FieldModel DocModel;
             try
             {
                 // add the shape model to the documentRepository
@@ -62,9 +62,9 @@ namespace DashWebServer.Controllers
 
         // PUT api/document/5, updates a given document field
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody]DocumentModel docModel)
+        public async Task<IActionResult> Put(int id, [FromBody]FieldModel docModel)
         {
-            DocumentModel DocModel;
+            FieldModel DocModel;
             try
             {
                 // add the shape model to the documentRepository
@@ -87,11 +87,11 @@ namespace DashWebServer.Controllers
 
         // DELETE api/document/5, sends OK on success
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(DocumentModel docModel)
+        public async Task<IActionResult> Delete(FieldModel docModel)
         {
             try
             {
-               await _documentRepository.DeleteItemAsync<DocumentModel>(docModel);
+               await _documentRepository.DeleteItemAsync<FieldModel>(docModel);
             }
             catch (DocumentClientException e)
             {
