@@ -296,5 +296,9 @@ namespace Dash
         //    else _radialMenu.IsVisible = false;
         //    e.Handled = true;
         //}
+        private void MainDocView_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
