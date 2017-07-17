@@ -14,6 +14,7 @@ namespace Dash
         private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
 
         public List<DocumentController> DocContextList { get { return _documentContextList; } }
+
         public Context()
         {
             _documentContextList = new List<DocumentController>();

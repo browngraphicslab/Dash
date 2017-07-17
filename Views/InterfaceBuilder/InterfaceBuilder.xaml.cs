@@ -45,8 +45,9 @@ namespace Dash
             Binding listBinding = new Binding
             {
                 Source = viewModel.DocumentContext.DocContextList
+                //Source = viewModel.DocumentController.Context.DocContextList
             }; 
-            BreadcrumbListView.SetBinding(ListView.ItemsSourceProperty, listBinding);
+            BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
         private void SetUpInterfaceBuilder(DocumentController docCont, Context docContext)
@@ -70,7 +71,7 @@ namespace Dash
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            DocumentController cont = e.ClickedItem as DocumentController; 
+            DocumentController cont = e.ClickedItem as DocumentController;
             SetUpInterfaceBuilder(cont, cont.Context); 
         }
 

@@ -18,15 +18,22 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <ListView x:Name ="BreadcrumbListView" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+            <ListView x:Name ="BreadcrumbListView" HorizontalAlignment="Stretch" VerticalAlignment="Top"
                       ItemClick="BreadcrumbListView_ItemClick" IsItemClickEnabled="True" Grid.Row="0" >
                 <ListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <StackPanel Orientation="Horizontal"></StackPanel>
+                        <ItemsStackPanel Orientation="Horizontal"></ItemsStackPanel>
                     </ItemsPanelTemplate>
                 </ListView.ItemsPanel>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Path=DocumentType}"></TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
             </ListView>
-            
+
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Black" Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
