@@ -190,6 +190,43 @@ namespace RadialMenuControl.UserControl
             return parent ?? FindParent<T>(parentObject);
         }
 
+        public async void Expand()
+        {
+            var floatingParent = FindParent<Floating>(this);
+            var distance = Diameter / 2 - CenterButton.ActualHeight / 2;
+            Visibility = Visibility.Visible;
+            Width = Diameter;
+            Height = Diameter;
+            // Check if we're floating
+            floatingParent?.ManipulateControlPosition(-distance, -distance, Width, Height);
+            Canvas.SetTop(CenterButton, Diameter / 2 - CenterButton.ActualHeight / 2);
+            Canvas.SetLeft(CenterButton, Diameter / 2 - CenterButton.ActualWidth / 2);
+            Pie.Visibility = Visibility.Visible;
+
+            await OpenStoryboard.PlayAsync();
+
+            BackgroundEllipse.Visibility = Visibility.Visible;
+
+        }
+
+        public async void Collapse()
+        {
+            var floatingParent = FindParent<Floating>(this);
+            var distance = Diameter / 2 - CenterButton.ActualHeight / 2;
+            BackgroundEllipse.Visibility = Visibility.Collapsed;
+
+            await CloseStoryboard.PlayAsync();
+
+            Pie.Visibility = Visibility.Collapsed;
+            Width = CenterButton.ActualWidth;
+            Height = CenterButton.ActualHeight;
+            // Check if we're floating
+            floatingParent?.ManipulateControlPosition(distance, distance, Width, Height);
+            Canvas.SetTop(CenterButton, 0);
+            Canvas.SetLeft(CenterButton, 0);
+            Visibility = Visibility.Collapsed;
+        }
+
         /// <summary>
         ///     Show or hide the outer wheel. This change is animated.
         /// </summary>

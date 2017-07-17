@@ -19,8 +19,7 @@
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public"
-              SizeChanged="OuterGrid_SizeChanged"
-              Background="Transparent">
+              SizeChanged="OuterGrid_SizeChanged">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" MaxWidth="50"/>
             <ColumnDefinition Width="*" />

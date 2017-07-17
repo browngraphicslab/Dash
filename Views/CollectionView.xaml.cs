@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
 using DashShared;
 using DocumentMenu;
+using static Dash.CourtesyDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -29,26 +30,33 @@ namespace Dash
         public Rect Bounds = new Rect(0, 0, 5000, 5000);
 
         // whether the user can draw links currently or not
-        public bool CanLink {
-            get {
+        public bool CanLink
+        {
+            get
+            {
                 if (CurrentView is CollectionFreeformView)
                     return (CurrentView as CollectionFreeformView).CanLink;
                 else
                     return false;
-            } set {
+            }
+            set
+            {
                 if (CurrentView is CollectionFreeformView)
                     (CurrentView as CollectionFreeformView).CanLink = value;
             }
         }
 
-        public PointerRoutedEventArgs PointerArgs {
-            get {
+        public PointerRoutedEventArgs PointerArgs
+        {
+            get
+            {
                 if (CurrentView is CollectionFreeformView)
                     return (CurrentView as CollectionFreeformView).PointerArgs;
                 else
                     return null;
             }
-            set {
+            set
+            {
                 if (CurrentView is CollectionFreeformView)
                     (CurrentView as CollectionFreeformView).PointerArgs = value;
             }
@@ -104,7 +112,6 @@ namespace Dash
                                                 ParentDocument.xBorder.Margin.Top + 5,
                                                 ParentDocument.xBorder.Margin.Right,
                                                 ParentDocument.xBorder.Margin.Bottom);
-            //=====================================================================================
 
             if (ParentDocument != MainPage.Instance.MainDocView)
             {
@@ -289,7 +296,7 @@ namespace Dash
             //Clamp the zoom
             CanvasScale *= delta.Scale;
             ClampScale(scale);
-            
+
 
             //Create initial composite transform
             TransformGroup composite = new TransformGroup();
@@ -481,7 +488,7 @@ namespace Dash
         {
             e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
-        
+
         /// <summary>
         /// Make sure the canvas is still in bounds after resize
         /// </summary>
@@ -546,7 +553,7 @@ namespace Dash
         private HashSet<uint> _currentPointers = new HashSet<uint>();
 
         #endregion
-        
+
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -613,14 +620,39 @@ namespace Dash
                 e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        private void CollectionGrid_Drop(object sender, DragEventArgs e)
+        private async void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
             e.Handled = true;
             RefreshItemsBinding();
-            ItemsCarrier.GetInstance().Destination = ViewModel;
-            ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
-            ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
-            ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
+            foreach (var s in e.DataView.AvailableFormats)
+                Debug.Write("" + s);
+            if (e.DataView.Contains(StandardDataFormats.StorageItems))
+            {
+                var items = await e.DataView.GetStorageItemsAsync();
+                if (items.Count > 0)
+                {
+                    foreach (var i in items)
+                        if (i is Windows.Storage.StorageFile)
+                        {
+                            var storageFile = i as Windows.Storage.StorageFile;
+                            if (storageFile.ContentType.Contains("image"))
+                            {
+                                var bitmapImage = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
+                                bitmapImage.SetSource(await storageFile.OpenAsync(Windows.Storage.FileAccessMode.Read));
+                                var doc = new AnnotatedImage(new Uri(i.Path), i.Name);
+                                (DataContext as CollectionViewModel).CollectionFieldModelController.AddDocument(doc.Document);
+                            }
+                        }
+                }
+            }
+            else
+            {
+                var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
+                ItemsCarrier.GetInstance().Destination = ViewModel;
+                ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
+                ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
+                ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
+            }
         }
 
         private void RefreshItemsBinding()
@@ -639,7 +671,7 @@ namespace Dash
             }
         }
 
-        
+
 
         #region Menu
         /// <summary>
@@ -698,7 +730,6 @@ namespace Dash
                                                             ParentDocument.xBorder.Margin.Top,
                                                             ParentDocument.xBorder.Margin.Right,
                                                             ParentDocument.xBorder.Margin.Bottom);
-            //=====================================================================================
         }
 
         private void SelectAllItems()
@@ -746,6 +777,7 @@ namespace Dash
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
+
             var collectionButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
@@ -755,9 +787,13 @@ namespace Dash
                 new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
                 new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
                 new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
+                new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
+                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
             };
+
             if (ParentDocument != MainPage.Instance.MainDocView)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
+
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
@@ -766,22 +802,30 @@ namespace Dash
                 },
                 new MenuButton(Symbol.Edit, "Interface", Colors.SteelBlue, null),
                 new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
-                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection)
+                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection),
             };
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
             ParentDocument.Width += 50;
             //Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50, 
-                                                            ParentDocument.xBorder.Margin.Top, 
-                                                            ParentDocument.xBorder.Margin.Right, 
+            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50,
+                                                            ParentDocument.xBorder.Margin.Top,
+                                                            ParentDocument.xBorder.Margin.Right,
                                                             ParentDocument.xBorder.Margin.Bottom);
-            //====================================================================================
         }
 
 
         #endregion
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
+        }
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(xOuterGrid);
+        }
 
         #region Collection Activation
 
@@ -864,13 +908,16 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
             xBackgroundTileContainer.Children.Clear();
             new ManipulationControls(xBackgroundTileContainer);
             var width = 100;
             var height = 100;
-            for (double x = 0; x < Grid.ActualWidth; x += width) {
-                for (double y = 0; y < Grid.ActualHeight; y += height) {
+            for (double x = 0; x < Grid.ActualWidth; x += width)
+            {
+                for (double y = 0; y < Grid.ActualHeight; y += height)
+                {
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;

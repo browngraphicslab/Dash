@@ -6,6 +6,7 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
+
 namespace Dash
 {
     public class DocumentController : ViewModelBase, IController
@@ -144,8 +145,25 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
-            // if the field contained a DocumentFieldModelController return it's data, otherwise return null
+            // if the field contained a DocumentFieldModelController return its data, otherwise return null
             return documentFieldModelController?.Data;
+        }
+
+        /// <summary>
+        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// </summary>
+        public LinkedList<DocumentController> GetAllPrototypes()
+        {
+            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
+
+            var prototype = GetPrototype(); 
+            while (prototype != null)
+            {
+                result.AddFirst(prototype); 
+                prototype = prototype.GetPrototype(); 
+            }
+            result.AddLast(this); 
+            return result; 
         }
 
         /// <summary>
@@ -423,10 +441,16 @@ namespace Dash
             return makeViewUI(new Context());
         }
 
+        public Context Context { get; set; }
+
         public FrameworkElement makeViewUI(Context context = null)
         {
-            context = context == null ? new Context() : context;
+            context = context == null ? new Context() : new Context(context);
+
             context.AddDocumentContext(this);
+
+            Context = context;
+
             var uieles = new List<FrameworkElement>();
 
             if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
@@ -436,6 +460,10 @@ namespace Dash
             if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
             {
                 return CourtesyDocuments.ImageBox.MakeView(this, context);
+            }
+            if (DocumentType == CourtesyDocuments.DocumentBox.DocumentType)
+            {
+                return CourtesyDocuments.DocumentBox.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
@@ -455,7 +483,7 @@ namespace Dash
             }
 
             // if document is not a known UI View, then see if it contains a Layout view field
-            var fieldModelController = GetDereferencedField(DashConstants.KeyStore.LayoutKey, context);
+            var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);

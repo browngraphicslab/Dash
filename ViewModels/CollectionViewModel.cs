@@ -82,7 +82,7 @@ namespace Dash
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            UpdateViewModels(_collectionFieldModelController);
+            UpdateViewModels(_collectionFieldModelController, context);
             collection.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
             CellSize = 250;
         }
@@ -164,7 +164,7 @@ namespace Dash
             return false;
         }
 
-        public void UpdateViewModels(DocumentCollectionFieldModelController documents)
+        public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context=null)
         {
             var offset = 0;
             var carriedControllers = ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController);
