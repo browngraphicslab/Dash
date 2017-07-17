@@ -490,14 +490,24 @@ namespace Dash {
                 else if (fieldModelController is NumberFieldModelController)
                 {
                     var numFieldModelController = fieldModelController as NumberFieldModelController;
-                    tb = new TextBlock();
+                    var textBox = new TextBox();
+                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
+                    tb = textBox;
+                    textBox.AcceptsReturn = false;
+                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    tb.VerticalAlignment = VerticalAlignment.Stretch;
                     // make text update when changed
                     var sourceBinding = new Binding
                     {
                         Source = numFieldModelController,
-                        Path = new PropertyPath(nameof(numFieldModelController.Data))
+                        Converter = new StringToDoubleConverter(0),
+                        Path = new PropertyPath(nameof(numFieldModelController.Data)),
+                        Mode = BindingMode.TwoWay
                     };
-                    tb.SetBinding(TextBlock.TextProperty, sourceBinding);
+                    tb.SetBinding(TextBox.TextProperty, sourceBinding);
+                    textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
+                    textBox.TextChanged += TextBox_NumberChanged;
+                    textBox.Tag = numFieldModelController;
                 }
                 else if (fieldModelController is DocumentFieldModelController)
                 {
@@ -505,13 +515,8 @@ namespace Dash {
                     return documentfieldModelController.Data.makeViewUI(context);
                 }
 
-                // bind the text height
-                var heightController = GetHeightFieldController(docController, context);
-                BindHeight(tb, heightController);
-
-                // bind the text width
-                var widthController = GetWidthFieldController(docController, context);
-                BindWidth(tb, widthController);
+                var border = new Border();
+                border.Child = tb;
 
                 var fontWeightController = GetFontWeightFieldController(docController, context);
                 BindFontWeight(tb, fontWeightController);
@@ -522,10 +527,31 @@ namespace Dash {
                 var textAlignmentController = GetTextAlignmentFieldController(docController, context);
                 BindTextAlignment(tb, textAlignmentController);
 
+                tb = border;
+                // bind the text height
+                var heightController = GetHeightFieldController(docController, context);
+                BindHeight(tb, heightController);
+
+                // bind the text width
+                var widthController = GetWidthFieldController(docController, context);
+                BindWidth(tb, widthController);
+
                 // add bindings to work with operators
                 BindOperationInteractions(refToData, tb);
 
-                return tb;
+                border.BorderThickness = new Thickness(5);
+                border.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(50, 50, 50, 50));
+
+                return border;
+            }
+
+            private static void TextBox_NumberChanged(object sender, TextChangedEventArgs e)
+            {
+                var tb = sender as TextBox;
+                var numFieldModelController = tb.Tag as NumberFieldModelController;
+                double num;
+                if (double.TryParse(tb.Text, out num))
+                    numFieldModelController.Data = num;  // bcz: why do I have to do this?  The binding only seems to fire when the textbox loses focus
             }
 
             private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -1009,11 +1035,11 @@ namespace Dash {
                 Document = new DocumentController(fields, NumbersType);
 
                 var imBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
-                    0, 50, 20).Document;
+                    0, 50, 30).Document;
                 var imBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
-                    0, 50, 20).Document;
+                    0, 50, 30).Document;
                 var tBox = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
-                    0, 50, 20).Document;
+                    0, 50, 30).Document;
 
                 var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }, false).Document;
 
