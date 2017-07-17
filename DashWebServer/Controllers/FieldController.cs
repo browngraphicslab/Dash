@@ -30,20 +30,19 @@ namespace DashWebServer.Controllers
 
         // GET api/document/5, returns the document with the given ID
         [HttpGet("{id}")]
-        public async Task<FieldModel> Get(string id)
+        public async Task<FieldModelDTO> Get(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<FieldModel>(id);
+            return await _documentRepository.GetItemByIdAsync<FieldModelDTO>(id);
         }
 
         // POST api/document, adds a document with a given 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]FieldModel fieldModel)
+        public async Task<IActionResult> Post([FromBody]FieldModelDTO FieldModelDTO)
         {
-            FieldModel fieldModel;
             try
             {
                 // add the shape model to the documentRepository
-                fieldModel = await _documentRepository.AddItemAsync(fieldModel);
+                FieldModelDTO = await _documentRepository.AddItemAsync(FieldModelDTO);
             }
             catch (DocumentClientException e)
             {
@@ -57,18 +56,17 @@ namespace DashWebServer.Controllers
                //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return Ok(fieldModel);
+            return Ok(FieldModelDTO);
         }
 
         // PUT api/document/5, updates a given document field
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody]FieldModel fieldModel)
+        public async Task<IActionResult> Put(int id, [FromBody]FieldModelDTO FieldModelDTO)
         {
-            FieldModel fieldModel;
             try
             {
                 // add the shape model to the documentRepository
-                fieldModel = await _documentRepository.UpdateItemAsync(fieldModel);
+                FieldModelDTO = await _documentRepository.UpdateItemAsync(FieldModelDTO);
             }
             catch (DocumentClientException e) // TODO: verify this is the right error to check for
             {
@@ -82,16 +80,16 @@ namespace DashWebServer.Controllers
                 //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return Ok(fieldModel);
+            return Ok(FieldModelDTO);
         }
 
         // DELETE api/document/5, sends OK on success
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(FieldModel fieldModel)
+        public async Task<IActionResult> Delete(FieldModelDTO FieldModelDTO)
         {
             try
             {
-               await _documentRepository.DeleteItemAsync<FieldModel>(fieldModel);
+               await _documentRepository.DeleteItemAsync<FieldModelDTO>(FieldModelDTO);
             }
             catch (DocumentClientException e)
             {

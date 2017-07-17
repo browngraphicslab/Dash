@@ -6,13 +6,12 @@ namespace DashShared
     /// <summary>
     /// A mapping of keys to FieldModels.
     /// </summary>
-    public class FieldModel : EntityBase // TODO: AuthorizableEntityBase
+    public class FieldModelDTO : EntityBase // TODO: AuthorizableEntityBase
     {
         [Required]
         public object Data { get; set; }
 
         [Required]
-        public System.Type DocumentType { get; set; }
-
+        public TypeInfo Type { get; set; }
     }
 }
