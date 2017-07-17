@@ -21,7 +21,6 @@
                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
                           CanDragItems="{Binding CanDragItems}"
-                          CanReorderItems="True"
                           AllowDrop="True"
                   ManipulationMode="None">
             <ListView.ItemsPanel>
