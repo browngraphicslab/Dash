@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
-using System.Collections.Generic;
 
 namespace Dash
 {
@@ -88,7 +87,7 @@ namespace Dash
             // Add Events
         }
 
-        private void OutputReferences_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        private void OutputReferences_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             //// we could fine tune this
             //switch (e.Action)
@@ -153,7 +152,7 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.NoWrap,
+                TextWrapping = TextWrapping.NoWrap
             };
 
             bindTextOrSetOnce(textBlock);

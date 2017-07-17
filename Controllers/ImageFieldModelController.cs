@@ -46,7 +46,7 @@ namespace Dash
             {
                 Source = new BitmapImage(ImageSource),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
             };
 
             var imageSourceBinding = new Binding

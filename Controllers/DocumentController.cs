@@ -1,11 +1,11 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using System.Collections.ObjectModel; 
+using DashShared;
 using static Dash.CourtesyDocuments;
 
 
@@ -387,7 +387,6 @@ namespace Dash
             }
             catch (KeyNotFoundException e)
             {
-                return;
             }
             //foreach (var fieldModel in results)
             //{
@@ -410,7 +409,7 @@ namespace Dash
             {
                 var prototype = GetPrototype();
                 if (prototype != null)
-                    foreach (var field in prototype.EnumFields().Where((f) => !_fields.ContainsKey(f.Key)))
+                    foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }
@@ -433,9 +432,9 @@ namespace Dash
 
                 if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
                 {
-                    var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
-                    var label = new TextBlock() { Text = f.Key.Name + ": " };
-                    var dBox = new CourtesyDocuments.DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+                    var label = new TextBlock { Text = f.Key.Name + ": " };
+                    var dBox = new DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
 
@@ -472,35 +471,38 @@ namespace Dash
             context = context ?? new Context();
             context.AddDocumentContext(this);
 
-            if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
+            if (DocumentType == TextingBox.DocumentType)
             {
-                return CourtesyDocuments.TextingBox.MakeView(this, context);
+                return TextingBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
+            if (DocumentType == ImageBox.DocumentType)
             {
-                return CourtesyDocuments.ImageBox.MakeView(this, context);
+                return ImageBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.DocumentBox.DocumentType)
+            if (DocumentType == DocumentBox.DocumentType)
             {
-                return CourtesyDocuments.DocumentBox.MakeView(this, context);
+                return DocumentBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
+            if (DocumentType == StackingPanel.DocumentType)
             {
-                return CourtesyDocuments.StackingPanel.MakeView(this, context);
+                return StackingPanel.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
+            if (DocumentType == CollectionBox.DocumentType)
             {
-                return CourtesyDocuments.CollectionBox.MakeView(this, context);
+                return CollectionBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
+            if (DocumentType == OperatorBox.DocumentType)
             {
-                return CourtesyDocuments.OperatorBox.MakeView(this, context);
+                return OperatorBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
+            if (DocumentType == ApiDocumentModel.DocumentType)
             {
-                return CourtesyDocuments.ApiDocumentModel.MakeView(this, context);
+                return ApiDocumentModel.MakeView(this, context);
             }
-
+            if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            {
+                return FreeFormDocument.MakeView(this, context);
+            }
 
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);

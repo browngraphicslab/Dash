@@ -277,6 +277,12 @@ namespace Dash {
                 return newLayout;
             }
 
+            public void CreateAndSetFreeFormActiveLayout()
+            {
+                var layoutDoc = new FreeFormDocument(Document).LayoutDoc;
+                //Document.SetActiveLayout(layoutDoc, true);
+            }
+
         }
 
         /// <summary>
@@ -726,7 +732,7 @@ namespace Dash {
             private static NumberFieldModelController GetOpacityField(DocumentController docController, Context context = null)
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
-                return docController.GetField(OpacityKey, context)
+                return docController.GetField(OpacityKey, context)?
                     .DereferenceToRoot<NumberFieldModelController>();
             }
 
@@ -894,6 +900,87 @@ namespace Dash {
             }
         }
 
+        public class FreeFormDocument : CourtesyDocument
+        {
+            public static string PrototypeId = "A5614540-0A50-40F3-9D89-965B8948F2A2";
+
+            public DocumentController LayoutDoc { get; private set; }
+
+            public FreeFormDocument(DocumentController dataDocument)
+            {
+                Document = dataDocument;
+                LayoutDoc = GetPrototype().MakeDelegate();
+                SetLayoutsCollectionField(LayoutDoc, new List<DocumentController>(), true);
+                SetLayoutForDocument(dataDocument, LayoutDoc, true);
+                //Document.SetFields(fields, true); //TODO add fields to constructor parameters
+            }
+
+            protected override DocumentController GetPrototype()
+            {
+                var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+                if (prototype == null)
+                {
+                    prototype = InstantiatePrototype();
+                }
+                return prototype;
+            }
+
+            protected override DocumentController InstantiatePrototype()
+            {
+                var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
+                var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormCollectionDocumentType, PrototypeId);
+                return prototypeDocument;
+            }
+
+            public override FrameworkElement makeView(DocumentController docController, Context context)
+            {
+                return MakeView(docController, context);
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            {
+                var grid = new Grid();
+                var layoutDocuments = GetLayoutsCollectionField(docController, context).GetDocuments();
+  
+                foreach (var layoutDocument in layoutDocuments)
+                {
+                    var layoutView = layoutDocument.MakeViewUI(context);
+                    grid.Children.Add(layoutView);
+
+                    //var posController = GetPositionField(layoutDocument, context);
+                    //BindTranslation(layoutView, posController);
+                }
+
+                BindWidth(grid, GetWidthField(docController, context));
+                BindHeight(grid, GetHeightField(docController, context));
+                BindTranslation(grid, GetPositionField(docController, context));
+                return grid;
+            }
+
+            private static DocumentCollectionFieldModelController GetLayoutsCollectionField(DocumentController docController, Context context = null)
+            {
+                context = Context.SafeInitAndAddDocument(context, docController);
+                return docController.GetField(DashConstants.KeyStore.DataKey, context)?
+                    .DereferenceToRoot<DocumentCollectionFieldModelController>();
+            }
+
+            private static void SetLayoutsCollectionField(DocumentController layoutDocument, IList<DocumentController> layoutDocuments,
+                bool forceMask, Context context = null)
+            {
+                var currentLayoutCollections = GetLayoutsCollectionField(layoutDocument, context);
+
+                if (currentLayoutCollections == null)
+                {
+                    currentLayoutCollections = new DocumentCollectionFieldModelController(layoutDocuments);
+                }
+
+                // TODO make sure if these are reference equal it just returns
+                layoutDocument.SetField(DashConstants.KeyStore.DataKey, currentLayoutCollections, forceMask); // set the field here so that forceMask is respected
+                currentLayoutCollections.SetDocuments(layoutDocuments.ToList());
+            }
+
+        }
 
         /// <summary>
         /// Constructs a nested stackpanel that displays the fields of all documents in the list

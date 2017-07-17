@@ -1,7 +1,7 @@
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
-using System.Collections.Generic;
 
 namespace Dash
 {
@@ -74,7 +74,7 @@ namespace Dash
 
         public override FieldModelController GetDefaultController()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)

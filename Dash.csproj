@@ -267,6 +267,7 @@
     <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\InterfaceBuilder\SettingsPaneFromDocumentControllerFactory.cs" />
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
