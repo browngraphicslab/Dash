@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -621,18 +622,11 @@ namespace Dash {
 
         public class RichTextBox : CourtesyDocument
         {
-            public static DocumentType DocumentType = new DocumentType("?","Rich Text");
-            public static Key RichTextDataKey = new Key("?","Rich Text Data Key");
+            public static DocumentType DocumentType = new DocumentType("ED3B2D3C-C3EA-4FDC-9C0C-71E10F549C5F", "Rich Text");
 
             public RichTextBox(FieldModelController refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
             {
-                var fields = new Dictionary<Key, FieldModelController>
-                {
-                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(w),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(h),
-                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(x, y),
-                    [RichTextDataKey] = new RichTextFieldModelController()
-                };
+                var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
                 Document = new DocumentController(fields, DocumentType);
                 SetLayoutForDocument(Document, Document);
             }
@@ -640,14 +634,33 @@ namespace Dash {
             public static FrameworkElement MakeView(DocumentController docController,
                 Context context)
             {
-                var controller = docController.GetField(RichTextDataKey);
-                if (controller != null && controller is RichTextFieldModelController)
+                RichTextView rtv = null;
+                var refToRichText =
+                    docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                Debug.Assert(refToRichText!=null);
+                var fieldModelController = refToRichText.DereferenceToRoot(context);
+                if (fieldModelController is RichTextFieldModelController)
                 {
-                    var richTextController = controller as RichTextFieldModelController;
-                    return new RichTextView(richTextController);
+                    var richTextFieldModelController = fieldModelController as RichTextFieldModelController;
+                    Debug.Assert(richTextFieldModelController != null);
+                    var richText = new RichTextView(richTextFieldModelController);
+                    richText.ManipulationDelta += (s, e) => e.Handled = true;
+                    rtv = richText;
+                    rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    rtv.VerticalAlignment = VerticalAlignment.Stretch;
                 }
-                return new RichTextView(new RichTextFieldModelController());
+
+                // bind the rich text height
+                var heightController = GetHeightFieldController(docController, context);
+                BindHeight(rtv, heightController);
+
+                // bind the rich text width
+                var widthController = GetWidthFieldController(docController, context);
+                BindWidth(rtv, widthController);
+
+                return rtv;
             }
+
         }
 
         /// <summary>
@@ -748,6 +761,7 @@ namespace Dash {
             public static Key Image1FieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField1");
             public static Key Image2FieldKey = new Key("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
             public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            public static Key RichTextKey = new Key("1C46E96E-F3CB-4DEE-8799-AD71DB1FB4D1", "RichTextField");
             static DocumentController _prototypeTwoImages = CreatePrototype2Images();
             static DocumentController _prototypeLayout   = CreatePrototypeLayout();
 
@@ -758,6 +772,7 @@ namespace Dash {
                 fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+                fields.Add(RichTextKey, new RichTextFieldModelController("Hi"));
                 return new DocumentController(new Dictionary<Key, FieldModelController>(), TwoImagesType);
                 //return new DocumentController(fields, TwoImagesType);
             }
@@ -776,7 +791,8 @@ namespace Dash {
                 var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image1FieldKey),   0, 50, 200, 200);
                 var prototypeImage2Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),   0, 250, 200, 200);
                 var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),   0, 0, 200, 50);
-                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document });
+                var prototypeRichTextLayout = new RichTextBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), RichTextKey),0,0,200,200);
+                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document, prototypeRichTextLayout.Document });
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(500), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
                 return prototypeLayout.Document;
@@ -788,6 +804,7 @@ namespace Dash {
                 Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                 Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                 Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
+                Document.SetField(RichTextKey, new RichTextFieldModelController("Test"), true);
                 //Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
                 //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
 

@@ -25,37 +25,42 @@ namespace Dash
         {
             this.InitializeComponent();
             _richTextFieldModelController = richTextFieldModelController;
-            xRichEitBox.Paste += XRichEitBoxOnPaste;
-            xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
             Loaded += OnLoaded;
+            xRichEitBox.LostFocus += XRichEitBox_LostFocus;
             _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
+        }
+
+        private void XRichEitBox_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var richText = string.Empty;
+            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
+            _richTextFieldModelController.RichTextData = richText;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            if(_richTextFieldModelController.RichTextData != null)
+            if (_richTextFieldModelController.RichTextData != null)
+            {
                 xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData);
+            }
         }
 
         private void RichTextFieldModelControllerOnFieldModelUpdated(FieldModelController sender)
         {
-            if (_richTextFieldModelController.RichTextData != null)
+            var text = string.Empty;
+            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out text);
+            if (_richTextFieldModelController.RichTextData != null && !text.Equals(_richTextFieldModelController.RichTextData))
+            {
                 xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData);
+            }
         }
 
-        private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
-        {
-            var richText = string.Empty;
-            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
-            _richTextFieldModelController.RichTextData = richText;
-        }
-
-        private void XRichEitBoxOnPaste(object sender, TextControlPasteEventArgs textControlPasteEventArgs)
-        {
-            var richText = string.Empty;
-            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
-            _richTextFieldModelController.RichTextData = richText;
-        }
+        //private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
+        //{
+        //    var richText = string.Empty;
+        //    xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
+        //    _richTextFieldModelController.RichTextData = richText;
+        //}
 
         private void BoldButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
@@ -94,6 +99,17 @@ namespace Dash
                 {
                     charFormatting.Underline = UnderlineType.None;
                 }
+                selectedText.CharacterFormat = charFormatting;
+            }
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ITextSelection selectedText = xRichEitBox.Document.Selection;
+            if (selectedText != null)
+            {
+                ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
+                charFormatting.Size = Convert.ToInt32(xFontSizeComboBox);
                 selectedText.CharacterFormat = charFormatting;
             }
         }
