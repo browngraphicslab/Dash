@@ -35,7 +35,7 @@ namespace Dash
         public DocumentViewModel ViewModel { get; set; }
 
 
-        public bool ProportionalScaling;
+        public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
         public event OperatorView.IODragEventHandler IODragStarted;
@@ -106,11 +106,11 @@ namespace Dash
             var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
 
             var deltaTranslate = delta.Translate;
-            var deltaScaleCenter = delta.ScaleCenter;
             var deltaScaleAmount = delta.ScaleAmount;
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-            var scaleCenter = new Point(currentTranslate.X + deltaScaleCenter.X, currentTranslate.Y + deltaScaleCenter.Y);
+            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh.a
+            var scaleCenter = new Point(currentTranslate.X + ActualWidth / 2, currentTranslate.Y + ActualHeight / 2);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -262,28 +262,28 @@ namespace Dash
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-
+            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
             int pad = 32;
             if (Width < MinWidth + pad && Height < MinHeight + pad) {
                 updateIcon();
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                XGrid.Visibility = Visibility.Collapsed;
+                xIcon.Visibility = Visibility.Visible;
+                xBorder.Visibility = Visibility.Collapsed;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
             } else {
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                XGrid.Visibility = Visibility.Visible;
+                xIcon.Visibility = Visibility.Collapsed;
+                xBorder.Visibility = Visibility.Visible;
                 Tapped += OnTapped;
             }
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
-            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
+            if (xIcon.Visibility ==  Visibility.Visible) {
                 Height = 300;
                 Width = 300;
 

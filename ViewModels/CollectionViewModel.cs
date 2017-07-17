@@ -39,8 +39,12 @@ namespace Dash
         public bool KeepItemsOnMove { get; set; } = true;
 
 
-        
-
+        private bool _canDragItems;
+        public bool CanDragItems
+        {
+            get { return _canDragItems; }
+            set { SetProperty(ref _canDragItems, value); }
+        }
         /// <summary>
         /// Determines the selection mode of the control currently displaying the documents
         /// </summary>
@@ -163,17 +167,16 @@ namespace Dash
         public void UpdateViewModels(DocumentCollectionFieldModelController documents)
         {
             var offset = 0;
+            var carriedControllers = ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController);
             foreach (var docController in documents.GetDocuments())
             {
                 if (ViewModelContains(DataBindingSource, docController)) continue;
                 var viewModel = new DocumentViewModel(docController, DocumentContext);  // TODO LSM: why are we passing the DocContextList Here to the documents
-                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(docController))
+                if (carriedControllers.Contains(docController))
                 {
                     var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
                     var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
-                    viewModel.GroupTransform = new TransformGroupData(new Point(x, y), 
-                                                                      new Point(viewModel.GroupTransform.ScaleCenter.X, viewModel.GroupTransform.ScaleCenter.Y), 
-                                                                      new Point(viewModel.GroupTransform.ScaleAmount.X, viewModel.GroupTransform.ScaleAmount.Y));
+                    viewModel.GroupTransform.Translate = new Point(x, y);
                     offset += 15;
                 }
                 viewModel.ManipulationMode = ManipulationModes.System;

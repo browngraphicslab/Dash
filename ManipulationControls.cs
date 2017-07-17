@@ -101,10 +101,12 @@ namespace Dash {
                 scale.ScaleX = MaxScale / _documentScale;
                 scale.ScaleY = MaxScale / _documentScale;
                 _documentScale = MaxScale;
+                return;
             } else if (newScale < MinScale) {
                 scale.ScaleX = MinScale / _documentScale;
                 scale.ScaleY = MinScale / _documentScale;
                 _documentScale = MinScale;
+                return;
             } else {
                 _documentScale = newScale;
             }

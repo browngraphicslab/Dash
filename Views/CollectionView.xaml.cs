@@ -609,7 +609,8 @@ namespace Dash
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
-            e.AcceptedOperation = DataPackageOperation.Move;
+            if(ItemsCarrier.GetInstance().Source != ViewModel)
+                e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         private void CollectionGrid_Drop(object sender, DragEventArgs e)
@@ -681,6 +682,7 @@ namespace Dash
         private void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
+            ViewModel.CanDragItems = true;
             _colMenu.GoToDocumentMenu();
         }
 
@@ -792,6 +794,7 @@ namespace Dash
                     CloseMenu();
                     SetEnabled(false);
                     ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                    ViewModel.CanDragItems = false;
                 }
                 else
                 {
@@ -814,6 +817,7 @@ namespace Dash
                 CurrentView.IsHitTestVisible = false;
                 xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                ViewModel.CanDragItems = false;
                 if (_colMenu != null)
                     CloseMenu();
                 foreach (var dvm in ViewModel.DataBindingSource)

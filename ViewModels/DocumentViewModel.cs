@@ -23,8 +23,14 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
+        private TransformGroup _gridViewIconGroupTransform;
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
+        public TransformGroup GridViewIconGroupTransform
+        {
+            get { return _gridViewIconGroupTransform; }
+            set { SetProperty(ref _gridViewIconGroupTransform, value); }
+        }
         
         public IconTypeEnum IconType { get { return iconType; } }
         
@@ -70,7 +76,6 @@ namespace Dash
                     var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, DocumentContext) as DocumentFieldModelController)?.Data;
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
-
                     var heightFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, DocumentContext) as
                             NumberFieldModelController;
@@ -243,6 +248,19 @@ namespace Dash
             }
             Height = heightFieldModelController.Data;
             heightFieldModelController.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
+        }
+
+        public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
+        {
+
+            var max = actualWidth > actualHeight ? actualWidth : actualHeight;
+            var translate = new TranslateTransform() { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
+            var scale = new ScaleTransform() { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
+            var group = new TransformGroup();
+            group.Children.Add(translate);
+            group.Children.Add(scale);
+            GridViewIconGroupTransform = group;
+            
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 

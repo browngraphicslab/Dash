@@ -13,6 +13,11 @@ namespace Dash
         public Point ScaleCenter { get; set; }
         public Point ScaleAmount { get; set; }
 
+        public TransformGroupData()
+        {
+
+        }
+
         public TransformGroupData(Point translate, Point scaleCenter, Point scaleAmount)
         {
             Translate = translate;
