@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using System.Collections.ObjectModel;
+
 
 namespace Dash
 {
@@ -460,6 +460,10 @@ namespace Dash
             if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
             {
                 return CourtesyDocuments.ImageBox.MakeView(this, context);
+            }
+            if (DocumentType == CourtesyDocuments.DocumentBox.DocumentType)
+            {
+                return CourtesyDocuments.DocumentBox.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {

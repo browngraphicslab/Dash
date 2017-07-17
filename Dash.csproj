@@ -97,6 +97,7 @@
     </Compile>
     <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
+    <Compile Include="Converters\StringToDoubleConverter.cs" />
     <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
     <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\RadialActionModel.cs" />

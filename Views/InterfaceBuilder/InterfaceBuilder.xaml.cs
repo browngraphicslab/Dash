@@ -66,12 +66,13 @@ namespace Dash
             _documentView.AllowDrop = true;
 
             ApplyEditable();
+            var layoutDocFieldController = _documentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContext);
+            _documentController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             DocumentController cont = e.ClickedItem as DocumentController;
-            Debug.WriteLine(cont.Context != null); 
             SetUpInterfaceBuilder(cont, cont.Context); 
         }
 
@@ -198,6 +199,7 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             var docContext = (_documentView.DataContext as DocumentViewModel).DocumentContext;
             var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
             var fieldModelController = _documentController.GetDereferencedField(key, docContext);
@@ -213,9 +215,12 @@ namespace Dash
 
                 if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
                     layoutDoc = _documentController;
+                // bcz: hack -- the idea is that if we're dropping a field on a prototype layout, then the layout should reference the prototype of
+                //       of the source document as well.  Otherwise, the other documents that use this prototype layout will get the data from this source document
+                var layoutDocPrototype = layoutDoc.GetPrototype() == null ? layoutDoc : layoutDoc.GetPrototype(); 
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                      box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDoc.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDoc.GetId(), key));
+                      box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDocPrototype.GetId(), key));
+                else  box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDocPrototype.GetId(), key)); 
             }
             else if (fieldModelController is ImageFieldModelController)
             {
@@ -237,8 +242,7 @@ namespace Dash
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X,
-                        e.GetPosition(_documentView).Y);
+                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X, e.GetPosition(_documentView).Y);
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
                 var layoutDataField = LayoutCourtesyDocument.LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContext);
 
