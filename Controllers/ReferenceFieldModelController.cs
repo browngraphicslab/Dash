@@ -2,6 +2,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -12,9 +13,17 @@ namespace Dash
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
-            var fmc = DereferenceToRoot(null);
-            if (fmc != null)
-                fmc.FieldModelUpdated += sender => FireFieldModelUpdated();
+            var docController = GetDocumentController(null);
+            if (docController != null)
+            {
+                docController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    if (args.Reference.FieldKey.Equals(FieldKey))
+                    {
+                        OnFieldModelUpdated();
+                    }
+                };
+            }
         }
 
         public Key FieldKey
@@ -39,6 +48,11 @@ namespace Dash
 
         public abstract DocumentController GetDocumentController(Context context);
 
+        /// <summary>
+        /// Resolve this reference field model to the lowest delegate in the given context
+        /// </summary>
+        /// <param name="context">Context to look for delegates in</param>
+        /// <returns>A new FieldModelController that points to the same field in the lowest delegate of the pointed to document</returns>
         public abstract ReferenceFieldModelController Resolve(Context context);
 
         public sealed override FieldModelController Dereference(Context context)
@@ -51,7 +65,7 @@ namespace Dash
                     return controller;
                 }
             }
-            return GetDocumentController(context).GetField(FieldKey, context);
+            return GetDocumentController(context).GetField(FieldKey);
         }
 
         public sealed override FieldModelController DereferenceToRoot(Context context)
@@ -77,16 +91,9 @@ namespace Dash
             return DereferenceToRoot(context) as T;
         }
 
-        public override ReferenceFieldModelController InputReference
+        public override void SetInputReference(ReferenceFieldModelController reference, Context context)
         {
-            get { return _inputReference; }
-            set
-            {
-                if (SetProperty(ref FieldModel.InputReference, value.ReferenceFieldModel))
-                {
-                    _inputReference = value;
-                }
-            }
+            InputReference = reference;
         }
 
         public override FrameworkElement GetTableCellView()

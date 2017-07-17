@@ -47,7 +47,7 @@ namespace Dash {
                 deleg.SetField(DashConstants.KeyStore.ActiveLayoutKey, selfFmc, true);
 
                 // TODO KB delegates... but this method is never called so ????? 
-                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey, null) as DocumentCollectionFieldModelController).AddDocument(deleg); 
+                (prototypeLayout.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController).AddDocument(deleg); 
 
                 return deleg;
             }
@@ -296,7 +296,7 @@ namespace Dash {
 
             public static FrameworkElement MakeView(DocumentController docController,
                 Context context) {
-                var data = docController.GetField(DashConstants.KeyStore.DataKey, context) ?? null;
+                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 var opfmc = (data as ReferenceFieldModelController);
                 OperatorView opView = new OperatorView { DataContext = opfmc };
                 return opView;
@@ -427,7 +427,7 @@ namespace Dash {
                 FrameworkElement tb = null;
 
                 // use the reference to the text to get the text field model controller
-                var retToText = docController.GetField(DashConstants.KeyStore.DataKey, context) as ReferenceFieldModelController;
+                var retToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
                 Debug.Assert(retToText != null);
                 var fieldModelController = retToText.DereferenceToRoot(context);
                 var doc = retToText.GetDocumentController(context);
@@ -466,7 +466,7 @@ namespace Dash {
                 doc.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
                     string s = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
-                    if (args.Action == DocumentController.FieldUpdatedAction.Add && s.Equals(retToText.GetDocumentController(context).GetId()) && args.Reference.FieldKey.Equals(retToText.FieldKey))
+                    if (args.Action != DocumentController.FieldUpdatedAction.Update && s.Equals(retToText.GetDocumentController(context).GetId()) && args.Reference.FieldKey.Equals(retToText.FieldKey))
                     {
                         var fmc = args.Reference.DereferenceToRoot(new Context(args.Context));
                         var sourceBinding = new Binding
@@ -553,7 +553,7 @@ namespace Dash {
                 Context context) {
                 // use the reference to the image to get the image field model controller
                 var refToImage =
-                    docController.GetField(DashConstants.KeyStore.DataKey, context) as ReferenceFieldModelController;
+                    docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
                 Debug.Assert(refToImage != null);
                 var fieldModelController = refToImage.DereferenceToRoot(context);
                 var imFieldModelController = fieldModelController as ImageFieldModelController;
@@ -972,7 +972,7 @@ namespace Dash {
 
                 // fetch parameter list to add to
                 var col =
-                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey, null);
+                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
 
                 double displayDouble = ((bool)display.IsChecked) ? 0 : 1;
                 double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
@@ -989,12 +989,12 @@ namespace Dash {
                 var ret = new DocumentController(fields, DocumentType);
 
                 // apply textbox bindings
-                bindToTextBox(key, ret.GetField(KeyTextKey, null));
-                bindToTextBox(value, ret.GetField(ValueTextKey, null));
+                bindToTextBox(key, ret.GetField(KeyTextKey));
+                bindToTextBox(value, ret.GetField(ValueTextKey));
 
                 // apply checkbox bindings
-                bindToCheckBox(display, ret.GetField(DisplayKey, null));
-                bindToCheckBox(required, ret.GetField(RequiredKey, null));
+                bindToCheckBox(display, ret.GetField(DisplayKey));
+                bindToCheckBox(required, ret.GetField(RequiredKey));
 
                 // get the property's type
                 ApiProperty.ApiPropertyType type = ApiProperty.ApiPropertyType.Parameter;
@@ -1012,7 +1012,7 @@ namespace Dash {
 
                 // bind source's fields to those of the editor (key, value)
                 TextFieldModelController textFieldModelController =
-                    ret.GetField(KeyTextKey, null) as TextFieldModelController;
+                    ret.GetField(KeyTextKey) as TextFieldModelController;
                 var sourceBinding = new Binding {
                     Source = textFieldModelController,
                     Path = new PropertyPath(nameof(textFieldModelController.Data)),
@@ -1020,7 +1020,7 @@ namespace Dash {
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
                 apiprop.XKey.SetBinding(TextBlock.TextProperty, sourceBinding);
-                bindToTextBox(apiprop.XValue, ret.GetField(ValueTextKey, null));
+                bindToTextBox(apiprop.XValue, ret.GetField(ValueTextKey));
 
                 // bind source visibility to display checkbox which is bound to backend display field of param document
                 var binding = new Binding {
@@ -1058,7 +1058,7 @@ namespace Dash {
                              parameterCollectionKey == ParametersKey || parameterCollectionKey == HeadersKey);
 
                 DocumentCollectionFieldModelController col =
-                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey, null);
+                    (DocumentCollectionFieldModelController)docController.GetField(parameterCollectionKey);
                 col.RemoveDocument(docModelToRemove);
 
             }
@@ -1107,14 +1107,14 @@ namespace Dash {
             private static void makeBinding(ApiCreatorDisplay apiDisplay, DocumentController docController) {
 
                 // set up text bindings
-                bindToTextBox(apiDisplay.UrlTB, docController.GetField(BaseUrlKey, null));
-                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.GetField(AuthBaseUrlKey, null));
-                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.GetField(AuthKey, null));
+                bindToTextBox(apiDisplay.UrlTB, docController.GetField(BaseUrlKey));
+                bindToTextBox(apiDisplay.AuthDisplay.UrlTB, docController.GetField(AuthBaseUrlKey));
+                bindToTextBox(apiDisplay.AuthDisplay.KeyTB, docController.GetField(AuthKey));
                 // bindToTextBox(apiDisplay.AuthDisplay.SecretTB, docController.Fields[AuthSecretKey));
 
                 // bind drop down list
                 NumberFieldModelController fmcontroller =
-                    docController.GetField(HttpMethodKey, null) as NumberFieldModelController;
+                    docController.GetField(HttpMethodKey) as NumberFieldModelController;
                 var sourceBinding = new Binding {
                     Source = fmcontroller,
                     Path = new PropertyPath(nameof(fmcontroller.Data)),
@@ -1126,7 +1126,7 @@ namespace Dash {
             }
 
             public static void setResults(DocumentController docController, List<DocumentController> documents) {
-                (docController.GetField(DocumentCollectionFieldModelController.CollectionKey, null) as
+                (docController.GetField(DocumentCollectionFieldModelController.CollectionKey) as
                     DocumentCollectionFieldModelController).SetDocuments(documents);
             }
 

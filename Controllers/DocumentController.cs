@@ -182,7 +182,7 @@ namespace Dash
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
             FieldModelController oldValue;
-            _fields.TryGetValue(key, out oldValue);
+            proto._fields.TryGetValue(key, out oldValue);
 
             proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
@@ -210,9 +210,8 @@ namespace Dash
         /// <param name="context"></param>
         /// <param name="ignorePrototype"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key, Context context, bool ignorePrototype = false)
+        public FieldModelController GetField(Key key, bool ignorePrototype = false)
         {
-            context = Context.SafeInitAndAddDocument(context, this);
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
 
@@ -328,27 +327,26 @@ namespace Dash
             //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
             //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
             //}
-            Debug.WriteLine($"adding reference to {GetId()}");
-            Debug.WriteLine($"reference w/o context is {reference.GetDocumentController(null).GetId()}");
-            Debug.WriteLine($"reference is {reference.GetDocumentController(context).GetId()}");
-            reference.Context = context;//bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
-            var field = GetField(fieldKey, context, true);
-            var protoField = GetField(fieldKey, context);
+            //Debug.WriteLine($"adding reference to {GetId()}");
+            //Debug.WriteLine($"reference w/o context is {reference.GetDocumentController(null).GetId()}");
+            //Debug.WriteLine($"reference is {reference.GetDocumentController(context).GetId()}");
+            var field = GetField(fieldKey, true);
+            var protoField = GetField(fieldKey);
             var refField = reference.DereferenceToRoot(context);
             var dereferencedField = protoField.DereferenceToRoot(context);
             DocumentController controller = reference.GetDocumentController(context);
 
-            if (!dereferencedField.CheckType(refField))
-            {
-                Debug.Assert(!refField.CheckType(dereferencedField));//Make sure check field is commutative
-                throw new ArgumentException("Invalid types");
-            }
+            //if (!dereferencedField.CheckType(refField))
+            //{
+            //    Debug.Assert(!refField.CheckType(dereferencedField));//Make sure check field is commutative
+            //    throw new ArgumentException("Invalid types");
+            //}
             if (field == null)
             {
                 field = protoField.Copy();
                 SetField(fieldKey, field, true);
             }
-            field.InputReference = reference;
+            field.SetInputReference(reference, context);
             controller.DocumentFieldUpdated += delegate (DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(reference.FieldKey))
@@ -356,13 +354,14 @@ namespace Dash
                     Execute(args.Context);
                 }
             };
+            controller.Execute(context);
             Execute(context);
         }
 
         public FieldModelController GetDereferencedField(Key key, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, this);
-            var fieldController = GetField(key, context);
+            var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
         }
 
@@ -381,14 +380,15 @@ namespace Dash
                 Dictionary<Key, FieldModelController> outputs = new Dictionary<Key, FieldModelController>(opField.Outputs.Count);
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
-                    var field = GetField(opFieldInput, context);
+                    var field = GetField(opFieldInput);
                     inputs[opFieldInput] = field?.DereferenceToRoot(context);
                 }
                 opField.Execute(inputs, outputs);
                 foreach (var fieldModel in outputs)
                 {
-                    SetField(fieldModel.Key, fieldModel.Value, true);
-                    context.AddData(new DocumentReferenceController(GetId(), fieldModel.Key), fieldModel.Value);
+                    DocumentReferenceController reference = new DocumentReferenceController(GetId(), fieldModel.Key);
+                    context.AddData(reference, fieldModel.Value);
+                    OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, fieldModel.Value, FieldUpdatedAction.Add, reference, context));
                 }
             }
             catch (KeyNotFoundException e)

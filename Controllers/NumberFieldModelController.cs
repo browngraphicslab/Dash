@@ -61,7 +61,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;

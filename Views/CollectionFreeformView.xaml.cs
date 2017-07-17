@@ -145,6 +145,8 @@ namespace Dash
 
         public void EndDrag(OperatorView.IOReference ioReference)
         {
+            OperatorView.IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
+            OperatorView.IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
             //if (!(DataContext as CollectionViewModel).IsEditorMode)
             //{
             //    return;
@@ -190,34 +192,17 @@ namespace Dash
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
 
-            if (ioReference.IsOutput)
+            DocumentController inputController =
+                inputReference.ReferenceFieldModelController.GetDocumentController(null);
+            if (!outputReference.IsReference || inputReference.IsReference)
             {
-                if (_currReference.IsReference)
-                {
-                    _currReference.ReferenceFieldModelController.GetDocumentController(null).SetField(_currReference.ReferenceFieldModelController.FieldKey, ioReference.ReferenceFieldModelController, true);
-                }
-                _currReference.ReferenceFieldModelController.GetDocumentController(null)
-                    .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
-                        ioReference.ReferenceFieldModelController, null);
+                inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
+                    outputReference.ReferenceFieldModelController, true);
             }
             else
             {
-                if (ioReference.IsReference)
-                {
-                    ioReference.ReferenceFieldModelController.GetDocumentController(null).SetField(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController, true);
-                }
-                //var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
-                try
-                {
-                    //ContentController.GetController<DocumentController>(refDocId)
-                    ioReference.ReferenceFieldModelController.GetDocumentController(null)
-                        .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
-                            null);
-                }
-                catch (ArgumentException)
-                {
-                    CancelDrag(ioReference.PointerArgs.Pointer);
-                }
+                inputController.AddInputReference(inputReference.ReferenceFieldModelController.FieldKey,
+                    outputReference.ReferenceFieldModelController, null);
             }
 
             if (!ioReference.IsOutput && _connectionLine != null)

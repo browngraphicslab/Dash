@@ -21,40 +21,49 @@ namespace Dash
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
 
-        public Context Context = null;
-
-
-        protected ReferenceFieldModelController _inputReference;
+        private ReferenceFieldModelController _inputReference;
         /// <summary>
         ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        public virtual ReferenceFieldModelController InputReference
-        {
+        public ReferenceFieldModelController InputReference {
             get { return _inputReference; }
-            set
+            protected set
             {
                 if (SetProperty(ref FieldModel.InputReference, value.ReferenceFieldModel))
                 {
                     _inputReference = value;
-                    // update local
-                    var cont = value.GetDocumentController(value.Context);
-                    cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
-                    {
-                        if (args.Reference.FieldKey.Equals(value.FieldKey))
-                        {
-                            UpdateValue(args.Reference.DereferenceToRoot(args.Context));
-                        }
-                    };
-                    UpdateValue(value.DereferenceToRoot(value.Context));
-
-                    // update server
                 }
             }
         }
 
+        public virtual void SetInputReference(ReferenceFieldModelController reference, Context context)
+        {
+            if (SetProperty(ref FieldModel.InputReference, reference.ReferenceFieldModel, nameof(InputReference)))
+            {
+                var c = new Context(context);
+                InputReference = reference;
+                // update local
+                var cont = reference.GetDocumentController(c);
+                cont.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    if (args.Reference.FieldKey.Equals(reference.FieldKey))
+                    {
+                        UpdateValue(args.Reference.DereferenceToRoot(args.Context));
+                    }
+                };
+                var fmc = reference.DereferenceToRoot(c);
+                if (fmc != null)
+                {
+                    UpdateValue(fmc);
+                }
 
-        public void FireFieldModelUpdated()
+                // update server
+            }
+        }
+
+
+        protected void OnFieldModelUpdated()
         {
             FieldModelUpdated?.Invoke(this);
         }

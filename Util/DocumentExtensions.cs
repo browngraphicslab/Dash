@@ -22,7 +22,7 @@ namespace Dash
         private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
-            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey, context) as DocumentCollectionFieldModelController;
+            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
             
             if (layoutList == null)
             {

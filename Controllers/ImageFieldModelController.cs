@@ -31,7 +31,7 @@ namespace Dash
                     // update local
                     // update server    
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
 
@@ -76,7 +76,7 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
                 {
-                    FireFieldModelUpdated();
+                    OnFieldModelUpdated();
                     // update local
                     // update server
                 }
