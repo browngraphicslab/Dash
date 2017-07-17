@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Media.Imaging;
 
-namespace Dash.Util
+namespace Dash
 {
         public class TypeInfoHelper
         {
@@ -54,7 +55,54 @@ namespace Dash.Util
                 }
             }
 
-            private static readonly Dictionary<Type, TypeInfo> TypeDict = new Dictionary<Type, TypeInfo>
+        public static FieldModelController CreateFieldModelController(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
+        {
+            var data = fieldModelDTO.Data;
+            switch (fieldModelDTO.Type)
+            {
+                case TypeInfo.Text:
+                    return new TextFieldModelController(data as string);
+                case TypeInfo.Number:
+                    return new NumberFieldModelController((double)data);
+                case TypeInfo.Image:
+                    return new ImageFieldModelController(data as Uri);
+                case TypeInfo.Collection:
+                    return new DocumentCollectionFieldModelController(data as List<DocumentController>);
+                case TypeInfo.Document:
+                    return new DocumentFieldModelController(data as DocumentController);
+                case TypeInfo.Reference:
+                    var kvp = ((KeyValuePair<Key, string>)data);
+                    return new DocumentReferenceController(kvp.Value, kvp.Key);
+                case TypeInfo.Operator://TODO What should this do?
+                    return null;
+                case TypeInfo.Point:
+                    return new PointFieldModelController((Windows.Foundation.Point)data);
+                case TypeInfo.List:
+                    switch (listType)//TODO support list of list?
+                    {
+                        case TypeInfo.Number:
+                            return new ListFieldModelController<NumberFieldModelController>(data as IEnumerable<NumberFieldModelController>);
+                        case TypeInfo.Image:
+                            return new ListFieldModelController<ImageFieldModelController>(data as IEnumerable<ImageFieldModelController>);
+                        case TypeInfo.Document:
+                            return new ListFieldModelController<DocumentFieldModelController>(data as IEnumerable<DocumentFieldModelController>);
+                        case TypeInfo.Point:
+                            return new ListFieldModelController<PointFieldModelController>(data as IEnumerable<PointFieldModelController>);
+                        case TypeInfo.Text:
+                            return new ListFieldModelController<TextFieldModelController>(data as IEnumerable<TextFieldModelController>);
+                        case TypeInfo.Reference:
+                            return new ListFieldModelController<ReferenceFieldModelController>(data as IEnumerable<ReferenceFieldModelController>);
+                        case TypeInfo.Collection:
+                            return new ListFieldModelController<DocumentCollectionFieldModelController>(data as IEnumerable<DocumentCollectionFieldModelController>);
+                        default:
+                            return null;
+                    }
+                default:
+                    return null;
+            }
+        }
+
+        private static readonly Dictionary<Type, TypeInfo> TypeDict = new Dictionary<Type, TypeInfo>
             {
                 [typeof(NumberFieldModelController)] = TypeInfo.Number,
                 [typeof(TextFieldModelController)] = TypeInfo.Text,

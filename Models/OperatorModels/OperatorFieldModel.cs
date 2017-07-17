@@ -1,4 +1,7 @@
-﻿namespace Dash
+﻿using System;
+using DashShared;
+
+namespace Dash
 {
     public class OperatorFieldModel : FieldModel
     {
@@ -11,6 +14,11 @@
         public OperatorFieldModel(string type)
         {
             Type = type; 
+        }
+
+        public override FieldModelDTO GetFieldDTO()
+        {
+            return new FieldModelDTO(TypeInfo.Reference, Type);
         }
     }
 }

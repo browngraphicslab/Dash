@@ -22,6 +22,6 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModelController InputReference;
 
-        
+        public abstract FieldModelDTO GetFieldDTO();
     }
 }

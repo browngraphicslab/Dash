@@ -47,10 +47,12 @@
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\EntityBase.cs" />
     <Compile Include="Models\AuthorizableEntityBase.cs" />
+    <Compile Include="Models\FieldModelDTO.cs" />
     <Compile Include="Models\Key.cs" />
     <Compile Include="Models\Result.cs" />
     <Compile Include="Models\ShapeModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\Util.cs" />
   </ItemGroup>
   <ItemGroup>

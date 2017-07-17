@@ -1,3 +1,6 @@
+using System;
+using DashShared;
+
 namespace Dash
 {
     public class NumberFieldModel : FieldModel
@@ -14,6 +17,11 @@ namespace Dash
         public override string ToString()
         {
             return $"NumberFieldModel: {Data}";
+        }
+
+        public override FieldModelDTO GetFieldDTO()
+        {
+            return new FieldModelDTO(TypeInfo.Reference, Data);
         }
     }
 }

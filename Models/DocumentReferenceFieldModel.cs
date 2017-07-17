@@ -27,6 +27,11 @@ namespace Dash
             return base.Equals(refFieldModel) && refFieldModel.DocId.Equals(DocId);
         }
 
+        public override FieldModelDTO GetFieldDTO()
+        {
+            return new FieldModelDTO(TypeInfo.Reference, new KeyValuePair<Key, string>(FieldKey, DocId));
+        }
+
         public override int GetHashCode()
         {
             return base.GetHashCode() ^ DocId.GetHashCode();

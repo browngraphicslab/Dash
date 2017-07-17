@@ -66,6 +66,16 @@ namespace Dash
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
             _radialMenu = new RadialMenuView(xCanvas);
+
+            asyncyboy();
+        }
+
+        async void asyncyboy() {
+            ServerEndpoint servyboy = new ServerEndpoint();
+            FieldEndpoint fieldyboy = new FieldEndpoint(servyboy);
+            var controllyboy = await fieldyboy.AddField(new TextFieldModel("boy"));
+            var resultyboy = controllyboy.Content as TextFieldModelController;
+            Debug.WriteLine("result is:" + resultyboy.Data);
         }
 
         public void AddOperator()

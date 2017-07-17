@@ -1,4 +1,7 @@
-﻿namespace Dash
+﻿using System;
+using DashShared;
+
+namespace Dash
 {
     /// <summary>
     /// A Field Model which holds text data
@@ -19,5 +22,10 @@
         /// The text which is the field model contains
         /// </summary>
         public string Data;
+
+        public override FieldModelDTO GetFieldDTO()
+        {
+            return new FieldModelDTO(TypeInfo.Text, Data);
+        }
     }
 }
