@@ -53,7 +53,7 @@ namespace Dash
             _documentView.AllowDrop = true;
 
 
-            ApplyEditable();
+            //ApplyEditable();
         }
 
         private void ApplyEditable()
