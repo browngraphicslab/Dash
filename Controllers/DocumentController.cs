@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using static Dash.CourtesyDocuments;
 
 namespace Dash
 {
@@ -437,6 +438,10 @@ namespace Dash
             {
                 return CourtesyDocuments.ImageBox.MakeView(this, context);
             }
+            if (DocumentType == CourtesyDocuments.DocumentBox.DocumentType)
+            {
+                return CourtesyDocuments.DocumentBox.MakeView(this, context);
+            }
             if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
                 return CourtesyDocuments.StackingPanel.MakeView(this, context);
@@ -461,6 +466,7 @@ namespace Dash
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
                 Debug.Assert(doc != null);
                 return doc.Data.makeViewUI(context);
+               // return LayoutCourtesyDocument.MakeView(doc.Data, context);
             }
 
             return makeAllViewUI(context);

@@ -184,6 +184,7 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
             var docContext = (_documentView.DataContext as DocumentViewModel).DocumentContext;
             var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
             var fieldModelController = _documentController.GetDereferencedField(key, docContext);
