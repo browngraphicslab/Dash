@@ -40,12 +40,11 @@ namespace Dash
             Width = width;
             Height = height;
 
-            SetUpInterfaceBuilder(viewModel.DocumentController, viewModel.DocumentContext); 
+            SetUpInterfaceBuilder(viewModel.DocumentController, viewModel.DocumentContext);
 
             Binding listBinding = new Binding
             {
-                Source = viewModel.DocumentContext.DocContextList
-                //Source = viewModel.DocumentController.Context.DocContextList
+                Source = viewModel.DocumentController.GetAllPrototypes() 
             }; 
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }

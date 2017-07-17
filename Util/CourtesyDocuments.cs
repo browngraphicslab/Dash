@@ -27,7 +27,6 @@ namespace Dash {
                 var layoutController = new DocumentFieldModelController(layoutDoc);
                 document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
 
-                // TODO KB 
                 var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
                 if (layoutList == null)
                 {
@@ -263,7 +262,7 @@ namespace Dash {
 
             public override FrameworkElement makeView(DocumentController docController,
                 Context context) {
-                return LayoutCourtesyDocument.MakeView(docController, context);
+                return MakeView(docController, context);
             }
 
             public static FrameworkElement MakeView(DocumentController docController,

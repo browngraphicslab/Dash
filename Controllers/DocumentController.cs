@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using System.Collections.ObjectModel; 
+using System.Collections.ObjectModel;
 
 namespace Dash
 {
@@ -147,6 +147,20 @@ namespace Dash
 
             // if the field contained a DocumentFieldModelController return it's data, otherwise return null
             return documentFieldModelController?.Data;
+        }
+
+        public LinkedList<DocumentController> GetAllPrototypes()
+        {
+            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
+
+            var prototype = GetPrototype(); 
+            while (prototype != null)
+            {
+                result.AddFirst(prototype); 
+                prototype = prototype.GetPrototype(); 
+            }
+            result.AddLast(this); 
+            return result; 
         }
 
         /// <summary>
@@ -424,14 +438,15 @@ namespace Dash
             return makeViewUI(new Context());
         }
 
-        public Context Context { get; set; } 
+        public Context Context { get; set; }
 
         public FrameworkElement makeViewUI(Context context = null)
         {
             context = context == null ? new Context() : new Context(context);
+
             context.AddDocumentContext(this);
 
-            Context = context; 
+            Context = context;
 
             var uieles = new List<FrameworkElement>();
 
@@ -467,7 +482,6 @@ namespace Dash
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
                 Debug.Assert(doc != null);
                 return doc.Data.makeViewUI(context);
-
             }
 
             return makeAllViewUI(context);

@@ -278,24 +278,24 @@ namespace Dash
             if (Width < MinWidth + pad && Height < MinHeight + pad)
             {
                 updateIcon();
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                XGrid.Visibility = Visibility.Collapsed;
+                xIcon.Visibility = Visibility.Visible;
+                xBorder.Visibility = Visibility.Collapsed;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
             }
             else
             {
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                XGrid.Visibility = Visibility.Visible;
+                xIcon.Visibility = Visibility.Collapsed;
+                xBorder.Visibility = Visibility.Visible;
                 Tapped += OnTapped;
             }
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
-            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible)
+            if (xIcon.Visibility == Visibility.Visible)
             {
                 Height = 300;
                 Width = 300;
