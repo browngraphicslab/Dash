@@ -12,6 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DashShared\**" />
+    <Content Remove="DashShared\**" />
+    <EmbeddedResource Remove="DashShared\**" />
+    <None Remove="DashShared\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Views;Areas\**\Views">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
