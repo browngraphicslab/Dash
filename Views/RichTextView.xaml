@@ -17,16 +17,16 @@
             </Style>
         </Grid.Resources>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30"/>
+            <RowDefinition x:Name="xFormatRow" Height="0"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
+        <Grid x:Name="xFormatControls" Grid.Row="0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="1*"/>
                     <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="1*"></ColumnDefinition>
+                    <ColumnDefinition Width="2*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
                 <Grid Grid.Column="0">
                     <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
@@ -44,25 +44,7 @@
                     </Button>
                 </Grid>
                 <Grid Grid.Column="3">
-                    <ComboBox x:Name="xFontSizeComboBox" Background="LightSteelBlue" BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged">
-                        <ComboBoxItem>8</ComboBoxItem>
-                        <ComboBoxItem>9</ComboBoxItem>
-                        <ComboBoxItem>10</ComboBoxItem>
-                        <ComboBoxItem>11</ComboBoxItem>
-                        <ComboBoxItem>12</ComboBoxItem>
-                        <ComboBoxItem>14</ComboBoxItem>
-                        <ComboBoxItem>16</ComboBoxItem>
-                        <ComboBoxItem>18</ComboBoxItem>
-                        <ComboBoxItem>20</ComboBoxItem>
-                        <ComboBoxItem>22</ComboBoxItem>
-                        <ComboBoxItem>24</ComboBoxItem>
-                        <ComboBoxItem>26</ComboBoxItem>
-                        <ComboBoxItem>28</ComboBoxItem>
-                        <ComboBoxItem>32</ComboBoxItem>
-                        <ComboBoxItem>36</ComboBoxItem>
-                        <ComboBoxItem>48</ComboBoxItem>
-                        <ComboBoxItem>72</ComboBoxItem>
-                    </ComboBox>
+                    <ComboBox x:Name="xFontSizeComboBox" Background="LightSteelBlue" BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
         </Grid>

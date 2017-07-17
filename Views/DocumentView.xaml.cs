@@ -70,7 +70,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            Tapped += OnTapped;         
+//            Tapped += OnTapped;         
         }
 
         private void SetUpMenu()
@@ -262,13 +262,13 @@ namespace Dash
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                Tapped -= OnTapped;
+                //Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
             } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                Tapped += OnTapped;
+                //Tapped += OnTapped;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -21,20 +22,80 @@ namespace Dash
     public sealed partial class RichTextView : UserControl
     {
         private RichTextFieldModelController _richTextFieldModelController;
+        ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
+
         public RichTextView(RichTextFieldModelController richTextFieldModelController)
         {
             this.InitializeComponent();
             _richTextFieldModelController = richTextFieldModelController;
             Loaded += OnLoaded;
             xRichEitBox.LostFocus += XRichEitBox_LostFocus;
+            xRichEitBox.GotFocus += XRichEitBox_GotFocus;
             _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
+            this.AddFonts();
         }
 
+        private void XRichEitBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            xFormatRow.Height = new GridLength(30);
+        }
+
+        private void AddFonts()
+        {
+            var FontNames = new List<string>()
+            {
+                "Arial",
+                "Calibri",
+                "Cambria",
+                "Cambria Math",
+                "Comic Sans MS",
+                "Courier New",
+                "Ebrima",
+                "Gadugi",
+                "Georgia",
+                "Javanese Text Regular Fallback font for Javanese script",
+                "Leelawadee UI",
+                "Lucida Console",
+                "Malgun Gothic",
+                "Microsoft Himalaya",
+                "Microsoft JhengHei",
+                "Microsoft JhengHei UI",
+                "Microsoft New Tai Lue",
+                "Microsoft PhagsPa",
+                "Microsoft Tai Le",
+                "Microsoft YaHei",
+                "Microsoft YaHei UI",
+                "Microsoft Yi Baiti",
+                "Mongolian Baiti",
+                "MV Boli",
+                "Myanmar Text",
+                "Nirmala UI",
+                "Segoe MDL2 Assets",
+                "Segoe Print",
+                "Segoe UI",
+                "Segoe UI Emoji",
+                "Segoe UI Historic",
+                "Segoe UI Symbol",
+                "SimSun",
+                "Times New Roman",
+                "Trebuchet MS",
+                "Verdana",
+                "Webdings",
+                "Wingdings",
+                "Yu Gothic",
+                "Yu Gothic UI"
+            };
+            foreach (var font in FontNames)
+            {
+                fonts.Add(new FontFamily(font));
+            }
+        }
         private void XRichEitBox_LostFocus(object sender, RoutedEventArgs e)
         {
             var richText = string.Empty;
             xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
             _richTextFieldModelController.RichTextData = richText;
+            xFormatRow.Height = new GridLength(0);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
@@ -55,6 +116,7 @@ namespace Dash
             }
         }
 
+        // freezes the app
         //private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         //{
         //    var richText = string.Empty;
@@ -109,7 +171,7 @@ namespace Dash
             if (selectedText != null)
             {
                 ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
-                charFormatting.Size = Convert.ToInt32(xFontSizeComboBox);
+                charFormatting.Name = (xFontSizeComboBox.SelectedItem as FontFamily).Source;
                 selectedText.CharacterFormat = charFormatting;
             }
         }
