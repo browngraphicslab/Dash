@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Converters;
 using DashShared;
+using Windows.UI.Xaml.Controls.Primitives;
 
 namespace Dash {
     public static class CourtesyDocuments {
@@ -27,6 +28,26 @@ namespace Dash {
 
             protected abstract DocumentController InstantiatePrototype();
 
+
+            protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
+            {
+                refToData = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                Debug.Assert(refToData != null);
+                var fieldModelController = refToData.DereferenceToRoot(context);
+
+                // bcz: think this through better:
+                //   -- the idea is that we're referencing a field that doesn't exist.  Instead of throwing an error, we can
+                //      create the field with a default value.  The question is where in the 'context' should we set it?  I think
+                //      we want to follow the reference to its end, adding fields along the way ... this just follows the reference one level.
+                if (fieldModelController == null)
+                {
+                    var parent = refToData.GetDocumentController();
+                    Debug.Assert(parent != null);
+                    parent.SetField((refToData as ReferenceFieldModelController).ReferenceFieldModel.FieldKey, defaultFieldModelController, true);
+                    fieldModelController = refToData.DereferenceToRoot(context);
+                }
+                return fieldModelController;
+            }
             /// <summary>
             /// Sets the active layout on the <paramref name="dataDocument"/> to the passed in <paramref name="layoutDoc"/>
             /// </summary>
@@ -242,7 +263,8 @@ namespace Dash {
                     IsDetailedUserInterfaceVisible = false,
                     IsMoveable = false
                 };
-                return new DocumentView(docViewModel);
+                var docView = new DocumentView(docViewModel);
+                return docView;
             }
 
 
@@ -297,6 +319,58 @@ namespace Dash {
         /// <summary>
         /// A generic document type containing a single text element.
         /// </summary>
+        public class DocumentBox : CourtesyDocument
+        {
+            public static DocumentType DocumentType =
+                new DocumentType("7C92378E-C38E-4B28-90C4-F5EF495878E5", "Document Box");
+            public DocumentBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
+            {
+                var fields = DefaultLayoutFields(x, y, w, h, refToDoc);
+                Document = new DocumentController(fields, DocumentType);
+                //SetLayoutForDocument(Document, Document);
+            }
+            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            {
+                // the document field model controller provides us with the DATA
+                // the Document on this courtesty document provides us with the parameters to display the DATA.
+                // X, Y, Width, and Height etc....
+                
+                ReferenceFieldModelController refToData;
+                var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<Key,FieldModelController>(), DashConstants.DocumentTypeStore.TextBoxDocumentType)), out refToData);
+
+                var documentfieldModelController = fieldModelController as DocumentFieldModelController;
+                Debug.Assert(documentfieldModelController != null);
+
+                var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+                var docView = documentfieldModelController.Data.MakeViewUI(context);
+
+                // bind the text height
+                var docheightController = GetHeightField(docController, context);
+                if (docheightController != null)
+                    BindHeight(docView, docheightController);
+
+                // bind the text width
+                var docwidthController = GetWidthField(docController, context);
+                if (docwidthController != null)
+                    BindWidth(docView, docwidthController);
+
+                return docView;
+            }
+
+            protected override DocumentController GetPrototype()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override DocumentController InstantiatePrototype()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// A generic document type containing a single text element.
+        /// </summary>
         public class TextingBox : CourtesyDocument {
             public static Key FontWeightKey = new Key("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
             public static Key FontSizeKey = new Key("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
@@ -309,7 +383,6 @@ namespace Dash {
             public static double DefaultTextAlignment = (int)TextAlignment.Left;
             public static double DefaultFontSize = 12;
             private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
-
 
             public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20) {
                 var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
@@ -543,6 +616,7 @@ namespace Dash {
                 }
             }
 
+
             private static void BindTextBlockSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
             {
                 var sourceBinding = new Binding
@@ -590,6 +664,7 @@ namespace Dash {
                 return MakeView(docController, context);
             }
 
+
             public static FrameworkElement MakeView(DocumentController docController, Context context) {
                 // use the reference to the image to get the image field model controller
                 var imFieldModelController = GetImageField(docController, context);
@@ -598,7 +673,9 @@ namespace Dash {
                 // create the image
                 var image = new Image {
                     Stretch = Stretch.Fill // set image to fill container but ignore aspect ratio :/
+                    
                 };
+                image.CacheMode = new BitmapCache();
 
                 // make image source update when changed
                 BindSource(image, imFieldModelController);
@@ -613,6 +690,7 @@ namespace Dash {
 
                 // set up interactions with operations
                 BindOperationInteractions(image, imFieldModelController);
+
 
                 // make image opacity change
                 var opacityController = GetOpacityField(docController, context);
@@ -821,14 +899,18 @@ namespace Dash {
         public class StackingPanel : CourtesyDocument {
             public static DocumentType StackPanelDocumentType =
                 new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
+            public static Key StyleKey = new Key("943A801F-A4F4-44AE-8390-31630055D62F", "Style");
 
             static public DocumentType DocumentType {
                 get { return StackPanelDocumentType; }
             }
 
-            public StackingPanel(IEnumerable<DocumentController> docs) {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
-                    new DocumentCollectionFieldModelController(docs));
+            public bool FreeForm;
+
+            public StackingPanel(IEnumerable<DocumentController> docs, bool freeForm) {
+                FreeForm = freeForm;
+                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, new DocumentCollectionFieldModelController(docs));
+                fields.Add(StyleKey, new TextFieldModelController(freeForm ? "Free Form" : "Stacked"));
                 Document = new DocumentController(fields, StackPanelDocumentType);
             }
 
@@ -853,38 +935,74 @@ namespace Dash {
             /// <param name="docController"></param>
             /// <param name="context"></param>
             /// <returns></returns>
-            public static FrameworkElement MakeView(DocumentController docController,
-                Context context) {
-                var stack = new GridView();
+            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            {
+                if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
+                    return MakeFreeFormView(docController, context);
+                var stack = new  GridView();
                 stack.Loaded += (s, e) =>
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
                     var stackDoc = stack.GetFirstAncestorOfType<DocumentView>();
-                    stackViewer.ViewChanging += (ss, ee) => 
-                        stackDoc.Manipulator.RemoveAllButHandle();
-                    stackViewer.ViewChanged += (ss, ee) => 
-                        stackDoc.Manipulator.AddAllAndHandle();
+                    var stackScrollBar = stackViewer.GetFirstDescendantOfType<ScrollBar>();
+                    stackScrollBar.ManipulationMode = ManipulationModes.All;
+                    stackScrollBar.ManipulationDelta += (ss, ee) => { ee.Handled = true; };
                 };
+                var stackFieldData =
+                    docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context)
+                    as DocumentCollectionFieldModelController;
+
+                // create a dynamic gridview that wraps content in borders
+                if (stackFieldData != null)
+                {
+                    CreateStack(context, stack, stackFieldData);
+                    stackFieldData.OnDocumentsChanged += delegate (IEnumerable<DocumentController> documents)
+                    {
+                        CreateStack(context, stack, stackFieldData);
+                    };
+                }
+                
+                return stack;
+            }
+
+            private static void CreateStack(Context context, GridView stack, DocumentCollectionFieldModelController stackFieldData)
+            {
+                double maxHeight = 0;
+                stack.Items.Clear();
+                foreach (var stackDoc in stackFieldData.GetDocuments())
+                {
+                    Border b = new Border();
+                    FrameworkElement item = stackDoc.MakeViewUI(context);
+                    b.Child = item;
+                    maxHeight = Math.Max(maxHeight, double.IsNaN(item.Height) ? 0:item.Height);
+                    stack.Items.Add(b);
+                }
+                foreach (Border b in stack.Items)
+                {
+                    b.Height = maxHeight;
+                }
+            }
+
+            public static FrameworkElement MakeFreeFormView(DocumentController docController, Context context)
+            {
+                var stack = new Grid();
+                stack.HorizontalAlignment = HorizontalAlignment.Left;
+                stack.VerticalAlignment = VerticalAlignment.Top;
                 var stackFieldData =
                     docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) 
                     as DocumentCollectionFieldModelController;
 
                 // create a dynamic gridview that wraps content in borders
-                double maxHeight = 0;
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments()) {
-
-                        Border b = new Border();
                         FrameworkElement item = stackDoc.MakeViewUI(context);
-                        b.Child = item;
-                        maxHeight = Math.Max(maxHeight, item.Height);
-                        stack.Items.Add(b);
+                        var posController = GetPositionField(stackDoc, context);
+                        item.HorizontalAlignment = HorizontalAlignment.Left;
+                        item.VerticalAlignment = VerticalAlignment.Top;
+                        BindTranslation(item, posController);
+                        stack.Children.Add(item);
                     }
-
-                // format gridview s.t. rows and columns automatically have the largest cell size to fit content
-                foreach (Border b in stack.Items) {
-                    b.Height = maxHeight;
-                }
+               
                 return stack;
             }
         }
@@ -894,26 +1012,36 @@ namespace Dash {
                 new DocumentType("A5FEFB00-EA2C-4B64-9230-BBA41BACCAFC", "Post It");
 
             public static Key NotesFieldKey = new Key("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
+            static DocumentController _prototypePostit = CreatePrototypePostit();
             static DocumentController _prototypeLayout = CreatePrototypeLayout();
-            static TextingBox _prototypeTextLayout;
 
+            static DocumentController CreatePrototypePostit()
+            {
+                // bcz: default values for data fields can be added, but should not be needed
+                var fields = new Dictionary<Key, FieldModelController>();
+                fields.Add(NotesFieldKey, new TextFieldModelController("Prototype Text"));
+                return new DocumentController(new Dictionary<Key, FieldModelController>(), PostitNoteType);
+            }
             static DocumentController CreatePrototypeLayout() {
-                _prototypeTextLayout = new TextingBox(new TextFieldModelController("Text"), 0, 0, double.NaN,
-                    double.NaN);
+                var prototypeTextLayout =
+                    //new StackingPanel(new DocumentController[] {
+                    new TextingBox(new DocumentReferenceController(_prototypePostit.GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                    //});
 
-                return _prototypeTextLayout.Document;
+                return prototypeTextLayout.Document;
             }
 
             public PostitNote() {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
-                fields.Add(NotesFieldKey, new TextFieldModelController("<your note>"));
 
-                Document = new DocumentController(fields, PostitNoteType);
+                Document = _prototypePostit.MakeDelegate();
+                Document.SetField(NotesFieldKey, new TextFieldModelController("Hello World!"), true);
+                
+                var docLayout = _prototypeLayout.MakeDelegate();
+                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                
+               // SetLayoutForDocument(docLayout, docLayout); // bcz: do we need this line?
 
-                var tBox = _prototypeTextLayout.Document.MakeDelegate();
-                SetLayoutForDocument(tBox, tBox, true);
-
-                SetLayoutForDocument(Document, tBox, true);
+                //SetLayoutForDocument(Document, docLayout);
             }
 
             protected override DocumentController GetPrototype()
@@ -927,10 +1055,70 @@ namespace Dash {
             }
         }
 
+
+        public class AnnotatedImage : CourtesyDocument
+        {
+            public static DocumentType ImageDocType = new DocumentType("41E1280D-1BA9-4C3F-AE72-4080677E199E", "Image Doc");
+            public static Key Image1FieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Annotate Image");
+            public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            static DocumentController _prototypeDoc    = CreatePrototypeDoc();
+            static DocumentController _prototypeLayout = CreatePrototypeLayout();
+
+            static DocumentController CreatePrototypeDoc()
+            {
+                return new DocumentController(new Dictionary<Key, FieldModelController>(), ImageDocType);
+            }
+
+            /// <summary>
+            /// Creates a default Layout for a Two Images document.  This requires that a prototype of a Two Images document exist so that
+            /// this layout can reference the fields of the prototype.  When a delegate is made of a Two Images document,  this layout's 
+            /// field references will automatically point to the delegate's (not the prototype's) values for those fields because of the
+            /// context list used in MakeView().
+            /// </summary>
+            /// <returns></returns>
+            static DocumentController CreatePrototypeLayout()
+            {
+                // set the default layout parameters on prototypes of field layout documents
+                // these prototypes will be overridden by delegates when an instance is created
+                var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
+                var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
+
+                var prototypeLayout = new StackingPanel(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
+
+                prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new DocumentReferenceController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
+                prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new DocumentReferenceController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
+                prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new DocumentReferenceController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.HeightFieldKey), true);
+
+                return prototypeLayout.Document;
+            }
+
+            public AnnotatedImage(Uri imageUri, string text)
+            {
+                Document = _prototypeDoc.MakeDelegate();
+                Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri), true);
+                Document.SetField(TextFieldKey, new TextFieldModelController(text), true);
+                var docLayout = _prototypeLayout.MakeDelegate();
+                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                docLayout.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(250), true);
+                docLayout.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+                //SetLayoutForDocument(Document, docLayout);
+            }
+
+            protected override DocumentController GetPrototype()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override DocumentController InstantiatePrototype()
+            {
+                throw new NotImplementedException();
+            }
+        }
         public class TwoImages : CourtesyDocument {
             public static DocumentType TwoImagesType = new DocumentType("FC8EF5EB-1A0B-433C-85B6-6929B974A4B7", "Two Images");
             public static Key Image1FieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "ImageField1");
             public static Key Image2FieldKey = new Key("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
+            public static Key AnnotatedFieldKey = new Key("F370A8F6-22D9-4442-A528-A7FEEC29E306", "AnnotatedImage");
             public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
             static DocumentController _prototypeTwoImages = CreatePrototype2Images();
             static DocumentController _prototypeLayout   = CreatePrototypeLayout();
@@ -942,6 +1130,7 @@ namespace Dash {
                 fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
+                fields.Add(AnnotatedFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
                 return new DocumentController(new Dictionary<Key, FieldModelController>(), TwoImagesType);
                 //return new DocumentController(fields, TwoImagesType);
             }
@@ -957,11 +1146,12 @@ namespace Dash {
             {
                 // set the default layout parameters on prototypes of field layout documents
                 // these prototypes will be overridden by delegates when an instance is created
-                var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image1FieldKey),   0, 50, 200, 200);
-                var prototypeImage2Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),   0, 250, 200, 200);
-                var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),   0, 0, 200, 50);
-                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document });
-                prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(500), true);
+                var prototypeImage1Layout    = new ImageBox   (new DocumentReferenceController(_prototypeTwoImages.GetId(), Image1FieldKey),    0, 50, 200, 200);
+                var prototypeImage2Layout    = new ImageBox   (new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),    0, 250, 200, 200);
+                var prototypeAnnotatedLayout = new DocumentBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
+                var prototypeTextLayout      = new TextingBox (new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),      0, 0, 200, 50);
+                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeAnnotatedLayout.Document, prototypeImage2Layout.Document }, true);
+                prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
                 return prototypeLayout.Document;
             }
@@ -971,6 +1161,7 @@ namespace Dash {
                 Document = _prototypeTwoImages.MakeDelegate();
                 Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                 Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
+                Document.SetField(AnnotatedFieldKey, new DocumentFieldModelController(new AnnotatedImage(new Uri("ms-appx://Dash/Assets/cat2.jpeg"), "Yowling").Document), true);
                 Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
                 //Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
                 //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
@@ -1020,7 +1211,7 @@ namespace Dash {
                 var tBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), TextField2Key))
                     .Document;
 
-                var stackPan = new StackingPanel(new DocumentController[] { tBox, imBox1, tBox2 }).Document;
+                var stackPan = new StackingPanel(new DocumentController[] { tBox, imBox1, tBox2 }, false).Document;
 
                 SetLayoutForDocument(Document, stackPan, true);
             }
@@ -1054,13 +1245,13 @@ namespace Dash {
                 Document = new DocumentController(fields, NumbersType);
 
                 var imBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
-                    0, 50, 20).Document;
+                    0, 50, 30).Document;
                 var imBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
-                    0, 50, 20).Document;
+                    0, 50, 30).Document;
                 var tBox = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
-                    0, 50, 20).Document;
+                    0, 50, 30).Document;
 
-                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }).Document;
+                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }, false).Document;
 
                 SetLayoutForDocument(Document, stackPan, true);
             }
