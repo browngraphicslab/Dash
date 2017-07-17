@@ -775,8 +775,9 @@ namespace Dash {
                 fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
-                return new DocumentController(new Dictionary<Key, FieldModelController>(), TwoImagesType);
-                //return new DocumentController(fields, TwoImagesType);
+                //return new DocumentController(new Dictionary<Key, FieldModelController>(), TwoImagesType);
+
+                return new DocumentController(fields, TwoImagesType); 
             }
             
             /// <summary>
@@ -796,6 +797,9 @@ namespace Dash {
                 var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document });
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(500), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+
+                SetLayoutForDocument(_prototypeTwoImages, prototypeLayout.Document);
+
                 return prototypeLayout.Document;
             }
 

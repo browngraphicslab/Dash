@@ -71,6 +71,7 @@ namespace Dash
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             DocumentController cont = e.ClickedItem as DocumentController;
+            Debug.WriteLine(cont.Context != null); 
             SetUpInterfaceBuilder(cont, cont.Context); 
         }
 

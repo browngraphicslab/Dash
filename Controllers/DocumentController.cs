@@ -145,10 +145,13 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
-            // if the field contained a DocumentFieldModelController return it's data, otherwise return null
+            // if the field contained a DocumentFieldModelController return its data, otherwise return null
             return documentFieldModelController?.Data;
         }
 
+        /// <summary>
+        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// </summary>
         public LinkedList<DocumentController> GetAllPrototypes()
         {
             LinkedList<DocumentController> result = new LinkedList<DocumentController>();
