@@ -80,5 +80,10 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
+
+        public override FieldModelController Copy()
+        {
+            return new ListFieldModelController<T>(new List<T>(Data));
+        }
     }
 }

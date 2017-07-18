@@ -18,7 +18,7 @@ namespace Dash
         public static DocumentController RunTests()
         {
 
-            var task = ParseCustomer();
+            var task = ParseSingleItem();
             task.Wait();
             return JsonDocument;
         }
@@ -39,6 +39,12 @@ namespace Dash
             JsonDocument = Parse(jsonString, file.Path);
         }
 
+        public static async Task ParseSingleItem()
+        {
+            var jsonString = @"""A single piece of text""";
+            JsonDocument = Parse(jsonString, "an/example/base/path");
+        }
+
         private static DocumentController Parse(string json, string path)
         {
             var jtoken = JToken.Parse(json);
@@ -46,28 +52,27 @@ namespace Dash
             return ParseRoot(jtoken, newSchema);
         }
 
-        private static DocumentController ParseRoot(JToken jtoken, NewDocumentSchema newSchema)
+        private static DocumentController ParseRoot(JToken jtoken, NewDocumentSchema schema)
         {
             if (jtoken.Type == JTokenType.Object)
             {
-                var obj = ParseObject(jtoken, newSchema);
+                var obj = ParseObject(jtoken, schema);
                 return obj;
             }
-            else
+            else if (jtoken.Type == JTokenType.Array)
             {
                 throw new NotImplementedException();
             }
-        }
-
-        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<Key, FieldModelController> fields)
-        {
-            foreach (var field in fields)
+            else
             {
-                if (prototype.GetField(field.Key) == null)
-                {
-                    var defaultField = field.Value.GetDefaultController();
-                    prototype.SetField(field.Key, defaultField, true);
-                }
+                var key = schema.GetKey(jtoken);
+                var field = ParseValue(jtoken);
+                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<Key, FieldModelController>{[key]=field});
+
+                // wrap the field in an instance of the prototype
+                var protoInstance = schema.Prototype.MakeDelegate();
+                protoInstance.SetField(key, field, true);
+                return protoInstance;
             }
         }
 
@@ -88,36 +93,9 @@ namespace Dash
             }
             else
             {
-                try
-                {
-                    var myValue = jtoken as JValue;
-                    var type = myValue.Type;
-                    switch (type)
-                    {
-                        case JTokenType.Null: // occurs on null fields
-                            return new TextFieldModelController("");
-                        case JTokenType.Integer:
-                        case JTokenType.Float:
-                            return new NumberFieldModelController(jtoken.ToObject<double>());
-                        case JTokenType.String:
-                        case JTokenType.Boolean:
-                        case JTokenType.Date:
-                        case JTokenType.Uri:
-                        case JTokenType.Guid:
-                        case JTokenType.TimeSpan:
-                            return new TextFieldModelController(jtoken.ToObject<string>());
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
+                return ParseValue(jtoken);
             }
         }
-
 
         private static DocumentController ParseObject(JToken jtoken, NewDocumentSchema schema)
         {
@@ -138,6 +116,49 @@ namespace Dash
             var protoInstance = schema.Prototype.MakeDelegate();
             protoInstance.SetFields(fields, true);
             return protoInstance;
+        }
+
+        private static FieldModelController ParseValue(JToken jtoken)
+        {
+            try
+            {
+                var myValue = jtoken as JValue;
+                var type = myValue.Type;
+                switch (type)
+                {
+                    case JTokenType.Null: // occurs on null fields
+                        return new TextFieldModelController("");
+                    case JTokenType.Integer:
+                    case JTokenType.Float:
+                        return new NumberFieldModelController(jtoken.ToObject<double>());
+                    case JTokenType.String:
+                    case JTokenType.Boolean:
+                    case JTokenType.Date:
+                    case JTokenType.Uri:
+                    case JTokenType.Guid:
+                    case JTokenType.TimeSpan:
+                        return new TextFieldModelController(jtoken.ToObject<string>());
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<Key, FieldModelController> fields)
+        {
+            foreach (var field in fields)
+            {
+                if (prototype.GetField(field.Key) == null)
+                {
+                    var defaultField = field.Value.GetDefaultController();
+                    prototype.SetField(field.Key, defaultField, true);
+                }
+            }
         }
 
         public static IController ParseJson(JToken jToken, DocumentSchema parentSchema, bool isRoot, bool isChildOfArray = false)
@@ -247,7 +268,7 @@ namespace Dash
 
         public Key GetKey(JToken jToken)
         {
-            return new Key(DashShared.Util.GetDeterministicGuid(BasePath + jToken.Path))
+            return new Key(DashShared.Util.GetDeterministicGuid(BasePath + jToken.Path + jToken.Type))
             {
                 Name = BasePath + jToken.Path
             };

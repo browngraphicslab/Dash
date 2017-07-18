@@ -146,6 +146,8 @@ namespace Dash
 
         public void EndDrag(OperatorView.IOReference ioReference)
         {
+            OperatorView.IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
+            OperatorView.IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
             //if (!(DataContext as CollectionViewModel).IsEditorMode)
             //{
             //    return;
@@ -158,29 +160,28 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            Context context = (DataContext as CollectionViewModel).DocumentContext;
             string outId;
             string inId;
             if (_currReference.IsOutput)
             {
-                outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
-                inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
+                //inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
             }
             else
             {
-                outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
-                inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(context).GetId();
+                //outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
+                //inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
             }
-            CollectionView.Graph.AddEdge(outId, inId);
+            //CollectionView.Graph.AddEdge(outId, inId);
             if (CollectionView.Graph.IsCyclic())
             {
                 if (_currReference.IsOutput)
                 {
-                    CollectionView.Graph.RemoveEdge(outId, inId);
+              //      CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 else
                 {
-                    CollectionView.Graph.RemoveEdge(outId, inId);
+                //    CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
@@ -192,28 +193,10 @@ namespace Dash
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
 
-            if (ioReference.IsOutput)
-            {
-                _currReference.ReferenceFieldModelController.GetDocumentController(context)
-                    .AddInputReference(_currReference.ReferenceFieldModelController.FieldKey,
-                        ioReference.ReferenceFieldModelController);
-            }
-            else
-            {
-                var contextList = (DataContext as CollectionViewModel).DocumentContext;
-                //var refDocId = ContentController.MapDocumentInstanceReference(ioReference.ReferenceFieldModelController.DocId, contextList);
-                try
-                {
-                    //ContentController.GetController<DocumentController>(refDocId)
-                    ioReference.ReferenceFieldModelController.GetDocumentController(context)//TODO Use context here
-                        .AddInputReference(ioReference.ReferenceFieldModelController.FieldKey, _currReference.ReferenceFieldModelController,
-                            contextList);
-                }
-                catch (ArgumentException)
-                {
-                    CancelDrag(ioReference.PointerArgs.Pointer);
-                }
-            }
+            DocumentController inputController =
+                inputReference.ReferenceFieldModelController.GetDocumentController(null);
+                inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
+                    outputReference.ReferenceFieldModelController, true);
 
             if (!ioReference.IsOutput && _connectionLine != null)
             {

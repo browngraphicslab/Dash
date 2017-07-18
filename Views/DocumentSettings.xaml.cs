@@ -24,11 +24,11 @@ namespace Dash.Views
             this.InitializeComponent();
         }
 
-        public DocumentSettings(DocumentController editedLayoutDocument, IEnumerable<DocumentController> docContextList)
+        public DocumentSettings(DocumentController editedLayoutDocument, Context context)
             : this()
         {
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, docContextList));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, docContextList));
+            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
         }
     }
 }

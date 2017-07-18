@@ -23,7 +23,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(DocumentController doc, Context context);
+        public abstract void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />

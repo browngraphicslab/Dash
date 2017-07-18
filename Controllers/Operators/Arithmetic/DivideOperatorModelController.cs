@@ -32,23 +32,30 @@ namespace Dash
 
         private int nextChar = 'C';
 
-        public override void Execute(DocumentController doc, Context context)
+        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            var numberA = doc.GetDereferencedField(AKey, context) as NumberFieldModelController;
+            var numberA = inputs[AKey] as NumberFieldModelController;
 
-            var numberB = doc.GetDereferencedField(BKey, context) as NumberFieldModelController;
-
-            if (numberA.InputReference == null || numberB.InputReference == null)//One or more of the inputs isn't set yet
+            var numberB = inputs[BKey] as NumberFieldModelController;
+            if (numberA == null || numberB == null)
             {
+                outputs[QuotientKey] = new NumberFieldModelController();
+                outputs[RemainderKey] = new NumberFieldModelController();
                 return;
             }
+
             string s = new string((char)nextChar++, 1);
             Inputs.Add(new Key(s, s), TypeInfo.Number);
-
+            
             double a = numberA.Data;
             double b = numberB.Data;
-            doc.SetField(QuotientKey, new NumberFieldModelController(a / b), true);
-            doc.SetField(RemainderKey, new NumberFieldModelController(a % b), true);
+            outputs[QuotientKey] = new NumberFieldModelController(a / b);
+            outputs[RemainderKey] = new NumberFieldModelController(a % b);
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new DivideOperatorFieldModelController(OperatorFieldModel);
         }
     }
 }

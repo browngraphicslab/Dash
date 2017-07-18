@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -12,6 +13,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using DashShared;
 using Windows.UI.Xaml.Controls.Primitives;
+using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash {
     public static class CourtesyDocuments {
@@ -20,28 +22,11 @@ namespace Dash {
         /// </summary>
         public class CourtesyDocument {
 
-            public List<DocumentModel> context;
-
             public virtual DocumentController Document { get; set; }
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
-                var layoutController = new DocumentFieldModelController(layoutDoc);
-                document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-
-                var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
-                if (layoutList == null)
-                {
-                    document.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-                }
-                else
-                {
-                    if (! new HashSet<DocumentController>(layoutList.GetDocuments()).Contains(layoutDoc))
-                    {
-                        layoutList.AddDocument(layoutDoc);
-                        document.SetField(DashConstants.KeyStore.LayoutListKey, layoutList, true);
-                    }
-                }
-
+                document.AddLayoutToLayoutList(layoutDoc);
+                document.SetActiveLayout(layoutDoc);
             }
 
 
@@ -57,7 +42,7 @@ namespace Dash {
                 //      we want to follow the reference to its end, adding fields along the way ... this just follows the reference one level.
                 if (fieldModelController == null)
                 {
-                    var parent = refToData.GetDocumentController();
+                    var parent = refToData.GetDocumentController(context);
                     Debug.Assert(parent != null);
                     parent.SetField((refToData as ReferenceFieldModelController).ReferenceFieldModel.FieldKey, defaultFieldModelController, true);
                     fieldModelController = refToData.DereferenceToRoot(context);
@@ -89,6 +74,7 @@ namespace Dash {
                 return deleg;
             }
 
+            [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
             public static Dictionary<Key, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
                 FieldModelController data) {
                 // create a layout for the image
@@ -99,6 +85,19 @@ namespace Dash {
                 };
                 if (data != null)
                     fields.Add(DashConstants.KeyStore.DataKey, data);
+                return fields;
+            }
+
+            public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null) {
+                // assign the default fields
+                var fields = new Dictionary<Key, FieldModelController> {
+                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
+                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos)
+                };
+
+                //TODO determine what the data key should point to if no field is provided
+                fields.Add(DashConstants.KeyStore.DataKey, data ?? new DocumentCollectionFieldModelController(new List<DocumentController>()));
                 return fields;
             }
 
@@ -249,34 +248,28 @@ namespace Dash {
         /// Given a document, this provides an API for getting all of the layout documents that define it's view.
         /// </summary>
         public class LayoutCourtesyDocument : CourtesyDocument {
-            public DocumentController LayoutDocumentController = null;
 
-            public LayoutCourtesyDocument(DocumentController docController, Context context) {
-                Document = docController; // get the layout field on the document being displayed
-                var layoutField = docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
-                if (layoutField == null) {
-                    var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN,
-                        new DocumentCollectionFieldModelController(new DocumentController[] { }));
-                    LayoutDocumentController =
-                        new DocumentController(fields, CourtesyDocuments.CollectionBox.DocumentType);
+            // the active layout for the doc that was passed in
+            public DocumentController ActiveLayoutDocController = null;
 
-                    SetLayoutForDocument(Document, LayoutDocumentController);
-                } else
-                    LayoutDocumentController = layoutField.Data;
+            public LayoutCourtesyDocument(DocumentController docController) {
+                Document = docController;      
+
+                var activeLayout = Document.GetActiveLayout();
+                ActiveLayoutDocController = activeLayout == null ? InstantiateActiveLayout(Document) : activeLayout.Data;
             }
 
-            public IEnumerable<DocumentController> GetLayoutDocuments(Context context)
+            public IEnumerable<DocumentController> GetLayoutDocuments()
             {
-
                 var layoutDataField =
-                        LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
-                if (layoutDataField is DocumentCollectionFieldModelController)
+                        ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, null);
+
+                if (layoutDataField is DocumentCollectionFieldModelController) // layout data is a collection of documents each referencing some field
                     foreach (var d in (layoutDataField as DocumentCollectionFieldModelController).GetDocuments())
                         yield return d;
-                else if (layoutDataField.FieldModel is DocumentModelFieldModel)
-                    yield return ContentController.GetController<DocumentController>(
-                        (layoutDataField.FieldModel as DocumentModelFieldModel).Data.Id);
-                else yield return LayoutDocumentController;
+                else if (layoutDataField is DocumentFieldModelController) // layout data is a document referencing some field
+                    yield return (layoutDataField as DocumentFieldModelController).Data;
+                else yield return ActiveLayoutDocController; // TODO why would the layout be any other type of field model controller
             }
 
             public override FrameworkElement makeView(DocumentController docController,
@@ -293,6 +286,18 @@ namespace Dash {
                 var docView = new DocumentView(docViewModel);
                 return docView;
             }
+
+
+            private DocumentController InstantiateActiveLayout(DocumentController doc)
+            {
+                // instantiate default fields
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN));
+                var newLayout = new DocumentController(fields, DashConstants.DocumentTypeStore.DynamicInterfaceLayout);
+                // since this is the first view of the document, set the prototype active layout to the new layout
+                doc.SetActiveLayout(newLayout, false);
+                return newLayout;
+            }
+
         }
 
         /// <summary>
@@ -314,7 +319,7 @@ namespace Dash {
 
             public static FrameworkElement MakeView(DocumentController docController,
                 Context context) {
-                var data = docController.GetField(DashConstants.KeyStore.DataKey, context) ?? null;
+                var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 var opfmc = (data as ReferenceFieldModelController);
                 OperatorView opView = new OperatorView { DataContext = opfmc };
                 return opView;
@@ -348,7 +353,7 @@ namespace Dash {
                 Debug.Assert(documentfieldModelController != null);
 
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-                var docView = documentfieldModelController.Data.makeViewUI(context);
+                var docView = documentfieldModelController.Data.MakeViewUI(context);
 
                 // bind the text height
                 var docheightController = GetHeightFieldController(docController, context);
@@ -484,10 +489,12 @@ namespace Dash {
 
                 // create the textblock
                 FrameworkElement tb = null;
+                FrameworkElement child = null;
 
                 // use the reference to the text to get the text field model controller
                 ReferenceFieldModelController refToData;
                 var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new TextFieldModelController("<default>"), out refToData);
+                var doc = refToData.GetDocumentController(context);
                 Debug.Assert(fieldModelController != null);
                 if (fieldModelController is TextFieldModelController)
                 {
@@ -509,7 +516,7 @@ namespace Dash {
                     textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
                     textBox.TextChanged += TextBox_TextChanged;
                     textBox.Tag = refToData.GetDocumentController(context);
-
+                    child = textBox;
                 }
                 else if (fieldModelController is NumberFieldModelController)
                 {
@@ -526,18 +533,53 @@ namespace Dash {
                         Source = numFieldModelController,
                         Converter = new StringToDoubleConverter(0),
                         Path = new PropertyPath(nameof(numFieldModelController.Data)),
-                        Mode = BindingMode.TwoWay
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                     };
                     tb.SetBinding(TextBox.TextProperty, sourceBinding);
                     textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
                     textBox.TextChanged += TextBox_NumberChanged;
                     textBox.Tag = numFieldModelController;
+                    child = textBox;
                 }
                 else if (fieldModelController is DocumentFieldModelController)
                 {
                     var documentfieldModelController = fieldModelController as DocumentFieldModelController;
-                    return documentfieldModelController.Data.makeViewUI(context);
+                    return documentfieldModelController.Data.MakeViewUI(context);
                 }
+
+                doc.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    string s = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
+                    if (args.Action != DocumentController.FieldUpdatedAction.Update && s.Equals(refToData.GetDocumentController(context).GetId()) && args.Reference.FieldKey.Equals(refToData.FieldKey))
+                    {
+                        var fmc = args.Reference.DereferenceToRoot(new Context(args.Context));
+                        Binding sourceBinding = null;
+                        if (fmc is TextFieldModelController)
+                        {
+                            TextFieldModelController tfmc = fmc as TextFieldModelController;
+                            sourceBinding = new Binding
+                            {
+                                Source = fmc,
+                                Path = new PropertyPath(nameof(tfmc.Data)),
+                                Mode = BindingMode.TwoWay
+                            };
+                        }
+                        else if (fmc is NumberFieldModelController)
+                        {
+                            NumberFieldModelController nfmc = fmc as NumberFieldModelController;
+                            sourceBinding = new Binding
+                            {
+                                Source = nfmc,
+                                Converter = new StringToDoubleConverter(0),
+                                Path = new PropertyPath(nameof(nfmc.Data)),
+                                Mode = BindingMode.TwoWay,
+                                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                            };
+                        }
+                        child.SetBinding(TextBox.TextProperty, sourceBinding);
+                    }
+                };
 
                 var border = new Border();
                 border.Child = tb;
@@ -561,7 +603,7 @@ namespace Dash {
                 BindWidth(tb, widthController);
 
                 // add bindings to work with operators
-                BindOperationInteractions(refToData, tb);
+                BindOperationInteractions(refToData.Resolve(context), tb);
 
                 border.BorderThickness = new Thickness(5);
                 border.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(50, 50, 50, 50));
@@ -574,8 +616,8 @@ namespace Dash {
                 var tb = sender as TextBox;
                 var numFieldModelController = tb.Tag as NumberFieldModelController;
                 double num;
-                if (double.TryParse(tb.Text, out num))
-                    numFieldModelController.Data = num;  // bcz: why do I have to do this?  The binding only seems to fire when the textbox loses focus
+                //if (double.TryParse(tb.Text, out num))
+                    //numFieldModelController.Data = num;  // bcz: why do I have to do this?  The binding only seems to fire when the textbox loses focus
             }
 
             private static void TextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -661,7 +703,7 @@ namespace Dash {
                 BindWidth(image, widthController);
 
                 // set up interactions with operations
-                BindOperationInteractions(refToData, image);
+                BindOperationInteractions(refToData.Resolve(context), image);
 
                 // make image opacity change
                 var opacityController =
@@ -740,7 +782,7 @@ namespace Dash {
                     double opacityValue = opacity.HasValue ? (double)opacity :1;
 
                     var collectionFieldModelController = data
-                        .DereferenceToRoot<DocumentCollectionFieldModelController>();
+                        .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                     Debug.Assert(collectionFieldModelController != null);
 
                     var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
@@ -865,7 +907,7 @@ namespace Dash {
                 foreach (var stackDoc in stackFieldData.GetDocuments())
                 {
                     Border b = new Border();
-                    FrameworkElement item = stackDoc.makeViewUI(context);
+                    FrameworkElement item = stackDoc.MakeViewUI(context);
                     b.Child = item;
                     maxHeight = Math.Max(maxHeight, double.IsNaN(item.Height) ? 0:item.Height);
                     stack.Items.Add(b);
@@ -888,7 +930,8 @@ namespace Dash {
                 // create a dynamic gridview that wraps content in borders
                 if (stackFieldData != null)
                     foreach (var stackDoc in stackFieldData.GetDocuments()) {
-                        FrameworkElement item = stackDoc.makeViewUI(context);
+
+                        FrameworkElement item = stackDoc.MakeViewUI(context);
                         var posController = GetTranslateFieldController(stackDoc, context);
                         item.HorizontalAlignment = HorizontalAlignment.Left;
                         item.VerticalAlignment = VerticalAlignment.Top;
@@ -1095,6 +1138,8 @@ namespace Dash {
             public static Key Number1FieldKey = new Key("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
             public static Key Number2FieldKey = new Key("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
             public static Key Number3FieldKey = new Key("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
+            public static Key Number4FieldKey = new Key("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
+            public static Key Number5FieldKey = new Key("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
 
             public Numbers() {
                 // create a document with two images
@@ -1102,17 +1147,26 @@ namespace Dash {
                 fields.Add(Number1FieldKey, new NumberFieldModelController(789));
                 fields.Add(Number2FieldKey, new NumberFieldModelController(23));
                 fields.Add(Number3FieldKey, new NumberFieldModelController(8));
+                Random r = new Random();
+                fields.Add(Number4FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
+                fields.Add(Number5FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
 
                 Document = new DocumentController(fields, NumbersType);
 
-                var imBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
-                    0, 50, 30).Document;
-                var imBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
-                    0, 50, 30).Document;
-                var tBox = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
-                    0, 50, 30).Document;
+                var tBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
+                    0, 60, 35).Document;
+                var tBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
+                    0, 60, 35).Document;
+                var tBox3 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
+                    0, 60, 35).Document;
+                var tBox4 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number4FieldKey), 0,
+                    0, 60, 35).Document;
+                var tBox5 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number5FieldKey), 0,
+                    0, 60, 35).Document;
+                var tBox6 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
+                    0, 60, 35).Document;
 
-                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }, false).Document;
+                var stackPan = new StackingPanel(new[] { tBox1, tBox2, tBox3, tBox4, tBox5, tBox6 }, false).Document;
 
                 SetLayoutForDocument(Document, stackPan);
             }
@@ -1361,10 +1415,10 @@ namespace Dash {
 
                 // make collection view display framework element
                 var data = resultView;
-                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>();
+                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
-                var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 

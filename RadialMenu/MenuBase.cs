@@ -1,4 +1,6 @@
-﻿namespace RadialMenuControl.UserControl
+﻿using Windows.UI.Xaml;
+
+namespace RadialMenuControl.UserControl
 {
     using Components;
     using Shims;

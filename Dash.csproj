@@ -128,6 +128,7 @@
       <DependentUpon>RichTextView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\Actions.cs" />
+    <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">

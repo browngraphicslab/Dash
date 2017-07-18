@@ -202,9 +202,19 @@ namespace Dash
 
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            DisplayDocument(new CourtesyDocuments.PostitNote().Document);
-            DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
-            DisplayDocument(new CourtesyDocuments.Numbers().Document);
+            //DisplayDocument(new CourtesyDocuments.PostitNote().Document);
+            //DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
+            DocumentController numbersProto = new CourtesyDocuments.Numbers().Document;
+            DisplayDocument(numbersProto);
+            DocumentController del = numbersProto.MakeDelegate();
+            del.SetField(CourtesyDocuments.Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
+            var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
+            var layoutDel = layout.Data.MakeDelegate();
+            layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
+            DisplayDocument(del);
+            Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
+            Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

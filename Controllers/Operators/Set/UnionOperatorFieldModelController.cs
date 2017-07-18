@@ -26,12 +26,13 @@ namespace Dash
             [UnionKey] = TypeInfo.Collection
         };
 
-        public override void Execute(DocumentController doc, Context context)
+        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, context) as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, context) as DocumentCollectionFieldModelController;
-            if (setA.InputReference == null || setB.InputReference == null)//One or more of the inputs isn't set yet
+            DocumentCollectionFieldModelController setA = inputs[AKey] as DocumentCollectionFieldModelController;
+            DocumentCollectionFieldModelController setB = inputs[BKey] as DocumentCollectionFieldModelController;
+            if (setA == null || setB == null)
             {
+                outputs[UnionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
                 return;
             }
 
@@ -42,7 +43,7 @@ namespace Dash
             HashSet<DocumentController> same = Util.GetIntersection(setA, setB);
             result.ExceptWith(same);
             //(doc.GetDereferencedField(UnionKey, DocContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
-            doc.SetField(UnionKey, new DocumentCollectionFieldModelController(result), true);
+            outputs[UnionKey] = new DocumentCollectionFieldModelController(result);
             Debug.WriteLine("union count :" + result.Count);
 
             // Union by Document ID 
@@ -53,6 +54,11 @@ namespace Dash
         public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new UnionOperatorFieldModelController(OperatorFieldModel);
         }
     }
 

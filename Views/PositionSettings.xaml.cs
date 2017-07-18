@@ -22,16 +22,16 @@ namespace Dash.Views
             this.InitializeComponent();
         }
 
-        public PositionSettings(DocumentController editedLayoutDocument, IEnumerable<DocumentController> docContextList)
+        public PositionSettings(DocumentController editedLayoutDocument, Context context)
             : this()
         {
-            BindPosition(editedLayoutDocument, docContextList);
+            BindPosition(editedLayoutDocument, context);
         }
 
-        private void BindPosition(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindPosition(DocumentController docController, Context context)
         {
             var fmc = docController.GetField(DashConstants.KeyStore.PositionFieldKey); 
-            var positionController = DocumentController.GetDereferencedField(fmc, fmc.Context) as PointFieldModelController;
+            var positionController = fmc.DereferenceToRoot<PointFieldModelController>(context);
             Debug.Assert(positionController != null);
 
             var converter = new StringCoordinateToPointConverter(positionController.Data);
