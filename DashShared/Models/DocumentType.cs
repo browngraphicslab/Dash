@@ -40,6 +40,7 @@ namespace DashShared
         public DocumentType(string guid)
         {
             Id = guid;
+            type = guid;
         }
 
         public DocumentType(string guid, string type)

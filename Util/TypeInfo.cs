@@ -55,7 +55,13 @@ namespace Dash
                 }
             }
 
-        public static FieldModelController CreateFieldModelController(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
+        public static FieldModelController CreateFieldModelController(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None) {
+            var x = CreateFieldModelControllerHelper(fieldModelDTO, listType);
+            x.FieldModel.Id = fieldModelDTO.Id;
+            return x;
+        }
+
+        public static FieldModelController CreateFieldModelControllerHelper(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
             var data = fieldModelDTO.Data;
             switch (fieldModelDTO.Type)

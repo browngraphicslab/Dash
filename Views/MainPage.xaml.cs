@@ -75,11 +75,38 @@ namespace Dash
             FieldEndpoint fieldEndpoint = new FieldEndpoint(serverEndpoint);
             DocumentEndpoint docEndpoint = new DocumentEndpoint(serverEndpoint);
 
-            // test that adding text fields to server works
+            // - FIELDS -
+            // add & get
             string data = "boy";
-            var result = (await fieldEndpoint.AddField(new TextFieldModel(data))).Content as TextFieldModelController;
-            Debug.Assert(result.Data.Equals(data));
+            TextFieldModel textField = new TextFieldModel(data);
+            var result = (await fieldEndpoint.AddField(textField));
+            Debug.Assert((result.Content as TextFieldModelController).Data.Equals(data));
             
+            result = (await fieldEndpoint.GetField(textField.Id));
+            Debug.Assert((result.Content as TextFieldModelController).Data.Equals(data));
+            
+            // update & get
+            string data2 = "girl";
+            textField.Data = data2;
+            result = (await fieldEndpoint.UpdateField(textField));
+            Debug.Assert((result.Content as TextFieldModelController).Data.Equals(data2));
+            result = (await fieldEndpoint.GetField(textField.Id));
+            Debug.Assert((result.Content as TextFieldModelController).Data.Equals(data2));
+            
+            // delete
+            fieldEndpoint.DeleteField(textField);
+            
+
+            // - Documents -
+            // update & get
+            Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
+            fields.Add(new Key("Text Field Sample"),textField);
+            DocumentModel docModel = new DocumentModel(fields, new DocumentType("idhere"));
+            var result2 = await docEndpoint.AddDocument(docModel);
+
+            result2 = await (docEndpoint.GetDocument(docModel.Id));
+            Debug.Assert(result2.Content.Fields.ContainsValue(textField.Id));
+
 
         }
 

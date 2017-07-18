@@ -27,7 +27,7 @@ namespace Dash
             return base.Equals(refFieldModel) && refFieldModel.DocReference.Equals(DocReference);
         }
 
-        public override FieldModelDTO GetFieldDTO()
+        protected override FieldModelDTO GetFieldDTOHelper()
         {
             return new FieldModelDTO(TypeInfo.Reference, DocReference);
 

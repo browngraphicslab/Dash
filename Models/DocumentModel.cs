@@ -22,7 +22,7 @@ namespace Dash
         /// The type of this document.
         /// </summary>
         public DocumentType DocumentType;
-
+        
         /// <summary>
         /// Initializes a document with given data and type.
         /// </summary>

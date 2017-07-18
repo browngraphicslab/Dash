@@ -23,7 +23,7 @@ namespace Dash
         /// </summary>
         public string Data;
 
-        public override FieldModelDTO GetFieldDTO()
+        protected override FieldModelDTO GetFieldDTOHelper()
         {
             return new FieldModelDTO(TypeInfo.Text, Data);
         }

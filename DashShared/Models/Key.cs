@@ -23,6 +23,7 @@ namespace DashShared
         public Key(string guid)
         {
             Id = guid;
+            Name = guid;
         }
 
         public Key(string guid, string name)

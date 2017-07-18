@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
 using DashShared;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -22,8 +23,9 @@ namespace Dash
         {
             try
             {
+                Debug.WriteLine(newField.Id);
                 // convert from field model to DTO
-                FieldModelDTO dto = newField.GetFieldDTO(); 
+                FieldModelDTO dto = newField.GetFieldDTO();
                 HttpResponseMessage result = _connection.Post("api/Field", dto);
                 FieldModelDTO resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
 
@@ -47,6 +49,7 @@ namespace Dash
         {
             try
             {
+                Debug.WriteLine(FieldToUpdate.Id);
                 FieldModelDTO dto = FieldToUpdate.GetFieldDTO();
                 HttpResponseMessage result = _connection.Put("api/Field", dto);
                 FieldModelDTO resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
@@ -66,6 +69,7 @@ namespace Dash
         {
             try
             {
+                Debug.WriteLine(id);
                 FieldModelDTO FieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
                 FieldModelController fmc = TypeInfoHelper.CreateFieldModelController(FieldModelDTO);
                 return new Result<FieldModelController>(true, fmc);
@@ -80,6 +84,7 @@ namespace Dash
         public Result DeleteField(FieldModel fieldToDelete)
         {
             string id = fieldToDelete.Id;
+            Debug.WriteLine(id);
             try
             {
                 _connection.Delete($"api/Field/{id}");

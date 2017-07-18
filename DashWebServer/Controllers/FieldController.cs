@@ -63,12 +63,12 @@ namespace DashWebServer.Controllers
         }
 
         // DELETE api/field/5, sends OK on success
-        [HttpDelete]
-        public async Task<IActionResult> Delete([FromBody]FieldModelDTO fieldModelDTO)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {
-               await _documentRepository.DeleteItemAsync<FieldModelDTO>(fieldModelDTO);
+                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<FieldModelDTO>(id));
             }
             catch (Exception e)
             {
