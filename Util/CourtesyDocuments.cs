@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Media;
 using Dash.Converters;
 using DashShared;
 using Windows.UI.Xaml.Controls.Primitives;
+using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash {
     public static class CourtesyDocuments {
@@ -432,7 +433,8 @@ namespace Dash {
                 var fieldModelController = retToText.DereferenceToRoot(context);
                 var doc = retToText.GetDocumentController(context);
                 Debug.WriteLine(doc.GetId());
-                if (fieldModelController is TextFieldModelController) {
+                if (fieldModelController is TextFieldModelController)
+                {
                     var textBox = new TextBox();
                     textBox.ManipulationDelta += (s, e) => e.Handled = true;
                     tb = textBox;
@@ -452,7 +454,8 @@ namespace Dash {
                     textBox.TextChanged += TextBox_TextChanged;
                     textBox.Tag = retToText.GetDocumentController(context);
 
-                } else if (fieldModelController is NumberFieldModelController) {
+                } else if (fieldModelController is NumberFieldModelController)
+                {
                     tb = new TextBlock();
                     var numFieldModelController = fieldModelController as NumberFieldModelController;
                     Debug.Assert(numFieldModelController != null);
@@ -884,6 +887,8 @@ namespace Dash {
             public static Key Number1FieldKey = new Key("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
             public static Key Number2FieldKey = new Key("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
             public static Key Number3FieldKey = new Key("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
+            public static Key Number4FieldKey = new Key("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
+            public static Key Number5FieldKey = new Key("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
 
             public Numbers() {
                 // create a document with two images
@@ -891,17 +896,26 @@ namespace Dash {
                 fields.Add(Number1FieldKey, new NumberFieldModelController(789));
                 fields.Add(Number2FieldKey, new NumberFieldModelController(23));
                 fields.Add(Number3FieldKey, new NumberFieldModelController(8));
+                Random r = new Random();
+                fields.Add(Number4FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
+                fields.Add(Number5FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
 
                 Document = new DocumentController(fields, NumbersType);
 
-                var imBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
+                var tBox1 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number1FieldKey), 0,
                     0, 50, 20).Document;
-                var imBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
+                var tBox2 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number2FieldKey), 0,
                     0, 50, 20).Document;
-                var tBox = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
+                var tBox3 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
+                    0, 50, 20).Document;
+                var tBox4 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number4FieldKey), 0,
+                    0, 50, 20).Document;
+                var tBox5 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number5FieldKey), 0,
+                    0, 50, 20).Document;
+                var tBox6 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
                     0, 50, 20).Document;
 
-                var stackPan = new StackingPanel(new[] { imBox1, imBox2, tBox }).Document;
+                var stackPan = new StackingPanel(new[] { tBox1, tBox2, tBox3, tBox4, tBox5, tBox6 }).Document;
 
                 SetLayoutForDocument(Document, stackPan);
             }
