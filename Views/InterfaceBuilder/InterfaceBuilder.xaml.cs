@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -51,7 +52,7 @@ namespace Dash
         private void SetUpInterfaceBuilder(DocumentController docCont)
         {
             _layoutCourtesyDocument = new LayoutCourtesyDocument(docCont);
-            _layoutCourtesyDocument.CreateAndSetFreeFormActiveLayout();
+            _layoutCourtesyDocument.CreateAndSetFreeFormActiveLayout(new Point(), new Size(400, 400));
 
             _documentView = LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document) as DocumentView;
 

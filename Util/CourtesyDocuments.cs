@@ -277,9 +277,9 @@ namespace Dash {
                 return newLayout;
             }
 
-            public void CreateAndSetFreeFormActiveLayout()
+            public void CreateAndSetFreeFormActiveLayout(Point position, Size size)
             {
-                var layoutDoc = new FreeFormDocument(Document).LayoutDoc;
+                var layoutDoc = new FreeFormDocument(Document, position, size).LayoutDoc;
                 //Document.SetActiveLayout(layoutDoc, true);
             }
 
