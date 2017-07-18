@@ -277,7 +277,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.GetCopy;
+            //e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)

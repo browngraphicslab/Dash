@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using Windows.Foundation;
 using Windows.Foundation.Metadata;
 
 namespace Dash
@@ -120,6 +121,32 @@ namespace Dash
             }
 
             return posField;
+        }
+
+        public static DocumentController GetCopy(this DocumentController doc, Context context = null)
+        {
+            var copy = doc.GetPrototype()?.MakeDelegate() ??
+                       new DocumentController(new Dictionary<Key, FieldModelController>(), doc.DocumentType);
+            var fields = new ObservableDictionary<Key, FieldModelController>();
+            foreach (var kvp in doc.EnumFields(true))
+            {
+                if (kvp.Key.Equals(DashConstants.KeyStore.WidthFieldKey) ||
+                    kvp.Key.Equals(DashConstants.KeyStore.HeightFieldKey)
+                    )
+                {
+                    fields[kvp.Key] = new NumberFieldModelController((kvp.Value as NumberFieldModelController)?.Data ?? 0);
+                } else if (kvp.Key.Equals(DashConstants.KeyStore.PositionFieldKey))
+                {
+                    fields[kvp.Key] = new PointFieldModelController((kvp.Value as PointFieldModelController)?.Data ?? new Point());
+                }
+                else
+                {
+                    fields[kvp.Key] = kvp.Value;
+                }
+            }
+            copy.SetFields(fields, true);
+
+            return copy;
         }
     }
 }

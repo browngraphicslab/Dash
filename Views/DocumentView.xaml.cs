@@ -78,7 +78,7 @@ namespace Dash
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,OpenLayout),
-                new MenuButton(Symbol.Copy, "GetCopy", Colors.LightBlue,CopyDocument),
+                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,CopyDocument),
                 new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, ScreenCap),
@@ -321,7 +321,7 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetCopy());
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.Copy());
         }
 
         private void MakeDelegate()
