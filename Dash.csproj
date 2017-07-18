@@ -89,6 +89,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="Assets\richtexttest.rtf" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -120,9 +121,16 @@
     <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
+    <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Models\RichTextFieldModel.cs" />
+    <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Views\RichTextView.xaml.cs">
+      <DependentUpon>RichTextView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
+    <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>
@@ -346,6 +354,7 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
+    <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -392,6 +401,10 @@
     <Page Include="RadialMenu\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RichTextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>

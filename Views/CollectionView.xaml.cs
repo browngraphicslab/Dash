@@ -27,7 +27,7 @@ namespace Dash
         public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.001f;
-        public Rect Bounds = new Rect(0, 0, 5000, 5000);
+        public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
 
         // whether the user can draw links currently or not
         public bool CanLink
@@ -616,7 +616,8 @@ namespace Dash
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
-            e.AcceptedOperation = DataPackageOperation.Move;
+            if(ItemsCarrier.GetInstance().Source != ViewModel)
+                e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         private async void CollectionGrid_Drop(object sender, DragEventArgs e)
@@ -646,7 +647,7 @@ namespace Dash
             }
             else
             {
-                var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
+                //var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
                 ItemsCarrier.GetInstance().Destination = ViewModel;
                 ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
                 ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
@@ -713,6 +714,7 @@ namespace Dash
         private void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
+            ViewModel.CanDragItems = true;
             _colMenu.GoToDocumentMenu();
         }
 
@@ -836,6 +838,7 @@ namespace Dash
                     CloseMenu();
                     SetEnabled(false);
                     ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                    ViewModel.CanDragItems = false;
                 }
                 else
                 {
@@ -858,6 +861,7 @@ namespace Dash
                 CurrentView.IsHitTestVisible = false;
                 xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                ViewModel.CanDragItems = false;
                 if (_colMenu != null)
                     CloseMenu();
                 foreach (var dvm in ViewModel.DataBindingSource)

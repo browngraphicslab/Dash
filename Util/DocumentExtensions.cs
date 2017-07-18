@@ -58,7 +58,6 @@ namespace Dash
         }
 
 
-        [Deprecated("We currently set a default active layout in courtesydocument.layoutCourtesyDocument", DeprecationType.Deprecate, 1)]
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask = true)
         {
             doc.AddLayoutToLayoutList(activeLayout);

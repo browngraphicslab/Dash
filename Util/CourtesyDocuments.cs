@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
@@ -60,16 +61,9 @@ namespace Dash {
 
             [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
             protected static Dictionary<Key, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
-                FieldModelController data) {
-                // assign the default fields
-                var fields = new Dictionary<Key, FieldModelController> {
-                    [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(w),
-                    [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(h),
-                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(x, y)
-                };
-                if (data != null)
-                    fields.Add(DashConstants.KeyStore.DataKey, data);
-                return fields;
+                FieldModelController data)
+            {
+                return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
             }
 
             protected static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null) {
@@ -77,7 +71,9 @@ namespace Dash {
                 var fields = new Dictionary<Key, FieldModelController> {
                     [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
                     [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
-                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos)
+                    [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
+                    [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
+                    [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0)
                 };
 
                 if (data != null)
@@ -905,6 +901,7 @@ namespace Dash {
             }
         }
 
+
         public class FreeFormDocument : CourtesyDocument
         {
             public static string PrototypeId = "A5614540-0A50-40F3-9D89-965B8948F2A2";
@@ -977,14 +974,65 @@ namespace Dash {
                 layoutDocument.SetField(DashConstants.KeyStore.DataKey, currentLayoutCollections, forceMask); // set the field here so that forceMask is respected
                 currentLayoutCollections.SetDocuments(layoutDocuments.ToList());
             }
-
         }
 
-        /// <summary>
-        /// Constructs a nested stackpanel that displays the fields of all documents in the list
-        /// docs.
-        /// </summary>
-        public class StackingPanel : CourtesyDocument {
+        public class RichTextBox : CourtesyDocument
+        {
+            public static DocumentType DocumentType = new DocumentType("ED3B2D3C-C3EA-4FDC-9C0C-71E10F549C5F", "Rich Text");
+
+            public RichTextBox(FieldModelController refToRichText, double x = 0, double y = 0, double w = 200, double h = 20)
+            {
+                var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
+                Document = new DocumentController(fields, DocumentType);
+                SetLayoutForDocument(Document, Document, true);
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController,
+                Context context)
+            {
+                RichTextView rtv = null;
+                var refToRichText =
+                    docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                Debug.Assert(refToRichText!=null);
+                var fieldModelController = refToRichText.DereferenceToRoot(context);
+                if (fieldModelController is RichTextFieldModelController)
+                {
+                    var richTextFieldModelController = fieldModelController as RichTextFieldModelController;
+                    Debug.Assert(richTextFieldModelController != null);
+                    var richText = new RichTextView(richTextFieldModelController);
+                    richText.ManipulationDelta += (s, e) => e.Handled = true;
+                    rtv = richText;
+                    rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    rtv.VerticalAlignment = VerticalAlignment.Stretch;
+                }
+
+                // bind the rich text height
+                var heightController = GetHeightField(docController, context);
+                BindHeight(rtv, heightController);
+
+                // bind the rich text width
+                var widthController = GetWidthField(docController, context);
+                BindWidth(rtv, widthController);
+
+                return rtv;
+            }
+
+            protected override DocumentController GetLayoutPrototype()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override DocumentController InstantiatePrototypeLayout()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+            /// <summary>
+            /// Constructs a nested stackpanel that displays the fields of all documents in the list
+            /// docs.
+            /// </summary>
+            public class StackingPanel : CourtesyDocument {
             public static DocumentType StackPanelDocumentType =
                 new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Panel");
             public static Key StyleKey = new Key("943A801F-A4F4-44AE-8390-31630055D62F", "Style");
@@ -1031,10 +1079,9 @@ namespace Dash {
                 stack.Loaded += (s, e) =>
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
-                    var stackDoc = stack.GetFirstAncestorOfType<DocumentView>();
                     var stackScrollBar = stackViewer.GetFirstDescendantOfType<ScrollBar>();
                     stackScrollBar.ManipulationMode = ManipulationModes.All;
-                    stackScrollBar.ManipulationDelta += (ss, ee) => { ee.Handled = true; };
+                    stackScrollBar.ManipulationDelta += (ss, ee) => ee.Handled = true;
                 };
                 var stackFieldData =
                     docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context)
@@ -1206,6 +1253,7 @@ namespace Dash {
             public static Key Image2FieldKey = new Key("BCB1109C-0C55-47B7-B1E3-34CA9C66627E", "ImageField2");
             public static Key AnnotatedFieldKey = new Key("F370A8F6-22D9-4442-A528-A7FEEC29E306", "AnnotatedImage");
             public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+            public static Key RichTextKey = new Key("1C46E96E-F3CB-4DEE-8799-AD71DB1FB4D1", "RichTextField");
             static DocumentController _prototypeTwoImages = CreatePrototype2Images();
             static DocumentController _prototypeLayout   = CreatePrototypeLayout();
 
@@ -1217,8 +1265,7 @@ namespace Dash {
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
                 fields.Add(AnnotatedFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
-
-                return new DocumentController(fields, TwoImagesType); 
+                return new DocumentController(fields, TwoImagesType);
 
             }
             
@@ -1241,8 +1288,6 @@ namespace Dash {
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
 
-                //SetLayoutForDocument(_prototypeTwoImages, prototypeLayout.Document);
-
                 return prototypeLayout.Document;
             }
 
@@ -1253,9 +1298,7 @@ namespace Dash {
                 Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                 Document.SetField(AnnotatedFieldKey, new DocumentFieldModelController(new AnnotatedImage(new Uri("ms-appx://Dash/Assets/cat2.jpeg"), "Yowling").Document), true);
                 Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
-                //Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
-                //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
-
+                Document.SetField(RichTextKey, new RichTextFieldModelController(null), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0,0)), true);
