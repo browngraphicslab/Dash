@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Data;
 using DashShared;
 using FontWeights = Windows.UI.Text.FontWeights;
 using System.Collections.Generic;
+using Dash.Views;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -15,6 +16,10 @@ namespace Dash
     {
         private DocumentController editedLayoutDocument;
         private ObservableCollection<double> _fontWeights = new ObservableCollection<double>();
+
+        private Slider _fontSlider;
+        private TextBox _fontTextBox;
+        private ComboBox _fontWeightBox;
 
         public TextSettings()
         {
@@ -66,9 +71,11 @@ namespace Dash
             //    RightButton
             //};
 
-            BindWidth(editedLayoutDocument, context);
-            BindHeight(editedLayoutDocument, context);
-            BindPosition(editedLayoutDocument, context);
+            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
+            //BindWidth(editedLayoutDocument, docContextList);
+            //BindHeight(editedLayoutDocument, docContextList);
+            //BindPosition(editedLayoutDocument, docContextList);
             BindFontWeight(editedLayoutDocument, context);
             BindFontSize(editedLayoutDocument, context);
             BindFontAlignment(editedLayoutDocument, context);
@@ -88,7 +95,7 @@ namespace Dash
             };
 
             xAlignmentListView.SetBinding(ListView.SelectedIndexProperty, fontAlignmentBinding);
-            xAlignmentListView.SelectionChanged += delegate(object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
+            xAlignmentListView.SelectionChanged += delegate (object sender, SelectionChangedEventArgs args) { Debug.WriteLine(xAlignmentListView.SelectedIndex); };
         }
 
         private void BindFontWeight(DocumentController docController, Context context)
@@ -134,64 +141,64 @@ namespace Dash
             xFontSizeTextBox.SetBinding(TextBox.TextProperty, fontSizeBinding);
         }
 
-        private void BindPosition(DocumentController docController, Context context)
-        {
-            var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
-            Debug.Assert(positionController != null);
+        //private void BindPosition(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        //{
+        //    var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
+        //    Debug.Assert(positionController != null);
 
-            var converter = new StringCoordinateToPointConverter(positionController.Data);
+        //    var converter = new StringCoordinateToPointConverter(positionController.Data);
 
-            var xPositionBinding = new Binding
-            {
-                Source = positionController,
-                Path = new PropertyPath(nameof(positionController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = converter,
-                ConverterParameter = Coordinate.X,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty, xPositionBinding);
+        //    var xPositionBinding = new Binding
+        //    {
+        //        Source = positionController,
+        //        Path = new PropertyPath(nameof(positionController.Data)),
+        //        Mode = BindingMode.TwoWay,
+        //        Converter = converter,
+        //        ConverterParameter = Coordinate.X,
+        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+        //    };
+        //    xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty, xPositionBinding);
 
-            var yPositionBinding = new Binding
-            {
-                Source = positionController,
-                Path = new PropertyPath(nameof(positionController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = converter,
-                ConverterParameter = Coordinate.Y,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
-        }
+        //    var yPositionBinding = new Binding
+        //    {
+        //        Source = positionController,
+        //        Path = new PropertyPath(nameof(positionController.Data)),
+        //        Mode = BindingMode.TwoWay,
+        //        Converter = converter,
+        //        ConverterParameter = Coordinate.Y,
+        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+        //    };
+        //    xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
+        //}
 
-        private void BindHeight(DocumentController docController, Context context)
-        {
-            var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as NumberFieldModelController;
-            Debug.Assert(heightController != null);
+        //private void BindHeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        //{
+        //    var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
+        //    Debug.Assert(heightController != null);
 
-            var heightBinding = new Binding
-            {
-                Source = heightController,
-                Path = new PropertyPath(nameof(heightController.Data)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
-        }
+        //    var heightBinding = new Binding
+        //    {
+        //        Source = heightController,
+        //        Path = new PropertyPath(nameof(heightController.Data)),
+        //        Mode = BindingMode.TwoWay,
+        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+        //    };
+        //    xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
+        //}
 
-        private void BindWidth(DocumentController docController, Context context)
-        {
-            var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
-            Debug.Assert(widthController != null);
+        //private void BindWidth(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        //{
+        //    var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
+        //    Debug.Assert(widthController != null);
 
-            var widthBinding = new Binding
-            {
-                Source = widthController,
-                Path = new PropertyPath(nameof(widthController.Data)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
-        }
+        //    var widthBinding = new Binding
+        //    {
+        //        Source = widthController,
+        //        Path = new PropertyPath(nameof(widthController.Data)),
+        //        Mode = BindingMode.TwoWay,
+        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+        //    };
+        //    xWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
+        //}
     }
 }

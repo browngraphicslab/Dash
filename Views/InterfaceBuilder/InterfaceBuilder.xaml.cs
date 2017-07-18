@@ -18,12 +18,12 @@ namespace Dash
     {
 
         private List<GuideLineViewModel> _guides = new List<GuideLineViewModel>();
-        
+
         /// <summary>
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
-        
+
 
         /// <summary>
         /// Courtesy document that manages getting the necessary layout fields to edit the document's layout
@@ -39,10 +39,21 @@ namespace Dash
             Width = width;
             Height = height;
 
-            _layoutCourtesyDocument = new LayoutCourtesyDocument(docController);
+            SetUpInterfaceBuilder(docController, new Context(docController));
 
-            _documentView =
-                LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document) as DocumentView;
+            Binding listBinding = new Binding
+            {
+                Source = docController.GetAllPrototypes()
+            };
+            BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
+        }
+
+        private void SetUpInterfaceBuilder(DocumentController docCont, Context docContext)
+        {
+            _layoutCourtesyDocument = new LayoutCourtesyDocument(docCont);
+
+            _documentView = LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document, docContext) as DocumentView;
+
 
             xDocumentHolder.Child = _documentView;
 
@@ -52,8 +63,15 @@ namespace Dash
             _documentView.Drop += DocumentViewOnDrop;
             _documentView.AllowDrop = true;
 
+            //ApplyEditable();
+            //var layoutDocFieldController = docCont.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContext);
+            //docCont.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
+        }
 
-            ApplyEditable();
+        private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            DocumentController cont = e.ClickedItem as DocumentController;
+            SetUpInterfaceBuilder(cont, new Context(cont));
         }
 
         private void ApplyEditable()
@@ -107,7 +125,7 @@ namespace Dash
                     Mode = BindingMode.TwoWay
                 };
                 editableBorder.SetBinding(HeightProperty, heightBinding);
-                  
+
                 if (layoutDocument.GetId() != _layoutCourtesyDocument.Document.GetId())
                 {
                     // when the editable border is loaded bind it's translation to the layout's translation
@@ -126,7 +144,7 @@ namespace Dash
                         };
                         editableBorder.Container.SetBinding(UIElement.RenderTransformProperty, translateBinding);
                     };
-                } 
+                }
                 editableBorder.Tapped += EditableBorder_Tapped;
                 editableElements.Add(editableBorder);
             }
@@ -187,8 +205,8 @@ namespace Dash
             CourtesyDocuments.CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-               var textFieldModelController = fieldModelController as TextFieldModelController;
-               if (docController.GetPrototype() != null && docController.GetPrototype().GetDereferencedField(key, null) == null)
+                var textFieldModelController = fieldModelController as TextFieldModelController;
+                if (docController.GetPrototype() != null && docController.GetPrototype().GetDereferencedField(key, null) == null)
                 {
                     docController.GetPrototype().SetField(key, textFieldModelController, false);
                 }
@@ -197,9 +215,13 @@ namespace Dash
 
                 if (layoutDoc == null || !docController.IsDelegateOf(layoutDoc.GetId()))
                     layoutDoc = docController;
+                // bcz: hack -- the idea is that if we're dropping a field on a prototype layout, then the layout should reference the prototype of
+                //       of the source document as well.  Otherwise, the other documents that use this prototype layout will get the data from this source document
+                var layoutDocPrototype = layoutDoc.GetPrototype() == null ? layoutDoc : layoutDoc.GetPrototype();
+
                 if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                      box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDoc.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDoc.GetId(), key));
+                    box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDocPrototype.GetId(), key));
+                else box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDocPrototype.GetId(), key));
             }
             else if (fieldModelController is ImageFieldModelController)
             {
@@ -212,7 +234,8 @@ namespace Dash
             else if (fieldModelController is NumberFieldModelController)
             {
                 box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(docController.GetId(), key));
-            } else if (fieldModelController is DocumentFieldModelController)
+            }
+            else if (fieldModelController is DocumentFieldModelController)
             {
                 box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data);
             }
@@ -221,8 +244,7 @@ namespace Dash
             if (box != null)
             {
                 //Sets the point position of the image/text box
-                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X,
-                        e.GetPosition(_documentView).Y);
+                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X, e.GetPosition(_documentView).Y);
                 box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
 
                 var layoutDataField = _layoutCourtesyDocument.ActiveLayoutDocController?.GetDereferencedField(DashConstants.KeyStore.DataKey, null);
@@ -234,7 +256,7 @@ namespace Dash
                 else
                 {
                     var newLayoutCollection = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[] { (docController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController).Data, box.Document }));
-                    var oldPt = ((layoutDocFieldController as DocumentFieldModelController).Data.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey,null) as PointFieldModelController).Data;
+                    var oldPt = ((layoutDocFieldController as DocumentFieldModelController).Data.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, null) as PointFieldModelController).Data;
                     (layoutDocFieldController as DocumentFieldModelController).Data.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), false);
                     layoutDocFieldController = new DocumentFieldModelController(newLayoutCollection.Document);
                     (layoutDocFieldController as DocumentFieldModelController).Data.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(oldPt), false);
@@ -242,8 +264,11 @@ namespace Dash
             }
 
             ApplyEditable();
-             docController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
+            docController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
+
+
+
     }
 
     public static class SettingsPaneFromDocumentControllerFactory

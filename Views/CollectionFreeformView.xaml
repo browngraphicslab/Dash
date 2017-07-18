@@ -10,11 +10,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <Grid x:Name="FreeformGrid">
-
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">
-
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="CollectionCanvas" 
@@ -29,13 +27,12 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <dash:DocumentView
-                                    DataContext="{Binding}" 
-                                    IODragStarted="StartDrag" 
-                                    IODragEnded="EndDrag" 
-                                    RenderTransform="{Binding Position, Converter={StaticResource PointToTranslateTransformConverter}}"/>
-                                    <!--ManipulationStarted="DocumentView_ManipulationStarted" 
-                                    ManipulationDelta="DocumentView_ManipulationDelta"--> 
+                    <dash:DocumentView DataContext="{Binding}" 
+                                       IODragStarted="StartDrag" 
+                                       IODragEnded="EndDrag" 
+                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"/>
+                                       <!--ManipulationStarted="DocumentView_ManipulationStarted" 
+                                       ManipulationDelta="DocumentView_ManipulationDelta"--> 
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

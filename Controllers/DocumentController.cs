@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using System.Collections.ObjectModel; 
+
 
 namespace Dash
 {
@@ -158,12 +158,27 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
-            
-
-            // if the field contained a DocumentFieldModelController return it's data, otherwise return null
+            // if the field contained a DocumentFieldModelController return its data, otherwise return null
             return documentFieldModelController?.Data;
         }
 
+
+        /// <summary>
+        /// Method that returns a list of prototypes' documentcontrollers and itself, in hierarchical order 
+        /// </summary>
+        public LinkedList<DocumentController> GetAllPrototypes()
+        {
+            LinkedList<DocumentController> result = new LinkedList<DocumentController>();
+
+            var prototype = GetPrototype(); 
+            while (prototype != null)
+            {
+                result.AddFirst(prototype); 
+                prototype = prototype.GetPrototype(); 
+            }
+            result.AddLast(this); 
+            return result; 
+        }
 
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="Key" /> at the first
@@ -450,6 +465,10 @@ namespace Dash
             {
                 return CourtesyDocuments.ImageBox.MakeView(this, context);
             }
+            if (DocumentType == CourtesyDocuments.DocumentBox.DocumentType)
+            {
+                return CourtesyDocuments.DocumentBox.MakeView(this, context);
+            }
             if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
             {
                 return CourtesyDocuments.StackingPanel.MakeView(this, context);
@@ -466,8 +485,11 @@ namespace Dash
             {
                 return CourtesyDocuments.ApiDocumentModel.MakeView(this, context);
             }
-
-
+            if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
+            {
+                return CourtesyDocuments.RichTextBox.MakeView(this, context);
+            }
+       
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)

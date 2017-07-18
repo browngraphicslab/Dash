@@ -41,6 +41,7 @@ namespace DocumentMenu
             this.InstantiateButton(icon, name, background);
             this.CreateAndRunInstantiationAnimation();
         }
+       
 
         /// <summary>
         /// Create a circular button with an icon and a string description

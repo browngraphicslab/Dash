@@ -89,6 +89,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="Assets\richtexttest.rtf" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
@@ -97,6 +98,7 @@
     </Compile>
     <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
+    <Compile Include="Converters\StringToDoubleConverter.cs" />
     <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
     <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\RadialActionModel.cs" />
@@ -119,9 +121,16 @@
     <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
+    <Compile Include="Util\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Models\RichTextFieldModel.cs" />
+    <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Views\RichTextView.xaml.cs">
+      <DependentUpon>RichTextView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
+    <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>
@@ -241,8 +250,14 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\CollectionSettings.xaml.cs">
+      <DependentUpon>CollectionSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\DocumentSettings.xaml.cs">
+      <DependentUpon>DocumentSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
@@ -278,11 +293,18 @@
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OverlayMenu.xaml.cs">
-      <DependentUpon>OverlayMenu.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Views\OverlayMenu.xaml.cs" />
     <Compile Include="Views\RadialMenuView.xaml.cs">
       <DependentUpon>RadialMenuView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\PositionSettings.xaml.cs">
+      <DependentUpon>PositionSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SettingsPaneBlock.xaml.cs">
+      <DependentUpon>SettingsPaneBlock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SizeSettings.xaml.cs">
+      <DependentUpon>SizeSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
@@ -331,6 +353,7 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
+    <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -377,6 +400,10 @@
     <Page Include="RadialMenu\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\RichTextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>
@@ -430,9 +457,17 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\CollectionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\DocumentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -485,6 +520,18 @@
     <Page Include="Views\RadialMenuView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\PositionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SettingsPaneBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SizeSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\TextSettings.xaml">
       <SubType>Designer</SubType>

@@ -40,5 +40,10 @@ namespace Dash
             var vm = DataContext as CollectionViewModel;
             HListView.SelectionChanged += vm.SelectionChanged;
         }
+
+        private void HListView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }

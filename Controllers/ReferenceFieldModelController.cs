@@ -40,7 +40,7 @@ namespace Dash
 
         public string GetDocumentId(Context context = null)
         {
-            return GetDocumentController(context).GetId();
+            return GetDocumentController(context)?.GetId();
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
@@ -77,7 +77,7 @@ namespace Dash
             {
                 return controller;
             }
-            var fmc = GetDocumentController(context).GetField(FieldKey);
+            var fmc = GetDocumentController(context)?.GetField(FieldKey);
             return fmc;
         }
 

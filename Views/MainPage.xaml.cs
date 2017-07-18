@@ -66,6 +66,7 @@ namespace Dash
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
             _radialMenu = new RadialMenuView(xCanvas);
+            xCanvas.Children.Add(_radialMenu);
         }
 
         public void AddOperator()
@@ -286,7 +287,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.Copy;
+            //e.AcceptedOperation = DataPackageOperation.GetCopy;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
@@ -298,12 +299,12 @@ namespace Dash
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
 
-        private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (!_radialMenu.IsVisible)
-                _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
-            else _radialMenu.IsVisible = false;
-            e.Handled = true;
-        }
+        //private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        //{
+        //    if (!_radialMenu.IsVisible)
+        //        _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
+        //    else _radialMenu.IsVisible = false;
+        //    e.Handled = true;
+        //}
     }
 }
