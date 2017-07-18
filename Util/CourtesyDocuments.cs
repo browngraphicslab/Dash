@@ -22,11 +22,11 @@ namespace Dash {
         /// </summary>
         public abstract class CourtesyDocument {
 
-            protected abstract DocumentController GetPrototype();
+            protected abstract DocumentController GetLayoutPrototype();
 
             public virtual DocumentController Document { get; set; }
 
-            protected abstract DocumentController InstantiatePrototype();
+            protected abstract DocumentController InstantiatePrototypeLayout();
 
             protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
             {
@@ -198,19 +198,19 @@ namespace Dash {
             protected static NumberFieldModelController GetHeightField(DocumentController docController, Context context) {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.HeightFieldKey, context)
-                    .DereferenceToRoot<NumberFieldModelController>();
+                    .DereferenceToRoot<NumberFieldModelController>(context);
             }
 
             protected static NumberFieldModelController GetWidthField(DocumentController docController, Context context) {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.WidthFieldKey, context)
-                    .DereferenceToRoot<NumberFieldModelController>();
+                    .DereferenceToRoot<NumberFieldModelController>(context);
             }
 
             protected static PointFieldModelController GetPositionField(DocumentController docController, Context context) {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.PositionFieldKey, context)
-                    .DereferenceToRoot<PointFieldModelController>();
+                    .DereferenceToRoot<PointFieldModelController>(context);
             }
 
             #endregion
@@ -243,12 +243,12 @@ namespace Dash {
                 else yield return ActiveLayoutDocController; // TODO why would the layout be any other type of field model controller
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -281,7 +281,7 @@ namespace Dash {
 
             public void CreateAndSetFreeFormActiveLayout(Point position, Size size)
             {
-                var layoutDoc = new FreeFormDocument(Document, position, size).LayoutDoc;
+                var layoutDoc = new FreeFormDocument(Document, position, size).Document;
                 //Document.SetActiveLayout(layoutDoc, true);
             }
 
@@ -299,12 +299,12 @@ namespace Dash {
                 Document = new DocumentController(fields, DocumentType);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -368,12 +368,12 @@ namespace Dash {
                 return new TextBox(); 
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -397,21 +397,21 @@ namespace Dash {
 
             public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20) {
                 var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
-                Document = GetPrototype().MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetFields(fields, true);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 var prototype = ContentController.GetController<DocumentController>(PrototypeId);
                 if (prototype == null)
                 {
-                    prototype = InstantiatePrototype();
+                    prototype = InstantiatePrototypeLayout();
                 }
                 return prototype;
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 var textFieldModelController = new TextFieldModelController(DefaultText);
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), textFieldModelController);
@@ -439,6 +439,7 @@ namespace Dash {
 
                 // use the reference to the text to get the text field model controller
                 var textField = GetTextField(docController, context);
+                Debug.Assert(textField != null);
                 if (textField is TextFieldModelController) {
                     var textBox = new TextBox();
                     textBox.ManipulationDelta += (s, e) => e.Handled = true;
@@ -492,21 +493,21 @@ namespace Dash {
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(TextAlignmentKey, context)?
-                    .DereferenceToRoot<NumberFieldModelController>();
+                    .DereferenceToRoot<NumberFieldModelController>(context);
             }
 
             private static NumberFieldModelController GetFontWeightField(DocumentController docController, Context context = null)
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(FontWeightKey, context)?
-                    .DereferenceToRoot<NumberFieldModelController>();
+                    .DereferenceToRoot<NumberFieldModelController>(context);
             }
 
             protected static NumberFieldModelController GetFontSizeField(DocumentController docController, Context context)
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(FontSizeKey, context)?
-                    .DereferenceToRoot<NumberFieldModelController>();
+                    .DereferenceToRoot<NumberFieldModelController>(context);
             }
 
             private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context = null)
@@ -668,7 +669,7 @@ namespace Dash {
 
             public ImageBox(FieldModelController refToImage, double x = 0, double y = 0, double w = 200, double h = 200) {
                 var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
-                Document = GetPrototype().MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetFields(fields, true);
             }
 
@@ -712,17 +713,17 @@ namespace Dash {
                 return image;
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 var prototype = ContentController.GetController<DocumentController>(PrototypeId);
                 if (prototype == null)
                 {
-                    prototype = InstantiatePrototype();
+                    prototype = InstantiatePrototypeLayout();
                 }
                 return prototype;
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 var imFieldModelController = new ImageFieldModelController(DefaultImageUri);
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), imFieldModelController);
@@ -737,7 +738,7 @@ namespace Dash {
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(OpacityKey, context)?
-                    .DereferenceToRoot<NumberFieldModelController>();
+                    .DereferenceToRoot<NumberFieldModelController>(context);
             }
 
 
@@ -759,7 +760,7 @@ namespace Dash {
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.DataKey, context)
-                    .DereferenceToRoot<ImageFieldModelController>();
+                    .DereferenceToRoot<ImageFieldModelController>(context);
             }
 
             private static void SetImageField(DocumentController docController, Uri imageUri, bool forceMask, Context context = null)
@@ -824,12 +825,12 @@ namespace Dash {
                 set { _doc.Document = value; }
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
@@ -852,21 +853,21 @@ namespace Dash {
             public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400)
             {
                 var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
-                Document = GetPrototype().MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetFields(fields, true);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 var prototype = ContentController.GetController<DocumentController>(PrototypeId);
                 if (prototype == null)
                 {
-                    prototype = InstantiatePrototype();
+                    prototype = InstantiatePrototypeLayout();
                 }
                 return prototype;
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 var docFieldModelController = new DocumentCollectionFieldModelController(new List<DocumentController>());
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
@@ -891,7 +892,7 @@ namespace Dash {
                     double opacityValue = opacity.HasValue ? (double)opacity :1;
 
                     var collectionFieldModelController = data
-                        .DereferenceToRoot<DocumentCollectionFieldModelController>();
+                        .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                     Debug.Assert(collectionFieldModelController != null);
 
                     var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
@@ -908,29 +909,26 @@ namespace Dash {
         {
             public static string PrototypeId = "A5614540-0A50-40F3-9D89-965B8948F2A2";
 
-            public DocumentController LayoutDoc { get; private set; }
-
             public FreeFormDocument(DocumentController dataDocument, Point position = new Point(), Size size = new Size())
             {
-                Document = dataDocument;
-                LayoutDoc = GetPrototype().MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 var fields = DefaultLayoutFields(position, size,
                     new DocumentCollectionFieldModelController(new List<DocumentController>()));
-                LayoutDoc.SetFields(fields, true); //TODO add fields to constructor parameters
-                SetLayoutForDocument(Document, LayoutDoc, true);
+                Document.SetFields(fields, true); //TODO add fields to constructor parameters
+                SetLayoutForDocument(dataDocument, Document, true);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 var prototype = ContentController.GetController<DocumentController>(PrototypeId);
                 if (prototype == null)
                 {
-                    prototype = InstantiatePrototype();
+                    prototype = InstantiatePrototypeLayout();
                 }
                 return prototype;
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
@@ -962,7 +960,7 @@ namespace Dash {
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.DataKey, context)?
-                    .DereferenceToRoot<DocumentCollectionFieldModelController>();
+                    .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             }
 
             private static void SetLayoutsCollectionField(DocumentController layoutDocument, IList<DocumentController> layoutDocuments,
@@ -1004,12 +1002,12 @@ namespace Dash {
                 Document = new DocumentController(fields, StackPanelDocumentType);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1129,17 +1127,15 @@ namespace Dash {
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 
-               // SetLayoutForDocument(docLayout, docLayout); // bcz: do we need this line?
-
-                SetLayoutForDocument(Document, docLayout, true);
+                SetLayoutForDocument(Document, docLayout, true); // this is the only call which makes postit a courtesy document
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1194,12 +1190,12 @@ namespace Dash {
                 //SetLayoutForDocument(Document, docLayout);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1268,12 +1264,12 @@ namespace Dash {
                 
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1310,12 +1306,12 @@ namespace Dash {
                 SetLayoutForDocument(Document, stackPan, true);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1350,12 +1346,12 @@ namespace Dash {
                 SetLayoutForDocument(Document, stackPan, true);
             }
 
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1518,12 +1514,12 @@ namespace Dash {
             }
 
             // inherited
-            protected override DocumentController GetPrototype()
+            protected override DocumentController GetLayoutPrototype()
             {
                 throw new NotImplementedException();
             }
 
-            protected override DocumentController InstantiatePrototype()
+            protected override DocumentController InstantiatePrototypeLayout()
             {
                 throw new NotImplementedException();
             }
@@ -1613,7 +1609,7 @@ namespace Dash {
 
                 // make collection view display framework element
                 var data = resultView;
-                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>();
+                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
                 var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
