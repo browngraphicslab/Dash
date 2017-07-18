@@ -481,7 +481,10 @@ namespace Dash
             {
                 return CourtesyDocuments.ApiDocumentModel.MakeView(this, context);
             }
-
+            if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
+            {
+                return CourtesyDocuments.RichTextBox.MakeView(this, context);
+            }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
