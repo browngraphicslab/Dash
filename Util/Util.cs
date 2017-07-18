@@ -14,7 +14,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
 using LightBuzz.SMTP;
-using EASendMailRT; 
+
 
 namespace Dash
 {
@@ -308,7 +308,7 @@ namespace Dash
         {
             throw new NotImplementedException("THIS WON'T WORK COS YOU HAVE TO INPUT YOUR EMAIL PASSWORD HERE AND I'M NOT GONNA EXPOSE MINE TO EVERYONE IN THE GRAPHICS LAB");
             /* 
-            using (LightBuzz.SMTP.SmtpClient client = new LightBuzz.SMTP.SmtpClient("smtp.gmail.com", 465, true, addressFrom, "YOUR EMAIL PASSWORD")) // gmail
+            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, "YOUR EMAIL PASSWORD")) // gmail
             {
                 var email = new Windows.ApplicationModel.Email.EmailMessage
                 {
@@ -316,22 +316,27 @@ namespace Dash
                 };
 
                 email.To.Add(new Windows.ApplicationModel.Email.EmailRecipient(addressTo));
-                // TODO add CC? and BCC?? idk 
-                FileOpenPicker picker = new FileOpenPicker();
-                picker.FileTypeFilter.Add("*");
-                StorageFile attachmentFile = await picker.PickSingleFileAsync();
-                if (attachmentFile != null)
+                // TODO add CC? and BCC??  
+                
+                if (attachment != null)
                 {
-                    var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile);
-                    email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream));
+                    var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachment);
+                    email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachment.Name, stream));
                 }
                 SmtpResult result = await client.SendMailAsync(email);
                 
-                Debug.WriteLine("SMPT RESULT: " + result.ToString());
-                //var popup = new Windows.UI.Popups.MessageDialog("SMPT RESULT: " + result.ToString());
-                //await popup.ShowAsync(); 
+                //Debug.WriteLine("SMPT RESULT: " + result.ToString());
+
+                string popupMsg = "D:"; 
+                if (result == SmtpResult.OK)
+                {
+                    popupMsg = "Sent!"; 
+                } 
+
+                var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
+                await popup.ShowAsync(); 
             }
-            */
+            //*/
         }
     }
 }

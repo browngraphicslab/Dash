@@ -508,7 +508,9 @@ namespace Dash.Views
         private void sendEmailHelper(object obj)
         {
             //Util.SendEmail(); 
-            Util.SendEmail2("example_email", "example_email", "testMessage", "testSubject", null); 
+            //Util.SendEmail2("example_email", "example_email", "testMessage", "testSubject", null);
+            _parentCanvas.Children.Add(new EmailView()); 
+
         }
 
         private void InitializeColors()
