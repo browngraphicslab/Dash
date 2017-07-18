@@ -83,5 +83,43 @@ namespace Dash
             var deepestPrototype = doc.GetDeepestPrototype();
             deepestPrototype.SetActiveLayout(activeLayout);
         }
+
+        public static NumberFieldModelController GetHeightField(this DocumentController doc, Context context = null)
+        {
+            context = Context.SafeInitAndAddDocument(context, doc);
+            var activeLayout = doc.GetActiveLayout(context);
+            var heightField = activeLayout?.Data.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as NumberFieldModelController;
+            if (heightField == null)
+            {
+                heightField = doc.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as NumberFieldModelController;
+            }
+
+            return heightField;
+        }
+
+        public static NumberFieldModelController GetWidthField(this DocumentController doc, Context context = null)
+        {
+            context = Context.SafeInitAndAddDocument(context, doc);
+            var activeLayout = doc.GetActiveLayout(context);
+            var widthField =  activeLayout?.Data.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+            if (widthField == null)
+            {
+                widthField = doc.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+            }
+            return widthField;
+        }
+
+        public static PointFieldModelController GetPositionField(this DocumentController doc, Context context = null)
+        {
+            context = Context.SafeInitAndAddDocument(context, doc);
+            var activeLayout = doc.GetActiveLayout(context);
+            var posField = activeLayout?.Data.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
+            if (posField == null)
+            {
+                posField = doc.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
+            }
+
+            return posField;
+        }
     }
 }

@@ -35,7 +35,7 @@ namespace Dash
                 {
                     // update local
                     var cont = value.GetDocumentController(value.Context);
-                    cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
+                    cont.DocumentFieldUpdated += delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
                         if (args.Reference.FieldKey.Equals(value.FieldKey))
                         {

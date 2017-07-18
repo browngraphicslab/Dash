@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
+using static Dash.CourtesyDocuments.CourtesyDocument;
 
 namespace Dash
 {
@@ -164,14 +165,45 @@ namespace Dash
 
             Content = documentController.MakeViewUI();
 
-            documentController.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
-            {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
-                {
+            documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
+            OnActiveLayoutChanged();
+        }
 
-                    Content = DocumentController.MakeViewUI();
-                }
-            };
+        private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
+            {
+                OnActiveLayoutChanged();
+            }
+        }
+
+        private void OnActiveLayoutChanged()
+        {
+            Content = DocumentController.MakeViewUI();
+            ListenToHeightField(DocumentController);
+            ListenToWidthField(DocumentController);
+            ListenToPositionField(DocumentController);
+        }
+
+        private void ListenToPositionField(DocumentController docController)
+        {
+            var positionField = docController.GetPositionField();
+            positionField.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+            Position = positionField.Data;
+        }
+
+        private void ListenToWidthField(DocumentController docController)
+        {
+            var widthField = docController.GetWidthField();
+            widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
+            Width = widthField.Data;
+        }
+
+        private void ListenToHeightField(DocumentController docController)
+        {
+            var heightField = docController.GetHeightField();
+            heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
+            Height = heightField.Data;
         }
 
 

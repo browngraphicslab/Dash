@@ -37,7 +37,7 @@ namespace Dash
             }
         }
 
-        public delegate void OnDocumentFieldUpdatedHandler(DocumentFieldUpdatedEventArgs args);
+        public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
 
@@ -356,7 +356,7 @@ namespace Dash
             }
 
             field.InputReference = reference;
-            controller.DocumentFieldUpdated += delegate (DocumentFieldUpdatedEventArgs args)
+            controller.DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(reference.FieldKey))
                 {
@@ -527,7 +527,7 @@ namespace Dash
 
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
-            DocumentFieldUpdated?.Invoke(args);
+            DocumentFieldUpdated?.Invoke(this, args);
         }
     }
 }

@@ -254,10 +254,12 @@ namespace Dash {
             }
 
             public override FrameworkElement makeView(DocumentController docController, Context context) {
-                return MakeView(docController);
+                return MakeView(docController, context);
             }
 
-            public static FrameworkElement MakeView(DocumentController docController) {
+            public static FrameworkElement MakeView(DocumentController docController, Context context = null) {
+                context = Context.SafeInitAndAddDocument(context, docController);
+
                 var docViewModel = new DocumentViewModel(docController) {
                     IsDetailedUserInterfaceVisible = false,
                     IsMoveable = false
@@ -912,8 +914,8 @@ namespace Dash {
                 LayoutDoc = GetPrototype().MakeDelegate();
                 var fields = DefaultLayoutFields(position, size,
                     new DocumentCollectionFieldModelController(new List<DocumentController>()));
+                LayoutDoc.SetFields(fields, true); //TODO add fields to constructor parameters
                 SetLayoutForDocument(Document, LayoutDoc, true);
-                Document.SetFields(fields, true); //TODO add fields to constructor parameters
             }
 
             protected override DocumentController GetPrototype()
@@ -941,6 +943,7 @@ namespace Dash {
 
             public static FrameworkElement MakeView(DocumentController docController, Context context)
             {
+                
                 var grid = new Grid();
                 var layoutDocuments = GetLayoutsCollectionField(docController, context).GetDocuments();
   
@@ -948,14 +951,8 @@ namespace Dash {
                 {
                     var layoutView = layoutDocument.MakeViewUI(context);
                     grid.Children.Add(layoutView);
-
-                    //var posController = GetPositionField(layoutDocument, context);
-                    //BindTranslation(layoutView, posController);
                 }
 
-                BindWidth(grid, GetWidthField(docController, context));
-                BindHeight(grid, GetHeightField(docController, context));
-                BindTranslation(grid, GetPositionField(docController, context));
                 return grid;
             }
 

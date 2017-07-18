@@ -126,12 +126,6 @@ namespace Dash
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = ActualWidth + dx;
             dvm.Height = ActualHeight + dy;
-
-
-            // todo: remove this and replace with binding // debug why x:Bind fails
-            Width = ActualWidth + dx;
-            Height = ActualHeight + dy;
-
         }
 
         /// <summary>
