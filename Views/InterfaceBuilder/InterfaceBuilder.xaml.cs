@@ -280,9 +280,18 @@ namespace Dash
             {
                 return CreateTextSettingsLayout(editedLayoutDocument);
             }
-
+            if (editedLayoutDocument.DocumentType == RichTextBox.DocumentType)
+            {
+                return CreateRichTextSettingsLayout(editedLayoutDocument);
+            }
             Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
             return null;
+        }
+
+        private static UIElement CreateRichTextSettingsLayout(DocumentController editedLayoutDocument)
+        {
+            var context = new Context();
+            return new RichTextSettings(editedLayoutDocument,context);
         }
 
         private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)

@@ -1025,7 +1025,8 @@ namespace Dash {
                 var prototypeImage2Layout    = new ImageBox   (new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),    0, 250, 200, 200);
                 var prototypeAnnotatedLayout = new DocumentBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
                 var prototypeTextLayout      = new TextingBox (new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),      0, 0, 200, 50);
-                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, true);
+                var prototypeRichTextLayout = new RichTextBox(new DocumentReferenceController(_prototypeTwoImages.GetId(),RichTextKey), 0,450,200,200);
+                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document, prototypeRichTextLayout.Document }, true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
 
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);

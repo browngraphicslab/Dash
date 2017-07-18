@@ -20,7 +20,7 @@
             <RowDefinition x:Name="xFormatRow" Height="0"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xFormatControls" Grid.Row="0">
+        <!--<Grid x:Name="xFormatControls" Grid.Row="0">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
@@ -47,7 +47,7 @@
                     <ComboBox x:Name="xFontSizeComboBox" Background="LightSteelBlue" BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
                 </Grid>
             </Grid>
-        </Grid>
+        </Grid>-->
         <Grid Grid.Row="1">
             <RichEditBox x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="LightSteelBlue" IsColorFontEnabled="True" SelectionHighlightColor="LightSteelBlue"></RichEditBox>
         </Grid>
