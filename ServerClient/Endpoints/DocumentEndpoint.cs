@@ -1,117 +1,86 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
 {
     public class DocumentEndpoint
     {
+        private ServerEndpoint _connection;
 
-        #region RemovedFakeLocal
+        public DocumentEndpoint(ServerEndpoint connection)
+        {
+            _connection = connection;
+        }
 
         /// <summary>
-        /// Fake dictionary of string (document id) to document model
+        /// Adds a new Document to the DashWebServer and returns that DocumentModel.
         /// </summary>
-        private Dictionary<string, DocumentModel> _documents;
+        /// <param name="newDocument"></param>
+        /// <returns></returns>
+        public async Task<Result<DocumentModel>> AddDocument(DocumentModel newDocument)
+        {
+            try
+            {
+                // convert from Document model to DTO
+                HttpResponseMessage result = _connection.Post("api/Document", newDocument);
+                DocumentModel resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
+                return new Result<DocumentModel>(true, resultdoc);
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+            }
+        }
 
         /// <summary>
-        /// The number of documents we currently have
+        /// Updates an existing Document in the DashWebServer and returns the updated document model.
         /// </summary>
-        private int _numDocs;
-
-        #endregion
-
-        /// <summary>
-        /// Controller for getting new types
-        /// </summary>
-        private readonly TypeEndpoint _typeEndpoint;
-
-        public DocumentEndpoint(TypeEndpoint typeEndpoint)
+        /// <param name="DocumentToUpdate"></param>
+        /// <returns></returns>
+        public async Task<Result<DocumentModel>> UpdateDocument(DocumentModel DocumentToUpdate)
         {
-            _typeEndpoint = typeEndpoint;
-            _documents = new Dictionary<string, DocumentModel>();
+            try
+            {
+                HttpResponseMessage result = _connection.Put("api/Document", DocumentToUpdate);
+                DocumentModel resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
+                return new Result<DocumentModel>(true, resultdoc);
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+            }
+            
         }
 
-        public FieldModel GetFieldInDocument(string docId, Key field)
+        public async Task<Result<DocumentModel>> GetDocument(string id)
         {
-            throw new NotImplementedException();
-
-            //DocumentModel model = _documents[docId];
-            //return model?.Field(field);
+            try
+            {
+                DocumentModel result = await _connection.GetItem<DocumentModel>($"api/Field/{id}");
+                return new Result<DocumentModel>(true, result);
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+            }
         }
 
-        public FieldModel GetFieldInDocument(ReferenceFieldModel referenceFieldModel)
+        public Result DeleteDocument(string id)
         {
-            throw new NotImplementedException();
-
-            //DocumentModel model = _documents[referenceFieldModel.DocId];
-            //if (model != null)
-            //{
-            //    return model.Field(referenceFieldModel.FieldKey);
-            //}
-            //return null;
-        }
-
-        public IEnumerable<DocumentModel> GetDelegates(string protoId)
-        {
-            throw new NotImplementedException();
-
-            //foreach (var doc in _documents)
-            //{
-            //    var docsProto = doc.Value.Field(DocumentModel.PrototypeKey) as DocumentModelFieldModel;
-            //    if (docsProto != null && docsProto.Data.Id == protoId)
-            //        yield return doc.Value;
-            //}
-        }
-
-        public DocumentModel GetDocumentAsync(string docId)
-        {
-            return _documents[docId];
-        }
-
-        public void DeleteDocumentAsync(DocumentModel model)
-        {
-            _documents.Remove(model.Id);
-        }
-
-        public DocumentModel UpdateDocumentAsync(DocumentModel model)
-        {
-            _documents[model.Id] = model;
-            return model;
-        }
-
-        public DocumentModel CreateDocumentAsync(string type)
-        {
-            throw new NotImplementedException();
-
-            //var id = $"{_numDocs++}";
-
-            //var newDoc = new DocumentModel
-            //{
-            //    DocumentType = _typeEndpoint.CreateTypeAsync(type),
-            //    Id = id
-            //};
-
-            //_documents[id] = newDoc;
-
-            //return newDoc;
-        }
-
-        public DocumentModel CreateDocumentAsync(DocumentType type)
-        {
-            throw new NotImplementedException();
-
-            //var id = $"{_numDocs++}";
-
-            //var newDoc = new DocumentModel
-            //{
-            //    DocumentType = type,
-            //    Id = id
-            //};
-
-            //_documents[id] = newDoc;
-
-            //return newDoc;
+            try
+            {
+                _connection.Delete($"api/Document/{id}");
+                return new Result(true);
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result(false, string.Join("\n", e.Errors));
+            }
         }
     }
 }

@@ -35,7 +35,7 @@ namespace DashWebServer.Controllers
             return await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
         }
 
-        // POST api/document, adds a document with a given 
+        // POST api/document, adds a new document from the given docModel
         [HttpPost]
         public async Task<IActionResult> Post([FromBody]DocumentModel docModel)
         {
@@ -47,39 +47,30 @@ namespace DashWebServer.Controllers
             }
             catch (DocumentClientException e)
             {
-               // _logger.LogWarning(LoggingEvents.DOCUMENT_CLIENT_EXCPETION, e,
-                //    "Could Not Add Shape To Document Repository", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             catch (Exception e)
             {
-               // _logger.LogError(LoggingEvents.UNHANDLED_EXCEPTION, e,
-               //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(DocModel);
         }
 
-        // PUT api/document/5, updates a given document field
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody]DocumentModel docModel)
+        // PUT api/document/5, pushes updates of a given DocumentModel into the server?
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody]DocumentModel docModel)
         {
             DocumentModel DocModel;
             try
             {
-                // add the shape model to the documentRepository
                 DocModel = await _documentRepository.UpdateItemAsync(docModel);
             }
             catch (DocumentClientException e) // TODO: verify this is the right error to check for
             {
-                // _logger.LogWarning(LoggingEvents.DOCUMENT_CLIENT_EXCPETION, e,
-                //    "Could Not Add Shape To Document Repository", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             catch (Exception e)
             {
-                // _logger.LogError(LoggingEvents.UNHANDLED_EXCEPTION, e,
-                //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(DocModel);
@@ -95,14 +86,10 @@ namespace DashWebServer.Controllers
             }
             catch (DocumentClientException e)
             {
-                // _logger.LogWarning(LoggingEvents.DOCUMENT_CLIENT_EXCPETION, e,
-                //    "Could Not Add Shape To Document Repository", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             catch (Exception e)
             {
-                // _logger.LogError(LoggingEvents.UNHANDLED_EXCEPTION, e,
-                //     "An exception was throws that we do not handle", shapeModel);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok();
