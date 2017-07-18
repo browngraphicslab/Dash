@@ -1,5 +1,6 @@
 ﻿{
   "dependencies": {
+    "EASendMail": "7.3.1.2",
     "lightbuzz-smtp": "1.8.0",
     "Microsoft.AspNet.SignalR.Client": "2.2.2",
     "Microsoft.AspNet.WebApi.Client": "5.2.3",

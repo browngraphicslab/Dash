@@ -13,7 +13,8 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
-using LightBuzz.SMTP; 
+using LightBuzz.SMTP;
+using EASendMailRT; 
 
 namespace Dash
 {
@@ -302,10 +303,12 @@ namespace Dash
             await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
+        // TODO at some point make a xaml page where user can input address password email message subject etc so that we don't need it in code 
         public static async void SendEmail2(string addressTo, string addressFrom, string message, string subject, StorageFile attachment)
         {
-            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, "wjflrk3wjflrk3")) // gmail
-            //using (SmtpClient client = new SmtpClient("smtp-mail.outlook.com", 587, false, addressFrom, "wjflrk3wjflrk3")) // gmail 
+            throw new NotImplementedException("THIS WON'T WORK COS YOU HAVE TO INPUT YOUR EMAIL PASSWORD HERE AND I'M NOT GONNA EXPOSE MINE TO EVERYONE IN THE GRAPHICS LAB");
+            /* 
+            using (LightBuzz.SMTP.SmtpClient client = new LightBuzz.SMTP.SmtpClient("smtp.gmail.com", 465, true, addressFrom, "YOUR EMAIL PASSWORD")) // gmail
             {
                 var email = new Windows.ApplicationModel.Email.EmailMessage
                 {
@@ -328,6 +331,7 @@ namespace Dash
                 //var popup = new Windows.UI.Popups.MessageDialog("SMPT RESULT: " + result.ToString());
                 //await popup.ShowAsync(); 
             }
+            */
         }
     }
 }
