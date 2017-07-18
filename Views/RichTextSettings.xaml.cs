@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -26,11 +28,11 @@ namespace Dash
     public sealed partial class RichTextSettings : UserControl
     {
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
+        ObservableCollection<NamedColor> colors { get; set; }
 
         public RichTextSettings()
         {
             this.InitializeComponent();
-            this.AddFonts();
         }
 
         public RichTextSettings(DocumentController docController, Context context) : this()
@@ -40,6 +42,8 @@ namespace Dash
             var docContextList = context.DocContextList;
             xSizeRow.Children.Add(new SizeSettings(docController,docContextList));
             xPositionRow.Children.Add(new PositionSettings(docController,docContextList));
+            this.AddFonts();
+            this.AddColors();
             this.AddHandlers(docController, context);
         }
 
@@ -91,11 +95,45 @@ namespace Dash
             };
             xAlignRightButton.Tapped += delegate
             {
-                this.xAlignRightTapped(docController, context);
+                this.AlignRightTapped(docController, context);
+            };
+            xFontColorComboBox.SelectionChanged += delegate
+            {
+                this.ColorSelectionChanged(docController, context);
+            };
+            xHighlightColorComboBox.SelectionChanged += delegate
+            {
+                this.HighlightSelectionChanged(docController, context);
             };
         }
 
-        private void xAlignRightTapped(DocumentController docController, Context context)
+        private void HighlightSelectionChanged(DocumentController docController, Context context)
+        {
+            var richTextController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as RichTextFieldModelController;
+            Debug.Assert(richTextController != null);
+            ITextSelection selectedText = richTextController.SelectedText;
+            if (selectedText != null)
+            {
+                ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
+                charFormatting.BackgroundColor = (xFontComboBox.SelectedItem as NamedColor).Color;
+                richTextController.SelectedText.CharacterFormat = charFormatting;
+            }
+        }
+
+        private void ColorSelectionChanged(DocumentController docController, Context context)
+        {
+            var richTextController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as RichTextFieldModelController;
+            Debug.Assert(richTextController != null);
+            ITextSelection selectedText = richTextController.SelectedText;
+            if (selectedText != null)
+            {
+                ITextCharacterFormat charFormatting = selectedText.CharacterFormat;
+                charFormatting.ForegroundColor = (xFontComboBox.SelectedItem as NamedColor).Color;
+                richTextController.SelectedText.CharacterFormat = charFormatting;
+            }
+        }
+
+        private void AlignRightTapped(DocumentController docController, Context context)
         {
             var richTextController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as RichTextFieldModelController;
             Debug.Assert(richTextController != null);
@@ -258,6 +296,14 @@ namespace Dash
             }
         }
 
+        private void AddColors()
+        {
+            foreach (var color in typeof(Colors).GetRuntimeProperties())
+            {
+                colors.Add(new NamedColor() {Name = color.Name, Color = (Color) color.GetValue(null)});
+            }
+        }
+
         private void AddFonts()
         {
             var FontNames = new List<string>()
@@ -308,5 +354,10 @@ namespace Dash
                 fonts.Add(new FontFamily(font));
             }
         }
+    }
+    public class NamedColor
+    {
+        public string Name { get; set; }
+        public Color Color { get; set; }
     }
 }

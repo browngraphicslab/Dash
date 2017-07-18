@@ -43,6 +43,8 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!--FONTS-->
@@ -193,11 +195,66 @@
                             <views:SettingsPaneBlock.Title>FONT STYLE</views:SettingsPaneBlock.Title>
                         </views:SettingsPaneBlock>
                     </Grid>
+
+                    <!--COLOR-->
+                    <Grid Grid.Row="5" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <views:SettingsPaneBlock>
+                            <views:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xFontColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                    <Rectangle.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Rectangle.Fill>
+                                                </Rectangle>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </views:SettingsPaneBlock.MainContent>
+                            <views:SettingsPaneBlock.Title>TEXT COLOR</views:SettingsPaneBlock.Title>
+                        </views:SettingsPaneBlock>
+                    </Grid>
+
+                    <!--HIGHLIGHT-->
+                    <Grid Grid.Row="6" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <views:SettingsPaneBlock>
+                            <views:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xHighlightColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                    <Rectangle.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Rectangle.Fill>
+                                                </Rectangle>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </views:SettingsPaneBlock.MainContent>
+                            <views:SettingsPaneBlock.Title>HIGHLIGHT</views:SettingsPaneBlock.Title>
+                        </views:SettingsPaneBlock>
+                    </Grid>
+
                     <!--SIZE-->
-                    <Grid x:Name="xSizeRow" Grid.Row="5"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Grid x:Name="xSizeRow" Grid.Row="7"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
                     <!--POSITION-->
-                    <Grid x:Name="xPositionRow" Grid.Row="6"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Grid x:Name="xPositionRow" Grid.Row="8"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                 </Grid>
             </ScrollViewer>
         </Grid>
