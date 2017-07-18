@@ -13,6 +13,7 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
+using LightBuzz.SMTP; 
 
 namespace Dash
 {
@@ -299,6 +300,34 @@ namespace Dash
 
 
             await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
+        }
+
+        public static async void SendEmail2(string addressTo, string addressFrom, string message, string subject, StorageFile attachment)
+        {
+            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, "wjflrk3wjflrk3")) // gmail
+            //using (SmtpClient client = new SmtpClient("smtp-mail.outlook.com", 587, false, addressFrom, "wjflrk3wjflrk3")) // gmail 
+            {
+                var email = new Windows.ApplicationModel.Email.EmailMessage
+                {
+                    Subject = subject, Body = message 
+                };
+
+                email.To.Add(new Windows.ApplicationModel.Email.EmailRecipient(addressTo));
+                // TODO add CC? and BCC?? idk 
+                FileOpenPicker picker = new FileOpenPicker();
+                picker.FileTypeFilter.Add("*");
+                StorageFile attachmentFile = await picker.PickSingleFileAsync();
+                if (attachmentFile != null)
+                {
+                    var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachmentFile);
+                    email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachmentFile.Name, stream));
+                }
+                SmtpResult result = await client.SendMailAsync(email);
+                
+                Debug.WriteLine("SMPT RESULT: " + result.ToString());
+                //var popup = new Windows.UI.Popups.MessageDialog("SMPT RESULT: " + result.ToString());
+                //await popup.ShowAsync(); 
+            }
         }
     }
 }
