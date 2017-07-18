@@ -482,8 +482,10 @@ namespace Dash {
             private static FieldModelController GetTextField(DocumentController docController, Context context = null)
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
+
+                var dataKey =  docController.GetField(DashConstants.KeyStore.DataKey, context);
                 return docController.GetField(DashConstants.KeyStore.DataKey, context)?
-                    .DereferenceToRoot<FieldModelController>();
+                    .DereferenceToRoot<FieldModelController>(context);
             }
 
             private static NumberFieldModelController GetTextAlignmentField(DocumentController docController, Context context = null)
@@ -1108,7 +1110,7 @@ namespace Dash {
                 // bcz: default values for data fields can be added, but should not be needed
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(NotesFieldKey, new TextFieldModelController("Prototype Text"));
-                return new DocumentController(new Dictionary<Key, FieldModelController>(), PostitNoteType);
+                return new DocumentController(fields, PostitNoteType);
             }
             static DocumentController CreatePrototypeLayout() {
                 var prototypeTextLayout =
@@ -1129,7 +1131,7 @@ namespace Dash {
                 
                // SetLayoutForDocument(docLayout, docLayout); // bcz: do we need this line?
 
-                //SetLayoutForDocument(Document, docLayout);
+                SetLayoutForDocument(Document, docLayout, true);
             }
 
             protected override DocumentController GetPrototype()
