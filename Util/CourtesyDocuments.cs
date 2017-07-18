@@ -26,7 +26,7 @@ namespace Dash {
 
             public static void SetLayoutForDocument(DocumentController document, DocumentController layoutDoc) {
                 var layoutController = new DocumentFieldModelController(layoutDoc);
-                document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
+                document.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
 
                 var layoutList = document.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
                 if (layoutList == null)

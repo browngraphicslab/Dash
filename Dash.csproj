@@ -121,7 +121,7 @@
     <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
-    <Compile Include="Util\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
     <Compile Include="Views\RichTextView.xaml.cs">

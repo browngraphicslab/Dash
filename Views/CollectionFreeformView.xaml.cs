@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI;
 using System.Diagnostics;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -318,7 +319,7 @@ namespace Dash
             public object Convert(object value, Type targetType, object parameter, string language)
             {
                 bool isEditorMode = (bool)value;
-                return isEditorMode ? Visibility.Visible : Visibility.Collapsed;
+                return isEditorMode ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, string language)
