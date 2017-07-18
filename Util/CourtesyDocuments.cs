@@ -772,7 +772,7 @@ namespace Dash {
                 fields.Add(TextFieldKey, new TextFieldModelController("Prototype Text"));
                 fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
                 fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
-                fields.Add(RichTextKey, new RichTextFieldModelController("Hi"));
+                fields.Add(RichTextKey, new RichTextFieldModelController("Rich Text"));
                 return new DocumentController(new Dictionary<Key, FieldModelController>(), TwoImagesType);
                 //return new DocumentController(fields, TwoImagesType);
             }
@@ -804,7 +804,7 @@ namespace Dash {
                 Document.SetField(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
                 Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
                 Document.SetField(TextFieldKey,   new TextFieldModelController("Hello World!"), true);
-                Document.SetField(RichTextKey, new RichTextFieldModelController("Test"), true);
+                Document.SetField(RichTextKey, new RichTextFieldModelController(null), true);
                 //Document.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point()), true);
                 //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Collection), true);
 
