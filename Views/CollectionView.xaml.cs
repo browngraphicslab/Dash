@@ -645,7 +645,7 @@ namespace Dash
                         }
                 }
             }
-            else
+            else if (ItemsCarrier.GetInstance().Source != null)
             {
                 //var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
                 ItemsCarrier.GetInstance().Destination = ViewModel;
