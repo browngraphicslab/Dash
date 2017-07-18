@@ -12,6 +12,11 @@ namespace DashShared
     /// </summary>
     public abstract class AuthorizableEntityBase : EntityBase
     {
+        public AuthorizableEntityBase(string id) : base(id)
+        {
+            
+        }
+
         [Required] // cannot be null
         public string UserId { get; set; }
 

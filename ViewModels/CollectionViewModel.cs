@@ -167,9 +167,8 @@ namespace Dash
             foreach (var docController in documents.GetDocuments())
             {
                 if (ViewModelContains(DataBindingSource, docController)) continue;
-                Context c = new Context(context);
-                c.AddDocumentContext(docController);
-                var viewModel = new DocumentViewModel(docController, c);
+
+                var viewModel = new DocumentViewModel(docController);
 
                 if (carriedControllers.Contains(docController))
                 {

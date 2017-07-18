@@ -24,71 +24,7 @@ namespace Dash
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
             BindOpacity(docController, context);
-            //BindWidth(docController, docContextList);
-            //BindHeight(docController, docContextList);
-            //BindPosition(docController, docContextList);
         }
-
-        //private void BindPosition(DocumentController docController, IEnumerable<DocumentController> docContextList)
-        //{
-        //    var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContextList) as PointFieldModelController;
-        //    Debug.Assert(positionController != null);
-
-        //    var converter = new StringCoordinateToPointConverter(positionController.Data);
-
-        //    var xPositionBinding = new Binding
-        //    {
-        //        Source = positionController,
-        //        Path = new PropertyPath(nameof(positionController.Data)),
-        //        Mode = BindingMode.TwoWay,
-        //        Converter = converter,
-        //        ConverterParameter = Coordinate.X,
-        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-        //    };
-        //    xHorizontalPositionTextBox.SetBinding(TextBox.TextProperty, xPositionBinding);
-
-        //    var yPositionBinding = new Binding
-        //    {
-        //        Source = positionController,
-        //        Path = new PropertyPath(nameof(positionController.Data)),
-        //        Mode = BindingMode.TwoWay,
-        //        Converter = converter,
-        //        ConverterParameter = Coordinate.Y,
-        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-        //    };
-        //    xVerticalPositionTextBox.SetBinding(TextBox.TextProperty, yPositionBinding);
-        //}
-
-        //private void BindHeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
-        //{
-        //    var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContextList) as NumberFieldModelController;
-        //    Debug.Assert(heightController != null);
-
-        //    var heightBinding = new Binding
-        //    {
-        //        Source = heightController,
-        //        Path = new PropertyPath(nameof(heightController.Data)),
-        //        Mode = BindingMode.TwoWay,
-        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-        //    };
-        //    xHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
-        //}
-
-        //private void BindWidth(DocumentController docController, IEnumerable<DocumentController> docContextList)
-        //{
-        //    var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContextList) as NumberFieldModelController;
-        //    Debug.Assert(widthController != null);
-
-        //    var widthBinding = new Binding
-        //    {
-        //        Source = widthController,
-        //        Path = new PropertyPath(nameof(widthController.Data)),
-        //        Mode = BindingMode.TwoWay,
-        //        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-        //    };
-        //    xWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
-        //}
-
 
         private void BindOpacity(DocumentController docController, Context context)
         {

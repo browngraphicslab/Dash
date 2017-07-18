@@ -15,15 +15,14 @@ namespace Dash.Views
 {
     public sealed partial class PositionSettings : UserControl
     {
-        private TextBox _horizontalPositionTextBox;
-        private TextBox _verticalPositionTextBox;
+
         public PositionSettings()
         {
             this.InitializeComponent();
         }
 
-        public PositionSettings(DocumentController editedLayoutDocument, Context context)
-            : this()
+
+        public PositionSettings(DocumentController editedLayoutDocument, Context context): this()
         {
             BindPosition(editedLayoutDocument, context);
         }

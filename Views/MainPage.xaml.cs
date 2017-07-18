@@ -29,7 +29,7 @@ namespace Dash
         private RadialMenuView _radialMenu;
 
 
-        public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
+        public DocumentController MainDocument { get; private set; }
 
         public MainPage()
         {
@@ -42,11 +42,15 @@ namespace Dash
             xOverlayCanvas.OnAddImageTapped += AddImage;
 
             // create the collection document model using a request
+            var fields = new Dictionary<Key, FieldModelController>();
+            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            MainDocument = new DocumentController(fields, new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E"));
             var collectionDocumentController =
-                new CourtesyDocuments.CollectionBox(
-                    new DocumentCollectionFieldModelController(new List<DocumentController>())).Document;
+                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            MainDocument.SetActiveLayout(collectionDocumentController);
+
             // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(collectionDocumentController)
+            MainDocView.DataContext = new DocumentViewModel(MainDocument)
             {
                 IsDetailedUserInterfaceVisible = false,
                 IsMoveable = false
@@ -57,11 +61,8 @@ namespace Dash
             MainDocView.Height = MyGrid.ActualHeight;
 
             // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null,
-                "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
-
-            //TODO this seriously slows down the document 
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
@@ -132,9 +133,7 @@ namespace Dash
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
-            var children =
-                MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey,
-                    new Context()) as DocumentCollectionFieldModelController;
+            var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             children?.AddDocument(docModel);
         }
 
@@ -287,7 +286,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.GetCopy;
+            //e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
@@ -299,12 +298,13 @@ namespace Dash
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
 
-        //private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        //{
-        //    if (!_radialMenu.IsVisible)
-        //        _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
-        //    else _radialMenu.IsVisible = false;
-        //    e.Handled = true;
-        //}
+        private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (!_radialMenu.IsVisible)
+                _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
+            else _radialMenu.IsVisible = false;
+            e.Handled = true;
+        }
+
     }
 }

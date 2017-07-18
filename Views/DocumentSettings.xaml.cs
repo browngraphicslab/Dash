@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -24,8 +23,7 @@ namespace Dash.Views
             this.InitializeComponent();
         }
 
-        public DocumentSettings(DocumentController editedLayoutDocument, Context context)
-            : this()
+        public DocumentSettings(DocumentController editedLayoutDocument, Context context): this()
         {
             xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));

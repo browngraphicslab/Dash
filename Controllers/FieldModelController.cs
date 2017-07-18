@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
-using System.Collections.Generic;
 
 namespace Dash
 {
@@ -57,30 +56,6 @@ namespace Dash
             // Add Events
         }
 
-        private void OutputReferences_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            //// we could fine tune this
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Add:
-            //        break;
-            //    case NotifyCollectionChangedAction.Move:
-            //        break;
-            //    case NotifyCollectionChangedAction.Remove:
-            //        break;
-            //    case NotifyCollectionChangedAction.Replace:
-            //        break;
-            //    case NotifyCollectionChangedAction.Reset:
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-            var freshList = sender as ObservableCollection<ReferenceFieldModelController>;
-            Debug.Assert(freshList != null);
-
-            // Update Local
-            // Update Server
-        }
 
         /// <summary>
         /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
@@ -122,7 +97,7 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.NoWrap,
+                TextWrapping = TextWrapping.NoWrap
             };
 
             bindTextOrSetOnce(textBlock);
