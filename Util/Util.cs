@@ -307,7 +307,7 @@ namespace Dash
         public static async void SendEmail2(string addressTo, string addressFrom, string message, string subject, StorageFile attachment)
         {
             throw new NotImplementedException("THIS WON'T WORK COS YOU HAVE TO INPUT YOUR EMAIL PASSWORD HERE AND I'M NOT GONNA EXPOSE MINE TO EVERYONE IN THE GRAPHICS LAB");
-            /* 
+            ///* 
             using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, "YOUR EMAIL PASSWORD")) // gmail
             {
                 var email = new Windows.ApplicationModel.Email.EmailMessage
@@ -331,7 +331,13 @@ namespace Dash
                 if (result == SmtpResult.OK)
                 {
                     popupMsg = "Sent!"; 
-                } 
+                } else if (result == SmtpResult.AuthenticationFailed)
+                {
+                    popupMsg = "Failed to authenticate email. Check your password and make sure to enable 'Access for less secure apps' on your gmail settings LOL WAHT A PAIN IN THE ASS I KNOW"; 
+                } else
+                {
+                    popupMsg = "Something went wrong :("; 
+                }
 
                 var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
                 await popup.ShowAsync(); 
