@@ -54,7 +54,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;
@@ -62,6 +62,11 @@ namespace Dash
         public override string ToString()
         {
             return $"({Data})";
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new PointFieldModelController(Data);
         }
     }
 }

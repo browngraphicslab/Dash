@@ -24,7 +24,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
 
@@ -59,6 +59,11 @@ namespace Dash
         public override string ToString()
         {
             return Data;
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new TextFieldModelController(Data);
         }
     }
 }

@@ -30,7 +30,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
 
@@ -61,6 +61,11 @@ namespace Dash
         public override string ToString()
         {
             return RichTextData;
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new RichTextFieldModelController(RichTextData);
         }
     }
 }

@@ -17,7 +17,8 @@ namespace Dash
         {
             Add,
             Remove,
-            Replace
+            Replace,
+            Update
         }
 
         public class DocumentFieldUpdatedEventArgs
@@ -25,23 +26,24 @@ namespace Dash
             public readonly FieldUpdatedAction Action;
             public readonly FieldModelController OldValue;
             public readonly FieldModelController NewValue;
-            public readonly ReferenceFieldModelController Reference;
+            public readonly DocumentReferenceController Reference;
+            public readonly Context Context;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, ReferenceFieldModelController reference)
+                FieldUpdatedAction action, DocumentReferenceController reference, Context context)
             {
                 Action = action;
                 OldValue = oldValue;
                 NewValue = newValue;
                 Reference = reference;
+                Context = context;
             }
         }
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
-
-        public ObservableCollection<DocumentController> DocContextList;
+        public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
 
         /// <summary>
@@ -159,7 +161,8 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
-            // if the field contained a DocumentFieldModelController return it's data, otherwise return null
+
+            // if the field contained a DocumentFieldModelController return its data, otherwise return null
             return documentFieldModelController?.Data;
         }
 
@@ -210,11 +213,14 @@ namespace Dash
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            ReferenceFieldModelController reference = new DocumentReferenceController(GetId(), key);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference));
-            field.FieldModelUpdated += delegate (FieldModelController sender)
+            var reference = new DocumentReferenceController(GetId(), key);
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this)));
+            field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference));
+                context = context ?? new Context();
+                context.AddDocumentContext(this);
+                Execute(context, true);
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context));
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -229,14 +235,17 @@ namespace Dash
         ///     key is not found then it returns null.
         /// </summary>
         /// <param name="key"></param>
+        /// <param name="context"></param>
+        /// <param name="ignorePrototype"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key, Context context = null)
+        public FieldModelController GetField(Key key, bool ignorePrototype = false)
         {
-            context = Context.SafeInitAndAddDocument(context, this);
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
-            var firstProtoWithKeyOrNull = GetPrototypeWithFieldKey(key);
+            var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
 
-            return firstProtoWithKeyOrNull?._fields[key];
+            FieldModelController field = null;
+            firstProtoWithKeyOrNull?._fields.TryGetValue(key, out field);
+            return field;
         }
 
 
@@ -263,6 +272,9 @@ namespace Dash
         {
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
+            delegateController.DocumentFieldUpdated += delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
+            DocumentFieldUpdated += delegateController.DocumentController_DocumentFieldUpdated;
+            PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = new DocumentFieldModelController(this);
@@ -274,6 +286,29 @@ namespace Dash
 
             // return the now fully populated delegate
             return delegateController;
+        }
+
+        private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+        {
+            if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
+            {
+                return;
+            }
+            Context c = new Context(args.Context);
+            c.AddDocumentContext(this);
+            //SetField(args.Reference.FieldKey, args.Reference.DereferenceToRoot(c), true);
+        }
+
+        private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+        {
+            if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
+            {
+                return;
+            }
+            Context c = new Context(this);
+            //c.AddDocumentContext(this);
+            DocumentReferenceController reference = new DocumentReferenceController(GetId(), args.Reference.FieldKey);
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c));
         }
 
 
@@ -305,68 +340,13 @@ namespace Dash
             {
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
-                _fields[DashConstants.KeyStore.DelegatesKey] = currentDelegates;
+                SetField(DashConstants.KeyStore.DelegatesKey, currentDelegates, true);
             }
 
             return currentDelegates;
         }
 
-
-        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, Context context = null)
-        {
-            //TODO Remove existing output references and add new output reference
-            //if (InputReferences.ContainsKey(fieldKey))
-            //{
-            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
-            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
-            //}
-            //reference.DocContextList = contextList;  //bcz : TODO This is wrong, but I need to understand input references more to know how to fix it.
-            reference.Context = context;
-            var field = GetField(fieldKey);
-            var refField = reference.DereferenceToRoot(context);
-            var controller = reference.GetDocumentController();
-            //if (field == null)
-            //{
-            //    var op = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-            //    if (op == null)
-            //    {
-            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
-            //    }
-            //    if (!op.Inputs.ContainsKey(fieldKey))
-            //    {
-            //        throw new ArgumentOutOfRangeException($"Key {fieldKey} does not exist in document");
-            //    }
-            //    TypeInfo info = op.Inputs[fieldKey];
-            //    if ((info & refField.TypeInfo) == refField.TypeInfo)
-            //    {
-            //        field = TypeInfoHelper.CreateFieldModelController(refField.TypeInfo);
-            //        SetField(fieldKey, field, true);
-            //    }
-            //    else
-            //    {
-            //        throw new ArgumentException("Invalid types");
-            //    }
-            //}
-            //else
-            //{
-            if (!field.CheckType(refField))
-            {
-                Debug.Assert(!refField.CheckType(field));
-                throw new ArgumentException("Invalid types");
-            }
-
-            field.InputReference = reference;
-            controller.DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
-            {
-                if (args.Reference.FieldKey.Equals(reference.FieldKey))
-                {
-                    Execute();
-                }
-            };
-            Execute();
-        }
-
-        public FieldModelController GetDereferencedField(Key key, Context context = null)
+        public FieldModelController GetDereferencedField(Key key, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
@@ -374,8 +354,9 @@ namespace Dash
         }
 
 
-        private void Execute(Context context = null)
+        public void Execute(Context context, bool update)
         {
+            context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
@@ -383,15 +364,28 @@ namespace Dash
             }
             try
             {
-                opField.Execute(this, context);//TODO Add Document fields updated in addition to the field updated event so that assigning to the field itself instead of data triggers updates
+                var inputs = new Dictionary<Key, FieldModelController>(opField.Inputs.Count);
+                var outputs = new Dictionary<Key, FieldModelController>(opField.Outputs.Count);
+                foreach (var opFieldInput in opField.Inputs.Keys)
+                {
+                    var field = GetField(opFieldInput);
+                    inputs[opFieldInput] = field?.DereferenceToRoot(context);
+                }
+                opField.Execute(inputs, outputs);
+                foreach (var fieldModel in outputs)
+                {
+                    DocumentReferenceController reference = new DocumentReferenceController(GetId(), fieldModel.Key);
+                    context.AddData(reference, fieldModel.Value);
+                    if (update)
+                    {
+                        OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
+                            FieldUpdatedAction.Add, reference, context));
+                    }
+                }
             }
             catch (KeyNotFoundException e)
             {
             }
-            //foreach (var fieldModel in results)
-            //{
-            //    SetField(fieldModel.Key, fieldModel.Value);
-            //}
         }
 
 
@@ -420,7 +414,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context = null)
+        private FrameworkElement makeAllViewUI(Context context)
         {
             var sp = new StackPanel();
             foreach (var f in EnumFields())
@@ -469,9 +463,10 @@ namespace Dash
         }
 
 
-        public FrameworkElement MakeViewUI(Context context = null)
+        public FrameworkElement MakeViewUI(Context context)
         {
             context = context ?? new Context();
+            //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
             context.AddDocumentContext(this);
 
             if (DocumentType == TextingBox.DocumentType)
@@ -510,6 +505,7 @@ namespace Dash
             {
                 return CourtesyDocuments.RichTextBox.MakeView(this, context);
             }
+
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
@@ -531,6 +527,7 @@ namespace Dash
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
             DocumentFieldUpdated?.Invoke(this, args);
+            PrototypeFieldUpdated?.Invoke(this, args);
         }
     }
 }

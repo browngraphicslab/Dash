@@ -15,22 +15,22 @@ namespace Dash.Views
 {
     public sealed partial class PositionSettings : UserControl
     {
-        private TextBox _horizontalPositionTextBox;
-        private TextBox _verticalPositionTextBox;
+
         public PositionSettings()
         {
             this.InitializeComponent();
         }
 
-        public PositionSettings(DocumentController editedLayoutDocument)
-            : this()
+
+        public PositionSettings(DocumentController editedLayoutDocument, Context context): this()
         {
-            BindPosition(editedLayoutDocument);
+            BindPosition(editedLayoutDocument, context);
         }
 
-        private void BindPosition(DocumentController docController)
+        private void BindPosition(DocumentController docController, Context context)
         {
-            var positionController = docController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController; 
+            var fmc = docController.GetField(DashConstants.KeyStore.PositionFieldKey); 
+            var positionController = fmc.DereferenceToRoot<PointFieldModelController>(context);
             Debug.Assert(positionController != null);
 
             var converter = new StringCoordinateToPointConverter(positionController.Data);

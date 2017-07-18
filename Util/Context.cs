@@ -14,7 +14,7 @@ namespace Dash
 
         private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
 
-        public List<DocumentController> DocContextList { get { return _documentContextList.ToList(); } }
+        public HashSet<DocumentController> DocContextList { get { return _documentContextList; } }
 
         public Context()
         {
@@ -22,10 +22,24 @@ namespace Dash
             _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
         }
 
+        public Context(DocumentController initialContext)
+        {
+            _documentContextList = new HashSet<DocumentController>{initialContext};
+            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+        }
+
         public Context(Context copyFrom)
         {
-            _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
-            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
+            if (copyFrom == null)
+            {
+                _documentContextList = new HashSet<DocumentController>();
+                _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+            }
+            else
+            {
+                _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
+                _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
+            }
         }
 
         public void AddDocumentContext(DocumentController document)

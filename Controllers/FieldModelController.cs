@@ -16,43 +16,12 @@ namespace Dash
         ///     on the fieldModel!
         /// </summary>
         public FieldModel FieldModel { get; set; }
-        public delegate void FieldModelUpdatedHandler(FieldModelController sender);
+        public delegate void FieldModelUpdatedHandler(FieldModelController sender, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
-
-        public Context Context = null;
-
-        /// <summary>
-        ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
-        ///     to the server and across the client
-        /// </summary>
-        public ReferenceFieldModelController InputReference
+        protected void OnFieldModelUpdated(Context context = null)
         {
-            get { return FieldModel.InputReference; }
-            set
-            {
-                if (SetProperty(ref FieldModel.InputReference, value))
-                {
-                    // update local
-                    var cont = value.GetDocumentController(value.Context);
-                    cont.DocumentFieldUpdated += delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                    {
-                        if (args.Reference.FieldKey.Equals(value.FieldKey))
-                        {
-                            UpdateValue(args.NewValue);
-                        }
-                    };
-                    UpdateValue(value.DereferenceToRoot(value.Context));
-
-                    // update server
-                }
-            }
-        }
-
-
-        public void FireFieldModelUpdated()
-        {
-            FieldModelUpdated?.Invoke(this);
+            FieldModelUpdated?.Invoke(this, context);
         }
 
         /// <summary>
@@ -87,30 +56,6 @@ namespace Dash
             // Add Events
         }
 
-        private void OutputReferences_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            //// we could fine tune this
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Add:
-            //        break;
-            //    case NotifyCollectionChangedAction.Move:
-            //        break;
-            //    case NotifyCollectionChangedAction.Remove:
-            //        break;
-            //    case NotifyCollectionChangedAction.Replace:
-            //        break;
-            //    case NotifyCollectionChangedAction.Reset:
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-            var freshList = sender as ObservableCollection<ReferenceFieldModelController>;
-            Debug.Assert(freshList != null);
-
-            // Update Local
-            // Update Server
-        }
 
         /// <summary>
         /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
@@ -120,19 +65,19 @@ namespace Dash
             return FieldModel.Id;
         }
 
-        public virtual FieldModelController Dereference(Context context = null)
+        public virtual FieldModelController Dereference(Context context)
         {
             return this;
         }
 
-        public virtual FieldModelController DereferenceToRoot(Context context = null)
+        public virtual FieldModelController DereferenceToRoot(Context context)
         {
             return this;
         }
 
-        public virtual T DereferenceToRoot<T>(Context context = null) where T : FieldModelController
+        public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
         {
-            return this as T;
+            return DereferenceToRoot(context) as T;
         }
 
         /// <summary>
@@ -182,6 +127,13 @@ namespace Dash
         public override int GetHashCode()
         {
             return FieldModel.GetHashCode();
+        }
+
+        public abstract FieldModelController Copy();
+
+        public T Copy<T>() where T : FieldModelController
+        {
+            return Copy() as T;
         }
 
         public abstract FieldModelController GetDefaultController();

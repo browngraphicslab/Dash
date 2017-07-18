@@ -12,9 +12,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
-using System.Collections.ObjectModel;
-using Newtonsoft.Json;
-using Windows.UI.Xaml.Media.Animation;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -73,6 +70,7 @@ namespace Dash
 
             Tapped += OnTapped;
         }
+
 
         private void SetUpMenu()
         {
@@ -347,7 +345,6 @@ namespace Dash
         {
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
-
 
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {

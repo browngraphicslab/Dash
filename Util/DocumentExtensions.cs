@@ -14,9 +14,9 @@ namespace Dash
         /// </summary>
         public static void AddLayoutToLayoutList(this DocumentController doc, DocumentController newLayoutController)
         {
-            var layoutList = doc.GetLayoutList();
+            var layoutList = doc.GetLayoutList(null);
             // if the layoutlist contains the new layout do nothing
-            if (new HashSet<DocumentController>(layoutList.GetDocuments()).Contains(newLayoutController))
+            if (layoutList.GetDocuments().Contains(newLayoutController))
             {
                 return;
             }
@@ -28,10 +28,10 @@ namespace Dash
         /// <summary>
         /// Gets the layout list which should always be in the deepestPrototype for the document
         /// </summary>
-        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context = null)
+        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
-            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey, context) as DocumentCollectionFieldModelController;
+            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
             
             if (layoutList == null)
             {
