@@ -65,7 +65,7 @@ namespace Dash
             //EditButton.Content = FreeformView.MainFreeformView.ViewModel.IsEditorMode ? "STOP" : "EDIT";
         }
 
-        public void OpenInterfaceBuilder(DocumentViewModel vm, Point position)
+        public void OpenInterfaceBuilder(DocumentController vm, Point position)
         {
             var interfaceBuilder = new InterfaceBuilder(vm)
             {

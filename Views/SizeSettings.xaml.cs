@@ -30,16 +30,17 @@ namespace Dash.Views
             this.InitializeComponent();
         }
 
-        public SizeSettings(DocumentController editedLayoutDocument, IEnumerable<DocumentController> docContextList) : this()
+        public SizeSettings(DocumentController editedLayoutDocument, Context context) : this()
         {
-            BindWidth(editedLayoutDocument, docContextList);
-            BindHeight(editedLayoutDocument, docContextList);
+            BindWidth(editedLayoutDocument, context);
+            BindHeight(editedLayoutDocument, context);
         }
 
-        private void BindHeight(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindHeight(DocumentController docController, Context context)
         {
             var fmc = docController.GetField(DashConstants.KeyStore.HeightFieldKey);
-            var heightController = DocumentController.GetDereferencedField(fmc, fmc.Context) as NumberFieldModelController;
+            var heightController =
+                fmc.DereferenceToRoot<NumberFieldModelController>(context);
             Debug.Assert(heightController != null);
 
             var heightBinding = new Binding
@@ -53,10 +54,10 @@ namespace Dash.Views
 
         }
 
-        private void BindWidth(DocumentController docController, IEnumerable<DocumentController> docContextList)
+        private void BindWidth(DocumentController docController, Context context)
         {
             var fmc = docController.GetField(DashConstants.KeyStore.WidthFieldKey);
-            NumberFieldModelController widthController = DocumentController.GetDereferencedField(fmc, fmc.Context) as NumberFieldModelController;
+            NumberFieldModelController widthController = fmc.DereferenceToRoot<NumberFieldModelController>(context);
             Debug.Assert(widthController != null);
 
             var widthBinding = new Binding

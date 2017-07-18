@@ -54,5 +54,10 @@ namespace Dash
         {
             textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
         }
+
+        public override FieldModelController Copy()
+        {
+            return new DocumentFieldModelController(Data);
+        }
     }
 }

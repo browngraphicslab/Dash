@@ -21,9 +21,8 @@ namespace Dash
         {
             Debug.Assert(docController.DocumentType == CourtesyDocuments.ImageBox.DocumentType, "You can only create image settings for an ImageBox");
 
-            var docContextList = context.DocContextList; 
-            xSizeRow.Children.Add(new SizeSettings(docController, docContextList));
-            xPositionRow.Children.Add(new PositionSettings(docController, docContextList));
+            xSizeRow.Children.Add(new SizeSettings(docController, context));
+            xPositionRow.Children.Add(new PositionSettings(docController, context));
             BindOpacity(docController, context);
             //BindWidth(docController, docContextList);
             //BindHeight(docController, docContextList);

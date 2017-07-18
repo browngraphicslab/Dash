@@ -71,9 +71,8 @@ namespace Dash
             //    RightButton
             //};
 
-            var docContextList = context.DocContextList; 
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument,docContextList));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument,docContextList));
+            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
             //BindWidth(editedLayoutDocument, docContextList);
             //BindHeight(editedLayoutDocument, docContextList);
             //BindPosition(editedLayoutDocument, docContextList);
