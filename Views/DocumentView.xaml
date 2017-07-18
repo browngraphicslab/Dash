@@ -10,7 +10,8 @@
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
     Width="{Binding Width}"
     Height="{Binding Height}"
-    PointerPressed="UserControl_PointerPressed">
+    PointerPressed="UserControl_PointerPressed"
+    PointerWheelChanged="This_PointerWheelChanged">
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
