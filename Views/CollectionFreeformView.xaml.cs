@@ -73,31 +73,24 @@ namespace Dash
 
         public void StartDrag(OperatorView.IOReference ioReference)
         {
-            Debug.WriteLine("number of shit in this hashset " + _currentPointers.Count);
-
-            Debug.WriteLine("1");
+            Debug.Write("1");
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
-            Debug.WriteLine("2");
+            Debug.Write("2");
 
-            if (ioReference.PointerArgs == null)
-                return;
+            if (ioReference.PointerArgs == null) return;
 
-            Debug.WriteLine("2.5");
-
-            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId))
-                return;
+            if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
             parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
 
-            Debug.WriteLine("3");
+            Debug.Write("3");
 
-            Debug.WriteLine("pointer id added " + ioReference.PointerArgs.Pointer.PointerId);
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
             _connectionLine = new Windows.UI.Xaml.Shapes.Path
@@ -119,7 +112,6 @@ namespace Dash
             }
             catch (COMException ex)
             {
-                Debug.WriteLine(ex.HResult);
             }
 
             _lineBinding =
@@ -157,7 +149,6 @@ namespace Dash
 
         public void CancelDrag(Pointer p)
         {
-            Debug.WriteLine("pointer id removed CANCELDRAG " + p.PointerId);
             _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
@@ -174,7 +165,6 @@ namespace Dash
             //{
             //    return;
             //}
-            Debug.WriteLine("pointer id removed ENDDRAG " + ioReference.PointerArgs.Pointer.PointerId);
             _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
