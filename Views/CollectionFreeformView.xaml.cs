@@ -183,6 +183,8 @@ namespace Dash
                 UndoLine();
                 return;
             }
+            if (_currReference.ReferenceFieldModelController == null) return; 
+
             Context context = (DataContext as CollectionViewModel).DocumentContext;
             string outId;
             string inId;
@@ -275,6 +277,9 @@ namespace Dash
                 _bezier = new BezierSegment();
                 _figure.Segments.Add(_bezier);
                 _col.Add(_figure);
+                
+                Pos2 = Element1.TransformToVisual(ToElement)
+                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
             }
             public FrameworkElement Element1 { get; set; }
             public FrameworkElement Element2 { get; set; }
@@ -287,11 +292,9 @@ namespace Dash
             {
                 var pos1 = Element1.TransformToVisual(ToElement)
                     .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
-                var pos2 = Element2?.TransformToVisual(ToElement)
-                               .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
 
-                Debug.WriteLine("start pos " + pos1.X + " " + pos1.Y);
-                Debug.WriteLine("end pos " + pos2.X + " " + pos2.Y);
+                var pos2 = Element2?.TransformToVisual(ToElement)
+                            .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
 
                 double offset = Math.Abs((pos1.X - pos2.X) / 3);
                 if (pos1.X < pos2.X)
