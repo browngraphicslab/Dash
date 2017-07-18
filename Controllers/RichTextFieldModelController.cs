@@ -30,7 +30,10 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                if (RichTextData != value)
+                {
+                    FireFieldModelUpdated();
+                }
             }
         }
 
