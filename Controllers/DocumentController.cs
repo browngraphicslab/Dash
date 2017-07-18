@@ -425,7 +425,10 @@ namespace Dash
             var sp = new StackPanel();
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) || f.Key.Equals(DashConstants.KeyStore.PrototypeKey))
+                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) || 
+                    f.Key.Equals(DashConstants.KeyStore.PrototypeKey) || 
+                    f.Key.Equals(DashConstants.KeyStore.LayoutListKey) || 
+                    f.Key.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
                     continue;
                 }

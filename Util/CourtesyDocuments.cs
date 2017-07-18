@@ -906,13 +906,14 @@ namespace Dash {
 
             public DocumentController LayoutDoc { get; private set; }
 
-            public FreeFormDocument(DocumentController dataDocument)
+            public FreeFormDocument(DocumentController dataDocument, Point position = new Point(), Size size = new Size())
             {
                 Document = dataDocument;
                 LayoutDoc = GetPrototype().MakeDelegate();
-                SetLayoutsCollectionField(LayoutDoc, new List<DocumentController>(), true);
-                SetLayoutForDocument(dataDocument, LayoutDoc, true);
-                //Document.SetFields(fields, true); //TODO add fields to constructor parameters
+                var fields = DefaultLayoutFields(position, size,
+                    new DocumentCollectionFieldModelController(new List<DocumentController>()));
+                SetLayoutForDocument(Document, LayoutDoc, true);
+                Document.SetFields(fields, true); //TODO add fields to constructor parameters
             }
 
             protected override DocumentController GetPrototype()
@@ -929,7 +930,7 @@ namespace Dash {
             {
                 var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
-                var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormCollectionDocumentType, PrototypeId);
+                var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormDocumentLayout, PrototypeId);
                 return prototypeDocument;
             }
 
