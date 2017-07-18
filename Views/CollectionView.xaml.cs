@@ -27,7 +27,7 @@ namespace Dash
         public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.001f;
-        public Rect Bounds = new Rect(0, 0, 5000, 5000);
+        public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
 
         // whether the user can draw links currently or not
         public bool CanLink

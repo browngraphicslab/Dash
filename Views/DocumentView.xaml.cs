@@ -393,6 +393,18 @@ namespace Dash
             ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
         }
 
+        private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var point = e.GetCurrentPoint(ParentCollection);
+            var scaleSign = point.Properties.MouseWheelDelta / 120.0f;
+            var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
+            var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
+            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
+                                                              ViewModel.GroupTransform.ScaleCenter,
+                                                              newScale);
+        }
+
         private void OpenLayout()
         {
             MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);

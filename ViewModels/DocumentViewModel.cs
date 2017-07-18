@@ -180,14 +180,13 @@ namespace Dash
             c.AddDocumentContext(DocumentController);
             // FIELD FETCHERS
             // overrides defaults with document fields if layout-relevant fields are set
-
-            var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
+            var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, c) as DocumentFieldModelController)?.Data;
 
             if (layoutDocController == null)
                 layoutDocController = documentController;
 
-            SetupTransformGroupFieldModelControllers(layoutDocController, context);
-            SetupSizeFieldModelControllers(layoutDocController, context);
+            SetupTransformGroupFieldModelControllers(layoutDocController, c);
+            SetupSizeFieldModelControllers(layoutDocController, c);
 
             // set icon via field 
             var iconFieldModelController = DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, context) as NumberFieldModelController;
@@ -305,7 +304,7 @@ namespace Dash
             var posFieldModelController = sender as PointFieldModelController;
             if (posFieldModelController != null)
             {
-                GroupTransform.Translate = posFieldModelController.Data;
+                GroupTransform = new TransformGroupData(posFieldModelController.Data, GroupTransform.ScaleCenter, GroupTransform.ScaleAmount);
             }
         }
 
@@ -314,7 +313,7 @@ namespace Dash
             var scaleCenterFieldModelController = sender as PointFieldModelController;
             if (scaleCenterFieldModelController != null)
             {
-                GroupTransform.ScaleCenter = scaleCenterFieldModelController.Data;
+                GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleCenterFieldModelController.Data, GroupTransform.ScaleAmount);
             }
         }
 
@@ -323,7 +322,7 @@ namespace Dash
             var scaleAmountFieldModelController = sender as PointFieldModelController;
             if (scaleAmountFieldModelController != null)
             {
-                GroupTransform.ScaleAmount = scaleAmountFieldModelController.Data;
+                GroupTransform = new TransformGroupData(GroupTransform.Translate, GroupTransform.ScaleCenter, scaleAmountFieldModelController.Data);
             }
         }
 

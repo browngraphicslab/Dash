@@ -7,16 +7,11 @@ using Windows.Foundation;
 
 namespace Dash
 {
-    public class TransformGroupData
+    public struct TransformGroupData
     {
         public Point Translate { get; set; }
         public Point ScaleCenter { get; set; }
         public Point ScaleAmount { get; set; }
-
-        public TransformGroupData()
-        {
-
-        }
 
         public TransformGroupData(Point translate, Point scaleCenter, Point scaleAmount)
         {
