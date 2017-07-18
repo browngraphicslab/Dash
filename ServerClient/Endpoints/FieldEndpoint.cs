@@ -77,8 +77,9 @@ namespace Dash
             }
         }
 
-        public Result DeleteField(string id)
+        public Result DeleteField(FieldModel fieldToDelete)
         {
+            string id = fieldToDelete.Id;
             try
             {
                 _connection.Delete($"api/Field/{id}");

@@ -67,15 +67,20 @@ namespace Dash
             DisplayDocument(jsonDoc);
             _radialMenu = new RadialMenuView(xCanvas);
 
-            asyncyboy();
+            testServer();
         }
 
-        async void asyncyboy() {
-            ServerEndpoint servyboy = new ServerEndpoint();
-            FieldEndpoint fieldyboy = new FieldEndpoint(servyboy);
-            var controllyboy = await fieldyboy.AddField(new TextFieldModel("boy"));
-            var resultyboy = controllyboy.Content as TextFieldModelController;
-            Debug.WriteLine("result is:" + resultyboy.Data);
+        async void testServer() {
+            ServerEndpoint serverEndpoint = new ServerEndpoint();
+            FieldEndpoint fieldEndpoint = new FieldEndpoint(serverEndpoint);
+            DocumentEndpoint docEndpoint = new DocumentEndpoint(serverEndpoint);
+
+            // test that adding text fields to server works
+            string data = "boy";
+            var result = (await fieldEndpoint.AddField(new TextFieldModel(data))).Content as TextFieldModelController;
+            Debug.Assert(result.Data.Equals(data));
+            
+
         }
 
         public void AddOperator()

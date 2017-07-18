@@ -40,53 +40,37 @@ namespace DashWebServer.Controllers
         public async Task<IActionResult> Post([FromBody]DocumentModel docModel)
         {
             DocumentModel DocModel;
-            try
-            {
+            try {
                 // add the shape model to the documentRepository
                 DocModel = await _documentRepository.AddItemAsync(docModel);
             }
-            catch (DocumentClientException e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(DocModel);
         }
 
-        // PUT api/document/5, pushes updates of a given DocumentModel into the server?
+        // PUT api/document, pushes updates of a given DocumentModel into the server?
         [HttpPut]
         public async Task<IActionResult> Put([FromBody]DocumentModel docModel)
         {
             DocumentModel DocModel;
-            try
-            {
+            try {
                 DocModel = await _documentRepository.UpdateItemAsync(docModel);
             }
-            catch (DocumentClientException e) // TODO: verify this is the right error to check for
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-            catch (Exception e)
-            {
+            catch (Exception e) {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(DocModel);
         }
-
-        // DELETE api/document/5, sends OK on success
+        
+        // DELETE api/document/5, deletes a document of the given id sends OK on success
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(DocumentModel docModel)
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {
-               await _documentRepository.DeleteItemAsync<DocumentModel>(docModel);
-            }
-            catch (DocumentClientException e)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<DocumentModel>(id));
             }
             catch (Exception e)
             {
@@ -94,5 +78,6 @@ namespace DashWebServer.Controllers
             }
             return Ok();
         }
+
     }
 }

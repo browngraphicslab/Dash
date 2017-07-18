@@ -69,8 +69,9 @@ namespace Dash
             }
         }
 
-        public Result DeleteDocument(string id)
+        public Result DeleteDocument(DocumentModel document)
         {
+            string id = document.Id;
             try
             {
                 _connection.Delete($"api/Document/{id}");
