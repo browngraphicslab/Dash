@@ -66,6 +66,7 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+
             Tapped += OnTapped;
             DoubleTapped += OnDoubleTapped;
         }
@@ -288,6 +289,7 @@ namespace Dash
             if (Width < MinWidth + pad && Height < MinHeight + pad)
             {
                 updateIcon();
+
                 XGrid.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
                 xBorder.Visibility = Visibility.Collapsed;
