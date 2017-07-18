@@ -321,45 +321,6 @@ namespace Dash
             return currentDelegates;
         }
 
-
-        public virtual void AddInputReference(Key fieldKey, ReferenceFieldModelController reference, Context context)
-        {
-            //TODO Remove existing output references and add new output reference
-            //if (InputReferences.ContainsKey(fieldKey))
-            //{
-            //    FieldModel fm = docEndpoint.GetFieldInDocument(InputReferences[fieldKey]);
-            //    fm.RemoveOutputReference(new ReferenceFieldModel {DocId = Id, Key = fieldKey});
-            //}
-            //Debug.WriteLine($"adding reference to {GetId()}");
-            //Debug.WriteLine($"reference w/o context is {reference.GetDocumentController(null).GetId()}");
-            //Debug.WriteLine($"reference is {reference.GetDocumentController(context).GetId()}");
-            var field = GetField(fieldKey, true);
-            var protoField = GetField(fieldKey);
-            var refField = reference.DereferenceToRoot(context);
-            var dereferencedField = protoField.DereferenceToRoot(context);
-            DocumentController controller = reference.GetDocumentController(context);
-
-            //if (!dereferencedField.CheckType(refField))
-            //{
-            //    Debug.Assert(!refField.CheckType(dereferencedField));//Make sure check field is commutative
-            //    throw new ArgumentException("Invalid types");
-            //}
-            if (field == null)
-            {
-                field = protoField.Copy();
-                SetField(fieldKey, field, true);
-            }
-            field.SetInputReference(reference, context);
-            controller.DocumentFieldUpdated += delegate (DocumentFieldUpdatedEventArgs args)
-            {
-                if (args.Reference.FieldKey.Equals(reference.FieldKey))
-                {
-                    Execute(args.Context, true);
-                }
-            };
-            Execute(context, true);
-        }
-
         public FieldModelController GetDereferencedField(Key key, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, this);

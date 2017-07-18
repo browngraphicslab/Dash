@@ -194,18 +194,8 @@ namespace Dash
 
             DocumentController inputController =
                 inputReference.ReferenceFieldModelController.GetDocumentController(null);
-            if (!outputReference.IsReference || inputReference.IsReference)
-            {
                 inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
                     outputReference.ReferenceFieldModelController, true);
-            }
-            else
-            {
-                inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
-                    outputReference.ReferenceFieldModelController, true);
-                //inputController.AddInputReference(inputReference.ReferenceFieldModelController.FieldKey,
-                    //outputReference.ReferenceFieldModelController, null);
-            }
 
             if (!ioReference.IsOutput && _connectionLine != null)
             {

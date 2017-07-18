@@ -16,11 +16,5 @@ namespace Dash
             // Add Any Events
         }
 
-
-        /// <summary>
-        ///     Optional reference to a separate <see cref="FieldModel" /> that this <see cref="FieldModel" /> takes as input
-        /// </summary>
-        public ReferenceFieldModel InputReference;
-
     }
 }

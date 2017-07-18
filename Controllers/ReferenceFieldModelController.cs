@@ -104,11 +104,6 @@ namespace Dash
             return DereferenceToRoot(context) as T;
         }
 
-        public override void SetInputReference(ReferenceFieldModelController reference, Context context)
-        {
-            InputReference = reference;
-        }
-
         public override FrameworkElement GetTableCellView()
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);

@@ -20,47 +20,6 @@ namespace Dash
         public delegate void FieldModelUpdatedHandler(FieldModelController sender, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
-
-        private ReferenceFieldModelController _inputReference;
-        /// <summary>
-        ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
-        ///     to the server and across the client
-        /// </summary>
-        public ReferenceFieldModelController InputReference
-        {
-            get { return _inputReference; }
-            protected set
-            {
-                if (SetProperty(ref FieldModel.InputReference, value.ReferenceFieldModel))
-                {
-                    _inputReference = value;
-                }
-            }
-        }
-
-        public virtual void SetInputReference(ReferenceFieldModelController reference, Context context)
-        {
-            var c = new Context(context);
-            InputReference = reference;
-            // update local
-            var cont = reference.GetDocumentController(c);
-            cont.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
-            {
-                if (args.Reference.FieldKey.Equals(reference.FieldKey))
-                {
-                    UpdateValue(args.Reference.DereferenceToRoot(args.Context));
-                }
-            };
-            var fmc = reference.DereferenceToRoot(c);
-            if (fmc != null)
-            {
-                UpdateValue(fmc);
-            }
-
-            // update server
-        }
-
-
         protected void OnFieldModelUpdated(Context context = null)
         {
             FieldModelUpdated?.Invoke(this, context);
@@ -138,7 +97,7 @@ namespace Dash
 
         public virtual FieldModelController DereferenceToRoot(Context context)
         {
-            return InputReference != null ? InputReference.DereferenceToRoot(context) : this;
+            return this;
         }
 
         public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
