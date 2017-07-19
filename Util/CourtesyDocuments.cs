@@ -309,7 +309,8 @@ namespace Dash {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 var opfmc = (data as ReferenceFieldModelController);
                 OperatorView opView = new OperatorView { DataContext = opfmc };
-                return opView;
+                if (isInterfaceBuilderLayout) return opView;
+                return new SelectableContainer(opView, docController);
             }
         }
 
@@ -352,6 +353,10 @@ namespace Dash {
                 if (docwidthController != null)
                     BindWidth(docView, docwidthController);
 
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(docView, docController);
+                }
                 return docView;
                 //*/ 
 
@@ -864,6 +869,10 @@ namespace Dash {
                 var opacityController = GetOpacityField(docController, context);
                 BindOpacity(image, opacityController);
 
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(image, docController);
+                }
                 return image;
             }
 
@@ -1043,6 +1052,10 @@ namespace Dash {
 
                     var view = new CollectionView(collectionViewModel);
                     view.Opacity = opacityValue;
+                    if (isInterfaceBuilderLayout)
+                    {
+                        return new SelectableContainer(view, docController);
+                    }
                     return view;
                 }
                 return new Grid();
@@ -1101,7 +1114,10 @@ namespace Dash {
                         LayoutDocuments(sender, args.Context, grid, isInterfaceBuilderLayout);
                     }
                 };
-
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(grid, docController);
+                }
                 return grid;
             }
 
@@ -1168,6 +1184,10 @@ namespace Dash {
                 var widthController = GetWidthField(docController, context);
                 BindWidth(rtv, widthController);
 
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(rtv, docController);
+                }
                 return rtv;
             }
 
@@ -1250,7 +1270,11 @@ namespace Dash {
                         CreateStack(context, stack, stackFieldData, isInterfaceBuilderLayout);
                     };
                 }
-                
+
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(stack, docController);
+                }
                 return stack;
             }
 
@@ -1293,7 +1317,10 @@ namespace Dash {
                         BindTranslation(item, posController);
                         stack.Children.Add(item);
                     }
-               
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(stack, docController);
+                }
                 return stack;
             }
         }
@@ -1855,6 +1882,10 @@ namespace Dash {
                 collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
 
                 // return all results
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(containerGrid, docController);
+                }
                 return containerGrid;
             }
         }
