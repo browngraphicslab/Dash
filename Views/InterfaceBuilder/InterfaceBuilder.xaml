@@ -16,6 +16,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <ListView x:Name ="BreadcrumbListView" HorizontalAlignment="Stretch" VerticalAlignment="Top"
@@ -53,6 +54,12 @@
                 <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
                   Background="White" BorderBrush="Black" BorderThickness="1,0,0,0" />
             </Grid>
+            
+            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                <Button Content="🖹" Width="50" Height="50" ></Button>
+                <Button Content="▦" Width="50" Height="50" ></Button>
+                <Button Content="⌗" Width="50" Height="50" ></Button>
+            </StackPanel>
         </Grid>
     </local:WindowTemplate.InnerContent>
 </local:WindowTemplate>
