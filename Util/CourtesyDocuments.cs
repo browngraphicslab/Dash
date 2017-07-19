@@ -1119,7 +1119,9 @@ namespace Dash
                 Document = GetLayoutPrototype().MakeDelegate();
                 var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
                 var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
-                Document.SetFields(fields, true); //TODO add fields to constructor parameters                
+                Document.SetFields(fields, true); //TODO add fields to constructor parameters     
+
+                //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
             }
 
             public FreeFormDocument() : this(new List<DocumentController>()) { }

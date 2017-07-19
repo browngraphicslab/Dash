@@ -54,11 +54,11 @@
                 <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
                   Background="White" BorderBrush="Black" BorderThickness="1,0,0,0" />
             </Grid>
-            
-            <StackPanel Orientation="Horizontal" Grid.Row="2">
-                <Button Content="🖹" Width="50" Height="50" ></Button>
-                <Button Content="▦" Width="50" Height="50" ></Button>
-                <Button Content="⌗" Width="50" Height="50" ></Button>
+
+            <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
+                <Button Content="🖹" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center" FontSize="25"></Button>
+                <Button Content="▦" Width="45" Height="45" Margin="5" VerticalContentAlignment="Center" FontSize="25"></Button>
+                <Button Content="⊡" Width="45" Height="45" Margin="5" VerticalContentAlignment="Center" FontSize="25"></Button>
             </StackPanel>
         </Grid>
     </local:WindowTemplate.InnerContent>
