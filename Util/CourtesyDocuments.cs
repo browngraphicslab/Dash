@@ -49,15 +49,12 @@ namespace Dash {
                 }
                 return fieldModelController;
             }
+
             /// <summary>
             /// Sets the active layout on the <paramref name="dataDocument"/> to the passed in <paramref name="layoutDoc"/>
             /// </summary>
-            protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool addToLayoutList) {
-                if (addToLayoutList)
-                {
-                    dataDocument.AddLayoutToLayoutList(layoutDoc);
-                }
-                dataDocument.SetActiveLayout(layoutDoc);
+            protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList) {
+                dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
             }
 
             [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
@@ -276,13 +273,6 @@ namespace Dash {
                 doc.SetPrototypeActiveLayout(newLayout);
                 return newLayout;
             }
-
-            public void CreateAndSetFreeFormActiveLayout(Point position, Size size)
-            {
-                var layoutDoc = new FreeFormDocument(Document, position, size).Document;
-                //Document.SetActiveLayout(layoutDoc, true);
-            }
-
         }
 
         /// <summary>
@@ -1054,16 +1044,17 @@ namespace Dash {
 
         public class FreeFormDocument : CourtesyDocument
         {
-            public static string PrototypeId = "A5614540-0A50-40F3-9D89-965B8948F2A2";
+            private static string PrototypeId = "A5614540-0A50-40F3-9D89-965B8948F2A2";
 
-            public FreeFormDocument(DocumentController dataDocument, Point position = new Point(), Size size = new Size())
+            public FreeFormDocument(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
             {
                 Document = GetLayoutPrototype().MakeDelegate();
                 var fields = DefaultLayoutFields(position, size,
-                    new DocumentCollectionFieldModelController(new List<DocumentController>()));
+                    new DocumentCollectionFieldModelController(layoutDocuments));
                 Document.SetFields(fields, true); //TODO add fields to constructor parameters
-                SetLayoutForDocument(dataDocument, Document, true);
             }
+
+            public FreeFormDocument() : this(new List<DocumentController>()) {}
 
             protected override DocumentController GetLayoutPrototype()
             {
@@ -1103,26 +1094,11 @@ namespace Dash {
                 return grid;
             }
 
-            private static DocumentCollectionFieldModelController GetLayoutsCollectionField(DocumentController docController, Context context = null)
+            private static DocumentCollectionFieldModelController GetLayoutsCollectionField(DocumentController docController, Context context)
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.DataKey)?
                     .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            }
-
-            private static void SetLayoutsCollectionField(DocumentController layoutDocument, IList<DocumentController> layoutDocuments,
-                bool forceMask, Context context = null)
-            {
-                var currentLayoutCollections = GetLayoutsCollectionField(layoutDocument, context);
-
-                if (currentLayoutCollections == null)
-                {
-                    currentLayoutCollections = new DocumentCollectionFieldModelController(layoutDocuments);
-                }
-
-                // TODO make sure if these are reference equal it just returns
-                layoutDocument.SetField(DashConstants.KeyStore.DataKey, currentLayoutCollections, forceMask); // set the field here so that forceMask is respected
-                currentLayoutCollections.SetDocuments(layoutDocuments.ToList());
             }
         }
 
@@ -1134,7 +1110,7 @@ namespace Dash {
             {
                 var fields = DefaultLayoutFields(x, y, w, h, refToRichText);
                 Document = new DocumentController(fields, DocumentType);
-                SetLayoutForDocument(Document, Document, true);
+                SetLayoutForDocument(Document, Document, forceMask: true, addToLayoutList: true);
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
@@ -1326,7 +1302,7 @@ namespace Dash {
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 
-                SetLayoutForDocument(Document, docLayout, true); // this is the only call which makes postit a courtesy document
+                SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true); // this is the only call which makes postit a courtesy document
             }
 
             protected override DocumentController GetLayoutPrototype()
@@ -1455,7 +1431,7 @@ namespace Dash {
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0,0)), true);
                 docLayout.SetField(new Key("opacity", "opacity"), new NumberFieldModelController(0.8), true);
-                SetLayoutForDocument(Document, docLayout, true);
+                SetLayoutForDocument(Document, docLayout, forceMask: true, addToLayoutList: true);
                 
             }
 
@@ -1498,7 +1474,7 @@ namespace Dash {
 
                 var stackPan = new StackingPanel(new DocumentController[] { tBox, imBox1, tBox2 }, false).Document;
 
-                SetLayoutForDocument(Document, stackPan, true);
+                SetLayoutForDocument(Document, stackPan, forceMask: true, addToLayoutList: true);
             }
 
             protected override DocumentController GetLayoutPrototype()
@@ -1549,7 +1525,7 @@ namespace Dash {
 
                 var stackPan = new StackingPanel(new[] { tBox1, tBox2, tBox3, tBox4, tBox5, tBox6 }, false).Document;
 
-                SetLayoutForDocument(Document, stackPan, true);
+                SetLayoutForDocument(Document, stackPan, forceMask: true, addToLayoutList: true);
             }
 
             protected override DocumentController GetLayoutPrototype()
