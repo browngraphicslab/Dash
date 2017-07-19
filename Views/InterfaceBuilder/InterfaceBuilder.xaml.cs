@@ -23,15 +23,7 @@ namespace Dash
         /// </summary>
         private DocumentView _documentView;
 
-        ///// <summary>
-        ///// Courtesy document that manages getting the necessary layout fields to edit the document's layout
-        ///// </summary>
-        //private LayoutCourtesyDocument _layoutCourtesyDocument;
-
-        //private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
-
         private DocumentController _documentController;
-
 
         public InterfaceBuilder(DocumentController docController, int width = 800, int height = 500)
         {

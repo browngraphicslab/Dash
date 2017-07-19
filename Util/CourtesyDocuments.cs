@@ -1049,9 +1049,9 @@ namespace Dash {
             public FreeFormDocument(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
             {
                 Document = GetLayoutPrototype().MakeDelegate();
-                var fields = DefaultLayoutFields(position, size,
-                    new DocumentCollectionFieldModelController(layoutDocuments));
-                Document.SetFields(fields, true); //TODO add fields to constructor parameters
+                var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
+                var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
+                Document.SetFields(fields, true); //TODO add fields to constructor parameters                
             }
 
             public FreeFormDocument() : this(new List<DocumentController>()) {}
@@ -1083,18 +1083,38 @@ namespace Dash {
             {
                 
                 var grid = new Grid();
-                var layoutDocuments = GetLayoutsCollectionField(docController, context).GetDocuments();
-  
-                foreach (var layoutDocument in layoutDocuments)
+                LayoutDocuments(docController, context, grid);
+
+                docController.DocumentFieldUpdated += delegate(DocumentController sender,
+                    DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
-                    var layoutView = layoutDocument.MakeViewUI(context);
-                    grid.Children.Add(layoutView);
-                }
+                    if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                    {
+                        LayoutDocuments(sender, context, grid);
+                    }
+                };
 
                 return grid;
             }
 
-            private static DocumentCollectionFieldModelController GetLayoutsCollectionField(DocumentController docController, Context context)
+            private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
+            {
+                var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
+                grid.Children.Clear();
+                foreach (var layoutDocument in layoutDocuments)
+                {
+                    var layoutView = layoutDocument.MakeViewUI(context);
+                    layoutView.HorizontalAlignment = HorizontalAlignment.Left;
+                    layoutView.VerticalAlignment = VerticalAlignment.Top;
+
+                    var positionField = layoutDocument.GetPositionField(context);
+                    BindTranslation(layoutView, positionField);
+
+                    grid.Children.Add(layoutView);
+                }
+            }
+
+            private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
             {
                 context = Context.SafeInitAndAddDocument(context, docController);
                 return docController.GetField(DashConstants.KeyStore.DataKey)?
