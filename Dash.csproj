@@ -265,6 +265,9 @@
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditableFieldFrame.cs" />
+    <Compile Include="Views\EmailView.xaml.cs">
+      <DependentUpon>EmailView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GuideLineView.xaml.cs">
       <DependentUpon>GuideLineView.xaml</DependentUpon>
     </Compile>
@@ -475,6 +478,10 @@
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\EmailView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\GuideLineView.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -13,17 +13,17 @@ namespace Dash
         public override TransformGroup ConvertDataToXaml(TransformGroupData data, object parameter = null)
         {
             var group = new TransformGroup();
-            group.Children.Add(new TranslateTransform
-            {
-                X = data.Translate.X,
-                Y = data.Translate.Y
-            });
             group.Children.Add(new ScaleTransform
             {
                 CenterX = data.ScaleCenter.X,
                 CenterY = data.ScaleCenter.Y,
                 ScaleX = data.ScaleAmount.X,
                 ScaleY = data.ScaleAmount.Y
+            });
+            group.Children.Add(new TranslateTransform
+            {
+                X = data.Translate.X,
+                Y = data.Translate.Y
             });
             return group;
         }

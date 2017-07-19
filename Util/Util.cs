@@ -13,6 +13,8 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
+using LightBuzz.SMTP;
+
 
 namespace Dash
 {
@@ -299,6 +301,48 @@ namespace Dash
 
 
             await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
+        }
+
+        // TODO at some point make a xaml page where user can input address password email message subject etc so that we don't need it in code 
+        public static async void SendEmail2(string addressTo, string addressFrom, string message, string subject, StorageFile attachment)
+        {
+            throw new NotImplementedException("THIS WON'T WORK COS YOU HAVE TO INPUT YOUR EMAIL PASSWORD HERE AND I'M NOT GONNA EXPOSE MINE TO EVERYONE IN THE GRAPHICS LAB");
+            ///* 
+            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, "YOUR EMAIL PASSWORD")) // gmail
+            {
+                var email = new Windows.ApplicationModel.Email.EmailMessage
+                {
+                    Subject = subject, Body = message 
+                };
+
+                email.To.Add(new Windows.ApplicationModel.Email.EmailRecipient(addressTo));
+                // TODO add CC? and BCC??  
+                
+                if (attachment != null)
+                {
+                    var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachment);
+                    email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachment.Name, stream));
+                }
+                SmtpResult result = await client.SendMailAsync(email);
+                
+                //Debug.WriteLine("SMPT RESULT: " + result.ToString());
+
+                string popupMsg = "D:"; 
+                if (result == SmtpResult.OK)
+                {
+                    popupMsg = "Sent!"; 
+                } else if (result == SmtpResult.AuthenticationFailed)
+                {
+                    popupMsg = "Failed to authenticate email. Check your password and make sure to enable 'Access for less secure apps' on your gmail settings LOL WAHT A PAIN IN THE ASS I KNOW"; 
+                } else
+                {
+                    popupMsg = "Something went wrong :("; 
+                }
+
+                var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
+                await popup.ShowAsync(); 
+            }
+            //*/
         }
     }
 }
