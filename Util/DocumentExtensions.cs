@@ -1,5 +1,6 @@
 ﻿using DashShared;
 using System.Collections.Generic;
+using Windows.Foundation;
 using Windows.Foundation.Metadata;
 
 namespace Dash
@@ -13,9 +14,9 @@ namespace Dash
         /// </summary>
         public static void AddLayoutToLayoutList(this DocumentController doc, DocumentController newLayoutController)
         {
-            var layoutList = doc.GetLayoutList();
+            var layoutList = doc.GetLayoutList(null);
             // if the layoutlist contains the new layout do nothing
-            if (new HashSet<DocumentController>(layoutList.GetDocuments()).Contains(newLayoutController))
+            if (layoutList.GetDocuments().Contains(newLayoutController))
             {
                 return;
             }
@@ -27,10 +28,10 @@ namespace Dash
         /// <summary>
         /// Gets the layout list which should always be in the deepestPrototype for the document
         /// </summary>
-        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context = null)
+        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
-            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey, context) as DocumentCollectionFieldModelController;
+            var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
             
             if (layoutList == null)
             {
@@ -57,7 +58,6 @@ namespace Dash
         }
 
 
-        [Deprecated("We currently set a default active layout in courtesydocument.layoutCourtesyDocument", DeprecationType.Deprecate, 1)]
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask = true)
         {
             doc.AddLayoutToLayoutList(activeLayout);
@@ -120,6 +120,32 @@ namespace Dash
             }
 
             return posField;
+        }
+
+        public static DocumentController GetCopy(this DocumentController doc, Context context = null)
+        {
+            var copy = doc.GetPrototype()?.MakeDelegate() ??
+                       new DocumentController(new Dictionary<Key, FieldModelController>(), doc.DocumentType);
+            var fields = new ObservableDictionary<Key, FieldModelController>();
+            foreach (var kvp in doc.EnumFields(true))
+            {
+                if (kvp.Key.Equals(DashConstants.KeyStore.WidthFieldKey) ||
+                    kvp.Key.Equals(DashConstants.KeyStore.HeightFieldKey)
+                    )
+                {
+                    fields[kvp.Key] = new NumberFieldModelController((kvp.Value as NumberFieldModelController)?.Data ?? 0);
+                } else if (kvp.Key.Equals(DashConstants.KeyStore.PositionFieldKey))
+                {
+                    fields[kvp.Key] = new PointFieldModelController((kvp.Value as PointFieldModelController)?.Data ?? new Point());
+                }
+                else
+                {
+                    fields[kvp.Key] = kvp.Value;
+                }
+            }
+            copy.SetFields(fields, true);
+
+            return copy;
         }
     }
 }

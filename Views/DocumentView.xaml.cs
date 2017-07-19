@@ -12,9 +12,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
-using System.Collections.ObjectModel;
-using Newtonsoft.Json;
-using Windows.UI.Xaml.Media.Animation;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -35,7 +32,7 @@ namespace Dash
         public DocumentViewModel ViewModel { get; set; }
 
 
-        public bool ProportionalScaling;
+        public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
         public event OperatorView.IODragEventHandler IODragStarted;
@@ -70,15 +67,17 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+
             Tapped += OnTapped;
         }
+
 
         private void SetUpMenu()
         {
             var documentButtons = new List<MenuButton>()
             {
                 new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,OpenLayout),
-                new MenuButton(Symbol.Copy, "GetCopy", Colors.LightBlue,CopyDocument),
+                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,CopyDocument),
                 new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, ScreenCap),
@@ -99,17 +98,26 @@ namespace Dash
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
-        /// <param name="translationDelta"></param>
-        private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
+        /// <param name="delta"></param>
+        private void ManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
         {
-            var documentViewModel = this.DataContext as DocumentViewModel;
-            documentViewModel.Position = new Point(documentViewModel.Position.X + translationDelta.X, documentViewModel.Position.Y + translationDelta.Y);
+            var currentTranslate = ViewModel.GroupTransform.Translate;
+            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleAmount = delta.ScaleAmount;
+
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh.a
+            var scaleCenter = new Point(currentTranslate.X + ActualWidth / 2, currentTranslate.Y + ActualHeight / 2);
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+
+            ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
-            DataContext = documentViewModel;
-
+            DataContext = documentViewModel;          
         }
 
 
@@ -255,21 +263,20 @@ namespace Dash
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-
+            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
             int pad = 32;
             if (Width < MinWidth + pad && Height < MinHeight + pad)
             {
                 updateIcon();
+
                 XGrid.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
                 xBorder.Visibility = Visibility.Collapsed;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
-            }
-            else
-            {
+            } else {
                 XGrid.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
                 xBorder.Visibility = Visibility.Visible;
@@ -321,7 +328,7 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetCopy());
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.Copy());
         }
 
         private void MakeDelegate()
@@ -339,7 +346,6 @@ namespace Dash
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
-
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
@@ -350,6 +356,18 @@ namespace Dash
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
+        }
+
+        private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var point = e.GetCurrentPoint(ParentCollection);
+            var scaleSign = point.Properties.MouseWheelDelta / 120.0f;
+            var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
+            var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
+            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
+                                                              ViewModel.GroupTransform.ScaleCenter,
+                                                              newScale);
         }
 
         private void OpenLayout()

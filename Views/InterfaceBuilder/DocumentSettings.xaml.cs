@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -17,18 +16,17 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Views
 {
-    public sealed partial class CollectionSettings : UserControl
+    public sealed partial class DocumentSettings : UserControl
     {
-        public CollectionSettings()
+        public DocumentSettings()
         {
             this.InitializeComponent();
         }
 
-        public CollectionSettings(DocumentController editedLayoutDocument)
-            : this()
+        public DocumentSettings(DocumentController editedLayoutDocument, Context context): this()
         {
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument));
+            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
         }
     }
 }

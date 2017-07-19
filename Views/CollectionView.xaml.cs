@@ -27,7 +27,7 @@ namespace Dash
         public int MaxZ { get; set; } = 0;
         public const float MaxScale = 10;
         public const float MinScale = 0.001f;
-        public Rect Bounds = new Rect(0, 0, 5000, 5000);
+        public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
 
         // whether the user can draw links currently or not
         public bool CanLink
@@ -87,7 +87,7 @@ namespace Dash
             SetEventHandlers();
             CanLink = false;
         }
-        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender)
+        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             DataContext = ViewModel;
         }
@@ -144,7 +144,7 @@ namespace Dash
                     var docVM = eNewItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     var ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -156,8 +156,8 @@ namespace Dash
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
-                                    orfm.DereferenceToRoot().GetId());
+                                //Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
+                                //    orfm.DereferenceToRoot().GetId());
                             }
                         }
                     }
@@ -170,7 +170,7 @@ namespace Dash
                     var docVM = eOldItem as DocumentViewModel;
                     Debug.Assert(docVM != null);
                     OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as
+                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
                             OperatorFieldModelController;
                     if (ofm != null)
                     {
@@ -182,8 +182,8 @@ namespace Dash
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                                 ReferenceFieldModelController orfm =
                                     new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                                Graph.RemoveEdge(irfm.DereferenceToRoot().GetId(),
-                                    orfm.DereferenceToRoot().GetId());
+                                Graph.RemoveEdge(irfm.DereferenceToRoot(null).GetId(),
+                                    orfm.DereferenceToRoot(null).GetId());
                             }
                         }
                     }
@@ -191,16 +191,14 @@ namespace Dash
             }
         }
 
-        public Context DocumentContext => (DataContext as CollectionViewModel).DocumentContext;
-
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
-            RefreshItemsBinding();
+            //RefreshItemsBinding();
             if (e.CollectionChange == CollectionChange.ItemInserted)
             {
                 var docVM = sender[(int)e.Index] as DocumentViewModel;
                 Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, DocumentContext) as OperatorFieldModelController;
+                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController;
                 if (ofm != null)
                 {
                     foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
@@ -209,7 +207,7 @@ namespace Dash
                         {
                             ReferenceFieldModelController irfm = new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
                             ReferenceFieldModelController orfm = new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
-                            Graph.AddEdge(irfm.DereferenceToRoot().GetId(), orfm.DereferenceToRoot().GetId());
+                            Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
                         }
                     }
                 }
@@ -593,7 +591,7 @@ namespace Dash
         {
             if (args.DropResult == DataPackageOperation.Move && !ViewModel.KeepItemsOnMove)
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-            RefreshItemsBinding();
+            //RefreshItemsBinding();
             ViewModel.KeepItemsOnMove = true;
             var carrier = ItemsCarrier.GetInstance();
             carrier.Payload.Clear();
@@ -616,7 +614,8 @@ namespace Dash
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
-            e.AcceptedOperation = DataPackageOperation.Move;
+            if(ItemsCarrier.GetInstance().Source != ViewModel)
+                e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         private async void CollectionGrid_Drop(object sender, DragEventArgs e)
@@ -646,7 +645,7 @@ namespace Dash
             }
             else
             {
-                var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
+                //var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
                 ItemsCarrier.GetInstance().Destination = ViewModel;
                 ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
                 ItemsCarrier.GetInstance().Translate = e.GetPosition(DocumentViewContainerGrid);
@@ -713,6 +712,7 @@ namespace Dash
         private void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
+            ViewModel.CanDragItems = true;
             _colMenu.GoToDocumentMenu();
         }
 
@@ -818,7 +818,8 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
+            throw new NotImplementedException("The document view model does not have a context any more");
+            //Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
         }
         public void ScreenCap()
         {
@@ -836,6 +837,7 @@ namespace Dash
                     CloseMenu();
                     SetEnabled(false);
                     ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                    ViewModel.CanDragItems = false;
                 }
                 else
                 {
@@ -858,6 +860,7 @@ namespace Dash
                 CurrentView.IsHitTestVisible = false;
                 xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
                 ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                ViewModel.CanDragItems = false;
                 if (_colMenu != null)
                     CloseMenu();
                 foreach (var dvm in ViewModel.DataBindingSource)

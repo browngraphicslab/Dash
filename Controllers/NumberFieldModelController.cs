@@ -60,7 +60,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;
@@ -68,6 +68,11 @@ namespace Dash
         public override string ToString()
         {
             return Data.ToString();
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new NumberFieldModelController(Data);
         }
     }
 }

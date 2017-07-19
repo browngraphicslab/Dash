@@ -11,11 +11,22 @@ namespace Dash
             DocReference = docReference;
         }
 
-        public override DocumentController GetDocumentController(Context context = null)
+        public override DocumentController GetDocumentController(Context context)
         {
             return DocReference.DereferenceToRoot<DocumentFieldModelController>(context)?.Data;
         }
 
+        public override ReferenceFieldModelController Resolve(Context context)
+        {
+            string docId = context.GetDeepestDelegateOf(GetDocumentController(context).GetId());
+            return new DocumentReferenceController(docId, FieldKey);
+        }
+
         public DocumentPointerReferenceFieldModel DocumentPointerReferenceFieldModel => FieldModel as DocumentPointerReferenceFieldModel;
+        
+        public override FieldModelController Copy()
+        {
+            return new DocumentPointerReferenceController(DocReference.Copy<ReferenceFieldModelController>(), FieldKey);
+        }
     }
 }

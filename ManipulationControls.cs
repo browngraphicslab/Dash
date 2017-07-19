@@ -69,8 +69,7 @@ namespace Dash {
             TranslateAndScale(false, true, e);
         }
 
-        public delegate void OnManipulatorTranslatedHandler(Point translationDelta);
-
+        public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslated;
 
 
@@ -102,10 +101,12 @@ namespace Dash {
                 scale.ScaleX = MaxScale / _documentScale;
                 scale.ScaleY = MaxScale / _documentScale;
                 _documentScale = MaxScale;
+                return;
             } else if (newScale < MinScale) {
                 scale.ScaleX = MinScale / _documentScale;
                 scale.ScaleY = MinScale / _documentScale;
                 _documentScale = MinScale;
+                return;
             } else {
                 _documentScale = newScale;
             }
@@ -116,7 +117,9 @@ namespace Dash {
             if (canTranslate)
             {
                 group.Children.Add(translate);
-                OnManipulatorTranslated?.Invoke(new Point(translate.X, translate.Y));
+                OnManipulatorTranslated?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y), 
+                                                                        new Point(scale.CenterX, scale.CenterY),
+                                                                        new Point(scale.ScaleX, scale.ScaleY)));
             }
         }
 

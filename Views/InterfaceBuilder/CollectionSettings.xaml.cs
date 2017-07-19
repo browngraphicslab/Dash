@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -14,20 +15,20 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
-    public sealed partial class DocumentSettings : UserControl
+    public sealed partial class CollectionSettings : UserControl
     {
-        public DocumentSettings()
+        public CollectionSettings()
         {
             this.InitializeComponent();
         }
 
-        public DocumentSettings(DocumentController editedLayoutDocument)
-            : this()
+
+        public CollectionSettings(DocumentController editedLayoutDocument, Context context): this()
         {
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument));
+            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
         }
     }
 }

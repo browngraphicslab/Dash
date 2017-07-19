@@ -9,6 +9,7 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using static Dash.CourtesyDocuments.CourtesyDocument;
+using System;
 
 namespace Dash
 {
@@ -20,15 +21,21 @@ namespace Dash
         private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
-        private Point _pos;
+        private TransformGroupData _trans;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
+        private TransformGroup _gridViewIconGroupTransform;
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
-        
+        public TransformGroup GridViewIconGroupTransform
+        {
+            get { return _gridViewIconGroupTransform; }
+            set { SetProperty(ref _gridViewIconGroupTransform, value); }
+        }
+
         public IconTypeEnum IconType { get { return iconType; } }
-        
+
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
 
@@ -49,14 +56,14 @@ namespace Dash
             {
                 if (SetProperty(ref _width, value))
                 {
-
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+                    var context = new Context(DocumentController);
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
 
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
 
                     var widthFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey) as
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
                             NumberFieldModelController;
                     widthFieldModelController.Data = value;
                 }
@@ -70,34 +77,47 @@ namespace Dash
             {
                 if (SetProperty(ref _height, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+                    var context = new Context(DocumentController);
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
 
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
-
                     var heightFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey) as
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as
                             NumberFieldModelController;
                     heightFieldModelController.Data = value;
                 }
             }
         }
 
-        public Point Position
+        public TransformGroupData GroupTransform
         {
-            get { return _pos; }
-            set {
-                if (SetProperty(ref _pos, value))
+            get { return _trans; }
+            set
+            {
+                if (SetProperty(ref _trans, value))
                 {
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController)?.Data;
+                    // get layout
+                    var context = new Context(DocumentController);
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey , context) as DocumentFieldModelController)?.Data;
 
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
-
+                    // set position
                     var posFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey) as
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
-                    posFieldModelController.Data = value;
+                    posFieldModelController.Data = value.Translate;
+                    // set scale center
+                    var scaleCenterFieldModelController =
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, context) as
+                            PointFieldModelController;
+                    scaleCenterFieldModelController.Data = value.ScaleCenter;
+                    // set scale amount
+                    var scaleAmountFieldModelController =
+                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, context) as
+                            PointFieldModelController;
+                    scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
             }
         }
@@ -163,10 +183,26 @@ namespace Dash
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.MakeViewUI();
+            Content = documentController.MakeViewUI(new Context(DocumentController));
+
+            SetUpSmallIcon();
 
             documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
             OnActiveLayoutChanged();
+        }
+
+        private void SetUpSmallIcon()
+        {
+            var iconFieldModelController =
+                DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, new Context(DocumentController)) as NumberFieldModelController;
+            if (iconFieldModelController == null)
+            {
+                iconFieldModelController = new NumberFieldModelController((int) (IconTypeEnum.Document));
+                DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
+            }
+
+            iconType = (IconTypeEnum) iconFieldModelController.Data;
+            iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
         }
 
         private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -179,17 +215,22 @@ namespace Dash
 
         private void OnActiveLayoutChanged()
         {
-            Content = DocumentController.MakeViewUI();
+            Content = DocumentController.MakeViewUI(new Context(DocumentController));
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
-            ListenToPositionField(DocumentController);
+            ListenToTransformGroupField(DocumentController);
         }
 
-        private void ListenToPositionField(DocumentController docController)
+        private void ListenToTransformGroupField(DocumentController docController)
         {
-            var positionField = docController.GetPositionField();
-            positionField.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-            Position = positionField.Data;
+            var posFieldModelController = docController.GetPositionField();
+            var activeLayout = docController.GetActiveLayout().Data;
+            var scaleCenterFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, new Context(DocumentController)) as PointFieldModelController;
+            var scaleAmountFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, new Context(DocumentController)) as PointFieldModelController;
+            GroupTransform = new TransformGroupData(posFieldModelController.Data, scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
+            posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+            scaleCenterFieldModelController.FieldModelUpdated += ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+            scaleAmountFieldModelController.FieldModelUpdated += ScaleAmountFieldModelController_FieldModelUpdatedEvent;
         }
 
         private void ListenToWidthField(DocumentController docController)
@@ -206,11 +247,21 @@ namespace Dash
             Height = heightField.Data;
         }
 
+        public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
+        {
+            var max = actualWidth > actualHeight ? actualWidth : actualHeight;
+            var translate = new TranslateTransform() { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
+            var scale = new ScaleTransform() { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
+            var group = new TransformGroup();
+            group.Children.Add(translate);
+            group.Children.Add(scale);
+            GridViewIconGroupTransform = group;
+        }
 
         // == FIELD UPDATED EVENT HANDLERS == 
         // these update the view model's variables when the document's corresponding fields update
 
-        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
+        private void HeightFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             var heightFieldModelController = sender as NumberFieldModelController;
             if (heightFieldModelController != null)
@@ -219,7 +270,7 @@ namespace Dash
             }
         }
 
-        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
+        private void WidthFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             var widthFieldModelController = sender as NumberFieldModelController;
             if (widthFieldModelController != null)
@@ -227,22 +278,43 @@ namespace Dash
                 Width = widthFieldModelController.Data;
             }
         }
-        
-        private void IconFieldModelController_FieldModelUpdatedEvent(FieldModelController sender) {
+
+        private void IconFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, Context c)
+        {
             var iconFieldModelController = sender as NumberFieldModelController;
-            if (iconFieldModelController != null) {
+            if (iconFieldModelController != null)
+            {
                 iconType = (IconTypeEnum)iconFieldModelController.Data;
             }
         }
 
-        private void PosFieldModelController_FieldModelUpdatedEvent(FieldModelController sender)
+        private void PosFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             var posFieldModelController = sender as PointFieldModelController;
             if (posFieldModelController != null)
             {
-                Position = posFieldModelController.Data;
+                GroupTransform = new TransformGroupData(posFieldModelController.Data, GroupTransform.ScaleCenter, GroupTransform.ScaleAmount);
             }
         }
+
+        private void ScaleCenterFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, Context context)
+        {
+            var scaleCenterFieldModelController = sender as PointFieldModelController;
+            if (scaleCenterFieldModelController != null)
+            {
+                GroupTransform = new TransformGroupData(GroupTransform.Translate, scaleCenterFieldModelController.Data, GroupTransform.ScaleAmount);
+            }
+        }
+
+        private void ScaleAmountFieldModelController_FieldModelUpdatedEvent(FieldModelController sender, Context context)
+        {
+            var scaleAmountFieldModelController = sender as PointFieldModelController;
+            if (scaleAmountFieldModelController != null)
+            {
+                GroupTransform = new TransformGroupData(GroupTransform.Translate, GroupTransform.ScaleCenter, scaleAmountFieldModelController.Data);
+            }
+        }
+
 
         public void ToggleMenuVisibility()
         {
@@ -268,52 +340,35 @@ namespace Dash
             MenuColumnWidth = new GridLength(50);
         }
 
-        public DocumentController GetCopy()
+        public DocumentController Copy()
         {
-            var copy = DocumentController.GetPrototype().MakeDelegate();
-            var fields = new ObservableDictionary<Key, FieldModelController>();
-            foreach (var kvp in DocumentController.EnumFields())
+            var copy = DocumentController.GetCopy();
+            var layoutField = copy.GetActiveLayout().Data;
+            var layoutCopy = layoutField.GetCopy();
+            copy.SetActiveLayout(layoutCopy, true);
+            var positionField = copy.GetPositionField();
+            if (positionField != null)
             {
-                fields[kvp.Key] = kvp.Value;
+                var oldPosition = DocumentController.GetPositionField().Data;
+                positionField.Data = new Point(oldPosition.X + 15, oldPosition.Y + 15);
             }
-            copy.SetFields(fields, true);
-            var documentFieldModelController = fields[DashConstants.KeyStore.ActiveLayoutKey] as DocumentFieldModelController;
-            if (documentFieldModelController != null)
-            {
-                var layout = documentFieldModelController.Data;
-                var pointFieldModelController = layout.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
-                if (pointFieldModelController != null)
-                {
-                    var pos = pointFieldModelController.Data;
-                    var layoutDel = layout.MakeDelegate();
-                    layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(pos.X + 15, pos.Y + 15), true);
-                    copy.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-                }
-            }
-            
+
             return copy;
         }
 
         public DocumentController GetDelegate()
         {
             var del = DocumentController.MakeDelegate();
-            var documentFieldModelController = DocumentController.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-            if (documentFieldModelController != null)
-            {
-                var layout = documentFieldModelController.Data;
-                var pointFieldModelController = layout.GetField(DashConstants.KeyStore.PositionFieldKey) as PointFieldModelController;
-                if (pointFieldModelController != null)
-                {
-                    var pos = pointFieldModelController.Data;
-                    var layoutDel = layout.MakeDelegate();
-                    layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(pos.X + 15, pos.Y + 15), true);
-                    //var docs =
-                    //    (layoutDel.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController)
-                    //    .GetDocuments();
-                    //layoutDel.SetField(DashConstants.KeyStore.DataKey, new DocumentCollectionFieldModelController(docs), true); TODO should we copy the collection over or leave it as original? -GH
-                    del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-                }
-            }
+            var delLayout = DocumentController.GetActiveLayout().Data.MakeDelegate();
+
+            var oldPosition = DocumentController.GetPositionField().Data;
+
+            delLayout.SetField(DashConstants.KeyStore.PositionFieldKey,
+                new PointFieldModelController(new Point(oldPosition.X + 15, oldPosition.Y + 15)),
+                true);
+
+            del.SetActiveLayout(delLayout, true);
+
             return del;
         }
     }

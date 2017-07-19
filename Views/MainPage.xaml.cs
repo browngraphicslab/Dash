@@ -29,7 +29,7 @@ namespace Dash
         private RadialMenuView _radialMenu;
 
 
-        public DocumentController MainDocument => (MainDocView.DataContext as DocumentViewModel)?.DocumentController;
+        public DocumentController MainDocument { get; private set; }
 
         public MainPage()
         {
@@ -42,11 +42,15 @@ namespace Dash
             xOverlayCanvas.OnAddImageTapped += AddImage;
 
             // create the collection document model using a request
+            var fields = new Dictionary<Key, FieldModelController>();
+            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            MainDocument = new DocumentController(fields, new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E"));
             var collectionDocumentController =
-                new CourtesyDocuments.CollectionBox(
-                    new DocumentCollectionFieldModelController(new List<DocumentController>())).Document;
+                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            MainDocument.SetActiveLayout(collectionDocumentController);
+
             // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(collectionDocumentController)
+            MainDocView.DataContext = new DocumentViewModel(MainDocument)
             {
                 IsDetailedUserInterfaceVisible = false,
                 IsMoveable = false
@@ -57,11 +61,8 @@ namespace Dash
             MainDocView.Height = MyGrid.ActualHeight;
 
             // Set the instance to be itself, there should only ever be one MainView
-            Debug.Assert(Instance == null,
-                "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
+            Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
-
-            //TODO this seriously slows down the document 
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
@@ -132,9 +133,7 @@ namespace Dash
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
-            var children =
-                MainDocument.GetDereferencedField(DashConstants.KeyStore.DataKey,
-                    new Context()) as DocumentCollectionFieldModelController;
+            var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             children?.AddDocument(docModel);
         }
 
@@ -203,8 +202,18 @@ namespace Dash
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             //DisplayDocument(new CourtesyDocuments.PostitNote().Document);
-            DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
-            DisplayDocument(new CourtesyDocuments.Numbers().Document);
+            //DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
+            DocumentController numbersProto = new CourtesyDocuments.Numbers().Document;
+            DisplayDocument(numbersProto);
+            DocumentController del = numbersProto.MakeDelegate();
+            del.SetField(CourtesyDocuments.Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
+            var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
+            var layoutDel = layout.Data.MakeDelegate();
+            layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
+            DisplayDocument(del);
+            Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
+            Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -277,7 +286,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.GetCopy;
+            //e.AcceptedOperation = DataPackageOperation.Copy;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)

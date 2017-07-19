@@ -19,26 +19,28 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class SizeSettings : UserControl
     {
-        private TextBox _heightTextBox;
-        private TextBox _widthTextBox;
+
         public SizeSettings()
         {
             this.InitializeComponent();
         }
 
-        public SizeSettings(DocumentController editedLayoutDocument) : this()
+
+        public SizeSettings(DocumentController editedLayoutDocument, Context context) : this()
         {
-            BindWidth(editedLayoutDocument);
-            BindHeight(editedLayoutDocument);
+            BindWidth(editedLayoutDocument, context);
+            BindHeight(editedLayoutDocument, context);
         }
 
-        private void BindHeight(DocumentController docController)
+        private void BindHeight(DocumentController docController, Context context)
         {
-            var heightController = docController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController;
+            var fmc = docController.GetField(DashConstants.KeyStore.HeightFieldKey);
+            var heightController =
+                fmc.DereferenceToRoot<NumberFieldModelController>(context);
             Debug.Assert(heightController != null);
 
             var heightBinding = new Binding
@@ -52,9 +54,12 @@ namespace Dash.Views
 
         }
 
-        private void BindWidth(DocumentController docController)
+
+        private void BindWidth(DocumentController docController, Context context)
         {
-            var widthController = docController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController;
+            var fmc = docController.GetField(DashConstants.KeyStore.WidthFieldKey);
+            var widthController = 
+                fmc.DereferenceToRoot<NumberFieldModelController>(context);
             Debug.Assert(widthController != null);
 
             var widthBinding = new Binding
