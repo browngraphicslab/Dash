@@ -23,19 +23,19 @@
                 <RowDefinition Height="Auto"></RowDefinition>
             </Grid.RowDefinitions>
 
-            <TextBox PlaceholderText="Your email" Grid.Row="0" 
+            <TextBox PlaceholderText="Your email" Grid.Row="0" TextWrapping="Wrap"
                      BorderBrush="LightGray" TextChanged="From_TextChanged" Margin="10, 10, 10, 5"></TextBox>
 
-            <TextBox PlaceholderText="Email password" Grid.Row="1" 
+            <TextBox PlaceholderText="Email password" Grid.Row="1" TextWrapping="Wrap"
                      BorderBrush="LightGray" TextChanged="Password_TextChanged" Margin="10, 5, 10, 5" ></TextBox>
-            
-            <TextBox PlaceholderText="Recipient email" Grid.Row="2" 
+
+            <TextBox PlaceholderText="Recipient email" Grid.Row="2" TextWrapping="Wrap"
                      BorderBrush="LightGray" TextChanged="To_TextChanged" Margin="10, 5, 10, 5" ></TextBox>
 
-            <TextBox PlaceholderText="Subject" Grid.Row="3" Margin="10, 5, 10, 5"
-                     BorderBrush="LightGray" TextChanged="Subject_TextChanged" ></TextBox>
+            <TextBox PlaceholderText="Subject" Grid.Row="3" Margin="10, 5, 10, 5" 
+                     BorderBrush="LightGray" TextChanged="Subject_TextChanged" TextWrapping="Wrap"></TextBox>
 
-            <TextBox PlaceholderText="Message body" VerticalAlignment="Stretch" Grid.Row="4"
+            <TextBox PlaceholderText="Message body" VerticalAlignment="Stretch" Grid.Row="4" TextWrapping="Wrap"
                      BorderBrush="LightGray" TextChanged="Message_TextChanged" Margin="10, 5, 10, 5" ></TextBox>
 
             <Button x:Name="AttachmentButton" Grid.Row="5" HorizontalAlignment="Stretch" Content = "Attachment: None"

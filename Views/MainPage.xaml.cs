@@ -221,8 +221,14 @@ namespace Dash
 
         public void AddNotes()
         {
-            DocumentController noteCont = new NoteDocuments.RichTextNote(new DocumentType()).Document;
-            DisplayDocument(noteCont); 
+            DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
+            DisplayDocument(rtfNote);
+
+            DocumentController postitNote = new NoteDocuments.PostitNote(new DocumentType()).Document;
+            DisplayDocument(postitNote);
+
+            DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
+            DisplayDocument(imageNote);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
