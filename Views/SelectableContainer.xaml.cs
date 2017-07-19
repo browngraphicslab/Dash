@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Security.Cryptography.Core;
 using Windows.UI;
+using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
 
 namespace Dash
@@ -32,7 +33,10 @@ namespace Dash
         private SelectableContainer _parentContainer;
         private bool _isSelected;
         private FrameworkElement _contentElement;
+        private List<Ellipse> _draggerList;
+
         public DocumentController LayoutDocument;
+        private ManipulationControls _manipulator;
 
         public FrameworkElement ContentElement
         {
@@ -54,28 +58,27 @@ namespace Dash
                 if (_isSelected)
                 {
                     XGrid.BorderThickness = new Thickness(3);
-                    xBottomLeftDragger.Visibility = Visibility.Visible;
-                    xTopLeftDragger.Visibility = Visibility.Visible;
-                    xBottomRightDragger.Visibility = Visibility.Visible;
-                    xTopRightDragger.Visibility = Visibility.Visible;
-                    xCenterDragger.Visibility = Visibility.Visible;
+                    foreach (var ellipse in _draggerList)
+                    {
+                        ellipse.Visibility = Visibility.Visible;
+                    }
                 } else
                 {
                     XGrid.BorderThickness = new Thickness(1);
-                    xBottomLeftDragger.Visibility = Visibility.Collapsed;
-                    xTopLeftDragger.Visibility = Visibility.Collapsed;
-                    xBottomRightDragger.Visibility = Visibility.Collapsed;
-                    xTopRightDragger.Visibility = Visibility.Collapsed;
-                    xCenterDragger.Visibility = Visibility.Collapsed;
+                    foreach (var ellipse in _draggerList)
+                    {
+                        ellipse.Visibility = Visibility.Collapsed;
+                    }
                 }
             }
         }
 
         public SelectableContainer(FrameworkElement contentElement, DocumentController layoutDocument)
         {
+            this.InitializeComponent();
+            this.InitiateManipulators();
             ContentElement = contentElement;
             LayoutDocument = layoutDocument;
-            this.InitializeComponent();
 
             RenderTransform = new TranslateTransform();
 
@@ -83,6 +86,7 @@ namespace Dash
             Tapped += CompositeLayoutContainer_Tapped;
         }
 
+       
         private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
@@ -148,6 +152,28 @@ namespace Dash
 
         #region Manipulation
 
+        private void InitiateManipulators()
+        {
+            _draggerList = new List<Ellipse>
+            {
+                xBottomLeftDragger,
+                xTopLeftDragger,
+                xBottomRightDragger,
+                xTopRightDragger,
+                xCenterDragger
+            };
+            var centerManipulator = new ManipulationControls(xCenterDragger);
+            centerManipulator.OnManipulatorTranslated += CenterManipulatorOnOnManipulatorTranslated;
+            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
+            bottomLeftManipulator.OnManipulatorTranslated += BottomLeftManipulator_OnManipulatorTranslated;
+            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
+            bottomRightManipulator.OnManipulatorTranslated += BottomRightManipulator_OnManipulatorTranslated;
+            var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
+            topLeftManipulator.OnManipulatorTranslated += TopLeftManipulator_OnManipulatorTranslated;
+            var topRightManipulator = new ManipulationControls(xTopRightDragger);
+            topRightManipulator.OnManipulatorTranslated += TopRightManipulator_OnManipulatorTranslated;
+        }
+
         private void ChangePosition(double deltaX, double deltaY)
         {
             var positionController = LayoutDocument.GetPositionField();
@@ -155,47 +181,52 @@ namespace Dash
             positionController.Data = new Point(currentPosition.X + deltaX, currentPosition.Y + deltaY);
         }
 
-        private void ChangeSize(double deltaWidth, double deltaHeight)
+        private Point ChangeSize(double deltaWidth, double deltaHeight)
         {
+            Point actualChange = new Point(0,0);
             var widthController = LayoutDocument.GetWidthField();
-            widthController.Data += deltaWidth;
+            //TODO: right now this just uses the framework element's minwidth as a boundary for size changes; might want to set minwidth in document later
+            if (widthController.Data + deltaWidth > ContentElement.MinWidth || deltaWidth > 0)
+            {
+                widthController.Data += deltaWidth;
+                actualChange.X = deltaWidth;
+            }
             var heightController = LayoutDocument.GetHeightField();
-            heightController.Data += deltaHeight;
+            if (heightController.Data + deltaHeight > ContentElement.MinHeight || deltaHeight > 0)
+            {
+                heightController.Data += deltaHeight;
+                actualChange.Y = deltaHeight;
+            }
+            return actualChange;
         }
-
-        private void XBottomLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            ChangeSize(-e.Delta.Translation.X, e.Delta.Translation.Y);
-            ChangePosition(e.Delta.Translation.X, 0);
-            e.Handled = true;
+            var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
+            ChangePosition(0, -sizeChange.Y);
         }
 
-
-        private void XBottomRightDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            ChangeSize(e.Delta.Translation.X, e.Delta.Translation.Y);
-            e.Handled = true;
+            var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
+            ChangePosition(-sizeChange.X, -sizeChange.Y);
         }
 
-        private void XTopLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void BottomRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            ChangeSize(-e.Delta.Translation.X, -e.Delta.Translation.Y);
-            ChangePosition(e.Delta.Translation.X, e.Delta.Translation.Y);
-            e.Handled = true;
+            ChangeSize(e.Translate.X, e.Translate.Y);
         }
 
-        private void XTopRightDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            ChangeSize(e.Delta.Translation.X, -e.Delta.Translation.Y);
-            ChangePosition(0, e.Delta.Translation.Y);
-            e.Handled = true;
+            var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
+            ChangePosition(-sizeChange.X, 0);
         }
 
-        private void XCenterDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void CenterManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
         {
-            ChangePosition(e.Delta.Translation.X, e.Delta.Translation.Y);
-            e.Handled = true;
+            ChangePosition(delta.Translate.X, delta.Translate.Y);
         }
+
 
         #endregion
     }
