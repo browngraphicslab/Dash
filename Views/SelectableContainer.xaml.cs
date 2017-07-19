@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -14,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Security.Cryptography.Core;
 using Windows.UI;
 using Dash.ViewModels;
 
@@ -47,9 +49,19 @@ namespace Dash
                 if (_isSelected)
                 {
                     XGrid.BorderThickness = new Thickness(3);
+                    xBottomLeftDragger.Visibility = Visibility.Visible;
+                    xTopLeftDragger.Visibility = Visibility.Visible;
+                    xBottomRightDragger.Visibility = Visibility.Visible;
+                    xTopRightDragger.Visibility = Visibility.Visible;
+                    xCenterDragger.Visibility = Visibility.Visible;
                 } else
                 {
                     XGrid.BorderThickness = new Thickness(1);
+                    xBottomLeftDragger.Visibility = Visibility.Collapsed;
+                    xTopLeftDragger.Visibility = Visibility.Collapsed;
+                    xBottomRightDragger.Visibility = Visibility.Collapsed;
+                    xTopRightDragger.Visibility = Visibility.Collapsed;
+                    xCenterDragger.Visibility = Visibility.Collapsed;
                 }
             }
         }
@@ -59,6 +71,7 @@ namespace Dash
             this.InitializeComponent();
 
             ContentElement = contentElement;
+            RenderTransform = new TranslateTransform();
 
             Loaded += SelectableContainer_Loaded;
             Tapped += CompositeLayoutContainer_Tapped;
@@ -114,9 +127,65 @@ namespace Dash
 
         }
 
+
         public SelectableContainer GetSelectedLayout()
         {
             return _selectedLayoutContainer;
+        }
+
+        private void XBottomLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            ContentElement.Width -= e.Delta.Translation.X;
+            ContentElement.Height += e.Delta.Translation.Y;
+            Width -= e.Delta.Translation.X;
+            Height += e.Delta.Translation.Y;
+            var transform = RenderTransform as TranslateTransform;
+            transform.X += e.Delta.Translation.X;
+            RenderTransform = transform;
+            e.Handled = true;
+        }
+
+        private void XBottomRightDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            ContentElement.Width += e.Delta.Translation.X;
+            ContentElement.Height += e.Delta.Translation.Y;
+            Width += e.Delta.Translation.X;
+            Height += e.Delta.Translation.Y;
+            e.Handled = true;
+        }
+
+        private void XTopLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            ContentElement.Width -= e.Delta.Translation.X;
+            ContentElement.Height -= e.Delta.Translation.Y;
+            Width -= e.Delta.Translation.X;
+            Height -= e.Delta.Translation.Y;
+            var transform = RenderTransform as TranslateTransform;
+            transform.X += e.Delta.Translation.X;
+            transform.Y += e.Delta.Translation.Y;
+            RenderTransform = transform;
+            e.Handled = true;
+        }
+
+        private void XTopRightDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            ContentElement.Width += e.Delta.Translation.X;
+            ContentElement.Height -= e.Delta.Translation.Y;
+            Width += e.Delta.Translation.X;
+            Height -= e.Delta.Translation.Y;
+            var transform = RenderTransform as TranslateTransform;
+            transform.Y += e.Delta.Translation.Y;
+            RenderTransform = transform;
+            e.Handled = true;
+        }
+
+        private void XCenterDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var transform = RenderTransform as TranslateTransform;
+            transform.X += e.Delta.Translation.X;
+            transform.Y += e.Delta.Translation.Y;
+            RenderTransform = transform;
+            e.Handled = true;
         }
     }
 }
