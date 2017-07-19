@@ -15,7 +15,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI;
 using System.Diagnostics;
-using DashShared;
+using System.Runtime.InteropServices;
+
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -46,7 +47,7 @@ namespace Dash
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
             //ParentCollection = view;
-            
+
         }
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
@@ -74,14 +75,18 @@ namespace Dash
         public void StartDrag(OperatorView.IOReference ioReference)
         {
             Debug.Write("1");
-            if (!CanLink) {
+            if (!CanLink)
+            {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
             Debug.Write("2");
 
+            if (ioReference.PointerArgs == null) return;
+
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
+
             parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
 
@@ -100,12 +105,21 @@ namespace Dash
             };
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, parentCanvas);
-            _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(parentCanvas).Position;
+
+            try
+            {
+                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(parentCanvas).Position;
+
+            }
+            catch (COMException ex)
+            {
+            }
+
             _lineBinding =
                 new MultiBinding<PathFigureCollection>(_converter, null);
-            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
-            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
-            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
             Binding lineBinding = new Binding
             {
                 Source = _lineBinding,
@@ -115,14 +129,16 @@ namespace Dash
             BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
             _connectionLine.Data = pathGeo;
 
+            // TODO comment back in if/when editor mode is implemented  
+            /* 
             Binding visibilityBinding = new Binding
             {
                 Source = DataContext as CollectionViewModel,
                 Path = new PropertyPath("IsEditorMode"),
                 Converter = new VisibilityConverter()
             };
-            _connectionLine.SetBinding(UIElement.VisibilityProperty, visibilityBinding);
-
+            _connectionLine.SetBinding(VisibilityProperty, visibilityBinding);
+            */
             parentCanvas.Children.Add(_connectionLine);
 
             if (!ioReference.IsOutput)
@@ -160,6 +176,8 @@ namespace Dash
                 UndoLine();
                 return;
             }
+            if (_currReference.ReferenceFieldModelController == null) return; 
+
             string outId;
             string inId;
             if (_currReference.IsOutput)
@@ -220,7 +238,7 @@ namespace Dash
                 _lineDict.Remove(model);
             }
         }
-        
+
 
         private class BezierConverter : IValueConverter
         {
@@ -233,6 +251,9 @@ namespace Dash
                 _bezier = new BezierSegment();
                 _figure.Segments.Add(_bezier);
                 _col.Add(_figure);
+                
+                Pos2 = Element1.TransformToVisual(ToElement)
+                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
             }
             public FrameworkElement Element1 { get; set; }
             public FrameworkElement Element2 { get; set; }
@@ -245,8 +266,10 @@ namespace Dash
             {
                 var pos1 = Element1.TransformToVisual(ToElement)
                     .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
+
                 var pos2 = Element2?.TransformToVisual(ToElement)
-                               .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+                            .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+
                 double offset = Math.Abs((pos1.X - pos2.X) / 3);
                 if (pos1.X < pos2.X)
                 {
@@ -284,7 +307,8 @@ namespace Dash
         {
             if (_currReference != null)
             {
-                CancelDrag(e.Pointer);
+                CancelDrag(_currReference.PointerArgs.Pointer);
+
                 //DocumentView view = new DocumentView();
                 //DocumentViewModel viewModel = new DocumentViewModel();
                 //view.DataContext = viewModel;
