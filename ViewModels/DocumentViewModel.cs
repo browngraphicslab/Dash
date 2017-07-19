@@ -183,8 +183,6 @@ namespace Dash
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.MakeViewUI(new Context(DocumentController));
-
             SetUpSmallIcon();
 
             documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;

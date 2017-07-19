@@ -9,7 +9,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Models.OperatorModels.Set;
 using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -76,53 +75,23 @@ namespace Dash
             var opModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            var view = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var opvm = new DocumentViewModel(opModel);
-            //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-            view.DataContext = opvm;
-
             DisplayDocument(opModel);
 
             //// add union operator for testing 
             var intersectOpModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            var intersectView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var intersectOpvm = new DocumentViewModel(intersectOpModel);
-            intersectView.DataContext = intersectOpvm;
             DisplayDocument(intersectOpModel);
 
             var unionOpModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            var unionView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var unionOpvm = new DocumentViewModel(unionOpModel);
-            unionView.DataContext = unionOpvm;
             DisplayDocument(unionOpModel);
 
             // add image url -> image operator for testing
             var imgOpModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            var imgOpView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var imgOpvm = new DocumentViewModel(imgOpModel);
-            imgOpView.DataContext = imgOpvm;
             DisplayDocument(imgOpModel);
         }
 

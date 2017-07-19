@@ -174,14 +174,14 @@ namespace Dash
         {
             LinkedList<DocumentController> result = new LinkedList<DocumentController>();
 
-            var prototype = GetPrototype(); 
+            var prototype = GetPrototype();
             while (prototype != null)
             {
-                result.AddFirst(prototype); 
-                prototype = prototype.GetPrototype(); 
+                result.AddFirst(prototype);
+                prototype = prototype.GetPrototype();
             }
-            result.AddLast(this); 
-            return result; 
+            result.AddLast(this);
+            return result;
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Dash
 
             FieldModelController oldField;
             proto._fields.TryGetValue(key, out oldField);
-            
+
             // if the fields are reference equal just return
             if (ReferenceEquals(oldField, field))
             {
@@ -214,13 +214,20 @@ namespace Dash
 
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentReferenceController(GetId(), key);
-            Execute(new Context(this), true);
+            Context c = new Context(this);
+            if (ShouldExecute(c, key))
+            {
+                Execute(c, true);
+            }
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this)));
             field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {
                 context = context ?? new Context();
                 context.AddDocumentContext(this);
-                Execute(context, true);
+                if (ShouldExecute(context, reference.FieldKey))
+                {
+                    Execute(context, true);
+                }
                 OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context));
             };
 
@@ -273,7 +280,7 @@ namespace Dash
         {
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
-            delegateController.DocumentFieldUpdated += delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
+            delegateController.DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
             DocumentFieldUpdated += delegateController.DocumentController_DocumentFieldUpdated;
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
@@ -355,6 +362,25 @@ namespace Dash
         }
 
 
+        private bool ShouldExecute(Context context, Key updatedKey)
+        {
+            context = context ?? new Context(this);
+            var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
+            if (opField == null)
+            {
+                return false;
+            }
+            if (opField.Inputs.ContainsKey(updatedKey))
+            {
+                return true;
+            }
+            if (opField.Outputs.ContainsKey(updatedKey))
+            {
+                return true;
+            }
+            return false;
+        }
+
         public void Execute(Context context, bool update)
         {
             context = context ?? new Context(this);
@@ -370,7 +396,8 @@ namespace Dash
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
                     var field = GetField(opFieldInput);
-                    inputs[opFieldInput] = field?.DereferenceToRoot(context);
+                    inputs[opFieldInput] = field?.DereferenceToRoot(context) ??
+                        TypeInfoHelper.CreateFieldModelController(opField.Inputs[opFieldInput]);
                 }
                 opField.Execute(inputs, outputs);
                 foreach (var fieldModel in outputs)
@@ -386,6 +413,7 @@ namespace Dash
             }
             catch (KeyNotFoundException e)
             {
+                Debug.WriteLine("Operator Execution failed: Input not set");
             }
         }
 
@@ -409,7 +437,7 @@ namespace Dash
             }
         }
 
-        
+
         /// <summary>
         /// Generates a UI view that showcases document fields as a list of key value pairs, where key is the
         /// string key of the field and value is the rendered UI element representing the value.
@@ -420,9 +448,9 @@ namespace Dash
             var sp = new StackPanel();
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) || 
-                    f.Key.Equals(DashConstants.KeyStore.PrototypeKey) || 
-                    f.Key.Equals(DashConstants.KeyStore.LayoutListKey) || 
+                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) ||
+                    f.Key.Equals(DashConstants.KeyStore.PrototypeKey) ||
+                    f.Key.Equals(DashConstants.KeyStore.LayoutListKey) ||
                     f.Key.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
                     continue;
