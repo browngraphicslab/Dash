@@ -94,7 +94,8 @@ namespace Dash
 
         public static void OnOperatorAdd(object obj)
         {
-            MainPage.Instance.AddOperator();
+            //MainPage.Instance.AddOperator();
+            MainPage.Instance.AddOperatorsFilter();
         }
 
         

@@ -106,6 +106,9 @@
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
+    <Compile Include="Views\OperatorsFilter.xaml.cs">
+      <DependentUpon>OperatorsFilter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
     <Compile Include="RadialMenu\Colors.cs" />
@@ -375,6 +378,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\OperatorsFilter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="RadialMenu\CenterButton.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

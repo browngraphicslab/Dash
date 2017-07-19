@@ -70,6 +70,16 @@ namespace Dash
             xCanvas.Children.Add(_radialMenu);
         }
 
+        public void AddOperatorsFilter()
+        {
+            if (!xCanvas.Children.Contains(OperatorsFilter.Instance))
+            {
+                xCanvas.Children.Add(OperatorsFilter.Instance);
+            } else
+            {
+                xCanvas.Children.Remove(OperatorsFilter.Instance);
+            }
+        }
         public void AddOperator()
         {
             //Create Operator document
