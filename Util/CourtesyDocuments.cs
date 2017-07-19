@@ -491,7 +491,7 @@ namespace Dash {
 
                 if (isInterfaceBuilderLayout)
                 {
-                    var selectableContainer = new SelectableContainer(tb);
+                    var selectableContainer = new SelectableContainer(tb, docController);
                     return selectableContainer;
                 }
 

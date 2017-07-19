@@ -46,7 +46,7 @@ namespace Dash
             SetActiveLayoutToFreeform_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
-            var rootSelectableContainer = new SelectableContainer(_documentView);
+            var rootSelectableContainer = new SelectableContainer(_documentView, docController);
 
             _documentController = docController;
 

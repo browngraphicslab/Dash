@@ -23,11 +23,16 @@ namespace Dash
 {
     public partial class SelectableContainer : UserControl
     {
+        public delegate void OnSelectionChangedHandler(SelectableContainer sender, DocumentController layoutDocument);
+
+        public event OnSelectionChangedHandler OnSelectionChanged;
+
 
         private SelectableContainer _selectedLayoutContainer;
         private SelectableContainer _parentContainer;
         private bool _isSelected;
         private FrameworkElement _contentElement;
+        public DocumentController LayoutDocument;
 
         public FrameworkElement ContentElement
         {
@@ -66,16 +71,16 @@ namespace Dash
             }
         }
 
-        public SelectableContainer(FrameworkElement contentElement)
+        public SelectableContainer(FrameworkElement contentElement, DocumentController layoutDocument)
         {
+            ContentElement = contentElement;
+            LayoutDocument = layoutDocument;
             this.InitializeComponent();
 
-            ContentElement = contentElement;
             RenderTransform = new TranslateTransform();
 
             Loaded += SelectableContainer_Loaded;
             Tapped += CompositeLayoutContainer_Tapped;
-
         }
 
         private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
@@ -86,18 +91,7 @@ namespace Dash
             SetContent();
         }
 
-        private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (!IsSelected)
-            {
-                if (_parentContainer != null)
-                {
-                    _parentContainer.SetSelectedContainer(this);
-                }
-            }
-            SetSelectedContainer(null);
-            e.Handled = true;
-        }
+
 
         // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
         private void OnContentChanged()
@@ -114,6 +108,25 @@ namespace Dash
             }
         }
 
+        #region Selection
+
+        private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (!IsSelected)
+            {
+                _parentContainer?.SetSelectedContainer(this);
+                _parentContainer?.FireSelectionChanged(this);
+            }
+            SetSelectedContainer(null);
+            e.Handled = true;
+        }
+
+        private void FireSelectionChanged(SelectableContainer selectedContainer)
+        {
+            OnSelectionChanged?.Invoke(selectedContainer, selectedContainer.LayoutDocument);
+            _parentContainer?.FireSelectionChanged(selectedContainer);
+        }
+
         public void SetSelectedContainer(SelectableContainer layoutContainer)
         {
             if (_selectedLayoutContainer != null)
@@ -123,8 +136,6 @@ namespace Dash
             }
             _selectedLayoutContainer = layoutContainer;
             if (_selectedLayoutContainer != null) _selectedLayoutContainer.IsSelected = true;
-
-
         }
 
 
@@ -133,59 +144,59 @@ namespace Dash
             return _selectedLayoutContainer;
         }
 
+        #endregion
+
+        #region Manipulation
+
+        private void ChangePosition(double deltaX, double deltaY)
+        {
+            var positionController = LayoutDocument.GetPositionField();
+            var currentPosition = positionController.Data;
+            positionController.Data = new Point(currentPosition.X + deltaX, currentPosition.Y + deltaY);
+        }
+
+        private void ChangeSize(double deltaWidth, double deltaHeight)
+        {
+            var widthController = LayoutDocument.GetWidthField();
+            widthController.Data += deltaWidth;
+            var heightController = LayoutDocument.GetHeightField();
+            heightController.Data += deltaHeight;
+        }
+
         private void XBottomLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            ContentElement.Width -= e.Delta.Translation.X;
-            ContentElement.Height += e.Delta.Translation.Y;
-            Width -= e.Delta.Translation.X;
-            Height += e.Delta.Translation.Y;
-            var transform = RenderTransform as TranslateTransform;
-            transform.X += e.Delta.Translation.X;
-            RenderTransform = transform;
+            ChangeSize(-e.Delta.Translation.X, e.Delta.Translation.Y);
+            ChangePosition(e.Delta.Translation.X, 0);
             e.Handled = true;
         }
 
+
         private void XBottomRightDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            ContentElement.Width += e.Delta.Translation.X;
-            ContentElement.Height += e.Delta.Translation.Y;
-            Width += e.Delta.Translation.X;
-            Height += e.Delta.Translation.Y;
+            ChangeSize(e.Delta.Translation.X, e.Delta.Translation.Y);
             e.Handled = true;
         }
 
         private void XTopLeftDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            ContentElement.Width -= e.Delta.Translation.X;
-            ContentElement.Height -= e.Delta.Translation.Y;
-            Width -= e.Delta.Translation.X;
-            Height -= e.Delta.Translation.Y;
-            var transform = RenderTransform as TranslateTransform;
-            transform.X += e.Delta.Translation.X;
-            transform.Y += e.Delta.Translation.Y;
-            RenderTransform = transform;
+            ChangeSize(-e.Delta.Translation.X, -e.Delta.Translation.Y);
+            ChangePosition(e.Delta.Translation.X, e.Delta.Translation.Y);
             e.Handled = true;
         }
 
         private void XTopRightDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            ContentElement.Width += e.Delta.Translation.X;
-            ContentElement.Height -= e.Delta.Translation.Y;
-            Width += e.Delta.Translation.X;
-            Height -= e.Delta.Translation.Y;
-            var transform = RenderTransform as TranslateTransform;
-            transform.Y += e.Delta.Translation.Y;
-            RenderTransform = transform;
+            ChangeSize(e.Delta.Translation.X, -e.Delta.Translation.Y);
+            ChangePosition(0, e.Delta.Translation.Y);
             e.Handled = true;
         }
 
         private void XCenterDragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            var transform = RenderTransform as TranslateTransform;
-            transform.X += e.Delta.Translation.X;
-            transform.Y += e.Delta.Translation.Y;
-            RenderTransform = transform;
+            ChangePosition(e.Delta.Translation.X, e.Delta.Translation.Y);
             e.Handled = true;
         }
+
+        #endregion
     }
 }
