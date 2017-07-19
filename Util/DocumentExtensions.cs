@@ -58,7 +58,7 @@ namespace Dash
         }
 
 
-        public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask = true)
+        public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {
             doc.AddLayoutToLayoutList(activeLayout);
 
@@ -81,7 +81,7 @@ namespace Dash
 
             // set the active layout on the deepest prototype since its the first one
             var deepestPrototype = doc.GetDeepestPrototype();
-            deepestPrototype.SetActiveLayout(activeLayout);
+            deepestPrototype.SetActiveLayout(activeLayout, forceMask: true, addToLayoutList: true);
         }
 
         public static NumberFieldModelController GetHeightField(this DocumentController doc, Context context = null)
