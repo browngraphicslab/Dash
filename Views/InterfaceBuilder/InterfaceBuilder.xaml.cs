@@ -329,6 +329,7 @@ namespace Dash
         private void List_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _display = DisplayTypeEnum.List;
+            SetActiveLayout(_documentController); 
             (sender as Button).Background = new SolidColorBrush(Colors.LightGray); 
             GridButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);;
             FreeformButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
@@ -337,6 +338,7 @@ namespace Dash
         private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _display = DisplayTypeEnum.Grid;
+            SetActiveLayout(_documentController);
             (sender as Button).Background = new SolidColorBrush(Colors.LightGray);
             ListButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
             FreeformButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
@@ -345,6 +347,7 @@ namespace Dash
         private void Freeform_Tapped(object sender, TappedRoutedEventArgs e)
         {
             _display = DisplayTypeEnum.Freeform;
+            SetActiveLayout(_documentController);
             (sender as Button).Background = new SolidColorBrush(Colors.LightGray);
             ListButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
             GridButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]); 
