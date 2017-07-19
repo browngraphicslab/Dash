@@ -450,6 +450,11 @@ namespace Dash {
                     tb = new TextBlock();
                     var numFieldModelController = textField as NumberFieldModelController;
                     BindTextBlockSource(tb, numFieldModelController);
+                } else if (textField is RichTextFieldModelController)
+                {
+                    tb = new TextBlock();
+                    var richTextFieldModelController = textField as RichTextFieldModelController;
+                    BindTextBlockSource(tb, richTextFieldModelController);
                 }
 
                 // bind the text height
@@ -657,6 +662,15 @@ namespace Dash {
                 }
             }
 
+            private static void BindTextBlockSource(FrameworkElement renderElement, RichTextFieldModelController fieldModelController)
+            {
+                var sourceBinding = new Binding
+                {
+                    Source = fieldModelController,
+                    Path = new PropertyPath(nameof(fieldModelController.RichTextData))
+                };
+                renderElement.SetBinding(TextBlock.TextProperty, sourceBinding);
+            }
 
             private static void BindTextBlockSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
             {
@@ -1293,7 +1307,10 @@ namespace Dash {
                 return stack;
             }
         }
-
+        /// <summary>
+        /// Postitnote 
+        /// </summary>
+        /*
         public class PostitNote : CourtesyDocument {
             public static DocumentType PostitNoteType =
                 new DocumentType("A5FEFB00-EA2C-4B64-9230-BBA41BACCAFC", "Post It");
@@ -1339,7 +1356,7 @@ namespace Dash {
                 throw new NotImplementedException();
             }
         }
-
+        */ 
 
         public class AnnotatedImage : CourtesyDocument
         {

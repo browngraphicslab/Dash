@@ -66,9 +66,12 @@ namespace Dash
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
+
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
         }
+
+        
 
         public void AddOperator()
         {
@@ -214,6 +217,12 @@ namespace Dash
             DisplayDocument(del);
             Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+        }
+
+        public void AddNotes()
+        {
+            DocumentController noteCont = new NoteDocuments.RichTextNote(new DocumentType()).Document;
+            DisplayDocument(noteCont); 
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
