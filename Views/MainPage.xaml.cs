@@ -100,7 +100,7 @@ namespace Dash
             // - Documents -
             // update & get
             Dictionary<Key, FieldModel> fields = new Dictionary<Key, FieldModel>();
-            fields.Add(new Key("Text Field Sample"),textField);
+            fields.Add(new Key("TextFieldSample"),textField);
             DocumentModel docModel = new DocumentModel(fields, new DocumentType("idhere"));
             var result2 = await docEndpoint.AddDocument(docModel);
 

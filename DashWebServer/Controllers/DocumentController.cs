@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Documents;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -41,10 +42,12 @@ namespace DashWebServer.Controllers
         {
             ServerDocumentModel DocModel;
             try {
+                Debug.WriteLine(docModel);
                 // add the shape model to the documentRepository
                 DocModel = await _documentRepository.AddItemAsync(docModel);
             }
             catch (Exception e) {
+                Debug.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(DocModel);

@@ -8,14 +8,22 @@ namespace DashShared
     /// </summary>
     public class ServerDocumentModel : EntityBase // TODO: AuthorizableEntityBase
     {
+
+        public ServerDocumentModel()
+        {
+
+        }
         public ServerDocumentModel(Dictionary<Key,string> fields, DocumentType type, string docId) {
             this.DocumentType = type;
             Id = docId;
-            this.Fields = fields;
+
+            Fields = new Dictionary<string, string>();
+            foreach (KeyValuePair<Key,string> item in fields)
+                Fields.Add(item.Key.ToString(), item.Value);
         }
 
         [Required]
-        public Dictionary<Key, string> Fields { get; set; }
+        public Dictionary<string, string> Fields { get; set; }
 
         [Required]
         public DocumentType DocumentType { get; set; }

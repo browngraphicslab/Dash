@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using DashShared;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -27,7 +28,10 @@ namespace Dash
         /// </summary>
         private DocumentModel convertToClientModel(ServerDocumentModel newDocument)
         {
-            return new DocumentModel(newDocument.Fields, newDocument.DocumentType);
+            Dictionary<Key, string> fields = new Dictionary<Key, string>();
+            foreach (KeyValuePair<string,string> item in newDocument.Fields)
+                fields.Add(new Key(item.Key), item.Value);
+            return new DocumentModel(fields, newDocument.DocumentType);
         }
 
         /// <summary>
@@ -40,7 +44,8 @@ namespace Dash
             try
             {
                 // convert from Dash DocumentModel to DashShared DocumentModel (server representation)
-                HttpResponseMessage result = _connection.Post("api/Document", convertToServerModel(newDocument));
+                var s = convertToServerModel(newDocument);
+                HttpResponseMessage result = _connection.Post("api/Document", s);
                 ServerDocumentModel resultdoc = await result.Content.ReadAsAsync<ServerDocumentModel>();
                 return new Result<DocumentModel>(true,convertToClientModel(resultdoc));
             }
@@ -81,7 +86,7 @@ namespace Dash
         {
             try
             {
-                ServerDocumentModel result = await _connection.GetItem<ServerDocumentModel>($"api/Field/{id}");
+                ServerDocumentModel result = await _connection.GetItem<ServerDocumentModel>($"api/Document/{id}");
                 return new Result<DocumentModel>(true,convertToClientModel(result));
             }
             catch (ApiException e)

@@ -16,7 +16,7 @@ namespace DashShared
         [Required]
         public string Name { get; set; }
 
-        public Key()
+        public Key() 
         {
         }
 
@@ -49,7 +49,7 @@ namespace DashShared
 
         public override string ToString()
         {
-            return Name;
+            return Name; 
         }
     }
 }
