@@ -271,7 +271,7 @@ namespace Dash
         public DocumentController MakeDelegate()
         {
             // create a controller for the child
-            var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
+            var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType, null);
             delegateController.DocumentFieldUpdated += delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
             DocumentFieldUpdated += delegateController.DocumentController_DocumentFieldUpdated;
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;

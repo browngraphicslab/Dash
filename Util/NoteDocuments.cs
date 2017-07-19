@@ -29,8 +29,8 @@ namespace Dash
             public NoteDocument(DocumentType type)
             {
                 Type = type;
-                _prototype = CreatePrototype();
-                _prototypeLayout = CreatePrototypeLayout(); 
+                //_prototype = CreatePrototype();
+                //_prototypeLayout = CreatePrototypeLayout(); 
             }
 
             public abstract DocumentController CreatePrototype();
@@ -53,8 +53,10 @@ namespace Dash
             public static Key TitleKey = new Key("EF1B8247-B31F-4821-859C-9E28FDD098D3", "Title");
             public static Key RTFieldKey = new Key("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
 
+
             public override DocumentController CreatePrototype()
             {
+
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(RTFieldKey, new RichTextFieldModelController("Prototype Content"));
@@ -63,8 +65,9 @@ namespace Dash
 
             public override DocumentController CreatePrototypeLayout()
             {
-                var titleLayout = new TextingBox(new DocumentReferenceController(_prototype.GetId(), TitleKey), 0, 0, 200, 50);
-                var richTextLayout = new RichTextBox(new DocumentReferenceController(_prototype.GetId(), RTFieldKey), 0, 50, 200, 200);
+                var prototype = GetLayoutPrototype(); 
+                var titleLayout = new TextingBox(new DocumentReferenceController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
+                var richTextLayout = new RichTextBox(new DocumentReferenceController(prototype.GetId(), RTFieldKey), 0, 50, 200, 200);
                 var prototpeLayout = new StackingPanel(new DocumentController[] { titleLayout.Document, richTextLayout.Document }, true);
 
                 return prototpeLayout.Document;
@@ -73,8 +76,9 @@ namespace Dash
             public RichTextNote(DocumentType type) : base(type)
             {
                 _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
+                _prototypeLayout = CreatePrototypeLayout();
 
-                Document = _prototype.MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
                 Document.SetField(RTFieldKey, new RichTextFieldModelController("Something to fill this space?"), true);
 
@@ -101,8 +105,10 @@ namespace Dash
 
             public override DocumentController CreatePrototypeLayout()
             {
-                var titleLayout = new TextingBox(new DocumentReferenceController(_prototype.GetId(), TitleKey), 0, 0, 200, 50);
-                var imageLayout = new ImageBox(new DocumentReferenceController(_prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
+                var prototype = GetLayoutPrototype();
+
+                var titleLayout = new TextingBox(new DocumentReferenceController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
+                var imageLayout = new ImageBox(new DocumentReferenceController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
                 var prototpeLayout = new StackingPanel(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
@@ -111,8 +117,9 @@ namespace Dash
             public ImageNote(DocumentType type) : base(type)
             {
                 _prototypeID = "C48C8AF2-5609-40F0-9FAA-E300C582AF5F";
+                _prototypeLayout = CreatePrototypeLayout();
 
-                Document = _prototype.MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
                 Document.SetField(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
 
@@ -138,16 +145,17 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototypeTextLayout =
-                    new TextingBox(new DocumentReferenceController(_prototype.GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                    new TextingBox(new DocumentReferenceController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
 
                 return prototypeTextLayout.Document;
             }
 
             public PostitNote(DocumentType type) : base(type)
             {
-                _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";  
+                _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";
+                _prototypeLayout = CreatePrototypeLayout();
 
-                Document = _prototype.MakeDelegate();
+                Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(NotesFieldKey, new TextFieldModelController("Hello World!"), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
