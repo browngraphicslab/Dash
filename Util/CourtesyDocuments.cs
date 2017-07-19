@@ -1182,6 +1182,12 @@ namespace Dash {
                 var widthController = GetWidthField(docController, context);
                 BindWidth(rtv, widthController);
 
+                var referenceToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController; 
+                if (referenceToText != null) // only bind operation interactions if text is a reference
+                {
+                    BindOperationInteractions(rtv.xRichEitBox, referenceToText);
+                }
+
                 return rtv;
             }
 
