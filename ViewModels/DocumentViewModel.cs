@@ -185,7 +185,8 @@ namespace Dash
 
             SetUpSmallIcon();
 
-            documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
+            documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
+            //documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
             OnActiveLayoutChanged();
         }
 
@@ -205,10 +206,8 @@ namespace Dash
 
         private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
-            {
-                OnActiveLayoutChanged();
-            }
+            Debug.Assert(args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey));
+            OnActiveLayoutChanged();
         }
 
         private void OnActiveLayoutChanged()

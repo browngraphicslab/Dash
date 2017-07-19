@@ -28,23 +28,46 @@ namespace Dash
             public readonly FieldModelController NewValue;
             public readonly DocumentReferenceController Reference;
             public readonly Context Context;
+            public readonly bool FromDelegate;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, DocumentReferenceController reference, Context context)
+                FieldUpdatedAction action, DocumentReferenceController reference, Context context, bool fromDelegate)
             {
                 Action = action;
                 OldValue = oldValue;
                 NewValue = newValue;
                 Reference = reference;
                 Context = context;
+                FromDelegate = fromDelegate;
             }
         }
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
+        private readonly Dictionary<Key, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<Key, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
+        {
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                _fieldUpdatedDictionary[key] += handler;
+            }
+            else
+            {
+                _fieldUpdatedDictionary[key] = handler;
+            }
+        }
+
+        public void RemoveFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
+        {
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                // ReSharper disable once DelegateSubtraction
+                _fieldUpdatedDictionary[key] -= handler;
+            }
+        }
 
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
@@ -219,7 +242,7 @@ namespace Dash
             {
                 Execute(c, true);
             }
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this)));
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this), false));
             field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {
                 context = context ?? new Context();
@@ -228,7 +251,7 @@ namespace Dash
                 {
                     Execute(context, true);
                 }
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context));
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false));
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -281,7 +304,6 @@ namespace Dash
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
             delegateController.DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
-            DocumentFieldUpdated += delegateController.DocumentController_DocumentFieldUpdated;
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
@@ -296,17 +318,6 @@ namespace Dash
             return delegateController;
         }
 
-        private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
-        {
-            if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
-            {
-                return;
-            }
-            Context c = new Context(args.Context);
-            c.AddDocumentContext(this);
-            //SetField(args.Reference.FieldKey, args.Reference.DereferenceToRoot(c), true);
-        }
-
         private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
@@ -316,7 +327,7 @@ namespace Dash
             Context c = new Context(this);
             //c.AddDocumentContext(this);
             DocumentReferenceController reference = new DocumentReferenceController(GetId(), args.Reference.FieldKey);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c));
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c, true));
         }
 
 
@@ -407,7 +418,7 @@ namespace Dash
                     if (update)
                     {
                         OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Add, reference, context));
+                            FieldUpdatedAction.Add, reference, context, false));
                     }
                 }
             }
@@ -555,6 +566,10 @@ namespace Dash
 
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
+            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
+            {
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(this, args);
+            }
             DocumentFieldUpdated?.Invoke(this, args);
             PrototypeFieldUpdated?.Invoke(this, args);
         }
