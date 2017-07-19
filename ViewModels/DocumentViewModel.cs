@@ -343,7 +343,7 @@ namespace Dash
             var copy = DocumentController.GetCopy();
             var layoutField = copy.GetActiveLayout().Data;
             var layoutCopy = layoutField.GetCopy();
-            copy.SetActiveLayout(layoutCopy, true);
+            copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
             var positionField = copy.GetPositionField();
             if (positionField != null)
             {
@@ -365,7 +365,7 @@ namespace Dash
                 new PointFieldModelController(new Point(oldPosition.X + 15, oldPosition.Y + 15)),
                 true);
 
-            del.SetActiveLayout(delLayout, true);
+            del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
 
             return del;
         }

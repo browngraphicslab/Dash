@@ -46,7 +46,7 @@ namespace Dash
             MainDocument = new DocumentController(fields, new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E"));
             var collectionDocumentController =
                 new CourtesyDocuments.CollectionBox(new DocumentReferenceController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            MainDocument.SetActiveLayout(collectionDocumentController);
+            MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(MainDocument)
