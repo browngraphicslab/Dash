@@ -86,7 +86,7 @@ namespace Dash
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
 
                 Document.AddLayoutToLayoutList(docLayout);
-                Document.SetActiveLayout(docLayout);
+                Document.SetActiveLayout(docLayout, true, true);
             }
         }
 
@@ -127,7 +127,7 @@ namespace Dash
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
 
                 Document.AddLayoutToLayoutList(docLayout);
-                Document.SetActiveLayout(docLayout);
+                Document.SetActiveLayout(docLayout, true, true);
             }
         }
 
@@ -162,7 +162,7 @@ namespace Dash
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 
                 Document.AddLayoutToLayoutList(docLayout);
-                Document.SetActiveLayout(docLayout);
+                Document.SetActiveLayout(docLayout,true, true);
             }
         }
 

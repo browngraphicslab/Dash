@@ -27,13 +27,8 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            DocumentCollectionFieldModelController setA = inputs[AKey] as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = inputs[BKey] as DocumentCollectionFieldModelController;
-            if (setA == null || setB == null)
-            {
-                outputs[UnionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-                return;
-            }
+            DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
+            DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController)inputs[BKey];
 
             // Union by comparing all fields 
             List<DocumentController> bigSet = setA.GetDocuments();
@@ -43,7 +38,7 @@ namespace Dash
             result.ExceptWith(same);
             //(doc.GetDereferencedField(UnionKey, DocContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
             outputs[UnionKey] = new DocumentCollectionFieldModelController(result);
-            Debug.WriteLine("union count :" + result.Count);
+            //Debug.WriteLine("union count :" + result.Count);
 
             // Union by Document ID 
             //(doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Union(setB.GetDocuments()).ToList());

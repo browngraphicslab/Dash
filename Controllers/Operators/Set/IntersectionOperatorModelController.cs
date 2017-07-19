@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using DashShared;
 
-namespace Dash.Models.OperatorModels.Set
+namespace Dash
 {
     class IntersectionOperatorModelController : OperatorFieldModelController
 
@@ -31,19 +31,14 @@ namespace Dash.Models.OperatorModels.Set
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            DocumentCollectionFieldModelController setA = inputs[AKey] as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = inputs[BKey] as DocumentCollectionFieldModelController;
-            if (setA == null || setB == null)
-            {
-                outputs[IntersectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-                return;
-            }
+            DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
+            DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController) inputs[BKey];
 
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 
             //(doc.GetDereferencedField(IntersectionKey, docContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
             outputs[IntersectionKey] = new DocumentCollectionFieldModelController(result);
-            Debug.WriteLine("intersection count :" + result.Count);
+            //Debug.WriteLine("intersection count :" + result.Count);
 
             // Intersect by Document ID 
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());

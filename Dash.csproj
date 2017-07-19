@@ -187,7 +187,7 @@
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\AddOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ImageOperatorFieldModelController.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />

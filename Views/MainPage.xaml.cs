@@ -9,7 +9,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Models.OperatorModels.Set;
 using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,7 +46,7 @@ namespace Dash
             MainDocument = new DocumentController(fields, new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E"));
             var collectionDocumentController =
                 new CourtesyDocuments.CollectionBox(new DocumentReferenceController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-            MainDocument.SetActiveLayout(collectionDocumentController);
+            MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
             MainDocView.DataContext = new DocumentViewModel(MainDocument)
@@ -76,57 +75,32 @@ namespace Dash
         public void AddOperator()
         {
             //Create Operator document
-            var opModel =
+            var divideOp =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            var view = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var opvm = new DocumentViewModel(opModel);
-            //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-            view.DataContext = opvm;
+            DisplayDocument(divideOp);
 
-            DisplayDocument(opModel);
+            var addOp =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new AddOperatorModelController(new OperatorFieldModel("Add")));
+            DisplayDocument(addOp);
 
             //// add union operator for testing 
-            var intersectOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            var intersectView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var intersectOpvm = new DocumentViewModel(intersectOpModel);
-            intersectView.DataContext = intersectOpvm;
-            DisplayDocument(intersectOpModel);
+            //var intersectOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
+            //DisplayDocument(intersectOpModel);
 
-            var unionOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            var unionView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var unionOpvm = new DocumentViewModel(unionOpModel);
-            unionView.DataContext = unionOpvm;
-            DisplayDocument(unionOpModel);
+            //var unionOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
+            //DisplayDocument(unionOpModel);
 
             // add image url -> image operator for testing
-            var imgOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            var imgOpView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var imgOpvm = new DocumentViewModel(imgOpModel);
-            imgOpView.DataContext = imgOpvm;
-            DisplayDocument(imgOpModel);
+            //var imgOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
+            //DisplayDocument(imgOpModel);
         }
 
         /// <summary>

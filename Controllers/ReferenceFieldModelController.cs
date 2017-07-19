@@ -17,13 +17,11 @@ namespace Dash
             var docController = GetDocumentController(null);
             if (docController != null)
             {
-                docController.DocumentFieldUpdated += delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                docController.AddFieldUpdatedListener(FieldKey, delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
-                    if (args.Reference.FieldKey.Equals(FieldKey))
-                    {
-                        OnFieldModelUpdated(args.Context);
-                    }
-                };
+                    Debug.Assert(args.Reference.FieldKey.Equals(FieldKey));
+                    OnFieldModelUpdated(args.Context);
+                });
             }
         }
 

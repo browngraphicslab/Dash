@@ -183,11 +183,10 @@ namespace Dash
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.MakeViewUI(new Context(DocumentController));
-
             SetUpSmallIcon();
 
-            documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
+            documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
+            //documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
             OnActiveLayoutChanged();
         }
 
@@ -207,10 +206,8 @@ namespace Dash
 
         private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey))
-            {
-                OnActiveLayoutChanged();
-            }
+            Debug.Assert(args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey));
+            OnActiveLayoutChanged();
         }
 
         private void OnActiveLayoutChanged()
@@ -345,7 +342,7 @@ namespace Dash
             var copy = DocumentController.GetCopy();
             var layoutField = copy.GetActiveLayout().Data;
             var layoutCopy = layoutField.GetCopy();
-            copy.SetActiveLayout(layoutCopy, true);
+            copy.SetActiveLayout(layoutCopy, forceMask: true, addToLayoutList: false);
             var positionField = copy.GetPositionField();
             if (positionField != null)
             {
@@ -367,7 +364,7 @@ namespace Dash
                 new PointFieldModelController(new Point(oldPosition.X + 15, oldPosition.Y + 15)),
                 true);
 
-            del.SetActiveLayout(delLayout, true);
+            del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
 
             return del;
         }
