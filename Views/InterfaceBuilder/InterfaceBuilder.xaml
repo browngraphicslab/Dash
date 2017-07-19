@@ -56,9 +56,9 @@
             </Grid>
 
             <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
-                <Button Content="🖹" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center" FontSize="25"></Button>
-                <Button Content="▦" Width="45" Height="45" Margin="5" VerticalContentAlignment="Center" FontSize="25"></Button>
-                <Button Content="⊡" Width="45" Height="45" Margin="5" VerticalContentAlignment="Center" FontSize="25"></Button>
+                <Button x:Name="ListButton" Content="🖹" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center" FontSize="25" Tapped="List_Tapped" ></Button>
+                <Button x:Name="GridButton" Content="▦" Width="45" Height="45" Margin="5" VerticalContentAlignment="Center" FontSize="25" Tapped="Grid_Tapped"></Button>
+                <Button x:Name="FreeformButton" Content="⊡" Width="45" Height="45" Margin="5" VerticalContentAlignment="Center" FontSize="25" Tapped="Freeform_Tapped" ></Button>
             </StackPanel>
         </Grid>
     </local:WindowTemplate.InnerContent>

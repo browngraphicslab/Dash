@@ -10,6 +10,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using static Dash.CourtesyDocuments;
+using System;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -22,8 +25,11 @@ namespace Dash
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
-
         private DocumentController _documentController;
+
+        public enum DisplayTypeEnum { List, Grid, Freeform } 
+
+        private DisplayTypeEnum _display = DisplayTypeEnum.Freeform;  
 
         public InterfaceBuilder(DocumentController docController, int width = 800, int height = 500)
         {
@@ -43,7 +49,8 @@ namespace Dash
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            SetActiveLayoutToFreeform_TEMP(docController);
+            //SetActiveLayoutToFreeform_TEMP(docController);
+            SetActiveLayout(docController);
             var docViewModel = new DocumentViewModel(docController);
             _documentView = new DocumentView(docViewModel);
             _documentController = docController;
@@ -67,6 +74,21 @@ namespace Dash
                 addToLayoutList: true);
         }
 
+        public void SetActiveLayout(DocumentController docController)
+        {
+            switch (_display)
+            {
+                case DisplayTypeEnum.Freeform:
+                    SetActiveLayoutToFreeform_TEMP(docController);
+                    return;
+                case DisplayTypeEnum.Grid:
+                    throw new NotImplementedException();
+                case DisplayTypeEnum.List:
+                    throw new NotImplementedException();
+                default:
+                    break;
+            }
+        }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
@@ -304,7 +326,28 @@ namespace Dash
             //docController.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
 
+        private void List_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _display = DisplayTypeEnum.List;
+            (sender as Button).Background = new SolidColorBrush(Colors.LightGray); 
+            GridButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);;
+            FreeformButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+        }
 
+        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _display = DisplayTypeEnum.Grid;
+            (sender as Button).Background = new SolidColorBrush(Colors.LightGray);
+            ListButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            FreeformButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+        }
 
+        private void Freeform_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _display = DisplayTypeEnum.Freeform;
+            (sender as Button).Background = new SolidColorBrush(Colors.LightGray);
+            ListButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            GridButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]); 
+        }
     }
 }
