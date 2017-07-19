@@ -22,7 +22,10 @@ namespace Dash
             protected static DocumentType Type { get; set;}
 
             public static DocumentController _prototype;
-            public static DocumentController _prototypeLayout; 
+            public static DocumentController _prototypeLayout;
+
+            protected static string _prototypeID; 
+
             public NoteDocument(DocumentType type)
             {
                 Type = type;
@@ -31,24 +34,31 @@ namespace Dash
             }
 
             public abstract DocumentController CreatePrototype();
-            public abstract DocumentController CreatePrototypeLayout(); 
+            public abstract DocumentController CreatePrototypeLayout();
 
-            // prototype id 
+            protected DocumentController GetLayoutPrototype()
+            {
+                var prototype = ContentController.GetController<DocumentController>(_prototypeID);
+                if (prototype == null)
+                {
+                    prototype = CreatePrototype(); // TODO should this be CreatePrototypeLayout ..?
+                }
+                return prototype;
+            }
+
         }
-
         
         public class RichTextNote : NoteDocument
         {
             public static Key TitleKey = new Key("EF1B8247-B31F-4821-859C-9E28FDD098D3", "Title");
             public static Key RTFieldKey = new Key("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
 
-
             public override DocumentController CreatePrototype()
             {
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(RTFieldKey, new RichTextFieldModelController("Prototype Content"));
-                return new DocumentController(fields, Type);
+                return new DocumentController(fields, Type, _prototypeID);
             }
 
             public override DocumentController CreatePrototypeLayout()
@@ -62,6 +72,8 @@ namespace Dash
 
             public RichTextNote(DocumentType type) : base(type)
             {
+                _prototypeID = "A79BB20B-A0D0-4F5C-81C6-95189AF0E90D";
+
                 Document = _prototype.MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
                 Document.SetField(RTFieldKey, new RichTextFieldModelController("Something to fill this space?"), true);
@@ -73,6 +85,7 @@ namespace Dash
                 Document.SetActiveLayout(docLayout);
             }
         }
+
         public class ImageNote : NoteDocument
         {
             public static Key TitleKey = new Key("290976B3-5FFA-4899-97B8-7DBFFF7C2E4A", "Title");
@@ -83,7 +96,7 @@ namespace Dash
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
-                return new DocumentController(fields, Type);
+                return new DocumentController(fields, Type, _prototypeID);
             }
 
             public override DocumentController CreatePrototypeLayout()
@@ -97,6 +110,8 @@ namespace Dash
 
             public ImageNote(DocumentType type) : base(type)
             {
+                _prototypeID = "C48C8AF2-5609-40F0-9FAA-E300C582AF5F";
+
                 Document = _prototype.MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
                 Document.SetField(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
@@ -109,7 +124,6 @@ namespace Dash
             }
         }
 
-
         public class PostitNote : NoteDocument
         {
             public static Key NotesFieldKey = new Key("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
@@ -118,7 +132,7 @@ namespace Dash
             {
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(NotesFieldKey, new TextFieldModelController("Prototype Text"));
-                return new DocumentController(fields, Type);
+                return new DocumentController(fields, Type, _prototypeID);
             }
 
             public override DocumentController CreatePrototypeLayout()
@@ -131,6 +145,8 @@ namespace Dash
 
             public PostitNote(DocumentType type) : base(type)
             {
+                _prototypeID = "08AC0453-D39F-45E3-81D9-C240B7283BCA";  
+
                 Document = _prototype.MakeDelegate();
                 Document.SetField(NotesFieldKey, new TextFieldModelController("Hello World!"), true);
 
