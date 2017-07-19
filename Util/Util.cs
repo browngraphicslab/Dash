@@ -303,12 +303,9 @@ namespace Dash
             await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
-        // TODO at some point make a xaml page where user can input address password email message subject etc so that we don't need it in code 
-        public static async void SendEmail2(string addressTo, string addressFrom, string message, string subject, StorageFile attachment)
+        public static async void SendEmail2(string addressTo, string password, string addressFrom, string message, string subject, StorageFile attachment)
         {
-            throw new NotImplementedException("THIS WON'T WORK COS YOU HAVE TO INPUT YOUR EMAIL PASSWORD HERE AND I'M NOT GONNA EXPOSE MINE TO EVERYONE IN THE GRAPHICS LAB");
-            ///* 
-            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, "YOUR EMAIL PASSWORD")) // gmail
+            using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, password)) // gmail
             {
                 var email = new Windows.ApplicationModel.Email.EmailMessage
                 {
@@ -342,7 +339,6 @@ namespace Dash
                 var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
                 await popup.ShowAsync(); 
             }
-            //*/
         }
     }
 }
