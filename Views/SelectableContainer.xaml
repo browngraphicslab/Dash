@@ -10,6 +10,6 @@
     d:DesignWidth="400">
 
     <Grid x:Name="XGrid" BorderBrush="{StaticResource WindowsBlue}">
-        <ContentControl x:Name="XLayoutDisplay"></ContentControl>
+        <ContentControl x:Name="XLayoutDisplay" Content="{Binding Path=ContentElement}"></ContentControl>
     </Grid>
 </UserControl>

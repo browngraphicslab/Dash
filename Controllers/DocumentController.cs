@@ -485,6 +485,10 @@ namespace Dash
             {
                 return StackingPanel.MakeView(this, context);
             }
+            if (DocumentType == FreeformBox.DocumentType)
+            {
+                return FreeformBox.MakeView(this, context);
+            }
             if (DocumentType == CollectionBox.DocumentType)
             {
                 return CollectionBox.MakeView(this, context);
