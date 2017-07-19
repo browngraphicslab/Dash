@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
@@ -47,6 +48,7 @@ namespace Dash
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
             var rootSelectableContainer = new SelectableContainer(_documentView, docController);
+            rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
 
             _documentController = docController;
 
@@ -58,6 +60,16 @@ namespace Dash
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.Drop += DocumentViewOnDrop;
             _documentView.AllowDrop = true;
+        }
+
+        private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument)
+        {
+            xSettingsPane.Children.Clear();
+            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument);
+            if (newSettingsPane != null)
+            {
+                xSettingsPane.Children.Add(newSettingsPane);
+            }
         }
 
         private void SetActiveLayoutToFreeform_TEMP(DocumentController docController)

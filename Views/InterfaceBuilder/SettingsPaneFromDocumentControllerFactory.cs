@@ -25,7 +25,7 @@ namespace Dash
             }
 
             Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
-            return null;
+            return CreateDocumentSettingsLayout(editedLayoutDocument);
         }
 
         private static UIElement CreateCollectionSettingsLayout(DocumentController editedLayoutDocument)
@@ -44,6 +44,12 @@ namespace Dash
         {
             var context = new Context(); // bcz: ??? Is this right?
             return new TextSettings(editedLayoutDocument, context);
+        }
+
+        private static UIElement CreateDocumentSettingsLayout(DocumentController editedLayoutDocument)
+        {
+            var context = new Context(); // bcz: ??? Is this right?
+            return new DocumentSettings(editedLayoutDocument, context);
         }
 
     }

@@ -37,6 +37,7 @@ namespace Dash
 
         public DocumentController LayoutDocument;
         private ManipulationControls _manipulator;
+        private bool _isLowestSelected;
 
         public FrameworkElement ContentElement
         {
@@ -58,13 +59,29 @@ namespace Dash
                 if (_isSelected)
                 {
                     XGrid.BorderThickness = new Thickness(3);
+                } else
+                {
+                    XGrid.BorderThickness = new Thickness(1);
+                    IsLowestSelected = false;
+                }
+            }
+        }
+
+        public bool IsLowestSelected
+        {
+            get { return _isLowestSelected; }
+            set
+            {
+                _isLowestSelected = value;
+                if (value)
+                {
                     foreach (var ellipse in _draggerList)
                     {
                         ellipse.Visibility = Visibility.Visible;
                     }
-                } else
+                }
+                else
                 {
-                    XGrid.BorderThickness = new Thickness(1);
                     foreach (var ellipse in _draggerList)
                     {
                         ellipse.Visibility = Visibility.Collapsed;
@@ -91,11 +108,12 @@ namespace Dash
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             IsSelected = false;
-
             SetContent();
+            if (_parentContainer == null)
+            {
+                OnSelectionChanged?.Invoke(this, LayoutDocument);
+            }
         }
-
-
 
         // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
         private void OnContentChanged()
@@ -116,10 +134,15 @@ namespace Dash
 
         private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (!IsSelected)
+            if (!IsLowestSelected)
             {
                 _parentContainer?.SetSelectedContainer(this);
                 _parentContainer?.FireSelectionChanged(this);
+                IsLowestSelected = true;
+                if (_parentContainer == null)
+                {
+                    OnSelectionChanged?.Invoke(this, LayoutDocument);
+                }
             }
             SetSelectedContainer(null);
             e.Handled = true;
@@ -139,7 +162,11 @@ namespace Dash
                 _selectedLayoutContainer.SetSelectedContainer(null); // deselect all children recursively
             }
             _selectedLayoutContainer = layoutContainer;
-            if (_selectedLayoutContainer != null) _selectedLayoutContainer.IsSelected = true;
+            if (_selectedLayoutContainer != null)
+            {
+                _selectedLayoutContainer.IsSelected = true;
+                IsLowestSelected = false;
+            }
         }
 
 
