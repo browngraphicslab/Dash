@@ -119,6 +119,11 @@ namespace Dash
             MainPage.Instance.AddDocuments(null, null);
         }
 
+        public static void AddNotes(object obj)
+        {
+            MainPage.Instance.AddNotes(); 
+        }
+
         public static void SetTouchInput(object obj)
         {
             InkSource.InkInputType = CoreInputDeviceTypes.Touch;

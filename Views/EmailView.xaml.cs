@@ -29,6 +29,7 @@ namespace Dash
         private StorageFile _attachmentFile;
         private string _to;
         private string _from;
+        private string _password; 
         private string _message = "";
         private string _subject = "";
 
@@ -56,8 +57,8 @@ namespace Dash
 
         private void Send_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_from == null || _to == null) return;
-            Util.SendEmail2(_to, _from, _message, _subject, _attachmentFile); 
+            if (_from == null || _to == null || _password == null) return;
+            Util.SendEmail2(_to, _password, _from, _message, _subject, _attachmentFile); 
         }
 
         private void Subject_TextChanged(object sender, TextChangedEventArgs e)
@@ -78,6 +79,11 @@ namespace Dash
         private void From_TextChanged(object sender, TextChangedEventArgs e)
         {
             _from = (sender as TextBox).Text;
+        }
+
+        private void Password_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            _password = (sender as TextBox).Text;
         }
     }
 }

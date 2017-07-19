@@ -37,12 +37,8 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            var input = inputs[InputKey] as BaseListFieldModelController;
-            var op = inputs[OperatorKey] as OperatorFieldModelController;
-            if (input == null || op == null)//Input not set
-            {
-                return;
-            }
+            var input = (BaseListFieldModelController) inputs[InputKey];
+            var op = (OperatorFieldModelController)inputs[OperatorKey];
             if (op.Inputs.Count != 1 || op.Outputs.Count != 1)
             {
                 return;

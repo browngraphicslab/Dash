@@ -71,11 +71,6 @@ namespace Dash
             return referenceDocId;
         }
 
-        public void PrintContextList()
-        {
-            Debug.WriteLine(string.Join(", ",_documentContextList.Select(dc => dc.GetId())));
-        }
-
         public static Context SafeInit(Context context)
         {
             return context ?? new Context();

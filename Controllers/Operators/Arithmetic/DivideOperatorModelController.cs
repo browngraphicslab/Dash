@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using DashShared;
 
 namespace Dash
@@ -32,16 +33,11 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            var numberA = inputs[AKey] as NumberFieldModelController;
+            var numberA = (NumberFieldModelController) inputs[AKey];
 
-            var numberB = inputs[BKey] as NumberFieldModelController;
-            if (numberA == null || numberB == null)
-            {
-                outputs[QuotientKey] = new NumberFieldModelController();
-                outputs[RemainderKey] = new NumberFieldModelController();
-                return;
-            }
+            var numberB = (NumberFieldModelController) inputs[BKey];
 
+            //Varargs proof of concept
             string s = new string((char)nextChar++, 1);
             Inputs.Add(new Key(s, s), TypeInfo.Number);
             
