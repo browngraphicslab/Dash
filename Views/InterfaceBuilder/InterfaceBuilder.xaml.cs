@@ -47,13 +47,13 @@ namespace Dash
             SetActiveLayoutToFreeform_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
-            var rootSelectableContainer = new SelectableContainer(_documentView, docController);
+            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
 
             _documentController = docController;
 
             // set the middle pane to hold the document view
-            xDocumentHolder.Child = rootSelectableContainer;
+            xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
 

@@ -239,28 +239,6 @@ namespace Dash
 
             SetUpMenu();
             ViewModel.CloseMenu();
-
-            #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
-
-            //ViewModel.PropertyChanged += (o, eventArgs) =>
-            //{
-            //    if (eventArgs.PropertyName == "IsMoveable")
-            //    {
-            //        if (ViewModel.IsMoveable)
-            //        {
-            //            manipulator.AddAllAndHandle();
-            //        }
-            //        else
-            //        {
-            //            manipulator.RemoveAllButHandle();
-            //        }
-            //    }
-            //};
-
-            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            //else manipulator.RemoveAllButHandle();
-
-            #endregion
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
