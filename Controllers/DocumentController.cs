@@ -214,6 +214,7 @@ namespace Dash
 
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentReferenceController(GetId(), key);
+            Execute(new Context(this), true);
             OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this)));
             field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {

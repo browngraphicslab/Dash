@@ -482,7 +482,7 @@ namespace Dash {
                     string id = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
                     if (args.Action != DocumentController.FieldUpdatedAction.Update && id.Equals(referenceToText.GetDocumentController(context).GetId()) && args.Reference.FieldKey.Equals(referenceToText.FieldKey))
                     {
-                        var field = GetTextField(docController, context);
+                        var field = GetTextField(docController, args.Context);
                         Debug.Assert(field != null);
                         if (field is TextFieldModelController)
                         {
