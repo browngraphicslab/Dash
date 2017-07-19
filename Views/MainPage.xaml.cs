@@ -72,27 +72,32 @@ namespace Dash
         public void AddOperator()
         {
             //Create Operator document
-            var opModel =
+            var divideOp =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            DisplayDocument(opModel);
+            DisplayDocument(divideOp);
+
+            var addOp =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new AddOperatorModelController(new OperatorFieldModel("Add")));
+            DisplayDocument(addOp);
 
             //// add union operator for testing 
-            var intersectOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            DisplayDocument(intersectOpModel);
+            //var intersectOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
+            //DisplayDocument(intersectOpModel);
 
-            var unionOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            DisplayDocument(unionOpModel);
+            //var unionOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
+            //DisplayDocument(unionOpModel);
 
             // add image url -> image operator for testing
-            var imgOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            DisplayDocument(imgOpModel);
+            //var imgOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
+            //DisplayDocument(imgOpModel);
         }
 
         /// <summary>

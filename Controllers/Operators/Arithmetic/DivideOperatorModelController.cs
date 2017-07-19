@@ -33,7 +33,6 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            Debug.WriteLine("Divide Execute");
             var numberA = (NumberFieldModelController) inputs[AKey];
 
             var numberB = (NumberFieldModelController) inputs[BKey];
