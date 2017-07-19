@@ -42,9 +42,30 @@ namespace Dash
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
+        private Dictionary<Key, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<Key, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
+        {
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                _fieldUpdatedDictionary[key] += handler;
+            }
+            else
+            {
+                _fieldUpdatedDictionary[key] = handler;
+            }
+        }
+
+        public void RemoveFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
+        {
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                // ReSharper disable once DelegateSubtraction
+                _fieldUpdatedDictionary[key] -= handler;
+            }
+        }
 
         /// <summary>
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
@@ -555,6 +576,10 @@ namespace Dash
 
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
+            if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
+            {
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(this, args);
+            }
             DocumentFieldUpdated?.Invoke(this, args);
             PrototypeFieldUpdated?.Invoke(this, args);
         }
