@@ -1,6 +1,5 @@
 ﻿using DashShared;
 
-
 namespace Dash
 {
     /// <summary>

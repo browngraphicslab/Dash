@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 
+
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
@@ -68,33 +69,19 @@ namespace Dash
             Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
             Tapped += OnTapped;
-            DoubleTapped += OnDoubleTapped;
         }
 
-        public void ScreenCap()
-        {
-            Util.ExportAsImage(OuterGrid); 
-        }
-
-        public void GetJson()
-        {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
-        }
 
         private void SetUpMenu()
         {
-            var layout = new Action(OpenLayout);
-            var copy = new Action(CopyDocument);
-            var delete = new Action(DeleteDocument);
-            var makeDelegate = new Action(MakeDelegate);
             var documentButtons = new List<MenuButton>()
             {
-                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,layout),
-                new MenuButton(Symbol.Copy, "GetCopy", Colors.LightBlue,copy),
-                new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, makeDelegate),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,delete),
-                new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, new Action(ScreenCap)),
-                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, new Action(GetJson))
+                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,OpenLayout),
+                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,CopyDocument),
+                new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, MakeDelegate),
+                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,DeleteDocument),
+                new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, ScreenCap),
+                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, GetJson)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -147,12 +134,6 @@ namespace Dash
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = ActualWidth + dx;
             dvm.Height = ActualHeight + dy;
-
-
-            // todo: remove this and replace with binding // debug why x:Bind fails
-            Width = ActualWidth + dx;
-            Height = ActualHeight + dy;
-
         }
 
         /// <summary>
@@ -347,7 +328,7 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetCopy());
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.Copy());
         }
 
         private void MakeDelegate()
@@ -355,37 +336,21 @@ namespace Dash
             ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
         }
 
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(OuterGrid);
+        }
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
+        }
 
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-        }
-
-        private void XGrid_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-
-        }
-
-        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            // TODO KB made to test doccontextlist, delete later 
-            /* 
-            ObservableCollection<DocumentController> docList = ViewModel.DocumentController.DocContextList; 
-            Debug.WriteLine("count in this list is " + ViewModel.DocumentController.DocContextList.Count); 
-            */
-
-            //test exporting as json 
-            //Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
-
-            //test exporting as image 
-            //Util.ExportAsImage(OuterGrid);
-
-            //test sending email 
-            //Util.SendEmail("kyu_bin_kwon@brown.edu", "email message", "test");
-
-            e.Handled = true;
         }
 
         private void FadeOut_Completed(object sender, object e)

@@ -1,10 +1,12 @@
-﻿using DashShared;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using DashShared;
+using static Dash.CourtesyDocuments;
 
 
 namespace Dash
@@ -38,7 +40,7 @@ namespace Dash
             }
         }
 
-        public delegate void OnDocumentFieldUpdatedHandler(DocumentFieldUpdatedEventArgs args);
+        public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
@@ -51,9 +53,10 @@ namespace Dash
         private Dictionary<Key, FieldModelController> _fields = new Dictionary<Key, FieldModelController>();
 
 
-        public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type)
+        public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type, string id = null)
         {
-            DocumentModel model = new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type);
+            DocumentModel model =
+                new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type, id);
             ContentController.AddModel(model);
             // Initialize Local Variables
             DocumentModel = model;
@@ -158,6 +161,7 @@ namespace Dash
             var documentFieldModelController =
                 _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
 
+
             // if the field contained a DocumentFieldModelController return its data, otherwise return null
             return documentFieldModelController?.Data;
         }
@@ -196,15 +200,21 @@ namespace Dash
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
-            FieldModelController oldValue;
-            proto._fields.TryGetValue(key, out oldValue);
+            FieldModelController oldField;
+            proto._fields.TryGetValue(key, out oldField);
+            
+            // if the fields are reference equal just return
+            if (ReferenceEquals(oldField, field))
+            {
+                return;
+            }
 
             proto._fields[key] = field;
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
-            FieldUpdatedAction action = oldValue == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            DocumentReferenceController reference = new DocumentReferenceController(GetId(), key);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldValue, field, action, reference, new Context(this)));
+            FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            var reference = new DocumentReferenceController(GetId(), key);
+            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this)));
             field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {
                 context = context ?? new Context();
@@ -262,7 +272,7 @@ namespace Dash
         {
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
-            delegateController.DocumentFieldUpdated += delegate(DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(args); };
+            delegateController.DocumentFieldUpdated += delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
             DocumentFieldUpdated += delegateController.DocumentController_DocumentFieldUpdated;
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
@@ -278,7 +288,7 @@ namespace Dash
             return delegateController;
         }
 
-        private void DocumentController_DocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
+        private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
             {
@@ -289,7 +299,7 @@ namespace Dash
             //SetField(args.Reference.FieldKey, args.Reference.DereferenceToRoot(c), true);
         }
 
-        private void OnPrototypeDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
+        private void OnPrototypeDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args)
         {
             if (_fields.ContainsKey(args.Reference.FieldKey))//This document overrides its prototypes value so its value didn't actually change
             {
@@ -354,8 +364,8 @@ namespace Dash
             }
             try
             {
-                Dictionary<Key, FieldModelController> inputs = new Dictionary<Key, FieldModelController>(opField.Inputs.Count);
-                Dictionary<Key, FieldModelController> outputs = new Dictionary<Key, FieldModelController>(opField.Outputs.Count);
+                var inputs = new Dictionary<Key, FieldModelController>(opField.Inputs.Count);
+                var outputs = new Dictionary<Key, FieldModelController>(opField.Outputs.Count);
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
                     var field = GetField(opFieldInput);
@@ -375,7 +385,6 @@ namespace Dash
             }
             catch (KeyNotFoundException e)
             {
-                return;
             }
         }
 
@@ -394,7 +403,7 @@ namespace Dash
             {
                 var prototype = GetPrototype();
                 if (prototype != null)
-                    foreach (var field in prototype.EnumFields().Where((f) => !_fields.ContainsKey(f.Key)))
+                    foreach (var field in prototype.EnumFields().Where(f => !_fields.ContainsKey(f.Key)))
                         yield return field;
             }
         }
@@ -410,16 +419,19 @@ namespace Dash
             var sp = new StackPanel();
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) || f.Key.Equals(DashConstants.KeyStore.PrototypeKey))
+                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) || 
+                    f.Key.Equals(DashConstants.KeyStore.PrototypeKey) || 
+                    f.Key.Equals(DashConstants.KeyStore.LayoutListKey) || 
+                    f.Key.Equals(DashConstants.KeyStore.ActiveLayoutKey))
                 {
                     continue;
                 }
 
                 if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
                 {
-                    var hstack = new StackPanel() { Orientation = Orientation.Horizontal };
-                    var label = new TextBlock() { Text = f.Key.Name + ": " };
-                    var dBox = new CourtesyDocuments.DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+                    var label = new TextBlock { Text = f.Key.Name + ": " };
+                    var dBox = new DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
 
@@ -457,44 +469,53 @@ namespace Dash
             //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
             context.AddDocumentContext(this);
 
-            if (DocumentType == CourtesyDocuments.TextingBox.DocumentType)
+            if (DocumentType == TextingBox.DocumentType)
             {
-                return CourtesyDocuments.TextingBox.MakeView(this, context);
+                return TextingBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.ImageBox.DocumentType)
+            if (DocumentType == ImageBox.DocumentType)
             {
-                return CourtesyDocuments.ImageBox.MakeView(this, context);
+                return ImageBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.DocumentBox.DocumentType)
+            if (DocumentType == DocumentBox.DocumentType)
             {
-                return CourtesyDocuments.DocumentBox.MakeView(this, context);
+                return DocumentBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.StackingPanel.DocumentType)
+            if (DocumentType == StackingPanel.DocumentType)
             {
-                return CourtesyDocuments.StackingPanel.MakeView(this, context);
+                return StackingPanel.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.CollectionBox.DocumentType)
+            if (DocumentType == CollectionBox.DocumentType)
             {
-                return CourtesyDocuments.CollectionBox.MakeView(this, context);
+                return CollectionBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.OperatorBox.DocumentType)
+            if (DocumentType == OperatorBox.DocumentType)
             {
-                return CourtesyDocuments.OperatorBox.MakeView(this, context);
+                return OperatorBox.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.ApiDocumentModel.DocumentType)
+            if (DocumentType == ApiDocumentModel.DocumentType)
             {
-                return CourtesyDocuments.ApiDocumentModel.MakeView(this, context);
+                return ApiDocumentModel.MakeView(this, context);
+            }
+            if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            {
+                return FreeFormDocument.MakeView(this, context);
             }
             if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
             {
                 return CourtesyDocuments.RichTextBox.MakeView(this, context);
             }
-       
+
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+
+                if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultLayout)
+                {
+                    return makeAllViewUI(context);
+                }
                 Debug.Assert(doc != null);
                 return doc.Data.MakeViewUI(context);
             }
@@ -505,8 +526,8 @@ namespace Dash
 
         protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
         {
-            DocumentFieldUpdated?.Invoke(args);
-            PrototypeFieldUpdated?.Invoke(args);
+            DocumentFieldUpdated?.Invoke(this, args);
+            PrototypeFieldUpdated?.Invoke(this, args);
         }
     }
 }

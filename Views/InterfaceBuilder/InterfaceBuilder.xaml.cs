@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -45,16 +46,19 @@ namespace Dash
             {
                 Source = docController.GetAllPrototypes()
             };
+
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
-        private void SetUpInterfaceBuilder(DocumentController docCont, Context docContext)
+        private void SetUpInterfaceBuilder(DocumentController docCont, Context context)
         {
             _layoutCourtesyDocument = new LayoutCourtesyDocument(docCont);
 
-            _documentView = LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document, docContext) as DocumentView;
+            _layoutCourtesyDocument.CreateAndSetFreeFormActiveLayout(new Point(), new Size(400, 400));
+            _documentView = LayoutCourtesyDocument.MakeView(_layoutCourtesyDocument.Document, context) as DocumentView;
 
 
+            // set the middle pane to hold the document view
             xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(_layoutCourtesyDocument.Document);
@@ -62,15 +66,12 @@ namespace Dash
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.Drop += DocumentViewOnDrop;
             _documentView.AllowDrop = true;
-
-            //ApplyEditable();
-            //var layoutDocFieldController = docCont.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, docContext);
-            //docCont.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutDocFieldController, false);
         }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             DocumentController cont = e.ClickedItem as DocumentController;
+
             SetUpInterfaceBuilder(cont, new Context(cont));
         }
 
@@ -197,6 +198,8 @@ namespace Dash
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
         {
+
+            var _documentController = _layoutCourtesyDocument.Document;
             var docController = _layoutCourtesyDocument.Document;
             var context = new Context(docController);
 
@@ -268,37 +271,6 @@ namespace Dash
         }
 
 
-
-    }
-
-    public static class SettingsPaneFromDocumentControllerFactory
-    {
-        public static UIElement CreateSettingsPane(DocumentController editedLayoutDocument)
-        {
-            if (editedLayoutDocument.DocumentType == ImageBox.DocumentType)
-            {
-                return CreateImageSettingsLayout(editedLayoutDocument);
-            }
-            if (editedLayoutDocument.DocumentType == TextingBox.DocumentType)
-            {
-                return CreateTextSettingsLayout(editedLayoutDocument);
-            }
-
-            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
-            return null;
-        }
-
-        private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)
-        {
-            var context = new Context(); // bcz: ??? Is this right?
-            return new ImageSettings(editedLayoutDocument, context);
-        }
-
-        private static UIElement CreateTextSettingsLayout(DocumentController editedLayoutDocument)
-        {
-            var context = new Context(); // bcz: ??? Is this right?
-            return new TextSettings(editedLayoutDocument, context);
-        }
 
     }
 }

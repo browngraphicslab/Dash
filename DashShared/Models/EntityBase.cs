@@ -14,18 +14,11 @@ namespace DashShared
     /// </summary>
     public abstract class EntityBase
     {
-        /// <summary>
-        /// Creates a new instance of <see cref="EntityBase"/> which can be stored in the database since
-        /// it has a unique id. By default <paramref name="AutomaticallyGenerateNewId"/> is true and the
-        /// class will generate it's own unique id.
-        /// </summary>
-        /// <param name="AutomaticallyGenerateNewId"></param>
-        protected EntityBase(bool AutomaticallyGenerateNewId = true)
+
+        protected EntityBase(string id = null)
         {
-            if (AutomaticallyGenerateNewId)
-            {
-                Id = Util.GenerateNewId();
-            }
+            Id = id ?? Util.GenerateNewId();
+
         }
 
         /// <summary>

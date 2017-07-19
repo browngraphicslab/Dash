@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Xaml;
 
 namespace Dash
@@ -65,10 +63,7 @@ namespace Dash
                 Debug.Assert((list.ListSubTypeInfo & ListSubTypeInfo) != TypeInfo.None);
                 return (list.ListSubTypeInfo & ListSubTypeInfo) != TypeInfo.None;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         public override FrameworkElement GetTableCellView()

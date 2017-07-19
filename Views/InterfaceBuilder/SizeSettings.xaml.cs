@@ -19,16 +19,16 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class SizeSettings : UserControl
     {
-        private TextBox _heightTextBox;
-        private TextBox _widthTextBox;
+
         public SizeSettings()
         {
             this.InitializeComponent();
         }
+
 
         public SizeSettings(DocumentController editedLayoutDocument, Context context) : this()
         {
@@ -54,10 +54,12 @@ namespace Dash.Views
 
         }
 
+
         private void BindWidth(DocumentController docController, Context context)
         {
             var fmc = docController.GetField(DashConstants.KeyStore.WidthFieldKey);
-            NumberFieldModelController widthController = fmc.DereferenceToRoot<NumberFieldModelController>(context);
+            var widthController = 
+                fmc.DereferenceToRoot<NumberFieldModelController>(context);
             Debug.Assert(widthController != null);
 
             var widthBinding = new Binding

@@ -1,3 +1,4 @@
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -16,7 +17,7 @@ namespace Dash
             var docController = GetDocumentController(null);
             if (docController != null)
             {
-                docController.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
+                docController.DocumentFieldUpdated += delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
                     if (args.Reference.FieldKey.Equals(FieldKey))
                     {
@@ -111,7 +112,7 @@ namespace Dash
 
         public override FieldModelController GetDefaultController()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)
