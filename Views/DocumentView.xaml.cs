@@ -315,8 +315,13 @@ namespace Dash
 
   #region Menu
 
-        public void OnTapped(object sender, TappedRoutedEventArgs e)
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                return;
+            }
+
             if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
                 ViewModel.OpenMenu();
             else

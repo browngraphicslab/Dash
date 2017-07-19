@@ -165,6 +165,8 @@ namespace Dash
         }
 
         private GridLength _menuColumnWidth;
+        public readonly bool IsInInterfaceBuilder;
+
         public GridLength MenuColumnWidth
         {
             get { return _menuColumnWidth; }
@@ -175,15 +177,16 @@ namespace Dash
         public DocumentViewModel() { }
 
 
-        public DocumentViewModel(DocumentController documentController)
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
         {
+            IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
 
             DataBindingSource.Add(documentController.DocumentModel);
 
-            Content = documentController.MakeViewUI(new Context(DocumentController));
+            Content = documentController.MakeViewUI(new Context(DocumentController), isInInterfaceBuilder);
 
             SetUpSmallIcon();
 
@@ -215,7 +218,7 @@ namespace Dash
 
         private void OnActiveLayoutChanged()
         {
-            Content = DocumentController.MakeViewUI(new Context(DocumentController));
+            Content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
             ListenToTransformGroupField(DocumentController);

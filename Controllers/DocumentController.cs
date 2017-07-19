@@ -414,7 +414,7 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context)
+        private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilderLayout = false)
         {
             var sp = new StackPanel();
             foreach (var f in EnumFields())
@@ -435,7 +435,7 @@ namespace Dash
 
                     hstack.Children.Add(label);
 
-                    var ele = dBox.MakeViewUI(context);
+                    var ele = dBox.MakeViewUI(context, isInterfaceBuilderLayout);
 
                     ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
@@ -445,7 +445,7 @@ namespace Dash
                 else if (f.Value is DocumentFieldModelController)
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                    sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
+                    sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilderLayout)));
                     (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
                     (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                 }
@@ -453,7 +453,7 @@ namespace Dash
                 {
                     foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
-                        sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc)));
+                        sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilderLayout)));
                         (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
                         (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                     }
@@ -463,7 +463,7 @@ namespace Dash
         }
 
 
-        public FrameworkElement MakeViewUI(Context context)
+        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder)
         {
             context = context ?? new Context();
             //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
@@ -471,43 +471,39 @@ namespace Dash
 
             if (DocumentType == TextingBox.DocumentType)
             {
-                return TextingBox.MakeView(this, context);
+                return TextingBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == ImageBox.DocumentType)
             {
-                return ImageBox.MakeView(this, context);
+                return ImageBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == DocumentBox.DocumentType)
             {
-                return DocumentBox.MakeView(this, context);
+                return DocumentBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == StackingPanel.DocumentType)
             {
-                return StackingPanel.MakeView(this, context);
-            }
-            if (DocumentType == FreeformBox.DocumentType)
-            {
-                return FreeformBox.MakeView(this, context);
+                return StackingPanel.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == CollectionBox.DocumentType)
             {
-                return CollectionBox.MakeView(this, context);
+                return CollectionBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == OperatorBox.DocumentType)
             {
-                return OperatorBox.MakeView(this, context);
+                return OperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == ApiDocumentModel.DocumentType)
             {
-                return ApiDocumentModel.MakeView(this, context);
+                return ApiDocumentModel.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
-                return FreeFormDocument.MakeView(this, context);
+                return FreeFormDocument.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
             {
-                return CourtesyDocuments.RichTextBox.MakeView(this, context);
+                return CourtesyDocuments.RichTextBox.MakeView(this, context, isInterfaceBuilder);
             }
 
             // if document is not a known UI View, then see if it contains a Layout view field
@@ -521,7 +517,7 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-                return doc.Data.MakeViewUI(context);
+                return doc.Data.MakeViewUI(context, isInterfaceBuilder);
             }
 
             return makeAllViewUI(context);

@@ -129,9 +129,6 @@
     <Compile Include="Views\SelectableContainer.xaml.cs">
       <DependentUpon>SelectableContainer.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\FreeformCompositeLayout.xaml.cs">
-      <DependentUpon>FreeformCompositeLayout.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\RichTextView.xaml.cs">
       <DependentUpon>RichTextView.xaml</DependentUpon>
     </Compile>
@@ -169,7 +166,6 @@
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
     <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
-    <Compile Include="Converters\DocumentToUIElementConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
@@ -414,10 +410,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SelectableContainer.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\FreeformCompositeLayout.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

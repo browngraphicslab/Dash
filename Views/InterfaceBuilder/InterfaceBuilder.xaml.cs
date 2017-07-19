@@ -44,12 +44,14 @@ namespace Dash
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
             SetActiveLayoutToFreeform_TEMP(docController);
-            var docViewModel = new DocumentViewModel(docController);
+            var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
+            var rootSelectableContainer = new SelectableContainer(_documentView);
+
             _documentController = docController;
 
             // set the middle pane to hold the document view
-            xDocumentHolder.Child = _documentView;
+            xDocumentHolder.Child = rootSelectableContainer;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
 

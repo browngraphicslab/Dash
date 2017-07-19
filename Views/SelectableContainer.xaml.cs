@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Dash.ViewModels;
 
-namespace Dash.Views
+namespace Dash
 {
     public partial class SelectableContainer : UserControl
     {
@@ -29,48 +29,82 @@ namespace Dash.Views
 
         public FrameworkElement ContentElement
         {
-            get => _contentElement;
-            set => _contentElement = value;
+            get { return _contentElement; }
+            set
+            {
+                _contentElement = value;
+                OnContentChanged();
+            }
         }
 
         public bool IsSelected
         {
-            get => _isSelected;
+            get { return _isSelected; }
             set
             {
-                _isSelected = value;
-                XLayoutDisplay.IsHitTestVisible = value;
-                if (value) XGrid.BorderThickness = new Thickness(3);
-                else XGrid.BorderThickness = new Thickness(1);
+                _isSelected = _parentContainer == null ? true : value;
+                ContentElement.IsHitTestVisible = value;
+                if (_isSelected)
+                {
+                    XGrid.BorderThickness = new Thickness(3);
+                } else
+                {
+                    XGrid.BorderThickness = new Thickness(1);
+                }
             }
         }
 
         public SelectableContainer(FrameworkElement contentElement)
         {
-            _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
-            Tapped += CompositeLayoutContainer_Tapped;
+            this.InitializeComponent();
+
             ContentElement = contentElement;
+
+            Loaded += SelectableContainer_Loaded;
+            Tapped += CompositeLayoutContainer_Tapped;
+
+        }
+
+        private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
+        {
+            _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
+            IsSelected = false;
+
+            SetContent();
         }
 
         private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (!IsSelected)
             {
-                _parentContainer.SetSelectedContainer(this);
+                if (_parentContainer != null) _parentContainer.SetSelectedContainer(this);
             }
             SetSelectedContainer(null);
             e.Handled = true;
         }
 
+        // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
+        private void OnContentChanged()
+        {
+            SetContent();
+        }
+
+        private void SetContent()
+        {
+            if (XLayoutDisplay != null)
+            {
+                XLayoutDisplay.Content = ContentElement;
+                ContentElement.IsHitTestVisible = IsSelected;
+            }
+        }
+
         public void SetSelectedContainer(SelectableContainer layoutContainer)
         {
-            _selectedLayoutContainer.IsSelected = false;
+            if (_selectedLayoutContainer != null) _selectedLayoutContainer.IsSelected = false;
             _selectedLayoutContainer = layoutContainer;
-            if (layoutContainer != null)
-            {
-                layoutContainer.IsSelected = true;
-            }
-            
+            if (_selectedLayoutContainer != null) _selectedLayoutContainer.IsSelected = true;
+
+
         }
 
         public SelectableContainer GetSelectedLayout()
