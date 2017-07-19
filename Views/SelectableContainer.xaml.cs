@@ -77,7 +77,10 @@ namespace Dash
         {
             if (!IsSelected)
             {
-                if (_parentContainer != null) _parentContainer.SetSelectedContainer(this);
+                if (_parentContainer != null)
+                {
+                    _parentContainer.SetSelectedContainer(this);
+                }
             }
             SetSelectedContainer(null);
             e.Handled = true;
@@ -100,7 +103,11 @@ namespace Dash
 
         public void SetSelectedContainer(SelectableContainer layoutContainer)
         {
-            if (_selectedLayoutContainer != null) _selectedLayoutContainer.IsSelected = false;
+            if (_selectedLayoutContainer != null)
+            {
+                _selectedLayoutContainer.IsSelected = false;
+                _selectedLayoutContainer.SetSelectedContainer(null); // deselect all children recursively
+            }
             _selectedLayoutContainer = layoutContainer;
             if (_selectedLayoutContainer != null) _selectedLayoutContainer.IsSelected = true;
 
