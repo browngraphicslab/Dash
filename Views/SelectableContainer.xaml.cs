@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Security.Cryptography.Core;
 using Windows.UI;
 using Windows.UI.Xaml.Shapes;
@@ -79,6 +80,7 @@ namespace Dash
                     {
                         ellipse.Visibility = Visibility.Visible;
                     }
+                    
                 }
                 else
                 {
@@ -86,6 +88,7 @@ namespace Dash
                     {
                         ellipse.Visibility = Visibility.Collapsed;
                     }
+                    
                 }
             }
         }
