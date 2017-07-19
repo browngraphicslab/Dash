@@ -722,7 +722,7 @@ namespace Dash
             if (panel != null) panel.Children.Remove(_colMenu);
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
-            ParentDocument.Width -= 50;
+            ParentDocument.ViewModel.Width -= 50;
             //Temporary graphical hax. to be removed when collectionview menu moved to its document.
             ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left - 50,
                                                             ParentDocument.xBorder.Margin.Top,
@@ -805,7 +805,7 @@ namespace Dash
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
-            ParentDocument.Width += 50;
+            ParentDocument.ViewModel.Width += 50;
             //Temporary graphical hax. to be removed when collectionview menu moved to its document.
             ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50,
                                                             ParentDocument.xBorder.Margin.Top,

@@ -27,6 +27,7 @@ namespace Dash
         private IconTypeEnum iconType;
         private TransformGroup _gridViewIconGroupTransform;
         public bool DoubleTapEnabled = true;
+        private bool _menuOpen;
         public DocumentController DocumentController;
         public TransformGroup GridViewIconGroupTransform
         {
@@ -49,6 +50,7 @@ namespace Dash
             }
         }
 
+        private bool _changingMenu;
         public double Width
         {
             get { return _width; }
@@ -56,16 +58,20 @@ namespace Dash
             {
                 if (SetProperty(ref _width, value))
                 {
-                    var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
+                    if (!_changingMenu)
+                    {
+                        var context = new Context(DocumentController);
+                        var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
 
-                    if (layoutDocController == null)
-                        layoutDocController = DocumentController;
+                        if (layoutDocController == null)
+                            layoutDocController = DocumentController;
 
-                    var widthFieldModelController =
-                        layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
-                            NumberFieldModelController;
-                    widthFieldModelController.Data = value;
+                        var widthFieldModelController =
+                            layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
+                                NumberFieldModelController;
+                        widthFieldModelController.Data = value;
+                    }
+                    _changingMenu = false;
                 }
             }
         }
@@ -330,14 +336,27 @@ namespace Dash
 
         public void CloseMenu()
         {
-            DocMenuVisibility = Visibility.Collapsed;
-            MenuColumnWidth = new GridLength(0);
+            if (_menuOpen)
+            {
+                _changingMenu = true;
+                DocMenuVisibility = Visibility.Collapsed;
+                MenuColumnWidth = new GridLength(0);
+                Width -= 50;
+                _menuOpen = false;
+            }
+
         }
 
         public void OpenMenu()
         {
-            DocMenuVisibility = Visibility.Visible;
-            MenuColumnWidth = new GridLength(50);
+            if(!_menuOpen)
+            {
+                _changingMenu = true;
+                DocMenuVisibility = Visibility.Visible;
+                MenuColumnWidth = new GridLength(50);
+                Width += 50;
+                _menuOpen = true;
+            }
         }
 
         public DocumentController Copy()
