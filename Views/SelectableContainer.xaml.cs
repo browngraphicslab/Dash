@@ -25,6 +25,13 @@ namespace Dash.Views
         private SelectableContainer _selectedLayoutContainer;
         private SelectableContainer _parentContainer;
         private bool _isSelected;
+        private FrameworkElement _contentElement;
+
+        public FrameworkElement ContentElement
+        {
+            get => _contentElement;
+            set => _contentElement = value;
+        }
 
         public bool IsSelected
         {
@@ -38,24 +45,24 @@ namespace Dash.Views
             }
         }
 
-        protected SelectableContainer()
+        public SelectableContainer(FrameworkElement contentElement)
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             Tapped += CompositeLayoutContainer_Tapped;
-            IsSelected = false;
+            ContentElement = contentElement;
         }
 
         private void CompositeLayoutContainer_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (!IsSelected)
             {
-                _parentContainer.SetSelectedLayout(this);
+                _parentContainer.SetSelectedContainer(this);
             }
-            SetSelectedLayout(null);
+            SetSelectedContainer(null);
             e.Handled = true;
         }
 
-        public void SetSelectedLayout(SelectableContainer layoutContainer)
+        public void SetSelectedContainer(SelectableContainer layoutContainer)
         {
             _selectedLayoutContainer.IsSelected = false;
             _selectedLayoutContainer = layoutContainer;
@@ -69,12 +76,6 @@ namespace Dash.Views
         public SelectableContainer GetSelectedLayout()
         {
             return _selectedLayoutContainer;
-        }
-
-        public void SetContent(FrameworkElement content)
-        {
-            XLayoutDisplay.Content = content;
-            content.DataContext = DataContext;
         }
     }
 }

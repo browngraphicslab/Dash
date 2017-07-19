@@ -293,10 +293,13 @@ namespace Dash {
         public class FreeformBox : CourtesyDocument
         {
             public static string PrototypeId = "CC41623F-DCE5-459D-A85D-26A4363AE30B";
+            public static DocumentType DocumentType = new DocumentType("28B52824-A5DB-4AD4-825C-DFAA01D85C94", "Freeform Box");
 
-            public FreeformBox(DocumentController dataDocument, Point position = new Point(), Size size = new Size())
+            public FreeformBox(IEnumerable<DocumentController> docs, Point position = new Point(), Size size = new Size())
             {
-                
+                var fields = DefaultLayoutFields(position, size, new DocumentCollectionFieldModelController(docs));
+                Document = GetLayoutPrototype().MakeDelegate();
+                Document.SetFields(fields, true);
             }
 
             protected override DocumentController GetLayoutPrototype()
@@ -313,7 +316,7 @@ namespace Dash {
             {
                 var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
                 var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
-                var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormDocumentLayout, PrototypeId);
+                var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
                 return prototypeDocument;
             }
 
@@ -324,17 +327,18 @@ namespace Dash {
 
             public static FrameworkElement MakeView(DocumentController docController, Context context)
             {
-
-                var grid = new Grid();
-                var layoutDocuments = GetLayoutsCollectionField(docController, context).GetDocuments();
-
-                foreach (var layoutDocument in layoutDocuments)
+                
+                var data = 
+                    docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context)
+                        as DocumentCollectionFieldModelController;
+                if (data != null)
                 {
-                    var layoutView = layoutDocument.MakeViewUI(context);
-                    grid.Children.Add(layoutView);
-                }
+                    var freeform = new FreeformCompositeLayout(docController) { DataContext = data};
+                    var container = new SelectableContainer(freeform);
 
-                return grid;
+                    return container;
+                }
+                return new Grid();
             }
 
             private static DocumentCollectionFieldModelController GetLayoutsCollectionField(DocumentController docController, Context context = null)
@@ -1512,7 +1516,8 @@ namespace Dash {
                 var prototypeImage2Layout    = new ImageBox   (new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey),    0, 250, 200, 200);
                 var prototypeAnnotatedLayout = new DocumentBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
                 var prototypeTextLayout      = new TextingBox (new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey),      0, 0, 200, 50);
-                var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, true);
+                //var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, true);
+                var prototypeLayout = new FreeformBox(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, new Point(), new Size());
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
 

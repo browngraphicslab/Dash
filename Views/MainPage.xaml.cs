@@ -212,6 +212,7 @@ namespace Dash
             layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
             del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
             DisplayDocument(del);
+            DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
             Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
         }

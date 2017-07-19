@@ -224,13 +224,24 @@ namespace Dash
         private void ListenToTransformGroupField(DocumentController docController)
         {
             var posFieldModelController = docController.GetPositionField();
-            var activeLayout = docController.GetActiveLayout().Data;
-            var scaleCenterFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, new Context(DocumentController)) as PointFieldModelController;
-            var scaleAmountFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, new Context(DocumentController)) as PointFieldModelController;
-            GroupTransform = new TransformGroupData(posFieldModelController.Data, scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
-            posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-            scaleCenterFieldModelController.FieldModelUpdated += ScaleCenterFieldModelController_FieldModelUpdatedEvent;
-            scaleAmountFieldModelController.FieldModelUpdated += ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+            var activeLayout = docController.GetActiveLayout()?.Data;
+            if (activeLayout != null)
+            {
+                var scaleCenterFieldModelController =
+                    activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey,
+                        new Context(DocumentController)) as PointFieldModelController;
+                var scaleAmountFieldModelController =
+                    activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey,
+                        new Context(DocumentController)) as PointFieldModelController;
+                GroupTransform = new TransformGroupData(posFieldModelController.Data,
+                    scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
+                posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+                scaleCenterFieldModelController.FieldModelUpdated +=
+                    ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+                scaleAmountFieldModelController.FieldModelUpdated +=
+                    ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+            }
+            
         }
 
         private void ListenToWidthField(DocumentController docController)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -27,11 +28,10 @@ namespace Dash.Views
         public DocumentController ParentDocument;
         public bool CanEdit;
 
-        public FreeformCompositeLayout(SelectableContainer container, DocumentController parentDocument)
+        public FreeformCompositeLayout(DocumentController parentDocument)
         {
             this.InitializeComponent();
             ParentDocument = parentDocument;
-            container.SetContent(this);
             DataContextChanged += OnDataContextChanged;
             DragOver += OnDragOver;
             Drop += OnDrop;
@@ -42,7 +42,9 @@ namespace Dash.Views
             var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
             if (key != null)
             {
-                DocumentCollection.AddDocument(ParentDocument.GetField(key));
+                var documentFieldModelController = ParentDocument.GetField(key) as DocumentFieldModelController;
+                if (documentFieldModelController != null)
+                    DocumentCollection.AddDocument(documentFieldModelController.Data);
             }
         }
 
@@ -55,6 +57,7 @@ namespace Dash.Views
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             DocumentCollection = DataContext as DocumentCollectionFieldModelController;
+            Debug.Assert(DocumentCollection != null, "the DataContext was not set to a DocumentCollectionFieldModelController");
             Binding childrenBinding = new Binding()
             {
                 Source = DocumentCollection,
@@ -63,7 +66,7 @@ namespace Dash.Views
                 Converter = new DocumentToUIElementConverter()
             };
             xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, childrenBinding);
-            DocumentCollection.OnDocumentsChanged += ViewModelOnOnDocumentsChanged;
+            if (DocumentCollection != null) DocumentCollection.OnDocumentsChanged += ViewModelOnOnDocumentsChanged;
         }
 
         private void ViewModelOnOnDocumentsChanged(IEnumerable<DocumentController> currentDocuments)
