@@ -443,7 +443,7 @@ namespace Dash {
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
-                    textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
+                    textBox.TextWrapping = TextWrapping.Wrap;
                     var textFieldModelController = textField as TextFieldModelController;
                     BindTextBoxSource(tb, textFieldModelController);
                 } else if (textField is NumberFieldModelController) {
@@ -498,6 +498,10 @@ namespace Dash {
                         {
                             var numFieldModelController = field as NumberFieldModelController;
                             BindTextBlockSource(tb, numFieldModelController);
+                        } else if (field is RichTextFieldModelController)
+                        {
+                            var richTextFieldModelController = field as RichTextFieldModelController;
+                            BindTextBlockSource(tb, richTextFieldModelController);
                         }
                     }
                 };
