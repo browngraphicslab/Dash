@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Converters;
 using DashShared;
 using Windows.UI.Xaml.Controls.Primitives;
+using Dash.Views;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash {
@@ -281,6 +282,81 @@ namespace Dash {
             {
                 var layoutDoc = new FreeFormDocument(Document, position, size).Document;
                 //Document.SetActiveLayout(layoutDoc, true);
+            }
+
+        }
+
+        /// <summary>
+        /// A test class, not to be confused with <see cref="FreeFormDocument"/>, that creates a <see cref="FreeformCompositeLayout"/>
+        /// within a <see cref="SelectableContainer"/> that can be added to a document.
+        /// </summary>
+        public class FreeformBox : CourtesyDocument
+        {
+            public static string PrototypeId = "CC41623F-DCE5-459D-A85D-26A4363AE30B";
+
+            public FreeformBox(DocumentController dataDocument, Point position = new Point(), Size size = new Size())
+            {
+                
+            }
+
+            protected override DocumentController GetLayoutPrototype()
+            {
+                var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+                if (prototype == null)
+                {
+                    prototype = InstantiatePrototypeLayout();
+                }
+                return prototype;
+            }
+
+            protected override DocumentController InstantiatePrototypeLayout()
+            {
+                var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
+                var prototypeDocument = new DocumentController(fields, DashConstants.DocumentTypeStore.FreeFormDocumentLayout, PrototypeId);
+                return prototypeDocument;
+            }
+
+            public override FrameworkElement makeView(DocumentController docController, Context context)
+            {
+                return MakeView(docController, context);
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            {
+
+                var grid = new Grid();
+                var layoutDocuments = GetLayoutsCollectionField(docController, context).GetDocuments();
+
+                foreach (var layoutDocument in layoutDocuments)
+                {
+                    var layoutView = layoutDocument.MakeViewUI(context);
+                    grid.Children.Add(layoutView);
+                }
+
+                return grid;
+            }
+
+            private static DocumentCollectionFieldModelController GetLayoutsCollectionField(DocumentController docController, Context context = null)
+            {
+                context = Context.SafeInitAndAddDocument(context, docController);
+                return docController.GetField(DashConstants.KeyStore.DataKey)?
+                    .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            }
+
+            private static void SetLayoutsCollectionField(DocumentController layoutDocument, IList<DocumentController> layoutDocuments,
+                bool forceMask, Context context = null)
+            {
+                var currentLayoutCollections = GetLayoutsCollectionField(layoutDocument, context);
+
+                if (currentLayoutCollections == null)
+                {
+                    currentLayoutCollections = new DocumentCollectionFieldModelController(layoutDocuments);
+                }
+
+                // TODO make sure if these are reference equal it just returns
+                layoutDocument.SetField(DashConstants.KeyStore.DataKey, currentLayoutCollections, forceMask); // set the field here so that forceMask is respected
+                currentLayoutCollections.SetDocuments(layoutDocuments.ToList());
             }
 
         }

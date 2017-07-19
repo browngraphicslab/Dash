@@ -124,6 +124,13 @@
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="ViewModels\CompositeLayoutViewModel.cs" />
+    <Compile Include="Views\SelectableContainer.xaml.cs">
+      <DependentUpon>SelectableContainer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FreeformCompositeLayout.xaml.cs">
+      <DependentUpon>FreeformCompositeLayout.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RichTextView.xaml.cs">
       <DependentUpon>RichTextView.xaml</DependentUpon>
     </Compile>
@@ -401,6 +408,14 @@
     <Page Include="RadialMenu\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SelectableContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FreeformCompositeLayout.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RichTextView.xaml">
       <SubType>Designer</SubType>
