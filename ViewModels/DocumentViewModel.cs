@@ -65,6 +65,7 @@ namespace Dash
                     var widthFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
                             NumberFieldModelController;
+
                     widthFieldModelController.Data = value;
                 }
             }

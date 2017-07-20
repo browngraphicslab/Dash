@@ -134,6 +134,8 @@ namespace Dash
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = ActualWidth + dx;
             dvm.Height = ActualHeight + dy;
+            Width = dvm.Width;
+            Height = dvm.Height; 
         }
 
         /// <summary>
@@ -163,8 +165,8 @@ namespace Dash
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             Resize(p.X, p.Y);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate, 
-                                                                new Point(ActualWidth / 2, ActualHeight / 2) , 
+            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
+                                                                new Point(ActualWidth / 2, ActualHeight / 2),
                                                                 ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
