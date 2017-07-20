@@ -15,7 +15,7 @@
 
                         <!--window chrome-->
                         <Rectangle x:Name="PART_Header" Fill="White"
-                                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Stroke="Black"/>
+                                   VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Stroke="{StaticResource WindowsBlue}"/>
                         <Button x:Name="PART_CloseButton" Width="30" Height="30"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0">
                             <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
@@ -25,7 +25,7 @@
                         <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}" 
                                         HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="1"/>
 
-                        <Border BorderBrush="Black" BorderThickness="1,0,1,1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
+                        <Border BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,1,1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
 
                         <!--resizer-->
                         <Ellipse x:Name="PART_Resizer" Width="30" Height="30" Fill="#DE0074FF"

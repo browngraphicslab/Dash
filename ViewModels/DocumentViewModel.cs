@@ -190,6 +190,13 @@ namespace Dash
             set { SetProperty(ref _docMenuVisibility, value); }
         }
 
+<<<<<<< HEAD
+=======
+        private GridLength _menuColumnWidth;
+
+        public readonly bool IsInInterfaceBuilder;
+
+>>>>>>> d3b1b70af692cf4260b008ed056951439c435d92
         public GridLength MenuColumnWidth
         {
             get { return _menuColumnWidth; }
@@ -197,12 +204,26 @@ namespace Dash
         }
 
         // == CONSTRUCTORS == 
+<<<<<<< HEAD
         public DocumentViewModel(DocumentController documentController)
+=======
+        public DocumentViewModel() { }
+
+
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
+>>>>>>> d3b1b70af692cf4260b008ed056951439c435d92
         {
+            IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
+<<<<<<< HEAD
+=======
+            
+            Content = documentController.MakeViewUI(new Context(DocumentController), isInInterfaceBuilder);
+
+>>>>>>> d3b1b70af692cf4260b008ed056951439c435d92
             SetUpSmallIcon();
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
             OnActiveLayoutChanged();
@@ -231,7 +252,7 @@ namespace Dash
 
         private void OnActiveLayoutChanged()
         {
-            Content = DocumentController.MakeViewUI(new Context(DocumentController));
+            Content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
             ListenToTransformGroupField(DocumentController);
@@ -240,13 +261,24 @@ namespace Dash
         private void ListenToTransformGroupField(DocumentController docController)
         {
             var posFieldModelController = docController.GetPositionField();
-            var activeLayout = docController.GetActiveLayout().Data;
-            var scaleCenterFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, new Context(DocumentController)) as PointFieldModelController;
-            var scaleAmountFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, new Context(DocumentController)) as PointFieldModelController;
-            GroupTransform = new TransformGroupData(posFieldModelController.Data, scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
-            posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-            scaleCenterFieldModelController.FieldModelUpdated += ScaleCenterFieldModelController_FieldModelUpdatedEvent;
-            scaleAmountFieldModelController.FieldModelUpdated += ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+            var activeLayout = docController.GetActiveLayout()?.Data;
+            if (activeLayout != null)
+            {
+                var scaleCenterFieldModelController =
+                    activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey,
+                        new Context(DocumentController)) as PointFieldModelController;
+                var scaleAmountFieldModelController =
+                    activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey,
+                        new Context(DocumentController)) as PointFieldModelController;
+                GroupTransform = new TransformGroupData(posFieldModelController.Data,
+                    scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
+                posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+                scaleCenterFieldModelController.FieldModelUpdated +=
+                    ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+                scaleAmountFieldModelController.FieldModelUpdated +=
+                    ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+            }
+            
         }
 
         private void ListenToWidthField(DocumentController docController)
