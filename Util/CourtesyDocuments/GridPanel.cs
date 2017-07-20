@@ -41,9 +41,9 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        public override FrameworkElement makeView(DocumentController docController, Context context)
+        public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilder)
         {
-            return MakeView(docController, context);
+            return MakeView(docController, context, isInterfaceBuilder);
         }
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c) where T : FrameworkElement;
@@ -178,7 +178,7 @@ namespace Dash
             }
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilder)
         {
             context = context ?? new Context();
             context.AddDocumentContext(docController);
@@ -194,7 +194,7 @@ namespace Dash
             Debug.Assert(col != null);
             foreach (var documentController in col.GetDocuments())
             {
-                var element = documentController.MakeViewUI(context);
+                var element = documentController.MakeViewUI(context, isInterfaceBuilder);
                 //Set column, row, and span
                 AddBinding(element, documentController, GridRowKey, context, BindGridRow);
                 AddBinding(element, documentController, GridColumnKey, context, BindGridColumn);

@@ -39,9 +39,12 @@ namespace Dash
 
         }
 
+
         private void XRichEitBox_GotFocus(object sender, RoutedEventArgs e)
         {
             xFormatRow.Height = new GridLength(30);
+            xRichEitBox.ManipulationMode = ManipulationModes.None;
+
         }
 
         private void AddFonts()
@@ -94,12 +97,15 @@ namespace Dash
                 fonts.Add(new FontFamily(font));
             }
         }
+
         private void XRichEitBox_LostFocus(object sender, RoutedEventArgs e)
         {
             var richText = string.Empty;
             xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
             _richTextFieldModelController.RichTextData = richText;
             xFormatRow.Height = new GridLength(0);
+
+            xRichEitBox.ManipulationMode = ManipulationModes.All; 
         }
 
         private async Task<string> LoadText()
@@ -195,5 +201,6 @@ namespace Dash
                 selectedText.CharacterFormat = charFormatting;
             }
         }
+        
     }
 }

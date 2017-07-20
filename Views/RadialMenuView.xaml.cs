@@ -473,18 +473,21 @@ namespace Dash.Views
             Action<object> addCollection = Actions.AddCollection;
             Action<object> addApiCreator = Actions.AddApiCreator;
             Action<object> addDocuments = Actions.AddDocuments;
-            
+            Action<object> addNotes = Actions.AddNotes;
+
             var operatorButton = new RadialActionModel("Operator", "↔️") { GenericAction = onOperatorAdd };
             var collectionButton = new RadialActionModel("Collection", "📁") { GenericAction = addCollection };
             var apiButton = new RadialActionModel("Api", "⚙️") { GenericAction = addApiCreator };
-            var documentButton = new RadialActionModel("Document", "📄") { GenericAction = addDocuments };
-
+            var documentButton = new RadialActionModel("Document", "🖺") { GenericAction = addDocuments };
+            var notesButton = new RadialActionModel("Notes", "🗋") { GenericAction = addNotes }; 
+            //📄
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {
                 operatorButton,
                 apiButton,
                 documentButton,
                 collectionButton,
+                notesButton
             });
 
             //TODO maybe this shouldn't go here 

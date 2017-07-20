@@ -28,7 +28,7 @@ namespace Dash
         /// <summary>
         /// Gets the layout list which should always be in the deepestPrototype for the document
         /// </summary>
-        private static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context)
+        public static DocumentCollectionFieldModelController GetLayoutList(this DocumentController doc, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var layoutList = doc.GetField(DashConstants.KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
@@ -60,7 +60,10 @@ namespace Dash
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {
-            doc.AddLayoutToLayoutList(activeLayout);
+            if (addToLayoutList)
+            {
+                doc.AddLayoutToLayoutList(activeLayout);
+            }
 
             // set the layout on the document that was calling this
             var layoutWrapper = new DocumentFieldModelController(activeLayout);

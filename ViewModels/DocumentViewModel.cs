@@ -8,8 +8,6 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
-using static Dash.CourtesyDocuments.CourtesyDocument;
-using System;
 
 namespace Dash
 {
@@ -26,8 +24,42 @@ namespace Dash
         private Brush _borderBrush;
         private IconTypeEnum iconType;
         private TransformGroup _gridViewIconGroupTransform;
+        private Visibility _docMenuVisibility;
+        private GridLength _menuColumnWidth;
+        private bool _menuOpen = false;
+        private bool _isDetailedUserInterfaceVisible = true;
+        private bool _isMoveable = true;
+        private FrameworkElement _content;
+        private WidthAndMenuOpenWrapper _widthBinding;
+        public string DebugName = "";
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
+        public WidthAndMenuOpenWrapper WidthBinding
+        {
+            get { return _widthBinding; }
+            set { SetProperty(ref _widthBinding, value); }
+        }
+        public struct WidthAndMenuOpenWrapper
+        {
+            public double Width { get; set; }
+            public bool MenuOpen { get; set; }
+            public WidthAndMenuOpenWrapper(double width, bool menuOpen)
+            {
+                Width = width;
+                MenuOpen = menuOpen;
+            }
+        }
+
+        public bool MenuOpen
+        {
+            get { return _menuOpen; }
+            set
+            {
+                if (SetProperty(ref _menuOpen, value))
+                    WidthBinding = new WidthAndMenuOpenWrapper(Width, value);
+            }
+        }
+
         public TransformGroup GridViewIconGroupTransform
         {
             get { return _gridViewIconGroupTransform; }
@@ -39,7 +71,6 @@ namespace Dash
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
 
-        private FrameworkElement _content;
         public FrameworkElement Content
         {
             get { return _content; }
@@ -65,7 +96,9 @@ namespace Dash
                     var widthFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
                             NumberFieldModelController;
+
                     widthFieldModelController.Data = value;
+                    WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
                 }
             }
         }
@@ -99,7 +132,7 @@ namespace Dash
                 {
                     // get layout
                     var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey , context) as DocumentFieldModelController)?.Data;
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
 
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
@@ -133,7 +166,6 @@ namespace Dash
             get { return _backgroundBrush; }
             set { SetProperty(ref _backgroundBrush, value); }
         }
-        public string DebugName = "";
 
         public Brush BorderBrush
         {
@@ -141,15 +173,11 @@ namespace Dash
             set { SetProperty(ref _borderBrush, value); }
         }
 
-        private bool _isDetailedUserInterfaceVisible = true;
-
         public bool IsDetailedUserInterfaceVisible
         {
             get { return _isDetailedUserInterfaceVisible; }
             set { SetProperty(ref _isDetailedUserInterfaceVisible, value); }
         }
-
-        private bool _isMoveable = true;
 
         public bool IsMoveable
         {
@@ -157,14 +185,14 @@ namespace Dash
             set { SetProperty(ref _isMoveable, value); }
         }
 
-        private Visibility _docMenuVisibility;
         public Visibility DocMenuVisibility
         {
             get { return _docMenuVisibility; }
             set { SetProperty(ref _docMenuVisibility, value); }
         }
-
-        private GridLength _menuColumnWidth;
+        
+        public readonly bool IsInInterfaceBuilder;
+        
         public GridLength MenuColumnWidth
         {
             get { return _menuColumnWidth; }
@@ -174,20 +202,21 @@ namespace Dash
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
-
-        public DocumentViewModel(DocumentController documentController)
+  
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
         {
+            if (IsInInterfaceBuilder = isInInterfaceBuilder)
+                ManipulationMode = ManipulationModes.None;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-
-            DataBindingSource.Add(documentController.DocumentModel);
+            DataBindingSource.Add(documentController.DocumentModel);     
+            Content = documentController.MakeViewUI(new Context(DocumentController), isInInterfaceBuilder);
 
             SetUpSmallIcon();
-
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
-            //documentController.DocumentFieldUpdated += DocumentController_DocumentFieldUpdated;
             OnActiveLayoutChanged();
+            WidthBinding = new WidthAndMenuOpenWrapper();
         }
 
         private void SetUpSmallIcon()
@@ -196,11 +225,10 @@ namespace Dash
                 DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, new Context(DocumentController)) as NumberFieldModelController;
             if (iconFieldModelController == null)
             {
-                iconFieldModelController = new NumberFieldModelController((int) (IconTypeEnum.Document));
+                iconFieldModelController = new NumberFieldModelController((int)(IconTypeEnum.Document));
                 DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
             }
-
-            iconType = (IconTypeEnum) iconFieldModelController.Data;
+            iconType = (IconTypeEnum)iconFieldModelController.Data;
             iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
         }
 
@@ -209,10 +237,9 @@ namespace Dash
             Debug.Assert(args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey));
             OnActiveLayoutChanged();
         }
-
         private void OnActiveLayoutChanged()
         {
-            Content = DocumentController.MakeViewUI(new Context(DocumentController));
+            Content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
             ListenToTransformGroupField(DocumentController);
@@ -221,13 +248,24 @@ namespace Dash
         private void ListenToTransformGroupField(DocumentController docController)
         {
             var posFieldModelController = docController.GetPositionField();
-            var activeLayout = docController.GetActiveLayout().Data;
-            var scaleCenterFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, new Context(DocumentController)) as PointFieldModelController;
-            var scaleAmountFieldModelController = activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, new Context(DocumentController)) as PointFieldModelController;
-            GroupTransform = new TransformGroupData(posFieldModelController.Data, scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
-            posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-            scaleCenterFieldModelController.FieldModelUpdated += ScaleCenterFieldModelController_FieldModelUpdatedEvent;
-            scaleAmountFieldModelController.FieldModelUpdated += ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+            var activeLayout = docController.GetActiveLayout()?.Data;
+            if (activeLayout != null)
+            {
+                var scaleCenterFieldModelController =
+                    activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey,
+                        new Context(DocumentController)) as PointFieldModelController;
+                var scaleAmountFieldModelController =
+                    activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey,
+                        new Context(DocumentController)) as PointFieldModelController;
+                GroupTransform = new TransformGroupData(posFieldModelController.Data,
+                    scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
+                posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+                scaleCenterFieldModelController.FieldModelUpdated +=
+                    ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+                scaleAmountFieldModelController.FieldModelUpdated +=
+                    ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+            }
+            
         }
 
         private void ListenToWidthField(DocumentController docController)
@@ -312,29 +350,24 @@ namespace Dash
             }
         }
 
-
-        public void ToggleMenuVisibility()
-        {
-            if (DocMenuVisibility == Visibility.Collapsed)
-            {
-                OpenMenu();
-            }
-            else
-            {
-                CloseMenu();
-            }
-        }
-
         public void CloseMenu()
         {
-            DocMenuVisibility = Visibility.Collapsed;
-            MenuColumnWidth = new GridLength(0);
+            if (MenuOpen)
+            {
+                DocMenuVisibility = Visibility.Collapsed;
+                MenuColumnWidth = new GridLength(0);
+                MenuOpen = false;
+            }
         }
 
         public void OpenMenu()
         {
-            DocMenuVisibility = Visibility.Visible;
-            MenuColumnWidth = new GridLength(50);
+            if (!MenuOpen)
+            {
+                DocMenuVisibility = Visibility.Visible;
+                MenuColumnWidth = new GridLength(50);
+                MenuOpen = true;
+            }
         }
 
         public DocumentController Copy()
@@ -349,7 +382,6 @@ namespace Dash
                 var oldPosition = DocumentController.GetPositionField().Data;
                 positionField.Data = new Point(oldPosition.X + 15, oldPosition.Y + 15);
             }
-
             return copy;
         }
 
@@ -357,15 +389,11 @@ namespace Dash
         {
             var del = DocumentController.MakeDelegate();
             var delLayout = DocumentController.GetActiveLayout().Data.MakeDelegate();
-
             var oldPosition = DocumentController.GetPositionField().Data;
-
             delLayout.SetField(DashConstants.KeyStore.PositionFieldKey,
                 new PointFieldModelController(new Point(oldPosition.X + 15, oldPosition.Y + 15)),
                 true);
-
             del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
-
             return del;
         }
     }

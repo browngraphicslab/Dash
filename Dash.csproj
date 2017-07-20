@@ -127,6 +127,11 @@
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
     <Compile Include="Util\CourtesyDocuments\GridPanel.cs" />
+    <Compile Include="Util\DropControls.cs" />
+    <Compile Include="Views\SelectableContainer.xaml.cs">
+      <DependentUpon>SelectableContainer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\NoteDocuments.cs" />
     <Compile Include="Views\RichTextView.xaml.cs">
       <DependentUpon>RichTextView.xaml</DependentUpon>
     </Compile>
@@ -164,7 +169,6 @@
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
     <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
-    <Compile Include="Converters\DocumentToUIElementConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
@@ -324,6 +328,7 @@
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
+    <Compile Include="Converters\WidthBindingToDoubleConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -407,6 +412,10 @@
     <Page Include="RadialMenu\Styles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SelectableContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\RichTextView.xaml">
       <SubType>Designer</SubType>

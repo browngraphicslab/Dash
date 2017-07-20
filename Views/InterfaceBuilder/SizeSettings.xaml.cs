@@ -38,9 +38,8 @@ namespace Dash
 
         private void BindHeight(DocumentController docController, Context context)
         {
-            var fmc = docController.GetField(DashConstants.KeyStore.HeightFieldKey);
             var heightController =
-                fmc.DereferenceToRoot<NumberFieldModelController>(context);
+                docController.GetHeightField(context);
             Debug.Assert(heightController != null);
 
             var heightBinding = new Binding
@@ -57,9 +56,7 @@ namespace Dash
 
         private void BindWidth(DocumentController docController, Context context)
         {
-            var fmc = docController.GetField(DashConstants.KeyStore.WidthFieldKey);
-            var widthController = 
-                fmc.DereferenceToRoot<NumberFieldModelController>(context);
+            var widthController = docController.GetWidthField(context);
             Debug.Assert(widthController != null);
 
             var widthBinding = new Binding
