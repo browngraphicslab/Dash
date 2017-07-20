@@ -17,7 +17,7 @@ namespace Dash
         public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Panel");
 
         public static readonly Key GridNumRowsKey = new Key("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitions");
-        public static readonly Key GridNumColumnsKey = new Key("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitions");
+        public static readonly Key GridNumColumnsKey = new Key("0319AF94-95E1-4518-BABD-8C48DF2CAA01", "ColumnDefinitions");
 
         public static readonly Key GridRowKey = new Key("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
         public static readonly Key GridColumnKey = new Key("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
