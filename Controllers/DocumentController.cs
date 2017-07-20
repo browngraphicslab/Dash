@@ -469,6 +469,7 @@ namespace Dash
             //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
             context.AddDocumentContext(this);
 
+            //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
                 return TextingBox.MakeView(this, context, isInterfaceBuilder);
@@ -500,6 +501,10 @@ namespace Dash
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
                 return FreeFormDocument.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == CourtesyDocuments.GridViewLayout.DocumentType)
+            {
+                return GridViewLayout.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
             {

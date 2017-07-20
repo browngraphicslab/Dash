@@ -126,6 +126,7 @@
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Util\DropControls.cs" />
     <Compile Include="Views\SelectableContainer.xaml.cs">
       <DependentUpon>SelectableContainer.xaml</DependentUpon>
     </Compile>
