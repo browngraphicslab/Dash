@@ -150,6 +150,10 @@ namespace Dash
                                  new DocumentController(new Dictionary<Key, FieldModelController>(),  //TODO factor out this default layout it will definitely lead to bugs
                                      DashConstants.DocumentTypeStore.DefaultLayout);
             }
+            else if (fieldModelController is RichTextFieldModelController)
+            {
+                layoutDocument = new RichTextBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+            }
             return layoutDocument;
         }
 

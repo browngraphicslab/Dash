@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
+using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -1192,6 +1194,15 @@ namespace Dash
                 grid.Children.Add(gridView);
                 if (isInterfaceBuilderLayout)
                 {
+                    var icon = new TextBlock()
+                    {
+                        Text = "▦",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
                     return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
@@ -1287,6 +1298,15 @@ namespace Dash
                 grid.Children.Add(listView);
                 if (isInterfaceBuilderLayout)
                 {
+                    var icon = new TextBlock()
+                    {
+                        Text = "🖹",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
                     return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
@@ -1358,6 +1378,7 @@ namespace Dash
             {
 
                 var grid = new Grid();
+                
                 // bind the grid height
                 var heightController = GetHeightField(docController, context);
                 BindHeight(grid, heightController);
@@ -1377,6 +1398,15 @@ namespace Dash
                 });
                 if (isInterfaceBuilderLayout)
                 {
+                    var icon = new TextBlock()
+                    {
+                        Text = "⊡",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
                     return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
@@ -1386,6 +1416,18 @@ namespace Dash
             {
                 var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
                 grid.Children.Clear();
+                if (isInterfaceBuilder)
+                {
+                    var icon = new TextBlock()
+                    {
+                        Text = "⊡",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
+                }
                 foreach (var layoutDocument in layoutDocuments)
                 {
                     var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
