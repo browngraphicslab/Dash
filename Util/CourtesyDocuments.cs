@@ -462,47 +462,22 @@ namespace Dash
                 // the text field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
                 // X, Y, Width, and Height etc....
-
-                // create the textblock
-                //FrameworkElement tb = null;
-
-                EditableTextBlock block = null; 
+                
+                EditableTextBlock block = block = new EditableTextBlock(); 
 
                 // use the reference to the text to get the text field model controller
                 var textField = GetTextField(docController, context);
                 Debug.Assert(textField != null);
                 if (textField is TextFieldModelController)
                 {
-                    /* 
-                    var textBox = new TextBox();
-                    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-                    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                    tb = textBox;
-                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    tb.VerticalAlignment = VerticalAlignment.Stretch;
-                    textBox.TextWrapping = TextWrapping.Wrap;
-                    var textFieldModelController = textField as TextFieldModelController;
-                    BindTextBoxSource(tb, textFieldModelController);
-                    */
-                    block = new EditableTextBlock();
                     var textFieldModelController = textField as TextFieldModelController;
                     BindEditableText(block, textFieldModelController);
                 }
-                else
-                    return new TextBox(); 
-                //else if (textField is NumberFieldModelController)
-                //{
-                //    var textBox = new TextBox();
-                //    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-                //    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                //    tb = textBox;
-                //    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                //    tb.VerticalAlignment = VerticalAlignment.Stretch;
-                //    textBox.TextWrapping = TextWrapping.Wrap;
-                //    var numFieldModelController = textField as NumberFieldModelController;
-                //    BindNumberFieldSource(tb, numFieldModelController);
-
-                //}
+                else if (textField is NumberFieldModelController)
+                {
+                    var numFieldModelController = textField as NumberFieldModelController;
+                    BindNumberFieldSource(block, numFieldModelController);
+                }
                 //else if (textField is RichTextFieldModelController)
                 //{
                 //    tb = new TextBlock();
@@ -555,11 +530,11 @@ namespace Dash
                             var textFieldModelController = field as TextFieldModelController;
                             BindEditableText(block, textFieldModelController);
                         }
-                        //else if (field is NumberFieldModelController)
-                        //{
-                        //    var numFieldModelController = field as NumberFieldModelController;
-                        //    BindNumberFieldSource(tb, numFieldModelController);
-                        //}
+                        else if (field is NumberFieldModelController)
+                        {
+                            var numFieldModelController = field as NumberFieldModelController;
+                            BindNumberFieldSource(block, numFieldModelController);
+                        }
                         //else if (field is RichTextFieldModelController)
                         //{
                         //    var richTextFieldModelController = field as RichTextFieldModelController;
@@ -857,19 +832,9 @@ namespace Dash
                 //                return border;
                 //>>>>>>> origin/master
             }
+            
 
-            private static void BindTextBoxSource(FrameworkElement renderElement, TextFieldModelController fieldModelController)
-            {
-                var sourceBinding = new Binding
-                {
-                    Source = fieldModelController,
-                    Path = new PropertyPath(nameof(fieldModelController.Data)),
-                    Mode = BindingMode.TwoWay
-                };
-                renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
-            }
-
-            private static void BindNumberFieldSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
+            private static void BindNumberFieldSource(EditableTextBlock block, NumberFieldModelController fieldModelController)
             {
                 var sourceBinding = new Binding
                 {
@@ -879,7 +844,8 @@ namespace Dash
                     Mode = BindingMode.TwoWay,
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
-                renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
+                block.Block.SetBinding(TextBlock.TextProperty, sourceBinding);
+                block.Box.SetBinding(TextBox.TextProperty, sourceBinding);
             }
 
             private static void BindEditableText(EditableTextBlock block, TextFieldModelController fieldModelController)
