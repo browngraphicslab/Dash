@@ -42,7 +42,12 @@
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>
-                <ContentPresenter Content="{Binding Content}" />
+                <FlyoutBase.AttachedFlyout >
+                    <Flyout Placement="Bottom">
+                        <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+                <ContentPresenter Grid.Row="0" Content="{Binding Content}" />
             </Grid>
             <!-- Misc. Document Components-->
             <Button x:Name="DraggerButton"

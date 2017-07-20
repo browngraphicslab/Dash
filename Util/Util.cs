@@ -37,8 +37,12 @@ namespace Dash
 
             MatrixTransform r = to.TransformToVisual(Window.Current.Content) as MatrixTransform;
             Debug.Assert(r != null);
-            Matrix m = r.Matrix;
-            return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
+            if (r != null)
+            {
+                Matrix m = r.Matrix;
+                return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
+            }
+            return new Point(0,0);
         }
 
         public static Point PointTransformFromVisual(Point p, UIElement to)

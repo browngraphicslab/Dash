@@ -12,6 +12,8 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
+using Windows.UI.Xaml.Controls.Primitives;
+using DashShared;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -81,6 +83,7 @@ namespace Dash
                 new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, ScreenCap),
+                new MenuButton(Symbol.Placeholder, "Commands", Colors.LightBlue, CommandLine),
                 new MenuButton(Symbol.Page, "Json", Colors.LightBlue, GetJson)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
@@ -329,6 +332,11 @@ namespace Dash
             Util.ExportAsImage(OuterGrid);
         }
 
+        public void CommandLine()
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)this.XGrid);
+        }
+
         public void GetJson()
         {
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
@@ -362,7 +370,24 @@ namespace Dash
         {
             MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);
         }
-        
+
+        private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var tb = sender as TextBox;
+            var docController = (DataContext as DocumentViewModel).DocumentController;
+            foreach (var tag in (sender as TextBox).Text.Split('#'))
+                if (tag.Contains("="))
+                {
+                    var eqPos = tag.IndexOfAny(new char[] { '=' });
+                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ').TrimStart(' ');
+                    var tagField = docController.GetDereferencedField(new Key(word, word), null);
+                    if (tagField is TextFieldModelController)
+                        (tagField as TextFieldModelController).Data = valu;
+                    else docController.SetField(new Key(word, word), new TextFieldModelController(valu), true);
+                }
+        }
+
         public void RemoveScroll()
         {
             PointerWheelChanged -= This_PointerWheelChanged;

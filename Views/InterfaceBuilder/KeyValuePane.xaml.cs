@@ -48,7 +48,6 @@ namespace Dash
 
         private void XKeyValueListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
-            Debug.WriteLine(e.Items.Count);
             var item = e.Items.FirstOrDefault();
 
             // item type has to be the same as ListItemSource item type

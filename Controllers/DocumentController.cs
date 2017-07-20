@@ -540,13 +540,17 @@ namespace Dash
             {
                 return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == CourtesyDocuments.GridViewLayout.DocumentType)
+            if (DocumentType == GridViewLayout.DocumentType)
             {
                 return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
+            if (DocumentType == ListViewLayout.DocumentType)
+            {
+                return ListViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+            }
             if (DocumentType == RichTextBox.DocumentType)
             {
-                return CourtesyDocuments.RichTextBox.MakeView(this, context, isInterfaceBuilder);
+                return RichTextBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == GridPanel.GridPanelDocumentType)
             {
@@ -561,12 +565,20 @@ namespace Dash
 
                 if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultLayout)
                 {
+                    if (isInterfaceBuilder)
+                    {
+                        return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+                    }
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
+                
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
-
+            if (isInterfaceBuilder)
+            {
+                return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+            }
             return makeAllViewUI(context);
         }
 
