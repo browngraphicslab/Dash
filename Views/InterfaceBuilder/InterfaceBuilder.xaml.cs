@@ -56,6 +56,8 @@ namespace Dash
             SetActiveLayoutToGridView_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
+            _documentView.Manipulator.RemoveAllButHandle();
+            _documentView.RemoveScroll();
             _documentController = docController;
             var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
@@ -71,6 +73,7 @@ namespace Dash
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
+<<<<<<< HEAD
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -151,9 +154,12 @@ namespace Dash
         }
 
         private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument)
+=======
+        private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)
+>>>>>>> 3ab96aa2b3805a1afb5ff8bbd68863c0b97d3009
         {
             xSettingsPane.Children.Clear();
-            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument);
+            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
             if (newSettingsPane != null)
             {
                 xSettingsPane.Children.Add(newSettingsPane);

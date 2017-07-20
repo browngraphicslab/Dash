@@ -585,44 +585,20 @@ namespace Dash
 
             private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)
             {
-                var currentTextAlignmentField = GetTextAlignmentField(docController, context);
-
-                if (currentTextAlignmentField == null)
-                {
-                    currentTextAlignmentField = new NumberFieldModelController(textAlignment);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentTextAlignmentField = new NumberFieldModelController(textAlignment);
                 docController.SetField(TextAlignmentKey, currentTextAlignmentField, forceMask); // set the field here so that forceMask is respected
-                currentTextAlignmentField.Data = textAlignment;
             }
 
             private void SetFontSizeField(DocumentController docController, double fontSize, bool forceMask, Context context)
             {
-                var currentFontSizeField = GetFontSizeField(docController, context);
-
-                if (currentFontSizeField == null)
-                {
-                    currentFontSizeField = new NumberFieldModelController(fontSize);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentFontSizeField = new NumberFieldModelController(fontSize);
                 docController.SetField(FontSizeKey, currentFontSizeField, forceMask); // set the field here so that forceMask is respected
-                currentFontSizeField.Data = fontSize;
             }
 
             private void SetFontWeightField(DocumentController docController, double fontWeight, bool forceMask, Context context)
             {
-                var currentFontWeightField = GetFontWeightField(docController, context);
-
-                if (currentFontWeightField == null)
-                {
-                    currentFontWeightField = new NumberFieldModelController(fontWeight);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentFontWeightField = new NumberFieldModelController(fontWeight);
                 docController.SetField(FontWeightKey, currentFontWeightField, forceMask); // set the field here so that forceMask is respected
-                currentFontWeightField.Data = fontWeight;
             }
 
             #endregion
@@ -962,16 +938,9 @@ namespace Dash
 
             private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask, Context context)
             {
-                var currentOpacityField = GetOpacityField(docController, context);
-
-                if (currentOpacityField == null)
-                {
-                    currentOpacityField = new NumberFieldModelController(opacity);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentOpacityField = new NumberFieldModelController(opacity);
                 docController.SetField(OpacityKey, currentOpacityField, forceMask); // set the field here so that forceMask is respected
-                currentOpacityField.Data = opacity;
+
             }
 
             private static ImageFieldModelController GetImageField(DocumentController docController, Context context)
@@ -1156,10 +1125,10 @@ namespace Dash
 
             public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
-                return MakeView(docController, context);
+                throw new NotImplementedException("We don't have access to the data document here");
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
 
                 var grid = new Grid();
@@ -1181,7 +1150,7 @@ namespace Dash
                 grid.Children.Add(gridView);
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController) { AllowDrop = true };
+                    return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
             }
@@ -1269,7 +1238,7 @@ namespace Dash
                 grid.Children.Add(listView);
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController) { AllowDrop = true };
+                    return new SelectableContainer(grid, docController);
                 }
                 return grid;
             }
@@ -1333,10 +1302,10 @@ namespace Dash
 
             public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
-                return MakeView(docController, context);
+                throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
 
                 var grid = new Grid();
@@ -1352,7 +1321,7 @@ namespace Dash
                 });
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController){AllowDrop = true};
+                    return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
             }
@@ -1473,9 +1442,8 @@ namespace Dash
                 throw new NotImplementedException();
             }
 
-            public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
-                return StackingPanel.MakeView(docController, context);
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
+                throw new NotImplementedException("We don't have access to the data document here");
             }
 
             /// <summary>
@@ -1483,8 +1451,10 @@ namespace Dash
             /// </summary>
             /// <param name="docController"></param>
             /// <param name="context"></param>
+            /// <param name="isInterfaceBuilderLayout"></param>
+            /// <param name="dataDocument"></param>
             /// <returns></returns>
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
                 if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
                     return MakeFreeFormView(docController, context, isInterfaceBuilderLayout);
@@ -1511,7 +1481,7 @@ namespace Dash
                 }
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(stack, docController);
+                    return new SelectableContainer(stack, docController, dataDocument);
                 }
                 return stack;
             }

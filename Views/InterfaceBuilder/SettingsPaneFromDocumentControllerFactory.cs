@@ -9,47 +9,47 @@ namespace Dash
 {
     public static class SettingsPaneFromDocumentControllerFactory
     {
-        public static UIElement CreateSettingsPane(DocumentController editedLayoutDocument)
+        public static UIElement CreateSettingsPane(DocumentController layoutDocument, DocumentController dataDocument)
         {
-            if (editedLayoutDocument.DocumentType == ImageBox.DocumentType)
+            if (layoutDocument.DocumentType == ImageBox.DocumentType)
             {
-                return CreateImageSettingsLayout(editedLayoutDocument);
+                return CreateImageSettingsLayout(layoutDocument);
             }
-            if (editedLayoutDocument.DocumentType == TextingBox.DocumentType)
+            if (layoutDocument.DocumentType == TextingBox.DocumentType)
             {
-                return CreateTextSettingsLayout(editedLayoutDocument);
+                return CreateTextSettingsLayout(layoutDocument);
             }
-            if (editedLayoutDocument.DocumentType == CollectionBox.DocumentType)
+            if (layoutDocument.DocumentType == CollectionBox.DocumentType)
             {
-                return CreateCollectionSettingsLayout(editedLayoutDocument);
+                return CreateCollectionSettingsLayout(layoutDocument);
             }
 
-            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
-            return CreateDocumentSettingsLayout(editedLayoutDocument);
+            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
+            return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
         }
 
-        private static UIElement CreateCollectionSettingsLayout(DocumentController editedLayoutDocument)
+        private static UIElement CreateCollectionSettingsLayout(DocumentController layoutDocument)
         {
             var context = new Context(); // bcz: ??? Is this right?
-            return new CollectionSettings(editedLayoutDocument, context);
+            return new CollectionSettings(layoutDocument, context);
         }
 
-        private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)
+        private static UIElement CreateImageSettingsLayout(DocumentController layoutDocument)
         {
             var context = new Context(); // bcz: ??? Is this right?
-            return new ImageSettings(editedLayoutDocument, context);
+            return new ImageSettings(layoutDocument, context);
         }
 
-        private static UIElement CreateTextSettingsLayout(DocumentController editedLayoutDocument)
+        private static UIElement CreateTextSettingsLayout(DocumentController layoutDocument)
         {
             var context = new Context(); // bcz: ??? Is this right?
-            return new TextSettings(editedLayoutDocument, context);
+            return new TextSettings(layoutDocument, context);
         }
 
-        private static UIElement CreateDocumentSettingsLayout(DocumentController editedLayoutDocument)
+        private static UIElement CreateDocumentSettingsLayout(DocumentController layoutDocument, DocumentController dataDocument)
         {
             var context = new Context(); // bcz: ??? Is this right?
-            return new DocumentSettings(editedLayoutDocument, context);
+            return new DocumentSettings(layoutDocument, dataDocument, context);
         }
 
     }

@@ -25,7 +25,7 @@ namespace Dash
 {
     public partial class SelectableContainer : UserControl
     {
-        public delegate void OnSelectionChangedHandler(SelectableContainer sender, DocumentController layoutDocument);
+        public delegate void OnSelectionChangedHandler(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument);
 
         public event OnSelectionChangedHandler OnSelectionChanged;
 
@@ -36,7 +36,8 @@ namespace Dash
         private FrameworkElement _contentElement;
         private List<Ellipse> _draggerList;
 
-        public DocumentController LayoutDocument;
+        public readonly DocumentController LayoutDocument;
+        public readonly DocumentController DataDocument;
         private ManipulationControls _manipulator;
         private bool _isLowestSelected;
 
@@ -93,12 +94,13 @@ namespace Dash
             }
         }
 
-        public SelectableContainer(FrameworkElement contentElement, DocumentController layoutDocument)
+        public SelectableContainer(FrameworkElement contentElement, DocumentController layoutDocument, DocumentController dataDocument = null)
         {
             this.InitializeComponent();
             this.InitiateManipulators();
             ContentElement = contentElement;
             LayoutDocument = layoutDocument;
+            DataDocument = dataDocument;
 
             RenderTransform = new TranslateTransform();
 
@@ -114,7 +116,7 @@ namespace Dash
             SetContent();
             if (_parentContainer == null)
             {
-                OnSelectionChanged?.Invoke(this, LayoutDocument);
+                OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
             }
         }
 
@@ -144,7 +146,7 @@ namespace Dash
                 IsLowestSelected = true;
                 if (_parentContainer == null)
                 {
-                    OnSelectionChanged?.Invoke(this, LayoutDocument);
+                    OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
                 }
             }
             SetSelectedContainer(null);
@@ -153,7 +155,7 @@ namespace Dash
 
         private void FireSelectionChanged(SelectableContainer selectedContainer)
         {
-            OnSelectionChanged?.Invoke(selectedContainer, selectedContainer.LayoutDocument);
+            OnSelectionChanged?.Invoke(selectedContainer, selectedContainer.LayoutDocument, selectedContainer.DataDocument);
             _parentContainer?.FireSelectionChanged(selectedContainer);
         }
 

@@ -1,7 +1,7 @@
 ﻿namespace Dash.ViewModels
 {
-    public class OperatorDocumentViewModel : DocumentViewModel
-    {
+    //public class OperatorDocumentViewModel : DocumentViewModel
+    //{
         //public OperatorDocumentViewModel(OperatorDocumentModel document) : base(document)
         //{
         //}
@@ -38,5 +38,5 @@
 
         //public event OperatorView.IODragEventHandler IODragStarted;
         //public event OperatorView.IODragEventHandler IODragEnded;
-    }
+    //}
 }

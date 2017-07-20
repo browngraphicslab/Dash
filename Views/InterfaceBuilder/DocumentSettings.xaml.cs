@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -19,26 +20,62 @@ namespace Dash.Views
 {
     public sealed partial class DocumentSettings : UserControl
     {
+        private readonly DocumentController _dataDocument;
+        private readonly Context _context;
+
         public DocumentSettings()
         {
             this.InitializeComponent();
         }
 
-        public DocumentSettings(DocumentController editedLayoutDocument, Context context): this()
+        public DocumentSettings(DocumentController layoutDocument, DocumentController dataDocument, Context context): this()
         {
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
+            _context = context;
+            _dataDocument = dataDocument;
 
-            xAddLayoutButton.Tapped += CreateNewActiveLayout;
+            xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
+            SetupActiveLayoutComboBox(dataDocument, context);
 
-            SetupActiveLayoutComboBox(editedLayoutDocument, context);
+            xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
         }
 
-        private void SetupActiveLayoutComboBox(DocumentController editedLayoutDocument, Context context)
+        private void SetupActiveLayoutComboBox(DocumentController dataDocument, Context context)
         {
-            var layoutList = editedLayoutDocument.GetLayoutList(context);
+            // listen to when the layout list changes
+            var layoutList = dataDocument.GetLayoutList(context);
             layoutList.OnDocumentsChanged += LayoutList_OnDocumentsChanged;
             SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
+
+            // listen to when the active layout changes
+            var activeLayout = dataDocument.GetActiveLayout(context).Data;
+            dataDocument.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DataDocument_DocumentFieldUpdated);
+            SetComboBoxSelectedItem(activeLayout);
+
+            xActiveLayoutComboBox.SelectionChanged += XActiveLayoutComboBox_OnSelectionChanged;
+        }
+
+        private void XActiveLayoutComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedLayoutDocument = xActiveLayoutComboBox.SelectedItem as DocumentController;
+            var currLayoutDocument = _dataDocument.GetActiveLayout(_context).Data;
+            if (currLayoutDocument.Equals(selectedLayoutDocument)  || selectedLayoutDocument == null)
+            {
+                return;
+            }
+
+            _dataDocument.SetActiveLayout(selectedLayoutDocument, true, false);
+        }
+
+        private void DataDocument_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var newLayout = (args.NewValue as DocumentFieldModelController).Data;
+            SetComboBoxSelectedItem(newLayout);
+        }
+
+        private void SetComboBoxSelectedItem(DocumentController newLayout)
+        {
+            xActiveLayoutComboBox.SelectedItem = newLayout;
         }
 
         private void SetActiveLayoutComboBoxItems(IEnumerable<DocumentController> documents)
@@ -51,9 +88,32 @@ namespace Dash.Views
             SetActiveLayoutComboBoxItems(currentDocuments);
         }
 
-        private void CreateNewActiveLayout(object sender, TappedRoutedEventArgs e)
+        // to be rewritten this just cycles through our possible layouts for documents
+        private void CreateNewActiveLayout_TEMP(object sender, TappedRoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var currActiveLayout = _dataDocument.GetActiveLayout(_context).Data;
+            var currPos = currActiveLayout.GetPositionField(_context).Data;
+            var currWidth = currActiveLayout.GetWidthField(_context).Data;
+            var currHeight = currActiveLayout.GetHeightField(_context).Data;
+            DocumentController newLayout = null;
+            if (currActiveLayout.DocumentType.Equals(DashConstants.DocumentTypeStore.FreeFormDocumentLayout))
+            {
+                newLayout = new CourtesyDocuments.GridViewLayout(new List<DocumentController>(), currPos,
+                    new Size(currWidth, currHeight)).Document;
+            }
+            if (currActiveLayout.DocumentType.Equals(CourtesyDocuments.GridViewLayout.DocumentType))
+            {
+                newLayout = new CourtesyDocuments.ListViewLayout(new List<DocumentController>(), currPos,
+                    new Size(currWidth, currHeight)).Document;
+            }
+
+            if (currActiveLayout.DocumentType.Equals(CourtesyDocuments.ListViewLayout.DocumentType))
+            {
+                newLayout = new CourtesyDocuments.FreeFormDocument(new List<DocumentController>(), currPos,
+                    new Size(currWidth, currHeight)).Document;
+            }
+
+            _dataDocument.SetActiveLayout(newLayout, true, true);
         }
     }
 }

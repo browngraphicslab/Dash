@@ -177,7 +177,7 @@ namespace Dash
                     viewModel.GroupTransform = new TransformGroupData(new Point(x, y), viewModel.GroupTransform.ScaleCenter, viewModel.GroupTransform.ScaleAmount);
                     offset += 15;
                 }
-                viewModel.ManipulationMode = ManipulationModes.System;
+                //viewModel.ManipulationMode = ManipulationModes.All;
                 viewModel.DoubleTapEnabled = false;
                 DataBindingSource.Add(viewModel);
             }
