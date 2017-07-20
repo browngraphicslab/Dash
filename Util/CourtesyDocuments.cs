@@ -466,11 +466,14 @@ namespace Dash
                 // create the textblock
                 FrameworkElement tb = null;
 
+                EditableTextBlock block = new EditableTextBlock();
+
                 // use the reference to the text to get the text field model controller
                 var textField = GetTextField(docController, context);
                 Debug.Assert(textField != null);
                 if (textField is TextFieldModelController)
                 {
+                    /* 
                     var textBox = new TextBox();
                     textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
                     textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
@@ -480,6 +483,9 @@ namespace Dash
                     textBox.TextWrapping = TextWrapping.Wrap;
                     var textFieldModelController = textField as TextFieldModelController;
                     BindTextBoxSource(tb, textFieldModelController);
+                    */
+                    var textFieldModelController = textField as TextFieldModelController;
+                    BindEditableText(block, textFieldModelController);
                 }
                 else if (textField is NumberFieldModelController)
                 {
@@ -866,6 +872,19 @@ namespace Dash
                 };
                 renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
             }
+
+            private static void BindEditableText(EditableTextBlock block, TextFieldModelController fieldModelController)
+            {
+                var sourceBinding = new Binding
+                {
+                    Source = fieldModelController,
+                    Path = new PropertyPath(nameof(fieldModelController.Data)),
+                    Mode = BindingMode.TwoWay
+                };
+                block.Block.SetBinding(TextBlock.TextProperty, sourceBinding);
+                block.Box.SetBinding(TextBox.TextProperty, sourceBinding);
+            }
+
 
             #endregion
         }

@@ -12,8 +12,8 @@ namespace Dash
 {
     public class EditableTextBlock
     {
-        private TextBox _box;
-        private TextBlock _block = new TextBlock();
+        public TextBox Box { get; }
+        public TextBlock Block { get; }
 
         //public string Data { get; set; } 
 
@@ -22,7 +22,8 @@ namespace Dash
 
         public EditableTextBlock()
         {
-            _box = new TextBox
+            Block = new TextBlock();
+            Box = new TextBox
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
@@ -30,35 +31,21 @@ namespace Dash
                 Visibility = Visibility.Collapsed
             };
 
-            _box.LostFocus += (s, e) =>
+            Box.LostFocus += (s, e) =>
             {
-                _box.Visibility = Visibility.Collapsed;
-                _block.Visibility = Visibility.Visible;
+                Box.Visibility = Visibility.Collapsed;
+                Block.Visibility = Visibility.Visible;
             };
 
-            _block.Tapped += (s, e) =>
+            Block.Tapped += (s, e) =>
             {
-                _block.Visibility = Visibility.Collapsed;
-                _box.Visibility = Visibility.Visible;
+                Block.Visibility = Visibility.Collapsed;
+                Box.Visibility = Visibility.Visible;
             };
+
+            Block.GotFocus += (s, e) => Block.ManipulationMode = ManipulationModes.None;
+            Block.LostFocus += (s, e) => Block.ManipulationMode = ManipulationModes.All;
         }
-
-
-        public void SetBinding(DependencyProperty dp, BindingBase binding)
-        {
-            _box.SetBinding(dp, binding);
-            _block.SetBinding(dp, binding); 
-        } 
-
-        public FrameworkElement MakeView()
-        {
-            return _block;
-        }
-
-        public void SetManipulation()
-        {
-            _box.GotFocus += (s, e) => _box.ManipulationMode = ManipulationModes.None;
-            _box.LostFocus += (s, e) => _box.ManipulationMode = ManipulationModes.All;
-        }
+        
     }
 }
