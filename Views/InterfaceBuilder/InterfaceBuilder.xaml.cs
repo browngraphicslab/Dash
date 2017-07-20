@@ -56,13 +56,13 @@ namespace Dash
             //SetActiveLayoutToFreeform_TEMP(docController);
             SetActiveLayout(docController);
             _documentView = new DocumentView(docViewModel);
-            var rootSelectableContainer = new SelectableContainer(_documentView, docController);
+            _documentController = docController;
+            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
 
-            _documentController = docController;
 
             // set the middle pane to hold the document view
-            xDocumentHolder.Child = rootSelectableContainer;
+            xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
@@ -110,7 +110,7 @@ namespace Dash
                 forceMask: true,
                 addToLayoutList: true);
         }
-
+        
         public void SetActiveLayout(DocumentController docController)
         {
             switch (_display)
@@ -128,7 +128,6 @@ namespace Dash
                     break;
             }
         }
-
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             DocumentController cont = e.ClickedItem as DocumentController;

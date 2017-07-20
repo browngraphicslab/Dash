@@ -257,7 +257,35 @@ namespace Dash
             ChangePosition(delta.Translate.X, delta.Translate.Y);
         }
 
+        private void LayoutManipulators()
+        {
+            var manipulatorWidth = xTopLeftDragger.ActualWidth;
+            var manipulatorHeight = xTopLeftDragger.ActualHeight;
+            var canvasWidth = xManipulatorCanvas.ActualWidth;
+            var canvasHeight = xManipulatorCanvas.ActualHeight;
+
+            Canvas.SetLeft(xTopLeftDragger, -manipulatorWidth);
+            Canvas.SetTop(xTopLeftDragger, -manipulatorHeight);
+
+            Canvas.SetLeft(xTopRightDragger, canvasWidth);
+            Canvas.SetTop(xTopRightDragger, -manipulatorHeight);
+
+            Canvas.SetLeft(xBottomRightDragger, canvasWidth);
+            Canvas.SetTop(xBottomRightDragger, canvasHeight);
+
+            Canvas.SetLeft(xBottomLeftDragger, -manipulatorWidth);
+            Canvas.SetTop(xBottomLeftDragger, canvasHeight);
+
+            Canvas.SetLeft(xCenterDragger, (canvasWidth - manipulatorWidth) / 2);
+            Canvas.SetTop(xCenterDragger, (canvasHeight - manipulatorHeight) / 2);
+        }
+
 
         #endregion
+
+        private void XManipulatorCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            LayoutManipulators();
+        }
     }
 }
