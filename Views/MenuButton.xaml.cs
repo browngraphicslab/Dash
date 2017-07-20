@@ -88,6 +88,12 @@ namespace DocumentMenu
             xButtonStackPanel.Children.Add(_descriptionText);
 
             _button.Tapped += Button_Tapped;
+            _button.DoubleTapped += Button_DoubleTapped;
+        }
+
+        private void Button_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
 
         /// <summary>

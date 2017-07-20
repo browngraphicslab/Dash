@@ -190,8 +190,7 @@ namespace Dash
             set { SetProperty(ref _docMenuVisibility, value); }
         }
 
-
-        public readonly bool IsInInterfaceBuilder;
+        public bool IsInInterfaceBuilder { get; }
 
         public GridLength MenuColumnWidth
         {
@@ -202,7 +201,8 @@ namespace Dash
         // == CONSTRUCTORS == 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
         {
-            IsInInterfaceBuilder = isInInterfaceBuilder;
+            if (IsInInterfaceBuilder = isInInterfaceBuilder)
+                ManipulationMode = ManipulationModes.None;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);

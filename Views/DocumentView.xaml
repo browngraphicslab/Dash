@@ -12,7 +12,9 @@
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
     PointerWheelChanged="This_PointerWheelChanged"
-    Loaded="This_Loaded">
+    Loaded="This_Loaded"
+    ManipulationMode="{Binding ManipulationMode}"
+    >
     
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">

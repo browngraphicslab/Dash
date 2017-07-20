@@ -56,6 +56,8 @@ namespace Dash
             //SetActiveLayoutToFreeform_TEMP(docController);
             SetActiveLayout(docController);
             _documentView = new DocumentView(docViewModel);
+            _documentView.Manipulator.RemoveAllButHandle();
+            _documentView.RemoveScroll();
             _documentController = docController;
             var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;

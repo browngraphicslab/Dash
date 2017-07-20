@@ -31,7 +31,6 @@ namespace Dash
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
 
-
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
@@ -362,8 +361,11 @@ namespace Dash
         {
             MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);
         }
-
+        
+        public void RemoveScroll()
+        {
+            PointerWheelChanged -= This_PointerWheelChanged;
+        }
         #endregion
-
     }
 }
