@@ -861,6 +861,7 @@ namespace Dash
                 var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
                 Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetFields(fields, true);
+                SetOpacityField(Document, DefaultOpacity, true, null);
             }
 
             public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
