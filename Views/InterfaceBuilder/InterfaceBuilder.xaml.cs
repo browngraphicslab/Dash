@@ -101,6 +101,9 @@ namespace Dash
                     else if (fieldModelController is ImageFieldModelController)
                     {
                         box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(docController.GetId(), key));
+                    } else if (fieldModelController is RichTextFieldModelController)
+                    {
+                        box = new RichTextBox(new DocumentReferenceController(docController.GetId(), key));
                     }
 
                     // safety check
