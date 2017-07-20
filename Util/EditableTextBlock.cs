@@ -13,18 +13,21 @@ namespace Dash
     public class EditableTextBlock
     {
         public TextBox Box { get; }
-        public TextBlock Block { get; }
+        public TextBlock Block { get; } = new TextBlock();
+
+        public Canvas Container { get; } = new Canvas(); 
 
         public EditableTextBlock()
         {
-            Block = new TextBlock();
             Box = new TextBox
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
-                TextWrapping = TextWrapping.Wrap, 
+                TextWrapping = TextWrapping.Wrap,
                 Visibility = Visibility.Collapsed
             };
+
+            Box.ManipulationDelta += (s, e) => e.Handled = true; 
 
             Box.LostFocus += (s, e) =>
             {
@@ -36,21 +39,16 @@ namespace Dash
             {
                 Box.Visibility = Visibility.Collapsed;
                 Block.Visibility = Visibility.Visible;
-            }; 
+            };
 
             Block.Tapped += (s, e) =>
             {
                 Block.Visibility = Visibility.Collapsed;
                 Box.Visibility = Visibility.Visible;
             };
-        }
 
-        public FrameworkElement MakeView()
-        {
-            Grid container = new Grid();
-            container.Children.Add(Block);
-            container.Children.Add(Box);
-            return container; 
+            Container.Children.Add(Block);
+            Container.Children.Add(Box);
         }
     }
 }

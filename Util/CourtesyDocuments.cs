@@ -463,7 +463,7 @@ namespace Dash
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
                 // X, Y, Width, and Height etc....
                 
-                EditableTextBlock block = block = new EditableTextBlock(); 
+                var block = new EditableTextBlock(); 
 
                 // use the reference to the text to get the text field model controller
                 var textField = GetTextField(docController, context);
@@ -478,22 +478,18 @@ namespace Dash
                     var numFieldModelController = textField as NumberFieldModelController;
                     BindNumberFieldSource(block, numFieldModelController);
                 }
-                //else if (textField is RichTextFieldModelController)
-                //{
-                //    tb = new TextBlock();
-                //    var richTextFieldModelController = textField as RichTextFieldModelController;
-                //    //BindTextBlockSource(tb, richTextFieldModelController);
-                //}
 
                 // bind the text height
                 var heightController = GetHeightField(docController, context);
-                BindHeight(block.Block, heightController);
+                BindHeight(block.Container, heightController);
                 BindHeight(block.Box, heightController);
+                BindHeight(block.Block, heightController);
 
                 // bind the text width
                 var widthController = GetWidthField(docController, context);
-                BindWidth(block.Block, widthController);
+                BindWidth(block.Container, widthController);
                 BindWidth(block.Box, widthController);
+                BindWidth(block.Block, widthController);
 
                 var fontWeightController = GetFontWeightField(docController, context);
                 BindFontWeight(block.Block, fontWeightController);
@@ -535,11 +531,6 @@ namespace Dash
                             var numFieldModelController = field as NumberFieldModelController;
                             BindNumberFieldSource(block, numFieldModelController);
                         }
-                        //else if (field is RichTextFieldModelController)
-                        //{
-                        //    var richTextFieldModelController = field as RichTextFieldModelController;
-                        //    BindTextBlockSource(tb, richTextFieldModelController);
-                        //}
                     }
                 });
 
@@ -549,7 +540,7 @@ namespace Dash
                     return selectableContainer;
                 }
 
-                return block.MakeView(); 
+                return block.Container; 
             }
 
 
