@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -19,24 +20,29 @@ namespace Dash.Views
 {
     public sealed partial class DocumentSettings : UserControl
     {
+        private readonly DocumentController _dataDocument;
+        private readonly Context _context;
+
         public DocumentSettings()
         {
             this.InitializeComponent();
         }
 
-        public DocumentSettings(DocumentController editedLayoutDocument, Context context): this()
+        public DocumentSettings(DocumentController layoutDocument, DocumentController dataDocument, Context context): this()
         {
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
+            _context = context;
+            _dataDocument = dataDocument;
+            xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
+            xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
 
             xAddLayoutButton.Tapped += CreateNewActiveLayout;
 
-            SetupActiveLayoutComboBox(editedLayoutDocument, context);
+            SetupActiveLayoutComboBox(dataDocument, context);
         }
 
-        private void SetupActiveLayoutComboBox(DocumentController editedLayoutDocument, Context context)
+        private void SetupActiveLayoutComboBox(DocumentController dataDocument, Context context)
         {
-            var layoutList = editedLayoutDocument.GetLayoutList(context);
+            var layoutList = dataDocument.GetLayoutList(context);
             layoutList.OnDocumentsChanged += LayoutList_OnDocumentsChanged;
             SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
         }
@@ -53,7 +59,29 @@ namespace Dash.Views
 
         private void CreateNewActiveLayout(object sender, TappedRoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var currActiveLayout = _dataDocument.GetActiveLayout(_context).Data;
+            var currPos = currActiveLayout.GetPositionField(_context).Data;
+            var currWidth = currActiveLayout.GetWidthField(_context).Data;
+            var currHeight = currActiveLayout.GetHeightField(_context).Data;
+            DocumentController newLayout = null;
+            if (currActiveLayout.DocumentType.Equals(DashConstants.DocumentTypeStore.FreeFormDocumentLayout))
+            {
+                newLayout = new CourtesyDocuments.GridViewLayout(new List<DocumentController>(), currPos,
+                    new Size(currWidth, currHeight)).Document;
+            }
+            if (currActiveLayout.DocumentType.Equals(CourtesyDocuments.GridViewLayout.DocumentType))
+            {
+                newLayout = new CourtesyDocuments.ListViewLayout(new List<DocumentController>(), currPos,
+                    new Size(currWidth, currHeight)).Document;
+            }
+
+            if (currActiveLayout.DocumentType.Equals(CourtesyDocuments.ListViewLayout.DocumentType))
+            {
+                newLayout = new CourtesyDocuments.FreeFormDocument(new List<DocumentController>(), currPos,
+                    new Size(currWidth, currHeight)).Document;
+            }
+
+            _dataDocument.SetActiveLayout(newLayout, true, true);
         }
     }
 }

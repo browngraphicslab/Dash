@@ -1156,10 +1156,10 @@ namespace Dash
 
             public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
-                return MakeView(docController, context);
+                throw new NotImplementedException("We don't have access to the data document here");
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
 
                 var grid = new Grid();
@@ -1181,7 +1181,7 @@ namespace Dash
                 grid.Children.Add(gridView);
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController);
+                    return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
             }
@@ -1333,10 +1333,10 @@ namespace Dash
 
             public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
-                return MakeView(docController, context);
+                throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
 
                 var grid = new Grid();
@@ -1353,7 +1353,7 @@ namespace Dash
                 if (isInterfaceBuilderLayout)
                 {
                     //DropControls controls = new DropControls(grid, docController);
-                    return new SelectableContainer(grid, docController);
+                    return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
             }
@@ -1474,9 +1474,8 @@ namespace Dash
                 throw new NotImplementedException();
             }
 
-            public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
-                return StackingPanel.MakeView(docController, context);
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
+                throw new NotImplementedException("We don't have access to the data document here");
             }
 
             /// <summary>
@@ -1484,8 +1483,10 @@ namespace Dash
             /// </summary>
             /// <param name="docController"></param>
             /// <param name="context"></param>
+            /// <param name="isInterfaceBuilderLayout"></param>
+            /// <param name="dataDocument"></param>
             /// <returns></returns>
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
                 if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
                     return MakeFreeFormView(docController, context, isInterfaceBuilderLayout);
@@ -1512,7 +1513,7 @@ namespace Dash
                 }
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(stack, docController);
+                    return new SelectableContainer(stack, docController, dataDocument);
                 }
                 return stack;
             }

@@ -67,10 +67,10 @@ namespace Dash
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
-        private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument)
+        private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)
         {
             xSettingsPane.Children.Clear();
-            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument);
+            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
             if (newSettingsPane != null)
             {
                 xSettingsPane.Children.Add(newSettingsPane);
