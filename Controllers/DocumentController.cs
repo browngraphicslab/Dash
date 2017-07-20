@@ -503,7 +503,7 @@ namespace Dash
         }
 
 
-        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder)
+        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
             context = context ?? new Context();
             //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
@@ -524,7 +524,7 @@ namespace Dash
             }
             if (DocumentType == StackingPanel.DocumentType)
             {
-                return StackingPanel.MakeView(this, context, isInterfaceBuilder);
+                return StackingPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == CollectionBox.DocumentType)
             {
@@ -540,11 +540,11 @@ namespace Dash
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
-                return FreeFormDocument.MakeView(this, context, isInterfaceBuilder);
+                return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == CourtesyDocuments.GridViewLayout.DocumentType)
             {
-                return GridViewLayout.MakeView(this, context, isInterfaceBuilder);
+                return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
             {
@@ -562,7 +562,7 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-                return doc.Data.MakeViewUI(context, isInterfaceBuilder);
+                return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
 
             return makeAllViewUI(context);
