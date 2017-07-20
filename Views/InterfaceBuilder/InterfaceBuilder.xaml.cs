@@ -47,10 +47,10 @@ namespace Dash
             SetActiveLayoutToFreeform_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
+            _documentController = docController;
             var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
 
-            _documentController = docController;
 
             // set the middle pane to hold the document view
             xDocumentHolder.Child = _documentView;
@@ -87,122 +87,6 @@ namespace Dash
             DocumentController cont = e.ClickedItem as DocumentController;
 
             SetUpInterfaceBuilder(cont, new Context(cont));
-        }
-
-        private void ApplyEditable()
-        {
-            //var editableElements = new List<FrameworkElement>();
-
-            //// iterate over all the documents which define views
-            //foreach (var layoutDocument in _layoutCourtesyDocument.GetLayoutDocuments())
-            //{
-            //    var context = new Context(_layoutCourtesyDocument.Document);
-            //    // use the layout document to generate a UI
-            //    var fieldView = layoutDocument.MakeViewUI(context);
-
-            //    var translationController = layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
-            //    if (translationController != null)
-            //    {
-            //        if (layoutDocument.GetId() != _layoutCourtesyDocument.Document.GetId()) // only bind translation when the layoutDocument isn't the entire layout
-            //        {
-            //            CourtesyDocument.BindTranslation(fieldView, translationController);
-            //        }
-            //    }
-
-            //    // generate an editable border
-            //    var editableBorder = new EditableFieldFrame(layoutDocument.GetId(), layoutDocument.GetId() != _layoutCourtesyDocument.Document.GetId())
-            //    {
-            //        EditableContent = fieldView,
-            //        HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
-            //        VerticalAlignment = VerticalAlignment.Top
-            //    };
-
-            //    // bind the editable border width to the layout width
-            //    var widthController =
-            //        layoutDocument.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as NumberFieldModelController;
-            //    Debug.Assert(widthController != null);
-            //    var widthBinding = new Binding
-            //    {
-            //        Source = widthController,
-            //        Path = new PropertyPath(nameof(widthController.Data)),
-            //        Mode = BindingMode.TwoWay
-            //    };
-            //    editableBorder.SetBinding(WidthProperty, widthBinding);
-
-            //    // bind the editable border height to the layout height
-            //    var heightController =
-            //        layoutDocument.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as NumberFieldModelController;
-            //    Debug.Assert(heightController != null);
-            //    var heightBinding = new Binding
-            //    {
-            //        Source = heightController,
-            //        Path = new PropertyPath(nameof(heightController.Data)),
-            //        Mode = BindingMode.TwoWay
-            //    };
-            //    editableBorder.SetBinding(HeightProperty, heightBinding);
-
-            //    if (layoutDocument.GetId() != _layoutCourtesyDocument.Document.GetId())
-            //    {
-            //        // when the editable border is loaded bind it's translation to the layout's translation
-            //        // TODO this probably causes a memory leak, but we have to capture the layoutDocument variable.
-            //        editableBorder.Loaded += delegate
-            //        {
-            //            translationController =
-            //                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, context) as PointFieldModelController;
-            //            Debug.Assert(translationController != null);
-            //            var translateBinding = new Binding
-            //            {
-            //                Source = translationController,
-            //                Path = new PropertyPath(nameof(translationController.Data)),
-            //                Mode = BindingMode.TwoWay,
-            //                Converter = new PointToTranslateTransformConverter()
-            //            };
-            //            editableBorder.Container.SetBinding(UIElement.RenderTransformProperty, translateBinding);
-            //        };
-            //    }
-            //    editableBorder.Tapped += EditableBorder_Tapped;
-            //    editableElements.Add(editableBorder);
-            //}
-
-            //var canvas = new Canvas();
-            //foreach (var frameworkElement in editableElements)
-            //{
-            //    canvas.Children.Add(frameworkElement);
-            //}
-
-            //_documentView.ViewModel.Content = canvas;
-        }
-
-        private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            //xSettingsPane.Children.Clear();
-
-            //var editableFieldFrame = sender as EditableFieldFrame;
-            //Debug.Assert(editableFieldFrame != null);
-
-            //UpdateEditableFieldFrameSelection(editableFieldFrame);
-
-            //var layoutDocumentId = editableFieldFrame.DocumentId;
-
-
-            //var editedLayoutDocument = _layoutCourtesyDocument.GetLayoutDocuments().FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
-            //Debug.Assert(editedLayoutDocument != null);
-
-            //var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument);
-            //if (newSettingsPane != null)
-            //{
-            //    xSettingsPane.Children.Add(newSettingsPane);
-            //}
-        }
-
-        private void UpdateEditableFieldFrameSelection(EditableFieldFrame newlySelectedEditableFieldFrame)
-        {
-            //if (_selectedEditableFieldFrame != null)
-            //{
-            //    _selectedEditableFieldFrame.IsSelected = false;
-            //}
-            //newlySelectedEditableFieldFrame.IsSelected = true;
-            //_selectedEditableFieldFrame = newlySelectedEditableFieldFrame;
         }
 
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)

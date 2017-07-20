@@ -9,14 +9,17 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-        <Grid x:Name="XGrid" BorderBrush="{StaticResource WindowsBlue}" Background="White" Margin="18,18,18,18" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="XGrid" BorderBrush="{StaticResource WindowsBlue}" Background="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
-        <Ellipse x:Name="xBottomLeftDragger"  HorizontalAlignment="Left" VerticalAlignment="Bottom" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xBottomRightDragger" HorizontalAlignment="Right" VerticalAlignment="Bottom" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xTopLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xTopRightDragger" HorizontalAlignment="Right" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}" />
-        <Ellipse x:Name="xCenterDragger" HorizontalAlignment="Center"  VerticalAlignment="Center" Style="{StaticResource xDraggerEllipseStyle}"/>
+        <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged">
+            <Ellipse x:Name="xBottomLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xCenterDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+        </Canvas>
+
     </Grid>
 
 </UserControl>
