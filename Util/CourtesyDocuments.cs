@@ -1181,7 +1181,7 @@ namespace Dash
                 grid.Children.Add(gridView);
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController);
+                    return new SelectableContainer(grid, docController) { AllowDrop = true };
                 }
                 return grid;
             }
@@ -1269,7 +1269,7 @@ namespace Dash
                 grid.Children.Add(listView);
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController);
+                    return new SelectableContainer(grid, docController) { AllowDrop = true };
                 }
                 return grid;
             }
@@ -1352,8 +1352,7 @@ namespace Dash
                 });
                 if (isInterfaceBuilderLayout)
                 {
-                    //DropControls controls = new DropControls(grid, docController);
-                    return new SelectableContainer(grid, docController);
+                    return new SelectableContainer(grid, docController){AllowDrop = true};
                 }
                 return grid;
             }
