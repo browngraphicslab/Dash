@@ -45,6 +45,22 @@ namespace Dash.Views
             var layoutList = dataDocument.GetLayoutList(context);
             layoutList.OnDocumentsChanged += LayoutList_OnDocumentsChanged;
             SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
+
+            var activeLayout = dataDocument.GetActiveLayout(context).Data;
+            dataDocument.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DataDocument_DocumentFieldUpdated);
+
+            SetComboBoxSelectedItem(activeLayout);
+        }
+
+        private void DataDocument_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var newLayout = (args.NewValue as DocumentFieldModelController).Data;
+            SetComboBoxSelectedItem(newLayout);
+        }
+
+        private void SetComboBoxSelectedItem(DocumentController newLayout)
+        {
+            xActiveLayoutComboBox.SelectedItem = newLayout;
         }
 
         private void SetActiveLayoutComboBoxItems(IEnumerable<DocumentController> documents)
