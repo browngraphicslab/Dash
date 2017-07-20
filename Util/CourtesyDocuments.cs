@@ -1167,6 +1167,13 @@ namespace Dash
             {
 
                 var grid = new Grid();
+                // bind the grid height
+                var heightController = GetHeightField(docController, context);
+                BindHeight(grid, heightController);
+
+                // bind the grid width
+                var widthController = GetWidthField(docController, context);
+                BindWidth(grid, widthController);
                 var gridView = new GridView
                 {
                     HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -1248,13 +1255,20 @@ namespace Dash
 
             public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
-                return MakeView(docController, context);
+                throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
 
                 var grid = new Grid();
+                // bind the grid height
+                var heightController = GetHeightField(docController, context);
+                BindHeight(grid, heightController);
+
+                // bind the grid width
+                var widthController = GetWidthField(docController, context);
+                BindWidth(grid, widthController);
                 var listView = new ListView
                 {
                     HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -1273,7 +1287,7 @@ namespace Dash
                 grid.Children.Add(listView);
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(grid, docController);
+                    return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
             }
@@ -1344,6 +1358,13 @@ namespace Dash
             {
 
                 var grid = new Grid();
+                // bind the grid height
+                var heightController = GetHeightField(docController, context);
+                BindHeight(grid, heightController);
+
+                // bind the grid width
+                var widthController = GetWidthField(docController, context);
+                BindWidth(grid, widthController);
                 LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
 
                 docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
@@ -1356,7 +1377,6 @@ namespace Dash
                 });
                 if (isInterfaceBuilderLayout)
                 {
-                    //DropControls controls = new DropControls(grid, docController);
                     return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;

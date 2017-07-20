@@ -546,6 +546,10 @@ namespace Dash
             {
                 return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
+            if (DocumentType == CourtesyDocuments.ListViewLayout.DocumentType)
+            {
+                return ListViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+            }
             if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
             {
                 return CourtesyDocuments.RichTextBox.MakeView(this, context, isInterfaceBuilder);
@@ -559,12 +563,20 @@ namespace Dash
 
                 if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultLayout)
                 {
+                    if (isInterfaceBuilder)
+                    {
+                        return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+                    }
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
+                
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
-
+            if (isInterfaceBuilder)
+            {
+                return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+            }
             return makeAllViewUI(context);
         }
 
