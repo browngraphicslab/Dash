@@ -112,12 +112,7 @@ namespace Dash
                 textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
                 textBox.AcceptsReturn = true;
             }
-            else if (textField is RichTextFieldModelController)
-            {
-                tb = new TextBlock();
-                //var richTextFieldModelController = textField as RichTextFieldModelController;
-                //BindTextBlockSource(tb, richTextFieldModelController);
-            }
+            
             //docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey,
             //    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
             //    {

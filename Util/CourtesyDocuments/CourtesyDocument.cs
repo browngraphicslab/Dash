@@ -402,12 +402,12 @@ namespace Dash
     {
         public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
-            document.SetField(CourtesyDocument.HorizontalAlignmentKey, new NumberFieldModelController((int)alignment), true);
+            document.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
-            document.SetField(CourtesyDocument.VerticalAlignmentKey, new NumberFieldModelController((int)alignment), true);
+            document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
         public static void SetGridRow(this DocumentController document, int row)
