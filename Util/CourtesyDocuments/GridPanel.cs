@@ -16,8 +16,13 @@ namespace Dash
     {
         public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Panel");
 
-        public static readonly Key GridNumRowsKey = new Key("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitions");
-        public static readonly Key GridNumColumnsKey = new Key("0319AF94-95E1-4518-BABD-8C48DF2CAA01", "ColumnDefinitions");
+        public static readonly Key HorizontalAlignmentKey = new Key("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
+        public static readonly Key VerticalAlignmentKey = new Key("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
+
+        public static readonly Key GridRowsTypeKey = new Key("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitionTypes");
+        public static readonly Key GridRowsValueKey = new Key("3761458D-757E-4350-8BF5-FC42D3DCF70F", "RowDefinitionValues");
+        public static readonly Key GridColumnsTypeKey = new Key("7B698361-0F0E-4322-983C-055989376C72", "ColumnDefinitionTypes");
+        public static readonly Key GridColumnsValueKey = new Key("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9", "ColumnDefinitionValues");
 
         public static readonly Key GridRowKey = new Key("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
         public static readonly Key GridColumnKey = new Key("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
@@ -96,49 +101,74 @@ namespace Dash
             element.SetBinding(UIElement.RenderTransformProperty, positionBinding);
         }
 
-        protected static void BindNumRows(Grid element, DocumentController docController,
+        protected static void BindRowDefinitions(Grid element, DocumentController docController,
             Context context)
         {
-            var numRowsFmc =
-                docController.GetDereferencedField(GridNumRowsKey, context) as NumberFieldModelController;
-            if (numRowsFmc != null)
+            var rowTypes =
+                docController.GetDereferencedField(GridRowsTypeKey, context) as ListFieldModelController<NumberFieldModelController>;
+            var rowValues =
+                docController.GetDereferencedField(GridRowsValueKey, context) as ListFieldModelController<NumberFieldModelController>;
+            if (rowTypes == null || rowValues == null) return;
+            var typeData = rowTypes.TypedData;
+            var valueData = rowValues.TypedData;
+            Debug.Assert(typeData.Count == valueData.Count);
+            element.RowDefinitions.Clear();
+            for (int i = 0; i < typeData.Count; ++i)
             {
-                int numRows = (int) numRowsFmc.Data;
-                if (numRows == element.RowDefinitions.Count)
+                RowDefinition row = new RowDefinition
                 {
-                    return;
-                }
-                element.RowDefinitions.Clear();
-                for (int i = 0; i < numRows - 1; ++i)
-                {
-                    RowDefinition autoRow = new RowDefinition {Height = GridLength.Auto};
-                    element.RowDefinitions.Add(autoRow);
-                }
-                RowDefinition starRow = new RowDefinition {Height = new GridLength(1, GridUnitType.Star)};
-                element.RowDefinitions.Add(starRow);
+                    Height = new GridLength(valueData[i].Data, (GridUnitType) typeData[i].Data)
+                };
+                element.RowDefinitions.Add(row);
             }
         }
 
-        protected static void BindNumColumns(Grid element, DocumentController docController,
+        protected static void BindColumnDefinitions(Grid element, DocumentController docController,
             Context context)
         {
-            var numColumnsFmc =
-                docController.GetDereferencedField(GridNumColumnsKey, context) as NumberFieldModelController;
-            if (numColumnsFmc != null)
+            var columnTypes =
+                docController.GetDereferencedField(GridColumnsTypeKey, context) as ListFieldModelController<NumberFieldModelController>;
+            var columnValues =
+                docController.GetDereferencedField(GridColumnsValueKey, context) as ListFieldModelController<NumberFieldModelController>;
+            if (columnTypes == null || columnValues == null) return;
+            var typeData = columnTypes.TypedData;
+            var valueData = columnValues.TypedData;
+            Debug.Assert(typeData.Count == valueData.Count);
+            element.ColumnDefinitions.Clear();
+            for (int i = 0; i < typeData.Count; ++i)
             {
-                int numColumns = (int)numColumnsFmc.Data;
-                if (numColumns == element.ColumnDefinitions.Count)
+                Debug.WriteLine("Test");
+                Debug.WriteLine((int)GridUnitType.Auto);
+                Debug.WriteLine((int)GridUnitType.Star);
+                Debug.WriteLine((GridUnitType)(int)GridUnitType.Auto);
+                Debug.WriteLine((GridUnitType)(int)GridUnitType.Star);
+                Debug.WriteLine((GridUnitType)typeData[i].Data);
+                Debug.WriteLine(typeData[i].Data);
+                ColumnDefinition column = new ColumnDefinition
                 {
-                    return;
-                }
-                element.ColumnDefinitions.Clear();
-                for (int i = 0; i < numColumns - 1; ++i)
-                {
-                    ColumnDefinition autoColumn = new ColumnDefinition {Width = GridLength.Auto};
-                    element.ColumnDefinitions.Add(autoColumn);
-                }
-                ColumnDefinition starColumn = new ColumnDefinition {Width = new GridLength(1, GridUnitType.Star)};
-                element.ColumnDefinitions.Add(starColumn);
+                    Width = new GridLength(valueData[i].Data, (GridUnitType)typeData[i].Data)
+                };
+                element.ColumnDefinitions.Add(column);
+            }
+        }
+
+        protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
+            Context context)
+        {
+            var horizontalAlignmentFmc = docController.GetField(HorizontalAlignmentKey) as NumberFieldModelController;
+            if (horizontalAlignmentFmc != null)
+            {
+                element.HorizontalAlignment = (HorizontalAlignment) horizontalAlignmentFmc.Data;
+            }
+        }
+
+        protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
+            Context context)
+        {
+            var verticalAlignmentFmc = docController.GetField(VerticalAlignmentKey) as NumberFieldModelController;
+            if (verticalAlignmentFmc != null)
+            {
+                element.VerticalAlignment = (VerticalAlignment)verticalAlignmentFmc.Data;
             }
         }
 
@@ -186,8 +216,10 @@ namespace Dash
             AddBinding(grid, docController, DashConstants.KeyStore.WidthFieldKey, context, BindWidth);
             AddBinding(grid, docController, DashConstants.KeyStore.HeightFieldKey, context, BindHeight);
             //AddBinding(grid, docController, DashConstants.KeyStore.PositionFieldKey, context, BindPosition);
-            AddBinding(grid, docController, GridNumRowsKey, context, BindNumRows);
-            AddBinding(grid, docController, GridNumRowsKey, context, BindNumColumns);
+            AddBinding(grid, docController, GridRowsTypeKey, context, BindRowDefinitions);
+            AddBinding(grid, docController, GridColumnsTypeKey, context, BindColumnDefinitions);
+            AddBinding(grid, docController, HorizontalAlignmentKey, context, BindHorizontalAlignment);
+            AddBinding(grid, docController, VerticalAlignmentKey, context, BindVerticalAlignment);
 
             var col = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context)
                 ?.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
@@ -228,14 +260,44 @@ namespace Dash
             document.SetField(GridPanel.GridColumnSpanKey, new NumberFieldModelController(columnSpan), true);
         }
 
-        public static void SetGridNumColumns(this DocumentController document, int numColumns)
+        public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
         {
-            document.SetField(GridPanel.GridNumColumnsKey, new NumberFieldModelController(numColumns), true);
+            document.SetField(GridPanel.HorizontalAlignmentKey, new NumberFieldModelController((int)alignment), true);
         }
 
-        public static void SetGridNumRows(this DocumentController document, int numRows)
+        public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
-            document.SetField(GridPanel.GridNumRowsKey, new NumberFieldModelController(numRows), true);
+            document.SetField(GridPanel.VerticalAlignmentKey, new NumberFieldModelController((int)alignment), true);
+        }
+
+        public static void SetGridRowDefinitions(this DocumentController document, List<RowDefinition> rows)
+        {
+            ListFieldModelController<NumberFieldModelController> types = new ListFieldModelController<NumberFieldModelController>();
+            ListFieldModelController<NumberFieldModelController> values = new ListFieldModelController<NumberFieldModelController>();
+            foreach (var row in rows)
+            {
+                int type = (int)row.Height.GridUnitType;
+                double value = row.Height.Value;
+                types.Add(new NumberFieldModelController(type));
+                values.Add(new NumberFieldModelController(value));
+            }
+            document.SetField(GridPanel.GridRowsTypeKey, types, true);
+            document.SetField(GridPanel.GridRowsValueKey, values, true);
+        }
+
+        public static void SetGridColumnDefinitions(this DocumentController document, List<ColumnDefinition> columns)
+        {
+            ListFieldModelController<NumberFieldModelController> types = new ListFieldModelController<NumberFieldModelController>();
+            ListFieldModelController<NumberFieldModelController> values = new ListFieldModelController<NumberFieldModelController>();
+            foreach (var column in columns)
+            {
+                int type = (int)column.Width.GridUnitType;
+                double value = column.Width.Value;
+                types.Add(new NumberFieldModelController(type));
+                values.Add(new NumberFieldModelController(value));
+            }
+            document.SetField(GridPanel.GridColumnsTypeKey, types, true);
+            document.SetField(GridPanel.GridColumnsValueKey, values, true);
         }
 
         public static void AddChild(this DocumentController document, DocumentController child, Context context = null)

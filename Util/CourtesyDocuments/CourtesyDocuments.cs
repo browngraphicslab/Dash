@@ -1781,19 +1781,40 @@ namespace Dash
                     0, 60, 35).Document;
 
                 var gridPanel = new GridPanel().Document;
-                gridPanel.SetGridNumRows(6);
-                gridPanel.SetGridNumColumns(2);
+                gridPanel.SetGridColumnDefinitions(new List<ColumnDefinition>
+                {
+                    new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)},
+                    new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)}
+                });
+                gridPanel.SetGridRowDefinitions(new List<RowDefinition>
+                {
+                    new RowDefinition{Height = new GridLength(1, GridUnitType.Star)},
+                    new RowDefinition{Height = new GridLength(1, GridUnitType.Star)},
+                    new RowDefinition{Height = new GridLength(1, GridUnitType.Star)},
+                    new RowDefinition{Height = new GridLength(1, GridUnitType.Star)},
+                    new RowDefinition{Height = new GridLength(1, GridUnitType.Star)},
+                    new RowDefinition{Height = new GridLength(1, GridUnitType.Star)}
+                });
+                gridPanel.SetHorizontalAlignment(HorizontalAlignment.Right);
+                gridPanel.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
                 tBox1.SetGridRow(0);
                 gridPanel.AddChild(tBox1);
                 tBox2.SetGridRow(1);
+                tBox2.SetGridColumn(1);
+                tBox2.SetHorizontalAlignment(HorizontalAlignment.Right);
                 gridPanel.AddChild(tBox2);
                 tBox3.SetGridRow(2);
                 gridPanel.AddChild(tBox3);
                 tBox4.SetGridRow(3);
+                tBox6.SetGridColumn(1);
                 gridPanel.AddChild(tBox4);
                 tBox5.SetGridRow(4);
+                tBox5.SetHorizontalAlignment(HorizontalAlignment.Left);
                 gridPanel.AddChild(tBox5);
                 tBox6.SetGridRow(5);
+                tBox6.SetGridColumn(1);
+                tBox6.SetVerticalAlignment(VerticalAlignment.Stretch);
+                tBox6.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 gridPanel.AddChild(tBox6);
                 //var stackPan = new StackingPanel(new[] { tBox1, tBox2, tBox3, tBox4, tBox5, tBox6 }, false).Document;
 
