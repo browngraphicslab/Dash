@@ -25,6 +25,13 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
+        public static readonly Key HorizontalAlignmentKey = new Key("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
+        public static readonly Key VerticalAlignmentKey = new Key("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
+
+        public static readonly Key GridRowKey = new Key("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
+        public static readonly Key GridColumnKey = new Key("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
+        public static readonly Key GridRowSpanKey = new Key("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
+        public static readonly Key GridColumnSpanKey = new Key("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
 
         protected abstract DocumentController GetLayoutPrototype();
 
@@ -58,6 +65,166 @@ namespace Dash
         protected static void SetLayoutForDocument(DocumentController dataDocument, DocumentController layoutDoc, bool forceMask, bool addToLayoutList)
         {
             dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
+        }
+
+        protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c) where T : FrameworkElement;
+
+        protected static void AddBinding<T>(T element, DocumentController docController, Key k, Context context,
+            BindingDelegate<T> bindingDelegate) where T : FrameworkElement
+        {
+            bindingDelegate.Invoke(element, docController, context);
+            docController.AddFieldUpdatedListener(k,
+                delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    bindingDelegate(element, sender, args.Context);//TODO Should be context or args.Context?
+                });
+        }
+
+        protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var widthFmc = docController.GetWidthField(context);
+            Binding widthBinding = new Binding
+            {
+                Source = widthFmc,
+                Path = new PropertyPath(nameof(widthFmc.Data)),
+                Mode = BindingMode.TwoWay
+            };
+            element.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+        }
+
+        protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var heightFmc = docController.GetHeightField(context);
+            Binding heightBinding = new Binding
+            {
+                Source = heightFmc,
+                Path = new PropertyPath(nameof(heightFmc.Data)),
+                Mode = BindingMode.TwoWay
+            };
+            element.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+        }
+
+        protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var positionFmc = docController.GetPositionField(context);
+            Binding positionBinding = new Binding
+            {
+                Source = positionFmc,
+                Path = new PropertyPath(nameof(positionFmc.Data)),
+                Mode = BindingMode.TwoWay,
+                Converter = new PointToTranslateTransformConverter()
+            };
+            element.SetBinding(UIElement.RenderTransformProperty, positionBinding);
+        }
+
+        protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
+            Context context)
+        {
+            var horizontalAlignmentFmc = docController.GetField(HorizontalAlignmentKey) as TextFieldModelController;
+            if (horizontalAlignmentFmc == null)
+            {
+                return;
+            }
+            Binding binding = new Binding
+            {
+                Source = horizontalAlignmentFmc,
+                Path = new PropertyPath(nameof(horizontalAlignmentFmc.Data)),
+                Converter = new StringToEnumConverter<HorizontalAlignment>()
+            };
+            element.SetBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
+        }
+
+        protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
+            Context context)
+        {
+            var verticalAlignmentFmc = docController.GetField(VerticalAlignmentKey) as TextFieldModelController;
+            if (verticalAlignmentFmc == null)
+            {
+            }
+            Binding binding = new Binding
+            {
+                Source = verticalAlignmentFmc,
+                Path = new PropertyPath(nameof(verticalAlignmentFmc.Data)),
+                Converter = new StringToEnumConverter<VerticalAlignment>()
+            };
+            element.SetBinding(FrameworkElement.VerticalAlignmentProperty, binding);
+        }
+
+        protected static void BindGridRow(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var gridRowFmc = docController.GetField(GridRowKey) as NumberFieldModelController;
+            if (gridRowFmc == null)
+            {
+                return;
+            }
+            Binding binding = new Binding
+            {
+                Source = gridRowFmc,
+                Path = new PropertyPath(nameof(gridRowFmc.Data))
+            };
+            element.SetBinding(Grid.RowProperty, binding);
+        }
+
+        protected static void BindGridColumn(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var gridColumnFmc = docController.GetField(GridColumnKey) as NumberFieldModelController;
+            if (gridColumnFmc == null)
+            {
+                return;
+            }
+            Binding binding = new Binding
+            {
+                Source = gridColumnFmc,
+                Path = new PropertyPath(nameof(gridColumnFmc.Data))
+            };
+            element.SetBinding(Grid.ColumnProperty, binding);
+        }
+
+        protected static void BindGridRowSpan(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var gridRowSpanFmc = docController.GetField(GridRowSpanKey) as NumberFieldModelController;
+            if (gridRowSpanFmc == null)
+            {
+                return;
+            }
+            Binding binding = new Binding
+            {
+                Source = gridRowSpanFmc,
+                Path = new PropertyPath(nameof(gridRowSpanFmc.Data))
+            };
+            element.SetBinding(Grid.RowSpanProperty, binding);
+        }
+
+        protected static void BindGridColumnSpan(FrameworkElement element, DocumentController docController, Context context)
+        {
+            var gridColumnSpanFmc = docController.GetField(GridColumnKey) as NumberFieldModelController;
+            if (gridColumnSpanFmc == null)
+            {
+                return;
+            }
+            Binding binding = new Binding
+            {
+                Source = gridColumnSpanFmc,
+                Path = new PropertyPath(nameof(gridColumnSpanFmc.Data))
+            };
+            element.SetBinding(Grid.ColumnSpanProperty, binding);
+        }
+
+        protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        {
+            //Set Position
+            //AddBinding(grid, docController, DashConstants.KeyStore.PositionFieldKey, context, BindPosition);
+            //Set width and height
+            AddBinding(element, docController, DashConstants.KeyStore.WidthFieldKey, context, BindWidth);
+            AddBinding(element, docController, DashConstants.KeyStore.HeightFieldKey, context, BindHeight);
+            //Set alignments
+            AddBinding(element, docController, HorizontalAlignmentKey, context, BindHorizontalAlignment);
+            AddBinding(element, docController, VerticalAlignmentKey, context, BindVerticalAlignment);
+            //Set column, row, and span
+            AddBinding(element, docController, GridRowKey, context, BindGridRow);
+            AddBinding(element, docController, GridColumnKey, context, BindGridColumn);
+            AddBinding(element, docController, GridRowSpanKey, context, BindGridRowSpan);
+            AddBinding(element, docController, GridColumnKey, context, BindGridColumnSpan);
         }
 
         [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
@@ -229,5 +396,38 @@ namespace Dash
         }
 
         #endregion
+    }
+
+    public static class CourtesyDocumentExtensions
+    {
+        public static void SetHorizontalAlignment(this DocumentController document, HorizontalAlignment alignment)
+        {
+            document.SetField(CourtesyDocument.HorizontalAlignmentKey, new NumberFieldModelController((int)alignment), true);
+        }
+
+        public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
+        {
+            document.SetField(CourtesyDocument.VerticalAlignmentKey, new NumberFieldModelController((int)alignment), true);
+        }
+
+        public static void SetGridRow(this DocumentController document, int row)
+        {
+            document.SetField(CourtesyDocument.GridRowKey, new NumberFieldModelController(row), true);
+        }
+
+        public static void SetGridColumn(this DocumentController document, int column)
+        {
+            document.SetField(CourtesyDocument.GridColumnKey, new NumberFieldModelController(column), true);
+        }
+
+        public static void SetGridRowSpan(this DocumentController document, int rowSpan)
+        {
+            document.SetField(CourtesyDocument.GridRowSpanKey, new NumberFieldModelController(rowSpan), true);
+        }
+
+        public static void SetGridColumnSpan(this DocumentController document, int columnSpan)
+        {
+            document.SetField(CourtesyDocument.GridColumnSpanKey, new NumberFieldModelController(columnSpan), true);
+        }
     }
 }

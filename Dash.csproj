@@ -102,6 +102,7 @@
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
+    <Compile Include="Converters\NumberToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
     <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
     <Compile Include="Models\DocumentReferenceFieldModel.cs" />
@@ -130,6 +131,7 @@
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
+    <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\DocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\LayoutCourtesyDocument.cs" />
@@ -261,7 +263,6 @@
       <DependentUpon>PDFViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Source.cs" />
-    <Compile Include="Util\CourtesyDocuments\CourtesyDocuments.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
     <Compile Include="Util\InkSource.cs" />
