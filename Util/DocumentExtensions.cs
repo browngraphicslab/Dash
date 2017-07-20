@@ -60,7 +60,10 @@ namespace Dash
 
         public static void SetActiveLayout(this DocumentController doc, DocumentController activeLayout, bool forceMask, bool addToLayoutList)
         {
-            doc.AddLayoutToLayoutList(activeLayout);
+            if (addToLayoutList)
+            {
+                doc.AddLayoutToLayoutList(activeLayout);
+            }
 
             // set the layout on the document that was calling this
             var layoutWrapper = new DocumentFieldModelController(activeLayout);

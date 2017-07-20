@@ -32,24 +32,39 @@ namespace Dash.Views
         {
             _context = context;
             _dataDocument = dataDocument;
+
             xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
-
-            xAddLayoutButton.Tapped += CreateNewActiveLayout;
-
             SetupActiveLayoutComboBox(dataDocument, context);
+
+            xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
         }
 
         private void SetupActiveLayoutComboBox(DocumentController dataDocument, Context context)
         {
+            // listen to when the layout list changes
             var layoutList = dataDocument.GetLayoutList(context);
             layoutList.OnDocumentsChanged += LayoutList_OnDocumentsChanged;
             SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
 
+            // listen to when the active layout changes
             var activeLayout = dataDocument.GetActiveLayout(context).Data;
             dataDocument.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DataDocument_DocumentFieldUpdated);
-
             SetComboBoxSelectedItem(activeLayout);
+
+            xActiveLayoutComboBox.SelectionChanged += XActiveLayoutComboBox_OnSelectionChanged;
+        }
+
+        private void XActiveLayoutComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedLayoutDocument = xActiveLayoutComboBox.SelectedItem as DocumentController;
+            var currLayoutDocument = _dataDocument.GetActiveLayout(_context).Data;
+            if (currLayoutDocument.Equals(selectedLayoutDocument)  || selectedLayoutDocument == null)
+            {
+                return;
+            }
+
+            _dataDocument.SetActiveLayout(selectedLayoutDocument, true, false);
         }
 
         private void DataDocument_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -73,7 +88,8 @@ namespace Dash.Views
             SetActiveLayoutComboBoxItems(currentDocuments);
         }
 
-        private void CreateNewActiveLayout(object sender, TappedRoutedEventArgs e)
+        // to be rewritten this just cycles through our possible layouts for documents
+        private void CreateNewActiveLayout_TEMP(object sender, TappedRoutedEventArgs e)
         {
             var currActiveLayout = _dataDocument.GetActiveLayout(_context).Data;
             var currPos = currActiveLayout.GetPositionField(_context).Data;

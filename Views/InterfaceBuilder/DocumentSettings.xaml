@@ -65,7 +65,7 @@
                                     <!--COMBO BOX-->
                                     <Grid Grid.Column="0">
                                         <ComboBox x:Name="xActiveLayoutComboBox" HorizontalAlignment="Stretch"
-                                                  BorderBrush="Transparent" FontSize="12">
+                                                  BorderBrush="Transparent" FontSize="12" SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
                                             <ComboBox.ItemTemplate >
                                                 <DataTemplate>
                                                     <TextBlock Text="{Binding DocumentType.Type}"></TextBlock>

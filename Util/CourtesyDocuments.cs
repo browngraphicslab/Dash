@@ -585,44 +585,20 @@ namespace Dash
 
             private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)
             {
-                var currentTextAlignmentField = GetTextAlignmentField(docController, context);
-
-                if (currentTextAlignmentField == null)
-                {
-                    currentTextAlignmentField = new NumberFieldModelController(textAlignment);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentTextAlignmentField = new NumberFieldModelController(textAlignment);
                 docController.SetField(TextAlignmentKey, currentTextAlignmentField, forceMask); // set the field here so that forceMask is respected
-                currentTextAlignmentField.Data = textAlignment;
             }
 
             private void SetFontSizeField(DocumentController docController, double fontSize, bool forceMask, Context context)
             {
-                var currentFontSizeField = GetFontSizeField(docController, context);
-
-                if (currentFontSizeField == null)
-                {
-                    currentFontSizeField = new NumberFieldModelController(fontSize);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentFontSizeField = new NumberFieldModelController(fontSize);
                 docController.SetField(FontSizeKey, currentFontSizeField, forceMask); // set the field here so that forceMask is respected
-                currentFontSizeField.Data = fontSize;
             }
 
             private void SetFontWeightField(DocumentController docController, double fontWeight, bool forceMask, Context context)
             {
-                var currentFontWeightField = GetFontWeightField(docController, context);
-
-                if (currentFontWeightField == null)
-                {
-                    currentFontWeightField = new NumberFieldModelController(fontWeight);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentFontWeightField = new NumberFieldModelController(fontWeight);
                 docController.SetField(FontWeightKey, currentFontWeightField, forceMask); // set the field here so that forceMask is respected
-                currentFontWeightField.Data = fontWeight;
             }
 
             #endregion
@@ -962,16 +938,9 @@ namespace Dash
 
             private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask, Context context)
             {
-                var currentOpacityField = GetOpacityField(docController, context);
-
-                if (currentOpacityField == null)
-                {
-                    currentOpacityField = new NumberFieldModelController(opacity);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentOpacityField = new NumberFieldModelController(opacity);
                 docController.SetField(OpacityKey, currentOpacityField, forceMask); // set the field here so that forceMask is respected
-                currentOpacityField.Data = opacity;
+
             }
 
             private static ImageFieldModelController GetImageField(DocumentController docController, Context context)
