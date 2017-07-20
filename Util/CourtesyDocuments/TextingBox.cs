@@ -94,31 +94,23 @@ namespace Dash
             Debug.Assert(textField != null);
             if (textField is TextFieldModelController)
             {
-                TextBox box = new TextBox();
-                TextingBox.SetupBindings(box, docController, context);
-                tb = box;
-                //var textBox = new TextBox();
-                //textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-                //textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                //tb = textBox;
-                //tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                //tb.VerticalAlignment = VerticalAlignment.Stretch;
+                TextBox textBox = new TextBox();
+                SetupBindings(textBox, docController, context);
+                tb = textBox;
+                textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+                textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
                 //textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
-                //var textFieldModelController = textField as TextFieldModelController;
-                //BindTextBoxSource(tb, textFieldModelController);
             }
             else if (textField is NumberFieldModelController)
             {
-                TextBox box = new TextBox();
-                TextingBox.SetupBindings(box, docController, context);
-                tb = box;
-                //var textBox = new TextBox();
-                //textBox.BorderThickness = new Thickness(5);
-                //textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
-                //textBox.AcceptsReturn = true;
-                //tb = textBox;
-                //var numFieldModelController = textField as NumberFieldModelController;
-                //BindTextBoxSource(tb, numFieldModelController);
+                TextBox textBox = new TextBox();
+                SetupBindings(textBox, docController, context);
+                tb = textBox;
+                textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+                textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
+                textBox.BorderThickness = new Thickness(5);
+                textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
+                textBox.AcceptsReturn = true;
             }
             else if (textField is RichTextFieldModelController)
             {

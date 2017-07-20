@@ -102,7 +102,7 @@
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
-    <Compile Include="Converters\NumberToEnumConverter.cs" />
+    <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
     <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
     <Compile Include="Models\DocumentReferenceFieldModel.cs" />
