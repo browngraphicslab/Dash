@@ -71,13 +71,18 @@ namespace Dash
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
+                if (xNewKeyField.Text == "" || xNewValueField.Text == "")
+                    return; 
+
                 //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // commented out cos i didn't want to waste guids on testing 
-                var key = new Key("newguid", (xNewKeyField as TextBox).Text);
-                var newKeyVal = new KeyFieldContainer(key, new TextFieldModelController((sender as TextBox).Text));
-                ListItemSource.Add(newKeyVal);
+                var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
+                var cont = new TextFieldModelController((sender as TextBox).Text);
+                ListItemSource.Add(new KeyFieldContainer(key, cont));
+
+                _documentControllerDataContext.SetField(key, cont, true);
 
                 xNewKeyField.Text = "";
-                xNewValueField.Text = ""; 
+                xNewValueField.Text = "";  
             }
         }
     }

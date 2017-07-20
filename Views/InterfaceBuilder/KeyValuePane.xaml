@@ -59,8 +59,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="xNewKeyField" TextAlignment="Center" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown"></TextBox>
-            <TextBox x:Name="xNewValueField" TextAlignment="Center" PlaceholderText="Value to add" KeyDown="ValueField_KeyDown" Grid.Column="1"></TextBox>
+            <TextBox x:Name="xNewKeyField" TextAlignment="Left" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown" BorderBrush="LightBlue" ></TextBox>
+            <TextBox x:Name="xNewValueField" TextAlignment="Left" PlaceholderText="Value to add" KeyDown="ValueField_KeyDown" BorderBrush="LightBlue" Grid.Column="1"></TextBox>
             <!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>-->
         </Grid>
     </Grid>
