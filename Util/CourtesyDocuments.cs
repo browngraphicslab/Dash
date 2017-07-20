@@ -312,7 +312,7 @@ namespace Dash
 
             public OperatorBox(ReferenceFieldModelController refToOp)
             {
-                var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, refToOp);
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), refToOp);
                 Document = new DocumentController(fields, DocumentType);
             }
 
@@ -350,7 +350,7 @@ namespace Dash
                 new DocumentType("7C92378E-C38E-4B28-90C4-F5EF495878E5", "Document Box");
             public DocumentBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
             {
-                var fields = DefaultLayoutFields(x, y, w, h, refToDoc);
+                var fields = DefaultLayoutFields(new Point(x,y), new Size(w,h), refToDoc);
                 Document = new DocumentController(fields, DocumentType);
                 //SetLayoutForDocument(Document, Document);
             }
@@ -478,6 +478,9 @@ namespace Dash
                 else if (textField is NumberFieldModelController)
                 {
                     var textBox = new TextBox();
+                    textBox.BorderThickness = new Thickness(5);
+                    textBox.BorderBrush = new SolidColorBrush(Windows.UI.Colors.Gray);
+                    textBox.AcceptsReturn = true;
                     tb = textBox;
                     var numFieldModelController = textField as NumberFieldModelController;
                     BindTextBoxSource(tb, numFieldModelController);
@@ -547,7 +550,7 @@ namespace Dash
                         else if (field is NumberFieldModelController)
                         {
                             var numFieldModelController = field as NumberFieldModelController;
-                            BindTextBlockSource(tb, numFieldModelController);
+                            BindTextBoxSource(tb, numFieldModelController);
                         } else if (field is RichTextFieldModelController)
                         {
                             var richTextFieldModelController = field as RichTextFieldModelController;
@@ -848,7 +851,6 @@ namespace Dash
 
             private static void BindTextBoxSource(FrameworkElement renderElement, TextFieldModelController fieldModelController)
             {
-                //<<<<<<< HEAD
                 var sourceBinding = new Binding
                 {
                     Source = fieldModelController,
@@ -861,7 +863,6 @@ namespace Dash
 
             private static void BindTextBoxSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
             {
-                //<<<<<<< HEAD
                 var sourceBinding = new Binding
                 {
                     Source = fieldModelController,
