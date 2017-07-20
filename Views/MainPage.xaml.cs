@@ -67,7 +67,7 @@ namespace Dash
             DisplayDocument(jsonDoc);
             _radialMenu = new RadialMenuView(xCanvas);
 
-            testServer();
+            //testServer();
         }
 
         async void testServer() {

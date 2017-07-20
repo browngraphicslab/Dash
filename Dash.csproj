@@ -97,11 +97,14 @@
     </Compile>
     <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
     <Compile Include="Controllers\DocumentReferenceController.cs" />
+    <Compile Include="Controllers\IPushController.cs" />
     <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
     <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
+    <Compile Include="Push\Connection.cs" />
+    <Compile Include="Push\PushClient.cs" />
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
     <Compile Include="RadialMenu\Colors.cs" />

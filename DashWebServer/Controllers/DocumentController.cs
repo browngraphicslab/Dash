@@ -18,14 +18,16 @@ namespace DashWebServer.Controllers
     {
 
         private readonly IDocumentRepository _documentRepository;
+        private readonly PushHandler _pushHandler;
 
         /// <summary>
         /// Constructs a new DocumentController endpoint with a reference to the Document Repository.
         /// </summary>
         /// <param name="documentRepository"></param>
-        public DocumentController(IDocumentRepository documentRepository)
+        public DocumentController(IDocumentRepository documentRepository, PushHandler pushHandler)
         {
             _documentRepository = documentRepository;
+            _pushHandler = pushHandler;
         }
 
 
@@ -50,6 +52,9 @@ namespace DashWebServer.Controllers
                 Debug.WriteLine(e.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+
+            _pushHandler.SendCreate(DocModel);
+
             return Ok(DocModel);
         }
 
@@ -64,6 +69,9 @@ namespace DashWebServer.Controllers
             catch (Exception e) {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+
+            _pushHandler.SendUpdate(DocModel);
+
             return Ok(DocModel);
         }
         
@@ -79,6 +87,9 @@ namespace DashWebServer.Controllers
             {
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
+
+            _pushHandler.SendDelete(id);
+
             return Ok();
         }
 
