@@ -85,5 +85,11 @@ namespace Dash
         {
             _password = (sender as TextBox).Text;
         }
+
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs args)
+        {
+            _password = (sender as PasswordBox).Password;
+        }
+        
     }
 }

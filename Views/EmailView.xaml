@@ -26,9 +26,9 @@
             <TextBox PlaceholderText="Your email" Grid.Row="0" TextWrapping="Wrap"
                      BorderBrush="LightGray" TextChanged="From_TextChanged" Margin="10, 10, 10, 5"></TextBox>
 
-            <TextBox PlaceholderText="Email password" Grid.Row="1" TextWrapping="Wrap"
-                     BorderBrush="LightGray" TextChanged="Password_TextChanged" Margin="10, 5, 10, 5" ></TextBox>
-
+            <PasswordBox PlaceholderText="Email password" Grid.Row="1" 
+                     BorderBrush="LightGray"  Margin="10, 5, 10, 5" PasswordChanged="PasswordBox_PasswordChanged" ></PasswordBox>
+            
             <TextBox PlaceholderText="Recipient email" Grid.Row="2" TextWrapping="Wrap"
                      BorderBrush="LightGray" TextChanged="To_TextChanged" Margin="10, 5, 10, 5" ></TextBox>
 
