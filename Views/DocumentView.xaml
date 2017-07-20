@@ -8,15 +8,19 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
-    Width="{Binding Width}"
+    Width="{Binding WidthBinding, Converter={StaticResource WidthBindingToDoubleConverter}}"
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
-    PointerWheelChanged="This_PointerWheelChanged">
+    PointerWheelChanged="This_PointerWheelChanged"
+    Loaded="This_Loaded"
+    ManipulationMode="{Binding ManipulationMode}"
+    >
     
     <UserControl.Resources>
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
+        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
     </UserControl.Resources>
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"

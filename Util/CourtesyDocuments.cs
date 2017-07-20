@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Converters;
 using DashShared;
 using Windows.UI.Xaml.Controls.Primitives;
+using Dash.Views;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
@@ -86,8 +88,7 @@ namespace Dash
             }
 
             public virtual FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = false) {
                 return new Grid();
             }
 
@@ -270,9 +271,8 @@ namespace Dash
             {
                 throw new NotImplementedException();
             }
-
-            public override FrameworkElement makeView(DocumentController docController, Context context)
-            {
+            
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = true) {
                 return MakeView(docController, context);
             }
 
@@ -301,6 +301,7 @@ namespace Dash
             }
         }
 
+
         /// <summary>
         /// Given a reference to an operator field model, constructs a document type that displays that operator.
         /// </summary>
@@ -326,18 +327,17 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
-                return OperatorBox.MakeView(docController, context);
+                Context context, bool isInterfaceBuilderLayout = false) {
+                return OperatorBox.MakeView(docController, context, isInterfaceBuilderLayout);
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = false) {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 var opfmc = (data as ReferenceFieldModelController);
                 OperatorView opView = new OperatorView { DataContext = opfmc };
-                return opView;
+                if (isInterfaceBuilderLayout) return opView;
+                return new SelectableContainer(opView, docController);
             }
         }
 
@@ -354,7 +354,7 @@ namespace Dash
                 Document = new DocumentController(fields, DocumentType);
                 //SetLayoutForDocument(Document, Document);
             }
-            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
                 // the document field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
@@ -368,7 +368,7 @@ namespace Dash
                 Debug.Assert(documentfieldModelController != null);
 
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-                var docView = documentfieldModelController.Data.MakeViewUI(context);
+                var docView = documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
 
                 // bind the text height
                 var docheightController = GetHeightField(docController, context);
@@ -380,6 +380,10 @@ namespace Dash
                 if (docwidthController != null)
                     BindWidth(docView, docwidthController);
 
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(docView, docController);
+                }
                 return docView;
                 //*/ 
 
@@ -444,13 +448,11 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = false) {
                 return MakeView(docController, context);
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context)
-            {
+            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
                 // the text field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
                 // X, Y, Width, and Height etc....
@@ -536,6 +538,12 @@ namespace Dash
                     }
                 });
 
+                if (isInterfaceBuilderLayout)
+                {
+                    var selectableContainer = new SelectableContainer(tb, docController);
+                    return selectableContainer;
+                }
+
                 return tb;
             }
 
@@ -577,44 +585,20 @@ namespace Dash
 
             private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)
             {
-                var currentTextAlignmentField = GetTextAlignmentField(docController, context);
-
-                if (currentTextAlignmentField == null)
-                {
-                    currentTextAlignmentField = new NumberFieldModelController(textAlignment);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentTextAlignmentField = new NumberFieldModelController(textAlignment);
                 docController.SetField(TextAlignmentKey, currentTextAlignmentField, forceMask); // set the field here so that forceMask is respected
-                currentTextAlignmentField.Data = textAlignment;
             }
 
             private void SetFontSizeField(DocumentController docController, double fontSize, bool forceMask, Context context)
             {
-                var currentFontSizeField = GetFontSizeField(docController, context);
-
-                if (currentFontSizeField == null)
-                {
-                    currentFontSizeField = new NumberFieldModelController(fontSize);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentFontSizeField = new NumberFieldModelController(fontSize);
                 docController.SetField(FontSizeKey, currentFontSizeField, forceMask); // set the field here so that forceMask is respected
-                currentFontSizeField.Data = fontSize;
             }
 
             private void SetFontWeightField(DocumentController docController, double fontWeight, bool forceMask, Context context)
             {
-                var currentFontWeightField = GetFontWeightField(docController, context);
-
-                if (currentFontWeightField == null)
-                {
-                    currentFontWeightField = new NumberFieldModelController(fontWeight);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentFontWeightField = new NumberFieldModelController(fontWeight);
                 docController.SetField(FontWeightKey, currentFontWeightField, forceMask); // set the field here so that forceMask is respected
-                currentFontWeightField.Data = fontWeight;
             }
 
             #endregion
@@ -879,14 +863,13 @@ namespace Dash
                 Document.SetFields(fields, true);
             }
 
-            public override FrameworkElement makeView(DocumentController docController, Context context)
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
                 return MakeView(docController, context);
             }
 
-
-            public static FrameworkElement MakeView(DocumentController docController, Context context)
-            {
+            
+            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
                 // use the reference to the image to get the image field model controller
                 var imFieldModelController = GetImageField(docController, context);
                 Debug.Assert(imFieldModelController != null);
@@ -917,6 +900,10 @@ namespace Dash
                 var opacityController = GetOpacityField(docController, context);
                 BindOpacity(image, opacityController);
 
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(image, docController);
+                }
                 return image;
             }
 
@@ -951,16 +938,9 @@ namespace Dash
 
             private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask, Context context)
             {
-                var currentOpacityField = GetOpacityField(docController, context);
-
-                if (currentOpacityField == null)
-                {
-                    currentOpacityField = new NumberFieldModelController(opacity);
-                }
-
-                // TODO make sure if these are reference equal it just returns
+                var currentOpacityField = new NumberFieldModelController(opacity);
                 docController.SetField(OpacityKey, currentOpacityField, forceMask); // set the field here so that forceMask is respected
-                currentOpacityField.Data = opacity;
+
             }
 
             private static ImageFieldModelController GetImageField(DocumentController docController, Context context)
@@ -1036,8 +1016,7 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = true) {
                 return _doc.makeView(docController, context);
             }
         }
@@ -1079,14 +1058,12 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
-                return CollectionBox.MakeView(docController, context);
+                Context context, bool isInterfaceBuilderLayout = false) {
+                return CollectionBox.MakeView(docController, context, isInterfaceBuilderLayout);
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = false) {
                 var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
                 if (data != null)
@@ -1103,12 +1080,191 @@ namespace Dash
 
                     var view = new CollectionView(collectionViewModel);
                     view.Opacity = opacityValue;
+                    if (isInterfaceBuilderLayout)
+                    {
+                        return new SelectableContainer(view, docController);
+                    }
                     return view;
                 }
                 return new Grid();
             }
         }
 
+        public class GridViewLayout : CourtesyDocument
+        {
+            private static string PrototypeId = "C2EB5E08-1C04-44BF-970A-DB213949EE48";
+            public static DocumentType DocumentType = new DocumentType("B7A022D4-B667-469C-B47E-3A84C0AA78A0", "GridView Layout");
+
+            public GridViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
+            {
+                Document = GetLayoutPrototype().MakeDelegate();
+                var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
+                var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
+                Document.SetFields(fields, true); //TODO add fields to constructor parameters                
+            }
+
+            public GridViewLayout() : this(new List<DocumentController>()) { }
+
+            protected override DocumentController GetLayoutPrototype()
+            {
+                var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+                if (prototype == null)
+                {
+                    prototype = InstantiatePrototypeLayout();
+                }
+                return prototype;
+            }
+
+            protected override DocumentController InstantiatePrototypeLayout()
+            {
+                var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
+                var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
+                return prototypeDocument;
+            }
+
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            {
+                throw new NotImplementedException("We don't have access to the data document here");
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+            {
+
+                var grid = new Grid();
+                var gridView = new GridView
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
+                };
+                LayoutDocuments(docController, context, gridView, isInterfaceBuilderLayout);
+
+                docController.DocumentFieldUpdated += delegate (DocumentController sender,
+                    DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                    {
+                        LayoutDocuments(sender, args.Context, gridView, isInterfaceBuilderLayout);
+                    }
+                };
+                grid.Children.Add(gridView);
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(grid, docController, dataDocument);
+                }
+                return grid;
+            }
+
+            private static void LayoutDocuments(DocumentController docController, Context context, GridView grid, bool isInterfaceBuilder)
+            {
+                var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
+                ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
+                foreach (var layoutDocument in layoutDocuments)
+                {
+                    var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
+                    layoutView.HorizontalAlignment = HorizontalAlignment.Left;
+                    layoutView.VerticalAlignment = VerticalAlignment.Top;
+
+                    itemsSource.Add(layoutView);
+                }
+                grid.ItemsSource = itemsSource;
+            }
+
+            private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
+            {
+                context = Context.SafeInitAndAddDocument(context, docController);
+                return docController.GetField(DashConstants.KeyStore.DataKey)?
+                    .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            }
+        }
+
+        public class ListViewLayout : CourtesyDocument
+        {
+            private static string PrototypeId = "C512FC2E-CDD1-4E94-A98F-35A65E821C08";
+            public static DocumentType DocumentType = new DocumentType("3E5C2739-A511-40FF-9B2E-A875901B296D", "ListView Layout");
+
+            public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
+            {
+                Document = GetLayoutPrototype().MakeDelegate();
+                var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
+                var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
+                Document.SetFields(fields, true); //TODO add fields to constructor parameters                
+            }
+
+            public ListViewLayout() : this(new List<DocumentController>()) { }
+
+            protected override DocumentController GetLayoutPrototype()
+            {
+                var prototype = ContentController.GetController<DocumentController>(PrototypeId);
+                if (prototype == null)
+                {
+                    prototype = InstantiatePrototypeLayout();
+                }
+                return prototype;
+            }
+
+            protected override DocumentController InstantiatePrototypeLayout()
+            {
+                var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
+                var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
+                var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
+                return prototypeDocument;
+            }
+
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            {
+                return MakeView(docController, context);
+            }
+
+            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            {
+
+                var grid = new Grid();
+                var listView = new ListView
+                {
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch,
+                };
+                LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
+
+                docController.DocumentFieldUpdated += delegate (DocumentController sender,
+                    DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                    {
+                        LayoutDocuments(sender, args.Context, listView, isInterfaceBuilderLayout);
+                    }
+                };
+                grid.Children.Add(listView);
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(grid, docController);
+                }
+                return grid;
+            }
+
+            private static void LayoutDocuments(DocumentController docController, Context context, ListView list, bool isInterfaceBuilder)
+            {
+                var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
+                ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
+                foreach (var layoutDocument in layoutDocuments)
+                {
+                    var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
+                    layoutView.HorizontalAlignment = HorizontalAlignment.Left;
+                    layoutView.VerticalAlignment = VerticalAlignment.Top;
+
+                    itemsSource.Add(layoutView);
+                }
+                list.ItemsSource = itemsSource;
+            }
+
+            private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
+            {
+                context = Context.SafeInitAndAddDocument(context, docController);
+                return docController.GetField(DashConstants.KeyStore.DataKey)?
+                    .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            }
+        }
 
         public class FreeFormDocument : CourtesyDocument
         {
@@ -1144,34 +1300,40 @@ namespace Dash
                 return prototypeDocument;
             }
 
-            public override FrameworkElement makeView(DocumentController docController, Context context)
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
             {
-                return MakeView(docController, context);
+                throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
 
                 var grid = new Grid();
-                LayoutDocuments(docController, context, grid);
+                LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
 
                 docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
                     DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
-                    Debug.Assert(args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey));
-                    LayoutDocuments(sender, context, grid);
+                    if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                    {
+                        LayoutDocuments(sender, args.Context, grid, isInterfaceBuilderLayout);
+                    }
                 });
-
+                if (isInterfaceBuilderLayout)
+                {
+                    //DropControls controls = new DropControls(grid, docController);
+                    return new SelectableContainer(grid, docController, dataDocument);
+                }
                 return grid;
             }
 
-            private static void LayoutDocuments(DocumentController docController, Context context, Grid grid)
+            private static void LayoutDocuments(DocumentController docController, Context context, Grid grid, bool isInterfaceBuilder)
             {
                 var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
                 grid.Children.Clear();
                 foreach (var layoutDocument in layoutDocuments)
                 {
-                    var layoutView = layoutDocument.MakeViewUI(context);
+                    var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                     layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                     layoutView.VerticalAlignment = VerticalAlignment.Top;
 
@@ -1202,7 +1364,7 @@ namespace Dash
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context)
+                Context context, bool isInterfaceBuilderLayout = false)
             {
                 RichTextView rtv = null;
                 var refToRichText =
@@ -1226,13 +1388,11 @@ namespace Dash
                 // bind the rich text width
                 var widthController = GetWidthField(docController, context);
                 BindWidth(rtv, widthController);
-
-                var referenceToText = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController; 
-                if (referenceToText != null) // only bind operation interactions if text is a reference
+                
+                if (isInterfaceBuilderLayout)
                 {
-                    BindOperationInteractions(rtv.xRichEitBox, referenceToText);
+                    return new SelectableContainer(rtv, docController);
                 }
-
                 return rtv;
             }
 
@@ -1282,10 +1442,8 @@ namespace Dash
                 throw new NotImplementedException();
             }
 
-            public override FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
-                return StackingPanel.MakeView(docController, context);
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
+                throw new NotImplementedException("We don't have access to the data document here");
             }
 
             /// <summary>
@@ -1293,12 +1451,14 @@ namespace Dash
             /// </summary>
             /// <param name="docController"></param>
             /// <param name="context"></param>
+            /// <param name="isInterfaceBuilderLayout"></param>
+            /// <param name="dataDocument"></param>
             /// <returns></returns>
-            public static FrameworkElement MakeView(DocumentController docController, Context context)
+            public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
             {
                 if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
-                    return MakeFreeFormView(docController, context);
-                var stack = new GridView();
+                    return MakeFreeFormView(docController, context, isInterfaceBuilderLayout);
+                var stack = new  GridView();
                 stack.Loaded += (s, e) =>
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
@@ -1313,24 +1473,27 @@ namespace Dash
                 // create a dynamic gridview that wraps content in borders
                 if (stackFieldData != null)
                 {
-                    CreateStack(context, stack, stackFieldData);
+                    CreateStack(context, stack, stackFieldData, isInterfaceBuilderLayout);
                     stackFieldData.OnDocumentsChanged += delegate (IEnumerable<DocumentController> documents)
                     {
-                        CreateStack(context, stack, stackFieldData);
+                        CreateStack(context, stack, stackFieldData, isInterfaceBuilderLayout);
                     };
                 }
-
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(stack, docController, dataDocument);
+                }
                 return stack;
             }
 
-            private static void CreateStack(Context context, GridView stack, DocumentCollectionFieldModelController stackFieldData)
+            private static void CreateStack(Context context, GridView stack, DocumentCollectionFieldModelController stackFieldData, bool isInterfaceBuilderLayout)
             {
                 double maxHeight = 0;
                 stack.Items.Clear();
                 foreach (var stackDoc in stackFieldData.GetDocuments())
                 {
                     Border b = new Border();
-                    FrameworkElement item = stackDoc.MakeViewUI(context);
+                    FrameworkElement item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout);
                     b.Child = item;
                     maxHeight = Math.Max(maxHeight, double.IsNaN(item.Height) ? 0 : item.Height);
                     stack.Items.Add(b);
@@ -1341,7 +1504,7 @@ namespace Dash
                 }
             }
 
-            public static FrameworkElement MakeFreeFormView(DocumentController docController, Context context)
+            public static FrameworkElement MakeFreeFormView(DocumentController docController, Context context, bool isInterfaceBuilderLayout)
             {
                 var stack = new Grid();
                 stack.HorizontalAlignment = HorizontalAlignment.Left;
@@ -1355,7 +1518,7 @@ namespace Dash
                     foreach (var stackDoc in stackFieldData.GetDocuments())
                     {
 
-                        FrameworkElement item = stackDoc.MakeViewUI(context);
+                        FrameworkElement item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout);
                         var posController = GetPositionField(stackDoc, context);
 
                         item.HorizontalAlignment = HorizontalAlignment.Left;
@@ -1363,7 +1526,10 @@ namespace Dash
                         BindTranslation(item, posController);
                         stack.Children.Add(item);
                     }
-
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(stack, docController);
+                }
                 return stack;
             }
         }
@@ -1773,8 +1939,7 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = false) {
                 return ApiDocumentModel.MakeView(docController, context);
             }
 
@@ -1847,8 +2012,7 @@ namespace Dash
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context)
-            {
+                Context context, bool isInterfaceBuilderLayout = false) {
 
                 ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
                 ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
@@ -1869,7 +2033,7 @@ namespace Dash
                 var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
-                var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController); 
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 
@@ -1903,6 +2067,10 @@ namespace Dash
                 collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
 
                 // return all results
+                if (isInterfaceBuilderLayout)
+                {
+                    return new SelectableContainer(containerGrid, docController);
+                }
                 return containerGrid;
             }
         }

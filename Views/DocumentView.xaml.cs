@@ -31,7 +31,6 @@ namespace Dash
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
 
-
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
@@ -66,11 +65,12 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
-            Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-
             Tapped += OnTapped;
         }
-
+        private void This_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+        }
 
         private void SetUpMenu()
         {
@@ -92,6 +92,7 @@ namespace Dash
             };
             _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
+            ViewModel.OpenMenu();
         }
 
 
@@ -120,8 +121,6 @@ namespace Dash
             DataContext = documentViewModel;          
         }
 
-
-
         /// <summary>
         /// Resizes the CollectionView according to the increments in width and height. 
         /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
@@ -132,10 +131,9 @@ namespace Dash
         public void Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
-            dvm.Width = ActualWidth + dx;
-            dvm.Height = ActualHeight + dy;
-            Width = dvm.Width;
-            Height = dvm.Height; 
+            dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
+            dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
+
         }
 
         /// <summary>
@@ -242,27 +240,8 @@ namespace Dash
             SetUpMenu();
             ViewModel.CloseMenu();
 
-            #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
+            ViewModel.CloseMenu();
 
-            //ViewModel.PropertyChanged += (o, eventArgs) =>
-            //{
-            //    if (eventArgs.PropertyName == "IsMoveable")
-            //    {
-            //        if (ViewModel.IsMoveable)
-            //        {
-            //            manipulator.AddAllAndHandle();
-            //        }
-            //        else
-            //        {
-            //            manipulator.RemoveAllButHandle();
-            //        }
-            //    }
-            //};
-
-            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            //else manipulator.RemoveAllButHandle();
-
-            #endregion
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -275,7 +254,6 @@ namespace Dash
             if (Width < MinWidth + pad && Height < MinHeight + pad)
             {
                 updateIcon();
-
                 XGrid.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
                 xBorder.Visibility = Visibility.Collapsed;
@@ -317,8 +295,13 @@ namespace Dash
 
   #region Menu
 
-        public void OnTapped(object sender, TappedRoutedEventArgs e)
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                return;
+            }
+
             if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
                 ViewModel.OpenMenu();
             else
@@ -379,8 +362,11 @@ namespace Dash
         {
             MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);
         }
-
+        
+        public void RemoveScroll()
+        {
+            PointerWheelChanged -= This_PointerWheelChanged;
+        }
         #endregion
-
     }
 }
