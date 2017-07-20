@@ -43,7 +43,7 @@ namespace Dash
         private void XRichEitBox_GotFocus(object sender, RoutedEventArgs e)
         {
             xFormatRow.Height = new GridLength(30);
-            xRichEitBox.ManipulationMode = ManipulationModes.All;
+            xRichEitBox.ManipulationMode = ManipulationModes.None;
 
         }
 
@@ -105,7 +105,7 @@ namespace Dash
             _richTextFieldModelController.RichTextData = richText;
             xFormatRow.Height = new GridLength(0);
 
-            xRichEitBox.ManipulationMode = ManipulationModes.None; 
+            xRichEitBox.ManipulationMode = ManipulationModes.All; 
         }
 
         private async Task<string> LoadText()

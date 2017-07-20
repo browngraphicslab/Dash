@@ -464,7 +464,8 @@ namespace Dash
                 if (textField is TextFieldModelController)
                 {
                     var textBox = new TextBox();
-                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
+                    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+                    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
                     tb = textBox;
                     tb.HorizontalAlignment = HorizontalAlignment.Stretch;
                     tb.VerticalAlignment = VerticalAlignment.Stretch;
@@ -537,7 +538,6 @@ namespace Dash
 
                 return tb;
             }
-
 
 
             #region GettersAndSetters
@@ -1214,7 +1214,6 @@ namespace Dash
                     var richTextFieldModelController = fieldModelController as RichTextFieldModelController;
                     Debug.Assert(richTextFieldModelController != null);
                     var richText = new RichTextView(richTextFieldModelController);
-                    richText.ManipulationDelta += (s, e) => e.Handled = true;
                     rtv = richText;
                     rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                     rtv.VerticalAlignment = VerticalAlignment.Stretch;
