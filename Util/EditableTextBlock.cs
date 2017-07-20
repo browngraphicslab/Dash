@@ -28,8 +28,9 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextWrapping = TextWrapping.Wrap, 
-                Visibility = Visibility.Collapsed
+                //Visibility = Visibility.Collapsed
             };
+            Block.Visibility = Visibility.Collapsed; 
 
             Box.LostFocus += (s, e) =>
             {
@@ -43,9 +44,16 @@ namespace Dash
                 Box.Visibility = Visibility.Visible;
             };
 
-            Block.GotFocus += (s, e) => Block.ManipulationMode = ManipulationModes.None;
-            Block.LostFocus += (s, e) => Block.ManipulationMode = ManipulationModes.All;
+            Box.GotFocus += (s, e) => Box.ManipulationMode = ManipulationModes.None;
+            Box.LostFocus += (s, e) => Box.ManipulationMode = ManipulationModes.All;
         }
-        
+
+        public FrameworkElement MakeView()
+        {
+            Grid container = new Grid();
+            container.Children.Add(Block);
+            container.Children.Add(Box);
+            return container; 
+        }
     }
 }

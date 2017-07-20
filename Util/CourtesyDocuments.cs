@@ -464,9 +464,9 @@ namespace Dash
                 // X, Y, Width, and Height etc....
 
                 // create the textblock
-                FrameworkElement tb = null;
+                //FrameworkElement tb = null;
 
-                EditableTextBlock block = new EditableTextBlock();
+                EditableTextBlock block = null; 
 
                 // use the reference to the text to get the text field model controller
                 var textField = GetTextField(docController, context);
@@ -484,51 +484,60 @@ namespace Dash
                     var textFieldModelController = textField as TextFieldModelController;
                     BindTextBoxSource(tb, textFieldModelController);
                     */
+                    block = new EditableTextBlock();
                     var textFieldModelController = textField as TextFieldModelController;
                     BindEditableText(block, textFieldModelController);
                 }
-                else if (textField is NumberFieldModelController)
-                {
-                    var textBox = new TextBox();
-                    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-                    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                    tb = textBox;
-                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                    tb.VerticalAlignment = VerticalAlignment.Stretch;
-                    textBox.TextWrapping = TextWrapping.Wrap;
-                    var numFieldModelController = textField as NumberFieldModelController;
-                    BindNumberFieldSource(tb, numFieldModelController);
+                else
+                    return new TextBox(); 
+                //else if (textField is NumberFieldModelController)
+                //{
+                //    var textBox = new TextBox();
+                //    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+                //    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
+                //    tb = textBox;
+                //    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
+                //    tb.VerticalAlignment = VerticalAlignment.Stretch;
+                //    textBox.TextWrapping = TextWrapping.Wrap;
+                //    var numFieldModelController = textField as NumberFieldModelController;
+                //    BindNumberFieldSource(tb, numFieldModelController);
 
-                }
-                else if (textField is RichTextFieldModelController)
-                {
-                    tb = new TextBlock();
-                    var richTextFieldModelController = textField as RichTextFieldModelController;
-                    //BindTextBlockSource(tb, richTextFieldModelController);
-                }
+                //}
+                //else if (textField is RichTextFieldModelController)
+                //{
+                //    tb = new TextBlock();
+                //    var richTextFieldModelController = textField as RichTextFieldModelController;
+                //    //BindTextBlockSource(tb, richTextFieldModelController);
+                //}
 
                 // bind the text height
                 var heightController = GetHeightField(docController, context);
-                BindHeight(tb, heightController);
+                BindHeight(block.Block, heightController);
+                BindHeight(block.Box, heightController);
 
                 // bind the text width
                 var widthController = GetWidthField(docController, context);
-                BindWidth(tb, widthController);
+                BindWidth(block.Block, widthController);
+                BindWidth(block.Box, widthController);
 
                 var fontWeightController = GetFontWeightField(docController, context);
-                BindFontWeight(tb, fontWeightController);
+                BindFontWeight(block.Block, fontWeightController);
+                BindFontWeight(block.Box, fontWeightController);
 
                 var fontSizeController = GetFontSizeField(docController, context);
-                BindFontSize(tb, fontSizeController);
+                BindFontSize(block.Block, fontSizeController);
+                BindFontSize(block.Box, fontSizeController);
 
                 var textAlignmentController = GetTextAlignmentField(docController, context);
-                BindTextAlignment(tb, textAlignmentController);
+                BindTextAlignment(block.Block, textAlignmentController);
+                BindTextAlignment(block.Box, textAlignmentController);
 
                 // add bindings to work with operators
                 var referenceToText = GetTextReference(docController);
                 if (referenceToText != null) // only bind operation interactions if text is a reference
                 {
-                    BindOperationInteractions(tb, referenceToText);
+                    BindOperationInteractions(block.Block, referenceToText);
+                    BindOperationInteractions(block.Box, referenceToText);
                 }
 
                 var doc = referenceToText.GetDocumentController(context);
@@ -544,13 +553,13 @@ namespace Dash
                         if (field is TextFieldModelController)
                         {
                             var textFieldModelController = field as TextFieldModelController;
-                            BindTextBoxSource(tb, textFieldModelController);
+                            BindEditableText(block, textFieldModelController);
                         }
-                        else if (field is NumberFieldModelController)
-                        {
-                            var numFieldModelController = field as NumberFieldModelController;
-                            BindNumberFieldSource(tb, numFieldModelController);
-                        }
+                        //else if (field is NumberFieldModelController)
+                        //{
+                        //    var numFieldModelController = field as NumberFieldModelController;
+                        //    BindNumberFieldSource(tb, numFieldModelController);
+                        //}
                         //else if (field is RichTextFieldModelController)
                         //{
                         //    var richTextFieldModelController = field as RichTextFieldModelController;
@@ -561,11 +570,11 @@ namespace Dash
 
                 if (isInterfaceBuilderLayout)
                 {
-                    var selectableContainer = new SelectableContainer(tb, docController);
+                    var selectableContainer = new SelectableContainer(block.Box, docController);
                     return selectableContainer;
                 }
 
-                return tb;
+                return block.MakeView(); 
             }
 
 
