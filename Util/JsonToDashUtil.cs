@@ -20,7 +20,7 @@ namespace Dash
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            var task = ParseYoutube();
+            var task = ParseSingleItem();
             task.Wait();
             stopwatch.Stop();
             return JsonDocument;
