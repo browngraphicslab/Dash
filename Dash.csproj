@@ -324,6 +324,7 @@
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
+    <Compile Include="Converters\WidthBindingToDoubleConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">

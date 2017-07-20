@@ -66,11 +66,12 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
 
-            Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-
             Tapped += OnTapped;
         }
-
+        private void This_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+        }
 
         private void SetUpMenu()
         {
@@ -92,8 +93,7 @@ namespace Dash
             };
             _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
-            ViewModel.DocMenuVisibility = Visibility.Collapsed;
-            ViewModel.MenuColumnWidth = new GridLength(0);
+            ViewModel.OpenMenu();
         }
 
 
@@ -122,8 +122,6 @@ namespace Dash
             DataContext = documentViewModel;          
         }
 
-
-
         /// <summary>
         /// Resizes the CollectionView according to the increments in width and height. 
         /// The CollectionListView vertically resizes corresponding to the change in the size of its cells, so if ProportionalScaling is true and the ListView is being displayed, 
@@ -134,8 +132,8 @@ namespace Dash
         public void Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
-            dvm.Width = ActualWidth + dx;
-            dvm.Height = ActualHeight + dy;
+            dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
+            dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
         }
 
         /// <summary>
@@ -165,8 +163,8 @@ namespace Dash
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             Resize(p.X, p.Y);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate, 
-                                                                new Point(ActualWidth / 2, ActualHeight / 2) , 
+            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
+                                                                new Point(ActualWidth / 2, ActualHeight / 2),
                                                                 ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
@@ -240,6 +238,7 @@ namespace Dash
             }
 
             SetUpMenu();
+            ViewModel.CloseMenu();
 
             #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
 
@@ -274,7 +273,6 @@ namespace Dash
             if (Width < MinWidth + pad && Height < MinHeight + pad)
             {
                 updateIcon();
-
                 XGrid.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
                 xBorder.Visibility = Visibility.Collapsed;
