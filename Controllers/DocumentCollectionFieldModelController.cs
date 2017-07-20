@@ -25,6 +25,10 @@ namespace Dash
         /// </summary>
         private List<DocumentController> _documents;
 
+        public DocumentCollectionFieldModelController() : this(new List<DocumentController>())
+        {
+        }
+
         public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) :base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
         {
             _documents = documents.ToList();

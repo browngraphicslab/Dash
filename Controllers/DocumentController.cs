@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
@@ -541,9 +539,13 @@ namespace Dash
             {
                 return FreeFormDocument.MakeView(this, context);
             }
-            if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
+            if (DocumentType == RichTextBox.DocumentType)
             {
-                return CourtesyDocuments.RichTextBox.MakeView(this, context);
+                return RichTextBox.MakeView(this, context);
+            }
+            if (DocumentType == GridPanel.GridPanelDocumentType)
+            {
+                return GridPanel.MakeView(this, context);
             }
 
             // if document is not a known UI View, then see if it contains a Layout view field

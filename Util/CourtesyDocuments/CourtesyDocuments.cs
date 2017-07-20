@@ -1605,9 +1605,24 @@ namespace Dash
                 var tBox6 = new TextingBox(new DocumentReferenceController(Document.GetId(), Number3FieldKey), 0,
                     0, 60, 35).Document;
 
-                var stackPan = new StackingPanel(new[] { tBox1, tBox2, tBox3, tBox4, tBox5, tBox6 }, false).Document;
+                var gridPanel = new GridPanel().Document;
+                gridPanel.SetGridNumRows(6);
+                gridPanel.SetGridNumColumns(2);
+                tBox1.SetGridRow(0);
+                gridPanel.AddChild(tBox1);
+                tBox2.SetGridRow(1);
+                gridPanel.AddChild(tBox2);
+                tBox3.SetGridRow(2);
+                gridPanel.AddChild(tBox3);
+                tBox4.SetGridRow(3);
+                gridPanel.AddChild(tBox4);
+                tBox5.SetGridRow(4);
+                gridPanel.AddChild(tBox5);
+                tBox6.SetGridRow(5);
+                gridPanel.AddChild(tBox6);
+                //var stackPan = new StackingPanel(new[] { tBox1, tBox2, tBox3, tBox4, tBox5, tBox6 }, false).Document;
 
-                SetLayoutForDocument(Document, stackPan, forceMask: true, addToLayoutList: true);
+                SetLayoutForDocument(Document, gridPanel, forceMask: true, addToLayoutList: true);
             }
 
             protected override DocumentController GetLayoutPrototype()
