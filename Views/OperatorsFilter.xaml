@@ -6,95 +6,108 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
+    d:DesignHeight="400"
     d:DesignWidth="300">
 
-    <Grid Background="SteelBlue" Width="300" Height="300" CornerRadius="15">
+    <Grid Width="300" Height="350" CornerRadius="15">
+        <Grid.Background>
+            <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
+        </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
         <Grid Grid.Row="0">
-            <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0"></AutoSuggestBox>
+            <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="15,20,15,10" PlaceholderText="Filter current category"></AutoSuggestBox>
         </Grid>
         <Grid Grid.Row="1">
-            <Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" Margin="0">
+            <Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged">
                 
                 <!--ALL-->
-                <PivotItem>
+                <PivotItem x:Name="xAllTab">
                     <PivotItem.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="∀" Foreground="White" HorizontalAlignment="Center" FontSize="20"></TextBlock>
-                            <TextBlock Text="ALL" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
-                        </StackPanel>
+                        <Border x:Name="xAllBorder" Width="65" Height="45" CornerRadius="5">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="∀" Foreground="White" HorizontalAlignment="Center" FontSize="20"></TextBlock>
+                                <TextBlock Text="ALL" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
+                            </StackPanel>
+                        </Border>
                     </PivotItem.Header>
                     <Grid CornerRadius="10" Margin="0,10,0,10">
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xAllList" ItemsSource="{x:Bind FilteredAll}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xAllList" ItemsSource="{x:Bind all}"/>
                     </Grid>
                 </PivotItem>
                 
                 <!--ARITHMETIC-->
-                <PivotItem>
+                <PivotItem x:Name="xArithmeticTab">
                     <PivotItem.Header>
-                        <StackPanel Orientation="Vertical">
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                <TextBlock Text="+" Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
-                                <TextBlock Text="−" Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
+                        <Border x:Name="xArithmeticBorder" Width="65" Height="45" CornerRadius="5">
+                            <StackPanel Orientation="Vertical">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="+" Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
+                                    <TextBlock Text="−" Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,-10,0,0" HorizontalAlignment="Center">
+                                    <TextBlock Text="×" Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
+                                    <TextBlock Text="÷ " Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
+                                </StackPanel>
+                                <TextBlock Text="ARITHMETIC" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" Margin="0,-10,0,0" HorizontalAlignment="Center">
-                                <TextBlock Text="×" Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
-                                <TextBlock Text="÷ " Foreground="White" HorizontalAlignment="Center" FontSize="14"></TextBlock>
-                            </StackPanel>
-                            <TextBlock Text="ARITHMETIC" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
-                        </StackPanel>
+                        </Border>
                     </PivotItem.Header>
                     <Grid CornerRadius="10" Margin="0,10,0,10">
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xArithmeticList" ItemsSource="{x:Bind FilteredArithmetics}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xArithmeticList" ItemsSource="{x:Bind arithmetics}" DisplayMemberPath="Type"/>
                     </Grid>
                 </PivotItem>
                 
                 <!--MAP-->
-                <PivotItem >
+                <PivotItem x:Name="xMapTab">
                     <PivotItem.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="→" Foreground="White" HorizontalAlignment="Center" FontSize="20"></TextBlock>
-                            <TextBlock Text="MAP" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
-                        </StackPanel>
+                        <Border x:Name="xMapBorder" Width="65" Height="45" CornerRadius="5">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="→" Foreground="White" HorizontalAlignment="Center" FontSize="20"></TextBlock>
+                                <TextBlock Text="MAP" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
+                            </StackPanel>
+                        </Border>
                     </PivotItem.Header>
                     <Grid CornerRadius="10" Margin="0,10,0,10">
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xMapList" ItemsSource="{x:Bind FilteredMaps}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xMapList" ItemsSource="{x:Bind maps}" DisplayMemberPath="Type"/>
                     </Grid>
                 </PivotItem>
                 
                 <!--SET-->
-                <PivotItem>
+                <PivotItem x:Name="xSetTab">
                     <PivotItem.Header>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock Text="∈" Foreground="White" HorizontalAlignment="Center" FontSize="20"></TextBlock>
-                            <TextBlock Text="SET" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
-                        </StackPanel>
+                        <Border x:Name="xSetBorder" Width="65" Height="45" CornerRadius="5">
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock Text="∈" Foreground="White" HorizontalAlignment="Center" FontSize="20"></TextBlock>
+                                <TextBlock Text="SET" FontSize="10" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
+                            </StackPanel>
+                        </Border>
                     </PivotItem.Header>
                     <Grid CornerRadius="10" Margin="0,10,0,10">
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xSetList" ItemsSource="{x:Bind FilteredSets}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xSetList" ItemsSource="{x:Bind sets}" DisplayMemberPath="Type"/>
                     </Grid>
                 </PivotItem>
                 
                 <!--CUSTOM-->
-                <PivotItem>
+                <PivotItem x:Name="xCustomTab">
                     <PivotItem.Header>
-                        <TextBlock Text="CUSTOM" FontSize="12" Foreground="White" HorizontalAlignment="Center" FontWeight="SemiBold"></TextBlock>
+                        <Border x:Name="xCustomBorder" Width="65" Height="45" CornerRadius="5">
+                            <TextBlock Text="CUSTOM" FontSize="12" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"></TextBlock>
+                        </Border>
                     </PivotItem.Header>
                     <Grid CornerRadius="10" Margin="0,10,0,10">
                         <Grid.Background>
