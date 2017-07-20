@@ -88,7 +88,8 @@ namespace Dash
             }
 
             public virtual FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 return new Grid();
             }
 
@@ -271,8 +272,9 @@ namespace Dash
             {
                 throw new NotImplementedException();
             }
-            
-            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = true) {
+
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = true)
+            {
                 return MakeView(docController, context);
             }
 
@@ -327,12 +329,14 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 return OperatorBox.MakeView(docController, context, isInterfaceBuilderLayout);
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
                 var opfmc = (data as ReferenceFieldModelController);
                 OperatorView opView = new OperatorView { DataContext = opfmc };
@@ -448,11 +452,13 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 return MakeView(docController, context);
             }
 
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
+            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            {
                 // the text field model controller provides us with the DATA
                 // the Document on this courtesty document provides us with the parameters to display the DATA.
                 // X, Y, Width, and Height etc....
@@ -477,10 +483,18 @@ namespace Dash
                 }
                 else if (textField is NumberFieldModelController)
                 {
-                    tb = new TextBlock();
+                    var textBox = new TextBox();
+                    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+                    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
+                    tb = textBox;
+                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
+                    tb.VerticalAlignment = VerticalAlignment.Stretch;
+                    textBox.TextWrapping = TextWrapping.Wrap;
                     var numFieldModelController = textField as NumberFieldModelController;
-                    BindTextBlockSource(tb, numFieldModelController);
-                } else if (textField is RichTextFieldModelController)
+                    BindNumberFieldSource(tb, numFieldModelController);
+
+                }
+                else if (textField is RichTextFieldModelController)
                 {
                     tb = new TextBlock();
                     var richTextFieldModelController = textField as RichTextFieldModelController;
@@ -529,8 +543,9 @@ namespace Dash
                         else if (field is NumberFieldModelController)
                         {
                             var numFieldModelController = field as NumberFieldModelController;
-                            BindTextBlockSource(tb, numFieldModelController);
-                        } else if (field is RichTextFieldModelController)
+                            BindNumberFieldSource(tb, numFieldModelController);
+                        }
+                        else if (field is RichTextFieldModelController)
                         {
                             var richTextFieldModelController = field as RichTextFieldModelController;
                             BindTextBlockSource(tb, richTextFieldModelController);
@@ -830,12 +845,24 @@ namespace Dash
 
             private static void BindTextBoxSource(FrameworkElement renderElement, TextFieldModelController fieldModelController)
             {
-                //<<<<<<< HEAD
                 var sourceBinding = new Binding
                 {
                     Source = fieldModelController,
                     Path = new PropertyPath(nameof(fieldModelController.Data)),
                     Mode = BindingMode.TwoWay
+                };
+                renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
+            }
+
+            private static void BindNumberFieldSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
+            {
+                var sourceBinding = new Binding
+                {
+                    Source = fieldModelController,
+                    Converter = new StringToDoubleConverter(0),
+                    Path = new PropertyPath(nameof(fieldModelController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
                 renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
             }
@@ -868,8 +895,9 @@ namespace Dash
                 return MakeView(docController, context);
             }
 
-            
-            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
+
+            public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            {
                 // use the reference to the image to get the image field model controller
                 var imFieldModelController = GetImageField(docController, context);
                 Debug.Assert(imFieldModelController != null);
@@ -1016,7 +1044,8 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = true) {
+                Context context, bool isInterfaceBuilderLayout = true)
+            {
                 return _doc.makeView(docController, context);
             }
         }
@@ -1058,12 +1087,14 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 return CollectionBox.MakeView(docController, context, isInterfaceBuilderLayout);
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
                 if (data != null)
@@ -1388,7 +1419,7 @@ namespace Dash
                 // bind the rich text width
                 var widthController = GetWidthField(docController, context);
                 BindWidth(rtv, widthController);
-                
+
                 if (isInterfaceBuilderLayout)
                 {
                     return new SelectableContainer(rtv, docController);
@@ -1442,7 +1473,8 @@ namespace Dash
                 throw new NotImplementedException();
             }
 
-            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false) {
+            public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+            {
                 throw new NotImplementedException("We don't have access to the data document here");
             }
 
@@ -1458,7 +1490,7 @@ namespace Dash
             {
                 if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
                     return MakeFreeFormView(docController, context, isInterfaceBuilderLayout);
-                var stack = new  GridView();
+                var stack = new GridView();
                 stack.Loaded += (s, e) =>
                 {
                     var stackViewer = stack.GetFirstDescendantOfType<ScrollViewer>();
@@ -1939,7 +1971,8 @@ namespace Dash
             }
 
             public override FrameworkElement makeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
                 return ApiDocumentModel.MakeView(docController, context);
             }
 
@@ -2012,7 +2045,8 @@ namespace Dash
             }
 
             public static FrameworkElement MakeView(DocumentController docController,
-                Context context, bool isInterfaceBuilderLayout = false) {
+                Context context, bool isInterfaceBuilderLayout = false)
+            {
 
                 ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
                 ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
@@ -2033,7 +2067,7 @@ namespace Dash
                 var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
-                var collectionViewModel = new CollectionViewModel(collectionFieldModelController); 
+                var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
                 var collectionDisplay = new CollectionView(collectionViewModel);
 
 
