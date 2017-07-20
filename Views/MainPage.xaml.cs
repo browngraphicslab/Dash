@@ -9,7 +9,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Models.OperatorModels.Set;
 using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,64 +65,42 @@ namespace Dash
 
             var jsonDoc = JsonToDashUtil.RunTests();
             DisplayDocument(jsonDoc);
+
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
         }
 
+        
+
         public void AddOperator()
         {
             //Create Operator document
-            var opModel =
+            var divideOp =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            var view = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var opvm = new DocumentViewModel(opModel);
-            //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-            view.DataContext = opvm;
+            DisplayDocument(divideOp);
 
-            DisplayDocument(opModel);
+            var addOp =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new AddOperatorModelController(new OperatorFieldModel("Add")));
+            DisplayDocument(addOp);
 
             //// add union operator for testing 
-            var intersectOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            var intersectView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var intersectOpvm = new DocumentViewModel(intersectOpModel);
-            intersectView.DataContext = intersectOpvm;
-            DisplayDocument(intersectOpModel);
+            //var intersectOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
+            //DisplayDocument(intersectOpModel);
 
-            var unionOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            var unionView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var unionOpvm = new DocumentViewModel(unionOpModel);
-            unionView.DataContext = unionOpvm;
-            DisplayDocument(unionOpModel);
+            //var unionOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
+            //DisplayDocument(unionOpModel);
 
             // add image url -> image operator for testing
-            var imgOpModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            var imgOpView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var imgOpvm = new DocumentViewModel(imgOpModel);
-            imgOpView.DataContext = imgOpvm;
-            DisplayDocument(imgOpModel);
+            //var imgOpModel =
+            //    OperatorDocumentModel.CreateOperatorDocumentModel(
+            //        new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
+            //DisplayDocument(imgOpModel);
         }
 
         /// <summary>
@@ -215,6 +192,18 @@ namespace Dash
             DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
             Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+        }
+
+        public void AddNotes()
+        {
+            DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
+            DisplayDocument(rtfNote);
+
+            DocumentController postitNote = new NoteDocuments.PostitNote(new DocumentType()).Document;
+            DisplayDocument(postitNote);
+
+            DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
+            DisplayDocument(imageNote);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

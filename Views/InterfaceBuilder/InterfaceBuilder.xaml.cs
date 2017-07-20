@@ -11,6 +11,9 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using static Dash.CourtesyDocuments;
+using System;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -23,10 +26,12 @@ namespace Dash
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
-
         private DocumentController _documentController;
-
+        
         private DropControls _controls;
+        public enum DisplayTypeEnum { List, Grid, Freeform } 
+
+        private DisplayTypeEnum _display = DisplayTypeEnum.Freeform;  
 
         public InterfaceBuilder(DocumentController docController, int width = 800, int height = 500)
         {
@@ -48,6 +53,8 @@ namespace Dash
         {
             SetActiveLayoutToGridView_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
+            //SetActiveLayoutToFreeform_TEMP(docController);
+            SetActiveLayout(docController);
             _documentView = new DocumentView(docViewModel);
             var rootSelectableContainer = new SelectableContainer(_documentView, docController);
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
@@ -78,8 +85,9 @@ namespace Dash
         {
             var currentDocPosition = docController.GetPositionField().Data;
             var defaultNewSize = new Size(400, 400);
-            docController.SetActiveLayout(new FreeFormDocument(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document, 
-                forceMask: true, 
+            docController.SetActiveLayout(
+                new FreeFormDocument(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document,
+                forceMask: true,
                 addToLayoutList: true);
         }
 
@@ -87,17 +95,72 @@ namespace Dash
         {
             var currentDocPosition = docController.GetPositionField().Data;
             var defaultNewSize = new Size(400, 400);
-            docController.SetActiveLayout(new GridViewLayout(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document,
+            docController.SetActiveLayout(
+                new GridViewLayout(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document,
                 forceMask: true,
                 addToLayoutList: true);
         }
 
+        private void SetActiveLayoutToListView_TEMP(DocumentController docController)
+        {
+            var currentDocPosition = docController.GetPositionField().Data;
+            var defaultNewSize = new Size(400, 400);
+            docController.SetActiveLayout(
+                new ListViewLayout(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document,
+                forceMask: true,
+                addToLayoutList: true);
+        }
+
+        public void SetActiveLayout(DocumentController docController)
+        {
+            switch (_display)
+            {
+                case DisplayTypeEnum.Freeform:
+                    SetActiveLayoutToFreeform_TEMP(docController);
+                    return;
+                case DisplayTypeEnum.Grid:
+                    SetActiveLayoutToGridView_TEMP(docController);
+                    return;
+                case DisplayTypeEnum.List:
+                    SetActiveLayoutToListView_TEMP(docController);
+                    return;
+                default:
+                    break;
+            }
+        }
 
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             DocumentController cont = e.ClickedItem as DocumentController;
 
             SetUpInterfaceBuilder(cont, new Context(cont));
+        }
+
+        private void List_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _display = DisplayTypeEnum.List;
+            (sender as Button).Background = new SolidColorBrush(Colors.LightGray); 
+            GridButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);;
+            FreeformButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            SetActiveLayout(_documentController);
+        }
+
+        private void Grid_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _display = DisplayTypeEnum.Grid;
+            (sender as Button).Background = new SolidColorBrush(Colors.LightGray);
+            ListButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            FreeformButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            SetActiveLayout(_documentController);
+        }
+
+        private void Freeform_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            _display = DisplayTypeEnum.Freeform;
+            (sender as Button).Background = new SolidColorBrush(Colors.LightGray);
+            ListButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            GridButton.Background = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]);
+            SetActiveLayout(_documentController);
         }
     }
 }

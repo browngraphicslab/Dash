@@ -231,7 +231,7 @@ namespace Dash
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
                 XGrid.Background = new SolidColorBrush(Colors.Transparent);
             }
-            Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
+            //Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
 
             if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
