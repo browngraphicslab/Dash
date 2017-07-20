@@ -90,7 +90,7 @@ namespace Dash
                     var key = kvp.Key;
                     var context = new Context(docController);
                     var fieldModelController = docController.GetDereferencedField(key, context);
-                    var dropPointFMC = new PointFieldModelController(e.GetPosition(_documentView).X, e.GetPosition(_documentView).Y);
+                    var dropPointFMC = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
 
                     // view factory
                     CourtesyDocuments.CourtesyDocument box = null;
@@ -126,13 +126,13 @@ namespace Dash
                     switch (displayType)
                     {
                         case DisplayTypeEnum.Freeform:
-                            newLayoutDocument = new FreeFormDocument(new List<DocumentController>(), e.GetPosition(_documentView), size).Document;
+                            newLayoutDocument = new FreeFormDocument(new List<DocumentController>(), e.GetPosition(layoutContainer), size).Document;
                             break;
                         case DisplayTypeEnum.Grid:
-                            newLayoutDocument = new GridViewLayout(new List<DocumentController>(), e.GetPosition(_documentView), size).Document;
+                            newLayoutDocument = new GridViewLayout(new List<DocumentController>(), e.GetPosition(layoutContainer), size).Document;
                             break;
                         case DisplayTypeEnum.List:
-                            newLayoutDocument = new ListViewLayout(new List<DocumentController>(), e.GetPosition(_documentView), size).Document;
+                            newLayoutDocument = new ListViewLayout(new List<DocumentController>(), e.GetPosition(layoutContainer), size).Document;
                             break;
                         default:
                             break;
