@@ -251,7 +251,7 @@ namespace Dash
                 {
                     Execute(context, true);
                 }
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false));
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false));//TODO Should be Action.Update
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
