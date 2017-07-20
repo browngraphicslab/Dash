@@ -72,8 +72,7 @@ namespace Dash
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
-
-<<<<<<< HEAD
+        
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -121,17 +120,30 @@ namespace Dash
                 } else if (e.Data.Properties[LayoutDragKey] != null && e.Data.Properties[LayoutDragKey] is DisplayTypeEnum)
                 {
                     var displayType = (DisplayTypeEnum) e.Data.Properties[LayoutDragKey];
+                    DocumentController newLayoutDocument = null;
+                    var size = new Size(200, 200);
+                    var pos = e.GetPosition(_documentView);
                     switch (displayType)
                     {
                         case DisplayTypeEnum.Freeform:
+                            newLayoutDocument = new FreeFormDocument(new List<DocumentController>(), e.GetPosition(_documentView), size).Document;
                             break;
                         case DisplayTypeEnum.Grid:
+                            newLayoutDocument = new GridViewLayout(new List<DocumentController>(), e.GetPosition(_documentView), size).Document;
                             break;
                         case DisplayTypeEnum.List:
+                            newLayoutDocument = new ListViewLayout(new List<DocumentController>(), e.GetPosition(_documentView), size).Document;
                             break;
                         default:
                             break;
                     }
+                    if (newLayoutDocument != null)
+                    {
+                        var col = layoutContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+                            DocumentCollectionFieldModelController;
+                        if (col != null) col.AddDocument(newLayoutDocument);
+                    }
+                    
                 }
             }
         }
@@ -152,11 +164,8 @@ namespace Dash
             var cont = (SelectableContainer) obj;
             return this.IsCompositeLayout(cont.LayoutDocument);
         }
-
-        private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument)
-=======
+        
         private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)
->>>>>>> 3ab96aa2b3805a1afb5ff8bbd68863c0b97d3009
         {
             xSettingsPane.Children.Clear();
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
