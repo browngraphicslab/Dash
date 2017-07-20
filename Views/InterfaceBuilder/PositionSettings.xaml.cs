@@ -29,8 +29,8 @@ namespace Dash
 
         private void BindPosition(DocumentController docController, Context context)
         {
-            var fmc = docController.GetField(DashConstants.KeyStore.PositionFieldKey); 
-            var positionController = fmc.DereferenceToRoot<PointFieldModelController>(context);
+            var fmc = docController.GetField(DashConstants.KeyStore.PositionFieldKey);
+            var positionController = docController.GetPositionField(context);
             Debug.Assert(positionController != null);
 
             var converter = new StringCoordinateToPointConverter(positionController.Data);

@@ -82,21 +82,21 @@
 
         <!-- GLOBAL STYLES -->
         <!-- border & padding on node-containing elements-->
-        <Style TargetType="Grid" x:Name="xNodeContainerGrid">
+        <Style TargetType="Grid" x:Key="xNodeContainerGrid">
             <Setter Property="Padding" Value="0,0,0,0"/>
             <Setter Property="Background" Value="{StaticResource TranslucentWhite}"/>
         </Style>
-        <Style TargetType="StackPanel" x:Name="xNodeContainerStackPanel">
+        <Style TargetType="StackPanel" x:Key="xNodeContainerStackPanel">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
         </Style>
-        <Style TargetType="UserControl" x:Name="xNodeContainerUserControl">
+        <Style TargetType="UserControl" x:Key="xNodeContainerUserControl">
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
         </Style>
 
         <!-- app Titles -->
-        <Style TargetType="TextBlock" x:Name="xTitleStyle">
+        <Style TargetType="TextBlock" x:Key="xTitleStyle">
             <Setter Property="FontSize" Value="20" />
             <Setter Property="Margin" Value="0,0,0,10" />
             <Setter Property="TextAlignment" Value="Center" />
@@ -105,7 +105,7 @@
         </Style>
 
         <!-- green accent button -->
-        <Style TargetType="Button" x:Name="xAccentButtonStyle">
+        <Style TargetType="Button" x:Key="xAccentButtonStyle">
             <!-- prevents node from moving while mouse is over UI element-->
             <Setter Property="ManipulationMode" Value="Scale"></Setter>
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -117,7 +117,7 @@
         <!-- NODE SPECIFIC STYLES -->
 
         <!-- Operator View (& Links)-->
-        <Style TargetType="Ellipse" x:Name="xLinkHandle">
+        <Style TargetType="Ellipse" x:Key="xLinkHandle">
             <Setter Property="Fill" Value="{StaticResource AccentGreen}" />
             <Setter Property="Height" Value="20"></Setter>
             <Setter Property="Width" Value="20"></Setter>
@@ -126,7 +126,7 @@
         </Style>
         
         <!-- Collection View -->
-        <Style TargetType="Button" x:Name="xBlueTextButtonStyle">
+        <Style TargetType="Button" x:Key="xBlueTextButtonStyle">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#DE0074FF"/>
             <Setter Property="BorderBrush" Value="Transparent"/>
@@ -136,12 +136,12 @@
             <Setter Property="HorizontalContentAlignment" Value="Right"></Setter>
         </Style>
 
-        <Style TargetType="TextBlock" x:Name="xBlueTextBoxStyle">
+        <Style TargetType="TextBlock" x:Key="xBlueTextBoxStyle">
             <Setter Property="Foreground" Value="#DE0074FF"/>
             <Setter Property="Padding" Value="0"></Setter>
         </Style>
 
-        <Style TargetType="FlyoutPresenter" x:Name="xFlyoutPresenterStyle">
+        <Style TargetType="FlyoutPresenter" x:Key="xFlyoutPresenterStyle">
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
@@ -150,6 +150,12 @@
         <!-- SAMPLE NODE HERE-->
 
         <!-- MISC. STYLES-->
+        <Style TargetType="Ellipse" x:Key="xDraggerEllipseStyle">
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Width" Value="20"/>
+            <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
+            <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
+        </Style>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>

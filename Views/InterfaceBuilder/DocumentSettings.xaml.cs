@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -27,6 +28,32 @@ namespace Dash.Views
         {
             xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
+
+            xAddLayoutButton.Tapped += CreateNewActiveLayout;
+
+            SetupActiveLayoutComboBox(editedLayoutDocument, context);
+        }
+
+        private void SetupActiveLayoutComboBox(DocumentController editedLayoutDocument, Context context)
+        {
+            var layoutList = editedLayoutDocument.GetLayoutList(context);
+            layoutList.OnDocumentsChanged += LayoutList_OnDocumentsChanged;
+            SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
+        }
+
+        private void SetActiveLayoutComboBoxItems(IEnumerable<DocumentController> documents)
+        {
+            xActiveLayoutComboBox.ItemsSource = documents;
+        }
+
+        private void LayoutList_OnDocumentsChanged(IEnumerable<DocumentController> currentDocuments)
+        {
+            SetActiveLayoutComboBoxItems(currentDocuments);
+        }
+
+        private void CreateNewActiveLayout(object sender, TappedRoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }
