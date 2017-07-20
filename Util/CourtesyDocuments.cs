@@ -477,15 +477,33 @@ namespace Dash
                 }
                 else if (textField is NumberFieldModelController)
                 {
-                    tb = new TextBlock();
+                    var textBox = new TextBox();
+                    tb = textBox;
                     var numFieldModelController = textField as NumberFieldModelController;
-                    BindTextBlockSource(tb, numFieldModelController);
+                    BindTextBoxSource(tb, numFieldModelController);
                 } else if (textField is RichTextFieldModelController)
                 {
                     tb = new TextBlock();
                     var richTextFieldModelController = textField as RichTextFieldModelController;
                     BindTextBlockSource(tb, richTextFieldModelController);
                 }
+                docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey,
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        var textField2 = GetTextField(sender, args.Context);
+                        if (textField2 is TextFieldModelController)
+                        {
+                            BindTextBoxSource(tb, textField2 as TextFieldModelController);
+                        }
+                        if (textField2 is NumberFieldModelController)
+                        {
+                            BindTextBoxSource(tb, textField2 as NumberFieldModelController);
+                        }
+                        else if (textField is RichTextFieldModelController)
+                        {
+                            BindTextBlockSource(tb, textField2 as RichTextFieldModelController);
+                        }
+                    });
 
                 // bind the text height
                 var heightController = GetHeightField(docController, context);
@@ -835,7 +853,22 @@ namespace Dash
                 {
                     Source = fieldModelController,
                     Path = new PropertyPath(nameof(fieldModelController.Data)),
-                    Mode = BindingMode.TwoWay
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
+            }
+
+            private static void BindTextBoxSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
+            {
+                //<<<<<<< HEAD
+                var sourceBinding = new Binding
+                {
+                    Source = fieldModelController,
+                    Path = new PropertyPath(nameof(fieldModelController.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new StringToDoubleConverter(0),
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
                 renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
             }
