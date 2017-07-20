@@ -64,7 +64,11 @@ namespace Dash
             Instance = this;
 
             var jsonDoc = JsonToDashUtil.RunTests();
+
+            var sw = new Stopwatch();
+            sw.Start();
             DisplayDocument(jsonDoc);
+            sw.Stop();
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
