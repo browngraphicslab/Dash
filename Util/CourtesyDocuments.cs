@@ -498,7 +498,7 @@ namespace Dash
                 {
                     tb = new TextBlock();
                     var richTextFieldModelController = textField as RichTextFieldModelController;
-                    BindTextBlockSource(tb, richTextFieldModelController);
+                    //BindTextBlockSource(tb, richTextFieldModelController);
                 }
 
                 // bind the text height
@@ -545,11 +545,11 @@ namespace Dash
                             var numFieldModelController = field as NumberFieldModelController;
                             BindNumberFieldSource(tb, numFieldModelController);
                         }
-                        else if (field is RichTextFieldModelController)
-                        {
-                            var richTextFieldModelController = field as RichTextFieldModelController;
-                            BindTextBlockSource(tb, richTextFieldModelController);
-                        }
+                        //else if (field is RichTextFieldModelController)
+                        //{
+                        //    var richTextFieldModelController = field as RichTextFieldModelController;
+                        //    BindTextBlockSource(tb, richTextFieldModelController);
+                        //}
                     }
                 });
 
