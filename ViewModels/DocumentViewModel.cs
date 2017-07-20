@@ -8,8 +8,6 @@ using Windows.UI.Xaml.Media;
 using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
-using static Dash.CourtesyDocuments.CourtesyDocument;
-using System;
 
 namespace Dash
 {
@@ -26,7 +24,14 @@ namespace Dash
         private Brush _borderBrush;
         private IconTypeEnum iconType;
         private TransformGroup _gridViewIconGroupTransform;
+        private bool _menuOpen = false;
         public bool DoubleTapEnabled = true;
+
+        public bool MenuOpen
+        {
+            get { return _menuOpen; }
+            set { SetProperty(ref _menuOpen, value); }
+        }
         public DocumentController DocumentController;
         public TransformGroup GridViewIconGroupTransform
         {
@@ -99,7 +104,7 @@ namespace Dash
                 {
                     // get layout
                     var context = new Context(DocumentController);
-                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey , context) as DocumentFieldModelController)?.Data;
+                    var layoutDocController = (DocumentController.GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController)?.Data;
 
                     if (layoutDocController == null)
                         layoutDocController = DocumentController;
@@ -165,6 +170,7 @@ namespace Dash
         }
 
         private GridLength _menuColumnWidth;
+
         public readonly bool IsInInterfaceBuilder;
 
         public GridLength MenuColumnWidth
@@ -201,11 +207,11 @@ namespace Dash
                 DocumentController.GetDereferencedField(DashConstants.KeyStore.IconTypeFieldKey, new Context(DocumentController)) as NumberFieldModelController;
             if (iconFieldModelController == null)
             {
-                iconFieldModelController = new NumberFieldModelController((int) (IconTypeEnum.Document));
+                iconFieldModelController = new NumberFieldModelController((int)(IconTypeEnum.Document));
                 DocumentController.SetField(DashConstants.KeyStore.IconTypeFieldKey, iconFieldModelController, true);
             }
 
-            iconType = (IconTypeEnum) iconFieldModelController.Data;
+            iconType = (IconTypeEnum)iconFieldModelController.Data;
             iconFieldModelController.FieldModelUpdated += IconFieldModelController_FieldModelUpdatedEvent;
         }
 
@@ -343,14 +349,23 @@ namespace Dash
 
         public void CloseMenu()
         {
-            DocMenuVisibility = Visibility.Collapsed;
-            MenuColumnWidth = new GridLength(0);
+            if (MenuOpen)
+            {
+                DocMenuVisibility = Visibility.Collapsed;
+                MenuColumnWidth = new GridLength(0);
+                MenuOpen = false;
+            }
+
         }
 
         public void OpenMenu()
         {
-            DocMenuVisibility = Visibility.Visible;
-            MenuColumnWidth = new GridLength(50);
+            if (!MenuOpen)
+            {
+                DocMenuVisibility = Visibility.Visible;
+                MenuColumnWidth = new GridLength(50);
+                MenuOpen = true;
+            }
         }
 
         public DocumentController Copy()

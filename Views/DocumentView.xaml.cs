@@ -92,6 +92,8 @@ namespace Dash
             };
             _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
+            ViewModel.DocMenuVisibility = Visibility.Collapsed;
+            ViewModel.MenuColumnWidth = new GridLength(0);
         }
 
 
@@ -238,7 +240,9 @@ namespace Dash
             }
 
             SetUpMenu();
+
             ViewModel.CloseMenu();
+
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
