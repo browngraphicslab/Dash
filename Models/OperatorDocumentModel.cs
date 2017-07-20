@@ -30,7 +30,7 @@ namespace Dash
             var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());
 
-            var layoutDoc = new CourtesyDocuments.OperatorBox(new DocumentReferenceController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new OperatorBox(new DocumentReferenceController(doc.GetId(), OperatorKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             doc.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
 

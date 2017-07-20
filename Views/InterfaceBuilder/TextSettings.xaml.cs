@@ -33,7 +33,7 @@ namespace Dash
         private void BindFontAlignment(DocumentController docController, Context context)
         {
             var textAlignmentController =
-                docController.GetDereferencedField(CourtesyDocuments.TextingBox.TextAlignmentKey, context) as NumberFieldModelController;
+                docController.GetDereferencedField(TextingBox.TextAlignmentKey, context) as NumberFieldModelController;
             Debug.Assert(textAlignmentController != null);
 
             var fontAlignmentBinding = new Binding()
@@ -50,7 +50,7 @@ namespace Dash
         private void BindFontWeight(DocumentController docController, Context context)
         {
             var fontWeightController =
-                    docController.GetDereferencedField(CourtesyDocuments.TextingBox.FontWeightKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as NumberFieldModelController;
             Debug.Assert(fontWeightController != null);
 
             _fontWeights = new ObservableCollection<double>()
@@ -75,7 +75,7 @@ namespace Dash
         private void BindFontSize(DocumentController docController, Context context)
         {
             var fontSizeController =
-                    docController.GetDereferencedField(CourtesyDocuments.TextingBox.FontSizeKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(TextingBox.FontSizeKey, context) as NumberFieldModelController;
             Debug.Assert(fontSizeController != null);
 
             var fontSizeBinding = new Binding()

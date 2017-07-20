@@ -9,7 +9,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
-using static Dash.CourtesyDocuments;
 
 namespace Dash {
     /// <summary>
@@ -69,7 +68,7 @@ namespace Dash {
         public bool updateDocumentModelResults() {
             
 
-            CourtesyDocuments.ApiDocumentModel.setResults(docController, responseAsDocuments);
+            ApiDocumentModel.setResults(docController, responseAsDocuments);
             return true;
         }
 

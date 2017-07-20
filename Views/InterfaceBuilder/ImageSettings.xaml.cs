@@ -19,7 +19,7 @@ namespace Dash
 
         public ImageSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == CourtesyDocuments.ImageBox.DocumentType, "You can only create image settings for an ImageBox");
+            Debug.Assert(docController.DocumentType == ImageBox.DocumentType, "You can only create image settings for an ImageBox");
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
@@ -29,7 +29,7 @@ namespace Dash
         private void BindOpacity(DocumentController docController, Context context)
         {
             var opacityController =
-                    docController.GetDereferencedField(CourtesyDocuments.ImageBox.OpacityKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(ImageBox.OpacityKey, context) as NumberFieldModelController;
             Debug.Assert(opacityController != null);
 
             var opacityBinding = new Binding()

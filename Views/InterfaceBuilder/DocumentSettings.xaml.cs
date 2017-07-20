@@ -98,18 +98,18 @@ namespace Dash.Views
             DocumentController newLayout = null;
             if (currActiveLayout.DocumentType.Equals(DashConstants.DocumentTypeStore.FreeFormDocumentLayout))
             {
-                newLayout = new CourtesyDocuments.GridViewLayout(new List<DocumentController>(), currPos,
+                newLayout = new GridViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
-            if (currActiveLayout.DocumentType.Equals(CourtesyDocuments.GridViewLayout.DocumentType))
+            if (currActiveLayout.DocumentType.Equals(GridViewLayout.DocumentType))
             {
-                newLayout = new CourtesyDocuments.ListViewLayout(new List<DocumentController>(), currPos,
+                newLayout = new ListViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
 
-            if (currActiveLayout.DocumentType.Equals(CourtesyDocuments.ListViewLayout.DocumentType))
+            if (currActiveLayout.DocumentType.Equals(ListViewLayout.DocumentType))
             {
-                newLayout = new CourtesyDocuments.FreeFormDocument(new List<DocumentController>(), currPos,
+                newLayout = new FreeFormDocument(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
 

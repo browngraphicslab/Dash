@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
-using static Dash.CourtesyDocuments;
 
 
 namespace Dash
@@ -251,7 +248,7 @@ namespace Dash
                 {
                     Execute(context, true);
                 }
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false));
+                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false));//TODO Should be Action.Update
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -542,17 +539,21 @@ namespace Dash
             {
                 return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == CourtesyDocuments.GridViewLayout.DocumentType)
+            if (DocumentType == GridViewLayout.DocumentType)
             {
                 return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == CourtesyDocuments.ListViewLayout.DocumentType)
+            if (DocumentType == ListViewLayout.DocumentType)
             {
                 return ListViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == CourtesyDocuments.RichTextBox.DocumentType)
+            if (DocumentType == RichTextBox.DocumentType)
             {
-                return CourtesyDocuments.RichTextBox.MakeView(this, context, isInterfaceBuilder);
+                return RichTextBox.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == GridPanel.GridPanelDocumentType)
+            {
+                return GridPanel.MakeView(this, context, isInterfaceBuilder);
             }
 
             // if document is not a known UI View, then see if it contains a Layout view field

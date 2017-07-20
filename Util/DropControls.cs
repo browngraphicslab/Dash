@@ -39,14 +39,14 @@ namespace Dash
             var dropPointFMC = new PointFieldModelController(e.GetPosition(_dropTarget).X, e.GetPosition(_dropTarget).Y);
 
             // view factory
-            CourtesyDocuments.CourtesyDocument box = null;
+            CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-                box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(docController.GetId(), key));
+                box = new TextingBox(new DocumentReferenceController(docController.GetId(), key));
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(docController.GetId(), key));
+                box = new ImageBox(new DocumentReferenceController(docController.GetId(), key));
             }
 
             // safety check
