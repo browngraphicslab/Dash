@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using static Dash.CourtesyDocuments;
 
 namespace Dash
 {

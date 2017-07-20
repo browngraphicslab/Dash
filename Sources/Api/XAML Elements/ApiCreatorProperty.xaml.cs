@@ -56,7 +56,7 @@ namespace Dash {
                 parent.SourceDisplay.RemoveFromListView(index);
 
                 // propagate changes to the document model
-                CourtesyDocuments.ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
+                ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
 
                 if (listView.Items.Count == 0)
                     listView.Visibility = Visibility.Collapsed;

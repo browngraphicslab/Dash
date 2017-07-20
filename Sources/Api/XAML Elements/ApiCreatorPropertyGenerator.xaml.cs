@@ -74,7 +74,7 @@ namespace Dash
             xCollapseButtonText.Text = "-";
 
             Debug.Assert(SourceDisplay != null);
-            DocumentController c = CourtesyDocuments.ApiDocumentModel.addParameter(
+            DocumentController c = ApiDocumentModel.addParameter(
                 docModel, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
                 stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
             stackPanel.docModelRef = c; // update to contain ref to docmodel generated

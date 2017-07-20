@@ -202,7 +202,7 @@ namespace Dash
 
         public void SetDefaultLayoutOnPrototype(DocumentController prototype)
         {
-            var _ = new CourtesyDocuments.LayoutCourtesyDocument(prototype);
+            var _ = new LayoutCourtesyDocument(prototype);
         }
     }
 

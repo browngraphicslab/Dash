@@ -4,7 +4,6 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
-using static Dash.CourtesyDocuments;
 
 
 namespace Dash

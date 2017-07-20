@@ -45,7 +45,7 @@ namespace Dash
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E"));
             var collectionDocumentController =
-                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                new CollectionBox(new DocumentReferenceController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
@@ -116,9 +116,9 @@ namespace Dash
 
         public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            var twoImages = new CourtesyDocuments.TwoImages(false).Document;
-            var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
-            var numbers = new CourtesyDocuments.Numbers().Document;
+            var twoImages = new TwoImages(false).Document;
+            var twoImages2 = new TwoImages(false).Document;
+            var numbers = new Numbers().Document;
 
             var fields = new Dictionary<Key, FieldModelController>
             {
@@ -130,7 +130,7 @@ namespace Dash
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
             var layoutDoc =
-                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(col.GetId(),
+                new CollectionBox(new DocumentReferenceController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
@@ -142,14 +142,14 @@ namespace Dash
 
         public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
-            var a = new CourtesyDocuments.ApiDocumentModel().Document;
+            var a = new ApiDocumentModel().Document;
             DisplayDocument(a);
         }
 
         private void AddAnotherLol()
         {
-            var numbers = new CourtesyDocuments.Numbers().Document;
-            var twoImages2 = new CourtesyDocuments.TwoImages(false).Document;
+            var numbers = new Numbers().Document;
+            var twoImages2 = new TwoImages(false).Document;
 
             var fields = new Dictionary<Key, FieldModelController>
             {
@@ -160,7 +160,7 @@ namespace Dash
 
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
             var layoutDoc =
-                new CourtesyDocuments.CollectionBox(new DocumentReferenceController(col.GetId(),
+                new CollectionBox(new DocumentReferenceController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
@@ -178,18 +178,18 @@ namespace Dash
 
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            //DisplayDocument(new CourtesyDocuments.PostitNote().Document);
-            //DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
-            DocumentController numbersProto = new CourtesyDocuments.Numbers().Document;
+            //DisplayDocument(new PostitNote().Document);
+            //DisplayDocument(new TwoImages(false).Document);
+            DocumentController numbersProto = new Numbers().Document;
             DisplayDocument(numbersProto);
             DocumentController del = numbersProto.MakeDelegate();
-            del.SetField(CourtesyDocuments.Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
+            del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
             var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
             var layoutDel = layout.Data.MakeDelegate();
             layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
             del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
             DisplayDocument(del);
-            DisplayDocument(new CourtesyDocuments.TwoImages(false).Document);
+            DisplayDocument(new TwoImages(false).Document);
             Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
         }

@@ -12,7 +12,7 @@ using DashShared;
 
 namespace Dash
 {
-    class GridPanel : CourtesyDocuments.CourtesyDocument
+    class GridPanel : CourtesyDocument
     {
         public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Panel");
 

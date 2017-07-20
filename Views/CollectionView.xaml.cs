@@ -15,7 +15,6 @@ using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
 using DashShared;
 using DocumentMenu;
-using static Dash.CourtesyDocuments;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
