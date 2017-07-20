@@ -62,7 +62,7 @@
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xArithmeticList" ItemsSource="{x:Bind arithmetics}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xArithmeticList" ItemsSource="{x:Bind arithmetics}"/>
                     </Grid>
                 </PivotItem>
                 
@@ -80,7 +80,7 @@
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xMapList" ItemsSource="{x:Bind maps}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xMapList" ItemsSource="{x:Bind maps}"/>
                     </Grid>
                 </PivotItem>
                 
@@ -98,7 +98,7 @@
                         <Grid.Background>
                             <SolidColorBrush Color="White" Opacity="0.5"></SolidColorBrush>
                         </Grid.Background>
-                        <ListView x:Name="xSetList" ItemsSource="{x:Bind sets}" DisplayMemberPath="Type"/>
+                        <ListView x:Name="xSetList" ItemsSource="{x:Bind sets}"/>
                     </Grid>
                 </PivotItem>
                 

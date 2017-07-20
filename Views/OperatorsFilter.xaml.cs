@@ -26,10 +26,6 @@ namespace Dash
         List<string> sets = new List<string>() { "Union", "Intersection" };
         List<string> maps = new List<string> () { "ImageToUri" };
         List<string> all = new List<string>() { "Divide", "Union", "Intersection", "ImageToUri"};
-        //ObservableCollection<OperatorFieldModel> Arithmetics { get; set; }
-        //ObservableCollection<OperatorFieldModel> Sets { get; set; }
-        //ObservableCollection<OperatorFieldModel> Maps { get; set; }
-        //ObservableCollection<OperatorFieldModel> All { get; set; }
         private static OperatorsFilter instance;
         public static OperatorsFilter Instance
         {
@@ -45,10 +41,6 @@ namespace Dash
         private OperatorsFilter()
         {
             this.InitializeComponent();
-            //All = MakeCategory(all);
-            //Maps = MakeCategory(maps);
-            //Sets = MakeCategory(sets);
-            //Arithmetics = MakeCategory(arithmetics);
             this.SetManipulation();
             xAllList.Tapped += delegate { this.ItemsSelected(xAllList); };
             xArithmeticList.Tapped += delegate { this.ItemsSelected(xArithmeticList); };
@@ -63,21 +55,10 @@ namespace Dash
             this.UpdateList(args.QueryText);
         }
 
-        //private ObservableCollection<OperatorFieldModel> MakeCategory(List<string> operatorTypes)
-        //{
-        //    ObservableCollection<OperatorFieldModel> operators = new ObservableCollection<OperatorFieldModel>();
-        //    foreach(var type in operatorTypes)
-        //    {
-        //        operators.Add(new OperatorFieldModel(type));
-        //    }
-        //    return operators;
-        //}
-
-        private void XSearch_SuggestionChosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
-        {
-            this.UpdateList(args.SelectedItem as string);
-        }
-
+        /// <summary>
+        /// Updates items source of the current listview to reflect search results within the current category
+        /// </summary>
+        /// <param name="query"></param>
         private void UpdateList(string query)
         {
             var results = GetMatches(query);
@@ -94,6 +75,7 @@ namespace Dash
                     sender.ItemsSource = GetMatches(sender.Text);
                 } else
                 {
+                    sender.ItemsSource = null;
                     xAllList.ItemsSource = all;
                     xArithmeticList.ItemsSource = arithmetics;
                     xSetList.ItemsSource = sets;
@@ -251,6 +233,8 @@ namespace Dash
             xMapBorder.Background = xRootPivot.SelectedItem == xMapTab ? new SolidColorBrush(Colors.SteelBlue) : new SolidColorBrush(Colors.Gray);
             xSetBorder.Background = xRootPivot.SelectedItem == xSetTab ? new SolidColorBrush(Colors.SteelBlue) : new SolidColorBrush(Colors.Gray);
             xCustomBorder.Background = xRootPivot.SelectedItem == xCustomTab ? new SolidColorBrush(Colors.SteelBlue) : new SolidColorBrush(Colors.Gray);
+            // makes sure that no suggestions from previous searches in other categories would show up
+            xSearch.ItemsSource = null;
         }
     }
 
