@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -46,20 +47,32 @@ namespace Dash
             _documentView = new DocumentView(docViewModel);
             _documentView.Manipulator.RemoveAllButHandle();
             _documentView.RemoveScroll();
-            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
-            rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
+            UpdateRootLayout();
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.AllowDrop = true;
             _documentView.Drop += DocumentViewOnDrop;
 
+            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
 
             // set the middle pane to hold the document view
             xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
-        
+
+        private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            UpdateRootLayout();
+        }
+
+        private void UpdateRootLayout()
+        {
+            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
+            Debug.Assert(rootSelectableContainer != null);
+            rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
+        }
+
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -91,7 +104,7 @@ namespace Dash
                 if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
                 {
 
-                    var positionController = new PointFieldModelController(e.GetPosition(_documentView).X, e.GetPosition(_documentView).Y);
+                    var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
                     layoutDocument.SetField(DashConstants.KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
@@ -104,7 +117,7 @@ namespace Dash
                 var displayType = (DisplayTypeEnum)e.Data.Properties[LayoutDragKey];
                 DocumentController newLayoutDocument = null;
                 var size = new Size(200, 200);
-                var position = e.GetPosition(_documentView);
+                var position = e.GetPosition(layoutContainer);
                 switch (displayType)
                 {
                     case DisplayTypeEnum.Freeform:

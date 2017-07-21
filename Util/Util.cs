@@ -36,7 +36,7 @@ namespace Dash
             //Point p = new Point(rect.Width * e.Delta.Translation.X, rect.Height * e.Delta.Translation.Y);
 
             MatrixTransform r = to.TransformToVisual(Window.Current.Content) as MatrixTransform;
-            Debug.Assert(r != null);
+            //Debug.Assert(r != null);
             if (r != null)
             {
                 Matrix m = r.Matrix;
