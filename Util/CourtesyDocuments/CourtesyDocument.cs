@@ -293,6 +293,7 @@ namespace Dash
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
                     view.PointerArgs = args;
+                args.Handled = true;
                 if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
                 {
 
