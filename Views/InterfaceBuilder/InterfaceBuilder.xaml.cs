@@ -100,6 +100,10 @@ namespace Dash
                     {
                         box = new ImageBox(new DocumentReferenceController(docController.GetId(), key));
                     }
+                    else if (fieldModelController is DocumentFieldModelController)
+                    {
+                        box = new DocumentBox(new DocumentReferenceController(docController.GetId(), key));
+                    }
 
                     // safety check
                     if (box == null)
@@ -216,7 +220,7 @@ namespace Dash
             {
                 var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
-                switch (button.Content)
+                switch ((string)button.Content)
                 {
                     case "🖹":
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.List;
