@@ -414,14 +414,14 @@ namespace Dash
         {
             IEnumerable<FieldModelController> fms = RawToFieldModelControllerFactory(randomList, true);
 
-            Key ListViewKey = new Key("what", "ListKey");                                                    // TODO give it a proper key 
+            //Key ListViewKey = new Key("what", "ListKey");                                                    // TODO give it a proper key 
             DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type 
             var fields = new Dictionary<Key, FieldModelController>();
-            fields.Add(ListViewKey, new ListFieldModelController<FieldModelController>(fms));
+            fields.Add(DashConstants.KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
             DocumentController Document = new DocumentController(fields, ListType);
 
             IList<DocumentController> viewDocs = FMControllerToCourtesyDocs(ref Document, fms);
-            var layoutDoc = new ListViewLayout(viewDocs, new Point(), new Size(100, Math.Min(50 * viewDocs.Count, 400)));
+            var layoutDoc = new ListViewLayout(viewDocs, new Point(), new Size(300, Math.Min(50 * viewDocs.Count, 400)));
             Document.SetActiveLayout(layoutDoc.Document, true, true);
 
             return Document; 

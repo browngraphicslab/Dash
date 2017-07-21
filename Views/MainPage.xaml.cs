@@ -182,8 +182,6 @@ namespace Dash
 
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
-            //DisplayDocument(new PostitNote().Document);
-            //DisplayDocument(new TwoImages(false).Document);
             DocumentController numbersProto = new Numbers().Document;
             DisplayDocument(numbersProto);
             DocumentController del = numbersProto.MakeDelegate();

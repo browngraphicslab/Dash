@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media;
 using Dash;
 using DashShared;
+using Windows.UI.Xaml.Shapes;
 
 namespace Dash
 {
@@ -53,6 +54,9 @@ namespace Dash
         {
 
             var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition());
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
             // bind the grid height
             var heightController = GetHeightField(docController, context);
             BindHeight(grid, heightController);
@@ -76,6 +80,7 @@ namespace Dash
                 }
             };
             grid.Children.Add(listView);
+            //Grid.SetRow(listView, 0);
             if (isInterfaceBuilderLayout)
             {
                 var icon = new TextBlock()
@@ -89,6 +94,20 @@ namespace Dash
                 grid.Children.Insert(0, icon);
                 return new SelectableContainer(grid, docController, dataDocument);
             }
+
+            Ellipse dragEllipse = new Ellipse
+            {
+                Fill = new SolidColorBrush(Color.FromArgb(255, 53, 197, 151)),
+                Width = 20,
+                Height = 20, 
+                Margin = new Thickness(5)
+            };
+            Grid.SetColumn(dragEllipse, 1);
+            grid.Children.Add(dragEllipse);
+
+            var referenceToText = new DocumentReferenceController(dataDocument.GetId(), DashConstants.KeyStore.DataKey);
+            BindOperationInteractions(dragEllipse, referenceToText);                                        // TODO must test if this actually works I feel like it doesn't lol
+
             return grid;
         }
 

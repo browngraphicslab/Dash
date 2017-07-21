@@ -26,7 +26,7 @@
             <TextBlock TextAlignment="Center">Keys</TextBlock>
             <TextBlock Grid.Column="1" TextAlignment="Center">Values</TextBlock>
         </Grid>
-        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch"
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
 
