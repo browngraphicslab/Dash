@@ -33,7 +33,7 @@ namespace Dash
 
         private DisplayTypeEnum _display = DisplayTypeEnum.Freeform;  
 
-        public InterfaceBuilder(DocumentController docController, int width = 800, int height = 500)
+        public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
         {
             this.InitializeComponent();
             Width = width;
@@ -51,7 +51,7 @@ namespace Dash
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            SetActiveLayoutToGridView_TEMP(docController);
+            SetActiveLayoutToFreeform_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
             _documentView.Manipulator.RemoveAllButHandle();
@@ -216,7 +216,7 @@ namespace Dash
             {
                 var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
-                switch (button.Content)
+                switch (button.Content as string)
                 {
                     case "🖹":
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.List;
@@ -232,6 +232,12 @@ namespace Dash
                 }
                 e.Data.RequestedOperation = DataPackageOperation.Move;
             }
+        }
+
+        private void xDocumentPane_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xScrollViewer.MaxWidth = xDocumentHolder.MaxWidth = e.NewSize.Width;
+            xScrollViewer.MaxHeight = xDocumentHolder.MaxHeight = e.NewSize.Height;
         }
     }
 }
