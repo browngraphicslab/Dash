@@ -62,7 +62,7 @@ namespace Dash
         private static UIElement CreateDocumentSettingsLayout(DocumentController layoutDocument, DocumentController dataDocument)
         {
             var context = new Context(); // bcz: ??? Is this right?
-            return new DocumentSettings(layoutDocument, dataDocument, context);
+            return new FreeformSettings(layoutDocument, dataDocument, context);
         }
 
     }
