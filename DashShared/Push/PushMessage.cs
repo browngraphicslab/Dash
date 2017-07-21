@@ -15,8 +15,19 @@ namespace DashShared
 
     public class PushMessage
     {
+        /// <summary>
+        /// The type of the push.
+        /// </summary>
         public PushType PushType;
-        public object Model;
-        public Type Type;
+
+        /// <summary>
+        /// Needed for delete operations.
+        /// </summary>
+        public string Id;
+
+        /// <summary>
+        /// The model to push.
+        /// </summary>
+        public EntityBase Model;
     }
 }

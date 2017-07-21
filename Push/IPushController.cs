@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    public interface IPushController
+    public interface IPushController :IController
     {
         void PushUpdate(EntityBase model);
-        void PushDelete(EntityBase model);
+        void PushDelete();
     }
 }

@@ -61,6 +61,16 @@ namespace Dash
             // Add Events
         }
 
+        public DocumentController(DocumentModel model) : this(ModelToFieldModelDictionary(model), model.DocumentType)
+        {
+
+        }
+
+        private static IDictionary<Key, FieldModelController> ModelToFieldModelDictionary(DocumentModel model)
+        {
+            return new Dictionary<Key, FieldModelController>();
+        }
+
         /// <summary>
         ///     The <see cref="DocumentModel" /> associated with this <see cref="DocumentController" />,
         ///     You should only set values on the controller, never directly on the model!

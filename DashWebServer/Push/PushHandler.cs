@@ -43,19 +43,24 @@ namespace DashWebServer
         }
         public void SendDelete(string id)
         {
-            Send(id, PushType.Delete);
+            Send(id, null, PushType.Delete);
         }
 
-        private async Task Send(object o, PushType action)
+        private void Send(string id, EntityBase model, PushType action)
         {
             var message = new PushMessage()
             {
                 PushType = action,
-                Model = o,
-                Type = o.GetType()
+                Id = id,
+                Model = model,
             };
 
-            await InvokeClientMethodToAllAsync("receiveMessage", message);
+            InvokeClientMethodToAllAsync("receiveMessage", message);
+        }
+
+        private void Send(EntityBase model, PushType action)
+        {
+            Send(model.Id, model, action);
         }
 
         public override async Task OnDisconnected(WebSocket socket)
