@@ -75,22 +75,18 @@ namespace Dash
             set
             {
                 _isLowestSelected = value;
-                if (value)
-                {
-                    foreach (var ellipse in _draggerList)
-                    {
-                        ellipse.Visibility = Visibility.Visible;
-                    }
-                    
-                }
-                else
-                {
-                    foreach (var ellipse in _draggerList)
-                    {
-                        ellipse.Visibility = Visibility.Collapsed;
-                    }
-                    
-                }
+
+                SetEllipseVisibility();
+            }
+        }
+
+        private void SetEllipseVisibility()
+        {
+            var isVisible = !IsRoot() && IsLowestSelected;
+
+            foreach (var ellipse in _draggerList)
+            {
+                ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -113,6 +109,7 @@ namespace Dash
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             IsSelected = false;
+            SetEllipseVisibility();
             SetContent();
             if (IsRoot())
             {
