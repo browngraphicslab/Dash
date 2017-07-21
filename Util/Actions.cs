@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Models;
+using Dash.Models.OperatorModels.Set;
 using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,6 +99,69 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter();
         }
 
+        public static void AddOperator(object obj)
+        {
+            DocumentController opModel = null;
+            var type = obj as string;
+            if (type == null) return;
+            if (type == "Divide")
+            {
+                opModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel);
+                //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+                view.DataContext = opvm;
+            }
+            else if (type == "Union")
+            {
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new UnionOperatorFieldModelController(new OperatorFieldModel(type)));
+                var unionView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var unionOpvm = new DocumentViewModel(opModel);
+                unionView.DataContext = unionOpvm;
+            }
+            else if (type == "Intersection")
+            {
+                // add union operator for testing 
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new IntersectionOperatorModelController(new OperatorFieldModel(type)));
+                var intersectView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var intersectOpvm = new DocumentViewModel(opModel);
+                intersectView.DataContext = intersectOpvm;
+            }
+            else if (type == "ImageToUri")
+            {
+                // add image url -> image operator for testing
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new ImageOperatorFieldModelController(new OperatorFieldModel(type)));
+                var imgOpView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var imgOpvm = new DocumentViewModel(opModel);
+                imgOpView.DataContext = imgOpvm;
+            }
+            if (opModel != null)
+                MainPage.Instance.DisplayDocument(opModel);
+        }
         
         public static void AddCollection(object obj)
         {

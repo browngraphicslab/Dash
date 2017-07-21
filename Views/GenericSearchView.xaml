@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <Grid Width="300" Height="350" CornerRadius="15">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CornerRadius="15">
         <Grid.Background>
             <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
