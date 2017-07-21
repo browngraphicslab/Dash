@@ -127,6 +127,7 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
     <Compile Include="Views\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>
     </Compile>
@@ -137,7 +138,6 @@
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\DocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\LayoutCourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />

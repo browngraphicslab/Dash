@@ -32,17 +32,16 @@ namespace Dash
 
             SetUpInterfaceBuilder(docController, new Context(docController));
 
+            // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
             {
                 Source = docController.GetAllPrototypes()
             };
-
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            SetActiveLayoutToFreeform_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
             _documentView.Manipulator.RemoveAllButHandle();
@@ -146,9 +145,7 @@ namespace Dash
             } else if (fieldModelController is DocumentFieldModelController)
             {
                 var documentController = (fieldModelController as DocumentFieldModelController).Data;
-                layoutDocument = documentController.GetActiveLayout(context)?.Data ??
-                                 new DocumentController(new Dictionary<Key, FieldModelController>(),  //TODO factor out this default layout it will definitely lead to bugs
-                                     DashConstants.DocumentTypeStore.DefaultLayout);
+                layoutDocument = documentController.GetActiveLayout(context).Data;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
@@ -160,7 +157,7 @@ namespace Dash
         private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
         {
             var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _documentView)
-                .First(AssertIsCompositeLayout);
+                .FirstOrDefault(AssertIsCompositeLayout);
             return elem as SelectableContainer;
         }
 

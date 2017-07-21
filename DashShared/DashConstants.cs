@@ -106,8 +106,6 @@ namespace DashShared
 
             public static Key LayoutListKey = new Key("6546DD08-C753-4C34-924E-3C4016C4B95B", "LayoutList");
             public static Key ActiveLayoutKey = new Key("BEBEC91F-F85A-4F72-A7D2-E2912571FBDA", "ActiveLayout");
-
-            //public static Key LayoutKey = new Key("4CD28733-93FB-4DF4-B878-289B14D5BFE1", "Layout");
             public static Key PrototypeKey = new Key("866A6CC9-0B8D-49A3-B45F-D7954631A682", "Prototype");
             public static Key DelegatesKey = new Key("D737A3D8-DB2C-40EB-8DAB-129D58BC6ADB", "Delegates");
             public static Key WidthFieldKey = new Key("5B329D99-96BF-4703-8E28-9B7B1C1B837E", "Width");
@@ -125,7 +123,6 @@ namespace DashShared
 
             public static DocumentType TextBoxDocumentType = new DocumentType("D63DDB00-1A66-4E3A-A19B-6B06BBD6DAC8", "Text Box");
             public static DocumentType FreeFormDocumentLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
-            public static DocumentType DefaultLayout = new DocumentType("5226FDA9-268A-4325-8090-C1100EE6AB50", "Default Layout");
         }
 
 

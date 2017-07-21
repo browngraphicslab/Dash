@@ -101,13 +101,12 @@ namespace Dash.Views
                 newLayout = new GridViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
-            if (currActiveLayout.DocumentType.Equals(GridViewLayout.DocumentType))
+            else if (currActiveLayout.DocumentType.Equals(GridViewLayout.DocumentType))
             {
                 newLayout = new ListViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
-
-            if (currActiveLayout.DocumentType.Equals(ListViewLayout.DocumentType))
+            else
             {
                 newLayout = new FreeFormDocument(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
