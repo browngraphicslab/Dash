@@ -6,7 +6,10 @@ namespace Dash
 {
     public class TextFieldModelController : FieldModelController
     {
-        public TextFieldModelController(string data) : base(new TextFieldModel(data)) { }
+        public TextFieldModelController(string data) : base(new TextFieldModel(data))
+        {
+            Data = data; 
+        }
 
         /// <summary>
         ///     The <see cref="TextFieldModel" /> associated with this <see cref="TextFieldModelController" />,

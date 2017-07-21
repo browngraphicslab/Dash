@@ -19,6 +19,9 @@ namespace Dash
 
         public abstract TypeInfo ListSubTypeInfo { get; }
 
+        public abstract void Add(FieldModelController fmc);
+        public abstract void AddRange(IList<FieldModelController> fmcs);
+
         public override bool CheckType(FieldModelController fmc)
         {
             bool isList = base.CheckType(fmc);

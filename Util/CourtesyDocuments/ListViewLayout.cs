@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Windows.Foundation;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Dash;
 using DashShared;
 
@@ -76,6 +78,15 @@ namespace Dash
             grid.Children.Add(listView);
             if (isInterfaceBuilderLayout)
             {
+                var icon = new TextBlock()
+                {
+                    Text = "🖹",
+                    FontSize = 100,
+                    Foreground = new SolidColorBrush(Colors.LightBlue),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                grid.Children.Insert(0, icon);
                 return new SelectableContainer(grid, docController, dataDocument);
             }
             return grid;

@@ -15,7 +15,7 @@ namespace Dash
 
         public override List<FieldModelController> Data
         {
-            get { return TypedData as List<FieldModelController>; }
+            get { return TypedData.Cast<FieldModelController>().ToList(); }
             set { TypedData = value.Cast<T>().ToList(); }
         }
 
@@ -32,6 +32,12 @@ namespace Dash
         {
             TypedData.Add(element);
             ListFieldModel.Data.Add(element.GetId());
+        }
+
+        public void AddRange(IList<T> elements)
+        {
+            TypedData.AddRange(elements);
+            ListFieldModel.Data.AddRange(elements.Select(fmc => fmc.GetId()));
         }
 
         public void Remove(T element)
@@ -57,6 +63,16 @@ namespace Dash
         public ListFieldModel ListFieldModel => FieldModel as ListFieldModel;
 
         public override TypeInfo ListSubTypeInfo { get; } = TypeInfoHelper.TypeToTypeInfo(typeof(T));
+
+        public override void Add(FieldModelController fmc)
+        {
+            Add(fmc as T);
+        }
+
+        public override void AddRange(IList<FieldModelController> fmcs)
+        {
+            AddRange(fmcs.Cast<T>().ToList());
+        }
 
         public override FrameworkElement GetTableCellView()
         {
