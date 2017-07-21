@@ -55,8 +55,8 @@ namespace Dash
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 64;
-            MinHeight = 64;
+            MinWidth = 120;
+            MinHeight = 96;
 
             startWidth = Width;
             startHeight = Height;
@@ -66,25 +66,26 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-
             Tapped += OnTapped;
+            DoubleTapped += ExpandContract_DoubleTapped;
         }
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
         }
 
-        private void SetUpMenu()
-        {
+        private void SetUpMenu() {
+            Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
+
             var documentButtons = new List<MenuButton>()
             {
-                new MenuButton(Symbol.Pictures, "Layout", Colors.LightBlue,OpenLayout),
-                new MenuButton(Symbol.Copy, "Copy", Colors.LightBlue,CopyDocument),
-                new MenuButton(Symbol.SetTile, "Delegate", Colors.LightBlue, MakeDelegate),
-                new MenuButton(Symbol.Delete, "Delete", Colors.LightBlue,DeleteDocument),
-                new MenuButton(Symbol.Camera, "ScrCap", Colors.LightBlue, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands", Colors.LightBlue, CommandLine),
-                new MenuButton(Symbol.Page, "Json", Colors.LightBlue, GetJson)
+                new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
+                new MenuButton(Symbol.Copy, "Copy",bgcolor,CopyDocument),
+                new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
+                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
+                new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
+                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine),
+                new MenuButton(Symbol.Page, "Json",bgcolor, GetJson)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -213,6 +214,33 @@ namespace Dash
             }
         }
 
+
+        void initDocumentOnDataContext() {
+
+            // document type specific styles >> use VERY sparringly
+            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            if (docType.Type != null) {
+                // hide white background & drop shadow on operator views
+                if (docType.Type.Equals("operator")) {
+                    XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                    xBorder.Opacity = 0;
+                }
+            } else {
+
+                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
+            }
+
+            // if there is a readable document type, use that as label
+            var sourceBinding = new Binding {
+                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
+
+        }
+
         /// <summary>
         /// The first time the local DocumentViewModel _vm can be set to the new datacontext
         /// this resets the fields otherwise does nothing
@@ -223,26 +251,16 @@ namespace Dash
         {
             // if _vm has already been set return
             if (ViewModel != null)
-            {
                 return;
-            }
+
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
- 
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("operator")) {
-                XGrid.Background = new SolidColorBrush(Colors.Transparent);
-            }
-            //Debug.WriteLine(ViewModel.DocumentController.DocumentModel.DocumentType.Type);
 
-            if (ViewModel.DocumentController.DocumentModel.DocumentType.Type != null && 
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type.Equals("collection")) {
-            }
+            initDocumentOnDataContext();
 
             SetUpMenu();
-            ViewModel.CloseMenu();
-
             ViewModel.CloseMenu();
 
         }
@@ -253,19 +271,20 @@ namespace Dash
             ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
-            int pad = 32;
-            if (Width < MinWidth + pad && Height < MinHeight + pad)
-            {
+            int pad = 1;
+             if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight) {
                 updateIcon();
-                XGrid.Visibility = Visibility.Collapsed;
-                xIcon.Visibility = Visibility.Visible;
-                xBorder.Visibility = Visibility.Collapsed;
+                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xDragImage.Opacity = 0;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
             } else {
-                XGrid.Visibility = Visibility.Visible;
-                xIcon.Visibility = Visibility.Collapsed;
-                xBorder.Visibility = Visibility.Visible;
+                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xDragImage.Opacity = 1;
                 Tapped += OnTapped;
             }
         }
@@ -274,15 +293,9 @@ namespace Dash
             // if in icon view expand to default size
             if (xIcon.Visibility == Visibility.Visible)
             {
-                Height = 300;
-                Width = 300;
-
-                var dvm = DataContext as DocumentViewModel;
-                dvm.Width = 300;
-                dvm.Height = 300;
-
-                // if in default view, show context menu
-            }
+                Resize(300, 300);
+                
+            }/*
             else
             {
                 Height = MinWidth;
@@ -292,7 +305,7 @@ namespace Dash
                 dvm.Width = MinWidth;
                 dvm.Height = MinHeight;
             }
-
+            */
             e.Handled = true; // prevent propagating
         }
 
