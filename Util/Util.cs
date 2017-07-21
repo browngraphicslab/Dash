@@ -367,25 +367,14 @@ namespace Dash
                 double n;
                 Uri outUri;
 
-                if (value is double)                                             // if it's a number 
+                if (double.TryParse(stringVal, out n))                             // if it's a number
                 {
-                    Debug.WriteLine("it's an actual number");
-                    result.AddLast(new NumberFieldModelController((double)value));
-                }
-                else if (double.TryParse(stringVal, out n))              
-                {
-                    Debug.WriteLine("it's a string number");
                     result.AddLast(new NumberFieldModelController(n));
                 }
-                else if (displayAsImage)
-                {
-                    if (Uri.TryCreate(stringVal, UriKind.Absolute, out outUri)         // if it's a url...  
+                else if (displayAsImage && Uri.TryCreate(stringVal, UriKind.Absolute, out outUri)         // if it's a url...  
                        && Uri.IsWellFormedUriString(stringVal, UriKind.Absolute))
-                    {
-                        //Do something with your validated Absolute URI...
-                        result.AddLast(new ImageFieldModelController(outUri));
-                        Debug.WriteLine("it's an image");
-                    }
+                {
+                    result.AddLast(new ImageFieldModelController(outUri));
                 }
                 else
                 {
@@ -398,7 +387,7 @@ namespace Dash
         public static IList<DocumentController> FMControllerToCourtesyDocs(ref DocumentController doc, IEnumerable<FieldModelController> fms)
         {
             var result = new List<DocumentController>();
-            string docID = doc.GetId(); 
+            string docID = doc.GetId();
 
             foreach (FieldModelController fm in fms)
             {
@@ -414,10 +403,10 @@ namespace Dash
                 }
                 else
                 {
-                    throw new NotImplementedException(); 
+                    throw new NotImplementedException();
                 }
             }
-            return result; 
+            return result;
         }
     }
 }

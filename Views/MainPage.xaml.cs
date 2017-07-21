@@ -211,25 +211,25 @@ namespace Dash
             DisplayDocument(imageNote);
             */
 
-            //List<object> randomList = new List<object> { "hi", "3", "hello", "ms - appx:///Assets/DefaultImage.png" };
-            List<object> randomList = new List<object> { 1,2,3 };
+            List<object> randomList = new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" };
+            //List<object> randomList = new List<object> { "WHY", 1111 };
             IEnumerable<FieldModelController> fms = Util.RawToFieldModelControllerFactory(randomList, true);
 
-            Key ListViewKey = new Key("fml", "Number1");
+            Key ListViewKey = new Key("fml", "ListKey");
             DocumentType ListType = new DocumentType("testingattentionpls", "List");
             var fields = new Dictionary<Key, FieldModelController>
             {
-                [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(double.NaN),
-                [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(double.NaN),
-                [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(new Point(0, 0)),
-                [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0)
+                //[DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(50),
+                //[DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(150),
+                //[DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(new Point(0, 0)),
+                //[DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
+                //[DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0)
             };
             fields.Add(ListViewKey, new ListFieldModelController<FieldModelController>(fms));
             DocumentController Document = new DocumentController(fields, ListType);
 
             IList<DocumentController> viewDocs = Util.FMControllerToCourtesyDocs(ref Document, fms);
-            var layoutDoc = new ListViewLayout(viewDocs);
+            var layoutDoc = new ListViewLayout(viewDocs, new Point(),new Size(100, Math.Min(50 *viewDocs.Count, 400)));
             Document.SetActiveLayout(layoutDoc.Document, true, true); 
 
             DisplayDocument(Document);
