@@ -22,9 +22,23 @@ namespace Dash
             {
                 return CreateCollectionSettingsLayout(layoutDocument);
             }
+            if (layoutDocument.DocumentType == RichTextBox.DocumentType)
+            {
+                return CreateRichTextSettingsLayout(layoutDocument);
+            }
 
             Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
-            return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
+            if (dataDocument != null)
+            {
+                return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
+            }
+            return null;
+        }
+
+        private static UIElement CreateRichTextSettingsLayout(DocumentController layoutDocument)
+        {
+            var context = new Context();
+            return new RichTextSettings(layoutDocument, context);
         }
 
         private static UIElement CreateCollectionSettingsLayout(DocumentController layoutDocument)

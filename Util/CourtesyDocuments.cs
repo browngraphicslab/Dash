@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
+using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -1167,6 +1169,15 @@ namespace Dash
                 grid.Children.Add(gridView);
                 if (isInterfaceBuilderLayout)
                 {
+                    var icon = new TextBlock()
+                    {
+                        Text = "▦",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
                     return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
@@ -1255,7 +1266,20 @@ namespace Dash
                 grid.Children.Add(listView);
                 if (isInterfaceBuilderLayout)
                 {
+<<<<<<< HEAD
                     return new SelectableContainer(grid, docController);
+=======
+                    var icon = new TextBlock()
+                    {
+                        Text = "🖹",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
+                    return new SelectableContainer(grid, docController, dataDocument);
+>>>>>>> b07256220705dc4e40381c645b1742d97713fcea
                 }
                 return grid;
             }
@@ -1326,6 +1350,17 @@ namespace Dash
             {
 
                 var grid = new Grid();
+<<<<<<< HEAD
+=======
+                
+                // bind the grid height
+                var heightController = GetHeightField(docController, context);
+                BindHeight(grid, heightController);
+
+                // bind the grid width
+                var widthController = GetWidthField(docController, context);
+                BindWidth(grid, widthController);
+>>>>>>> b07256220705dc4e40381c645b1742d97713fcea
                 LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
 
                 docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
@@ -1338,7 +1373,19 @@ namespace Dash
                 });
                 if (isInterfaceBuilderLayout)
                 {
+<<<<<<< HEAD
                     //DropControls controls = new DropControls(grid, docController);
+=======
+                    var icon = new TextBlock()
+                    {
+                        Text = "⊡",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
+>>>>>>> b07256220705dc4e40381c645b1742d97713fcea
                     return new SelectableContainer(grid, docController, dataDocument);
                 }
                 return grid;
@@ -1348,6 +1395,18 @@ namespace Dash
             {
                 var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
                 grid.Children.Clear();
+                if (isInterfaceBuilder)
+                {
+                    var icon = new TextBlock()
+                    {
+                        Text = "⊡",
+                        FontSize = 100,
+                        Foreground = new SolidColorBrush(Colors.LightBlue),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+                    grid.Children.Insert(0, icon);
+                }
                 foreach (var layoutDocument in layoutDocuments)
                 {
                     var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
@@ -1647,6 +1706,7 @@ namespace Dash
                 var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image1FieldKey), 0, 50, 200, 200);
                 var prototypeImage2Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey), 0, 250, 200, 200);
                 var prototypeAnnotatedLayout = new DocumentBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
+
                 var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey), 0, 0, 200, 50);
                 var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, true);
                 prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);

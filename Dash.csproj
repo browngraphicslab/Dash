@@ -127,9 +127,11 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Views\RichTextSettings.xaml.cs">
+      <DependentUpon>RichTextSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
-    <Compile Include="Util\CourtesyDocuments.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
@@ -436,6 +438,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SelectableContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RichTextSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
