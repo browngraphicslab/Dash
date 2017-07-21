@@ -19,6 +19,8 @@ namespace Dash
 
         public EditableTextBlock()
         {
+            Block.TextWrapping = TextWrapping.Wrap; 
+
             Box = new TextBox
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -34,12 +36,6 @@ namespace Dash
                 Box.Visibility = Visibility.Collapsed;
                 Block.Visibility = Visibility.Visible;
             };
-
-            //Box.PointerExited += (s, e) =>
-            //{
-            //    Box.Visibility = Visibility.Collapsed;
-            //    Block.Visibility = Visibility.Visible;
-            //};
 
             Block.Tapped += (s, e) =>
             {

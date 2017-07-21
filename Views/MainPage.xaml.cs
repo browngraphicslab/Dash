@@ -74,7 +74,7 @@ namespace Dash
             xCanvas.Children.Add(_radialMenu);
         }
 
-        
+
 
         public void AddOperator()
         {
@@ -168,7 +168,7 @@ namespace Dash
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true); 
+            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
             DisplayDocument(col);
         }
 
@@ -200,6 +200,7 @@ namespace Dash
 
         public void AddNotes()
         {
+            /* 
             DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
             DisplayDocument(rtfNote);
 
@@ -208,6 +209,30 @@ namespace Dash
 
             DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
             DisplayDocument(imageNote);
+            */
+
+            //List<object> randomList = new List<object> { "hi", "3", "hello", "ms - appx:///Assets/DefaultImage.png" };
+            List<object> randomList = new List<object> { 1,2,3 };
+            IEnumerable<FieldModelController> fms = Util.RawToFieldModelControllerFactory(randomList, true);
+
+            Key ListViewKey = new Key("fml", "Number1");
+            DocumentType ListType = new DocumentType("testingattentionpls", "List");
+            var fields = new Dictionary<Key, FieldModelController>
+            {
+                [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(double.NaN),
+                [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(double.NaN),
+                [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(new Point(0, 0)),
+                [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
+                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0)
+            };
+            fields.Add(ListViewKey, new ListFieldModelController<FieldModelController>(fms));
+            DocumentController Document = new DocumentController(fields, ListType);
+
+            IList<DocumentController> viewDocs = Util.FMControllerToCourtesyDocs(ref Document, fms);
+            var layoutDoc = new ListViewLayout(viewDocs);
+            Document.SetActiveLayout(layoutDoc.Document, true, true); 
+
+            DisplayDocument(Document);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
