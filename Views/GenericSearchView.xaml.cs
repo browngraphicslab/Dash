@@ -27,6 +27,8 @@ namespace Dash
             this.InitializeComponent();
             this.MakeCategories(categories);
             this.SetManipulation();
+            xSearch.TextChanged += XSearch_TextChanged;
+            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
         }
 
         private void MakeCategories(List<SearchCategoryItem> categories)
@@ -36,6 +38,21 @@ namespace Dash
                 _items.Add(category.Item, category);
                 xRootPivot.Items.Add(category.Item);
             }
+        }
+
+        private void XSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            this.UpdateList(args.QueryText);
+        }
+
+        /// <summary>
+        /// Updates items source of the current listview to reflect search results within the current category
+        /// </summary>
+        /// <param name="query"></param>
+        private void UpdateList(string query)
+        {
+            var results = GetMatches(query);
+            _items[xRootPivot.SelectedItem as PivotItem].NewContent = results;
         }
 
         /// <summary>
@@ -57,7 +74,27 @@ namespace Dash
         }
 
         /// <summary>
-        /// Returns operator types that match the query
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void XSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                if (sender.Text.Length > 0)
+                {
+                    sender.ItemsSource = GetMatches(sender.Text);
+                }
+                else
+                {
+                    sender.ItemsSource = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns results that match the query
         /// </summary>
         /// <param name="searchInput"></param>
         /// <returns></returns>
