@@ -108,7 +108,8 @@ namespace Dash
                 }
 
                 // add the document to the composite
-                var data = layoutContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+                //if (layoutContainer.DataDocument != null) context.AddDocumentContext(layoutContainer.DataDocument);
+                var data = layoutContainer.LayoutDocument.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
                 data?.AddDocument(layoutDocument);
             }
             else if (isDraggedFromLayoutBar)
@@ -156,8 +157,7 @@ namespace Dash
                 layoutDocument = new CollectionBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                var documentController = (fieldModelController as DocumentFieldModelController).Data;
-                layoutDocument = documentController.GetActiveLayout(context).Data;
+                layoutDocument = new DocumentBox(new DocumentReferenceController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
