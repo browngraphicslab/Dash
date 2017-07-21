@@ -75,37 +75,16 @@ namespace Dash
             xCanvas.Children.Add(_radialMenu);
         }
 
-        
 
-        public void AddOperator()
+        public void AddOperatorsFilter()
         {
-            //Create Operator document
-            var divideOp =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            DisplayDocument(divideOp);
-
-            var addOp =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new AddOperatorModelController(new OperatorFieldModel("Add")));
-            DisplayDocument(addOp);
-
-            //// add union operator for testing 
-            //var intersectOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(
-            //        new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            //DisplayDocument(intersectOpModel);
-
-            //var unionOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(
-            //        new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            //DisplayDocument(unionOpModel);
-
-            // add image url -> image operator for testing
-            //var imgOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(
-            //        new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            //DisplayDocument(imgOpModel);
+            if (!xCanvas.Children.Contains(OperatorsFilter.Instance))
+            {
+                xCanvas.Children.Add(OperatorsFilter.Instance);
+            } else
+            {
+                xCanvas.Children.Remove(OperatorsFilter.Instance);
+            }
         }
 
         /// <summary>

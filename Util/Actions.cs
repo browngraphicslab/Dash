@@ -23,20 +23,20 @@ namespace Dash
     public static class Actions
     {
        
-        private static SearchView _searchView = new SearchView();
+        //private static SearchView _searchView = new SearchView();
 
         public static void AddSearch(Canvas c, Point p)
         {
-            if (!c.Children.Contains(_searchView))
-            {
-                c.Children.Add(_searchView);
-                _searchView.SetPosition(p);
-                _searchView.IsDraggable = true;
-            }
-            else
-            {
-                c.Children.Remove(_searchView);
-            }
+            //if (!c.Children.Contains(_searchView))
+            //{
+            //    c.Children.Add(_searchView);
+            //    _searchView.SetPosition(p);
+            //    _searchView.IsDraggable = true;
+            //}
+            //else
+            //{
+            //    c.Children.Remove(_searchView);
+            //}
         }
 
 
@@ -94,9 +94,73 @@ namespace Dash
 
         public static void OnOperatorAdd(object obj)
         {
-            MainPage.Instance.AddOperator();
+            //MainPage.Instance.AddOperator();
+            MainPage.Instance.AddOperatorsFilter();
         }
 
+        public static void AddOperator(object obj)
+        {
+            DocumentController opModel = null;
+            var type = obj as string;
+            if (type == null) return;
+            if (type == "Divide")
+            {
+                opModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel);
+                //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+                view.DataContext = opvm;
+            }
+            else if (type == "Union")
+            {
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new UnionOperatorFieldModelController(new OperatorFieldModel(type)));
+                var unionView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var unionOpvm = new DocumentViewModel(opModel);
+                unionView.DataContext = unionOpvm;
+            }
+            else if (type == "Intersection")
+            {
+                // add union operator for testing 
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new IntersectionOperatorModelController(new OperatorFieldModel(type)));
+                var intersectView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var intersectOpvm = new DocumentViewModel(opModel);
+                intersectView.DataContext = intersectOpvm;
+            }
+            else if (type == "ImageToUri")
+            {
+                // add image url -> image operator for testing
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new ImageOperatorFieldModelController(new OperatorFieldModel(type)));
+                var imgOpView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var imgOpvm = new DocumentViewModel(opModel);
+                imgOpView.DataContext = imgOpvm;
+            }
+            if (opModel != null)
+                MainPage.Instance.DisplayDocument(opModel);
+        }
         
         public static void AddCollection(object obj)
         {
