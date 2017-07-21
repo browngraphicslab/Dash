@@ -64,6 +64,20 @@ namespace Dash
         }
 
         /// <summary>
+        /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
+        /// </summary>
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType : class, IController
+        {
+            List< string > ids = new List<string>();
+            foreach (var c in _controllers)
+                if (c.Value is TControllerType && !ids.Contains(c.Value.GetId()))
+                {
+                    ids.Add(c.Value.GetId());
+                    yield return c.Value as TControllerType;
+                }
+        }
+
+        /// <summary>
         /// Returns the requested controller if it exists otherwise returns null
         /// </summary>
         /// <param name="controllerId"></param>

@@ -103,7 +103,6 @@ namespace Dash
                 // apply position if we are dropping on a freeform
                 if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
                 {
-
                     var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
                     layoutDocument.SetField(DashConstants.KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
