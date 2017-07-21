@@ -31,9 +31,6 @@ namespace Dash
 
         public FreeformSettings(DocumentController layoutDocument, DocumentController dataDocument, Context context): this()
         {
-            _context = context;
-            _dataDocument = dataDocument;
-
             if (dataDocument == null)
             {
                 xCollapsableDocRow.Height = new GridLength(0);
