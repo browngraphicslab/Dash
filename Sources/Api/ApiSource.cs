@@ -247,8 +247,7 @@ namespace Dash {
 
                 // parse JSON result. place first-tier documents in collection view. if there are none, simply
                 // put a single document into the collection view
-                throw new NotImplementedException();
-                DocumentController documentModel = null; //JsonToDashUtil.Parse(response.Content.ToString());
+                DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), docController.GetId());
 
                 var layDocCtrl = new DocumentController(new Dictionary<Key, FieldModelController>(), CollectionBox.DocumentType);
                 var cbox = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[0]));
@@ -265,7 +264,7 @@ namespace Dash {
 
                 // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
                 // the parser should be reworked to auto do this or do it in a more user-friendly way
-                foreach (var f in documentModel.EnumFields()) {
+                foreach (var f in documentController.EnumFields()) {
                     Debug.WriteLine(f.Value.GetType().ToString());
                     if (f.Value is DocumentFieldModelController)
                         ResponseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
@@ -274,7 +273,7 @@ namespace Dash {
                 } 
 
                 if (ResponseAsDocuments.Count == 0)
-                    ResponseAsDocuments.Add(documentModel);
+                    ResponseAsDocuments.Add(documentController);
 
                 var newresponseDocs = new List<DocumentController>();
                 foreach (var doc in ResponseAsDocuments)

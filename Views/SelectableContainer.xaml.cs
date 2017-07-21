@@ -56,7 +56,7 @@ namespace Dash
             get { return _isSelected; }
             set
             {
-                _isSelected = _parentContainer == null ? true : value;
+                _isSelected = IsRoot() || value;
                 ContentElement.IsHitTestVisible = value;
                 if (_isSelected)
                 {
@@ -114,10 +114,15 @@ namespace Dash
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             IsSelected = false;
             SetContent();
-            if (_parentContainer == null)
+            if (IsRoot())
             {
                 OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
             }
+        }
+
+        private bool IsRoot()
+        {
+            return _parentContainer == null;
         }
 
         // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
@@ -144,9 +149,9 @@ namespace Dash
                 _parentContainer?.SetSelectedContainer(this);
                 _parentContainer?.FireSelectionChanged(this);
                 IsLowestSelected = true;
-                if (_parentContainer == null)
+                if (IsRoot())
                 {
-                    OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
+                    FireSelectionChanged(this);
                 }
             }
             SetSelectedContainer(null);
@@ -231,6 +236,7 @@ namespace Dash
             }
             return actualChange;
         }
+
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
             var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);

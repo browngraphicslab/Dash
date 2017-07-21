@@ -451,9 +451,11 @@ namespace Dash
         /// string key of the field and value is the rendered UI element representing the value.
         /// </summary>
         /// <returns></returns>
-        private FrameworkElement makeAllViewUI(Context context, bool isInterfaceBuilderLayout = false)
+        private FrameworkElement makeAllViewUI(Context context)
         {
             var sp = new StackPanel();
+            var isInterfaceBuilder = false;
+
             foreach (var f in EnumFields())
             {
                 if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) ||
@@ -472,7 +474,7 @@ namespace Dash
 
                     hstack.Children.Add(label);
 
-                    var ele = dBox.MakeViewUI(context, isInterfaceBuilderLayout);
+                    var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
 
                     ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
@@ -482,7 +484,7 @@ namespace Dash
                 else if (f.Value is DocumentFieldModelController)
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                    sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilderLayout)));
+                    sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
                     (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
                     (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                 }
@@ -490,7 +492,7 @@ namespace Dash
                 {
                     foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
-                        sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilderLayout)));
+                        sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
                         (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
                         (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                     }
@@ -562,11 +564,12 @@ namespace Dash
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
 
-                if (doc.Data.DocumentType == DashConstants.DocumentTypeStore.DefaultLayout)
+                if (doc.Data.DocumentType == DefaultLayout.DocumentType)
                 {
                     if (isInterfaceBuilder)
                     {
-                        return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
+                        var activeLayout = this.GetActiveLayout(context).Data;
+                        return new SelectableContainer(makeAllViewUI(context), activeLayout, this);
                     }
                     return makeAllViewUI(context);
                 }
@@ -574,6 +577,7 @@ namespace Dash
                 
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
+            Debug.Assert(false, "Everything should have an active layout maybe");
             if (isInterfaceBuilder)
             {
                 return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
