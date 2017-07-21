@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
+using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -25,6 +26,8 @@ namespace Dash
     {
         private RichTextFieldModelController _richTextFieldModelController;
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
+        private int _selectionStart;
+        private int _selectionEnd;
 
         private ITextSelection _selectedText
         {
@@ -38,8 +41,19 @@ namespace Dash
             Loaded += OnLoaded;
             xRichEitBox.SelectionChanged += XRichEitBox_SelectionChanged;
             xRichEitBox.LostFocus += XRichEitBox_LostFocus;
+            xRichEitBox.GotFocus += XRichEitBoxOnGotFocus;
             xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
             _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
+        }
+
+        private void XRichEitBoxOnGotFocus(object sender, RoutedEventArgs routedEventArgs)
+        {
+            ITextSelection selectedText = xRichEitBox.Document.Selection;
+            if (selectedText != null)
+            {
+                xRichEitBox.Document.Selection.SetRange(_selectionStart, _selectionEnd);
+                selectedText.CharacterFormat.BackgroundColor = Colors.White;
+            }
         }
 
         private void XRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
@@ -55,7 +69,16 @@ namespace Dash
             _richTextFieldModelController.RichTextData = richText;
             xFormatRow.Height = new GridLength(0);
 
-            xRichEitBox.ManipulationMode = ManipulationModes.All; 
+            xRichEitBox.ManipulationMode = ManipulationModes.All;
+
+            _selectionEnd = xRichEitBox.Document.Selection.EndPosition;
+            _selectionStart = xRichEitBox.Document.Selection.StartPosition;
+
+            ITextSelection selectedText = xRichEitBox.Document.Selection;
+            if (selectedText != null)
+            {
+                selectedText.CharacterFormat.BackgroundColor = Colors.LightGray;
+            }
         }
 
         private async Task<string> LoadText()
