@@ -14,7 +14,9 @@
     <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -26,8 +28,8 @@
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch"
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
-                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}">
-            
+                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
+
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <!--Make the list view items stretch to the full width of the list view-->
@@ -51,7 +53,15 @@
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
-
         </ListView>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="xNewKeyField" TextAlignment="Left" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown" BorderBrush="LightBlue" ></TextBox>
+            <TextBox x:Name="xNewValueField" TextAlignment="Left" PlaceholderText="Value to add" KeyDown="ValueField_KeyDown" BorderBrush="LightBlue" Grid.Column="1"></TextBox>
+            <!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>-->
+        </Grid>
     </Grid>
 </UserControl>

@@ -18,6 +18,7 @@ namespace Dash
         /// <param name="numberFieldModel">The model which this controller will be operating over</param>
         private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
         {
+            Data = numberFieldModel.Data;
         }
 
         /// <summary>

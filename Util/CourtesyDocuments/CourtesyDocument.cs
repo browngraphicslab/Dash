@@ -67,10 +67,10 @@ namespace Dash
             dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
 
-        protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c) where T : FrameworkElement;
+        protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
 
         protected static void AddBinding<T>(T element, DocumentController docController, Key k, Context context,
-            BindingDelegate<T> bindingDelegate) where T : FrameworkElement
+            BindingDelegate<T> bindingDelegate)
         {
             bindingDelegate.Invoke(element, docController, context);
             docController.AddFieldUpdatedListener(k,

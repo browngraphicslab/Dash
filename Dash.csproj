@@ -129,6 +129,7 @@
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Util\CourtesyDocuments.cs" />
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
@@ -148,6 +149,7 @@
     <Compile Include="Util\CourtesyDocuments\StackingPanel.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
     <Compile Include="Util\CourtesyDocuments\TwoImages.cs" />
+    <Compile Include="Util\EditableTextBlock.cs" />
     <Compile Include="Util\DropControls.cs" />
     <Compile Include="Views\SelectableContainer.xaml.cs">
       <DependentUpon>SelectableContainer.xaml</DependentUpon>
