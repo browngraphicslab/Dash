@@ -33,8 +33,6 @@ namespace Dash.Views
             _context = context;
             _dataDocument = dataDocument;
 
-            xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
-            xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
             SetupActiveLayoutComboBox(dataDocument, context);
 
             xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;

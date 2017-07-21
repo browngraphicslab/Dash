@@ -219,7 +219,8 @@ namespace Dash
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
             }
-            BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+            if (sourceBinding != null)
+                BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
         }
 
         protected static void BindTextAllignment(FrameworkElement element, DocumentController docController, Context context)

@@ -34,7 +34,7 @@
                 </TextBlock>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" Width="250">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

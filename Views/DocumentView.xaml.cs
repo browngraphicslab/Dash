@@ -14,6 +14,7 @@ using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
+using Dash.Controllers.Operators;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -387,17 +388,50 @@ namespace Dash
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
         {
             var tb = sender as TextBox;
+            if (!(tb.Text.EndsWith("\r")))
+                return;
             var docController = (DataContext as DocumentViewModel).DocumentController;
             foreach (var tag in (sender as TextBox).Text.Split('#'))
                 if (tag.Contains("="))
                 {
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
                     var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
-                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ').TrimStart(' ');
-                    var tagField = docController.GetDereferencedField(new Key(word, word), null);
-                    if (tagField is TextFieldModelController)
-                        (tagField as TextFieldModelController).Data = valu;
-                    else docController.SetField(new Key(word, word), new TextFieldModelController(valu), true);
+                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key = new Key(word, word);
+                    foreach (var keyFields in docController.EnumFields())
+                        if (keyFields.Key.Name == word)
+                        {
+                            key = keyFields.Key;
+                            break;
+                        }
+
+                    if (valu.StartsWith("@") && !valu.Contains("="))
+                    {
+                        docController.GetPrototype().SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(docController.GetPrototype().GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
+                        var keyField = docController.GetDereferencedField(key, new Context(docController));
+                        Debug.WriteLine(keyField.ToString());
+                    }
+                    else if (valu.StartsWith("@"))
+                    {
+                        var eqPos2 = valu.IndexOfAny(new char[] { '=' });
+                        var fieldName = valu.Substring(1, eqPos2-1).TrimEnd(' ').TrimStart(' ');
+                        var fieldValue = valu.Substring(eqPos2 + 1, Math.Max(0, valu.Length - eqPos2 - 1)).Trim(' ', '\r');
+
+                        foreach (var doc in ContentController.GetControllers<DocumentController>())
+                            foreach (var field in doc.EnumFields())
+                                if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
+                                {
+                                    docController.SetField(key, new DocumentFieldModelController(doc), true);
+                                    break;
+                                }
+                    }
+                    else
+                    {
+                        var tagField = docController.GetDereferencedField(new Key(word, word), null);
+                        if (tagField is TextFieldModelController)
+                            (tagField as TextFieldModelController).Data = valu;
+                        else docController.SetField(key, new TextFieldModelController(valu), true);
+                    }
                 }
         }
 

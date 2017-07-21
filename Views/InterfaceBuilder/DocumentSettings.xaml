@@ -7,93 +7,61 @@
     xmlns:local="using:Dash"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="230">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" BorderBrush="Transparent">
-        <Grid.Background>
-            <SolidColorBrush Color="LightBlue" Opacity="0.75"></SolidColorBrush>
-        </Grid.Background>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="75" />
-            <RowDefinition Height="30" />
-            <RowDefinition />
-            <RowDefinition Height="100" />
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
-            <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
-                <Run Text="SETTINGS" />
-            </TextBlock>
-        </Grid>
-        <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock>
-                    <Run Text="Type" />
-                </TextBlock>
-                <TextBlock Margin="50,0,0,0">
-                    <Run Text="Document" />
-                </TextBlock>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Row="2">
-            <ScrollViewer VerticalScrollMode="Auto" VerticalScrollBarVisibility="Visible" IsVerticalRailEnabled="True" Margin="10,0,0,0">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+    <Grid HorizontalAlignment="Stretch" Height="Auto" BorderBrush="Transparent">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
 
-                    <!--EDIT-->
-                    <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <Button Margin="0,5,0,10" Height="35" HorizontalAlignment="Stretch" Content="EDIT">
-                            <Button.Background>
-                                <SolidColorBrush Color="SteelBlue" Opacity="0.75"></SolidColorBrush>
-                            </Button.Background>
-                        </Button>
-                    </Grid>
+            <!--EDIT-->
+            <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Button Margin="0,5,0,10" Height="35" HorizontalAlignment="Stretch" Content="EDIT">
+                    <Button.Background>
+                        <SolidColorBrush Color="SteelBlue" Opacity="0.75"></SolidColorBrush>
+                    </Button.Background>
+                </Button>
+            </Grid>
 
-                    <!--LAYOUT-->
-                    <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <local:SettingsPaneBlock>
-                            <local:SettingsPaneBlock.MainContent>
-                                <Grid Margin="0,5,0,5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="4.5*" />
-                                        <ColumnDefinition Width="1*" />
-                                    </Grid.ColumnDefinitions>
-                                    <!--COMBO BOX-->
-                                    <Grid Grid.Column="0">
-                                        <ComboBox x:Name="xActiveLayoutComboBox" HorizontalAlignment="Stretch"
-                                                  BorderBrush="Transparent" FontSize="12" SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
-                                            <ComboBox.ItemTemplate >
-                                                <DataTemplate>
-                                                    <TextBlock Text="{Binding DocumentType.Type}"></TextBlock>
-                                                </DataTemplate>
-                                            </ComboBox.ItemTemplate>
-                                        </ComboBox>
-                                    </Grid>
-                                    <!--ADD LAYOUT BUTTON-->
-                                    <Grid Grid.Column="1">
-                                        <Button x:Name="xAddLayoutButton" Background="LightSteelBlue">
-                                            <SymbolIcon Symbol="Add"></SymbolIcon>
-                                        </Button>
-                                    </Grid>
-                                </Grid>
-                            </local:SettingsPaneBlock.MainContent>
-                            <local:SettingsPaneBlock.Title>LAYOUT</local:SettingsPaneBlock.Title>
-                        </local:SettingsPaneBlock>
-                    </Grid>
-
-                    <!--SIZE-->
-                    <Grid x:Name="xSizeRow" Grid.Row="2" Width="230" HorizontalAlignment="Left"
-                          VerticalAlignment="Center" />
-
-                    <!--POSITION-->
-                    <Grid x:Name="xPositionRow" Grid.Row="3" Width="230" HorizontalAlignment="Left"
-                          VerticalAlignment="Center" />
-                </Grid>
-            </ScrollViewer>
+            <!--LAYOUT-->
+            <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <local:SettingsPaneBlock>
+                    <local:SettingsPaneBlock.MainContent>
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="4.5*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            
+                            <!--COMBO BOX-->
+                            <Grid Grid.Column="0">
+                                <ComboBox x:Name="xActiveLayoutComboBox" HorizontalAlignment="Stretch"
+                                          BorderBrush="Transparent" FontSize="12"
+                                          SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding DocumentType.Type}"></TextBlock>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+                            
+                            <!--ADD LAYOUT BUTTON-->
+                            <Grid Grid.Column="1">
+                                <Button x:Name="xAddLayoutButton" Background="LightSteelBlue">
+                                    <SymbolIcon Symbol="Add"></SymbolIcon>
+                                </Button>
+                            </Grid>
+                            
+                        </Grid>
+                    </local:SettingsPaneBlock.MainContent>
+                    <local:SettingsPaneBlock.Title>LAYOUT</local:SettingsPaneBlock.Title>
+                </local:SettingsPaneBlock>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

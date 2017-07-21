@@ -62,7 +62,7 @@ namespace Dash
             };
             Document = new DocumentController(fields, DocumentType);
             Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
-            Document.SetActiveLayout(new DefaultLayout(0, 0, 550, 400).Document, true, true);
+            Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
         /// <summary>

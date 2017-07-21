@@ -219,99 +219,13 @@ namespace Dash {
             responseAsDocuments = new List<DocumentController>();
             var apiDocType = new DocumentType(apiURI.Host.ToString().Split('.').First(), apiURI.Host.ToString().Split('.').First());
             try {
-                /*
-                var resultObjects = AllChildren(JObject.Parse(text.Text))
-                    .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
-                    .Children<JObject>();
 
-                int max = 100000, i = 0; // this limits the # of results returned
-                // loop through all instantiated objects, making 
-                foreach (JObject result in resultObjects) {
-                    if (i > max)
-                        break;
-                    i++;
-                    Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
-                    foreach (JProperty property in result.Properties()) {
-                        //Debug.WriteLine(property.Name + ": " + property.Value);
-
-                        // TODO: we can add special viewmodels for each of the JOBJECT types here
-                        //       concerns: rabbit hole-ing?
-                        toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
-                    }
-
-                    DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
-                    responseAsDocuments.Add(Document); // /*apiURL.Host.ToString() DocumentType.DefaultType));
-                }
-                    
-                */
-
-                // parse JSON result. place first-tier documents in collection view. if there are none, simply
-                // put a single document into the collection view
                 DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), docController.GetId());
 
-                var layDocCtrl = new DocumentController(new Dictionary<Key, FieldModelController>(), CollectionBox.DocumentType);
-                var cbox = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[0]));
-                var cfmc = new DocumentFieldModelController(cbox.Document);
-                var widthFieldCtrl = new NumberFieldModelController(200);
-                var heightFieldCtrl = new NumberFieldModelController(200);
-                layDocCtrl.SetField(DashConstants.KeyStore.ActiveLayoutKey, cfmc, false);
-                layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
-                layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
-                
-                var dataFieldModelController = new DocumentCollectionFieldModelController(new DocumentController[] { });
-                ContentController.AddController(dataFieldModelController);
-                layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
+                ResponseAsDocuments = new List<DocumentController>{ documentController };
 
-                // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
-                // the parser should be reworked to auto do this or do it in a more user-friendly way
-                foreach (var f in documentController.EnumFields()) {
-                    Debug.WriteLine(f.Value.GetType().ToString());
-                    if (f.Value is DocumentFieldModelController)
-                        ResponseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
-                    if (f.Value is DocumentCollectionFieldModelController)
-                        ResponseAsDocuments = (f.Value as DocumentCollectionFieldModelController).GetDocuments();
-                } 
-
-                if (ResponseAsDocuments.Count == 0)
-                    ResponseAsDocuments.Add(documentController);
-
-                var newresponseDocs = new List<DocumentController>();
-                foreach (var doc in ResponseAsDocuments)
-                {
-                    // make a delegate of each response document that will handle its visual display
-                    var visualDoc = doc.MakeDelegate();
-                    var prototypeFieldController = new DocumentFieldModelController(layDocCtrl);
-                    // make a delegate of the prototype layout that each visual doc will use and mask the Position field so that each 
-                    // document can be moved independently
-                    var layoutDelegate = layDocCtrl.MakeDelegate();
-                    visualDoc.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDelegate), true);
-                    layoutDelegate.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
-                    newresponseDocs.Add(visualDoc);
-                }
-
-                ResponseAsDocuments = newresponseDocs;
-
-
-                // at this point resultAsDocuments contains a list of all JSON results formatted
-                // as documents! They all have the same type, indexed by api URL you could store 
-                // this in a listview node or something wohoo
-                //
-                // TODO: generate unique identifiers for each ApiSource s.t. if two ApiSources had
-                // the same URL, the DocumentModel can still distinguish them
-
-                // then try and parse it as a single object
             } catch (InvalidOperationException e) {
-                JObject result = JObject.Parse(response.Content.ToString());
-                Dictionary<Key, FieldModelController> toAdd = new Dictionary<Key, FieldModelController>();
-                foreach (JProperty property in result.Properties()) {
-                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModelController(property.Value.ToString()));
-                }
-
-                // at this point, resultAsDocument is a new document
-                //
-                // TODO: unique identifiers as above
-                DocumentController Document = new DocumentController(toAdd, new DocumentType(apiURI.Host));
-                responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
+                Debug.Fail("the json util failed");
             }
 
             // add document to children
