@@ -408,5 +408,23 @@ namespace Dash
             }
             return result;
         }
+
+        // TODO move this somewhere else 
+        public static DocumentController MakeListView(List<object> randomList)
+        {
+            IEnumerable<FieldModelController> fms = Util.RawToFieldModelControllerFactory(randomList, true);
+
+            Key ListViewKey = new Key("what", "ListKey");                                                    // TODO give it a proper key 
+            DocumentType ListType = new DocumentType("testingattentionpls", "List");                        // TODO give it proper document type 
+            var fields = new Dictionary<Key, FieldModelController>();
+            fields.Add(ListViewKey, new ListFieldModelController<FieldModelController>(fms));
+            DocumentController Document = new DocumentController(fields, ListType);
+
+            IList<DocumentController> viewDocs = Util.FMControllerToCourtesyDocs(ref Document, fms);
+            var layoutDoc = new ListViewLayout(viewDocs, new Point(), new Size(100, Math.Min(50 * viewDocs.Count, 400)));
+            Document.SetActiveLayout(layoutDoc.Document, true, true);
+
+            return Document; 
+        }
     }
 }
