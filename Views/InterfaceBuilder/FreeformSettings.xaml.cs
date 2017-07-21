@@ -35,10 +35,12 @@ namespace Dash
             {
                 xCollapsableDocRow.Height = new GridLength(0);
             }
-
+            else
+            {
+                xDocRow.Children.Add(new DocumentSettings(layoutDocument, dataDocument, context));
+            }
             xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
-            xDocRow.Children.Add(new DocumentSettings(layoutDocument,dataDocument,context));
         }
     }
 }
