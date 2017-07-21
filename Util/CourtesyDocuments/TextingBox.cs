@@ -60,6 +60,20 @@ namespace Dash
             return prototypeDocument;
         }
 
+        protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        {
+            CourtesyDocument.SetupBindings(element, docController, context);
+
+            if (element is TextBox)
+            {
+                var textBox = element as TextBox;
+                AddBinding(textBox, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
+                AddBinding(textBox, docController, FontWeightKey, context, BindFontWeight);
+                AddBinding(textBox, docController, FontSizeKey, context, BindFontSize);
+                AddBinding(textBox, docController, TextAlignmentKey, context, BindTextAllignment);
+            }
+        }
+
         public override FrameworkElement makeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
         {
@@ -80,66 +94,42 @@ namespace Dash
             Debug.Assert(textField != null);
             if (textField is TextFieldModelController)
             {
-                var textBox = new TextBox();
+                TextBox textBox = new TextBox();
+                SetupBindings(textBox, docController, context);
+                tb = textBox;
                 textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
                 textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                tb = textBox;
-                tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-                tb.VerticalAlignment = VerticalAlignment.Stretch;
-                textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
-                var textFieldModelController = textField as TextFieldModelController;
-                BindTextBoxSource(tb, textFieldModelController);
+                //textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
             }
             else if (textField is NumberFieldModelController)
             {
-                var textBox = new TextBox();
+                TextBox textBox = new TextBox();
+                SetupBindings(textBox, docController, context);
+                tb = textBox;
+                textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+                textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
                 textBox.BorderThickness = new Thickness(5);
                 textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
                 textBox.AcceptsReturn = true;
-                tb = textBox;
-                var numFieldModelController = textField as NumberFieldModelController;
-                BindTextBoxSource(tb, numFieldModelController);
             }
-            else if (textField is RichTextFieldModelController)
-            {
-                tb = new TextBlock();
-                var richTextFieldModelController = textField as RichTextFieldModelController;
-                BindTextBlockSource(tb, richTextFieldModelController);
-            }
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey,
-                delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                {
-                    var textField2 = GetTextField(sender, args.Context);
-                    if (textField2 is TextFieldModelController)
-                    {
-                        BindTextBoxSource(tb, textField2 as TextFieldModelController);
-                    }
-                    if (textField2 is NumberFieldModelController)
-                    {
-                        BindTextBoxSource(tb, textField2 as NumberFieldModelController);
-                    }
-                    else if (textField is RichTextFieldModelController)
-                    {
-                        BindTextBlockSource(tb, textField2 as RichTextFieldModelController);
-                    }
-                });
-
-            // bind the text height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(tb, heightController);
-
-            // bind the text width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(tb, widthController);
-
-            var fontWeightController = GetFontWeightField(docController, context);
-            BindFontWeight(tb, fontWeightController);
-
-            var fontSizeController = GetFontSizeField(docController, context);
-            BindFontSize(tb, fontSizeController);
-
-            var textAlignmentController = GetTextAlignmentField(docController, context);
-            BindTextAlignment(tb, textAlignmentController);
+            
+            //docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey,
+            //    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+            //    {
+            //        var textField2 = GetTextField(sender, args.Context);
+            //        if (textField2 is TextFieldModelController)
+            //        {
+            //            BindTextBoxSource(tb, textField2 as TextFieldModelController);
+            //        }
+            //        if (textField2 is NumberFieldModelController)
+            //        {
+            //            BindTextBoxSource(tb, textField2 as NumberFieldModelController);
+            //        }
+            //        else if (textField is RichTextFieldModelController)
+            //        {
+            //            BindTextBlockSource(tb, textField2 as RichTextFieldModelController);
+            //        }
+            //    });
 
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
@@ -148,33 +138,33 @@ namespace Dash
                 BindOperationInteractions(tb, referenceToText);
             }
 
-            var doc = referenceToText.GetDocumentController(context);
-            doc.AddFieldUpdatedListener(referenceToText.FieldKey, delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-            {
-                Debug.Assert(args.Reference.FieldKey.Equals(referenceToText.FieldKey));
-                string id = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
-                Debug.Assert(id.Equals(referenceToText.GetDocumentController(context).GetId()));
-                if (args.Action != DocumentController.FieldUpdatedAction.Update)
-                {
-                    var field = GetTextField(docController, args.Context);
-                    Debug.Assert(field != null);
-                    if (field is TextFieldModelController)
-                    {
-                        var textFieldModelController = field as TextFieldModelController;
-                        BindTextBoxSource(tb, textFieldModelController);
-                    }
-                    else if (field is NumberFieldModelController)
-                    {
-                        var numFieldModelController = field as NumberFieldModelController;
-                        BindTextBoxSource(tb, numFieldModelController);
-                    }
-                    else if (field is RichTextFieldModelController)
-                    {
-                        var richTextFieldModelController = field as RichTextFieldModelController;
-                        BindTextBlockSource(tb, richTextFieldModelController);
-                    }
-                }
-            });
+            //var doc = referenceToText.GetDocumentController(context);
+            //doc.AddFieldUpdatedListener(referenceToText.FieldKey, delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+            //{
+            //    Debug.Assert(args.Reference.FieldKey.Equals(referenceToText.FieldKey));
+            //    string id = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
+            //    Debug.Assert(id.Equals(referenceToText.GetDocumentController(context).GetId()));
+            //    if (args.Action != DocumentController.FieldUpdatedAction.Update)
+            //    {
+            //        var field = GetTextField(docController, args.Context);
+            //        Debug.Assert(field != null);
+            //        if (field is TextFieldModelController)
+            //        {
+            //            var textFieldModelController = field as TextFieldModelController;
+            //            BindTextBoxSource(tb, textFieldModelController);
+            //        }
+            //        else if (field is NumberFieldModelController)
+            //        {
+            //            var numFieldModelController = field as NumberFieldModelController;
+            //            BindTextBoxSource(tb, numFieldModelController);
+            //        }
+            //        else if (field is RichTextFieldModelController)
+            //        {
+            //            var richTextFieldModelController = field as RichTextFieldModelController;
+            //            BindTextBlockSource(tb, richTextFieldModelController);
+            //        }
+            //    }
+            //});
 
             if (isInterfaceBuilderLayout)
             {
@@ -184,6 +174,89 @@ namespace Dash
 
             return tb;
         }
+        #region Bindings
+
+        protected static void BindTextSource(TextBox textBox, DocumentController docController, Context context)
+        {
+            var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+            if (data is TextFieldModelController)
+            {
+                var textData = data as TextFieldModelController;
+                var sourceBinding = new Binding
+                {
+                    Source = textData,
+                    Path = new PropertyPath(nameof(textData.Data)),
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                textBox.SetBinding(TextBox.TextProperty, sourceBinding);
+            }
+            else if (data is NumberFieldModelController)
+            {
+                var numberData = data as NumberFieldModelController;
+                var sourceBinding = new Binding
+                {
+                    Source = numberData,
+                    Path = new PropertyPath(nameof(numberData.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new StringToDoubleConverter(0),
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+                textBox.SetBinding(TextBox.TextProperty, sourceBinding);
+            }
+        }
+
+        protected static void BindTextAllignment(TextBox textBox, DocumentController docController, Context context)
+        {
+            var textAlignmentData = docController.GetDereferencedField(TextAlignmentKey, context) as TextFieldModelController;
+            if (textAlignmentData == null)
+            {
+                return;
+            }
+            var alignmentBinding = new Binding
+            {
+                Source = textAlignmentData,
+                Path = new PropertyPath(nameof(textAlignmentData.Data)),
+                Mode = BindingMode.TwoWay,
+                Converter = new StringToEnumConverter<TextAlignment>()
+            };
+            textBox.SetBinding(TextBox.TextAlignmentProperty, alignmentBinding);
+        }
+
+        protected static void BindFontWeight(TextBox textBox, DocumentController docController, Context context)
+        {
+            var fontWeightData = docController.GetDereferencedField(FontWeightKey, context) as NumberFieldModelController;
+            if (fontWeightData == null)
+            {
+                return;
+            }
+            var fontWeightBinding = new Binding
+            {
+                Source = fontWeightData,
+                Path = new PropertyPath(nameof(fontWeightData.Data)),
+                Mode = BindingMode.TwoWay,
+                Converter = new DoubleToFontWeightConverter()
+            };
+            textBox.SetBinding(Control.FontWeightProperty, fontWeightBinding);
+        }
+
+        protected static void BindFontSize(TextBox textBox, DocumentController docController, Context context)
+        {
+            var fontSizeData = docController.GetDereferencedField(FontSizeKey, context) as NumberFieldModelController;
+            if (fontSizeData == null)
+            {
+                return;
+            }
+            var fontSizeBinding = new Binding
+            {
+                Source = fontSizeData,
+                Path = new PropertyPath(nameof(fontSizeData.Data)),
+                Mode = BindingMode.TwoWay,
+            };
+            textBox.SetBinding(Control.FontSizeProperty, fontSizeBinding);
+        }
+
+        #endregion
 
 
         #region GettersAndSetters
@@ -237,258 +310,6 @@ namespace Dash
         {
             var currentFontWeightField = new NumberFieldModelController(fontWeight);
             docController.SetField(FontWeightKey, currentFontWeightField, forceMask); // set the field here so that forceMask is respected
-        }
-
-        #endregion
-
-        #region Bindings
-
-        protected static void BindTextAlignment(FrameworkElement renderElement,
-            NumberFieldModelController textAlignmentController)
-        {
-            if (textAlignmentController == null) throw new ArgumentNullException(nameof(textAlignmentController));
-            var alignmentBinding = new Binding
-            {
-                Source = textAlignmentController,
-                Path = new PropertyPath(nameof(textAlignmentController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = new IntToTextAlignmentConverter()
-            };
-            if (renderElement is TextBlock)
-            {
-                renderElement.SetBinding(TextBlock.TextAlignmentProperty, alignmentBinding);
-            }
-            else if (renderElement is TextBox)
-            {
-                renderElement.SetBinding(TextBox.TextAlignmentProperty, alignmentBinding);
-            }
-            else
-            {
-                Debug.Assert(false, $"we don't support alignment for elements of type {renderElement.GetType()}");
-            }
-        }
-
-        protected static void BindFontWeight(FrameworkElement renderElement,
-            NumberFieldModelController fontWeightController)
-        {
-            if (fontWeightController == null) throw new ArgumentNullException(nameof(fontWeightController));
-            var fontWeightBinding = new Binding
-            {
-                Source = fontWeightController,
-                Path = new PropertyPath(nameof(fontWeightController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = new DoubleToFontWeightConverter()
-            };
-            if (renderElement is TextBlock)
-            {
-                renderElement.SetBinding(Control.FontWeightProperty, fontWeightBinding);
-            }
-            else if (renderElement is TextBox)
-            {
-                renderElement.SetBinding(Control.FontWeightProperty, fontWeightBinding);
-            }
-            else
-            {
-                Debug.Assert(false, $"we don't support fontweight for elements of type {renderElement.GetType()}");
-            }
-        }
-
-        protected static void BindFontSize(FrameworkElement renderElement,
-            NumberFieldModelController sizeController)
-        {
-            if (sizeController == null) throw new ArgumentNullException(nameof(sizeController));
-            var fontSizeBinding = new Binding
-            {
-                Source = sizeController,
-                Path = new PropertyPath(nameof(sizeController.Data)),
-                Mode = BindingMode.TwoWay,
-            };
-            if (renderElement is TextBlock)
-            {
-                renderElement.SetBinding(Control.FontSizeProperty, fontSizeBinding);
-            }
-            else if (renderElement is TextBox)
-            {
-                renderElement.SetBinding(Control.FontSizeProperty, fontSizeBinding);
-            }
-            else
-            {
-                Debug.Assert(false, $"we don't support fontsize for elements of type {renderElement.GetType()}");
-            }
-        }
-
-        private static void BindTextBlockSource(FrameworkElement renderElement, RichTextFieldModelController fieldModelController)
-        {
-            var sourceBinding = new Binding
-            {
-                Source = fieldModelController,
-                Path = new PropertyPath(nameof(fieldModelController.RichTextData))
-            };
-            renderElement.SetBinding(TextBlock.TextProperty, sourceBinding);
-        }
-
-        private static void BindTextBlockSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
-        {
-            //<<<<<<< HEAD
-            var sourceBinding = new Binding
-            {
-                Source = fieldModelController,
-                Path = new PropertyPath(nameof(fieldModelController.Data))
-            };
-            renderElement.SetBinding(TextBlock.TextProperty, sourceBinding);
-            //=======
-            //                // the text field model controller provides us with the DATA
-            //                // the Document on this courtesty document provides us with the parameters to display the DATA.
-            //                // X, Y, Width, and Height etc....
-
-            //                // create the textblock
-            //                FrameworkElement tb = null;
-            //                FrameworkElement child = null;
-
-            //                // use the reference to the text to get the text field model controller
-            //                ReferenceFieldModelController refToData;
-            //                var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new TextFieldModelController("<default>"), out refToData);
-            //                var doc = refToData.GetDocumentController(context);
-            //                Debug.Assert(fieldModelController != null);
-            //                if (fieldModelController is TextFieldModelController)
-            //                {
-            //                    var textFieldModelController = fieldModelController as TextFieldModelController;
-            //                    var textBox = new TextBox();
-            //                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
-            //                    tb = textBox;
-            //                    textBox.AcceptsReturn = true;
-            //                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-            //                    tb.VerticalAlignment = VerticalAlignment.Stretch;
-            //                    // make text update when changed
-            //                    var sourceBinding = new Binding
-            //                    {
-            //                        Source = textFieldModelController,
-            //                        Path = new PropertyPath(nameof(textFieldModelController.Data)),
-            //                        Mode = BindingMode.TwoWay
-            //                    };
-            //                    tb.SetBinding(TextBox.TextProperty, sourceBinding);
-            //                    textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
-            //                    textBox.TextChanged += TextBox_TextChanged;
-            //                    textBox.Tag = refToData.GetDocumentController(context);
-            //                    child = textBox;
-            //                }
-            //                else if (fieldModelController is NumberFieldModelController)
-            //                {
-            //                    var numFieldModelController = fieldModelController as NumberFieldModelController;
-            //                    var textBox = new TextBox();
-            //                    textBox.ManipulationDelta += (s, e) => e.Handled = true;
-            //                    tb = textBox;
-            //                    textBox.AcceptsReturn = false;
-            //                    tb.HorizontalAlignment = HorizontalAlignment.Stretch;
-            //                    tb.VerticalAlignment = VerticalAlignment.Stretch;
-            //                    // make text update when changed
-            //                    var sourceBinding = new Binding
-            //                    {
-            //                        Source = numFieldModelController,
-            //                        Converter = new StringToDoubleConverter(0),
-            //                        Path = new PropertyPath(nameof(numFieldModelController.Data)),
-            //                        Mode = BindingMode.TwoWay,
-            //                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            //                    };
-            //                    tb.SetBinding(TextBox.TextProperty, sourceBinding);
-            //                    textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
-            //                    textBox.TextChanged += TextBox_NumberChanged;
-            //                    textBox.Tag = numFieldModelController;
-            //                    child = textBox;
-            //                }
-            //                else if (fieldModelController is DocumentFieldModelController)
-            //                {
-            //                    var documentfieldModelController = fieldModelController as DocumentFieldModelController;
-            //                    return documentfieldModelController.Data.MakeViewUI(context);
-            //                }
-
-            //                doc.DocumentFieldUpdated += delegate (DocumentController.DocumentFieldUpdatedEventArgs args)
-            //                {
-            //                    string s = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
-            //                    if (args.Action != DocumentController.FieldUpdatedAction.Update && s.Equals(refToData.GetDocumentController(context).GetId()) && args.Reference.FieldKey.Equals(refToData.FieldKey))
-            //                    {
-            //                        var fmc = args.Reference.DereferenceToRoot(new Context(args.Context));
-            //                        Binding sourceBinding = null;
-            //                        if (fmc is TextFieldModelController)
-            //                        {
-            //                            TextFieldModelController tfmc = fmc as TextFieldModelController;
-            //                            sourceBinding = new Binding
-            //                            {
-            //                                Source = fmc,
-            //                                Path = new PropertyPath(nameof(tfmc.Data)),
-            //                                Mode = BindingMode.TwoWay
-            //                            };
-            //                        }
-            //                        else if (fmc is NumberFieldModelController)
-            //                        {
-            //                            NumberFieldModelController nfmc = fmc as NumberFieldModelController;
-            //                            sourceBinding = new Binding
-            //                            {
-            //                                Source = nfmc,
-            //                                Converter = new StringToDoubleConverter(0),
-            //                                Path = new PropertyPath(nameof(nfmc.Data)),
-            //                                Mode = BindingMode.TwoWay,
-            //                                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            //                            };
-            //                        }
-            //                        child.SetBinding(TextBox.TextProperty, sourceBinding);
-            //                    }
-            //                };
-
-            //                var border = new Border();
-            //                border.Child = tb;
-
-            //                var fontWeightController = GetFontWeightFieldController(docController, context);
-            //                BindFontWeight(tb, fontWeightController);
-
-            //                var fontSizeController = GetFontSizeFieldController(docController, context);
-            //                BindFontSize(tb, fontSizeController);
-
-            //                var textAlignmentController = GetTextAlignmentFieldController(docController, context);
-            //                BindTextAlignment(tb, textAlignmentController);
-
-            //                tb = border;
-            //                // bind the text height
-            //                var heightController = GetHeightFieldController(docController, context);
-            //                BindHeight(tb, heightController);
-
-            //                // bind the text width
-            //                var widthController = GetWidthFieldController(docController, context);
-            //                BindWidth(tb, widthController);
-
-            //                // add bindings to work with operators
-            //                BindOperationInteractions(refToData.Resolve(context), tb);
-
-            //                border.BorderThickness = new Thickness(5);
-            //                border.BorderBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(50, 50, 50, 50));
-
-            //                return border;
-            //>>>>>>> origin/master
-        }
-
-        private static void BindTextBoxSource(FrameworkElement renderElement, TextFieldModelController fieldModelController)
-        {
-            var sourceBinding = new Binding
-            {
-                Source = fieldModelController,
-                Path = new PropertyPath(nameof(fieldModelController.Data)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
-        }
-
-        private static void BindTextBoxSource(FrameworkElement renderElement, NumberFieldModelController fieldModelController)
-        {
-            var sourceBinding = new Binding
-            {
-                Source = fieldModelController,
-                Path = new PropertyPath(nameof(fieldModelController.Data)),
-                Mode = BindingMode.TwoWay,
-                Converter = new StringToDoubleConverter(0),
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            renderElement.SetBinding(TextBox.TextProperty, sourceBinding);
         }
 
         #endregion
