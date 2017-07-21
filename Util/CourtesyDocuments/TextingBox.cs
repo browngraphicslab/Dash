@@ -133,8 +133,6 @@ namespace Dash
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
                 BindOperationInteractions(tb.Block, referenceToText);
-                BindOperationInteractions(tb.Box, referenceToText);
-
             }
 
             //var doc = referenceToText.GetDocumentController(context);
