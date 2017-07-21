@@ -8,8 +8,8 @@ namespace Dash
     class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
-        public static readonly Key AKey = new Key("178123E8-4E64-44D9-8F05-509B2F097B7D", "Input A");
-        public static readonly Key BKey = new Key("0B9C67F7-3FB7-400A-B016-F12C048325BA", "Input B");
+        public static readonly Key AKey = new Key("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
+        public static readonly Key BKey = new Key("740CE0AA-C7FD-4E78-9FC7-C7ED5E828260", "Input B");
 
         //Output keys
         public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");

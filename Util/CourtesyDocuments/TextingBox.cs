@@ -110,60 +110,14 @@ namespace Dash
             //    textBox.AcceptsReturn = true;
             //}
 
-            //docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey,
-            //    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-            //    {
-            //        var textField2 = GetTextField(sender, args.Context);
-            //        if (textField2 is TextFieldModelController)
-            //        {
-            //            BindTextBoxSource(tb, textField2 as TextFieldModelController);
-            //        }
-            //        if (textField2 is NumberFieldModelController)
-            //        {
-            //            BindTextBoxSource(tb, textField2 as NumberFieldModelController);
-            //        }
-            //        else if (textField is RichTextFieldModelController)
-            //        {
-            //            BindTextBlockSource(tb, textField2 as RichTextFieldModelController);
-            //        }
-            //    });
-
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                BindOperationInteractions(tb.Block, referenceToText);
-                BindOperationInteractions(tb.Box, referenceToText);
+                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context));
+                BindOperationInteractions(tb.Box, referenceToText.FieldReference.Resolve(context));
 
             }
-
-            //var doc = referenceToText.GetDocumentController(context);
-            //doc.AddFieldUpdatedListener(referenceToText.FieldKey, delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-            //{
-            //    Debug.Assert(args.Reference.FieldKey.Equals(referenceToText.FieldKey));
-            //    string id = args.Context.GetDeepestDelegateOf(args.Reference.DocId);
-            //    Debug.Assert(id.Equals(referenceToText.GetDocumentController(context).GetId()));
-            //    if (args.Action != DocumentController.FieldUpdatedAction.Update)
-            //    {
-            //        var field = GetTextField(docController, args.Context);
-            //        Debug.Assert(field != null);
-            //        if (field is TextFieldModelController)
-            //        {
-            //            var textFieldModelController = field as TextFieldModelController;
-            //            BindTextBoxSource(tb, textFieldModelController);
-            //        }
-            //        else if (field is NumberFieldModelController)
-            //        {
-            //            var numFieldModelController = field as NumberFieldModelController;
-            //            BindTextBoxSource(tb, numFieldModelController);
-            //        }
-            //        else if (field is RichTextFieldModelController)
-            //        {
-            //            var richTextFieldModelController = field as RichTextFieldModelController;
-            //            BindTextBlockSource(tb, richTextFieldModelController);
-            //        }
-            //    }
-            //});
 
             if (isInterfaceBuilderLayout)
             {
@@ -191,6 +145,9 @@ namespace Dash
         protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context)
         {
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+            var field = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+            var key = field.FieldKey;
+            var docId = field.GetDocumentId(context);
             if (data == null)
             {
                 return;

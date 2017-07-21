@@ -211,7 +211,6 @@ namespace Dash
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);     
-            Content = documentController.MakeViewUI(new Context(DocumentController), isInInterfaceBuilder);
 
             SetUpSmallIcon();
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
