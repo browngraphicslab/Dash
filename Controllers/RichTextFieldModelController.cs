@@ -30,10 +30,12 @@ namespace Dash
                     // update local
                     // update server
                 }
+
                 OnFieldModelUpdated();
             }
         }
 
+        public ITextSelection SelectedText { get; set; }
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             var richTextFieldModelController = fieldModel as RichTextFieldModelController;

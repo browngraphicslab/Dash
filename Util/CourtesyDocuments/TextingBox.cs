@@ -64,14 +64,10 @@ namespace Dash
         {
             CourtesyDocument.SetupBindings(element, docController, context);
 
-            if (element is TextBox)
-            {
-                var textBox = element as TextBox;
-                AddBinding(textBox, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
-                AddBinding(textBox, docController, FontWeightKey, context, BindFontWeight);
-                AddBinding(textBox, docController, FontSizeKey, context, BindFontSize);
-                AddBinding(textBox, docController, TextAlignmentKey, context, BindTextAllignment);
-            }
+            AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
+            AddBinding(element, docController, FontSizeKey, context, BindFontSize);
+            AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
+            AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
         }
 
         public override FrameworkElement makeView(DocumentController docController,
@@ -87,32 +83,33 @@ namespace Dash
             // X, Y, Width, and Height etc....
 
             // create the textblock
-            FrameworkElement tb = null;
+            EditableTextBlock tb = new EditableTextBlock();
 
+            SetupBindings(tb.Block, docController, context);
+            SetupBindings(tb.Box, docController, context);
+            CourtesyDocument.SetupBindings(tb.Container, docController, context);
             // use the reference to the text to get the text field model controller
-            var textField = GetTextField(docController, context);
-            Debug.Assert(textField != null);
-            if (textField is TextFieldModelController)
-            {
-                TextBox textBox = new TextBox();
-                SetupBindings(textBox, docController, context);
-                tb = textBox;
-                textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-                textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                //textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
-            }
-            else if (textField is NumberFieldModelController)
-            {
-                TextBox textBox = new TextBox();
-                SetupBindings(textBox, docController, context);
-                tb = textBox;
-                textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-                textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-                textBox.BorderThickness = new Thickness(5);
-                textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
-                textBox.AcceptsReturn = true;
-            }
-            
+            //if (textField is TextFieldModelController)
+            //{
+            //    TextBox textBox = new TextBox();
+            //    SetupBindings(textBox, docController, context);
+            //    tb = textBox;
+            //    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+            //    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
+            //    //textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
+            //}
+            //else if (textField is NumberFieldModelController)
+            //{
+            //    TextBox textBox = new TextBox();
+            //    SetupBindings(textBox, docController, context);
+            //    tb = textBox;
+            //    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
+            //    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
+            //    textBox.BorderThickness = new Thickness(5);
+            //    textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
+            //    textBox.AcceptsReturn = true;
+            //}
+
             //docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey,
             //    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
             //    {
@@ -135,7 +132,9 @@ namespace Dash
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                BindOperationInteractions(tb, referenceToText);
+                BindOperationInteractions(tb.Block, referenceToText);
+                BindOperationInteractions(tb.Box, referenceToText);
+
             }
 
             //var doc = referenceToText.GetDocumentController(context);
@@ -168,33 +167,50 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(tb, docController);
+                var selectableContainer = new SelectableContainer(tb.Container, docController);
                 return selectableContainer;
             }
 
-            return tb;
+            return tb.Container;
         }
         #region Bindings
 
-        protected static void BindTextSource(TextBox textBox, DocumentController docController, Context context)
+        protected static void BindProperty(FrameworkElement element, Binding binding,
+            DependencyProperty textBoxProperty, DependencyProperty textBlockProperty)
+        {
+            if (element is TextBlock)
+            {
+                element.SetBinding(textBlockProperty, binding);
+            }
+            else if (element is TextBox)
+            {
+                element.SetBinding(textBoxProperty, binding);
+            }
+        }
+
+        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context)
         {
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+            if (data == null)
+            {
+                return;
+            }
+            Binding sourceBinding = null;
             if (data is TextFieldModelController)
             {
                 var textData = data as TextFieldModelController;
-                var sourceBinding = new Binding
+                sourceBinding = new Binding
                 {
                     Source = textData,
                     Path = new PropertyPath(nameof(textData.Data)),
                     Mode = BindingMode.TwoWay,
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
-                textBox.SetBinding(TextBox.TextProperty, sourceBinding);
             }
             else if (data is NumberFieldModelController)
             {
                 var numberData = data as NumberFieldModelController;
-                var sourceBinding = new Binding
+                sourceBinding = new Binding
                 {
                     Source = numberData,
                     Path = new PropertyPath(nameof(numberData.Data)),
@@ -202,11 +218,12 @@ namespace Dash
                     Converter = new StringToDoubleConverter(0),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
-                textBox.SetBinding(TextBox.TextProperty, sourceBinding);
             }
+            if (sourceBinding != null)
+                BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
         }
 
-        protected static void BindTextAllignment(TextBox textBox, DocumentController docController, Context context)
+        protected static void BindTextAllignment(FrameworkElement element, DocumentController docController, Context context)
         {
             var textAlignmentData = docController.GetDereferencedField(TextAlignmentKey, context) as TextFieldModelController;
             if (textAlignmentData == null)
@@ -220,10 +237,10 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Converter = new StringToEnumConverter<TextAlignment>()
             };
-            textBox.SetBinding(TextBox.TextAlignmentProperty, alignmentBinding);
+            BindProperty(element, alignmentBinding, TextBox.TextAlignmentProperty, TextBlock.TextAlignmentProperty);
         }
 
-        protected static void BindFontWeight(TextBox textBox, DocumentController docController, Context context)
+        protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
         {
             var fontWeightData = docController.GetDereferencedField(FontWeightKey, context) as NumberFieldModelController;
             if (fontWeightData == null)
@@ -237,10 +254,10 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Converter = new DoubleToFontWeightConverter()
             };
-            textBox.SetBinding(Control.FontWeightProperty, fontWeightBinding);
+            BindProperty(element, fontWeightBinding, TextBox.FontWeightProperty, TextBlock.FontWeightProperty);
         }
 
-        protected static void BindFontSize(TextBox textBox, DocumentController docController, Context context)
+        protected static void BindFontSize(FrameworkElement element, DocumentController docController, Context context)
         {
             var fontSizeData = docController.GetDereferencedField(FontSizeKey, context) as NumberFieldModelController;
             if (fontSizeData == null)
@@ -253,7 +270,7 @@ namespace Dash
                 Path = new PropertyPath(nameof(fontSizeData.Data)),
                 Mode = BindingMode.TwoWay,
             };
-            textBox.SetBinding(Control.FontSizeProperty, fontSizeBinding);
+            BindProperty(element, fontSizeBinding, TextBox.FontSizeProperty, TextBlock.FontSizeProperty);
         }
 
         #endregion
@@ -271,27 +288,6 @@ namespace Dash
         private static ReferenceFieldModelController GetTextReference(DocumentController docController)
         {
             return docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-        }
-
-        private static NumberFieldModelController GetTextAlignmentField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(TextAlignmentKey)?
-                .DereferenceToRoot<NumberFieldModelController>(context);
-        }
-
-        private static NumberFieldModelController GetFontWeightField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(FontWeightKey)?
-                .DereferenceToRoot<NumberFieldModelController>(context);
-        }
-
-        protected static NumberFieldModelController GetFontSizeField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(FontSizeKey)?
-                .DereferenceToRoot<NumberFieldModelController>(context);
         }
 
         private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)

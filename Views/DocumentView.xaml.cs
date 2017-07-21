@@ -394,7 +394,9 @@ namespace Dash
 
                     if (valu.StartsWith("@") && !valu.Contains("="))
                     {
-                        docController.SetField(key, DBSearchOperatorFieldModelController.CreateSearch(docController, valu.Substring(1, valu.Length - 1)), true);
+                        docController.GetPrototype().SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(docController.GetPrototype().GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
+                        var keyField = docController.GetDereferencedField(key, new Context(docController));
+                        Debug.WriteLine(keyField.ToString());
                     }
                     else if (valu.StartsWith("@"))
                     {
