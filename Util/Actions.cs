@@ -23,20 +23,20 @@ namespace Dash
     public static class Actions
     {
        
-        private static SearchView _searchView = new SearchView();
+        //private static SearchView _searchView = new SearchView();
 
         public static void AddSearch(Canvas c, Point p)
         {
-            if (!c.Children.Contains(_searchView))
-            {
-                c.Children.Add(_searchView);
-                _searchView.SetPosition(p);
-                _searchView.IsDraggable = true;
-            }
-            else
-            {
-                c.Children.Remove(_searchView);
-            }
+            //if (!c.Children.Contains(_searchView))
+            //{
+            //    c.Children.Add(_searchView);
+            //    _searchView.SetPosition(p);
+            //    _searchView.IsDraggable = true;
+            //}
+            //else
+            //{
+            //    c.Children.Remove(_searchView);
+            //}
         }
 
 
