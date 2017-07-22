@@ -212,14 +212,14 @@ namespace Dash
 
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
-            //Set Position
-            //AddBinding(grid, docController, DashConstants.KeyStore.PositionFieldKey, context, BindPosition);
             //Set width and height
             AddBinding(element, docController, DashConstants.KeyStore.WidthFieldKey, context, BindWidth);
             AddBinding(element, docController, DashConstants.KeyStore.HeightFieldKey, context, BindHeight);
+
             //Set alignments
             AddBinding(element, docController, HorizontalAlignmentKey, context, BindHorizontalAlignment);
             AddBinding(element, docController, VerticalAlignmentKey, context, BindVerticalAlignment);
+
             //Set column, row, and span
             AddBinding(element, docController, GridRowKey, context, BindGridRow);
             AddBinding(element, docController, GridColumnKey, context, BindGridColumn);

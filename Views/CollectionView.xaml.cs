@@ -908,8 +908,8 @@ namespace Dash
         {
             xBackgroundTileContainer.Children.Clear();
             new ManipulationControls(xBackgroundTileContainer);
-            var width = 100;
-            var height = 100;
+            var width = 150;
+            var height = 150;
             for (double x = 0; x < Grid.ActualWidth; x += width)
             {
                 for (double y = 0; y < Grid.ActualHeight; y += height)
@@ -917,7 +917,7 @@ namespace Dash
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .2;
+                    image.Opacity = .67;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);

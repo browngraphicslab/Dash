@@ -13,6 +13,7 @@ using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Visibility = Windows.UI.Xaml.Visibility;
+using static Dash.NoteDocuments;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -74,37 +75,16 @@ namespace Dash
             xCanvas.Children.Add(_radialMenu);
         }
 
-        
 
-        public void AddOperator()
+        public void AddOperatorsFilter()
         {
-            //Create Operator document
-            var divideOp =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
-            DisplayDocument(divideOp);
-
-            var addOp =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new AddOperatorModelController(new OperatorFieldModel("Add")));
-            DisplayDocument(addOp);
-
-            //// add union operator for testing 
-            //var intersectOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(
-            //        new IntersectionOperatorModelController(new OperatorFieldModel("Intersection")));
-            //DisplayDocument(intersectOpModel);
-
-            //var unionOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(
-            //        new UnionOperatorFieldModelController(new OperatorFieldModel("Union")));
-            //DisplayDocument(unionOpModel);
-
-            // add image url -> image operator for testing
-            //var imgOpModel =
-            //    OperatorDocumentModel.CreateOperatorDocumentModel(
-            //        new ImageOperatorFieldModelController(new OperatorFieldModel("ImageToUri")));
-            //DisplayDocument(imgOpModel);
+            if (!xCanvas.Children.Contains(OperatorsFilter.Instance))
+            {
+                xCanvas.Children.Add(OperatorsFilter.Instance);
+            } else
+            {
+                xCanvas.Children.Remove(OperatorsFilter.Instance);
+            }
         }
 
         /// <summary>
@@ -196,6 +176,8 @@ namespace Dash
             DisplayDocument(new TwoImages(false).Document);
             Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(d);
         }
 
         public void AddNotes()

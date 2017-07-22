@@ -73,7 +73,7 @@ namespace Dash
             get { return _isSelected; }
             set
             {
-                _isSelected = _parentContainer == null || value;
+                _isSelected = IsRoot() || value;
                 ContentElement.IsHitTestVisible = value;
                 if (_isSelected)
                 {
@@ -93,21 +93,17 @@ namespace Dash
             set
             {
                 _isLowestSelected = value;
-                if (value)
-                {
-                    foreach (var ellipse in _draggerList)
-                    {
-                        ellipse.Visibility = Visibility.Visible;
-                    }
+                SetEllipseVisibility();
+            }
+        }
 
-                }
-                else
-                {
-                    foreach (var ellipse in _draggerList)
-                    {
-                        ellipse.Visibility = Visibility.Collapsed;
-                    }
-                }
+        private void SetEllipseVisibility()
+        {
+            var isVisible = !IsRoot() && IsLowestSelected;
+
+            foreach (var ellipse in _draggerList)
+            {
+                ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -137,12 +133,18 @@ namespace Dash
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             IsSelected = false;
+            SetEllipseVisibility();
             SetContent();
-            if (_parentContainer == null)
+            if (IsRoot())
             {
                 OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
             }
             UpdateSizeMarkers(ContentElement.ActualWidth, ContentElement.ActualHeight);
+        }
+
+        private bool IsRoot()
+        {
+            return _parentContainer == null;
         }
 
         // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
@@ -167,9 +169,9 @@ namespace Dash
                 _parentContainer?.SetSelectedContainer(this);
                 _parentContainer?.FireSelectionChanged(this);
                 IsLowestSelected = true;
-                if (_parentContainer == null)
+                if (IsRoot())
                 {
-                    OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
+                    FireSelectionChanged(this);
                 }
             }
             SetSelectedContainer(null);
@@ -278,6 +280,7 @@ namespace Dash
             }
             return actualChange;
         }
+
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
             SetPressedEllipse(xTopRightDragger);

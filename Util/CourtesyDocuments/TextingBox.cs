@@ -36,6 +36,9 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
+            SetFontWeightField(Document, DefaultFontWeight, true, null);
+            SetFontSizeField(Document, DefaultFontSize, true, null);
+            SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -54,9 +57,6 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), textFieldModelController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
 
-            SetFontWeightField(prototypeDocument, DefaultFontWeight, true, null);
-            SetFontSizeField(prototypeDocument, DefaultFontSize, true, null);
-            SetTextAlignmentField(prototypeDocument, DefaultTextAlignment, true, null);
             return prototypeDocument;
         }
 
@@ -219,12 +219,13 @@ namespace Dash
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
             }
-            BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+            if (sourceBinding != null)
+                BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
         }
 
         protected static void BindTextAllignment(FrameworkElement element, DocumentController docController, Context context)
         {
-            var textAlignmentData = docController.GetDereferencedField(TextAlignmentKey, context) as TextFieldModelController;
+            var textAlignmentData = docController.GetDereferencedField(TextAlignmentKey, context) as NumberFieldModelController;
             if (textAlignmentData == null)
             {
                 return;
@@ -234,7 +235,7 @@ namespace Dash
                 Source = textAlignmentData,
                 Path = new PropertyPath(nameof(textAlignmentData.Data)),
                 Mode = BindingMode.TwoWay,
-                Converter = new StringToEnumConverter<TextAlignment>()
+                Converter = new IntToTextAlignmentConverter()
             };
             BindProperty(element, alignmentBinding, TextBox.TextAlignmentProperty, TextBlock.TextAlignmentProperty);
         }
