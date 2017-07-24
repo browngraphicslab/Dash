@@ -23,7 +23,7 @@
             <Canvas x:Name="xMenuCanvas"/>
 
             <!-- Collectionview Content-->
-            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1"
+            <Grid x:Name="Grid" x:FieldModifier="public" BorderThickness="0" Grid.Column="1"
                   Background="{StaticResource CollectionViewBackground}" Padding="0" SizeChanged="Grid_SizeChanged">
                 <Canvas x:Name="xBackgroundTileContainer" />
                 <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None"/>
