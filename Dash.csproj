@@ -97,18 +97,21 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
-    <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
-    <Compile Include="Controllers\DocumentReferenceController.cs" />
+    <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
-    <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
-    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
+    <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
+      <DependentUpon>FreeformSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
+    <Compile Include="Views\OperatorsFilter.xaml.cs">
+      <DependentUpon>OperatorsFilter.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
     <Compile Include="RadialMenu\Colors.cs" />
@@ -127,6 +130,10 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Util\DocumentFieldReference.cs" />
+    <Compile Include="Util\DocumentPointerFieldReference.cs" />
+    <Compile Include="Util\FieldReference.cs" />
+    <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
     <Compile Include="Views\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>
     </Compile>
@@ -135,9 +142,9 @@
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
+    <Compile Include="Util\CourtesyDocuments\DBTest.cs" />
     <Compile Include="Util\CourtesyDocuments\DocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\LayoutCourtesyDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
@@ -405,6 +412,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\InterfaceBuilder\FreeformSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OperatorsFilter.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="RadialMenu\CenterButton.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

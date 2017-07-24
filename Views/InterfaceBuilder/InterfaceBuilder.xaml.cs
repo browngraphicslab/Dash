@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -31,36 +32,47 @@ namespace Dash
             Height = height;
 
             SetUpInterfaceBuilder(docController, new Context(docController));
+            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
 
+
+            // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
             {
                 Source = docController.GetAllPrototypes()
             };
-
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            SetActiveLayoutToFreeform_TEMP(docController);
             var docViewModel = new DocumentViewModel(docController, true);
             _documentView = new DocumentView(docViewModel);
             _documentView.Manipulator.RemoveAllButHandle();
             _documentView.RemoveScroll();
-            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
-            rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
+            UpdateRootLayout();
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.AllowDrop = true;
             _documentView.Drop += DocumentViewOnDrop;
-
 
             // set the middle pane to hold the document view
             xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
-        
+
+        private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            UpdateRootLayout();
+        }
+
+        private void UpdateRootLayout()
+        {
+            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
+            Debug.Assert(rootSelectableContainer != null);
+            rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
+        }
+
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -91,13 +103,13 @@ namespace Dash
                 // apply position if we are dropping on a freeform
                 if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
                 {
-
-                    var positionController = new PointFieldModelController(e.GetPosition(_documentView).X, e.GetPosition(_documentView).Y);
+                    var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
                     layoutDocument.SetField(DashConstants.KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
                 // add the document to the composite
-                var data = layoutContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+                //if (layoutContainer.DataDocument != null) context.AddDocumentContext(layoutContainer.DataDocument);
+                var data = layoutContainer.LayoutDocument.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
                 data?.AddDocument(layoutDocument);
             }
             else if (isDraggedFromLayoutBar)
@@ -105,7 +117,7 @@ namespace Dash
                 var displayType = (DisplayTypeEnum)e.Data.Properties[LayoutDragKey];
                 DocumentController newLayoutDocument = null;
                 var size = new Size(200, 200);
-                var position = e.GetPosition(_documentView);
+                var position = e.GetPosition(layoutContainer);
                 switch (displayType)
                 {
                     case DisplayTypeEnum.Freeform:
@@ -135,24 +147,21 @@ namespace Dash
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                layoutDocument = new TextingBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                layoutDocument = new ImageBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                layoutDocument = new CollectionBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                var documentController = (fieldModelController as DocumentFieldModelController).Data;
-                layoutDocument = documentController.GetActiveLayout(context)?.Data ??
-                                 new DocumentController(new Dictionary<Key, FieldModelController>(),  //TODO factor out this default layout it will definitely lead to bugs
-                                     DashConstants.DocumentTypeStore.DefaultLayout);
+                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
-                layoutDocument = new RichTextBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }
@@ -160,7 +169,7 @@ namespace Dash
         private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
         {
             var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _documentView)
-                .First(AssertIsCompositeLayout);
+                .FirstOrDefault(AssertIsCompositeLayout);
             return elem as SelectableContainer;
         }
 

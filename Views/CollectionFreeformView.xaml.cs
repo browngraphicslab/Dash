@@ -39,7 +39,7 @@ namespace Dash
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
 
-        private Dictionary<ReferenceFieldModelController, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<ReferenceFieldModelController, Windows.UI.Xaml.Shapes.Path>();
+        private Dictionary<FieldReference, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<FieldReference, Windows.UI.Xaml.Shapes.Path>();
         //private CollectionView ParentCollection;
         private Canvas parentCanvas;
         public CollectionFreeformView()
@@ -143,8 +143,8 @@ namespace Dash
 
             if (!ioReference.IsOutput)
             {
-                CheckLinePresence(ioReference.ReferenceFieldModelController);
-                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
+                CheckLinePresence(ioReference.FieldReference);
+                _lineDict.Add(ioReference.FieldReference, _connectionLine);
             }
         }
 
@@ -176,7 +176,7 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            if (_currReference.ReferenceFieldModelController == null) return; 
+            if (_currReference.FieldReference == null) return; 
 
             string outId;
             string inId;
@@ -212,14 +212,14 @@ namespace Dash
             _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
 
             DocumentController inputController =
-                inputReference.ReferenceFieldModelController.GetDocumentController(null);
-                inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
-                    outputReference.ReferenceFieldModelController, true);
+                inputReference.FieldReference.GetDocumentController(null);
+                inputController.SetField(inputReference.FieldReference.FieldKey,
+                    new ReferenceFieldModelController(outputReference.FieldReference), true);
 
             if (!ioReference.IsOutput && _connectionLine != null)
             {
-                CheckLinePresence(ioReference.ReferenceFieldModelController);
-                _lineDict.Add(ioReference.ReferenceFieldModelController, _connectionLine);
+                CheckLinePresence(ioReference.FieldReference);
+                _lineDict.Add(ioReference.FieldReference, _connectionLine);
                 _connectionLine = null;
             }
         }
@@ -229,7 +229,7 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(ReferenceFieldModelController model)
+        private void CheckLinePresence(FieldReference model)
         {
             if (_lineDict.ContainsKey(model))
             {

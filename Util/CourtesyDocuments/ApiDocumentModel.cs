@@ -50,6 +50,11 @@ namespace Dash
                 [AuthParametersKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>()),
                 [AuthHeadersKey] = new DocumentCollectionFieldModelController(new List<DocumentController>()),
+                [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(550),
+                [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(400),
+                [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(new Windows.Foundation.Point(0,0)),
+                [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
+                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
 
                 // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
                 [DocumentCollectionFieldModelController.CollectionKey] =
@@ -57,6 +62,7 @@ namespace Dash
             };
             Document = new DocumentController(fields, DocumentType);
             Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
+            Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
         /// <summary>
@@ -257,8 +263,7 @@ namespace Dash
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
-        {
+            Context context, bool isInterfaceBuilderLayout = false) {
 
             ApiSourceDisplay sourceDisplay = new ApiSourceDisplay();
             ApiCreatorDisplay apiDisplay = new ApiCreatorDisplay(docController, sourceDisplay);
@@ -287,8 +292,7 @@ namespace Dash
             // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)
             // or should everyone just see the same view ?
             // bind URL
-            var sourceBinding = new Binding
-            {
+            var sourceBinding = new Binding {
                 Source = apiDisplay,
                 Path = new PropertyPath(nameof(apiDisplay.Visibility)),
                 Mode = BindingMode.TwoWay,
@@ -313,8 +317,7 @@ namespace Dash
             collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
 
             // return all results
-            if (isInterfaceBuilderLayout)
-            {
+            if (isInterfaceBuilderLayout) {
                 return new SelectableContainer(containerGrid, docController);
             }
             return containerGrid;

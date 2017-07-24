@@ -41,9 +41,9 @@ namespace Dash
         {
             var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc };
-            if (isInterfaceBuilderLayout) return opView;
-            return new SelectableContainer(opView, docController);
+            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
+            if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
+            return opView;
         }
     }
 }

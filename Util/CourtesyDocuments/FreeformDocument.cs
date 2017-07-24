@@ -90,6 +90,18 @@ namespace Dash
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
             grid.Children.Clear();
+            if (isInterfaceBuilder)
+            {
+                var icon = new TextBlock()
+                {
+                    Text = "⊡",
+                    FontSize = 100,
+                    Foreground = new SolidColorBrush(Colors.LightBlue),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center
+                };
+                grid.Children.Add(icon);
+            }
             foreach (var layoutDocument in layoutDocuments)
             {
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);

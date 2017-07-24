@@ -6,6 +6,7 @@ using Windows.UI.Xaml.Data;
 using DashShared;
 using FontWeights = Windows.UI.Text.FontWeights;
 using System.Collections.Generic;
+using Dash.Converters;
 using Dash.Views;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -40,7 +41,7 @@ namespace Dash
             {
                 Source = textAlignmentController,
                 Path = new PropertyPath(nameof(textAlignmentController.Data)),
-                Mode = BindingMode.TwoWay,
+                Mode = BindingMode.TwoWay
             };
 
             xAlignmentListView.SetBinding(ListView.SelectedIndexProperty, fontAlignmentBinding);

@@ -61,7 +61,7 @@ namespace Dash
             JsonDocument = Parse(jsonString, "an/example/base/path");
         }
 
-        private static DocumentController Parse(string json, string path)
+        public static DocumentController Parse(string json, string path)
         {
             var jtoken = JToken.Parse(json);
             var newSchema = new DocumentSchema(path);
@@ -268,7 +268,7 @@ namespace Dash
 
         public void SetDefaultLayoutOnPrototype(DocumentController prototype)
         {
-            var _ = new LayoutCourtesyDocument(prototype);
+            prototype.SetActiveLayout(new DefaultLayout().Document, true, true);
         }
     }
 

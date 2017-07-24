@@ -36,7 +36,7 @@ namespace Dash
             //Point p = new Point(rect.Width * e.Delta.Translation.X, rect.Height * e.Delta.Translation.Y);
 
             MatrixTransform r = to.TransformToVisual(Window.Current.Content) as MatrixTransform;
-            Debug.Assert(r != null);
+            //Debug.Assert(r != null);
             if (r != null)
             {
                 Matrix m = r.Matrix;
@@ -395,11 +395,11 @@ namespace Dash
                 doc.SetField(key, fm, true);
                 if (fm is TextFieldModelController || fm is NumberFieldModelController)
                 {
-                    result.Add(new TextingBox(new DocumentReferenceController(docID, key)).Document);
+                    result.Add(new TextingBox(new ReferenceFieldModelController(docID, key)).Document);
                 }
                 else if (fm is ImageFieldModelController)
                 {
-                    result.Add(new ImageBox(new DocumentReferenceController(docID, key)).Document);
+                    result.Add(new ImageBox(new ReferenceFieldModelController(docID, key)).Document);
                 }
                 else
                 {

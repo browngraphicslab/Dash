@@ -6,6 +6,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash;
 using DashShared;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 namespace Dash
 {
@@ -37,6 +39,10 @@ namespace Dash
 
             var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
             var docView = documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+            var border = new Border();
+            border.Child = docView;
+            border.BorderThickness = new Thickness(3);
+            border.BorderBrush = new SolidColorBrush(Colors.Black);
 
             // bind the text height
             var docheightController = GetHeightField(docController, context);
@@ -50,9 +56,9 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(docView, docController);
+                return new SelectableContainer(border, docController);
             }
-            return docView;
+            return border;
             //*/ 
 
             return new TextBox();

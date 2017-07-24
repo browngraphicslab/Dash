@@ -80,7 +80,6 @@ namespace Dash
                 }
             };
             grid.Children.Add(listView);
-            //Grid.SetRow(listView, 0);
             if (isInterfaceBuilderLayout)
             {
                 var icon = new TextBlock()
@@ -94,7 +93,7 @@ namespace Dash
                 grid.Children.Insert(0, icon);
                 return new SelectableContainer(grid, docController, dataDocument);
             }
-
+            
             Ellipse dragEllipse = new Ellipse
             {
                 Fill = new SolidColorBrush(Color.FromArgb(255, 53, 197, 151)),
@@ -105,9 +104,9 @@ namespace Dash
             Grid.SetColumn(dragEllipse, 1);
             grid.Children.Add(dragEllipse);
 
-            var referenceToText = new DocumentReferenceController(dataDocument.GetId(), DashConstants.KeyStore.DataKey);
-            BindOperationInteractions(dragEllipse, referenceToText);                                        // TODO must test if this actually works I feel like it doesn't lol
-
+            var referenceToText = new ReferenceFieldModelController(dataDocument.GetId(), DashConstants.KeyStore.DataKey);
+            BindOperationInteractions(dragEllipse, referenceToText.FieldReference.Resolve(context));            // TODO must test if this actually works I feel like it doesn't lol
+            
             return grid;
         }
 
