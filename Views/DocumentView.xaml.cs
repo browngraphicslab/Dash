@@ -270,7 +270,7 @@ namespace Dash
         {
             if (ViewModel.MenuOpen)
             {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 50, e.NewSize.Height);
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 60, e.NewSize.Height);
             }
             else
             {
@@ -330,14 +330,14 @@ namespace Dash
             if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
             {
                 ViewModel.OpenMenu();
-                tg.Children.Add(new TranslateTransform { X = -50, Y = 0 }); 
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+                tg.Children.Add(new TranslateTransform { X = -60, Y = 0 }); 
+         //       OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
             else
             {
                 ViewModel.CloseMenu();
-                tg.Children.Add(new TranslateTransform { X = 50, Y = 0 });
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+                tg.Children.Add(new TranslateTransform { X = 60, Y = 0 });
+          //      OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
 
             }
             e.Handled = true;

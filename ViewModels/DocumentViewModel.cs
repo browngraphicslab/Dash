@@ -364,7 +364,7 @@ namespace Dash
             if (!MenuOpen)
             {
                 DocMenuVisibility = Visibility.Visible;
-                MenuColumnWidth = new GridLength(50);
+                MenuColumnWidth = new GridLength(60);
                 MenuOpen = true;
             }
         }
