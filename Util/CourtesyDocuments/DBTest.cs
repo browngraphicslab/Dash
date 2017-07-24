@@ -37,7 +37,8 @@ namespace Dash
             fields.Add(UmpNameKey, new TextFieldModelController("Prototype Umpire"));
             var dc = new DocumentController(fields, UmpType);
             dc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
-            dc.SetField(UmpAssignmentsKey, DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(dc.GetId(), DashConstants.KeyStore.ThisKey), "AssignedGame.GameDate"), true);
+            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(dc.GetId(), DashConstants.KeyStore.ThisKey), "AssignedGame.GameDate");
+            dc.SetField(UmpAssignmentsKey, new DocumentReferenceController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
             return dc;
         }
         static DocumentController CreatePrototypeVol()

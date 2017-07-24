@@ -484,9 +484,10 @@ namespace Dash
                 else if (f.Value is DocumentFieldModelController)
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                    sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
-                    (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
-                    (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
+                    // bcz: commented this out because it generated exceptions after making a search List of Umpires
+                    //sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
+                    //(sp.Children.Last() as FrameworkElement).MaxWidth = 300;
+                    //(sp.Children.Last() as FrameworkElement).MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
@@ -577,7 +578,7 @@ namespace Dash
                 
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
-            Debug.Assert(false, "Everything should have an active layout maybe");
+            //Debug.Assert(false, "Everything should have an active layout maybe");
             if (isInterfaceBuilder)
             {
                 return new SelectableContainer(makeAllViewUI(context), this, dataDocument);

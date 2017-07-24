@@ -678,6 +678,7 @@ namespace Dash
         /// <param name="e"></param>
         public void SetFreeformView()
         {
+            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
@@ -690,6 +691,7 @@ namespace Dash
         /// <param name="e"></param>
         public void SetListView()
         {
+            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView(this) { DataContext = ViewModel };
             (CurrentView as CollectionListView).HListView.SelectionChanged += ViewModel.SelectionChanged;
@@ -702,6 +704,7 @@ namespace Dash
         /// <param name="e"></param>
         public void SetGridView()
         {
+            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView(this) { DataContext = ViewModel };
             (CurrentView as CollectionGridView).xGridView.SelectionChanged += ViewModel.SelectionChanged;

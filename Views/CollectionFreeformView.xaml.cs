@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Navigation;
 using Windows.UI;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using DashShared;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -213,6 +214,10 @@ namespace Dash
 
             DocumentController inputController =
                 inputReference.ReferenceFieldModelController.GetDocumentController(null);
+            if (inputReference.ReferenceFieldModelController is DocumentReferenceController)
+                inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
+                (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null), true);
+            else
                 inputController.SetField(inputReference.ReferenceFieldModelController.FieldKey,
                     outputReference.ReferenceFieldModelController, true);
 
@@ -307,6 +312,27 @@ namespace Dash
         {
             if (_currReference != null)
             {
+                if (_currReference.IsOutput) {
+                        if (outType == TypeInfo.Collection)
+                        {
+
+                            var fields = new Dictionary<Key, FieldModelController> { {
+                            DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModelController() }  };
+
+                            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+                            var layoutDoc =
+                                new CollectionBox(new DocumentReferenceController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                            layoutDoc.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(e.GetCurrentPoint(MainPage.Instance).Position), true);
+                            var layoutController = new DocumentFieldModelController(layoutDoc);
+                            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+                            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
+                            MainPage.Instance.DisplayDocument(col);
+                            col.SetField(DocumentCollectionFieldModelController.CollectionKey,
+                                new DocumentReferenceController(
+                                    opDoc.GetId(), _currReference.ReferenceFieldModelController.ReferenceFieldModel.FieldKey), true);
+                        }
+                    }
+                }  
                 CancelDrag(_currReference.PointerArgs.Pointer);
 
                 //DocumentView view = new DocumentView();

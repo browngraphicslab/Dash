@@ -19,6 +19,7 @@ namespace Dash
             {
                 docId = context.GetDeepestDelegateOf(DocId);
             }
+            var tmp = ContentController.GetController(docId);
             return ContentController.GetController<DocumentController>(docId);
         }
 

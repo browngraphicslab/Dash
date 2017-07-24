@@ -97,8 +97,11 @@ namespace Dash
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
                             NumberFieldModelController;
 
-                    widthFieldModelController.Data = value;
-                    WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
+                    if (widthFieldModelController != null)
+                    {
+                        widthFieldModelController.Data = value;
+                        WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
+                    }
                 }
             }
         }
@@ -118,7 +121,8 @@ namespace Dash
                     var heightFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as
                             NumberFieldModelController;
-                    heightFieldModelController.Data = value;
+                    if (heightFieldModelController != null)
+                        heightFieldModelController.Data = value;
                 }
             }
         }
@@ -270,15 +274,25 @@ namespace Dash
         private void ListenToWidthField(DocumentController docController)
         {
             var widthField = docController.GetWidthField();
-            widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
-            Width = widthField.Data;
+            if (widthField != null)
+            {
+                widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
+                Width = widthField.Data;
+            }
+            else
+                Width = double.NaN;
         }
 
         private void ListenToHeightField(DocumentController docController)
         {
             var heightField = docController.GetHeightField();
-            heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
-            Height = heightField.Data;
+            if (heightField != null)
+            {
+                heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
+                Height = heightField.Data;
+            }
+            else
+                Height = double.NaN;
         }
 
         public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)

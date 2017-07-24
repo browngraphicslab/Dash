@@ -17,6 +17,8 @@ using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
+using Dash.Controllers.Operators;
+using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 namespace Dash
 {
@@ -37,6 +39,20 @@ namespace Dash
             //{
             //    c.Children.Remove(_searchView);
             //}
+            var opModel = DBSearchOperatorFieldModelController.CreateSearch(new DocumentFieldModelController(null), "UmpName");
+            
+            //var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel("Search", "UmpName"));
+
+            //var opModel = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
+          
+            //opModel.SetField(ForceUpdateKey, new DocumentReferenceController(GlobalDoc.GetId(), ForceUpdateKey), true);
+
+            var searchView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            MainPage.Instance.DisplayDocument(opModel);
         }
 
 

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Dash.Controllers.Operators;
+using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -14,6 +16,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -170,52 +173,24 @@ namespace Dash
                 opModel =
                 OperatorDocumentModel.CreateOperatorDocumentModel(
                     new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel);
-                //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-                view.DataContext = opvm;
-            } else if (type == "Union")
+            }
+            else if (type == "Union")
             {
                 opModel =
                     OperatorDocumentModel.CreateOperatorDocumentModel(
                         new UnionOperatorFieldModelController(new OperatorFieldModel(type)));
-                var unionView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var unionOpvm = new DocumentViewModel(opModel);
-                unionView.DataContext = unionOpvm;
             } else if (type == "Intersection")
             {
                 // add union operator for testing 
                 opModel =
                     OperatorDocumentModel.CreateOperatorDocumentModel(
                         new IntersectionOperatorModelController(new OperatorFieldModel(type)));
-                var intersectView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var intersectOpvm = new DocumentViewModel(opModel);
-                intersectView.DataContext = intersectOpvm;
             } else if (type == "ImageToUri")
             {
                 // add image url -> image operator for testing
                 opModel =
                     OperatorDocumentModel.CreateOperatorDocumentModel(
                         new ImageOperatorFieldModelController(new OperatorFieldModel(type)));
-                var imgOpView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var imgOpvm = new DocumentViewModel(opModel);
-                imgOpView.DataContext = imgOpvm;
             }
             return opModel;
         }
