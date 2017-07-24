@@ -57,13 +57,13 @@
             </Grid>
 
             <GridView Grid.Row="2" HorizontalAlignment="Center" Margin="312,0,311,0" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting">
-                <Button x:Name="ListButton" Content="🖹" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center"
+                <Button x:Name="ListButton" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False">
                 </Button>
-                <Button x:Name="GridButton" Content="▦" Width="45" Height="45" Margin="5"
+                <Button x:Name="GridButton" Width="45" Height="45" Margin="5"
                         VerticalContentAlignment="Center" FontSize="25" IsHitTestVisible="False">
                 </Button>
-                <Button x:Name="FreeformButton" Content="⊡" Width="45" Height="45" Margin="5"
+                <Button x:Name="FreeformButton" Width="45" Height="45" Margin="5"
                         VerticalContentAlignment="Center" FontSize="25" IsHitTestVisible="False">
                 </Button>
             </GridView>

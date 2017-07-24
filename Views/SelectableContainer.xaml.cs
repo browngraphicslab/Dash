@@ -20,7 +20,6 @@ using Windows.Security.Cryptography.Core;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Shapes;
-using Dash.ViewModels;
 
 namespace Dash
 {

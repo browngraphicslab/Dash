@@ -62,10 +62,6 @@ namespace Dash
             }
         }
 
-        private void KeyField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-        }
-
         private void ValueField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
@@ -73,7 +69,7 @@ namespace Dash
                 if (xNewKeyField.Text == "" || xNewValueField.Text == "")
                     return; 
 
-                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // commented out cos i didn't want to waste guids on testing 
+                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
                 var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
                 var cont = new TextFieldModelController((sender as TextBox).Text);
                 ListItemSource.Add(new KeyFieldContainer(key, cont));

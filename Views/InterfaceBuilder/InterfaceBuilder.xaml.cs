@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -34,6 +35,7 @@ namespace Dash
             SetUpInterfaceBuilder(docController, new Context(docController));
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
 
+            SetUpButtons(); 
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
@@ -59,6 +61,27 @@ namespace Dash
             xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
+        }
+
+        private void SetUpButtons()
+        {
+            var listSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.List, Foreground = new SolidColorBrush(Colors.White)
+            };
+            ListButton.Content = new Border { Child = listSymbol };
+
+            var freeformSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.View, Foreground = new SolidColorBrush(Colors.White)
+            };
+            FreeformButton.Content = new Border { Child = freeformSymbol };
+
+            var gridSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.ViewAll, Foreground = new SolidColorBrush(Colors.White)
+            };
+            GridButton.Content = new Border { Child = gridSymbol };
         }
 
         private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -236,15 +259,15 @@ namespace Dash
             {
                 var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
-                switch (button.Content as string)
+                switch (((button.Content as Border).Child as SymbolIcon).Symbol)
                 {
-                    case "🖹":
+                    case Symbol.List:
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.List;
                         break;
-                    case "▦":
+                    case Symbol.ViewAll:
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.Grid;
                         break;
-                    case "⊡":
+                    case Symbol.View:
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.Freeform;
                         break;
                     default:
