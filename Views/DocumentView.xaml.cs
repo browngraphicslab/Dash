@@ -331,14 +331,13 @@ namespace Dash
             {
                 ViewModel.OpenMenu();
                 tg.Children.Add(new TranslateTransform { X = -60, Y = 0 }); 
-         //       OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
             else
             {
                 ViewModel.CloseMenu();
                 tg.Children.Add(new TranslateTransform { X = 60, Y = 0 });
-          //      OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
-
+                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
             e.Handled = true;
         }
