@@ -11,8 +11,7 @@
 
     <Grid SizeChanged="Grid_SizeChanged" Padding="0,0,12,0">
         <!-- Makes the blue background shape-->
-        <Border x:Name="xBackgroundBorder" Margin="0,0,150,0" Background="{StaticResource WindowsBlue}">
-        </Border>
+        <Border x:Name="xBackgroundBorder" Background="{StaticResource WindowsBlue}"></Border>
         <Viewbox x:Name="xViewbox" Stretch="Uniform" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
             HorizontalAlignment="Right"
@@ -36,7 +35,7 @@
         </Viewbox>
         
         <!-- Content containing grid-->
-        <Grid x:Name="XGrid" Background="Transparent">
+        <Grid x:Name="XGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -44,7 +43,8 @@
             </Grid.ColumnDefinitions>
             
             <!-- Input Operator Handles & Labels-->
-            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None">
+            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" 
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Padding" Value="0"/>
