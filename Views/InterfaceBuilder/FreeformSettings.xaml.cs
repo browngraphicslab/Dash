@@ -41,6 +41,7 @@ namespace Dash
             }
             xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
+            xAlignmentRow.Children.Add(new AlignmentSettings(layoutDocument,context));
         }
     }
 }

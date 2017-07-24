@@ -77,12 +77,24 @@ namespace Dash
 
         public void AddOperatorsFilter()
         {
-            if (!xCanvas.Children.Contains(OperatorsFilter.Instance))
+            if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
             {
-                xCanvas.Children.Add(OperatorsFilter.Instance);
+                xCanvas.Children.Add(OperatorSearchView.Instance);
             } else
             {
-                xCanvas.Children.Remove(OperatorsFilter.Instance);
+                xCanvas.Children.Remove(OperatorSearchView.Instance);
+            }
+        }
+
+        public void AddGenericFilter()
+        {
+            if (!xCanvas.Children.Contains(GenericSearchView.Instance))
+            {
+                xCanvas.Children.Add(GenericSearchView.Instance);
+            }
+            else
+            {
+                xCanvas.Children.Add(GenericSearchView.Instance);
             }
         }
 

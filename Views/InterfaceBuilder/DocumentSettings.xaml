@@ -22,7 +22,7 @@
             <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <Button Margin="0,5,0,10" Height="35" HorizontalAlignment="Stretch" Content="EDIT">
                     <Button.Background>
-                        <SolidColorBrush Color="SteelBlue" Opacity="0.75"></SolidColorBrush>
+                        <SolidColorBrush Color="SteelBlue"></SolidColorBrush>
                     </Button.Background>
                 </Button>
             </Grid>
@@ -52,7 +52,7 @@
                             
                             <!--ADD LAYOUT BUTTON-->
                             <Grid Grid.Column="1">
-                                <Button x:Name="xAddLayoutButton" Background="LightSteelBlue">
+                                <Button x:Name="xAddLayoutButton" Background="SteelBlue">
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
                                 </Button>
                             </Grid>
