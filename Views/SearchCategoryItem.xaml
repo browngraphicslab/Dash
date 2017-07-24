@@ -13,6 +13,6 @@
         <Grid.Background>
             <SolidColorBrush x:Name="xGridBackground" Color="White" Opacity="0.5"></SolidColorBrush>
         </Grid.Background>
-        <ListView x:Name="xList" ItemsSource="{x:Bind NewContent}"/>
+        <ListView x:Name="xList" ItemsSource="{x:Bind ListContent}"/>
     </Grid>
 </UserControl>

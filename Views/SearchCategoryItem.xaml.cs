@@ -21,21 +21,51 @@ namespace Dash
 {
     public sealed partial class SearchCategoryItem : UserControl
     {
-        public ObservableCollection<object> OriginalContent { get; }
-        public ObservableCollection<object> NewContent { get; set; }
+        /// <summary>
+        /// All objects under this category
+        /// </summary>
+        public ObservableCollection<object> ListContent { get; }
+
+        /// <summary>
+        /// Returns the list view used to display objects
+        /// </summary>
+        public ListView List { get { return xList; } }
+
+        /// <summary>
+        /// Display path of objects in the listview (replace with ToString overried?) 
+        /// </summary>
         public string ListDisplayMemberPath { get; set; }
+
+        /// <summary>
+        /// Icon for this category
+        /// </summary>
         public string Icon { get; }
+
+        /// <summary>
+        /// Title for this category
+        /// </summary>
         public string Title { get; }
+
+        /// <summary>
+        /// Background color of the listview
+        /// </summary>
         public Color ContentBackGround { get { return xGridBackground.Color; } set { xGridBackground.Color = value; } }
         
+        /// <summary>
+        /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
+        /// </summary>
+        /// <param name="icon"></param>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="action"></param>
         public SearchCategoryItem(string icon, string title, ObservableCollection<object> content, Action<object> action)
         {
             this.InitializeComponent();
             Icon = icon;
             Title = title;
-            OriginalContent = content;
-            NewContent = content;
+            ListContent = content;
             ListDisplayMemberPath = xList.DisplayMemberPath;
+
             xList.Tapped += delegate
             {
                 action.Invoke(xList.SelectedItem);

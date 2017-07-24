@@ -51,7 +51,8 @@ namespace Dash
             categories.Add(new SearchCategoryItem("÷", "ARITHMETIC",arithmetics, Actions.AddOperator));
             categories.Add(new SearchCategoryItem("→","MAP", maps, Actions.AddOperator));
             categories.Add(new SearchCategoryItem("∈","SET", sets, Actions.AddOperator));
-            var searchView = new GenericSearchView(categories);
+            categories.Add(new SearchCategoryItem(string.Empty,"CUSTOM",null,Actions.AddOperator));
+            var searchView = new SearchView(categories);
 
             xMainGrid.Children.Add(searchView);
         }
