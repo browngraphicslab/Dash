@@ -80,6 +80,18 @@ namespace Dash
                 xCanvas.Children.Remove(OperatorSearchView.Instance);
             }
         }
+
+        public void AddGenericFilter()
+        {
+            if (!xCanvas.Children.Contains(GenericSearchView.Instance))
+            {
+                xCanvas.Children.Add(GenericSearchView.Instance);
+            }
+            else
+            {
+                xCanvas.Children.Add(GenericSearchView.Instance);
+            }
+        }
         public void AddOperator()
         {
             //Create Operator document

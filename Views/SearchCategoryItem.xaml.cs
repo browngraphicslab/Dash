@@ -68,7 +68,7 @@ namespace Dash
 
             xList.Tapped += delegate
             {
-                action.Invoke(xList.SelectedItem);
+                action?.Invoke(xList.SelectedItem);
             };
         }
     }

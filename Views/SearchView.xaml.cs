@@ -68,7 +68,7 @@ namespace Dash
 
             var headerBorder = new Border()
             {
-                Width = 65,
+                Width = 75,
                 Height = 45,
                 CornerRadius = new CornerRadius(5)
             };
@@ -82,7 +82,7 @@ namespace Dash
             }
             else
             {
-                titleTextBlock.FontSize = 12;
+                titleTextBlock.FontSize = 10;
                 titleTextBlock.VerticalAlignment = VerticalAlignment.Center;
                 headerBorder.Child = titleTextBlock;
             }
