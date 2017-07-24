@@ -391,7 +391,7 @@ namespace Dash
 
             foreach (FieldModelController fm in fms)
             {
-                Key key = new Key();
+                Key key = new Key();                                                                                  // TODO should give it a unique key? 
                 doc.SetField(key, fm, true);
                 if (fm is TextFieldModelController || fm is NumberFieldModelController)
                 {
@@ -414,8 +414,7 @@ namespace Dash
         {
             IEnumerable<FieldModelController> fms = RawToFieldModelControllerFactory(randomList, true);
 
-            //Key ListViewKey = new Key("what", "ListKey");                                                    // TODO give it a proper key 
-            DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type 
+            DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type w/ actual guid 
             var fields = new Dictionary<Key, FieldModelController>();
             fields.Add(DashConstants.KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
             DocumentController Document = new DocumentController(fields, ListType);

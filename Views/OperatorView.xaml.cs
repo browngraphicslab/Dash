@@ -82,24 +82,25 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput) {
+        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
+        {
 
             string docId = (DataContext as DocumentReferenceController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                (view.CurrentView as CollectionFreeformView).CanLink = true;
-                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
+            (view.CurrentView as CollectionFreeformView).CanLink = true;
+            (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
 
         }
-        
+
 
         private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             holdPointerOnEllipse(sender, e, false);
         }
-        
+
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             holdPointerOnEllipse(sender, e, true);
@@ -128,7 +129,8 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput) {
+        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
+        {
             string docId = (DataContext as DocumentReferenceController).DocId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
@@ -153,7 +155,8 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
             xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
         }
     }
