@@ -268,7 +268,15 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            // TODO KB change this so that if it's opened... cliprect should be like 50 units less wide 
+            if (ViewModel.MenuOpen)
+            {
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 50, e.NewSize.Height);
+            }
+            else
+            {
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            }
             ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
