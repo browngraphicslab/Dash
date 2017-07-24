@@ -12,20 +12,20 @@ namespace Dash
     {
         private readonly HashSet<DocumentController> _documentContextList;
 
-        private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
+        private readonly Dictionary<FieldReference, FieldModelController> _data;
 
         public HashSet<DocumentController> DocContextList { get { return _documentContextList; } }
 
         public Context()
         {
             _documentContextList = new HashSet<DocumentController>();
-            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+            _data = new Dictionary<FieldReference, FieldModelController>();
         }
 
         public Context(DocumentController initialContext)
         {
             _documentContextList = new HashSet<DocumentController>{initialContext};
-            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+            _data = new Dictionary<FieldReference, FieldModelController>();
         }
 
         public Context(Context copyFrom)
@@ -33,12 +33,12 @@ namespace Dash
             if (copyFrom == null)
             {
                 _documentContextList = new HashSet<DocumentController>();
-                _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+                _data = new Dictionary<FieldReference, FieldModelController>();
             }
             else
             {
                 _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
-                _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
+                _data = new Dictionary<FieldReference, FieldModelController>(copyFrom._data);
             }
         }
 
@@ -49,10 +49,15 @@ namespace Dash
 
         public void AddData(ReferenceFieldModelController reference, FieldModelController data)
         {
+            _data[reference.FieldReference] = data;
+        }
+
+        public void AddData(FieldReference reference, FieldModelController data)
+        {
             _data[reference] = data;
         }
 
-        public bool TryDereferenceToRoot(ReferenceFieldModelController reference, out FieldModelController data)
+        public bool TryDereferenceToRoot(FieldReference reference, out FieldModelController data)
         {
             if (_data.ContainsKey(reference))
             {

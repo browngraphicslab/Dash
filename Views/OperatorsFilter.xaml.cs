@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -25,6 +26,7 @@ namespace Dash
         List<string> sets = new List<string>() { "Union", "Intersection" };
         List<string> maps = new List<string> () { "ImageToUri" };
         List<string> all = new List<string>() { "Divide", "Union", "Intersection", "ImageToUri"};
+        public Canvas OverlayParent { get; set; }
         private static OperatorsFilter instance;
         public static OperatorsFilter Instance
         {
@@ -40,7 +42,9 @@ namespace Dash
         private OperatorsFilter()
         {
             this.InitializeComponent();
-            this.SetManipulation();
+            //this.SetManipulation();
+            RenderTransform = new CompositeTransform();
+            OverlayParent = MainPage.Instance.xCanvas;
             xAllList.Tapped += delegate { this.ItemsSelected(xAllList); };
             xArithmeticList.Tapped += delegate { this.ItemsSelected(xArithmeticList); };
             xMapList.Tapped += delegate { this.ItemsSelected(xMapList); };
@@ -132,15 +136,12 @@ namespace Dash
         private void SetManipulation()
         {
             ManipulationMode = ManipulationModes.All;
-            RenderTransform = new CompositeTransform();
             ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
             {
-                var transform = RenderTransform as CompositeTransform;
-                if (transform != null)
-                {
-                    transform.TranslateX += e.Delta.Translation.X;
-                    transform.TranslateY += e.Delta.Translation.Y;
-                }
+                var transform = (CompositeTransform) RenderTransform;
+                Debug.Assert(transform != null);
+                transform.TranslateX += e.Delta.Translation.X;
+                transform.TranslateY += e.Delta.Translation.Y;
             };
         }
 
@@ -163,22 +164,39 @@ namespace Dash
         /// <returns></returns>
         private DocumentController CreateOperator(string type)
         {
+            var freeForm =
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()
+                    .CurrentView as CollectionFreeformView;
             DocumentController opModel = null;
+            var border = this.GetFirstDescendantOfType<Border>();
+            var position = new Point(Canvas.GetLeft(border), Canvas.GetTop(border));
+            var translate = new Point();
+            if (freeForm != null)
+            {
+                var r = TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                Debug.Assert(r != null);
+                translate = r.TransformPoint(new Point(position.X, position.Y));
+            }
             if (type == null) return null;
             if (type == "Divide")
             {
                 opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
                 var view = new DocumentView
                 {
                     Width = 200,
                     Height = 200
                 };
-                var opvm = new DocumentViewModel(opModel);
+
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
                 view.DataContext = opvm;
-            } else if (type == "Union")
+            }
+            else if (type == "Union")
             {
                 opModel =
                     OperatorDocumentModel.CreateOperatorDocumentModel(
@@ -188,9 +206,13 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var unionOpvm = new DocumentViewModel(opModel);
+                var unionOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 unionView.DataContext = unionOpvm;
-            } else if (type == "Intersection")
+            }
+            else if (type == "Intersection")
             {
                 // add union operator for testing 
                 opModel =
@@ -201,9 +223,13 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var intersectOpvm = new DocumentViewModel(opModel);
+                var intersectOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 intersectView.DataContext = intersectOpvm;
-            } else if (type == "ImageToUri")
+            }
+            else if (type == "ImageToUri")
             {
                 // add image url -> image operator for testing
                 opModel =
@@ -214,7 +240,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var imgOpvm = new DocumentViewModel(opModel);
+                var imgOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 imgOpView.DataContext = imgOpvm;
             }
             return opModel;

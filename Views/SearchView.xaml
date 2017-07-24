@@ -5,24 +5,26 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:userControl="using:RadialMenuControl.UserControl"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-
-    <Grid Width="300" Height="350" CornerRadius="15">
-        <Grid.Background>
-            <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
-        </Grid.Background>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="15,20,15,10" PlaceholderText="Filter current category"></AutoSuggestBox>
+    <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True">
+        <Grid CornerRadius="15" MaxWidth="300" MaxHeight="800">
+            <Grid.Background>
+                <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
+            </Grid.Background>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <AutoSuggestBox x:Name="xSearch" Background="Transparent" QueryIcon="Find" BorderBrush="Transparent" BorderThickness="0" Margin="15,20,15,10" PlaceholderText="Filter current category"></AutoSuggestBox>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged">
+                </Pivot>
+            </Grid>
         </Grid>
-        <Grid Grid.Row="1">
-            <Pivot x:Name="xRootPivot" HorizontalContentAlignment="Center" BorderBrush="Transparent" BorderThickness="0" SelectionChanged="xRootPivot_SelectionChanged">
-            </Pivot>
-        </Grid>
-    </Grid>
+    </userControl:Floating>
 </UserControl>
