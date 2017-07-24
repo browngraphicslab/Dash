@@ -29,14 +29,14 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
-            var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
+            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
+            var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
 
             var prototypeLayout = new StackingPanel(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
 
-            prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new DocumentReferenceController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new DocumentReferenceController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new DocumentReferenceController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.HeightFieldKey), true);
+            prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
+            prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
+            prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.HeightFieldKey), true);
 
             return prototypeLayout.Document;
         }

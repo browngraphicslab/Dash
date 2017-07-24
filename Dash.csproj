@@ -97,8 +97,6 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
-    <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
-    <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
@@ -108,8 +106,6 @@
     <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
       <DependentUpon>FreeformSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
-    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
@@ -134,6 +130,9 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Util\DocumentFieldReference.cs" />
+    <Compile Include="Util\DocumentPointerFieldReference.cs" />
+    <Compile Include="Util\FieldReference.cs" />
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
     <Compile Include="Views\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>

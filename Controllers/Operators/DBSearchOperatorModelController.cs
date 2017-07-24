@@ -32,9 +32,9 @@ namespace Dash.Controllers.Operators
             var searchFieldController = new DBSearchOperatorFieldModelController(searchFieldModel);
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
             searchOp.SetField(ContextDocKey, new DocumentFieldModelController(contextDoc), true);
-            searchOp.SetField(DummyKey, new DocumentReferenceController(GlobalDoc.GetId(), DummyKey), true);
+            searchOp.SetField(DummyKey, new ReferenceFieldModelController(GlobalDoc.GetId(), DummyKey), true);
             _searches.Add(searchOp);
-            return new DocumentReferenceController(searchOp.GetId(), DBSearchOperatorFieldModelController.ResultsKey);
+            return new ReferenceFieldModelController(searchOp.GetId(), DBSearchOperatorFieldModelController.ResultsKey);
         }
 
         static public FieldModelController CreateSearch(FieldModelController contextDocFieldController, string fieldRef)
@@ -48,9 +48,9 @@ namespace Dash.Controllers.Operators
             var searchFieldController = new DBSearchOperatorFieldModelController(searchFieldModel);
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
             searchOp.SetField(ContextDocKey, contextDocFieldController, true);
-            searchOp.SetField(DummyKey, new DocumentReferenceController(GlobalDoc.GetId(), DummyKey), true);
+            searchOp.SetField(DummyKey, new ReferenceFieldModelController(GlobalDoc.GetId(), DummyKey), true);
             _searches.Add(searchOp);
-            return new DocumentReferenceController(searchOp.GetId(), DBSearchOperatorFieldModelController.ResultsKey);
+            return new ReferenceFieldModelController(searchOp.GetId(), DBSearchOperatorFieldModelController.ResultsKey);
         }
         public DBSearchOperatorFieldModelController(SearchOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {

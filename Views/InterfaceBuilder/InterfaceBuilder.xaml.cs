@@ -147,21 +147,21 @@ namespace Dash
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                layoutDocument = new TextingBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                layoutDocument = new ImageBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                layoutDocument = new CollectionBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                layoutDocument = new DocumentBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
-                layoutDocument = new RichTextBox(new DocumentReferenceController(docController.GetId(), key)).Document;
+                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             return layoutDocument;
         }

@@ -65,8 +65,8 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetLayoutPrototype(); 
-                var titleLayout = new TextingBox(new DocumentReferenceController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
-                var richTextLayout = new RichTextBox(new DocumentReferenceController(prototype.GetId(), RTFieldKey), 0, 50, 200, 200);
+                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
+                var richTextLayout = new RichTextBox(new ReferenceFieldModelController(prototype.GetId(), RTFieldKey), 0, 50, 200, 200);
                 var prototpeLayout = new StackingPanel(new DocumentController[] { titleLayout.Document, richTextLayout.Document }, true);
 
                 return prototpeLayout.Document;
@@ -106,8 +106,8 @@ namespace Dash
             {
                 var prototype = GetLayoutPrototype();
 
-                var titleLayout = new TextingBox(new DocumentReferenceController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
-                var imageLayout = new ImageBox(new DocumentReferenceController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
+                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
+                var imageLayout = new ImageBox(new ReferenceFieldModelController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
                 var prototpeLayout = new StackingPanel(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
@@ -144,7 +144,7 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototypeTextLayout =
-                    new TextingBox(new DocumentReferenceController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                    new TextingBox(new ReferenceFieldModelController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
 
                 return prototypeTextLayout.Document;
             }

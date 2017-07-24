@@ -2,19 +2,13 @@
 
 namespace Dash
 {
-    public abstract class ReferenceFieldModel : FieldModel
+    public class ReferenceFieldModel : FieldModel
     {
-        /// <summary>
-        /// Key of field within document that is referenced
-        /// </summary>
-        public Key FieldKey;
+        public FieldReference Reference;
 
-        //TODO Do we ever want to just create a reference field model without the controller?
-        //Some/many references are created temporarily so we don't really need a controller
-        //for them and we don't need to add them to the content controller, but it might be better to be safe than sorry
-        protected ReferenceFieldModel(Key fieldKey)
+        public ReferenceFieldModel(FieldReference reference)
         {
-            FieldKey = fieldKey;
+            Reference = reference;
         }
 
         public override bool Equals(object obj)
@@ -25,12 +19,12 @@ namespace Dash
                 return false;
             }
 
-            return refFieldModel.FieldKey.Equals(FieldKey);
+            return refFieldModel.Reference.Equals(Reference);
         }
 
         public override int GetHashCode()
         {
-            return FieldKey.GetHashCode();
+            return Reference.GetHashCode();
         }
     }
 }

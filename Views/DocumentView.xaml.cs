@@ -410,7 +410,7 @@ namespace Dash
                     {
                         var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
                         proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-                        proto.SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
+                        proto.SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
                         var keyField = docController.GetDereferencedField(key, new Context(docController));
                         Debug.WriteLine(keyField.ToString());
                     }
