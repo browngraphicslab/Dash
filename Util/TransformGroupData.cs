@@ -9,9 +9,9 @@ namespace Dash
 {
     public struct TransformGroupData
     {
-        public Point Translate { get; set; }
-        public Point ScaleCenter { get; set; }
-        public Point ScaleAmount { get; set; }
+        public Point Translate { get; private set; }
+        public Point ScaleCenter { get; private set; }
+        public Point ScaleAmount { get; private set; }
 
         public TransformGroupData(Point translate, Point scaleCenter, Point scaleAmount)
         {

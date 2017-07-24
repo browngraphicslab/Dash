@@ -96,12 +96,12 @@ namespace Dash
         {
             var layoutDocuments = GetLayoutDocumentCollection(docController, context).GetDocuments();
             ObservableCollection<FrameworkElement> itemsSource = new ObservableCollection<FrameworkElement>();
+            double maxHeight = 0;
             foreach (var layoutDocument in layoutDocuments)
             {
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-
                 itemsSource.Add(layoutView);
             }
             grid.ItemsSource = itemsSource;

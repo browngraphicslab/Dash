@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<dash:SelectionElement
     x:Class="Dash.CollectionView"
     x:Name="Control"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,9 +10,9 @@
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
-    ManipulationDelta="UserControl_ManipulationDelta"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    PointerWheelChanged="UserControl_PointerWheelChanged">
+    ManipulationMode="All"
+    ManipulationDelta="CollectionView_OnManipulationDelta"
+    PointerWheelChanged="CollectionView_OnPointerWheelChanged">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -23,9 +23,9 @@
             <Canvas x:Name="xMenuCanvas"/>
 
             <!-- Collectionview Content-->
-            <Grid x:Name="Grid" BorderThickness="0" Grid.Column="1"
-                  Background="{StaticResource CollectionViewBackground}" Padding="0">
-                <Canvas x:Name="xBackgroundTileContainer" SizeChanged="Grid_SizeChanged" />
+            <Grid x:Name="Grid" x:FieldModifier="public" BorderThickness="0" Grid.Column="1"
+                  Background="{StaticResource CollectionViewBackground}" Padding="0" SizeChanged="Grid_SizeChanged">
+                <Canvas x:Name="xBackgroundTileContainer" />
                 <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None"/>
                 <Grid x:Name="DocumentViewContainerGrid"
                       Background="Transparent"
@@ -39,7 +39,7 @@
                     <Grid.Clip>
                         <RectangleGeometry x:Name="ClipRect" />
                     </Grid.Clip>
-                    <ContentControl x:Name="xContentControl" />
+                    <ContentControl x:Name="xContentControl"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"
                          x:FieldModifier="public"
@@ -47,8 +47,11 @@
                          HorizontalAlignment="Right"
                          PointerPressed="ConnectionEllipse_OnPointerPressed"
                          PointerReleased="ConnectionEllipse_OnPointerReleased" />
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="xBackgroundClip"></RectangleGeometry>
+                </Grid.Clip>
             </Grid>
         </Grid>
     </Grid>
 
-</UserControl>
+</dash:SelectionElement>

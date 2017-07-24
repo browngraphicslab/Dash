@@ -42,11 +42,11 @@ namespace Dash
             CourtesyDocument box = null;
             if (fieldModelController is TextFieldModelController)
             {
-                box = new TextingBox(new DocumentReferenceController(docController.GetId(), key));
+                box = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key));
             }
             else if (fieldModelController is ImageFieldModelController)
             {
-                box = new ImageBox(new DocumentReferenceController(docController.GetId(), key));
+                box = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key));
             }
 
             // safety check

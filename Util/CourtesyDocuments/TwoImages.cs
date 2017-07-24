@@ -40,10 +40,10 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeImage1Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image1FieldKey), 0, 50, 200, 200);
-            var prototypeImage2Layout = new ImageBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), Image2FieldKey), 0, 250, 200, 200);
-            var prototypeAnnotatedLayout = new DocumentBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
-            var prototypeTextLayout = new TextingBox(new DocumentReferenceController(_prototypeTwoImages.GetId(), TextFieldKey), 0, 0, 200, 50);
+            var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), Image1FieldKey), 0, 50, 200, 200);
+            var prototypeImage2Layout = new ImageBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), Image2FieldKey), 0, 250, 200, 200);
+            var prototypeAnnotatedLayout = new DocumentBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 450, 200, 250);
+            var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), TextFieldKey), 0, 0, 200, 50);
             var prototypeLayout = new StackingPanel(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeTextLayout.Document, prototypeImage2Layout.Document }, true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);

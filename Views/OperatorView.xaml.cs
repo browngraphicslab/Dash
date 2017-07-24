@@ -36,7 +36,7 @@ namespace Dash
         /// </summary>
         public class IOReference
         {
-            public ReferenceFieldModelController ReferenceFieldModelController { get; set; }
+            public FieldReference FieldReference { get; set; }
             public bool IsOutput { get; set; }
             public bool IsReference { get; set; }
 
@@ -45,9 +45,9 @@ namespace Dash
             public FrameworkElement FrameworkElement { get; set; }
             public DocumentView ContainerView { get; set; }
 
-            public IOReference(ReferenceFieldModelController referenceFieldModelController, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container, bool isReference = false)
+            public IOReference(FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container, bool isReference = false)
             {
-                ReferenceFieldModelController = referenceFieldModelController;
+                FieldReference = fieldReference;
                 IsOutput = isOutput;
                 PointerArgs = args;
                 FrameworkElement = e;
@@ -72,7 +72,7 @@ namespace Dash
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var opCont = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>(null);
+            var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
 
             if (opCont is DBSearchOperatorFieldModelController)
             {
@@ -100,10 +100,11 @@ namespace Dash
         /// <param name="e"></param>
         void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput) {
 
-            string docId = (DataContext as DocumentReferenceController).DocId;
+
+            string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
+            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
                 (view.CurrentView as CollectionFreeformView).CanLink = true;
                 (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
@@ -145,10 +146,10 @@ namespace Dash
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput) {
-            string docId = (DataContext as DocumentReferenceController).DocId;
+            string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
+            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
 

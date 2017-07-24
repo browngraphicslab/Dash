@@ -23,6 +23,7 @@ namespace Dash
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
+            xAlignmentRow.Children.Add(new AlignmentSettings());
             BindOpacity(docController, context);
         }
 

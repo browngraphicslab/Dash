@@ -33,6 +33,15 @@ namespace Dash
             SetOpacityField(Document, DefaultOpacity, true, null);
         }
 
+        protected new static void SetupBindings(Image image, DocumentController docController,
+            Context context)
+        {
+            CourtesyDocument.SetupBindings(image, docController, context);
+
+            AddBinding(image, docController, OpacityKey, context, BindOpacity);
+            SetupImageBinding(image, docController, context);
+        }
+
         public override FrameworkElement makeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
         {
@@ -43,41 +52,76 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
         {
-            // use the reference to the image to get the image field model controller
-            var imFieldModelController = GetImageField(docController, context);
-            Debug.Assert(imFieldModelController != null);
-
             // create the image
             var image = new Image
             {
-                Stretch = Stretch.Fill // set image to fill container but ignore aspect ratio :/
-
+                Stretch = Stretch.Fill,// set image to fill container but ignore aspect ratio :/
+                CacheMode = new BitmapCache()
             };
-            image.CacheMode = new BitmapCache();
 
-            // make image source update when changed
-            BindSource(image, imFieldModelController);
-
-            // make image height resize
-            var heightController = GetHeightField(docController, context);
-            BindHeight(image, heightController);
-
-            // make image width resize
-            var widthController = GetWidthField(docController, context);
-            BindWidth(image, widthController);
+            SetupBindings(image, docController, context);
 
             // set up interactions with operations
-            BindOperationInteractions(image, GetImageReference(docController));
-
-            // make image opacity change
-            var opacityController = GetOpacityField(docController, context);
-            BindOpacity(image, opacityController);
+            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context));
 
             if (isInterfaceBuilderLayout)
             {
                 return new SelectableContainer(image, docController);
             }
             return image;
+        }
+
+        protected static void SetupImageBinding(Image image, DocumentController controller,
+            Context context)
+        {
+            var data = controller.GetField(DashConstants.KeyStore.DataKey);
+            if (data is ReferenceFieldModelController)
+            {
+                var reference = data as ReferenceFieldModelController;
+                var dataDoc = reference.GetDocumentController(context);
+                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
+                        {
+                            return;
+                        }
+                        BindImageSource(image, sender, args.Context, reference.FieldKey);
+                    });
+            }
+            BindImageSource(image, controller, context, DashConstants.KeyStore.DataKey);
+        }
+
+        protected static void BindImageSource(Image image, DocumentController docController, Context context, Key key)
+        {
+            var data = docController.GetDereferencedField(key, context) as ImageFieldModelController;
+            if (data == null)
+            {
+                return;
+            }
+            var sourceBinding = new Binding
+            {
+                Source = data,
+                Path = new PropertyPath(nameof(data.Data)),
+                Mode = BindingMode.OneWay
+            };
+            image.SetBinding(Image.SourceProperty, sourceBinding);
+        }
+
+        private static void BindOpacity(Image image, DocumentController docController, Context context)
+        {
+            var opacityController = docController.GetDereferencedField(OpacityKey, context) as NumberFieldModelController;
+            if (opacityController == null)
+            {
+                return;
+            }
+            var opacityBinding = new Binding
+            {
+                Source = opacityController,
+                Path = new PropertyPath(nameof(opacityController.Data)),
+                Mode = BindingMode.OneWay
+            };
+            image.SetBinding(UIElement.OpacityProperty, opacityBinding);
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -101,14 +145,6 @@ namespace Dash
 
         #region FieldGettersAndSetters
 
-        private static NumberFieldModelController GetOpacityField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(OpacityKey)?
-                .DereferenceToRoot<NumberFieldModelController>(context);
-        }
-
-
         private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask,
             Context context)
         {
@@ -118,42 +154,9 @@ namespace Dash
 
         }
 
-        private static ImageFieldModelController GetImageField(DocumentController docController, Context context)
-        {
-            context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.DataKey)
-                .DereferenceToRoot<ImageFieldModelController>(context);
-        }
-
         private static ReferenceFieldModelController GetImageReference(DocumentController docController)
         {
             return docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-        }
-
-        #endregion
-
-        #region Bindings
-
-        private static void BindSource(FrameworkElement renderElement, ImageFieldModelController imageField)
-        {
-            var sourceBinding = new Binding
-            {
-                Source = imageField,
-                Path = new PropertyPath(nameof(imageField.Data)),
-                Mode = BindingMode.OneWay,
-            };
-            renderElement.SetBinding(Image.SourceProperty, sourceBinding);
-        }
-
-        private static void BindOpacity(FrameworkElement renderElement, NumberFieldModelController opacityController)
-        {
-            var opacityBinding = new Binding
-            {
-                Source = opacityController,
-                Path = new PropertyPath(nameof(opacityController.Data)),
-                Mode = BindingMode.OneWay
-            };
-            renderElement.SetBinding(UIElement.OpacityProperty, opacityBinding);
         }
 
         #endregion

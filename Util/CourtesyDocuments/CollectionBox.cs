@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -18,11 +19,19 @@ namespace Dash
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
 
-        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400)
+        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400, NumberFieldModelController widthController = null, NumberFieldModelController heightController = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
+            if (widthController != null)
+            {
+                Document.SetField(DashConstants.KeyStore.WidthFieldKey, widthController, true);
+            }
+            if (heightController != null)
+            {
+                Document.SetField(DashConstants.KeyStore.HeightFieldKey, heightController, true);
+            }
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -47,11 +56,11 @@ namespace Dash
         public override FrameworkElement makeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
         {
-            return MakeView(docController, context, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null, isInterfaceBuilderLayout);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
@@ -67,10 +76,22 @@ namespace Dash
                 var collectionViewModel = new CollectionViewModel(docController, DashConstants.KeyStore.DataKey, context); //  collectionFieldModelController, context);
 
                 var view = new CollectionView(collectionViewModel);
+
+                if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
+                {
+                    // make image height resize
+                    var heightController = GetHeightField(docController, context);
+                    BindHeight(view, heightController);
+
+                    // make image width resize
+                    var widthController = GetWidthField(docController, context);
+                    BindWidth(view, widthController);
+                }
+
                 view.Opacity = opacityValue;
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(view, docController);
+                    return new SelectableContainer(view, docController, dataDocument);
                 }
                 return view;
             }

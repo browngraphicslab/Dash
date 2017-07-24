@@ -21,55 +21,55 @@ namespace Dash
 {
     public sealed partial class SearchCategoryItem : UserControl
     {
-        public ObservableCollection<object> OriginalContent { get; }
-        public ObservableCollection<object> NewContent { get; set; }
-        public PivotItem Item { get { return xPivot; } }
-        public Brush HeaderBackground { get { return xBorder.Background; } set { xBorder.Background = value; } }
+        /// <summary>
+        /// All objects under this category
+        /// </summary>
+        public ObservableCollection<object> ListContent { get; }
+
+        /// <summary>
+        /// Returns the list view used to display objects
+        /// </summary>
+        public ListView List { get { return xList; } }
+
+        /// <summary>
+        /// Display path of objects in the listview (replace with ToString overried?) 
+        /// </summary>
+        public string ListDisplayMemberPath { get; set; }
+
+        /// <summary>
+        /// Icon for this category
+        /// </summary>
+        public string Icon { get; }
+
+        /// <summary>
+        /// Title for this category
+        /// </summary>
+        public string Title { get; }
+
+        /// <summary>
+        /// Background color of the listview
+        /// </summary>
         public Color ContentBackGround { get { return xGridBackground.Color; } set { xGridBackground.Color = value; } }
-        public Brush HeaderForeground { get; set; }
+        
+        /// <summary>
+        /// ObservableCollection defines what is displayed list view and the action passed in defines what happens when an item is selected in the listview
+        /// </summary>
+        /// <param name="icon"></param>
+        /// <param name="title"></param>
+        /// <param name="content"></param>
+        /// <param name="action"></param>
         public SearchCategoryItem(string icon, string title, ObservableCollection<object> content, Action<object> action)
         {
             this.InitializeComponent();
-            this.SetHeader(icon, title);
-            OriginalContent = content;
-            NewContent = content;
+            Icon = icon;
+            Title = title;
+            ListContent = content;
+            ListDisplayMemberPath = xList.DisplayMemberPath;
+
             xList.Tapped += delegate
             {
-                action.Invoke(xList.SelectedItem);
+                action?.Invoke(xList.SelectedItem);
             };
-        }
-
-        private void SetHeader(string icon, string title)
-        {
-            // text part of the title
-            var pivotTitle = new TextBlock();
-            pivotTitle.Text = title;
-            pivotTitle.Foreground = new SolidColorBrush(Colors.White);
-            pivotTitle.HorizontalAlignment = HorizontalAlignment.Center;
-
-            // icon part of the title (can be empty)
-            var pivotIcon = new TextBlock();
-            pivotIcon.Text = icon;
-            pivotIcon.Foreground = new SolidColorBrush(Colors.White);
-            pivotIcon.HorizontalAlignment = HorizontalAlignment.Center;
-
-            // arrange layout of the header according to whether or not icon is empty
-            if (icon == string.Empty)
-            {
-                xBorder.Child = pivotTitle;
-                pivotTitle.FontSize = 12;
-            }
-            else
-            {
-                var stack = new StackPanel();
-                stack.Orientation = Orientation.Vertical;
-                pivotIcon.FontSize = 20;
-                pivotTitle.FontSize = 10;
-                pivotTitle.VerticalAlignment = VerticalAlignment.Center;
-                stack.Children.Add(pivotIcon);
-                stack.Children.Add(pivotTitle);
-                xBorder.Child = stack;
-            }
         }
     }
 }

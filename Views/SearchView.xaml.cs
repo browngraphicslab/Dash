@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -20,148 +21,176 @@ namespace Dash
 {
     public sealed partial class SearchView : UserControl
     {
-        /// <summary>
-        /// Maps PivotItems to the ListView they contain
-        /// </summary>
-        private Dictionary<PivotItem, ListView> _listViews = new Dictionary<PivotItem, ListView>();
-        /// <summary>
-        /// Maps ListView to the Category they display (to get the action specified for the category)
-        /// </summary>
-        private Dictionary<ListView, Category> _categories = new Dictionary<ListView,Category>();
-        /// <summary>
-        /// Maps PivotItems to the Borders around their headers (to change their backgrounds when selecte)
-        /// </summary>
-        private Dictionary<PivotItem, Border> _borders = new Dictionary<PivotItem, Border>();
-
-        public SearchView(List<Category> categories)
+        private Dictionary<PivotItem, SearchCategoryItem> _items = new Dictionary<PivotItem, SearchCategoryItem>();
+        public SearchView(List<SearchCategoryItem> categories)
         {
             this.InitializeComponent();
-            MakeCategories(categories);
+            this.MakeCategories(categories);
+            //this.SetManipulation();
+            xSearch.TextChanged += XSearch_TextChanged;
+            xSearch.QuerySubmitted += XSearch_QuerySubmitted;
         }
 
-        private void AddListTappedHandler(ListView list)
+        private void MakeCategories(List<SearchCategoryItem> categories)
         {
-            list.Tapped += delegate { this.ItemsSelected(list); };
-        }
-
-        /// <summary>
-        /// Invoke action specified for the category, passing in the selected item in the ListView
-        /// </summary>
-        /// <param name="listView"></param>
-        private void ItemsSelected(ListView listView)
-        {
-            var item = listView.SelectedItem;
-            _categories[listView].SelectedAction.Invoke(item);
-        }
-
-
-        private void MakeCategories(List<Category> categories)
-        {
-            foreach(var category in categories)
+            foreach (var category in categories)
             {
-                MakePivotItem(category);
+                var pivotItem = new PivotItem();
+                pivotItem.Content = category;
+                pivotItem.Header = MakePivotItemHeader(category);
+                _items.Add(pivotItem, category);
+                xRootPivot.Items?.Add(pivotItem);
             }
         }
 
-        private void MakePivotItem(Category category)
+        /// <summary>
+        /// Creates header for the pivot item
+        /// </summary>
+        /// <param name="category"></param>
+        /// <returns></returns>
+        private Border MakePivotItemHeader(SearchCategoryItem category)
         {
-            var pivotItem = new PivotItem();
-
-            // border around the header of the pivotitem
-            var border = new Border();
-            border.Width = 65;
-            border.Height = 45;
-            border.CornerRadius = new CornerRadius(5);
-            border.Background = new SolidColorBrush(Colors.Gray);
-
-            // text part of the title
-            var pivotTitle = new TextBlock();
-            pivotTitle.Text = category.Title;
-            pivotTitle.Foreground = new SolidColorBrush(Colors.White);
-            pivotTitle.HorizontalAlignment = HorizontalAlignment.Center;
-
-            // icon part of the title (can be empty)
-            var pivotIcon = new TextBlock();
-            pivotIcon.Text = category.Icon;
-            pivotIcon.Foreground = new SolidColorBrush(Colors.White);
-            pivotIcon.HorizontalAlignment = HorizontalAlignment.Center;
-
-            // arrange layout of the header accordingly
-            if (category.Icon == string.Empty)
+            var iconTextBlock = new TextBlock()
             {
-                border.Child = pivotTitle;
-                pivotTitle.FontSize = 12;
-            } else
+                Text = category.Icon,
+                Foreground = new SolidColorBrush(Colors.White),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                FontSize = 20
+            };
+
+            var titleTextBlock = new TextBlock()
+            {
+                Text = category.Title,
+                FontSize= 10,
+                Foreground = new SolidColorBrush(Colors.White),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var headerBorder = new Border()
+            {
+                Width = 75,
+                Height = 45,
+                CornerRadius = new CornerRadius(5)
+            };
+            if (category.Icon != string.Empty && category.Icon != null)
             {
                 var stack = new StackPanel();
-                pivotIcon.FontSize = 20;
-                pivotTitle.FontSize = 10;
-                pivotTitle.VerticalAlignment = VerticalAlignment.Center;
-                stack.Children.Add(pivotIcon);
-                stack.Children.Add(pivotTitle);
-                border.Child = stack;
+                stack.Orientation = Orientation.Vertical;
+                stack.Children.Add(iconTextBlock);
+                stack.Children.Add(titleTextBlock);
+                headerBorder.Child = stack;
             }
-            pivotItem.Header = border;
-
-            // grid around the listview that displays the members of the category / search results
-            var grid = new Grid();
-            grid.CornerRadius = new CornerRadius(10);
-            grid.Margin = new Thickness(0, 10, 0, 10);
-
-            var background = new SolidColorBrush(Colors.White);
-            background.Opacity = 0.5;
-            grid.Background = background;
-
-            // set up listview 
-            var listView = new ListView();
-            // set up binding, what should generic search bind to? (what to search through)
-            var listBinding = new Binding
+            else
             {
-                Source = category.List,
-                Path = new PropertyPath(nameof(OperatorFieldModel.Type)),
-                Mode = BindingMode.OneWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            listView.SetBinding(ListView.ItemsSourceProperty, listBinding);
-            AddListTappedHandler(listView);
-
-            _listViews.Add(pivotItem, listView);
-            _categories.Add(listView, category);
-            _borders.Add(pivotItem, border);
-            pivotItem.Content = listView;
-            xRootPivot.Items.Add(pivotItem);
+                titleTextBlock.FontSize = 10;
+                titleTextBlock.VerticalAlignment = VerticalAlignment.Center;
+                headerBorder.Child = titleTextBlock;
+            }
+            return headerBorder;
         }
 
         /// <summary>
-        /// Highlights header of the selected PivotItem
+        /// Adds handler to move the control
+        /// </summary>
+        private void SetManipulation()
+        {
+            ManipulationMode = ManipulationModes.All;
+            RenderTransform = new CompositeTransform();
+            ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
+            {
+                var transform = RenderTransform as CompositeTransform;
+                if (transform != null)
+                {
+                    transform.TranslateX += e.Delta.Translation.X;
+                    transform.TranslateY += e.Delta.Translation.Y;
+                }
+            };
+        }
+
+        private void XSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            this.UpdateList(args.QueryText);
+        }
+
+        /// <summary>
+        /// Updates items source of the current listview to reflect search results within the current category
+        /// </summary>
+        /// <param name="query"></param>
+        private void UpdateList(string query)
+        {
+            var results = GetMatches(query);
+            _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = results;
+        }
+
+        /// <summary>
+        /// Returns results that match the query
+        /// </summary>
+        /// <param name="searchInput"></param>
+        /// <returns></returns>
+        private ObservableCollection<object> GetMatches(string searchInput)
+        {
+            ObservableCollection<object> items = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
+            ObservableCollection<object> suggestions = new ObservableCollection<object>();
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    // don't know what to filter yet (how to filter document, collection, fields... etc.)
+                    var type = item.ToString().ToLower();
+                    var input = searchInput.ToLower();
+                    if (type.Contains(input))
+                    {
+                        suggestions.Add(item);
+                    }
+                }
+            }
+            return suggestions;
+        }
+
+        /// <summary>
+        /// Generates suggestions for searchbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void XSearch_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                if (sender.Text.Length > 0)
+                {
+                    sender.ItemsSource = GetMatches(sender.Text);
+                }
+                else
+                {
+                    sender.ItemsSource = null;
+                    _items[xRootPivot.SelectedItem as PivotItem].List.ItemsSource = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Highlights the header of the selected pivot item
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void xRootPivot_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            foreach(var border in _borders.Values)
+            foreach(var item in xRootPivot.Items)
             {
-                border.Background = new SolidColorBrush(Colors.Gray);
+                var pivotItem = item as PivotItem;
+                var headerBorder = pivotItem.Header as Border;
+                if (xRootPivot.SelectedItem as PivotItem == pivotItem)
+                {
+                    headerBorder.Background = new SolidColorBrush(Colors.SteelBlue);
+                }
+                else
+                {
+                    headerBorder.Background = new SolidColorBrush(Colors.Gray);
+                }
             }
-            _borders[xRootPivot.SelectedItem as PivotItem].Background = new SolidColorBrush(Colors.SteelBlue);
+            xSearch.ItemsSource = null;
+            // doesn't update list
+//            UpdateList(xSearch.Text);
         }
     }
-
-    /// <summary>
-    /// Holds information for a category in the SearchView
-    /// </summary>
-    public class Category{
-        public string Icon { get; set; }
-        public string Title { get; set; }
-        public List<object> List { get; set; }
-        public Action<object> SelectedAction;
-        public Category(string icon, string title, List<object> list, Action<object> action)
-        {
-            Icon = icon;
-            Title = title;
-            List = list;
-            SelectedAction = action;
-        }
-    }
-
 }

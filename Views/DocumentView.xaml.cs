@@ -21,7 +21,7 @@ using Dash.Controllers.Operators;
 namespace Dash
 {
 
-    public sealed partial class DocumentView : UserControl
+    public sealed partial class DocumentView : SelectionElement
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
@@ -313,6 +313,8 @@ namespace Dash
 
   #region Menu
 
+
+
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
@@ -320,10 +322,7 @@ namespace Dash
                 return;
             }
 
-            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
-                ViewModel.OpenMenu();
-            else
-                ViewModel.CloseMenu();
+            OnSelected();
             e.Handled = true;
         }
 
@@ -411,8 +410,9 @@ namespace Dash
                     {
                         var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
                         proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
-                        proto.SetField(key, new DocumentReferenceController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+
+                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
+                        proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
                     }
                     else if (valu.StartsWith("@"))
                     {
@@ -443,5 +443,19 @@ namespace Dash
             PointerWheelChanged -= This_PointerWheelChanged;
         }
         #endregion
+
+        protected override void OnActivated(bool isSelected)
+        {
+            
+        }
+
+        public override void OnLowestActivated(bool isLowestSelected)
+        {
+            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+                ViewModel.OpenMenu();
+            else
+                ViewModel.CloseMenu();
+        }
+        
     }
 }

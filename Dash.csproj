@@ -93,28 +93,36 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
+      <DependentUpon>AlignmentSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
-    <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
-    <Compile Include="Controllers\DocumentReferenceController.cs" />
     <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
     <Compile Include="Converters\DoubleToBoolConverter.cs" />
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Views\SelectionElement.xaml.cs">
+      <DependentUpon>SelectionElement.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
       <DependentUpon>FreeformSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
-    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
+    <Compile Include="Views\GenericSearchView.xaml.cs">
+      <DependentUpon>GenericSearchView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
-    <Compile Include="Views\OperatorsFilter.xaml.cs">
-      <DependentUpon>OperatorsFilter.xaml</DependentUpon>
+    <Compile Include="Views\SearchView.xaml.cs">
+      <DependentUpon>SearchView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OperatorSearchView.xaml.cs">
+      <DependentUpon>OperatorSearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
@@ -134,6 +142,9 @@
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Util\DocumentFieldReference.cs" />
+    <Compile Include="Util\DocumentPointerFieldReference.cs" />
+    <Compile Include="Util\FieldReference.cs" />
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
     <Compile Include="Views\RichTextSettings.xaml.cs">
       <DependentUpon>RichTextSettings.xaml</DependentUpon>
@@ -352,8 +363,8 @@
     <Compile Include="Views\InterfaceBuilder\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SearchView.xaml.cs">
-      <DependentUpon>SearchView.xaml</DependentUpon>
+    <Compile Include="Views\SearchCategoryItem.xaml.cs">
+      <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
@@ -413,13 +424,29 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\SelectionElement.xaml">
+    <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\InterfaceBuilder\FreeformSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\OperatorsFilter.xaml">
+    <Page Include="Views\GenericSearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OperatorSearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="RadialMenu\CenterButton.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -600,7 +627,7 @@
     <Page Include="Views\InterfaceBuilder\TextSettings.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\SearchView.xaml">
+    <Page Include="Views\SearchCategoryItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

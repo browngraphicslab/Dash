@@ -53,7 +53,7 @@ namespace Dash
             {
                 var parent = refToData.GetDocumentController(context);
                 Debug.Assert(parent != null);
-                parent.SetField((refToData as ReferenceFieldModelController).ReferenceFieldModel.FieldKey, defaultFieldModelController, true);
+                parent.SetField((refToData as ReferenceFieldModelController).FieldKey, defaultFieldModelController, true);
                 fieldModelController = refToData.DereferenceToRoot(context);
             }
             return fieldModelController;
@@ -76,6 +76,10 @@ namespace Dash
             docController.AddFieldUpdatedListener(k,
                 delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
+                    if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                    {
+                        return;
+                    }
                     bindingDelegate(element, sender, args.Context);//TODO Should be context or args.Context?
                 });
         }
@@ -140,6 +144,7 @@ namespace Dash
             var verticalAlignmentFmc = docController.GetField(VerticalAlignmentKey) as TextFieldModelController;
             if (verticalAlignmentFmc == null)
             {
+                return;
             }
             Binding binding = new Binding
             {
@@ -262,7 +267,7 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, ReferenceFieldModelController fieldModelController)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
             renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
@@ -284,7 +289,7 @@ namespace Dash
                 if (view == null) return; // we can't always assume we're on a collection
                     view.CanLink = true;
                 if (view.CurrentView is CollectionFreeformView)
-                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldModelController, true, view.PointerArgs, renderElement,
+                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };
@@ -302,7 +307,7 @@ namespace Dash
                 {
                     view.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
-                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldModelController, true, args, renderElement,
+                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(reference, true, args, renderElement,
                             renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -314,7 +319,7 @@ namespace Dash
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
-                    new OperatorView.IOReference(fieldModelController, false, args, renderElement,
+                    new OperatorView.IOReference(reference, false, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };
@@ -406,9 +411,32 @@ namespace Dash
             document.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
+
+        public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
+        {
+            var horizontalAlignmentController = 
+                document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
+            if (horizontalAlignmentController == null)
+            {
+                return HorizontalAlignment.Stretch;
+            }
+            return (HorizontalAlignment) Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
+        }
+
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
             document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+        }
+
+        public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
+        {
+            var verticalAlignmentController =
+                document.GetField(CourtesyDocument.VerticalAlignmentKey) as TextFieldModelController;
+            if (verticalAlignmentController == null)
+            {
+                return VerticalAlignment.Stretch;
+            }
+            return (VerticalAlignment)Enum.Parse(typeof(VerticalAlignment), verticalAlignmentController?.Data);
         }
 
         public static void SetGridRow(this DocumentController document, int row)

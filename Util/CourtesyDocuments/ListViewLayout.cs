@@ -101,8 +101,23 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-
-                itemsSource.Add(layoutView);
+                //if (isInterfaceBuilder)
+                //{
+                //    Border border = new Border {Child = layoutView};
+                //    itemsSource.Add(border);
+                //    layoutView.Loaded += delegate(object sender, RoutedEventArgs args)
+                //        {
+                //            border.Width = layoutView.ActualWidth + 20;
+                //            border.Height = layoutView.ActualHeight + 20;
+                //        };
+                //    layoutView.VerticalAlignment = VerticalAlignment.Center;
+                //    layoutView.HorizontalAlignment = HorizontalAlignment.Center;
+                //}
+                //else
+                //{
+                    itemsSource.Add(layoutView);
+                //}
+                
             }
             list.ItemsSource = itemsSource;
         }
