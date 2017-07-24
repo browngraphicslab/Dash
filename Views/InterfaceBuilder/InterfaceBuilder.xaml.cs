@@ -22,7 +22,7 @@ namespace Dash
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
-        public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
+        public static readonly string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
         public enum DisplayTypeEnum { List, Grid, Freeform } 
 
 
@@ -35,7 +35,7 @@ namespace Dash
             SetUpInterfaceBuilder(docController, new Context(docController));
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
 
-            SetUpButtons(); 
+            SetUpButtons();
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
@@ -67,19 +67,22 @@ namespace Dash
         {
             var listSymbol = new SymbolIcon()
             {
-                Symbol = Symbol.List, Foreground = new SolidColorBrush(Colors.White)
+                Symbol = Symbol.List,
+                Foreground = new SolidColorBrush(Colors.White)
             };
             ListButton.Content = new Border { Child = listSymbol };
 
             var freeformSymbol = new SymbolIcon()
             {
-                Symbol = Symbol.View, Foreground = new SolidColorBrush(Colors.White)
+                Symbol = Symbol.View,
+                Foreground = new SolidColorBrush(Colors.White)
             };
             FreeformButton.Content = new Border { Child = freeformSymbol };
 
             var gridSymbol = new SymbolIcon()
             {
-                Symbol = Symbol.ViewAll, Foreground = new SolidColorBrush(Colors.White)
+                Symbol = Symbol.ViewAll,
+                Foreground = new SolidColorBrush(Colors.White)
             };
             GridButton.Content = new Border { Child = gridSymbol };
         }
@@ -257,7 +260,7 @@ namespace Dash
             var item = e.Items.FirstOrDefault();
             if (item is Button)
             {
-                var defaultNewSize = new Size(400, 400);
+                //var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
                 switch (((button.Content as Border).Child as SymbolIcon).Symbol)
                 {

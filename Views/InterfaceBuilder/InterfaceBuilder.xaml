@@ -56,7 +56,7 @@
                   Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" />
             </Grid>
 
-            <GridView Grid.Row="2" HorizontalAlignment="Center" Margin="312,0,311,0" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting">
+            <GridView Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" DragItemsStarting="ListViewBase_OnDragItemsStarting" CanDragItems="True" > 
                 <Button x:Name="ListButton" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False">
                 </Button>

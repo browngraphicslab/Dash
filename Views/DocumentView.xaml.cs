@@ -268,7 +268,6 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            // TODO KB change this so that if it's opened... cliprect should be like 50 units less wide 
             if (ViewModel.MenuOpen)
             {
                 ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 50, e.NewSize.Height);

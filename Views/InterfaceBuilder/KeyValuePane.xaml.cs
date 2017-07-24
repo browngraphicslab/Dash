@@ -75,7 +75,6 @@ namespace Dash
                 ListItemSource.Add(new KeyFieldContainer(key, cont));
 
                 _documentControllerDataContext.SetField(key, cont, true);
-
                 xNewKeyField.Text = "";
                 xNewValueField.Text = "";  
             }
