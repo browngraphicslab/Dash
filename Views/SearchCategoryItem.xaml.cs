@@ -23,53 +23,23 @@ namespace Dash
     {
         public ObservableCollection<object> OriginalContent { get; }
         public ObservableCollection<object> NewContent { get; set; }
-        public PivotItem Item { get { return xPivot; } }
-        public Brush HeaderBackground { get { return xBorder.Background; } set { xBorder.Background = value; } }
+        public string ListDisplayMemberPath { get; set; }
+        public string Icon { get; }
+        public string Title { get; }
         public Color ContentBackGround { get { return xGridBackground.Color; } set { xGridBackground.Color = value; } }
-        public Brush HeaderForeground { get; set; }
+        
         public SearchCategoryItem(string icon, string title, ObservableCollection<object> content, Action<object> action)
         {
             this.InitializeComponent();
-            this.SetHeader(icon, title);
+            Icon = icon;
+            Title = title;
             OriginalContent = content;
             NewContent = content;
+            ListDisplayMemberPath = xList.DisplayMemberPath;
             xList.Tapped += delegate
             {
                 action.Invoke(xList.SelectedItem);
             };
-        }
-
-        private void SetHeader(string icon, string title)
-        {
-            // text part of the title
-            var pivotTitle = new TextBlock();
-            pivotTitle.Text = title;
-            pivotTitle.Foreground = new SolidColorBrush(Colors.White);
-            pivotTitle.HorizontalAlignment = HorizontalAlignment.Center;
-
-            // icon part of the title (can be empty)
-            var pivotIcon = new TextBlock();
-            pivotIcon.Text = icon;
-            pivotIcon.Foreground = new SolidColorBrush(Colors.White);
-            pivotIcon.HorizontalAlignment = HorizontalAlignment.Center;
-
-            // arrange layout of the header according to whether or not icon is empty
-            if (icon == string.Empty)
-            {
-                xBorder.Child = pivotTitle;
-                pivotTitle.FontSize = 12;
-            }
-            else
-            {
-                var stack = new StackPanel();
-                stack.Orientation = Orientation.Vertical;
-                pivotIcon.FontSize = 20;
-                pivotTitle.FontSize = 10;
-                pivotTitle.VerticalAlignment = VerticalAlignment.Center;
-                stack.Children.Add(pivotIcon);
-                stack.Children.Add(pivotTitle);
-                xBorder.Child = stack;
-            }
         }
     }
 }

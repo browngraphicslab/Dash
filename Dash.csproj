@@ -106,6 +106,12 @@
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
+    <Compile Include="Views\GenericSearchView.xaml.cs">
+      <DependentUpon>GenericSearchView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OperatorSearchView.xaml.cs">
+      <DependentUpon>OperatorSearchView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\OperatorsFilter.xaml.cs">
       <DependentUpon>OperatorsFilter.xaml</DependentUpon>
     </Compile>
@@ -318,6 +324,9 @@
     <Compile Include="Views\InterfaceBuilder\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\SearchCategoryItem.xaml.cs">
+      <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
@@ -378,6 +387,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\GenericSearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OperatorSearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\OperatorsFilter.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -551,6 +568,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\TextSettings.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\SearchCategoryItem.xaml">
+      <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\SearchView.xaml">

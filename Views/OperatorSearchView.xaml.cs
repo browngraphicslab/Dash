@@ -20,17 +20,31 @@ namespace Dash
 {
     public sealed partial class OperatorSearchView : UserControl
     {
+        private static OperatorSearchView instance;
+        public static OperatorSearchView Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new OperatorSearchView();
+                }
+                return instance;
+            }
+        }
+
         public OperatorSearchView()
         {
             this.InitializeComponent();
+            this.MakeView();
         }
 
         private void MakeView()
         {
-            var arithmetics = new ObservableCollection<string>() { "Divide" };
-            var sets = new ObservableCollection<string>() { "Union", "Intersection" };
-            var maps = new ObservableCollection<string>() { "ImageToUri" };
-            var all = new ObservableCollection<string>(){ "Divide", "Union", "Intersection", "ImageToUri" };
+            var arithmetics = new ObservableCollection<object>() { "Divide" };
+            var sets = new ObservableCollection<object>() { "Union", "Intersection" };
+            var maps = new ObservableCollection<object>() { "ImageToUri" };
+            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri" };
 
             var categories = new List<SearchCategoryItem>();
             categories.Add(new SearchCategoryItem("∀", "ALL",all, Actions.AddOperator));

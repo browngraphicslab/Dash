@@ -22,6 +22,7 @@ namespace Dash
     public sealed partial class GenericSearchView : UserControl
     {
         private Dictionary<PivotItem, SearchCategoryItem> _items = new Dictionary<PivotItem, SearchCategoryItem>();
+        private Dictionary<PivotItem, Border> _headers = new Dictionary<PivotItem, Border>();
         public GenericSearchView(List<SearchCategoryItem> categories)
         {
             this.InitializeComponent();
@@ -35,9 +36,53 @@ namespace Dash
         {
             foreach (var category in categories)
             {
-                _items.Add(category.Item, category);
-                xRootPivot.Items.Add(category.Item);
+                var pivotItem = new PivotItem();
+                pivotItem.Content = category;
+                pivotItem.Header = MakePivotItemHeader(category);
+                _items.Add(pivotItem, category);
+                xRootPivot.Items?.Add(pivotItem);
             }
+        }
+
+        private Border MakePivotItemHeader(SearchCategoryItem category)
+        {
+            var iconTextBlock = new TextBlock()
+            {
+                Text = category.Icon,
+                Foreground = new SolidColorBrush(Colors.White),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                FontSize = 20
+            };
+
+            var titleTextBlock = new TextBlock()
+            {
+                Text = category.Title,
+                FontSize= 10,
+                Foreground = new SolidColorBrush(Colors.White),
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var headerBorder = new Border()
+            {
+                Width = 65,
+                Height = 45,
+                CornerRadius = new CornerRadius(5)
+            };
+            if (category.Icon != string.Empty && category.Icon != null)
+            {
+                var stack = new StackPanel();
+                stack.Orientation = Orientation.Vertical;
+                stack.Children.Add(iconTextBlock);
+                stack.Children.Add(titleTextBlock);
+                headerBorder.Child = stack;
+            }
+            else
+            {
+                titleTextBlock.FontSize = 12;
+                titleTextBlock.VerticalAlignment = VerticalAlignment.Center;
+                headerBorder.Child = titleTextBlock;
+            }
+            return headerBorder;
         }
 
         private void XSearch_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
@@ -123,10 +168,17 @@ namespace Dash
             foreach(var item in xRootPivot.Items)
             {
                 var pivotItem = item as PivotItem;
-                var category = _items[pivotItem];
-                category.HeaderBackground = new SolidColorBrush(Colors.Gray);
+                var headerBorder = pivotItem.Header as Border;
+                if (xRootPivot.SelectedItem as PivotItem == pivotItem)
+                {
+                    headerBorder.Background = new SolidColorBrush(Colors.SteelBlue);
+                }
+                else
+                {
+                    headerBorder.Background = new SolidColorBrush(Colors.Gray);
+                }
             }
-            _items[xRootPivot.SelectedItem as PivotItem].HeaderBackground = new SolidColorBrush(Colors.SteelBlue);
+//            _items[xRootPivot.SelectedItem as PivotItem].HeaderBackground = new SolidColorBrush(Colors.SteelBlue);
             xSearch.ItemsSource = null;
         }
     }
