@@ -322,14 +322,24 @@ namespace Dash
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
-            {
                 return;
-            }
+
+            TransformGroup tg = new TransformGroup();
+            tg.Children.Add(OuterGrid.RenderTransform); 
 
             if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
+            {
                 ViewModel.OpenMenu();
+                tg.Children.Add(new TranslateTransform { X = -50, Y = 0 }); 
+                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+            }
             else
+            {
                 ViewModel.CloseMenu();
+                tg.Children.Add(new TranslateTransform { X = 50, Y = 0 });
+                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+
+            }
             e.Handled = true;
         }
 
