@@ -91,6 +91,20 @@ namespace Dash
         {
             DocumentController opModel = null;
             var type = obj as string;
+            var freeForm =
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()
+                    .CurrentView as CollectionFreeformView;
+            var searchView = OperatorSearchView.Instance.SearchView;
+            var border = searchView.GetFirstDescendantOfType<Border>();
+            var position = new Point(Canvas.GetLeft(border), Canvas.GetTop(border));
+            var translate = new Point();
+            if (freeForm != null)
+            {
+                var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                Debug.Assert(r != null);
+                translate = r.TransformPoint(new Point(position.X, position.Y));
+            }
+
             if (type == null) return;
             if (type == "Divide")
             {
@@ -102,7 +116,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var opvm = new DocumentViewModel(opModel);
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
                 view.DataContext = opvm;
             }
@@ -116,7 +133,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var unionOpvm = new DocumentViewModel(opModel);
+                var unionOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 unionView.DataContext = unionOpvm;
             }
             else if (type == "Intersection")
@@ -130,7 +150,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var intersectOpvm = new DocumentViewModel(opModel);
+                var intersectOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 intersectView.DataContext = intersectOpvm;
             }
             else if (type == "ImageToUri")
@@ -144,7 +167,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var imgOpvm = new DocumentViewModel(opModel);
+                var imgOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 imgOpView.DataContext = imgOpvm;
             }
             if (opModel != null)
