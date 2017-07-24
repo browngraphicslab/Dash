@@ -11,6 +11,10 @@ namespace Dash
     {
         public static UIElement CreateSettingsPane(DocumentController layoutDocument, DocumentController dataDocument)
         {
+            if (dataDocument != null)
+            {
+                return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
+            }
             var type = layoutDocument.DocumentType;
             if (type == ImageBox.DocumentType)
             {
@@ -32,10 +36,7 @@ namespace Dash
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
-            if (dataDocument != null)
-            {
-                return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
-            }
+            
 
             Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
             

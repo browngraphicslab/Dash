@@ -27,6 +27,7 @@ namespace Dash
     {
         public static MainPage Instance;
         private RadialMenuView _radialMenu;
+        public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
 
 
         public DocumentController MainDocument { get; private set; }
@@ -44,7 +45,7 @@ namespace Dash
             // create the collection document model using a request
             var fields = new Dictionary<Key, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
-            MainDocument = new DocumentController(fields, new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E"));
+            MainDocument = new DocumentController(fields, MainDocumentType);
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);

@@ -145,12 +145,14 @@ namespace Dash
                     var scaleCenterFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, context) as
                             PointFieldModelController;
-                    scaleCenterFieldModelController.Data = value.ScaleCenter;
+                    if (scaleCenterFieldModelController != null)
+                        scaleCenterFieldModelController.Data = value.ScaleCenter;
                     // set scale amount
                     var scaleAmountFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, context) as
                             PointFieldModelController;
-                    scaleAmountFieldModelController.Data = value.ScaleAmount;
+                    if (scaleAmountFieldModelController != null)
+                        scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
             }
         }
@@ -256,13 +258,18 @@ namespace Dash
                 var scaleAmountFieldModelController =
                     activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey,
                         new Context(DocumentController)) as PointFieldModelController;
-                GroupTransform = new TransformGroupData(posFieldModelController.Data,
-                    scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
-                posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-                scaleCenterFieldModelController.FieldModelUpdated +=
-                    ScaleCenterFieldModelController_FieldModelUpdatedEvent;
-                scaleAmountFieldModelController.FieldModelUpdated +=
-                    ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+                if (scaleCenterFieldModelController != null)
+                {
+                    if (scaleAmountFieldModelController != null)
+                        GroupTransform = new TransformGroupData(posFieldModelController.Data,
+                            scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
+                    posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+                    scaleCenterFieldModelController.FieldModelUpdated +=
+                        ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+                }
+                if (scaleAmountFieldModelController != null)
+                    scaleAmountFieldModelController.FieldModelUpdated +=
+                        ScaleAmountFieldModelController_FieldModelUpdatedEvent;
             }
             
         }
@@ -351,22 +358,16 @@ namespace Dash
 
         public void CloseMenu()
         {
-            if (MenuOpen)
-            {
-                DocMenuVisibility = Visibility.Collapsed;
-                MenuColumnWidth = new GridLength(0);
-                MenuOpen = false;
-            }
+            DocMenuVisibility = Visibility.Collapsed;
+            MenuColumnWidth = new GridLength(0);
+            MenuOpen = false;
         }
 
         public void OpenMenu()
         {
-            if (!MenuOpen)
-            {
-                DocMenuVisibility = Visibility.Visible;
-                MenuColumnWidth = new GridLength(50);
-                MenuOpen = true;
-            }
+            DocMenuVisibility = Visibility.Visible;
+            MenuColumnWidth = new GridLength(50);
+            MenuOpen = true;
         }
 
         public DocumentController Copy()

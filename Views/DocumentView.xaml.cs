@@ -21,7 +21,7 @@ using Dash.Controllers.Operators;
 namespace Dash
 {
 
-    public sealed partial class DocumentView : UserControl
+    public sealed partial class DocumentView : SelectionElement
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
@@ -312,6 +312,8 @@ namespace Dash
 
   #region Menu
 
+
+
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
@@ -319,10 +321,7 @@ namespace Dash
                 return;
             }
 
-            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
-                ViewModel.OpenMenu();
-            else
-                ViewModel.CloseMenu();
+            OnSelected();
             e.Handled = true;
         }
 
@@ -443,5 +442,19 @@ namespace Dash
             PointerWheelChanged -= This_PointerWheelChanged;
         }
         #endregion
+
+        protected override void OnActivated(bool isSelected)
+        {
+            
+        }
+
+        public override void OnLowestActivated(bool isLowestSelected)
+        {
+            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+                ViewModel.OpenMenu();
+            else
+                ViewModel.CloseMenu();
+        }
+        
     }
 }

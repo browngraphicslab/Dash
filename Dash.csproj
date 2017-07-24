@@ -106,6 +106,9 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Views\SelectionElement.xaml.cs">
+      <DependentUpon>SelectionElement.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
       <DependentUpon>FreeformSettings.xaml</DependentUpon>
     </Compile>
@@ -421,6 +424,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Views\SelectionElement.xaml">
+    <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
