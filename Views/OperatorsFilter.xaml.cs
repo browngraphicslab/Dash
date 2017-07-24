@@ -164,21 +164,30 @@ namespace Dash
         private DocumentController CreateOperator(string type)
         {
             DocumentController opModel = null;
-            if (type == null) return null;
-            if (type == "Divide")
+            var transform = RenderTransform as CompositeTransform;
+            if (type == null)
+            {
+                return null;
+            }
+            else if (type == "Divide")
             {
                 opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
                 var view = new DocumentView
                 {
                     Width = 200,
                     Height = 200
                 };
-                var opvm = new DocumentViewModel(opModel);
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    //GroupTransform = new TransformGroupData(new Point(transform.TranslateX, transform.TranslateY),
+                    //    new Point(), new Point(1, 1))
+                };
                 //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
                 view.DataContext = opvm;
-            } else if (type == "Union")
+            }
+            else if (type == "Union")
             {
                 opModel =
                     OperatorDocumentModel.CreateOperatorDocumentModel(
@@ -188,9 +197,14 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var unionOpvm = new DocumentViewModel(opModel);
+                var unionOpvm = new DocumentViewModel(opModel)
+                {
+                    //GroupTransform = new TransformGroupData(new Point(transform.TranslateX, transform.TranslateY),
+                    //    new Point(), new Point(1, 1))
+                };
                 unionView.DataContext = unionOpvm;
-            } else if (type == "Intersection")
+            }
+            else if (type == "Intersection")
             {
                 // add union operator for testing 
                 opModel =
@@ -201,9 +215,14 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var intersectOpvm = new DocumentViewModel(opModel);
+                var intersectOpvm = new DocumentViewModel(opModel)
+                {
+                    //GroupTransform = new TransformGroupData(new Point(transform.TranslateX, transform.TranslateY),
+                    //    new Point(), new Point(1, 1))
+                };
                 intersectView.DataContext = intersectOpvm;
-            } else if (type == "ImageToUri")
+            }
+            else if (type == "ImageToUri")
             {
                 // add image url -> image operator for testing
                 opModel =
@@ -214,7 +233,11 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var imgOpvm = new DocumentViewModel(opModel);
+                var imgOpvm = new DocumentViewModel(opModel)
+                {
+                    //GroupTransform = new TransformGroupData(new Point(transform.TranslateX, transform.TranslateY),
+                    //    new Point(), new Point(1, 1))
+                };
                 imgOpView.DataContext = imgOpvm;
             }
             return opModel;
