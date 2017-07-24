@@ -411,9 +411,32 @@ namespace Dash
             document.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
+
+        public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
+        {
+            var horizontalAlignmentController = 
+                document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
+            if (horizontalAlignmentController == null)
+            {
+                return HorizontalAlignment.Stretch;
+            }
+            return (HorizontalAlignment) Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
+        }
+
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
             document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+        }
+
+        public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
+        {
+            var verticalAlignmentController =
+                document.GetField(CourtesyDocument.VerticalAlignmentKey) as TextFieldModelController;
+            if (verticalAlignmentController == null)
+            {
+                return VerticalAlignment.Stretch;
+            }
+            return (VerticalAlignment)Enum.Parse(typeof(VerticalAlignment), verticalAlignmentController?.Data);
         }
 
         public static void SetGridRow(this DocumentController document, int row)
