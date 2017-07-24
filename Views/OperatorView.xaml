@@ -43,6 +43,7 @@
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
+            <TextBox x:Name="SearchString" Style="{StaticResource xPlainTextBox}" Visibility="Collapsed" TextChanged="SearchString_TextChanged" Grid.Column="1" Text="--Search--" Width="150" Height="30" Foreground="White" />
 
             <!-- Input Operator Handles & Labels-->
             <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None">

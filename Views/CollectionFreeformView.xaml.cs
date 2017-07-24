@@ -313,6 +313,10 @@ namespace Dash
             if (_currReference != null)
             {
                 if (_currReference.IsOutput) {
+                    var opDoc = (_currReference.ContainerView.DataContext as DocumentViewModel)?.DocumentController;
+                    var searchOp = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+                    if (searchOp != null) {
+                        var outType = searchOp.Outputs[_currReference.ReferenceFieldModelController.FieldKey];
                         if (outType == TypeInfo.Collection)
                         {
 
