@@ -527,7 +527,7 @@ namespace Dash
             }
             if (DocumentType == CollectionBox.DocumentType)
             {
-                return CollectionBox.MakeView(this, context, isInterfaceBuilder);
+                return CollectionBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == OperatorBox.DocumentType)
             {

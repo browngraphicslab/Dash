@@ -20,7 +20,7 @@ using DocumentMenu;
 
 namespace Dash
 {
-    public sealed partial class CollectionView : UserControl
+    public sealed partial class CollectionView : SelectionElement
     {
         public double CanvasScale { get; set; } = 1;
         public int MaxZ { get; set; } = 0;
@@ -70,13 +70,11 @@ namespace Dash
 
         public CollectionViewModel ViewModel;
 
-        private CollectionView _activeCollection;
-
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
 
-        public CollectionView(CollectionViewModel vm)
+        public CollectionView(CollectionViewModel vm) : base()
         {
             this.InitializeComponent();
             DataContext = ViewModel = vm;
@@ -86,6 +84,7 @@ namespace Dash
             SetEventHandlers();
             CanLink = false;
         }
+
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender, Context c)
         {
             DataContext = ViewModel;
@@ -102,29 +101,28 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
+            
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            ParentDocument.HasCollection = true;
-            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
-            ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
-                                                ParentDocument.xBorder.Margin.Top + 5,
-                                                ParentDocument.xBorder.Margin.Right,
-                                                ParentDocument.xBorder.Margin.Bottom);
+            //ParentDocument.HasCollection = true;
+            ////Temporary graphical hax. to be removed when collectionview menu moved to its document.
+            //ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
+            //ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
+            //                                    ParentDocument.xBorder.Margin.Top + 5,
+            //                                    ParentDocument.xBorder.Margin.Right,
+            //                                    ParentDocument.xBorder.Margin.Bottom);
 
-            if (ParentDocument != MainPage.Instance.MainDocView)
+            if (ParentDocument == MainPage.Instance.MainDocView)
             {
-                ParentDocument.SizeChanged += (ss, ee) =>
-                {
-                    Height = ee.NewSize.Height;
-                    Width = ee.NewSize.Width;
-                };
-                SetEnabled(false);
-            }
-            else
-            {
+                ParentDocument.HasCollection = true;
+                //Temporary graphical hax.to be removed when collectionview menu moved to its document.
+                ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
+                    ParentDocument.xBorder.Margin.Top + 5,
+                    ParentDocument.xBorder.Margin.Right,
+                    ParentDocument.xBorder.Margin.Bottom);
                 OpenMenu();
-                SetEnabled(true);
+                ParentSelectionElement?.SetSelectedElement(this);
                 xOuterGrid.BorderThickness = new Thickness(0);
             }
         }
@@ -803,11 +801,6 @@ namespace Dash
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
-            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            //ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 50,
-            //                                                ParentDocument.xBorder.Margin.Top,
-            //                                                ParentDocument.xBorder.Margin.Right,
-            //                                                ParentDocument.xBorder.Margin.Bottom);
         }
 
 
@@ -827,74 +820,11 @@ namespace Dash
 
         public void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (ParentDocument != MainPage.Instance.MainDocView)
+            if (ParentSelectionElement?.IsSelected != null && ParentSelectionElement.IsSelected)
             {
-                if (_colMenu != null)
-                {
-                    CloseMenu();
-                    SetEnabled(false);
-                    ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                    ViewModel.CanDragItems = false;
-                }
-                else
-                {
-                    OpenMenu();
-                    ParentCollection.SetActiveCollection(this);
-                }
+                OnSelected();
+                e.Handled = true;
             }
-            SetActiveCollection(null);
-            e.Handled = true;
-        }
-
-        public void SetEnabled(bool enabled)
-        {
-            if (enabled)
-            {
-                CurrentView.IsHitTestVisible = true;
-            }
-            else
-            {
-                CurrentView.IsHitTestVisible = false;
-                xOuterGrid.BorderBrush = new SolidColorBrush(Colors.Transparent);
-                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                ViewModel.CanDragItems = false;
-                if (_colMenu != null)
-                    CloseMenu();
-                foreach (var dvm in ViewModel.DataBindingSource)
-                {
-                    dvm.CloseMenu();
-                }
-            }
-        }
-
-        //private void CollectionView_OnTapped(object sender, TappedRoutedEventArgs e)
-        //{
-        //    if (ParentCollection?.GetActiveCollection() != this)
-        //        ParentCollection?.SetActiveCollection(this);
-        //    SetActiveCollection(null);
-        //    e.Handled = true;
-        //}
-
-        public void SetActiveCollection(CollectionView collection)
-        {
-            if (_activeCollection != null && _activeCollection != collection)
-            {
-                _activeCollection.SetEnabled(false);
-                if (_activeCollection.GetActiveCollection() != null)
-                {
-                    _activeCollection.SetActiveCollection(null);
-                }
-            }
-            _activeCollection = collection;
-            if (collection != null)
-            {
-                _activeCollection.SetEnabled(true);
-            }
-        }
-
-        public CollectionView GetActiveCollection()
-        {
-            return _activeCollection;
         }
 
         #endregion
@@ -924,6 +854,27 @@ namespace Dash
                     xBackgroundTileContainer.Children.Add(image);
                 }
             }
+            xBackgroundClip.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
+        }
+
+        protected override void OnActivated(bool isSelected)
+        {
+            if (isSelected)
+            {
+                CurrentView.IsHitTestVisible = true;
+            }
+            else
+            {
+                CurrentView.IsHitTestVisible = false;
+                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+                ViewModel.CanDragItems = false;
+            }
+        }
+
+        public override void OnLowestActivated(bool isLowestSelected)
+        {
+            if(_colMenu == null && isLowestSelected) OpenMenu();
+            else if (_colMenu != null && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
     }
 }

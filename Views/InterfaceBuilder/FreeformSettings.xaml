@@ -16,7 +16,7 @@
         </Grid.Background>
         <Grid.RowDefinitions>
             <RowDefinition Height="75" />
-            <RowDefinition Height="30" />
+            <RowDefinition Height="55" />
             <RowDefinition />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
@@ -25,12 +25,12 @@
                 <Run Text="SETTINGS" />
             </TextBlock>
         </Grid>
-        <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
+        <Grid Grid.Row="1" Width="250" Height="50" VerticalAlignment="Top">
             <StackPanel Orientation="Horizontal">
                 <TextBlock>
                     <Run Text="Type" />
                 </TextBlock>
-                <TextBlock Margin="50,0,0,0">
+                <TextBlock x:Name="TypeBlock" Margin="30,0,0,0" TextWrapping="Wrap" MaxWidth="190">
                     <Run Text="Document" />
                 </TextBlock>
             </StackPanel>
