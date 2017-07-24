@@ -67,7 +67,7 @@ namespace Dash
             BindWidth(image, widthController);
 
             // set up interactions with operations
-            BindOperationInteractions(image, GetImageReference(docController));
+            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context));
 
             // make image opacity change
             var opacityController = GetOpacityField(docController, context);

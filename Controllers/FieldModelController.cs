@@ -9,7 +9,7 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
-    public abstract class FieldModelController : ViewModelBase, IController
+    public abstract class FieldModelController : ViewModelBase, IController, IDisposable
     {
         /// <summary>
         ///     The fieldModel associated with this <see cref="FieldModelController"/>, You should only set values on the controller, never directly
@@ -137,5 +137,9 @@ namespace Dash
         }
 
         public abstract FieldModelController GetDefaultController();
+
+        public virtual void Dispose()
+        {
+        }
     }
 }

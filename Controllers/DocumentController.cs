@@ -23,12 +23,12 @@ namespace Dash
             public readonly FieldUpdatedAction Action;
             public readonly FieldModelController OldValue;
             public readonly FieldModelController NewValue;
-            public readonly DocumentReferenceController Reference;
+            public readonly DocumentFieldReference Reference;
             public readonly Context Context;
-            public readonly bool FromDelegate;
+            public bool FromDelegate;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, DocumentReferenceController reference, Context context, bool fromDelegate)
+                FieldUpdatedAction action, DocumentFieldReference reference, Context context, bool fromDelegate)
             {
                 Action = action;
                 OldValue = oldValue;
@@ -222,6 +222,7 @@ namespace Dash
 
             FieldModelController oldField;
             proto._fields.TryGetValue(key, out oldField);
+            oldField?.Dispose();
 
             // if the fields are reference equal just return
             if (ReferenceEquals(oldField, field))
@@ -233,13 +234,13 @@ namespace Dash
             proto.DocumentModel.Fields[key] = field.FieldModel.Id;
 
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            var reference = new DocumentReferenceController(GetId(), key);
+            var reference = new DocumentFieldReference(GetId(), key);
             Context c = new Context(this);
             if (ShouldExecute(c, key))
             {
                 Execute(c, true);
             }
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this), false));
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this), false), true);
             field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
             {
                 context = context ?? new Context();
@@ -248,7 +249,7 @@ namespace Dash
                 {
                     Execute(context, true);
                 }
-                OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false));//TODO Should be Action.Update
+                OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false), true);//TODO Should be Action.Update
             };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
@@ -300,7 +301,12 @@ namespace Dash
         {
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
-            delegateController.DocumentFieldUpdated += delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args) { DocumentFieldUpdated?.Invoke(sender, args); };
+            delegateController.DocumentFieldUpdated +=
+                delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+                {
+                    args.FromDelegate = true;
+                    OnDocumentFieldUpdated(sender, args, false);
+                };
             PrototypeFieldUpdated += delegateController.OnPrototypeDocumentFieldUpdated;
 
             // create and set a prototype field on the child, pointing to ourself
@@ -323,8 +329,8 @@ namespace Dash
             }
             Context c = new Context(this);
             //c.AddDocumentContext(this);
-            DocumentReferenceController reference = new DocumentReferenceController(GetId(), args.Reference.FieldKey);
-            OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c, true));
+            var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c, false), true);
         }
 
 
@@ -410,12 +416,12 @@ namespace Dash
                 opField.Execute(inputs, outputs);
                 foreach (var fieldModel in outputs)
                 {
-                    DocumentReferenceController reference = new DocumentReferenceController(GetId(), fieldModel.Key);
+                    var reference = new DocumentFieldReference(GetId(), fieldModel.Key);
                     context.AddData(reference, fieldModel.Value);
                     if (update)
                     {
-                        OnDocumentFieldUpdated(new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Add, reference, context, false));
+                        OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
+                            FieldUpdatedAction.Add, reference, context, false), true);
                     }
                 }
             }
@@ -470,7 +476,7 @@ namespace Dash
                 {
                     var hstack = new StackPanel { Orientation = Orientation.Horizontal };
                     var label = new TextBlock { Text = f.Key.Name + ": " };
-                    var dBox = new DataBox(new DocumentReferenceController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var dBox = new DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
 
                     hstack.Children.Add(label);
 
@@ -586,14 +592,17 @@ namespace Dash
         }
 
 
-        protected virtual void OnDocumentFieldUpdated(DocumentFieldUpdatedEventArgs args)
+        protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {
             if (_fieldUpdatedDictionary.ContainsKey(args.Reference.FieldKey))
             {
-                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(this, args);
+                _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
             }
-            DocumentFieldUpdated?.Invoke(this, args);
-            PrototypeFieldUpdated?.Invoke(this, args);
+            DocumentFieldUpdated?.Invoke(sender, args);
+            if (updateDelegates)
+            {
+                PrototypeFieldUpdated?.Invoke(sender, args);
+            }
         }
     }
 }

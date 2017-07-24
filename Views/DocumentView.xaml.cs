@@ -387,6 +387,7 @@ namespace Dash
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
         {
+            DBSearchOperatorFieldModelController.ForceUpdate();
             var tb = sender as TextBox;
             if (!(tb.Text.EndsWith("\r")))
                 return;
@@ -407,7 +408,9 @@ namespace Dash
 
                     if (valu.StartsWith("@") && !valu.Contains("="))
                     {
-                        docController.GetPrototype().SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new DocumentReferenceController(docController.GetPrototype().GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
+                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
+                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
+                        proto.SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
                         var keyField = docController.GetDereferencedField(key, new Context(docController));
                         Debug.WriteLine(keyField.ToString());
                     }

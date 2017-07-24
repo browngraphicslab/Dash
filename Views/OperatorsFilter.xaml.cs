@@ -40,7 +40,7 @@ namespace Dash
         private OperatorsFilter()
         {
             this.InitializeComponent();
-            this.SetManipulation();
+            //this.SetManipulation();
             xAllList.Tapped += delegate { this.ItemsSelected(xAllList); };
             xArithmeticList.Tapped += delegate { this.ItemsSelected(xArithmeticList); };
             xMapList.Tapped += delegate { this.ItemsSelected(xMapList); };

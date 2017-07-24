@@ -147,10 +147,10 @@ namespace Dash
                         {
                             foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
-                                ReferenceFieldModelController irfm =
-                                    new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
-                                ReferenceFieldModelController orfm =
-                                    new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
+                                var irfm =
+                                    new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
+                                var orfm =
+                                    new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
                                 //Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
                                 //    orfm.DereferenceToRoot().GetId());
                             }
@@ -173,10 +173,10 @@ namespace Dash
                         {
                             foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                             {
-                                ReferenceFieldModelController irfm =
-                                    new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
-                                ReferenceFieldModelController orfm =
-                                    new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
+                                var irfm =
+                                    new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
+                                var orfm =
+                                    new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
                                 Graph.RemoveEdge(irfm.DereferenceToRoot(null).GetId(),
                                     orfm.DereferenceToRoot(null).GetId());
                             }
@@ -200,8 +200,8 @@ namespace Dash
                     {
                         foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                         {
-                            ReferenceFieldModelController irfm = new DocumentReferenceController(docVM.DocumentController.GetId(), inputKey.Key);
-                            ReferenceFieldModelController orfm = new DocumentReferenceController(docVM.DocumentController.GetId(), outputKey.Key);
+                            var irfm = new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
+                            var orfm = new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
                             Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
                         }
                     }
@@ -317,7 +317,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentReferenceController(docId, outputKey), true, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument);
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
@@ -327,7 +327,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentReferenceController(docId, outputKey), false, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument);
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
