@@ -70,11 +70,10 @@ namespace Dash
 
                 double opacityValue = opacity.HasValue ? (double)opacity : 1;
 
-                var collectionFieldModelController = data
-                    .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
-                var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
+                var collectionViewModel = new CollectionViewModel(docController, DashConstants.KeyStore.DataKey, context); //  collectionFieldModelController, context);
 
                 var view = new CollectionView(collectionViewModel);
 

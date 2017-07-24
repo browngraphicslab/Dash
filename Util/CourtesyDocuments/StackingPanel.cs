@@ -121,12 +121,15 @@ namespace Dash
                 {
 
                     FrameworkElement item = stackDoc.MakeViewUI(context, isInterfaceBuilderLayout);
-                    var posController = GetPositionField(stackDoc, context);
+                    if (item != null)
+                    {
+                        var posController = GetPositionField(stackDoc, context);
 
-                    item.HorizontalAlignment = HorizontalAlignment.Left;
-                    item.VerticalAlignment = VerticalAlignment.Top;
-                    BindTranslation(item, posController);
-                    stack.Children.Add(item);
+                        item.HorizontalAlignment = HorizontalAlignment.Left;
+                        item.VerticalAlignment = VerticalAlignment.Top;
+                        BindTranslation(item, posController);
+                        stack.Children.Add(item);
+                    }
                 }
             if (isInterfaceBuilderLayout)
             {

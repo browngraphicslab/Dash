@@ -43,7 +43,7 @@ namespace Dash
 
         public bool IsSelected
         {
-            get => _isSelected;
+            get { return _isSelected; }
             set
             {
                 _isSelected = value;
@@ -54,7 +54,7 @@ namespace Dash
 
         public bool IsLowestSelected
         {
-            get => _isLowestSelected;
+            get { return _isLowestSelected; }
             set
             {
                 _isLowestSelected = value;

@@ -434,6 +434,7 @@ namespace Dash
         /// <param name="e"></param>
         public void SetFreeformView()
         {
+            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionFreeformView) return;
             ManipulationMode = ManipulationModes.All;
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
@@ -447,6 +448,7 @@ namespace Dash
         /// <param name="e"></param>
         public void SetListView()
         {
+            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionListView) return;
             ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionListView(this) { DataContext = ViewModel };
@@ -460,6 +462,7 @@ namespace Dash
         /// <param name="e"></param>
         public void SetGridView()
         {
+            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionGridView) return;
             ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionGridView(this) { DataContext = ViewModel };

@@ -73,8 +73,14 @@ namespace Dash
         /// </summary>
         public double CellSize { get; set; }
 
-        public CollectionViewModel(DocumentCollectionFieldModelController collection, Context context = null)
+        // bcz: get rid of these when Collection searches update properly
+        DocumentController DocController;
+        Key Key;
+        public CollectionViewModel(DocumentController docController, Key key, Context context = null) // DocumentCollectionFieldModelController collection, Context context = null)
         {
+            Key = key;
+            DocController = docController;
+            var collection = docController.GetDereferencedField(key, context) as DocumentCollectionFieldModelController;
             _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
@@ -162,6 +168,10 @@ namespace Dash
 
         public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context = null)
         {
+            // bcz: shouldn't need this conditional once the collection updates properly
+            if (documents == null)
+                documents = DocController.GetDereferencedField(Key, context) as DocumentCollectionFieldModelController;
+
             var offset = 0;
             var carriedControllers = ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).ToList();
             foreach (var docController in documents.GetDocuments())

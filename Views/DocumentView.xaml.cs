@@ -269,7 +269,8 @@ namespace Dash
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+            if (ViewModel != null)
+                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
@@ -409,9 +410,9 @@ namespace Dash
                     {
                         var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
                         proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-                        proto.SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
-                        var keyField = docController.GetDereferencedField(key, new Context(docController));
-                        Debug.WriteLine(keyField.ToString());
+
+                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
+                        proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
                     }
                     else if (valu.StartsWith("@"))
                     {

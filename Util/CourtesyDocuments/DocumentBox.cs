@@ -34,6 +34,10 @@ namespace Dash
             ReferenceFieldModelController refToData;
             var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<Key, FieldModelController>(), DashConstants.DocumentTypeStore.TextBoxDocumentType)), out refToData);
 
+            if (fieldModelController is ImageFieldModelController)
+                return ImageBox.MakeView(docController, context, isInterfaceBuilderLayout);
+            if (fieldModelController is TextFieldModelController)
+                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout);
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
 
