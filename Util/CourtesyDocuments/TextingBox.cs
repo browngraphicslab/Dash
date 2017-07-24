@@ -66,7 +66,8 @@ namespace Dash
 
             AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
             AddBinding(element, docController, FontSizeKey, context, BindFontSize);
-            AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
+            //AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
+            SetupTextBinding(element, docController, context);
             AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
         }
 
@@ -142,12 +143,29 @@ namespace Dash
             }
         }
 
-        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context)
+        protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
-            var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
-            var field = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-            var key = field.FieldKey;
-            var docId = field.GetDocumentId(context);
+            var data = controller.GetField(DashConstants.KeyStore.DataKey);
+            if (data is ReferenceFieldModelController)
+            {
+                var reference = data as ReferenceFieldModelController;
+                var dataDoc = reference.GetDocumentController(context);
+                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
+                    delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
+                        {
+                            return;
+                        }
+                        BindTextSource(element, sender, args.Context, reference.FieldKey);
+                    });
+            }
+            BindTextSource(element, controller, context, DashConstants.KeyStore.DataKey);
+        }
+
+        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, Key key)
+        {
+            var data = docController.GetDereferencedField(key, context);
             if (data == null)
             {
                 return;
