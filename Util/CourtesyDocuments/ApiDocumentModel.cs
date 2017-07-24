@@ -288,6 +288,7 @@ namespace Dash
             var collectionDisplay = new CollectionView(collectionViewModel);
 
 
+
             // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
             // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)
             // or should everyone just see the same view ?
@@ -315,6 +316,8 @@ namespace Dash
 
             collectionDisplay.MaxWidth = 550;
             collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
+            collectionDisplay.Width = 500;
+            collectionDisplay.Height = 500;
 
             // return all results
             if (isInterfaceBuilderLayout) {

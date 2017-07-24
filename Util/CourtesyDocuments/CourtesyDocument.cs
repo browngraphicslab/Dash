@@ -239,7 +239,7 @@ namespace Dash
             return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
         }
 
-        protected static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
+        public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
         {
             // assign the default fields
             var fields = new Dictionary<Key, FieldModelController>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Storage;
 using DashShared;
 using Newtonsoft.Json.Linq;
@@ -84,8 +85,18 @@ namespace Dash
                 // wrap the field in an instance of the prototype
                 var protoInstance = schema.Prototype.MakeDelegate();
                 protoInstance.SetField(key, field, true);
+
+                SetDefaultsOnActiveLayout(schema, protoInstance);
                 return protoInstance;
             }
+        }
+
+        private static void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
+        {
+            var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
+            protoInstance.SetActiveLayout(activeLayout, true, false);
+            var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
+            activeLayout.SetFields(defaultLayoutFields, true);
         }
 
         private static FieldModelController ParseChild(JToken jtoken, DocumentSchema parentSchema)
@@ -126,6 +137,7 @@ namespace Dash
             SetDefaultFieldsOnPrototype(schema.Prototype, fields);
 
             var protoInstance = schema.Prototype.MakeDelegate();
+            SetDefaultsOnActiveLayout(schema, protoInstance);
             protoInstance.SetFields(fields, true);
             return protoInstance;
         }
@@ -248,15 +260,16 @@ namespace Dash
 
         public Key GetKey(JToken jToken)
         {
-            return new Key(DashShared.Util.GetDeterministicGuid(BasePath + jToken.Path + jToken.Type))
+            var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
+            return new Key(DashShared.Util.GetDeterministicGuid(uniqueName))
             {
-                Name = BasePath + jToken.Path
+                Name = jToken.Path
             };
         }
 
         public DocumentSchema AddChildSchemaOrReturnCurrentChild(JToken jtoken)
         {
-            var newPath = BasePath + jtoken.Path;
+            var newPath = ConvertPathToUniqueName(BasePath + jtoken.Path);
             var currentSchema = _schemas.FirstOrDefault(s => s.BasePath == newPath);
             if (currentSchema == null)
             {
@@ -269,6 +282,11 @@ namespace Dash
         public void SetDefaultLayoutOnPrototype(DocumentController prototype)
         {
             prototype.SetActiveLayout(new DefaultLayout().Document, true, true);
+        }
+
+        private string ConvertPathToUniqueName(string path)
+        {
+            return Regex.Replace(path, @"\[\d+?\]", "");
         }
     }
 
