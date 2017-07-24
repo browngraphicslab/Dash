@@ -17,19 +17,25 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionSettings : UserControl
+    public sealed partial class AlignmentSettings : UserControl
     {
-        public CollectionSettings()
+        public AlignmentSettings()
         {
             this.InitializeComponent();
         }
 
-
-        public CollectionSettings(DocumentController editedLayoutDocument, Context context): this()
+        public AlignmentSettings(DocumentController editedLayoutDocument, Context context): this()
         {
-            xSizeRow.Children.Add(new SizeSettings(editedLayoutDocument, context));
-            xPositionRow.Children.Add(new PositionSettings(editedLayoutDocument, context));
-            xAlignmentRow.Children.Add(new AlignmentSettings(editedLayoutDocument,context));
+            BindHorizontalAlignment(editedLayoutDocument, context);
+            BindVerticalAlignment(editedLayoutDocument, context);
+        }
+
+        private void BindVerticalAlignment(DocumentController editedLayoutDocument, Context context)
+        {
+        }
+
+        private void BindHorizontalAlignment(DocumentController editedLayoutDocument, Context context)
+        {
         }
     }
 }
