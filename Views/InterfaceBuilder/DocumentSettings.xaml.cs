@@ -33,8 +33,6 @@ namespace Dash.Views
             _context = context;
             _dataDocument = dataDocument;
 
-            xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
-            xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
             SetupActiveLayoutComboBox(dataDocument, context);
 
             xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
@@ -101,13 +99,12 @@ namespace Dash.Views
                 newLayout = new GridViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
-            if (currActiveLayout.DocumentType.Equals(GridViewLayout.DocumentType))
+            else if (currActiveLayout.DocumentType.Equals(GridViewLayout.DocumentType))
             {
                 newLayout = new ListViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
-
-            if (currActiveLayout.DocumentType.Equals(ListViewLayout.DocumentType))
+            else
             {
                 newLayout = new FreeFormDocument(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;

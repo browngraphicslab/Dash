@@ -59,7 +59,7 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
             if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
-                return MakeFreeFormView(docController, context, isInterfaceBuilderLayout);
+                return MakeFreeFormView(docController, context, isInterfaceBuilderLayout, dataDocument);
             var stack = new GridView();
             stack.Loaded += (s, e) =>
             {
@@ -106,7 +106,7 @@ namespace Dash
             }
         }
 
-        public static FrameworkElement MakeFreeFormView(DocumentController docController, Context context, bool isInterfaceBuilderLayout)
+        public static FrameworkElement MakeFreeFormView(DocumentController docController, Context context, bool isInterfaceBuilderLayout, DocumentController dataDocument)
         {
             var stack = new Grid();
             stack.HorizontalAlignment = HorizontalAlignment.Left;
@@ -130,7 +130,7 @@ namespace Dash
                 }
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(stack, docController);
+                return new SelectableContainer(stack, docController, dataDocument);
             }
             return stack;
         }

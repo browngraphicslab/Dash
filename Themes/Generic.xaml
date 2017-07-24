@@ -28,7 +28,7 @@
                         <Border BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,1,1" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
 
                         <!--resizer-->
-                        <Ellipse x:Name="PART_Resizer" Width="30" Height="30" Fill="#DE0074FF"
+                        <Ellipse x:Name="PART_Resizer" Width="10" Height="10" Fill="#DE0074FF"
                                    VerticalAlignment="Bottom" HorizontalAlignment="Right" Grid.Row="1" Margin="1"/>
                     </Grid>
                 </ControlTemplate>

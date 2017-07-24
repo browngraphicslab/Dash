@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using Windows.UI.Xaml;
 using Dash.Views;
+using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -10,28 +11,34 @@ namespace Dash
     {
         public static UIElement CreateSettingsPane(DocumentController layoutDocument, DocumentController dataDocument)
         {
-            if (layoutDocument.DocumentType == ImageBox.DocumentType)
+            var type = layoutDocument.DocumentType;
+            if (type == ImageBox.DocumentType)
             {
                 return CreateImageSettingsLayout(layoutDocument);
             }
-            if (layoutDocument.DocumentType == TextingBox.DocumentType)
+            if (type == TextingBox.DocumentType)
             {
                 return CreateTextSettingsLayout(layoutDocument);
             }
-            if (layoutDocument.DocumentType == CollectionBox.DocumentType)
+            if (type == CollectionBox.DocumentType)
             {
                 return CreateCollectionSettingsLayout(layoutDocument);
             }
-            if (layoutDocument.DocumentType == RichTextBox.DocumentType)
+            if (type == RichTextBox.DocumentType)
             {
                 return CreateRichTextSettingsLayout(layoutDocument);
             }
-
-            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
+            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout || type == GridViewLayout.DocumentType || type == ListViewLayout.DocumentType)
+            {
+                return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
+            }
             if (dataDocument != null)
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
+
+            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
+            
             return null;
         }
 
@@ -62,7 +69,7 @@ namespace Dash
         private static UIElement CreateDocumentSettingsLayout(DocumentController layoutDocument, DocumentController dataDocument)
         {
             var context = new Context(); // bcz: ??? Is this right?
-            return new DocumentSettings(layoutDocument, dataDocument, context);
+            return new FreeformSettings(layoutDocument, dataDocument, context);
         }
 
     }

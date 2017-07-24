@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Security.Cryptography.Core;
 using Windows.UI;
+using Windows.UI.Text;
 using Windows.UI.Xaml.Shapes;
 using Dash.ViewModels;
 
@@ -25,8 +26,22 @@ namespace Dash
 {
     public partial class SelectableContainer : UserControl
     {
-        public delegate void OnSelectionChangedHandler(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument);
+        private struct LinesAndTextBlocks
+        {
+            public LinesAndTextBlocks(Line hLine, Line vLine, Border widthBorder, Border heightBorder)
+            {
+                HLine = hLine;
+                VLine = vLine;
+                WidthBorder = widthBorder;
+                HeightBorder = heightBorder;
+            }
+            public Line HLine { get; }
+            public Line VLine { get; }
+            public Border WidthBorder { get; }
+            public Border HeightBorder { get; }
+        }
 
+        public delegate void OnSelectionChangedHandler(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument);
         public event OnSelectionChangedHandler OnSelectionChanged;
 
 
@@ -35,6 +50,8 @@ namespace Dash
         private bool _isSelected;
         private FrameworkElement _contentElement;
         private List<Ellipse> _draggerList;
+        private Dictionary<Ellipse, LinesAndTextBlocks> _lineMap;
+        private Ellipse _pressedEllipse;
 
         public readonly DocumentController LayoutDocument;
         public readonly DocumentController DataDocument;
@@ -56,12 +73,13 @@ namespace Dash
             get { return _isSelected; }
             set
             {
-                _isSelected = _parentContainer == null ? true : value;
+                _isSelected = IsRoot() || value;
                 ContentElement.IsHitTestVisible = value;
                 if (_isSelected)
                 {
                     XGrid.BorderThickness = new Thickness(3);
-                } else
+                }
+                else
                 {
                     XGrid.BorderThickness = new Thickness(1);
                     IsLowestSelected = false;
@@ -75,30 +93,28 @@ namespace Dash
             set
             {
                 _isLowestSelected = value;
-                if (value)
-                {
-                    foreach (var ellipse in _draggerList)
-                    {
-                        ellipse.Visibility = Visibility.Visible;
-                    }
-                    
-                }
-                else
-                {
-                    foreach (var ellipse in _draggerList)
-                    {
-                        ellipse.Visibility = Visibility.Collapsed;
-                    }
-                    
-                }
+                SetEllipseVisibility();
+            }
+        }
+
+        private void SetEllipseVisibility()
+        {
+            var isVisible = !IsRoot() && IsLowestSelected;
+
+            foreach (var ellipse in _draggerList)
+            {
+                ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
         public SelectableContainer(FrameworkElement contentElement, DocumentController layoutDocument, DocumentController dataDocument = null)
         {
-            this.InitializeComponent();
-            this.InitiateManipulators();
+            InitializeComponent();
+            InitiateManipulators();
+            InitializeEllipsePointerHandling();
             ContentElement = contentElement;
+            ContentElement.SizeChanged += ContentElement_SizeChanged;
+            ContentElement.Loaded += ContentElement_Loaded;
             LayoutDocument = layoutDocument;
             DataDocument = dataDocument;
 
@@ -108,16 +124,27 @@ namespace Dash
             Tapped += CompositeLayoutContainer_Tapped;
         }
 
-       
+        private void ContentElement_Loaded(object sender, RoutedEventArgs e)
+        {
+            UpdateSizeMarkers(ContentElement.ActualWidth, ContentElement.ActualHeight);
+        }
+
         private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             IsSelected = false;
+            SetEllipseVisibility();
             SetContent();
-            if (_parentContainer == null)
+            if (IsRoot())
             {
                 OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
             }
+            UpdateSizeMarkers(ContentElement.ActualWidth, ContentElement.ActualHeight);
+        }
+
+        private bool IsRoot()
+        {
+            return _parentContainer == null;
         }
 
         // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
@@ -128,11 +155,9 @@ namespace Dash
 
         private void SetContent()
         {
-            if (XLayoutDisplay != null)
-            {
-                XLayoutDisplay.Content = ContentElement;
-                ContentElement.IsHitTestVisible = IsSelected;
-            }
+            if (XLayoutDisplay == null) return;
+            XLayoutDisplay.Content = ContentElement;
+            ContentElement.IsHitTestVisible = IsSelected;
         }
 
         #region Selection
@@ -144,9 +169,9 @@ namespace Dash
                 _parentContainer?.SetSelectedContainer(this);
                 _parentContainer?.FireSelectionChanged(this);
                 IsLowestSelected = true;
-                if (_parentContainer == null)
+                if (IsRoot())
                 {
-                    OnSelectionChanged?.Invoke(this, LayoutDocument, DataDocument);
+                    FireSelectionChanged(this);
                 }
             }
             SetSelectedContainer(null);
@@ -206,6 +231,30 @@ namespace Dash
             topRightManipulator.OnManipulatorTranslated += TopRightManipulator_OnManipulatorTranslated;
         }
 
+        private void InitializeEllipsePointerHandling()
+        {
+            _lineMap = new Dictionary<Ellipse, LinesAndTextBlocks>
+            {
+                [xTopLeftDragger] = new LinesAndTextBlocks(xTopHLine, xLeftVLine, xTopWidthTextBoxBorder,
+                    xLeftHeightTextBoxBorder),
+                [xTopRightDragger] = new LinesAndTextBlocks(xTopHLine, xRightVLine, xTopWidthTextBoxBorder,
+                    xRightHeightTextBoxBorder),
+                [xBottomLeftDragger] = new LinesAndTextBlocks(xBottomHLine, xLeftVLine, xBottomWidthTextBoxBorder,
+                    xLeftHeightTextBoxBorder),
+                [xBottomRightDragger] = new LinesAndTextBlocks(xBottomHLine, xRightVLine, xBottomWidthTextBoxBorder,
+                    xRightHeightTextBoxBorder)
+            };
+            xTopLeftDragger.ManipulationCompleted += Ellipse_ManipulationCompleted;
+            xTopRightDragger.ManipulationCompleted += Ellipse_ManipulationCompleted;
+            xBottomLeftDragger.ManipulationCompleted += Ellipse_ManipulationCompleted;
+            xBottomRightDragger.ManipulationCompleted += Ellipse_ManipulationCompleted;
+        }
+
+        private void Ellipse_ManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
+        {
+            SetPressedEllipse(null);
+        }
+
         private void ChangePosition(double deltaX, double deltaY)
         {
             var positionController = LayoutDocument.GetPositionField();
@@ -215,7 +264,7 @@ namespace Dash
 
         private Point ChangeSize(double deltaWidth, double deltaHeight)
         {
-            Point actualChange = new Point(0,0);
+            Point actualChange = new Point(0, 0);
             var widthController = LayoutDocument.GetWidthField();
             //TODO: right now this just uses the framework element's minwidth as a boundary for size changes; might want to set minwidth in document later
             if (widthController.Data + deltaWidth > ContentElement.MinWidth || deltaWidth > 0)
@@ -231,27 +280,55 @@ namespace Dash
             }
             return actualChange;
         }
+
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
+            SetPressedEllipse(xTopRightDragger);
             var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
-            ChangePosition(0, -sizeChange.Y);
+            ChangePosition(0, -sizeChange.Y);           
         }
 
         private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
+            SetPressedEllipse(xTopLeftDragger);
             var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
-            ChangePosition(-sizeChange.X, -sizeChange.Y);
+            ChangePosition(-sizeChange.X, -sizeChange.Y);           
         }
 
         private void BottomRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            ChangeSize(e.Translate.X, e.Translate.Y);
+            SetPressedEllipse(xBottomRightDragger);
+            ChangeSize(e.Translate.X, e.Translate.Y);           
         }
 
         private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
+            SetPressedEllipse(xBottomLeftDragger);
             var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
-            ChangePosition(-sizeChange.X, 0);
+            ChangePosition(-sizeChange.X, 0);        
+        }
+
+        private void SetPressedEllipse(Ellipse ellipse)
+        {
+            _pressedEllipse = ellipse;
+            if (ellipse == null)
+            {
+                xTopHLine.Visibility
+                    = xBottomHLine.Visibility
+                        = xLeftVLine.Visibility
+                            = xRightVLine.Visibility
+                                = xTopWidthTextBoxBorder.Visibility
+                                    = xBottomWidthTextBoxBorder.Visibility
+                                        = xLeftHeightTextBoxBorder.Visibility
+                                            = xRightHeightTextBoxBorder.Visibility
+                                                = Visibility.Collapsed; 
+                return;
+            }
+            _lineMap[_pressedEllipse].HLine.Visibility
+                = _lineMap[_pressedEllipse].VLine.Visibility
+                    = _lineMap[_pressedEllipse].WidthBorder.Visibility
+                        = _lineMap[_pressedEllipse].HeightBorder.Visibility
+                            = Visibility.Visible;
         }
 
         private void CenterManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
@@ -265,29 +342,82 @@ namespace Dash
             var manipulatorHeight = xTopLeftDragger.ActualHeight;
             var canvasWidth = xManipulatorCanvas.ActualWidth;
             var canvasHeight = xManipulatorCanvas.ActualHeight;
-
             Canvas.SetLeft(xTopLeftDragger, -manipulatorWidth);
             Canvas.SetTop(xTopLeftDragger, -manipulatorHeight);
-
             Canvas.SetLeft(xTopRightDragger, canvasWidth);
             Canvas.SetTop(xTopRightDragger, -manipulatorHeight);
-
             Canvas.SetLeft(xBottomRightDragger, canvasWidth);
             Canvas.SetTop(xBottomRightDragger, canvasHeight);
-
             Canvas.SetLeft(xBottomLeftDragger, -manipulatorWidth);
             Canvas.SetTop(xBottomLeftDragger, canvasHeight);
-
             Canvas.SetLeft(xCenterDragger, (canvasWidth - manipulatorWidth) / 2);
             Canvas.SetTop(xCenterDragger, (canvasHeight - manipulatorHeight) / 2);
         }
-
 
         #endregion
 
         private void XManipulatorCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             LayoutManipulators();
+        }
+
+        private void ContentElement_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            var newWidth = e.NewSize.Width;
+            var newHeight = e.NewSize.Height;
+            UpdateSizeMarkers(newWidth, newHeight);
+        }
+
+        private void UpdateSizeMarkers(double newWidth, double newHeight)
+        {
+            if (_pressedEllipse == null) return;
+            var linesAndBorders = _lineMap[_pressedEllipse];
+            linesAndBorders.HLine.X2 = newWidth;
+            linesAndBorders.VLine.Y2 = newHeight;
+            if (DraggingBottom())
+                linesAndBorders.HLine.Y1 = linesAndBorders.HLine.Y2 = XOuterGrid.ActualHeight + 10;
+            if (DraggingRight())
+                linesAndBorders.VLine.X1 = linesAndBorders.VLine.X2 = XOuterGrid.ActualWidth + 10;
+
+            ((TextBlock)linesAndBorders.WidthBorder.Child).Text = "" + (int)newWidth;
+            ((TextBlock)linesAndBorders.HeightBorder.Child).Text = "" + (int)newHeight;
+            ApplySizeMarkerTransforms(newWidth, newHeight);
+        }
+
+        private bool DraggingRight()
+        {
+            return _pressedEllipse == xTopRightDragger || _pressedEllipse == xBottomRightDragger;
+        }
+
+        private bool DraggingBottom()
+        {
+            return _pressedEllipse == xBottomLeftDragger || _pressedEllipse == xBottomRightDragger;
+        }
+
+        private void ApplySizeMarkerTransforms(double newWidth, double newHeight)
+        {
+            var linesAndBorders = _lineMap[_pressedEllipse];
+            var hTranslate = new TranslateTransform
+            {
+                X = newWidth / 2 - linesAndBorders.WidthBorder.ActualWidth / 2 + linesAndBorders.HLine.X1 / 2,
+                Y = linesAndBorders.HLine.Y1 - linesAndBorders.WidthBorder.ActualHeight / 2
+            };
+            var vRotate = new RotateTransform
+            {
+                Angle = 90,
+                CenterX = linesAndBorders.HeightBorder.ActualWidth / 2,
+                CenterY = linesAndBorders.HeightBorder.ActualHeight / 2
+            };
+            var vTranslate = new TranslateTransform
+            {
+                X = linesAndBorders.VLine.X1 - linesAndBorders.HeightBorder.ActualWidth / 2,
+                Y = newHeight / 2 - linesAndBorders.HeightBorder.ActualHeight / 2 + linesAndBorders.VLine.Y1 / 2
+            };
+            var vGroup = new TransformGroup();
+            vGroup.Children.Add(vRotate);
+            vGroup.Children.Add(vTranslate);
+            linesAndBorders.WidthBorder.RenderTransform = hTranslate;
+            linesAndBorders.HeightBorder.RenderTransform = vGroup;
         }
     }
 }
