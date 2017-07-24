@@ -20,24 +20,39 @@ namespace Dash
 {
     public sealed partial class OperatorSearchView : UserControl
     {
+        private static OperatorSearchView instance;
+        public static OperatorSearchView Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new OperatorSearchView();
+                }
+                return instance;
+            }
+        }
+
         public OperatorSearchView()
         {
             this.InitializeComponent();
+            this.MakeView();
         }
 
         private void MakeView()
         {
-            var arithmetics = new ObservableCollection<string>() { "Divide" };
-            var sets = new ObservableCollection<string>() { "Union", "Intersection" };
-            var maps = new ObservableCollection<string>() { "ImageToUri" };
-            var all = new ObservableCollection<string>(){ "Divide", "Union", "Intersection", "ImageToUri" };
+            var arithmetics = new ObservableCollection<object>() { "Divide" };
+            var sets = new ObservableCollection<object>() { "Union", "Intersection" };
+            var maps = new ObservableCollection<object>() { "ImageToUri" };
+            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri" };
 
             var categories = new List<SearchCategoryItem>();
             categories.Add(new SearchCategoryItem("∀", "ALL",all, Actions.AddOperator));
             categories.Add(new SearchCategoryItem("÷", "ARITHMETIC",arithmetics, Actions.AddOperator));
             categories.Add(new SearchCategoryItem("→","MAP", maps, Actions.AddOperator));
             categories.Add(new SearchCategoryItem("∈","SET", sets, Actions.AddOperator));
-            var searchView = new GenericSearchView(categories);
+            categories.Add(new SearchCategoryItem(string.Empty,"CUSTOM",null,Actions.AddOperator));
+            var searchView = new SearchView(categories);
 
             xMainGrid.Children.Add(searchView);
         }
