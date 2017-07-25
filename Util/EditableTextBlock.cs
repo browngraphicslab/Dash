@@ -35,12 +35,6 @@ namespace Dash
                 Block.Visibility = Visibility.Visible;
             };
 
-            //Box.PointerExited += (s, e) =>
-            //{
-            //    Box.Visibility = Visibility.Collapsed;
-            //    Block.Visibility = Visibility.Visible;
-            //};
-
             Block.Tapped += (s, e) =>
             {
                 e.Handled = true;

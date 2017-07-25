@@ -314,10 +314,10 @@ namespace Dash
             containerGrid.Children.Add(sourceDisplay);
             containerGrid.Children.Add(collectionDisplay);
 
-            collectionDisplay.MaxWidth = 550;
-            collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
-            collectionDisplay.Width = 500;
-            collectionDisplay.Height = 500;
+            collectionDisplay.HorizontalAlignment = HorizontalAlignment.Stretch;
+            collectionDisplay.VerticalAlignment = VerticalAlignment.Stretch;
+            collectionDisplay.Height = double.NaN;
+
 
             // return all results
             if (isInterfaceBuilderLayout) {

@@ -276,8 +276,14 @@ namespace Dash
             var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
             return new Key(DashShared.Util.GetDeterministicGuid(uniqueName))
             {
-                Name = jToken.Path
+                Name = GetCleanNameFromJtokenPath(jToken.Path)
             };
+        }
+
+        private string GetCleanNameFromJtokenPath(string jTokenPath)
+        {
+            var splitOnPeriods = jTokenPath.Split('.');
+            return splitOnPeriods.Last();
         }
 
         public DocumentSchema AddChildSchemaOrReturnCurrentChild(JToken jtoken)
