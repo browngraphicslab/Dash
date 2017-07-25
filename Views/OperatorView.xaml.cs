@@ -73,7 +73,8 @@ namespace Dash
 
             if (opCont != null)
                 (opCont as DBSearchOperatorFieldModelController).Pattern = (sender as TextBox).Text;
-            DBSearchOperatorFieldModelController.ForceUpdate();
+            
+            DBSearchOperatorFieldModelController.ForceUpdate(DataContext as DocumentFieldReference);
         }
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
