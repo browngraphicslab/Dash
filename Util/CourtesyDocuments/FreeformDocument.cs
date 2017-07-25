@@ -108,6 +108,8 @@ namespace Dash
                 var positionField = layoutDocument.GetPositionField(context);
                 BindTranslation(layoutView, positionField);
 
+                if(isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
+
                 grid.Children.Add(layoutView);
             }
         }

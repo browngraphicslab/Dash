@@ -83,7 +83,7 @@ namespace Dash
                 };
                 grid.Children.Insert(0, icon);
                 var container = new SelectableContainer(grid, docController, dataDocument);
-                SetupBindings(container, docController, context);
+                //SetupBindings(container, docController, context);
                 return container;
             }
             return grid;
@@ -98,22 +98,8 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-                //if (isInterfaceBuilder)
-                //{
-                //    Border border = new Border {Child = layoutView};
-                //    itemsSource.Add(border);
-                //    layoutView.Loaded += delegate(object sender, RoutedEventArgs args)
-                //        {
-                //            border.Width = layoutView.ActualWidth + 20;
-                //            border.Height = layoutView.ActualHeight + 20;
-                //        };
-                //    layoutView.VerticalAlignment = VerticalAlignment.Center;
-                //    layoutView.HorizontalAlignment = HorizontalAlignment.Center;
-                //}
-                //else
-                //{
-                    itemsSource.Add(layoutView);
-                //}
+                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
+                itemsSource.Add(layoutView);
                 
             }
             list.ItemsSource = itemsSource;

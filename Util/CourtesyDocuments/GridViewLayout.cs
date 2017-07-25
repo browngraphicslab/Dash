@@ -83,7 +83,7 @@ namespace Dash
                 };
                 grid.Children.Insert(0, icon);
                 var container = new SelectableContainer(grid, docController, dataDocument);
-                SetupBindings(container, docController, context);
+                //SetupBindings(container, docController, context);
                 return container;
             }
             return grid;
@@ -99,6 +99,7 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
+                if(isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
                 itemsSource.Add(layoutView);
             }
             grid.ItemsSource = itemsSource;

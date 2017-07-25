@@ -77,7 +77,7 @@ namespace Dash
             if (isInterfaceBuilderLayout)
             {
                 SelectableContainer container = new SelectableContainer(view, docController, dataDocument);
-                SetupBindings(container, docController, context);
+                //SetupBindings(container, docController, context);
                 return container;
             }
             return view;
