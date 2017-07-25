@@ -181,6 +181,9 @@ namespace Dash
                     GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
                 };
                 intersectView.DataContext = intersectOpvm;
+            } else if (type == "Filter")
+            {
+                opModel = OperatorDocumentModel.CreateFilterDocumentController();
             }
             else if (type == "ImageToUri")
             {
