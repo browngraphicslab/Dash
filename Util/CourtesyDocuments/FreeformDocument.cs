@@ -56,6 +56,9 @@ namespace Dash
             SetupBindings(grid, docController, context);
             LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
 
+            grid.Clip = new RectangleGeometry();
+            grid.SizeChanged += delegate(object sender, SizeChangedEventArgs args) { grid.Clip.Rect = new Rect(0,0,args.NewSize.Width,args.NewSize.Height); };
+
             var c = new Context(context);
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
