@@ -137,7 +137,7 @@ namespace Dash
             AddAnotherLol();
         }
 
-        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        public void AddApiCreator()
         {
             var a = new ApiDocumentModel().Document;
             DisplayDocument(a);

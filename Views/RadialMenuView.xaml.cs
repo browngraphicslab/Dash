@@ -313,15 +313,14 @@ namespace Dash.Views
             if (item.IsAction && item is RadialActionModel)
             {
                 var actionButton = item as RadialActionModel;
-                button.InnerArcReleased += delegate(object sender, PointerRoutedEventArgs e)
-                {
-                    actionButton.CanvasAction?.Invoke(_parentCanvas, e.GetCurrentPoint(_parentCanvas).Position);
-                    if (button.InnerNormalColor != null)
-                        actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
-                    actionButton.GenericAction?.Invoke(null);
-                    
-                };
-                
+                    button.InnerArcReleased += delegate
+                    {
+                        if (button.InnerNormalColor != null) actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
+                        actionButton.GenericAction?.Invoke(null);
+                    };
+                button.DragAction += actionButton.CanvasAction;
+                actionButton.CanvasAction?.Invoke(se, e);
+
             } 
             menu.AddButton(button);
             return button;
@@ -377,8 +376,6 @@ namespace Dash.Views
         /// <param name="canvas"></param>
         private void SampleRadialMenu(Canvas canvas)
         {
-            
-
             #region Ink Controls
 
             Action<object> choosePen = Actions.ChoosePen;
@@ -461,25 +458,23 @@ namespace Dash.Views
 
             #endregion
 
-            Action<Canvas, Point> addSearch = Actions.AddSearch;
+            Action<object, PointerRoutedEventArgs> addSearch = Actions.AddSearch;
             var searchButton = new RadialActionModel("Search", "🔍")
             {
                 CanvasAction = addSearch
             };
 
+            Action<object, PointerRoutedEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
+            Action<object, PointerRoutedEventArgs> addCollection = Actions.AddCollection;
+            Action<object, PointerRoutedEventArgs> addApiCreator = Actions.AddApiCreator;
+            Action<object, PointerRoutedEventArgs> addDocuments = Actions.AddDocuments;
+            Action<object, PointerRoutedEventArgs> addNotes = Actions.AddNotes;
 
-
-            Action<object> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<object> addCollection = Actions.AddCollection;
-            Action<object> addApiCreator = Actions.AddApiCreator;
-            Action<object> addDocuments = Actions.AddDocuments;
-            Action<object> addNotes = Actions.AddNotes;
-
-            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericAction = onOperatorAdd };
-            var collectionButton = new RadialActionModel("Collection", "📁") { GenericAction = addCollection };
-            var apiButton = new RadialActionModel("Api", "⚙️") { GenericAction = addApiCreator };
-            var documentButton = new RadialActionModel("Document", "🖺") { GenericAction = addDocuments };
-            var notesButton = new RadialActionModel("Notes", "🗋") { GenericAction = addNotes }; 
+            var operatorButton = new RadialActionModel("Operator", "↔️") { CanvasAction = onOperatorAdd };
+            var collectionButton = new RadialActionModel("Collection", "📁") { CanvasAction = addCollection };
+            var apiButton = new RadialActionModel("Api", "⚙️") { CanvasAction = addApiCreator };
+            var documentButton = new RadialActionModel("Document", "🖺") { CanvasAction = addDocuments };
+            var notesButton = new RadialActionModel("Notes", "🗋") { CanvasAction = addNotes }; 
             //📄
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {

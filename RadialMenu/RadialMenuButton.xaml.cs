@@ -451,6 +451,7 @@ namespace RadialMenuControl.Components
         /// </summary>
         /// <returns></returns>
         public bool HasOuterArcAction => (Submenu != null || CustomMenu != null || HasOuterArcEvents);
+        
 
         public delegate void InnerArcPressedEventHandler(object sender, PointerRoutedEventArgs e);
 
@@ -510,5 +511,9 @@ namespace RadialMenuControl.Components
         }
 
         #endregion
+
+        public delegate void DragStartedEventHandler(object sender, DragStartingEventArgs e);
+
+        public event DragStartedEventHandler InnerArcDragStarted;
     }
 }

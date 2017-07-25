@@ -25,7 +25,7 @@ namespace Dash
     public static class Actions
     {
        
-        public static void AddSearch(Canvas c, Point p)
+        public static void AddSearch(object o, PointerRoutedEventArgs e)
         {
             //if (!c.Children.Contains(_searchView))
             //{
@@ -107,7 +107,7 @@ namespace Dash
         }
 
 
-        public static void OnOperatorAdd(object obj)
+        public static void OnOperatorAdd(object o, PointerRoutedEventArgs e)
         {
             //MainPage.Instance.AddOperator();
             MainPage.Instance.AddOperatorsFilter();
@@ -206,28 +206,28 @@ namespace Dash
                 MainPage.Instance.DisplayDocument(opModel);
         }
         
-        public static void AddCollection(object obj)
+        public static void AddCollection(object o, PointerRoutedEventArgs e)
         {
             MainPage.Instance.AddCollection(null, null);
         }
 
-        public static void AddApiCreator(object obj)
+        public static void AddApiCreator(object o, PointerRoutedEventArgs e)
         {
-            MainPage.Instance.AddApiCreator(obj, new TappedRoutedEventArgs());
+            MainPage.Instance.AddApiCreator();
         }
 
-        public static void AddImage(object obj)
+        public static void AddImage(object o, PointerRoutedEventArgs e)
         {
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
-        public static void AddDocuments(object obj)
+        public static void AddDocuments(object o, PointerRoutedEventArgs e)
         {
             MainPage.Instance.AddDocuments(null, null);
         }
 
-        public static void AddNotes(object obj)
+        public static void AddNotes(object o, PointerRoutedEventArgs e)
         {
             MainPage.Instance.AddNotes(); 
         }
