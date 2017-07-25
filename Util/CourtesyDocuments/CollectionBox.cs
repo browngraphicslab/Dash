@@ -64,6 +64,14 @@ namespace Dash
         {
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
+
+
+            return ConstructCollection(docController, context, dataDocument, data, isInterfaceBuilderLayout);
+        }
+
+        public static FrameworkElement ConstructCollection(DocumentController docController,
+            Context context, DocumentController dataDocument, FieldModelController data, bool isInterfaceBuilderLayout = false)
+        {
             if (data != null)
             {
                 var opacity = (docController.GetDereferencedField(new Key("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
