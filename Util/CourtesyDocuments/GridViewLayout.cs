@@ -53,13 +53,7 @@ namespace Dash
         {
 
             var grid = new Grid();
-            // bind the grid height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(grid, heightController);
-
-            // bind the grid width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(grid, widthController);
+            SetupBindings(grid, docController, context);
             var gridView = new GridView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -88,7 +82,9 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 grid.Children.Insert(0, icon);
-                return new SelectableContainer(grid, docController, dataDocument);
+                var container = new SelectableContainer(grid, docController, dataDocument);
+                SetupBindings(container, docController, context);
+                return container;
             }
             return grid;
         }

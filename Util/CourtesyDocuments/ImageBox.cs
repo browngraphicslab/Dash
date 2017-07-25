@@ -66,7 +66,9 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(image, docController);
+                var selectableContainer = new SelectableContainer(image, docController);
+                SetupBindings(selectableContainer, docController, context);
+                return selectableContainer;
             }
             return image;
         }

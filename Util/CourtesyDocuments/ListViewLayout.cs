@@ -53,13 +53,7 @@ namespace Dash
         {
 
             var grid = new Grid();
-            // bind the grid height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(grid, heightController);
-
-            // bind the grid width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(grid, widthController);
+            SetupBindings(grid, docController, context);
             var listView = new ListView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -88,7 +82,9 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 grid.Children.Insert(0, icon);
-                return new SelectableContainer(grid, docController, dataDocument);
+                var container = new SelectableContainer(grid, docController, dataDocument);
+                SetupBindings(container, docController, context);
+                return container;
             }
             return grid;
         }
@@ -121,6 +117,13 @@ namespace Dash
                 
             }
             list.ItemsSource = itemsSource;
+            list.SelectionMode = ListViewSelectionMode.None;
+            foreach (var item in list.Items)
+            {
+                var elem = (item as UIElement);
+                if (elem != null) elem.IsHitTestVisible = true;
+            }
+            
         }
 
         private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)

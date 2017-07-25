@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Input;
 using DashShared;
 using Windows.UI.Xaml.Media;
 
@@ -22,6 +23,8 @@ namespace Dash
         /// </summary>
         private DocumentView _documentView;
         public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
+        private SelectableContainer _selectedContainer;
+
         public enum DisplayTypeEnum { List, Grid, Freeform } 
 
 
@@ -192,6 +195,7 @@ namespace Dash
         {
             xSettingsPane.Children.Clear();
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
+            _selectedContainer = sender;
             if (newSettingsPane != null)
             {
                 xSettingsPane.Children.Add(newSettingsPane);
@@ -204,27 +208,6 @@ namespace Dash
                    layoutDocument.DocumentType == GridViewLayout.DocumentType ||
                    layoutDocument.DocumentType == ListViewLayout.DocumentType;
         }
-
-        private void SetActiveLayoutToFreeform_TEMP(DocumentController docController)
-        {
-            var currentDocPosition = docController.GetPositionField().Data;
-            var defaultNewSize = new Size(400, 400);
-            docController.SetActiveLayout(
-                new FreeFormDocument(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document,
-                forceMask: true,
-                addToLayoutList: true);
-        }
-
-        private void SetActiveLayoutToGridView_TEMP(DocumentController docController)
-        {
-            var currentDocPosition = docController.GetPositionField().Data;
-            var defaultNewSize = new Size(400, 400);
-            docController.SetActiveLayout(
-                new GridViewLayout(new List<DocumentController>(), currentDocPosition, defaultNewSize).Document,
-                forceMask: true,
-                addToLayoutList: true);
-        }
-        
         
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
@@ -232,8 +215,6 @@ namespace Dash
 
             SetUpInterfaceBuilder(cont, new Context(cont));
         }
-
-
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             var item = e.Items.FirstOrDefault();
@@ -241,15 +222,15 @@ namespace Dash
             {
                 var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
-                switch (button.Content as string)
+                switch (button.Name)
                 {
-                    case "🖹":
+                    case "ListButton":
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.List;
                         break;
-                    case "▦":
+                    case "GridButton":
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.Grid;
                         break;
-                    case "⊡":
+                    case "FreeformButton":
                         e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.Freeform;
                         break;
                     default:
@@ -263,6 +244,18 @@ namespace Dash
         {
             xScrollViewer.MaxWidth = xDocumentHolder.MaxWidth = e.NewSize.Width;
             xScrollViewer.MaxHeight = xDocumentHolder.MaxHeight = e.NewSize.Height;
+        }
+
+        private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_selectedContainer.ParentContainer != null)
+            {
+                var collection =
+                    _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+                        DocumentCollectionFieldModelController;
+                collection?.RemoveDocument(_selectedContainer.LayoutDocument);
+                _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            }
         }
     }
 }

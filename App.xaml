@@ -157,12 +157,17 @@
             <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
             <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
         </Style>
+        <ItemsPanelTemplate x:Key="ListViewLayoutTemplate">
+            <DataTemplate>
+                <StackPanel Orientation="Vertical"></StackPanel>
+            </DataTemplate>
+        </ItemsPanelTemplate>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
-        <Style x:Key="xPlainTextBox" TargetType="TextBox">
+        <!--<Style x:Key="xPlainTextBox" TargetType="TextBox">
             <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}"/>
             <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}"/>
             <Setter Property="Foreground" Value="{ThemeResource SystemControlForegroundBaseHighBrush}"/>
@@ -263,7 +268,7 @@
                     </ItemsPanelTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
+        </Style>-->
     </Application.Resources>
 </Application>
 

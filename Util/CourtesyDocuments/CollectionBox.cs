@@ -58,7 +58,6 @@ namespace Dash
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
 
-
             return ConstructCollection(docController, context, dataDocument, data, isInterfaceBuilderLayout);
         }
 
@@ -88,7 +87,9 @@ namespace Dash
                 view.Opacity = opacityValue;
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(view, docController, dataDocument);
+                    SelectableContainer container = new SelectableContainer(view, docController, dataDocument);
+                    SetupBindings(container, docController, context);
+                    return container;
                 }
                 return view;
             }
