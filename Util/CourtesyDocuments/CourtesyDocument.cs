@@ -239,7 +239,7 @@ namespace Dash
             return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
         }
 
-        protected static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
+        public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
         {
             // assign the default fields
             var fields = new Dictionary<Key, FieldModelController>
@@ -248,7 +248,9 @@ namespace Dash
                 [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
                 [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
                 [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0)
+                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
+                [HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Left.ToString()),
+                [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Top.ToString())
             };
 
             if (data != null)
@@ -411,9 +413,42 @@ namespace Dash
             document.SetField(CourtesyDocument.HorizontalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
         }
 
+
+        public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
+        {
+            var horizontalAlignmentController = 
+                document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
+            if (horizontalAlignmentController == null)
+            {
+                return HorizontalAlignment.Stretch;
+            }
+            return (HorizontalAlignment) Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
+        }
+
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
             document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+        }
+
+        public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
+        {
+            var verticalAlignmentController =
+                document.GetField(CourtesyDocument.VerticalAlignmentKey) as TextFieldModelController;
+            if (verticalAlignmentController == null)
+            {
+                return VerticalAlignment.Stretch;
+            }
+            return (VerticalAlignment)Enum.Parse(typeof(VerticalAlignment), verticalAlignmentController?.Data);
+        }
+
+        public static void SetWidth(this DocumentController document, double width)
+        {
+            document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+        }
+
+        public static void SetHeight(this DocumentController document, double height)
+        {
+            document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
         }
 
         public static void SetGridRow(this DocumentController document, int row)

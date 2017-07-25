@@ -19,6 +19,9 @@ namespace Dash
 {
     public sealed partial class AlignmentSettings : UserControl
     {
+
+        private readonly DocumentController _editedLayoutDocument;
+
         public AlignmentSettings()
         {
             this.InitializeComponent();
@@ -26,16 +29,74 @@ namespace Dash
 
         public AlignmentSettings(DocumentController editedLayoutDocument, Context context): this()
         {
-            BindHorizontalAlignment(editedLayoutDocument, context);
-            BindVerticalAlignment(editedLayoutDocument, context);
+            _editedLayoutDocument = editedLayoutDocument;
+            editedLayoutDocument.AddFieldUpdatedListener(CourtesyDocument.HorizontalAlignmentKey, HorizontalAlignmentChanged);
+            editedLayoutDocument.AddFieldUpdatedListener(CourtesyDocument.VerticalAlignmentKey, VerticalAlignmentChanged);
+
+            xHorizontalAlignmentComboBox.SelectionChanged += XHorizontalAlignmentComboBox_SelectionChanged;
+            xVerticalAlignmentComboBox.SelectionChanged += XVerticalAlignmentComboBox_SelectionChanged; ;
+            SetActiveVerticalAlignment();
+            SetActiveHorizontalAlignment();
         }
 
-        private void BindVerticalAlignment(DocumentController editedLayoutDocument, Context context)
+        private void SetActiveHorizontalAlignment()
         {
+            var horizontalAlignment = _editedLayoutDocument.GetHorizontalAlignment();
+            var selectedItem = xHorizontalAlignmentComboBox.Items.Cast<ComboBoxItem>().FirstOrDefault(cbi => (cbi.Content as string).Equals(horizontalAlignment.ToString()));
+            xHorizontalAlignmentComboBox.SelectedItem = selectedItem;
         }
 
-        private void BindHorizontalAlignment(DocumentController editedLayoutDocument, Context context)
+        private void SetActiveVerticalAlignment()
         {
+            var verticalAlignment = _editedLayoutDocument.GetVerticalAlignment();
+            var selectedItem = xVerticalAlignmentComboBox.Items.Cast<ComboBoxItem>().FirstOrDefault(cbi => (cbi.Content as string).Equals(verticalAlignment.ToString()));
+            xVerticalAlignmentComboBox.SelectedItem = selectedItem;
+        }
+
+        private void XVerticalAlignmentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var verticalAlignment = (VerticalAlignment)xVerticalAlignmentComboBox.SelectedIndex;
+            if (verticalAlignment == _editedLayoutDocument.GetVerticalAlignment()) return;
+
+            _editedLayoutDocument.SetVerticalAlignment(verticalAlignment);
+            if (verticalAlignment == VerticalAlignment.Stretch)
+            {
+                var hf = _editedLayoutDocument.GetHeightField();
+                hf.Data = double.NaN;
+            }
+        }
+
+        private void XHorizontalAlignmentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var horizontalAlignment = (HorizontalAlignment)xHorizontalAlignmentComboBox.SelectedIndex;
+
+            if (horizontalAlignment == _editedLayoutDocument.GetHorizontalAlignment()) return;
+            _editedLayoutDocument.SetHorizontalAlignment(horizontalAlignment);
+            if (horizontalAlignment == HorizontalAlignment.Stretch)
+            {
+                var wf = _editedLayoutDocument.GetWidthField();
+                wf.Data = double.NaN;
+            }
+        }
+
+        // called when the document key updates
+        private void VerticalAlignmentChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            var alignment = sender.GetVerticalAlignment();
+            xVerticalAlignmentComboBox.SelectionChanged -= XVerticalAlignmentComboBox_SelectionChanged; ;
+            xVerticalAlignmentComboBox.SelectedIndex = (int) alignment;
+            xVerticalAlignmentComboBox.SelectionChanged += XVerticalAlignmentComboBox_SelectionChanged; ;
+        }
+
+        // called when the document key updates
+        private void HorizontalAlignmentChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+
+            var alignment = sender.GetHorizontalAlignment();
+            xHorizontalAlignmentComboBox.SelectionChanged -= XHorizontalAlignmentComboBox_SelectionChanged;
+            xHorizontalAlignmentComboBox.SelectedIndex = (int)alignment;
+            xHorizontalAlignmentComboBox.SelectionChanged += XHorizontalAlignmentComboBox_SelectionChanged;
+
         }
     }
 }

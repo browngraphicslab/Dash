@@ -23,7 +23,7 @@
                           CanDragItems="{Binding CanDragItems}"
                           AllowDrop="True"
                           Tapped="HListView_Tapped"  
-                          ManipulationMode="None">
+                          ManipulationMode="None" Style="{StaticResource ListViewStyle_SelectionEdit}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>

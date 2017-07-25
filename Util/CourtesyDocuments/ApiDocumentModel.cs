@@ -284,8 +284,9 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(collectionFieldModelController);
+            var collectionViewModel = new CollectionViewModel(docController, DocumentCollectionFieldModelController.CollectionKey, context); //  collectionFieldModelController);
             var collectionDisplay = new CollectionView(collectionViewModel);
+
 
 
             // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
@@ -313,8 +314,10 @@ namespace Dash
             containerGrid.Children.Add(sourceDisplay);
             containerGrid.Children.Add(collectionDisplay);
 
-            collectionDisplay.MaxWidth = 550;
-            collectionDisplay.HorizontalAlignment = HorizontalAlignment.Left;
+            collectionDisplay.HorizontalAlignment = HorizontalAlignment.Stretch;
+            collectionDisplay.VerticalAlignment = VerticalAlignment.Stretch;
+            collectionDisplay.Height = double.NaN;
+
 
             // return all results
             if (isInterfaceBuilderLayout) {

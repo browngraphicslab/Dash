@@ -220,9 +220,13 @@ namespace Dash {
             var apiDocType = new DocumentType(apiURI.Host.ToString().Split('.').First(), apiURI.Host.ToString().Split('.').First());
             try {
 
-                DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), docController.GetId());
+                DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), message.RequestUri.ToString());
 
-                ResponseAsDocuments = new List<DocumentController>{ documentController };
+                var dcfm = documentController.EnumFields()
+                    .FirstOrDefault(keyFieldPair => keyFieldPair.Value is DocumentCollectionFieldModelController).Value as DocumentCollectionFieldModelController;
+
+                ResponseAsDocuments = new List<DocumentController>(dcfm.GetDocuments());
+                ResponseAsDocuments.Add(documentController);
 
             } catch (InvalidOperationException e) {
                 Debug.Fail("the json util failed");

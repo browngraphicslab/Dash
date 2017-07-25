@@ -7,7 +7,7 @@ namespace Dash
 {
     public class DocumentFieldModelController : FieldModelController
     {
-        public DocumentFieldModelController(DocumentController document) : base(new DocumentModelFieldModel(document.DocumentModel))
+        public DocumentFieldModelController(DocumentController document) : base(new DocumentModelFieldModel(document?.DocumentModel))
         {
             Data = document;
         }

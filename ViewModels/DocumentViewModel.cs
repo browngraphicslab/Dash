@@ -97,8 +97,11 @@ namespace Dash
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, context) as
                             NumberFieldModelController;
 
-                    widthFieldModelController.Data = value;
-                    WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
+                    if (widthFieldModelController != null)
+                    {
+                        widthFieldModelController.Data = value;
+                        WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
+                    }
                 }
             }
         }
@@ -118,7 +121,8 @@ namespace Dash
                     var heightFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, context) as
                             NumberFieldModelController;
-                    heightFieldModelController.Data = value;
+                    if (heightFieldModelController != null)
+                        heightFieldModelController.Data = value;
                 }
             }
         }
@@ -145,12 +149,14 @@ namespace Dash
                     var scaleCenterFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.ScaleCenterFieldKey, context) as
                             PointFieldModelController;
-                    scaleCenterFieldModelController.Data = value.ScaleCenter;
+                    if (scaleCenterFieldModelController != null)
+                        scaleCenterFieldModelController.Data = value.ScaleCenter;
                     // set scale amount
                     var scaleAmountFieldModelController =
                         layoutDocController.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey, context) as
                             PointFieldModelController;
-                    scaleAmountFieldModelController.Data = value.ScaleAmount;
+                    if (scaleAmountFieldModelController != null)
+                        scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
             }
         }
@@ -190,9 +196,9 @@ namespace Dash
             get { return _docMenuVisibility; }
             set { SetProperty(ref _docMenuVisibility, value); }
         }
-        
+
         public readonly bool IsInInterfaceBuilder;
-        
+
         public GridLength MenuColumnWidth
         {
             get { return _menuColumnWidth; }
@@ -202,7 +208,7 @@ namespace Dash
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
-  
+
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
         {
             if (IsInInterfaceBuilder = isInInterfaceBuilder)
@@ -210,7 +216,7 @@ namespace Dash
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-            DataBindingSource.Add(documentController.DocumentModel);     
+            DataBindingSource.Add(documentController.DocumentModel);
 
             SetUpSmallIcon();
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
@@ -256,29 +262,44 @@ namespace Dash
                 var scaleAmountFieldModelController =
                     activeLayout.GetDereferencedField(DashConstants.KeyStore.ScaleAmountFieldKey,
                         new Context(DocumentController)) as PointFieldModelController;
-                GroupTransform = new TransformGroupData(posFieldModelController.Data,
-                    scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
-                posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
-                scaleCenterFieldModelController.FieldModelUpdated +=
-                    ScaleCenterFieldModelController_FieldModelUpdatedEvent;
-                scaleAmountFieldModelController.FieldModelUpdated +=
-                    ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+                if (scaleCenterFieldModelController != null)
+                {
+                    if (scaleAmountFieldModelController != null)
+                        GroupTransform = new TransformGroupData(posFieldModelController.Data,
+                            scaleCenterFieldModelController.Data, scaleAmountFieldModelController.Data);
+                    posFieldModelController.FieldModelUpdated += PosFieldModelController_FieldModelUpdatedEvent;
+                    scaleCenterFieldModelController.FieldModelUpdated +=
+                        ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+                }
+                if (scaleAmountFieldModelController != null)
+                    scaleAmountFieldModelController.FieldModelUpdated +=
+                        ScaleAmountFieldModelController_FieldModelUpdatedEvent;
             }
-            
+
         }
 
         private void ListenToWidthField(DocumentController docController)
         {
             var widthField = docController.GetWidthField();
-            widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
-            Width = widthField.Data;
+            if (widthField != null)
+            {
+                widthField.FieldModelUpdated += WidthFieldModelController_FieldModelUpdatedEvent;
+                Width = widthField.Data;
+            }
+            else
+                Width = double.NaN;
         }
 
         private void ListenToHeightField(DocumentController docController)
         {
             var heightField = docController.GetHeightField();
-            heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
-            Height = heightField.Data;
+            if (heightField != null)
+            {
+                heightField.FieldModelUpdated += HeightFieldModelController_FieldModelUpdatedEvent;
+                Height = heightField.Data;
+            }
+            else
+                Height = double.NaN;
         }
 
         public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
@@ -351,22 +372,16 @@ namespace Dash
 
         public void CloseMenu()
         {
-            if (MenuOpen)
-            {
-                DocMenuVisibility = Visibility.Collapsed;
-                MenuColumnWidth = new GridLength(0);
-                MenuOpen = false;
-            }
+            DocMenuVisibility = Visibility.Collapsed;
+            MenuColumnWidth = new GridLength(0);
+            MenuOpen = false;
         }
 
         public void OpenMenu()
         {
-            if (!MenuOpen)
-            {
-                DocMenuVisibility = Visibility.Visible;
-                MenuColumnWidth = new GridLength(60);
-                MenuOpen = true;
-            }
+            DocMenuVisibility = Visibility.Visible;
+            MenuColumnWidth = new GridLength(60);
+            MenuOpen = true;
         }
 
         public DocumentController Copy()

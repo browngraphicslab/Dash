@@ -33,6 +33,9 @@ namespace Dash
             }
         }
 
+
+        public SearchView SearchView { get; set; }
+
         public OperatorSearchView()
         {
             this.InitializeComponent();
@@ -52,9 +55,8 @@ namespace Dash
             categories.Add(new SearchCategoryItem("→","MAP", maps, Actions.AddOperator));
             categories.Add(new SearchCategoryItem("∈","SET", sets, Actions.AddOperator));
             categories.Add(new SearchCategoryItem(string.Empty,"CUSTOM",null,Actions.AddOperator));
-            var searchView = new SearchView(categories);
 
-            xMainGrid.Children.Add(searchView);
+            xMainGrid.Children.Add(SearchView = new SearchView(categories));
         }
     }
 }

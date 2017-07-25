@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash;
 using DashShared;
+using System;
 
 namespace Dash
 {
@@ -47,11 +49,11 @@ namespace Dash
         public override FrameworkElement makeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
         {
-            return MakeView(docController, context, isInterfaceBuilderLayout);
+            return MakeView(docController, context, null, isInterfaceBuilderLayout);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
-            Context context, bool isInterfaceBuilderLayout = false)
+            Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
@@ -61,17 +63,24 @@ namespace Dash
 
                 double opacityValue = opacity.HasValue ? (double)opacity : 1;
 
-                var collectionFieldModelController = data
-                    .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
                 Debug.Assert(collectionFieldModelController != null);
 
-                var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context);
+                var collectionViewModel = new CollectionViewModel(docController, DashConstants.KeyStore.DataKey, context); //  collectionFieldModelController, context);
 
                 var view = new CollectionView(collectionViewModel);
+
+                if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
+                {
+                    SetupBindings(view, docController, context);
+                }
+
+                
+
                 view.Opacity = opacityValue;
                 if (isInterfaceBuilderLayout)
                 {
-                    return new SelectableContainer(view, docController);
+                    return new SelectableContainer(view, docController, dataDocument);
                 }
                 return view;
             }

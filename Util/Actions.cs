@@ -17,6 +17,8 @@ using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
+using Dash.Controllers.Operators;
+using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 namespace Dash
 {
@@ -25,6 +27,30 @@ namespace Dash
        
         public static void AddSearch(Canvas c, Point p)
         {
+            //if (!c.Children.Contains(_searchView))
+            //{
+            //    c.Children.Add(_searchView);
+            //    _searchView.SetPosition(p);
+            //    _searchView.IsDraggable = true;
+            //}
+            //else
+            //{
+            //    c.Children.Remove(_searchView);
+            //}
+            var opModel = DBSearchOperatorFieldModelController.CreateSearch(new DocumentFieldModelController(null), "UmpName");
+            
+            //var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel("Search", "UmpName"));
+
+            //var opModel = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
+          
+            //opModel.SetField(ForceUpdateKey, new DocumentReferenceController(GlobalDoc.GetId(), ForceUpdateKey), true);
+
+            var searchView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            MainPage.Instance.DisplayDocument(opModel);
             MainPage.Instance.AddGenericFilter();
         }
 
@@ -91,6 +117,20 @@ namespace Dash
         {
             DocumentController opModel = null;
             var type = obj as string;
+            var freeForm =
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()
+                    .CurrentView as CollectionFreeformView;
+            var searchView = OperatorSearchView.Instance.SearchView;
+            var border = searchView.GetFirstDescendantOfType<Border>();
+            var position = new Point(Canvas.GetLeft(border), Canvas.GetTop(border));
+            var translate = new Point();
+            if (freeForm != null)
+            {
+                var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                Debug.Assert(r != null);
+                translate = r.TransformPoint(new Point(position.X, position.Y));
+            }
+
             if (type == null) return;
             if (type == "Divide")
             {
@@ -102,7 +142,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var opvm = new DocumentViewModel(opModel);
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
                 view.DataContext = opvm;
             }
@@ -116,7 +159,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var unionOpvm = new DocumentViewModel(opModel);
+                var unionOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 unionView.DataContext = unionOpvm;
             }
             else if (type == "Intersection")
@@ -130,7 +176,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var intersectOpvm = new DocumentViewModel(opModel);
+                var intersectOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 intersectView.DataContext = intersectOpvm;
             }
             else if (type == "ImageToUri")
@@ -144,7 +193,10 @@ namespace Dash
                     Width = 200,
                     Height = 200
                 };
-                var imgOpvm = new DocumentViewModel(opModel);
+                var imgOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
                 imgOpView.DataContext = imgOpvm;
             }
             if (opModel != null)

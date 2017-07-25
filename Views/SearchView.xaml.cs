@@ -26,7 +26,7 @@ namespace Dash
         {
             this.InitializeComponent();
             this.MakeCategories(categories);
-            this.SetManipulation();
+            //this.SetManipulation();
             xSearch.TextChanged += XSearch_TextChanged;
             xSearch.QuerySubmitted += XSearch_QuerySubmitted;
         }

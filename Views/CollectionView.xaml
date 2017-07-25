@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<dash:SelectionElement
     x:Class="Dash.CollectionView"
     x:Name="Control"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -24,8 +24,8 @@
 
             <!-- Collectionview Content-->
             <Grid x:Name="Grid" x:FieldModifier="public" BorderThickness="0" Grid.Column="1"
-                  Background="{StaticResource CollectionViewBackground}" Padding="0" ManipulationMode="All">
-                <Canvas x:Name="xBackgroundTileContainer" SizeChanged="Grid_SizeChanged"/>
+                  Background="{StaticResource CollectionViewBackground}" Padding="0" SizeChanged="Grid_SizeChanged">
+                <Canvas x:Name="xBackgroundTileContainer" />
                 <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None"/>
                 <Grid x:Name="DocumentViewContainerGrid"
                       Background="Transparent"
@@ -47,8 +47,11 @@
                          HorizontalAlignment="Right"
                          PointerPressed="ConnectionEllipse_OnPointerPressed"
                          PointerReleased="ConnectionEllipse_OnPointerReleased" />
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="xBackgroundClip"></RectangleGeometry>
+                </Grid.Clip>
             </Grid>
         </Grid>
     </Grid>
 
-</UserControl>
+</dash:SelectionElement>

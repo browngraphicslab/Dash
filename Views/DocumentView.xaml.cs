@@ -21,7 +21,7 @@ using Dash.Controllers.Operators;
 namespace Dash
 {
 
-    public sealed partial class DocumentView : UserControl
+    public sealed partial class DocumentView : SelectionElement
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
@@ -277,6 +277,10 @@ namespace Dash
                 ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+
+            if (ViewModel != null)
+                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
@@ -319,6 +323,8 @@ namespace Dash
 
   #region Menu
 
+
+
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
@@ -326,6 +332,7 @@ namespace Dash
 
             TransformGroup tg = new TransformGroup();
             tg.Children.Add(OuterGrid.RenderTransform); 
+
 
             if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
             {
@@ -339,6 +346,9 @@ namespace Dash
                 tg.Children.Add(new TranslateTransform { X = 60, Y = 0 });
                 OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
+
+            OnSelected();
+
             e.Handled = true;
         }
 
@@ -426,9 +436,9 @@ namespace Dash
                     {
                         var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
                         proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-                        proto.SetField(key, DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1)), true);
-                        var keyField = docController.GetDereferencedField(key, new Context(docController));
-                        Debug.WriteLine(keyField.ToString());
+
+                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
+                        proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
                     }
                     else if (valu.StartsWith("@"))
                     {
@@ -459,5 +469,19 @@ namespace Dash
             PointerWheelChanged -= This_PointerWheelChanged;
         }
         #endregion
+
+        protected override void OnActivated(bool isSelected)
+        {
+            
+        }
+
+        public override void OnLowestActivated(bool isLowestSelected)
+        {
+            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+                ViewModel?.OpenMenu();
+            else
+                ViewModel?.CloseMenu();
+        }
+        
     }
 }

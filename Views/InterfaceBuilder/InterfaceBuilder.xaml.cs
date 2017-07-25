@@ -33,7 +33,6 @@ namespace Dash
             Height = height;
 
             SetUpInterfaceBuilder(docController, new Context(docController));
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
 
             SetUpButtons();
 
@@ -52,6 +51,8 @@ namespace Dash
             _documentView.Manipulator.RemoveAllButHandle();
             _documentView.RemoveScroll();
             UpdateRootLayout();
+            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
+
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.AllowDrop = true;
@@ -172,6 +173,10 @@ namespace Dash
         {
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
+            {
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            }
+            else if (fieldModelController is NumberFieldModelController)
             {
                 layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }

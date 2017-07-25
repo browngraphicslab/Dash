@@ -71,12 +71,13 @@ namespace Dash
             };
             LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
 
+            var c = new Context(context);
             docController.DocumentFieldUpdated += delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
                 {
-                    LayoutDocuments(sender, args.Context, listView, isInterfaceBuilderLayout);
+                    LayoutDocuments(sender, c, listView, isInterfaceBuilderLayout);
                 }
             };
             grid.Children.Add(listView);
@@ -119,8 +120,23 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-
-                itemsSource.Add(layoutView);
+                //if (isInterfaceBuilder)
+                //{
+                //    Border border = new Border {Child = layoutView};
+                //    itemsSource.Add(border);
+                //    layoutView.Loaded += delegate(object sender, RoutedEventArgs args)
+                //        {
+                //            border.Width = layoutView.ActualWidth + 20;
+                //            border.Height = layoutView.ActualHeight + 20;
+                //        };
+                //    layoutView.VerticalAlignment = VerticalAlignment.Center;
+                //    layoutView.HorizontalAlignment = HorizontalAlignment.Center;
+                //}
+                //else
+                //{
+                    itemsSource.Add(layoutView);
+                //}
+                
             }
             list.ItemsSource = itemsSource;
         }
