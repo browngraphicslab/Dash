@@ -222,10 +222,12 @@ namespace Dash
 
             DocumentController inputController =
                 inputReference.FieldReference.GetDocumentController(null);
-            //if (inputReference.FieldReference is DocumentFieldReference)
-            //    inputController.SetField(inputReference.FieldReference.FieldKey,
-            //    (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null), true);
-            //else
+            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null);
+            if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
+                (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document &&
+                inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+            else
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new ReferenceFieldModelController(outputReference.FieldReference), true);
 
