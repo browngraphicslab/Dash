@@ -83,9 +83,9 @@ namespace Dash
 
         public static Context SafeInitAndAddDocument(Context context, DocumentController doc)
         {
-            context = context ?? new Context();
-            context.AddDocumentContext(doc);
-            return context;
+            var newcontext = new Context(context);
+            newcontext.AddDocumentContext(doc);
+            return newcontext;
         }
     }
 }
