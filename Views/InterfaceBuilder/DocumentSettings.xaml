@@ -15,7 +15,6 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!--EDIT-->
@@ -27,8 +26,41 @@
                 </Button>
             </Grid>
 
-            <!--LAYOUT-->
+            <!--NAME-->
             <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <local:SettingsPaneBlock>
+                    <local:SettingsPaneBlock.MainContent>
+                        <Grid Margin="0,5,0,5">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="6*" />
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid Grid.Column="0">
+                                <TextBlock x:Name="xNameTextBlock" Text="{Binding ElementName=xEditNameTextBox, Path=Text}" FontSize="14"
+                                       HorizontalAlignment="Stretch">
+                                </TextBlock>
+                                <TextBox x:Name="xEditNameTextBox" Header=" " Margin="0,-25,0,0" FontSize="12" BorderBrush="Transparent"
+                                     HorizontalAlignment="Stretch" Visibility="Collapsed">
+                                </TextBox>
+                            </Grid>
+                            <Grid Grid.Column="1">
+                                <Button x:Name="xEditNameButton" Background="Transparent" Foreground="DimGray" Padding="-3"
+                                    Margin="15,0,0,5">
+                                    <SymbolIcon Symbol="Edit"></SymbolIcon>
+                                </Button>
+                                <Button x:Name="xConfirmNameButton" Background="Transparent" Foreground="DimGray"
+                                    Padding="-2" Margin="15,0,0,5" Visibility="Collapsed">
+                                    <SymbolIcon Symbol="Accept"></SymbolIcon>
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </local:SettingsPaneBlock.MainContent>
+                    <local:SettingsPaneBlock.Title>NAME</local:SettingsPaneBlock.Title>
+                </local:SettingsPaneBlock>
+            </Grid>
+            
+            <!--LAYOUT-->
+            <Grid Grid.Row="2" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
                 <local:SettingsPaneBlock>
                     <local:SettingsPaneBlock.MainContent>
                         <Grid Margin="0,5,0,5">
@@ -39,7 +71,7 @@
                             
                             <!--COMBO BOX-->
                             <Grid Grid.Column="0">
-                                <ComboBox x:Name="xActiveLayoutComboBox" HorizontalAlignment="Stretch"
+                                <ComboBox x:Name="xActiveLayoutComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                           BorderBrush="Transparent" FontSize="12"
                                           SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
                                     <ComboBox.ItemTemplate>
@@ -52,12 +84,15 @@
                             
                             <!--ADD LAYOUT BUTTON-->
                             <Grid Grid.Column="1">
-                                <Button x:Name="xAddLayoutButton" Background="SteelBlue">
+                                <Button x:Name="xAddLayoutButton" Background="SteelBlue" HorizontalAlignment="Stretch" Height="28"  BorderThickness="0">
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
+                                    <Button.Flyout>
+                                        <MenuFlyout x:Name="xLayoutFlyout"/>
+                                    </Button.Flyout>
                                 </Button>
                             </Grid>
-                            
                         </Grid>
+                
                     </local:SettingsPaneBlock.MainContent>
                     <local:SettingsPaneBlock.Title>LAYOUT</local:SettingsPaneBlock.Title>
                 </local:SettingsPaneBlock>

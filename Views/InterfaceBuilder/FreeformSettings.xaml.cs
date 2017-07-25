@@ -31,15 +31,17 @@ namespace Dash
 
         public FreeformSettings(DocumentController layoutDocument, DocumentController dataDocument, Context context): this()
         {
+            xLayoutBlock.Text = layoutDocument.DocumentType.Type;
             if (dataDocument == null)
             {
                 xCollapsableDocRow.Height = new GridLength(0);
-                TypeBlock.Text = layoutDocument.DocumentType.Type;
+                xTypeRow.Height = new GridLength(0);
+//                TypeBlock.Text = layoutDocument.DocumentType.Type;
             }
             else
             {
                 xDocRow.Children.Add(new DocumentSettings(layoutDocument, dataDocument, context));
-                TypeBlock.Text =  "Document (" + layoutDocument.DocumentType.Type + ")";
+//                TypeBlock.Text =  "Document (" + layoutDocument.DocumentType.Type + ")";
             }
             xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
