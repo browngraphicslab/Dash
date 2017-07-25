@@ -197,13 +197,13 @@ namespace Dash
 
         public void AddNotes()
         {
-            DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
+            DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType("RichText")).Document;
             DisplayDocument(rtfNote);
 
-            DocumentController postitNote = new NoteDocuments.PostitNote(new DocumentType()).Document;
+            DocumentController postitNote = new NoteDocuments.PostitNote(new DocumentType("Postit")).Document;
             DisplayDocument(postitNote);
 
-            DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
+            DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType("Image")).Document;
             DisplayDocument(imageNote);
         }
 
