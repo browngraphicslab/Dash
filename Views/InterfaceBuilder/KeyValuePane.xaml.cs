@@ -67,10 +67,14 @@ namespace Dash
                 if (!xNewKeyField.IsEnabled && _selectedKV != null)
                 {
                     TextFieldModelController textCont = _selectedKV.Controller as TextFieldModelController;
-                    (_selectedKV.Controller as TextFieldModelController).Data = xNewValueField.Text;
-
-                    SetListItemSourceToCurrentDataContext();
+                    if ((_selectedKV.Controller as TextFieldModelController).Data != xNewValueField.Text || _selectedKV.Key.Name != xNewKeyField.Text)
+                    {
+                        _selectedKV.Key.Name = xNewKeyField.Text;
+                        (_selectedKV.Controller as TextFieldModelController).Data = xNewValueField.Text;
+                        SetListItemSourceToCurrentDataContext();
+                    }
                     ResetKeyValueModifier();
+
                     return;
                 }
                 if (xNewKeyField.Text == "" || xNewValueField.Text == "")
@@ -93,20 +97,24 @@ namespace Dash
 
         private void KeyField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
+            if (_selectedKV == null) return;
             if (!xNewValueField.IsEnabled && (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Tab))
             {
-                if (_selectedKV != null) _selectedKV.Key.Name = xNewKeyField.Text;
-
                 var textCont = _selectedKV.Controller as TextFieldModelController;
                 if (textCont != null)
                 {
-                    xNewValueField.IsEnabled = true; 
+                    //_selectedKV.Key.Name = xNewKeyField.Text; 
+                    xNewValueField.IsEnabled = true;
                     xNewValueField.Text = textCont.Data;
                     xNewKeyField.IsEnabled = false;
                 }
                 else
                 {
-                    SetListItemSourceToCurrentDataContext();
+                    if (_selectedKV.Key.Name != xNewKeyField.Text)
+                    {
+                        _selectedKV.Key.Name = xNewKeyField.Text; 
+                        SetListItemSourceToCurrentDataContext();
+                    }
                     ResetKeyValueModifier();
                 }
             }
@@ -118,10 +126,8 @@ namespace Dash
         {
             _selectedKV = e.ClickedItem as KeyFieldContainer;
 
-            string keyField = _selectedKV.Key.Name;
-
             xNewValueField.Text = "< Enter new key";
-            xNewKeyField.Text = keyField;
+            xNewKeyField.Text = _selectedKV.Key.Name;
             xNewValueField.IsEnabled = false;
         }
 
