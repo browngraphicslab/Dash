@@ -93,6 +93,8 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
+    <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>

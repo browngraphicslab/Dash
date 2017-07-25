@@ -17,7 +17,7 @@ using Dash.StaticClasses;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class FilterView : UserControl
     {
@@ -27,6 +27,51 @@ namespace Dash.Views
 
         {
             this.InitializeComponent();
+
+            DataContextChanged += OnDataContextChanged;
+        }
+
+        private DocumentController _filterParams;
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var refToOp = args.NewValue as FieldReference;
+            var doc = refToOp.GetDocumentController(null);
+            _filterParams =
+                (doc.GetDereferencedField(FilterOperator.FilterParameterKey, null) as DocumentFieldModelController)
+                .Data;
+            doc.AddFieldUpdatedListener(FilterOperator.InputCollection,
+                delegate(DocumentController controller, DocumentController.DocumentFieldUpdatedEventArgs eventArgs)
+                {
+                    Documents = eventArgs.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(null)
+                        .GetDocuments();
+                });
+        }
+
+        private void UpdateParams()
+        {
+            if (_filterParams == null)
+            {
+                return;
+            }
+            if (xComboBox.SelectedItem == xHasField)
+            {
+                _filterParams.SetField(FilterOperator.FilterTypeKey, new TextFieldModelController(FilterModel.FilterType.containsKey.ToString()), true);
+                _filterParams.SetField(FilterOperator.KeyNameKey, new TextFieldModelController(xSearchFieldBox.Text), true);
+                _filterParams.SetField(FilterOperator.FilterValueKey, new TextFieldModelController(""), true);
+            }
+            else if (xComboBox.SelectedItem == xFieldContains)
+            {
+                _filterParams.SetField(FilterOperator.FilterTypeKey, new TextFieldModelController(FilterModel.FilterType.valueContains.ToString()), true);
+                _filterParams.SetField(FilterOperator.KeyNameKey, new TextFieldModelController(xFieldBox.Text), true);
+                _filterParams.SetField(FilterOperator.FilterValueKey, new TextFieldModelController(xSearchBox.Text), true);
+            }
+            else if (xComboBox.SelectedItem == xFieldEquals)
+            {
+                _filterParams.SetField(FilterOperator.FilterTypeKey, new TextFieldModelController(FilterModel.FilterType.valueEquals.ToString()), true);
+                _filterParams.SetField(FilterOperator.KeyNameKey, new TextFieldModelController(xFieldBox.Text), true);
+                _filterParams.SetField(FilterOperator.FilterValueKey, new TextFieldModelController(xSearchBox.Text), true);
+            }
         }
 
 
@@ -166,38 +211,39 @@ namespace Dash.Views
         private void xSearchBox_TextChanged(object sender, TextChangedEventArgs e)
 
         {
-            EnableOrDisableFilterButton();
+            UpdateParams();
+            //EnableOrDisableFilterButton();
         }
 
 
-        /// <summary>
-        /// Generate autosuggestions according to available fields when user types into the autosuggestionbox to prevent mispelling
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        private void XFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        ///// <summary>
+        ///// Generate autosuggestions according to available fields when user types into the autosuggestionbox to prevent mispelling
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="args"></param>
+        //private void XFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
 
-        {
-            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        //{
+        //    if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
 
-            {
-                if (sender.Text.Length > 0)
+        //    {
+        //        if (sender.Text.Length > 0)
 
-                {
-                    sender.ItemsSource = FilterUtils.GetKeySuggestions(Documents, sender.Text.ToLower());
-                }
+        //        {
+        //            sender.ItemsSource = FilterUtils.GetKeySuggestions(Documents, sender.Text.ToLower());
+        //        }
 
-                else
+        //        else
 
-                {
-                    sender.ItemsSource = new string[] {"No suggestions..."};
-                }
-            }
+        //        {
+        //            sender.ItemsSource = new string[] {"No suggestions..."};
+        //        }
+        //    }
 
-            // enable and disable button accordingly
+        //    // enable and disable button accordingly
 
-            EnableOrDisableFilterButton();
-        }
+        //    EnableOrDisableFilterButton();
+        //}
 
         public List<DocumentController> Documents { get; set; }
 
@@ -272,6 +318,16 @@ namespace Dash.Views
             // bind gridview to list of DocumentControllers
 
             //TODO: Do something with list
+        }
+
+        private void XComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateParams();
+        }
+
+        private void XFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            UpdateParams();
         }
     }
 }
