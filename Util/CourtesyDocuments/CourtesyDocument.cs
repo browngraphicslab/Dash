@@ -427,7 +427,9 @@ namespace Dash
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
+            var currentHeight = document.GetHeightField().Data;
             document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetHeight(currentHeight);
         }
 
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)
