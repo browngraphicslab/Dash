@@ -40,7 +40,6 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition Width="*"></ColumnDefinition>
                 <ColumnDefinition Width="Auto"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
@@ -70,7 +69,7 @@
                 </ItemsControl.ItemTemplate>
             </ListView>
             
-            <ContentPresenter x:Name="XPresenter"  Grid.Column="2"></ContentPresenter>
+            <ContentPresenter x:Name="XPresenter"  Grid.Column="1"></ContentPresenter>
             
             <!-- Output link handles and labels -->
             <ListView x:Name="OutputListView" Grid.Column="3" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,-23,0" >

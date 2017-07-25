@@ -16,20 +16,10 @@ namespace Dash.Controllers.Operators
     }
     public class DBSearchOperatorFieldModelController : OperatorFieldModelController
     {
-        static public DocumentController GlobalDoc = null;
-        static void initGlobalDoc()
+        public static void ForceUpdate(DocumentFieldReference docFieldRef)
         {
-            if (GlobalDoc == null)
-            {
-                GlobalDoc = new DocumentController(new Dictionary<Key, FieldModelController>(), new DocumentType("global", "global"));
-                GlobalDoc.SetField(ForceUpdateKey, new NumberFieldModelController(1), true);
-            }
-        }
-        public static void ForceUpdate()
-        {
-            initGlobalDoc();
-            if (GlobalDoc != null)
-                GlobalDoc.SetField(ForceUpdateKey, new NumberFieldModelController(2), true);
+            var opDoc = ContentController.GetController<DocumentController>(docFieldRef.DocumentId);
+            opDoc.Execute(null, true);
         }
         public DBSearchOperatorFieldModel DBSearchOperatorFieldModel {  get { return OperatorFieldModel as DBSearchOperatorFieldModel; } }
         public string Pattern
@@ -40,28 +30,23 @@ namespace Dash.Controllers.Operators
        
         static public DocumentController CreateSearch(DocumentController searchForDoc, string fieldRef)
         {
-            initGlobalDoc();
             var searchFieldModel = new DBSearchOperatorFieldModel("Search", fieldRef);
             var searchFieldController = new DBSearchOperatorFieldModelController(searchFieldModel);
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
             searchOp.SetField(SearchForDocKey, new DocumentFieldModelController(searchForDoc), true);
-            searchOp.SetField(ForceUpdateKey, new ReferenceFieldModelController(GlobalDoc.GetId(), ForceUpdateKey), true);
             return searchOp;
         }
 
         static public DocumentController CreateSearch(FieldModelController fieldContainingSearchForDoc, string fieldRef)
         {
-            initGlobalDoc();
             var searchFieldModel = new DBSearchOperatorFieldModel("Search", fieldRef);
             var searchFieldController = new DBSearchOperatorFieldModelController(searchFieldModel);
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
             searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
-            searchOp.SetField(ForceUpdateKey, new ReferenceFieldModelController(GlobalDoc.GetId(), ForceUpdateKey), true);
             return searchOp;
         }
         public DBSearchOperatorFieldModelController(DBSearchOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
-            initGlobalDoc();
             OperatorFieldModel = operatorFieldModel;
         }
         //Input keys
@@ -69,12 +54,10 @@ namespace Dash.Controllers.Operators
         //Output keys
         public static readonly Key ResultsKey = new Key("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
         public static readonly Key SearchForDocKey = new Key("C544405C-6389-4F6D-8C17-31DEB14409D4", "SearchForDoc");
-        public static readonly Key ForceUpdateKey = new Key("1FA1ABE9-6891-45B6-A845-08E9F0101D19", "ForceUpdate");
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            [SearchForDocKey] = TypeInfo.Document,
-            [ForceUpdateKey] = TypeInfo.Number
+            [SearchForDocKey] = TypeInfo.Document
         };
         public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
@@ -100,22 +83,27 @@ namespace Dash.Controllers.Operators
 
         private static IEnumerable<DocumentController> findDocsThatReferenceDocument(DocumentController targetDocument)
         {
-            if (targetDocument == null)
-                return ContentController.GetControllers<DocumentController>();
             var docsInSearchScope = new List<DocumentController>();
             foreach (var dmc in ContentController.GetControllers<DocumentController>())
-            {
-                foreach (var field in dmc.EnumFields())
-                    if (field.Value is DocumentFieldModelController)
+                if (!dmc.DocumentType.Type.Contains("Box") && 
+                    dmc.DocumentType != StackingPanel.DocumentType && 
+                    dmc.DocumentType != GridPanel.GridPanelDocumentType && 
+                    dmc.DocumentType != GridViewLayout.DocumentType) {
+                    if (targetDocument == null)
                     {
-                        var dfmc = field.Value as DocumentFieldModelController;
-                        if (dfmc.Data == targetDocument)
-                        {
-                            docsInSearchScope.Add(dmc);
-                            break;
-                        }
+                        docsInSearchScope.Add(dmc);
                     }
-            }
+                    foreach (var field in dmc.EnumFields())
+                        if (field.Value is DocumentFieldModelController)
+                        {
+                            var dfmc = field.Value as DocumentFieldModelController;
+                            if (dfmc.Data == targetDocument)
+                            {
+                                docsInSearchScope.Add(dmc);
+                                break;
+                            }
+                        }
+                }
             return docsInSearchScope;
         }
 
@@ -129,15 +117,7 @@ namespace Dash.Controllers.Operators
                 {
                     if (dmc.GetField(DashConstants.KeyStore.DelegatesKey, true) == null)
                     {
-                        var del = dmc.MakeDelegate();
-                        var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-                        if (layout != null)
-                        {
-                            var layoutDel = layout.Data.MakeDelegate();
-                            layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
-                            del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-                        }
-                        documents.Add(del);
+                        documents.Add(dmc);
                         if (pfield.Value is DocumentFieldModelController)
                         {
                             textStr += "Document(";

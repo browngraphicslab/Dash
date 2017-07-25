@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Globalization;
 using System.Linq;
 using Dash.Models;
 using DashShared;
@@ -82,41 +83,40 @@ namespace Dash.StaticClasses
 
         private static IEnumerable<Key> GetKeys(DocumentController doc)
         {
-            throw new NotImplementedException();
 
-            //foreach (var item in doc.EnumFields())
-            //    yield return item.Key;
+            foreach (var item in doc.EnumFields())
+                yield return item.Key;
         }
 
-        //        /// <summary>
-        //        /// multiple values
-        //        /// Takes in a list of DocumentModels, a key, and an array of values, and returns a list of DocumentsModels whose dictionary
-        //        /// contains a specified value at the specified key
-        //        /// </summary>
-        //        /// <param name="collection"></param>
-        //        /// <param name="key"></param>
-        //        /// <param name="values"></param>
-        //        /// <returns></returns>
-        //        private static List<DocumentModel> CheckValueContains(List<DocumentModel> collection, string key, string[] values)
+        /// <summary>
+        /// multiple values
+        /// Takes in a list of DocumentModels, a key, and an array of values, and returns a list of DocumentsModels whose dictionary
+        /// contains a specified value at the specified key
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="key"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        //private static List<DocumentController> CheckValueContains(List<DocumentController> collection, string key, string[] values)
+        //{
+        //    // use hashset to prevent duplicates
+        //    var valueContainsDocuments = new HashSet<DocumentController>();
+
+        //    // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
+        //    foreach (var document in CheckContainsKey(collection, key))
+        //    {
+        //        // loop through all search values
+        //        foreach (var value in values)
         //        {
-        //            // use hashset to prevent duplicates
-        //            var valueContainsDocuments = new HashSet<DocumentModel>();
-        //
-        //            // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
-        //            foreach (var document in CheckContainsKey(collection, key))
+        //            // add any documents whose dictionary contains the specified value at the specified key to the hashset of documents
+        //            if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(document.GetField(key).Key, value, CompareOptions.IgnoreCase) >= 0)
         //            {
-        //                // loop through all search values
-        //                foreach (var value in values)
-        //                {
-        //                    // add any documents whose dictionary contains the specified value at the specified key to the hashset of documents
-        //                    if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(document.Fields[key].Key, value, CompareOptions.IgnoreCase) >= 0)
-        //                    {
-        //                        valueContainsDocuments.Add(document);
-        //                    }
-        //                }
+        //                valueContainsDocuments.Add(document);
         //            }
-        //            return valueContainsDocuments.ToList();
         //        }
+        //    }
+        //    return valueContainsDocuments.ToList();
+        //}
 
         /// <summary>
         /// Takes in a list of DocumentModels, a key, and a value, and returns a list of DocumentsModels whose dictionary
@@ -128,41 +128,41 @@ namespace Dash.StaticClasses
         /// <returns></returns>
         private static List<DocumentController> CheckValueContains(List<DocumentController> collection, string keyName, string value)
         {
-            throw new NotImplementedException();
+            // use hashset to prevent duplicates
+            var valueContainsDocuments = new HashSet<DocumentController>();
 
-            //// use hashset to prevent duplicates
-            //var valueContainsDocuments = new HashSet<DocumentModel>();
+            // obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
+            foreach (var document in CheckContainsKey(collection, keyName))
+            {
+                var key = new Key();
+                foreach (var docKey in GetKeys(document))
+                {
+                    if (docKey.Name.Equals(keyName))
+                    {
+                        key = docKey;
+                    }
+                }
+                string data = "";
+                var field = document.GetField(key);
+                if (field is TextFieldModelController)
+                {
+                    var text = field as TextFieldModelController;
+                    data = text.Data;
+                }
+                else if (field is ImageFieldModelController)
+                {
+                    var image = field as ImageFieldModelController;
+                    data = image.Data.UriSource.AbsoluteUri;
+                }
+                if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(data, value, CompareOptions.IgnoreCase) >= 0)
+                {
+                    valueContainsDocuments.Add(document);
+                }
 
-            //// obtain a list of documents with the specified field using the CheckContainsKey method and loop through those documents
-            //foreach (var document in CheckContainsKey(collection, keyName))
-            //{
-            //    var key = new Key();
-            //    foreach (var docKey in GetKeys(document))
-            //    {
-            //        if (docKey.Name.Equals(keyName))
-            //        {
-            //            key = docKey;
-            //        }
-            //    }
-            //    string data = "";
-            //    if (document.Field(key) is TextFieldModel)
-            //    {
-            //        var text = document.Field(key) as TextFieldModel;
-            //        data = text.Data;
-            //    } else if (document.Field(key) is ImageFieldModel)
-            //    {
-            //        var image = document.Field(key) as ImageFieldModel;
-            //        data = image.Data.UriSource.AbsoluteUri;
-            //    }
-            //    if (CultureInfo.CurrentCulture.CompareInfo.IndexOf(data, value, CompareOptions.IgnoreCase) >= 0)
-            //        {
-            //            valueContainsDocuments.Add(document);
-            //        }
+                // add any documents whose dictionary contains the specified value at the specified key to the hashset of documents
 
-            //        // add any documents whose dictionary contains the specified value at the specified key to the hashset of documents
-
-            //}
-            //return valueContainsDocuments.ToList();
+            }
+            return valueContainsDocuments.ToList();
         }
 
         /// <summary>
@@ -175,39 +175,38 @@ namespace Dash.StaticClasses
         /// <returns></returns>
         private static List<DocumentController> CheckValueEquals(List<DocumentController> collection, string keyName, string value)
         {
-            throw new NotImplementedException();
+            var valueEqualsDocuments = new List<DocumentController>();
 
-            //var valueEqualsDocuments = new List<DocumentModel>();
-
-            //// loop through documents that have the specified field
-            //foreach (var document in CheckContainsKey(collection, keyName))
-            //{
-            //    var key = new Key();
-            //    foreach (var docKey in GetKeys(document))
-            //    {
-            //        if (docKey.Name == keyName)
-            //        {
-            //            key = docKey;
-            //            break;
-            //        }
-            //    }
-            //    string data = "";
-            //    if (document.Field(key) is TextFieldModel)
-            //    {
-            //        var text = document.Field(key) as TextFieldModel;
-            //        data = text.Data;
-            //    }
-            //    else if (document.Field(key) is ImageFieldModel)
-            //    {
-            //        var image = document.Field(key) as ImageFieldModel;
-            //        data = image.Data.UriSource.AbsoluteUri;
-            //    }
-            //    if (data.Equals(value.ToLower()))
-            //    {
-            //        valueEqualsDocuments.Add(document);
-            //    }
-            //}
-            //return valueEqualsDocuments;
+            // loop through documents that have the specified field
+            foreach (var document in CheckContainsKey(collection, keyName))
+            {
+                var key = new Key();
+                foreach (var docKey in GetKeys(document))
+                {
+                    if (docKey.Name == keyName)
+                    {
+                        key = docKey;
+                        break;
+                    }
+                }
+                string data = "";
+                var field = document.GetField(key);
+                if (field is TextFieldModelController)
+                {
+                    var text = field as TextFieldModelController;
+                    data = text.Data;
+                }
+                else if (field is ImageFieldModelController)
+                {
+                    var image = field as ImageFieldModelController;
+                    data = image.Data.UriSource.AbsoluteUri;
+                }
+                if (data.Equals(value.ToLower()))
+                {
+                    valueEqualsDocuments.Add(document);
+                }
+            }
+            return valueEqualsDocuments;
         }
     }
 }

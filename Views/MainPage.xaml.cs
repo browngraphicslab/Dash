@@ -177,20 +177,20 @@ namespace Dash
         {
             //DisplayDocument(new PostitNote().Document);
             //DisplayDocument(new TwoImages(false).Document);
-            DocumentController numbersProto = new Numbers().Document;
-            DocumentController del = numbersProto.MakeDelegate();
-            Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
-            var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-            var layoutDel = layout.Data.MakeDelegate();
-            layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
-            del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-            DisplayDocument(numbersProto);
-            DisplayDocument(del);
-            DisplayDocument(new TwoImages(false).Document);
-            Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+            //DocumentController numbersProto = new Numbers().Document;
+            //DocumentController del = numbersProto.MakeDelegate();
+            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
+            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+            //del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
+            //var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
+            //var layoutDel = layout.Data.MakeDelegate();
+            //layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+            //del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
+            //DisplayDocument(numbersProto);
+            //DisplayDocument(del);
+            //DisplayDocument(new TwoImages(false).Document);
+            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
+            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(d);
         }

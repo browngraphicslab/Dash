@@ -120,9 +120,6 @@ namespace DashShared
 
         public static class DocumentTypeStore
         {
-            public static DocumentType OperatorDocumentType = new DocumentType("3FF64E84-A614-46AF-9742-FB5F6E2E37CE", "operator");
-
-            public static DocumentType TextBoxDocumentType = new DocumentType("D63DDB00-1A66-4E3A-A19B-6B06BBD6DAC8", "Text Box");
             public static DocumentType FreeFormDocumentLayout = new DocumentType("0E2B8354-D3B3-4A45-8A47-C7BF9A46B46C", "Free Form Layout");
         }
 

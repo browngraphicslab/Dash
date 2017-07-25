@@ -61,13 +61,20 @@ namespace Dash
             this.InitializeComponent();
         }
 
+        public object OperatorContent
+        {
+            get { return XPresenter.Content; }
+            set { XPresenter.Content = value; }
+        }
+
         private void SearchString_TextChanged(object sender, TextChangedEventArgs e)
         {
             var opCont = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null) as DBSearchOperatorFieldModelController;
 
             if (opCont != null)
                 (opCont as DBSearchOperatorFieldModelController).Pattern = (sender as TextBox).Text;
-            DBSearchOperatorFieldModelController.ForceUpdate();
+            
+            DBSearchOperatorFieldModelController.ForceUpdate(DataContext as DocumentFieldReference);
         }
 
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
