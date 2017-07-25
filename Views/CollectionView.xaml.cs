@@ -64,7 +64,14 @@ namespace Dash
         public UserControl CurrentView { get; set; }
         private OverlayMenu _colMenu = null;
 
-        public CollectionViewModel ViewModel;
+        public CollectionViewModel ViewModel
+        {
+            get
+            {
+                return DataContext as CollectionViewModel;
+            }
+            set { DataContext = value; }
+        }
 
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
@@ -73,18 +80,13 @@ namespace Dash
         public CollectionView(CollectionViewModel vm) : base()
         {
             this.InitializeComponent();
-            DataContext = ViewModel = vm;
-            vm.CollectionFieldModelController.FieldModelUpdated += DocFieldCtrler_FieldModelUpdatedEvent;
-            CurrentView = new CollectionFreeformView { DataContext = ViewModel };
+            ViewModel = vm;
+            CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
             SetEventHandlers();
             CanLink = true;
         }
 
-        private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender, Context c)
-        {
-            DataContext = ViewModel;
-        }
         private void SetEventHandlers()
         {
             Loaded += CollectionView_Loaded;
@@ -434,10 +436,9 @@ namespace Dash
         /// <param name="e"></param>
         public void SetFreeformView()
         {
-            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionFreeformView) return;
             ManipulationMode = ManipulationModes.All;
-            CurrentView = new CollectionFreeformView { DataContext = ViewModel };
+            CurrentView = new CollectionFreeformView();
             (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
             xContentControl.Content = CurrentView;
         }
@@ -448,10 +449,9 @@ namespace Dash
         /// <param name="e"></param>
         public void SetListView()
         {
-            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionListView) return;
             ManipulationMode = ManipulationModes.None;
-            CurrentView = new CollectionListView(this) { DataContext = ViewModel };
+            CurrentView = new CollectionListView(this);
             (CurrentView as CollectionListView).HListView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
@@ -462,10 +462,9 @@ namespace Dash
         /// <param name="e"></param>
         public void SetGridView()
         {
-            ViewModel.UpdateViewModels(null); // bcz: shouldn't need this once collections update properly
             if (CurrentView is CollectionGridView) return;
             ManipulationMode = ManipulationModes.None;
-            CurrentView = new CollectionGridView(this) { DataContext = ViewModel };
+            CurrentView = new CollectionGridView(this);
             (CurrentView as CollectionGridView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
