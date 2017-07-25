@@ -138,11 +138,17 @@ namespace Dash.Controllers.Operators
                         if (pattern[1][0] == '~')
                         {
                             if (f.Key.Name.Contains(pattern[1].Substring(1, pattern.Count - 1)))
+                            {
                                 textStr += f.Value + " ";
+                                documents.Add(ContentController.GetController<DocumentController>((pfield.Value as DocumentFieldModelController).Data.DocumentModel.Id));
+                            }
                         }
                         else
                             if (f.Key.Name == pattern[1])
-                                textStr += f.Value + " ";
+                        {
+                            textStr += f.Value + " ";
+                            documents.Add(ContentController.GetController<DocumentController>((pfield.Value as DocumentFieldModelController).Data.DocumentModel.Id));
+                        }
                     }
             }
 

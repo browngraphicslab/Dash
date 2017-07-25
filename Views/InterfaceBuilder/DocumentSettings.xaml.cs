@@ -124,6 +124,10 @@ namespace Dash
                 var dataDocHeight = dataDocLayout.GetHeightField().Data;
                 var delegateNewLayout = newLayout.MakeDelegate();
                 var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(dataDocPos, new Size(dataDocWidth, dataDocHeight));
+
+                defaultLayoutFields.Remove(DashConstants.KeyStore.WidthFieldKey);
+                defaultLayoutFields.Remove(DashConstants.KeyStore.HeightFieldKey);
+
                 delegateNewLayout.SetFields(defaultLayoutFields, true);
                 dataDocDelegate.SetActiveLayout(delegateNewLayout, true, false);
             }
