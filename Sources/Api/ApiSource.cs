@@ -222,7 +222,11 @@ namespace Dash {
 
                 DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), docController.GetId());
 
-                ResponseAsDocuments = new List<DocumentController>{ documentController };
+                var dcfm = documentController.EnumFields()
+                    .FirstOrDefault(keyFieldPair => keyFieldPair.Value is DocumentCollectionFieldModelController).Value as DocumentCollectionFieldModelController;
+
+                ResponseAsDocuments = new List<DocumentController>(dcfm.GetDocuments());
+                ResponseAsDocuments.Add(documentController);
 
             } catch (InvalidOperationException e) {
                 Debug.Fail("the json util failed");
