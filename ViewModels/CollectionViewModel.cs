@@ -85,13 +85,12 @@ namespace Dash
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
             UpdateViewModels(_collectionFieldModelController, context);
-            _collectionFieldModelController.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
+            docController.AddFieldUpdatedListener(key,
+                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    UpdateViewModels(args.Reference.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context));
+                });
             CellSize = 250;
-        }
-
-        private void Controller_FieldModelUpdatedEvent(FieldModelController sender, Context c)
-        {
-            UpdateViewModels(sender as DocumentCollectionFieldModelController);
         }
 
         #region Event Handlers

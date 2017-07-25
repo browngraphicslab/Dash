@@ -65,7 +65,6 @@ namespace Dash
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
 
-
             return ConstructCollection(docController, context, dataDocument, data, isInterfaceBuilderLayout);
         }
 

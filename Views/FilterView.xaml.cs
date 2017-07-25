@@ -216,35 +216,6 @@ namespace Dash
         }
 
 
-        ///// <summary>
-        ///// Generate autosuggestions according to available fields when user types into the autosuggestionbox to prevent mispelling
-        ///// </summary>
-        ///// <param name="sender"></param>
-        ///// <param name="args"></param>
-        //private void XFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
-
-        //{
-        //    if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
-
-        //    {
-        //        if (sender.Text.Length > 0)
-
-        //        {
-        //            sender.ItemsSource = FilterUtils.GetKeySuggestions(Documents, sender.Text.ToLower());
-        //        }
-
-        //        else
-
-        //        {
-        //            sender.ItemsSource = new string[] {"No suggestions..."};
-        //        }
-        //    }
-
-        //    // enable and disable button accordingly
-
-        //    EnableOrDisableFilterButton();
-        //}
-
         public List<DocumentController> Documents { get; set; }
 
 
@@ -327,6 +298,25 @@ namespace Dash
 
         private void XFieldBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+
+            {
+                if (sender.Text.Length > 0)
+
+                {
+                    sender.ItemsSource = FilterUtils.GetKeySuggestions(Documents, sender.Text.ToLower());
+                }
+
+                else
+
+                {
+                    sender.ItemsSource = new string[] { "No suggestions..." };
+                }
+            }
+
+            // enable and disable button accordingly
+
+            EnableOrDisableFilterButton();
             UpdateParams();
         }
     }
