@@ -284,7 +284,7 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(docController, DocumentCollectionFieldModelController.CollectionKey, context); //  collectionFieldModelController);
+            var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context); //  collectionFieldModelController);
             var collectionDisplay = new CollectionView(collectionViewModel);
 
 

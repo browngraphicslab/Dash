@@ -21,7 +21,7 @@ namespace Dash
 
     
         #region Properties
-        public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
+        public DocumentCollectionFieldModelController CollectionFieldModelController { get; }
         
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
@@ -64,7 +64,6 @@ namespace Dash
         Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
 
 
-        private DocumentCollectionFieldModelController _collectionFieldModelController;
         //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
 
@@ -73,23 +72,18 @@ namespace Dash
         /// </summary>
         public double CellSize { get; set; }
 
-        // bcz: get rid of these when Collection searches update properly
-        DocumentController DocController;
-        Key Key;
-        public CollectionViewModel(DocumentController docController, Key key, Context context = null) // DocumentCollectionFieldModelController collection, Context context = null)
+        public CollectionViewModel(FieldModelController collection, Context context = null)
         {
-            Key = key;
-            DocController = docController;
-            var collection = docController.GetDereferencedField(key, context) as DocumentCollectionFieldModelController;
-            _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            UpdateViewModels(_collectionFieldModelController, context);
-            docController.AddFieldUpdatedListener(key,
-                delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                {
-                    UpdateViewModels(args.Reference.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context));
-                });
+            CollectionFieldModelController =
+                collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            UpdateViewModels(CollectionFieldModelController, context);
+            collection.FieldModelUpdated += delegate(FieldModelController sender, Context context1)
+            {
+                UpdateViewModels(sender.DereferenceToRoot<DocumentCollectionFieldModelController>(context1),
+                    context1);
+            };
             CellSize = 250;
         }
 
@@ -167,9 +161,9 @@ namespace Dash
 
         public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context = null)
         {
-            // bcz: shouldn't need this conditional once the collection updates properly
-            if (documents == null)
-                documents = DocController.GetDereferencedField(Key, context) as DocumentCollectionFieldModelController;
+            //// bcz: shouldn't need this conditional once the collection updates properly
+            //if (documents == null)
+            //    documents = DocController.GetDereferencedField(Key, context) as DocumentCollectionFieldModelController;
 
             var offset = 0;
             var carriedControllers = ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).ToList();
