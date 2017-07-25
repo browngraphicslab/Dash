@@ -452,9 +452,9 @@ namespace Dash
         public override void OnLowestActivated(bool isLowestSelected)
         {
             if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
-                ViewModel.OpenMenu();
+                ViewModel?.OpenMenu();
             else
-                ViewModel.CloseMenu();
+                ViewModel?.CloseMenu();
         }
         
     }

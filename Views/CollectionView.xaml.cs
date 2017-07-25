@@ -78,7 +78,7 @@ namespace Dash
             CurrentView = new CollectionFreeformView { DataContext = ViewModel };
             xContentControl.Content = CurrentView;
             SetEventHandlers();
-            CanLink = false;
+            CanLink = true;
         }
 
         private void DocFieldCtrler_FieldModelUpdatedEvent(FieldModelController sender, Context c)
