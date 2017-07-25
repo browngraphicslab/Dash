@@ -19,8 +19,6 @@ namespace Dash
         private DocumentController _documentControllerDataContext;
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
-        //private KeyFieldContainer _newKeyVal = new KeyFieldContainer(null, null);
-
         public KeyValuePane()
         {
             InitializeComponent();
@@ -66,6 +64,18 @@ namespace Dash
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
+                if (!xNewKeyField.IsEnabled && _selectedKV != null)
+                {
+                    TextFieldModelController textCont = _selectedKV.Controller as TextFieldModelController;
+                    (_selectedKV.Controller as TextFieldModelController).Data = xNewValueField.Text;
+                    xNewKeyField.IsEnabled = true;
+
+                    xNewKeyField.Text = "";
+                    xNewValueField.Text = "";
+                    SetListItemSourceToCurrentDataContext();
+                    _selectedKV = null;
+                    return; 
+                }
                 if (xNewKeyField.Text == "" || xNewValueField.Text == "")
                     return; 
 
@@ -78,6 +88,51 @@ namespace Dash
                 xNewKeyField.Text = "";
                 xNewValueField.Text = "";  
             }
+        }
+
+        private void KeyField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (!xNewValueField.IsEnabled && e.Key == Windows.System.VirtualKey.Enter)
+            {
+                if (_selectedKV != null) _selectedKV.Key.Name = xNewKeyField.Text;
+                xNewValueField.IsEnabled = true;
+
+                xNewKeyField.Text = "";
+                xNewValueField.Text = "";
+                SetListItemSourceToCurrentDataContext();
+                _selectedKV = null; 
+            }
+        }
+
+        private KeyFieldContainer _selectedKV;
+
+        private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var kv = e.ClickedItem as KeyFieldContainer; 
+            //if (_selectedKV == kv || kv == null)
+            //{
+            //    xNewValueField.IsEnabled = true;
+            //    xNewValueField.Text = "";
+            //    _selectedKV = null; 
+            //    return; 
+            //}
+            _selectedKV = e.ClickedItem as KeyFieldContainer;
+
+            //if (_modifyVal && _selectedKV.Controller is TextFieldModelController)
+            //{
+            //    TextFieldModelController textCont = _selectedKV.Controller as TextFieldModelController;
+            //    xNewKeyField.Text = "Enter new value >";
+            //    xNewValueField.Text = textCont.Data; 
+            //    xNewKeyField.IsEnabled = false;
+            //}
+            //else
+            //{
+                string keyField = _selectedKV.Key.Name;
+
+                xNewValueField.Text = "< Enter new key";
+                xNewKeyField.Text = keyField; 
+                xNewValueField.IsEnabled = false;
+            //}
         }
     }
 
