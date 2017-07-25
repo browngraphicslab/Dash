@@ -63,7 +63,7 @@ namespace Dash
 
         private void SearchString_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var opCont = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>(null) as DBSearchOperatorFieldModelController;
+            var opCont = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null) as DBSearchOperatorFieldModelController;
 
             if (opCont != null)
                 (opCont as DBSearchOperatorFieldModelController).Pattern = (sender as TextBox).Text;

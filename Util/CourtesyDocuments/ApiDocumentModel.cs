@@ -284,8 +284,7 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            throw new Exception("Need to temporarily change the arguments to CollectionViewModel");
-            var collectionViewModel = new CollectionViewModel(null, null); //  collectionFieldModelController);
+            var collectionViewModel = new CollectionViewModel(docController, DocumentCollectionFieldModelController.CollectionKey, context); //  collectionFieldModelController);
             var collectionDisplay = new CollectionView(collectionViewModel);
 
 

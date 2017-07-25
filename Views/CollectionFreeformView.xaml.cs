@@ -567,7 +567,8 @@ namespace Dash
                         {
 
                             var fields = new Dictionary<Key, FieldModelController> { {
-                            DocumentCollectionFieldModelController.CollectionKey, new DocumentCollectionFieldModelController() }  };
+                            DocumentCollectionFieldModelController.CollectionKey,  new ReferenceFieldModelController(
+                                    opDoc.GetId(), _currReference.FieldReference.FieldKey) }  };
 
                             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
                             var layoutDoc =
@@ -577,9 +578,9 @@ namespace Dash
                             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
                             col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
                             MainPage.Instance.DisplayDocument(col);
-                            col.SetField(DocumentCollectionFieldModelController.CollectionKey,
-                                new ReferenceFieldModelController(
-                                    opDoc.GetId(), _currReference.FieldReference.FieldKey), true);
+                            //col.SetField(DocumentCollectionFieldModelController.CollectionKey,
+                            //    new ReferenceFieldModelController(
+                            //        opDoc.GetId(), _currReference.FieldReference.FieldKey), true);
                         }
                     }
                 }  

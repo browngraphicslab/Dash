@@ -111,6 +111,23 @@ namespace Dash
             }
 
             _dataDocument.SetActiveLayout(newLayout, true, true);
+
+            // get docs which have an active layout which was a delegate of the prev active layout
+            var delegateDocs = _dataDocument.GetDelegates().GetDocuments()
+                .Where(dc => dc.GetActiveLayout().Data.IsDelegateOf(currActiveLayout.GetId()));
+
+            foreach (var dataDocDelegate in delegateDocs)
+            {
+                var dataDocLayout = dataDocDelegate.GetActiveLayout().Data;
+                var dataDocPos = dataDocLayout.GetPositionField().Data;
+                var dataDocWidth = dataDocLayout.GetWidthField().Data;
+                var dataDocHeight = dataDocLayout.GetHeightField().Data;
+                var delegateNewLayout = newLayout.MakeDelegate();
+                var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(dataDocPos, new Size(dataDocWidth, dataDocHeight));
+                delegateNewLayout.SetFields(defaultLayoutFields, true);
+                dataDocDelegate.SetActiveLayout(delegateNewLayout, true, false);
+            }
+
         }
     }
 }

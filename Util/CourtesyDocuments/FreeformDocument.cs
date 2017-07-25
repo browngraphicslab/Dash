@@ -62,12 +62,13 @@ namespace Dash
             BindWidth(grid, widthController);
             LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
 
+            var c = new Context(context);
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
                 {
-                    LayoutDocuments(sender, args.Context, grid, isInterfaceBuilderLayout);
+                    LayoutDocuments(sender, c, grid, isInterfaceBuilderLayout);
                 }
             });
             if (isInterfaceBuilderLayout)

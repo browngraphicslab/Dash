@@ -149,6 +149,10 @@ namespace Dash
             {
                 layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
+            else if (fieldModelController is NumberFieldModelController)
+            {
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            }
             else if (fieldModelController is ImageFieldModelController)
             {
                 layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
