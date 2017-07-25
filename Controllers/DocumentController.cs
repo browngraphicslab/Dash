@@ -512,8 +512,7 @@ namespace Dash
 
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
-            context = context ?? new Context();
-            //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
+            context = new Context(context);
             context.AddDocumentContext(this);
 
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.

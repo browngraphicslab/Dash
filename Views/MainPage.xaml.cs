@@ -65,12 +65,12 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            var jsonDoc = JsonToDashUtil.RunTests();
+            //var jsonDoc = JsonToDashUtil.RunTests();
 
-            var sw = new Stopwatch();
-            sw.Start();
-            DisplayDocument(jsonDoc);
-            sw.Stop();
+            //var sw = new Stopwatch();
+            //sw.Start();
+            //DisplayDocument(jsonDoc);
+            //sw.Stop();
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
@@ -201,14 +201,14 @@ namespace Dash
 
         public void AddNotes()
         {
-            DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
-            DisplayDocument(rtfNote);
+            //DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
+            //DisplayDocument(rtfNote);
 
-            DocumentController postitNote = new NoteDocuments.PostitNote(new DocumentType()).Document;
+            DocumentController postitNote = new PostitNote(PostitNote.DocumentType).Document;
             DisplayDocument(postitNote);
 
-            DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
-            DisplayDocument(imageNote);
+            //DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
+            //DisplayDocument(imageNote);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
