@@ -133,6 +133,7 @@ namespace Dash
         public class PostitNote : NoteDocument
         {
             public static Key NotesFieldKey = new Key("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
+            public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Post it Note");
 
             public override DocumentController CreatePrototype()
             {
@@ -155,10 +156,15 @@ namespace Dash
                 _prototypeLayout = CreatePrototypeLayout();
 
                 Document = GetLayoutPrototype().MakeDelegate();
-                Document.SetField(NotesFieldKey, new TextFieldModelController("Hello World!"), true);
+                Document.SetField(NotesFieldKey, new TextFieldModelController("Write something amazing!"), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                var widthController = docLayout.GetWidthField();
+                widthController.Data = double.NaN;
+                var heightController = docLayout.GetHeightField();
+                heightController.Data = double.NaN;
+                docLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 
                 Document.AddLayoutToLayoutList(docLayout);
                 Document.SetActiveLayout(docLayout,true, true);
