@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using DashShared;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -95,6 +96,19 @@ namespace Dash
                 // return the error message
                 return new Result(false, string.Join("\n", e.Errors));
             }
+        }
+
+        public Result<IDictionary<Key, FieldModelController>>  GetFieldsDictionary(Dictionary<Key, string> fields)
+        {
+            var controllersMap = new Dictionary<Key, FieldModelController>();
+
+            foreach(var kv in fields)
+            {
+                var controller = GetField(kv.Value).Result.Content;
+                controllersMap[kv.Key] = controller;
+            }
+
+            return new Result<IDictionary<Key, FieldModelController>>(true, controllersMap);
         }
     }
 }

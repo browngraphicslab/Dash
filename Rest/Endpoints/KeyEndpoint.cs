@@ -8,52 +8,12 @@ namespace Dash
 {
     public class KeyEndpoint
     {
-        #region RemovedFakeLocal
-        private Dictionary<string, Key> _keys;
-
-        private int _numKeys;
-        #endregion
-
-
         private ServerEndpoint _connection;
 
         public KeyEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
-            _keys = new Dictionary<string, Key>();
         }
-
-        public Key GetKeyAsync(string keyId)
-        {
-            return _keys.ContainsKey(keyId) ? _keys[keyId] : null;
-        }
-
-        public void DeleteKeyAsync(Key model)
-        {
-            _keys.Remove(model.Id);
-        }
-
-        public Key UpdateKeyAsync(Key model)
-        {
-            _keys[model.Id] = model;
-            return model;
-        }
-
-        public Key CreateKeyAsync(string keyId, string name="")
-        {
-
-            var newKey = new Key
-            {
-                Id = keyId,
-                Name = name
-            };
-
-            _keys[keyId] = newKey;
-
-            return newKey;
-        }
-
-        // Server methods
 
         /// <summary>
         /// Adds a new Key to the DashWebServer.
@@ -89,7 +49,6 @@ namespace Dash
                 HttpResponseMessage result = _connection.Put("api/Key", KeyToUpdate);
                 Key resultk = await result.Content.ReadAsAsync<Key>();
 
-                // convert from server dto back to Key model controller
                 return new Result<Key>(true, resultk);
             }
             catch (ApiException e)
@@ -103,7 +62,6 @@ namespace Dash
         {
             try
             {
-                Debug.WriteLine(id);
                 Key Key = await _connection.GetItem<Key>($"api/Key/{id}");
                 return new Result<Key>(true, Key);
             }
@@ -117,7 +75,6 @@ namespace Dash
         public Result DeleteKey(Key KeyToDelete)
         {
             string id = KeyToDelete.Id;
-            Debug.WriteLine(id);
             try
             {
                 _connection.Delete($"api/Key/{id}");

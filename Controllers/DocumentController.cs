@@ -63,12 +63,12 @@ namespace Dash
 
         public DocumentController(DocumentModel model) : this(ModelToFieldModelDictionary(model), model.DocumentType)
         {
-
+                 
         }
 
         private static IDictionary<Key, FieldModelController> ModelToFieldModelDictionary(DocumentModel model)
         {
-            return new Dictionary<Key, FieldModelController>();
+            return RESTClient.Instance.Fields.GetFieldsDictionary(model.Fields).Content;
         }
 
         /// <summary>
