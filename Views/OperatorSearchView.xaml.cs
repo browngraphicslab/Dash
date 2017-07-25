@@ -45,7 +45,7 @@ namespace Dash
         private void MakeView()
         {
             var arithmetics = new ObservableCollection<object>() { "Divide" };
-            var sets = new ObservableCollection<object>() { "Union", "Intersection" };
+            var sets = new ObservableCollection<object>() { "Union", "Intersection", "Filter" };
             var maps = new ObservableCollection<object>() { "ImageToUri" };
             var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri" };
 

@@ -380,7 +380,9 @@ namespace Dash
         public void OpenMenu()
         {
             DocMenuVisibility = Visibility.Visible;
-            MenuColumnWidth = new GridLength(60);
+
+            MenuColumnWidth = new GridLength(55);
+
             MenuOpen = true;
         }
 

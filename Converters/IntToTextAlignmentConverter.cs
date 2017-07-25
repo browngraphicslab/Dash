@@ -8,9 +8,9 @@ namespace Dash.Converters
         {
             switch ((int) data)
             {
-                case 1:
-                    return TextAlignment.Left;
                 case 0:
+                    return TextAlignment.Left;
+                case 1:
                     return TextAlignment.Center;
                 case 2:
                     return TextAlignment.Right;

@@ -16,7 +16,7 @@ namespace Dash
     public class CollectionBox : CourtesyDocument
     {
 
-        public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
+        public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
 
@@ -55,36 +55,32 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
+            var data = docController.GetField(DashConstants.KeyStore.DataKey);
 
-            if (data != null)
+            var opacity = (docController.GetDereferencedField(new Key("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
+
+            double opacityValue = opacity.HasValue ? (double)opacity : 1;
+
+            var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            Debug.Assert(collectionFieldModelController != null);
+
+            var collectionViewModel = new CollectionViewModel(data, context);
+
+            var view = new CollectionView(collectionViewModel);
+
+            if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
             {
-                var opacity = (docController.GetDereferencedField(new Key("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
-
-                double opacityValue = opacity.HasValue ? (double)opacity : 1;
-
-                var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-                Debug.Assert(collectionFieldModelController != null);
-
-                var collectionViewModel = new CollectionViewModel(docController, DashConstants.KeyStore.DataKey, context); //  collectionFieldModelController, context);
-
-                var view = new CollectionView(collectionViewModel);
-
-                if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
-                {
-                    SetupBindings(view, docController, context);
-                }
-
-                
-
-                view.Opacity = opacityValue;
-                if (isInterfaceBuilderLayout)
-                {
-                    return new SelectableContainer(view, docController, dataDocument);
-                }
-                return view;
+                SetupBindings(view, docController, context);
             }
-            return new Grid();
+
+            view.Opacity = opacityValue;
+            if (isInterfaceBuilderLayout)
+            {
+                SelectableContainer container = new SelectableContainer(view, docController, dataDocument);
+                //SetupBindings(container, docController, context);
+                return container;
+            }
+            return view;
         }
     }
 }

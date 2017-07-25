@@ -69,13 +69,11 @@
                 </ItemsControl.ItemTemplate>
             </ListView>
             
+            <ContentPresenter x:Name="XPresenter"  Grid.Column="1"></ContentPresenter>
+            
             <!-- Output link handles and labels -->
-            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,-23,0" >
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
-                    </Style>
-                </ListView.ItemContainerStyle>
+            <ListView x:Name="OutputListView" Grid.Column="3" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,-23,0" >
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid VerticalAlignment="Center" Background="Transparent">

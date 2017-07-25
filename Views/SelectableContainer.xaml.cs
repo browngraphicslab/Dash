@@ -45,7 +45,7 @@ namespace Dash
 
 
         private SelectableContainer _selectedLayoutContainer;
-        private SelectableContainer _parentContainer;
+        public SelectableContainer ParentContainer;
         private bool _isSelected;
         private FrameworkElement _contentElement;
         private List<Ellipse> _draggerList;
@@ -130,7 +130,7 @@ namespace Dash
 
         private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
         {
-            _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
+            ParentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             IsSelected = false;
             SetEllipseVisibility();
             SetContent();
@@ -143,7 +143,7 @@ namespace Dash
 
         private bool IsRoot()
         {
-            return _parentContainer == null;
+            return ParentContainer == null;
         }
 
         // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
@@ -165,8 +165,8 @@ namespace Dash
         {
             if (!IsLowestSelected)
             {
-                _parentContainer?.SetSelectedContainer(this);
-                _parentContainer?.FireSelectionChanged(this);
+                ParentContainer?.SetSelectedContainer(this);
+                ParentContainer?.FireSelectionChanged(this);
                 IsLowestSelected = true;
                 if (IsRoot())
                 {
@@ -180,7 +180,7 @@ namespace Dash
         private void FireSelectionChanged(SelectableContainer selectedContainer)
         {
             OnSelectionChanged?.Invoke(selectedContainer, selectedContainer.LayoutDocument, selectedContainer.DataDocument);
-            _parentContainer?.FireSelectionChanged(selectedContainer);
+            ParentContainer?.FireSelectionChanged(selectedContainer);
         }
 
         public void SetSelectedContainer(SelectableContainer layoutContainer)

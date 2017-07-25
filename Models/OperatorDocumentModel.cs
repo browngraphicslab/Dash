@@ -32,7 +32,19 @@ namespace Dash
 
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            doc.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, false);
+            doc.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+
+            return doc;
+        }
+
+        public static DocumentController CreateFilterDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = new FilterOperator(new OperatorFieldModel("Filter"));
+            var doc = new DocumentController(fields, FilterOperator.FilterType);
+
+            var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
         }

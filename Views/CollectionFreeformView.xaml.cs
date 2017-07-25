@@ -222,9 +222,11 @@ namespace Dash
 
             DocumentController inputController =
                 inputReference.FieldReference.GetDocumentController(null);
-            if (inputReference.FieldReference is DocumentFieldReference)
-                inputController.SetField(inputReference.FieldReference.FieldKey,
-                (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null), true);
+            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null);
+            if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
+                (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document &&
+                inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new ReferenceFieldModelController(outputReference.FieldReference), true);
@@ -558,10 +560,12 @@ namespace Dash
         {
             if (_currReference != null)
             {
-                if (_currReference.IsOutput) {
+                if (_currReference.IsOutput)
+                {
                     var opDoc = (_currReference.ContainerView.DataContext as DocumentViewModel)?.DocumentController;
                     var searchOp = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-                    if (searchOp != null) {
+                    if (searchOp != null)
+                    {
                         var outType = searchOp.Outputs[_currReference.FieldReference.FieldKey];
                         if (outType == TypeInfo.Collection)
                         {
@@ -583,7 +587,7 @@ namespace Dash
                             //        opDoc.GetId(), _currReference.FieldReference.FieldKey), true);
                         }
                     }
-                }  
+                }
                 CancelDrag(_currReference.PointerArgs.Pointer);
 
                 //DocumentView view = new DocumentView();

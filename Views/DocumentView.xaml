@@ -27,7 +27,7 @@
           x:FieldModifier="public"
               SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" MaxWidth="60"/>
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         

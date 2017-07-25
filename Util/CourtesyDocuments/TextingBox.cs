@@ -122,6 +122,7 @@ namespace Dash
             if (isInterfaceBuilderLayout)
             {
                 var selectableContainer = new SelectableContainer(tb.Container, docController);
+                //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
 
