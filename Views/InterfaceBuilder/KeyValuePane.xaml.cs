@@ -103,7 +103,6 @@ namespace Dash
                 var textCont = _selectedKV.Controller as TextFieldModelController;
                 if (textCont != null)
                 {
-                    //_selectedKV.Key.Name = xNewKeyField.Text; 
                     xNewValueField.IsEnabled = true;
                     xNewValueField.Text = textCont.Data;
                     xNewKeyField.IsEnabled = false;
@@ -124,7 +123,13 @@ namespace Dash
 
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            _selectedKV = e.ClickedItem as KeyFieldContainer;
+            var kv = e.ClickedItem as KeyFieldContainer; 
+            if (kv == _selectedKV)
+            {
+                ResetKeyValueModifier();
+                return;    
+            }
+            _selectedKV = kv; 
 
             xNewValueField.Text = "< Enter new key";
             xNewKeyField.Text = _selectedKV.Key.Name;
