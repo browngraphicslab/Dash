@@ -32,7 +32,6 @@ namespace Dash
             Height = height;
 
             SetUpInterfaceBuilder(docController, new Context(docController));
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
 
 
             // TODO do we want to update breadcrumb bindings or just set them once
@@ -50,6 +49,8 @@ namespace Dash
             _documentView.Manipulator.RemoveAllButHandle();
             _documentView.RemoveScroll();
             UpdateRootLayout();
+            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
+
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.AllowDrop = true;

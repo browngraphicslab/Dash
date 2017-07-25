@@ -248,7 +248,9 @@ namespace Dash
                 [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
                 [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
                 [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0)
+                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
+                [HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Left.ToString()),
+                [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Top.ToString())
             };
 
             if (data != null)
@@ -277,7 +279,7 @@ namespace Dash
                     if (view.CanLink)
                 {
                     args.Complete();
-                    view.CanLink = false; // essential s.t. drag events don't get overriden
+                    view.CanLink = true; // essential that this is false s.t. drag events don't get overriden
                     }
             };
             renderElement.IsHoldingEnabled = true; // turn on holding
@@ -315,7 +317,7 @@ namespace Dash
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = false;
+                    view.CanLink = true; // was false?
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
@@ -437,6 +439,16 @@ namespace Dash
                 return VerticalAlignment.Stretch;
             }
             return (VerticalAlignment)Enum.Parse(typeof(VerticalAlignment), verticalAlignmentController?.Data);
+        }
+
+        public static void SetWidth(this DocumentController document, double width)
+        {
+            document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+        }
+
+        public static void SetHeight(this DocumentController document, double height)
+        {
+            document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
         }
 
         public static void SetGridRow(this DocumentController document, int row)

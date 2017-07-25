@@ -564,6 +564,10 @@ namespace Dash
             {
                 return GridPanel.MakeView(this, context, isInterfaceBuilder);
             }
+            if (DocumentType == FilterOperatorBox.DocumentType)
+            {
+                return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
 
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);

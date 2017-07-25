@@ -67,12 +67,13 @@ namespace Dash
             };
             LayoutDocuments(docController, context, gridView, isInterfaceBuilderLayout);
 
+            var c = new Context(context);
             docController.DocumentFieldUpdated += delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
                 {
-                    LayoutDocuments(sender, args.Context, gridView, isInterfaceBuilderLayout);
+                    LayoutDocuments(sender, c, gridView, isInterfaceBuilderLayout);
                 }
             };
             grid.Children.Add(gridView);

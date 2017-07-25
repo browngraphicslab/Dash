@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Dash;
 using DashShared;
+using System;
 
 namespace Dash
 {
@@ -15,23 +16,15 @@ namespace Dash
     public class CollectionBox : CourtesyDocument
     {
 
-        public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Generic Collection");
+        public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
 
-        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400, NumberFieldModelController widthController = null, NumberFieldModelController heightController = null)
+        public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            if (widthController != null)
-            {
-                Document.SetField(DashConstants.KeyStore.WidthFieldKey, widthController, true);
-            }
-            if (heightController != null)
-            {
-                Document.SetField(DashConstants.KeyStore.HeightFieldKey, heightController, true);
-            }
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -64,6 +57,13 @@ namespace Dash
         {
             var data = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) ?? null;
 
+
+            return ConstructCollection(docController, context, dataDocument, data, isInterfaceBuilderLayout);
+        }
+
+        public static FrameworkElement ConstructCollection(DocumentController docController,
+            Context context, DocumentController dataDocument, FieldModelController data, bool isInterfaceBuilderLayout = false)
+        {
             if (data != null)
             {
                 var opacity = (docController.GetDereferencedField(new Key("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
@@ -79,14 +79,10 @@ namespace Dash
 
                 if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
                 {
-                    // make image height resize
-                    var heightController = GetHeightField(docController, context);
-                    BindHeight(view, heightController);
-
-                    // make image width resize
-                    var widthController = GetWidthField(docController, context);
-                    BindWidth(view, widthController);
+                    SetupBindings(view, docController, context);
                 }
+
+                
 
                 view.Opacity = opacityValue;
                 if (isInterfaceBuilderLayout)

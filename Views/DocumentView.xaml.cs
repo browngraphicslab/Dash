@@ -387,7 +387,6 @@ namespace Dash
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
         {
-            DBSearchOperatorFieldModelController.ForceUpdate();
             var tb = sender as TextBox;
             if (!(tb.Text.EndsWith("\r")))
                 return;
