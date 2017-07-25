@@ -100,22 +100,24 @@ namespace Dash.Controllers.Operators
 
         private static IEnumerable<DocumentController> findDocsThatReferenceDocument(DocumentController targetDocument)
         {
-            if (targetDocument == null)
-                return ContentController.GetControllers<DocumentController>();
             var docsInSearchScope = new List<DocumentController>();
             foreach (var dmc in ContentController.GetControllers<DocumentController>())
-            {
-                foreach (var field in dmc.EnumFields())
-                    if (field.Value is DocumentFieldModelController)
+                if (!dmc.DocumentType.Type.Contains("Box") && dmc.DocumentType != StackingPanel.DocumentType && dmc.DocumentType != GridPanel.GridPanelDocumentType && dmc.DocumentType != GridViewLayout.DocumentType) {
+                    if (targetDocument == null)
                     {
-                        var dfmc = field.Value as DocumentFieldModelController;
-                        if (dfmc.Data == targetDocument)
-                        {
-                            docsInSearchScope.Add(dmc);
-                            break;
-                        }
+                        docsInSearchScope.Add(dmc);
                     }
-            }
+                    foreach (var field in dmc.EnumFields())
+                        if (field.Value is DocumentFieldModelController)
+                        {
+                            var dfmc = field.Value as DocumentFieldModelController;
+                            if (dfmc.Data == targetDocument)
+                            {
+                                docsInSearchScope.Add(dmc);
+                                break;
+                            }
+                        }
+                }
             return docsInSearchScope;
         }
 
@@ -129,15 +131,7 @@ namespace Dash.Controllers.Operators
                 {
                     if (dmc.GetField(DashConstants.KeyStore.DelegatesKey, true) == null)
                     {
-                        var del = dmc.MakeDelegate();
-                        var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-                        if (layout != null)
-                        {
-                            var layoutDel = layout.Data.MakeDelegate();
-                            layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
-                            del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-                        }
-                        documents.Add(del);
+                        documents.Add(dmc);
                         if (pfield.Value is DocumentFieldModelController)
                         {
                             textStr += "Document(";

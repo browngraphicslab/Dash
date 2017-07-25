@@ -174,22 +174,28 @@ namespace Dash
             var offset = 0;
             var carriedControllers = ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).ToList();
             foreach (var docController in documents.GetDocuments())
-            {
-                if (ViewModelContains(DataBindingSource, docController)) continue;
+                if (DocController != docController && !docController.DocumentType.Type.Contains("Box"))
+                    {
+                    if (ViewModelContains(DataBindingSource, docController)) continue;
+                    var recursive1 = (docController.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, context) as DocumentCollectionFieldModelController)?.GetDocuments().Contains(docController);
+                    if (recursive1.HasValue && (bool)recursive1)
+                        continue;
+                    var recursive2 = (docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as DocumentCollectionFieldModelController)?.GetDocuments().Contains(docController);
+                    if (recursive2.HasValue && (bool)recursive2)
+                        continue;
+                    var viewModel = new DocumentViewModel(docController);
 
-                var viewModel = new DocumentViewModel(docController);
-
-                if (carriedControllers.Contains(docController))
-                {
-                    var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
-                    var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
-                    viewModel.GroupTransform = new TransformGroupData(new Point(x, y), viewModel.GroupTransform.ScaleCenter, viewModel.GroupTransform.ScaleAmount);
-                    offset += 15;
+                    if (carriedControllers.Contains(docController))
+                    {
+                        var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
+                        var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
+                        viewModel.GroupTransform = new TransformGroupData(new Point(x, y), viewModel.GroupTransform.ScaleCenter, viewModel.GroupTransform.ScaleAmount);
+                        offset += 15;
+                    }
+                    //viewModel.ManipulationMode = ManipulationModes.All;
+                    viewModel.DoubleTapEnabled = false;
+                    DataBindingSource.Add(viewModel);
                 }
-                //viewModel.ManipulationMode = ManipulationModes.All;
-                viewModel.DoubleTapEnabled = false;
-                DataBindingSource.Add(viewModel);
-            }
             for (int i = DataBindingSource.Count - 1; i >= 0; --i)
             {
                 if (ViewModelContains(documents.GetDocuments(), DataBindingSource[i])) continue;
