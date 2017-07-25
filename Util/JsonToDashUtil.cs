@@ -214,7 +214,7 @@ namespace Dash
                     case JTokenType.Uri:
                     case JTokenType.Guid:
                     case JTokenType.TimeSpan:
-                        return new TextFieldModelController(jtoken.ToObject<string>());
+                        return ParseText(jtoken.ToObject<string>());
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -224,6 +224,19 @@ namespace Dash
                 Console.WriteLine(e);
                 throw;
             }
+        }
+
+        private static FieldModelController ParseText(string text)
+        {
+            string[] _imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
+            foreach (var ext in _imageExtensions)
+            {
+                if (text.EndsWith(ext))
+                {
+                    return new ImageFieldModelController(new Uri(text));
+                }
+            }
+            return new TextFieldModelController(text);
         }
 
         private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<Key, FieldModelController> fields)
