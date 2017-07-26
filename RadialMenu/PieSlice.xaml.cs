@@ -801,6 +801,23 @@ namespace RadialMenuControl.UserControl
         {
             OriginalRadialMenuButton.OnDragStarting(args);
             args.DragUI.SetContentFromDataPackage();
+            switch (OriginalRadialMenuButton.Type)
+            {
+                case RadialMenuButton.ButtonType.Toggle:
+                    VisualStateManager.GoToState(this,
+                        (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value))
+                            ? "InnerReleased"
+                            : "InnerNormal", true);
+                    break;
+                case RadialMenuButton.ButtonType.Radio:
+                    VisualStateManager.GoToState(this, "InnerReleased", true);
+                    // get all other menus to release now that this menu has been selected
+                    ChangeSelectedEvent?.Invoke(sender, this);
+                    break;
+                default:
+                    VisualStateManager.GoToState(this, "InnerNormal", true);
+                    break;
+            }
         }
     }
 }

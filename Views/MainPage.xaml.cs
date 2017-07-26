@@ -150,10 +150,11 @@ namespace Dash
             AddAnotherLol(where);
         }
 
-        public void AddApiCreator()
+        public void AddApiCreator(object o, DragEventArgs e)
         {
+            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
             var a = new ApiDocumentModel().Document;
-            DisplayDocument(a);
+            DisplayDocument(a, where);
         }
 
         private void AddAnotherLol(Point where)
@@ -209,13 +210,13 @@ namespace Dash
                 DisplayDocument(d, where);
         }
 
-        public void AddNotes()
+        public void AddNotes(object o, DragEventArgs e)
         {
             //DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
             //DisplayDocument(rtfNote);
-
+            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
             DocumentController postitNote = new PostitNote(PostitNote.DocumentType).Document;
-            DisplayDocument(postitNote);
+            DisplayDocument(postitNote, where);
 
             //DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
             //DisplayDocument(imageNote);
