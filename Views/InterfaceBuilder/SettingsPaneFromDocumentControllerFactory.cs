@@ -32,13 +32,17 @@ namespace Dash
             {
                 return CreateRichTextSettingsLayout(layoutDocument);
             }
-            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout || type == GridViewLayout.DocumentType /*|| type == ListViewLayout.DocumentType*/)
+            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout /*|| type == GridViewLayout.DocumentType || type == ListViewLayout.DocumentType*/)
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }
             if (type == ListViewLayout.DocumentType)
             {
                 return CreateListViewSettingsLayout(layoutDocument);
+            }
+            if (type == GridViewLayout.DocumentType)
+            {
+                return CreateGridViewsettingsLayout(layoutDocument); 
             }
 
 
@@ -69,6 +73,11 @@ namespace Dash
         {
             var context = new Context(); // bcz: ??? Is this right?
             return new ListViewSettings(layoutDocument, context);
+        }
+
+        private static UIElement CreateGridViewsettingsLayout(DocumentController layoutDocument)
+        {
+            return new GridViewSettings(layoutDocument, new Context()); 
         }
 
         private static UIElement CreateTextSettingsLayout(DocumentController layoutDocument)

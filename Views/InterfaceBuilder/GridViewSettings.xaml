@@ -1,5 +1,5 @@
 ﻿<UserControl
-    x:Class="Dash.ListViewSettings"
+    x:Class="Dash.GridViewSettings"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
@@ -11,10 +11,14 @@
 
     <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" Background="LightSteelBlue" BorderBrush="Transparent">
         <Grid.RowDefinitions>
-            <RowDefinition Height="75"/> <!--"settings"-->
-            <RowDefinition Height="30"/> <!--"listview"-->
-            <RowDefinition /> <!-- all the little drop downs -->
-            <RowDefinition Height="100"/> <!-- empty space? --> 
+            <RowDefinition Height="75"/>
+            <!--"settings"-->
+            <RowDefinition Height="30"/>
+            <!--"listview"-->
+            <RowDefinition />
+            <!-- all the little drop downs -->
+            <RowDefinition Height="100"/>
+            <!-- empty space? -->
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
@@ -27,7 +31,7 @@
                     <Run Text="Type"/>
                 </TextBlock>
                 <TextBlock Margin="50,0,0,0">
-                    <Run Text="ListView Layout"/>
+                    <Run Text="GridView Layout"/>
                 </TextBlock>
             </StackPanel>
         </Grid>
