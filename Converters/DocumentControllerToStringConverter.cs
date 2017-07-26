@@ -77,56 +77,26 @@ namespace Dash.Converters
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
-                foreach (var doc in ContentController.GetControllers<DocumentController>())
-                {
-                    bool found = true;
-                    foreach (var k in keys.Data)
-                    {
-                        var key = new Key((k as TextFieldModelController).Data);
-                        var index = keys.Data.IndexOf(k);
-                        var derefValue = (doc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
-                        if (derefValue != null)
-                        {
-                            if (values[index] != derefValue)
-                            {
-                                found = false;
-                                break;
-                            }
-                        } else
-                        {
-                            found = false;
-                            break;
-                        }
-                    }
-                    if (found)
-                    {
-                        _doc = doc;
-                        return doc;
-                    }
-                }
-                foreach (var doc in ContentController.GetControllers<DocumentController>())
-                {
-                    var primaryKeys = doc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
-                    if (primaryKeys != null)
+                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                    if (!dmc.DocumentType.Type.Contains("Box") &&
+                        dmc.DocumentType != StackingPanel.DocumentType &&
+                        dmc.DocumentType != GridPanel.GridPanelDocumentType &&
+                        dmc.DocumentType != GridViewLayout.DocumentType)
                     {
                         bool found = true;
-                        foreach (var value in values)
+                        foreach (var k in keys.Data)
                         {
-                            bool foundValue = false;
-                            foreach (var kf in primaryKeys.Data)
+                            var key = new Key((k as TextFieldModelController).Data);
+                            var index = keys.Data.IndexOf(k);
+                            var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
+                            if (derefValue != null)
                             {
-                                var key = new Key((kf as TextFieldModelController).Data);
-                                var derefValue = (doc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
-                                if (derefValue != null)
+                                if (values[index] != derefValue)
                                 {
-                                    if (value == derefValue)
-                                    {
-                                        foundValue = true;
-                                        break;
-                                    }
+                                    found = false;
+                                    break;
                                 }
-                            }
-                            if (!foundValue)
+                            } else
                             {
                                 found = false;
                                 break;
@@ -134,10 +104,48 @@ namespace Dash.Converters
                         }
                         if (found)
                         {
-                            _doc = doc;
-                            return doc;
+                            _doc = dmc;
+                            return dmc;
                         }
                     }
+                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                    if (!dmc.DocumentType.Type.Contains("Box") &&
+                        dmc.DocumentType != StackingPanel.DocumentType &&
+                        dmc.DocumentType != GridPanel.GridPanelDocumentType &&
+                        dmc.DocumentType != GridViewLayout.DocumentType)
+                    {
+                        var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
+                        if (primaryKeys != null)
+                        {
+                            bool found = true;
+                            foreach (var value in values)
+                            {
+                                bool foundValue = false;
+                                foreach (var kf in primaryKeys.Data)
+                                {
+                                    var key = new Key((kf as TextFieldModelController).Data);
+                                    var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
+                                    if (derefValue != null)
+                                    {
+                                        if (value == derefValue)
+                                        {
+                                            foundValue = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!foundValue)
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            if (found)
+                            {
+                                _doc = dmc;
+                                return dmc;
+                            }
+                        }
                 }
             }
             return _doc;
