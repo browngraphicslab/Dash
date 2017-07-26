@@ -143,7 +143,7 @@ namespace Dash
                 }
                 else
                 {
-                    fields[kvp.Key] = kvp.Value;
+                    fields[kvp.Key] = kvp.Value.Copy();
                 }
             }
             copy.SetFields(fields, true);
