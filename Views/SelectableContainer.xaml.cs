@@ -257,7 +257,40 @@ namespace Dash
         private void Manipulator_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             var snapManager = GetRootSnapManager();
-            snapManager.SetDraggingContainer(this);
+
+            SnapBehavior snapBehavior = 0;
+            var snapPoint = new Point();
+            if (sender.Equals(xCenterDragger))
+            {
+                snapBehavior = SnapBehavior.Center;
+                snapPoint.X = ActualWidth / 2;
+                snapPoint.Y = ActualHeight / 2;
+            }
+            else if (sender.Equals(xTopLeftDragger))
+            {
+                snapBehavior = SnapBehavior.Left | SnapBehavior.Top;
+
+            }
+            else if (sender.Equals(xTopRightDragger))
+            {
+                snapBehavior = SnapBehavior.Top | SnapBehavior.Right;
+                snapPoint.X = ActualWidth;
+
+            }
+            else if (sender.Equals(xBottomRightDragger))
+            {
+                snapBehavior = SnapBehavior.Right | SnapBehavior.Bottom;
+                snapPoint.X = ActualWidth;
+                snapPoint.Y = ActualHeight;
+
+            }
+            else if (sender.Equals(xBottomLeftDragger))
+            {
+                snapBehavior = SnapBehavior.Left | SnapBehavior.Bottom;
+                snapPoint.Y = ActualHeight;
+            }
+
+            snapManager.SetDraggingContainer(this, snapBehavior, snapPoint);
         }
 
         private void Manipulator_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -274,6 +307,18 @@ namespace Dash
             var currentPosition = positionController.Data;
             positionController.Data = new Point(currentPosition.X + deltaX, currentPosition.Y + deltaY);
             return actualChange;
+        }
+
+        private void SetPosition(double newX, double newY)
+        {
+            var positionController = LayoutDocument.GetPositionField();
+            positionController.Data = new Point(newX, newY);
+        }
+
+        private Point GetPosition()
+        {
+            var positionController = LayoutDocument.GetPositionField();
+            return positionController.Data;
         }
 
         private Point ChangeSize(double deltaWidth, double deltaHeight)
@@ -295,13 +340,36 @@ namespace Dash
             return actualChange;
         }
 
+        private void SetSize(double newW, double newH)
+        {
+            var widthController = LayoutDocument.GetWidthField();
+            //TODO: right now this just uses the framework element's minwidth as a boundary for size changes; might want to set minwidth in document later
+            if (newW > ContentElement.MinWidth || newW > 0)
+            {
+                widthController.Data = newW;
+            }
+            var heightController = LayoutDocument.GetHeightField();
+            if (newH > ContentElement.MinHeight || newH > 0)
+            {
+                heightController.Data = newH;
+            }
+        }
+
+        private Point GetSize()
+        {
+            var widthController = LayoutDocument.GetWidthField();
+            //TODO: right now this just uses the framework element's minwidth as a boundary for size changes; might want to set minwidth in document later
+            var heightController = LayoutDocument.GetHeightField();
+            return new Point(widthController.Data, heightController.Data);
+        }
+
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
             SetPressedEllipse(xTopRightDragger);
             var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
             var posChange = ChangePosition(0, -sizeChange.Y);
             var snapManager = GetRootSnapManager();
-            snapManager.UpdateDraggingContainer(sizeChange, posChange);
+            snapManager.UpdateDraggingContainer(e.Translate);
         }
 
         private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
@@ -310,7 +378,7 @@ namespace Dash
             var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
             var posChange = ChangePosition(-sizeChange.X, -sizeChange.Y);
             var snapManager = GetRootSnapManager();
-            snapManager.UpdateDraggingContainer(sizeChange, posChange);
+            snapManager.UpdateDraggingContainer(e.Translate);
         }
 
         private void BottomRightManipulator_OnManipulatorTranslated(TransformGroupData e)
@@ -319,7 +387,7 @@ namespace Dash
             var sizeChange = ChangeSize(e.Translate.X, e.Translate.Y);
             var posChange = new Point();
             var snapManager = GetRootSnapManager();
-            snapManager.UpdateDraggingContainer(sizeChange, posChange);
+            snapManager.UpdateDraggingContainer(e.Translate);
         }
 
         private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
@@ -328,15 +396,15 @@ namespace Dash
             var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
             var posChange = ChangePosition(-sizeChange.X, 0);
             var snapManager = GetRootSnapManager();
-            snapManager.UpdateDraggingContainer(sizeChange, posChange);
+            snapManager.UpdateDraggingContainer(e.Translate);
         }
 
-        private void CenterManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
+        private void CenterManipulatorOnOnManipulatorTranslated(TransformGroupData e)
         {
-            var posChange = ChangePosition(delta.Translate.X, delta.Translate.Y);
+            var posChange = ChangePosition(e.Translate.X, e.Translate.Y);
             var sizeChange = new Point();
             var snapManager = GetRootSnapManager();
-            snapManager.UpdateDraggingContainer(sizeChange, posChange, isTranslate: true);
+            snapManager.UpdateDraggingContainer(e.Translate);
         }
 
         private void SetPressedEllipse(Ellipse ellipse)
@@ -448,6 +516,42 @@ namespace Dash
 
         #region guidelinesAndSnapping
 
+        private void AddSnapLine(double lineCoordinate, bool isVertical)
+        {
+            var line = new Line();
+            line.Tag = "GUIDELINE";
+            line.Stroke = new SolidColorBrush(Colors.Black);
+            line.StrokeThickness = 3;
+
+            if (isVertical)
+            {
+                line.X1 = lineCoordinate;
+                line.X2 = lineCoordinate;
+                line.Y1 = 0;
+                line.Y2 = ActualHeight;
+            }
+            else
+            {
+                line.X1 = 0;
+                line.X2 = ActualWidth;
+                line.Y1 = lineCoordinate;
+                line.Y2 = lineCoordinate;
+            }
+
+            xManipulatorCanvas.Children.Add(line);
+        }
+
+        private void ClearSnapLines()
+        {
+            foreach (var child in xManipulatorCanvas.Children.ToArray())
+            {
+                if ((child as Line)?.Tag as string == "GUIDELINE")
+                {
+                    xManipulatorCanvas.Children.Remove(child);
+                }
+            }
+        }
+
         private SelectableContainer GetRoot()
         {
             return IsRoot() ? this : _parentContainer.GetRoot();
@@ -479,44 +583,157 @@ namespace Dash
         private RootSnapManager GetRootSnapManager()
         {
             var root = GetRoot();
-            return root._rootSnapManager ?? (_rootSnapManager = new RootSnapManager(root));
+            return root._rootSnapManager ?? (root._rootSnapManager = new RootSnapManager(root));
+        }
+
+        [Flags]
+        private enum SnapBehavior
+        {
+            Left = 0x1,
+            Top = 0x2,
+            Right = 0x4,
+            Bottom = 0x8,
+            Center = 0x10
         }
 
         private class RootSnapManager
         {
-            private const double Snapoffset = 15;
+            private const double Snapoffset = 30;
 
             private readonly SelectableContainer _rootContainer;
             private SelectableContainer _draggingContainer;
-            private Snap _currentSnaps;
+            private SnapBehavior _dragSnapBehavior;
+            private Point _actual;
+            private Point _start;
+            private Point _startSize;
 
             public RootSnapManager(SelectableContainer rootContainer)
             {
                 _rootContainer = rootContainer;
             }
 
-            public void SetDraggingContainer(SelectableContainer draggingContainer)
+            // manipulation started
+            public void SetDraggingContainer(SelectableContainer draggingContainer, SnapBehavior snapBehavior, Point actual)
             {
                 _draggingContainer = draggingContainer;
+                _dragSnapBehavior = snapBehavior;
+
+                var transform = GetChildToRootTransform(_draggingContainer);
+                _actual = transform.TransformPoint(actual);
+                _start = new Point(_actual.X, _actual.Y);
+                _startSize = _draggingContainer.GetSize();
             }
 
+            // manipulation completed
             public void DisposeDraggingContainer(SelectableContainer draggingContainer)
             {
-                _draggingContainer = null;
+                //throw new NotImplementedException();
             }
 
-            public void UpdateDraggingContainer(Point sizeChange, Point posChange, bool isTranslate = false)
+            // manipulation translate
+            public void UpdateDraggingContainer(Point translate)
             {
+                _rootContainer.ClearSnapLines();
                 var allContainers = _rootContainer.GetAllChildrenRecursively();
                 var allLines = CalculateLines(allContainers);
-                var previousSnaps = _currentSnaps;
-                _currentSnaps = CalculateSnaps(allLines);
 
-                if (_currentSnaps.Left.HasValue)
+                foreach (var verticalLine in allLines.VerticalLines)
                 {
+                    _rootContainer.AddSnapLine(verticalLine, true);
                 }
 
+
+                foreach (var horizontalLine in allLines.HorizontalLines)
+                {
+                    _rootContainer.AddSnapLine(horizontalLine, false);
+                }
+
+                _actual.X += translate.X;
+                _actual.Y += translate.Y;
+
+                var newPosition = _draggingContainer.GetPosition();
+                var newSize = _draggingContainer.GetSize();
+
+                Point toBeRenderPosition;
+                if ((_dragSnapBehavior & SnapBehavior.Center) == SnapBehavior.Center)
+                {
+                    var topLeft = new Point(_actual.X - newSize.X / 2, _actual.Y - newSize.Y / 2);
+                    var snappedTopLeft = SnapActual(allLines, topLeft);
+                    var bottomRight = new Point(snappedTopLeft.X + newSize.X, snappedTopLeft.Y + newSize.Y);
+                    toBeRenderPosition = SnapActual(allLines, bottomRight);
+                }
+                else
+                {
+                    toBeRenderPosition =  SnapActual(allLines, _actual);
+                }
+
+
+                if ((_dragSnapBehavior & SnapBehavior.Left) == SnapBehavior.Left)
+                {
+                    newPosition.X = toBeRenderPosition.X;
+                    newSize.X =
+                        _startSize.X + _start.X - toBeRenderPosition.X;
+                }
+
+                if ((_dragSnapBehavior & SnapBehavior.Top) == SnapBehavior.Top)
+                {
+                    newPosition.Y = toBeRenderPosition.Y;
+                    newSize.Y =
+                        _startSize.Y + _start.Y - toBeRenderPosition.Y;
+                }
+
+                if ((_dragSnapBehavior & SnapBehavior.Right) == SnapBehavior.Right)
+                {
+                    newSize.X = _startSize.X + toBeRenderPosition.X - _start.X;
+                }
+
+                if ((_dragSnapBehavior & SnapBehavior.Bottom) == SnapBehavior.Bottom)
+                {
+                    newSize.Y = _startSize.Y + toBeRenderPosition.Y - _start.Y;
+                }
+
+                if ((_dragSnapBehavior & SnapBehavior.Center) == SnapBehavior.Center)
+                {
+                    newPosition.X = toBeRenderPosition.X - _draggingContainer.ActualWidth;
+                    newPosition.Y = toBeRenderPosition.Y - _draggingContainer.ActualHeight;
+                }
+
+                _draggingContainer.SetPosition(newPosition.X, newPosition.Y);
+                _draggingContainer.SetSize(newSize.X, newSize.Y);
             }
+
+            private Point SnapActual(Lines allLines, Point actual)
+            {
+                var minVert = CalculateMinSnap(allLines.VerticalLines, actual.X);
+                var minHorz = CalculateMinSnap(allLines.HorizontalLines, actual.Y);
+
+                var x = minVert ?? actual.X;
+                var y = minHorz ?? actual.Y;
+
+                return new Point(x, y);
+            }
+
+            private double? CalculateMinSnap(HashSet<double> allPossibleSnaps, double coordinateToCheck)
+            {
+                var minSnap = double.PositiveInfinity;
+                var minDistance = double.PositiveInfinity;
+                foreach (var snap in allPossibleSnaps)
+                {
+                    var distance = Math.Abs(snap - coordinateToCheck);
+                    if (distance < minDistance)
+                    {
+                        minDistance = distance;
+                        minSnap = snap;
+                    }
+                }
+
+                if (Math.Abs(minSnap - coordinateToCheck) < Snapoffset)
+                {
+                    return minSnap;
+                }
+                return null;
+            }
+
 
             /// <summary>
             /// Calculates all the possible line in root container coordinates, based on each of the container's rendered
@@ -544,37 +761,6 @@ namespace Dash
                 return lines;
             }
 
-            private Snap CalculateSnaps(Lines allLines)
-            {
-                var dragUpperLeft = DraggingContainerGhostUpperLeft();
-                var dragLowerRight = DraggingContainerGhostLowerRight();
-
-                var snap = new Snap(Snapoffset);
-
-                snap.CalculateLeft(allLines.VerticalLines, dragUpperLeft.X);
-                snap.CalculateTop(allLines.HorizontalLines, dragUpperLeft.Y);
-                snap.CalculateRight(allLines.VerticalLines, dragLowerRight.X);
-                snap.CalculateBottom(allLines.HorizontalLines, dragLowerRight.Y);
-
-                return snap;
-            }
-
-            /// <summary>
-            /// Gets the point of the dragging container with ghosted positioning and sizing taken account of
-            /// </summary>
-            private Point DraggingContainerGhostLowerRight()
-            {
-                throw new NotImplementedException();
-            }
-
-            /// <summary>
-            /// Gets the point of the dragging container with ghosted positioning and sizing taken account of
-            /// </summary>
-            private Point DraggingContainerGhostUpperLeft()
-            {
-                throw new NotImplementedException();
-            }
-
             private GeneralTransform GetChildToRootTransform(SelectableContainer child)
             {
                 return child.TransformToVisual(_rootContainer);
@@ -589,56 +775,6 @@ namespace Dash
                 {
                     VerticalLines = new HashSet<double>();
                     HorizontalLines = new HashSet<double>();
-                }
-            }
-
-            private class Snap
-            {
-                public double? Left;
-                public double? Top;
-                public double? Right;
-                public double? Bottom;
-
-                private readonly double _snapoffset;
-
-                public Snap(double snapoffset)
-                {
-                    _snapoffset = snapoffset;
-                }
-
-                public bool HasLeftSnap => Left.HasValue;
-                public bool HasTopSnap => Top.HasValue;
-                public bool HasRightSnap => Right.HasValue;
-                public bool HasBottomSnap => Bottom.HasValue;
-
-                public void CalculateLeft(HashSet<double> allVerticalLines, double leftX)
-                {
-                    Left = CalculateMinSnap(allVerticalLines, leftX);
-                }
-
-                public void CalculateTop(HashSet<double> allHorizontalLines, double leftY)
-                {
-                    Top = CalculateMinSnap(allHorizontalLines, leftY);
-                }
-
-                public void CalculateRight(HashSet<double> allVerticalinLines, double rightX)
-                {
-                    Right = CalculateMinSnap(allVerticalinLines, rightX);
-                }
-
-                public void CalculateBottom(HashSet<double> allHorizontalLines, double rightY)
-                {
-                    Bottom = CalculateMinSnap(allHorizontalLines, rightY);
-                }
-
-                private double? CalculateMinSnap(HashSet<double> allPossibleSnaps, double coordinateToCheck)
-                {
-                    var minSnap = allPossibleSnaps.Min(possibleSnap => Math.Abs(possibleSnap - coordinateToCheck));
-                    if (Math.Abs(minSnap - coordinateToCheck) < _snapoffset)
-                    {
-                        return minSnap;
-                    }
-                    return null;
                 }
             }
         }

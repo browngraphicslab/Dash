@@ -176,7 +176,7 @@ namespace Dash
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             //DisplayDocument(new PostitNote().Document);
-            //DisplayDocument(new TwoImages(false).Document);
+            DisplayDocument(new TwoImages(false).Document);
             //DocumentController numbersProto = new Numbers().Document;
             //DocumentController del = numbersProto.MakeDelegate();
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
@@ -191,8 +191,8 @@ namespace Dash
             //DisplayDocument(new TwoImages(false).Document);
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(d);
+            //foreach (var d in new DBTest().Documents)
+            //    DisplayDocument(d);
         }
 
         public void AddNotes()
