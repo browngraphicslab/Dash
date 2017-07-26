@@ -39,6 +39,8 @@ namespace Dash
             dc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
             var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(dc.GetId(), DashConstants.KeyStore.ThisKey), "AssignedGame.GameDate");
             dc.SetField(UmpAssignmentsKey, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+            dc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                new TextFieldModelController[] { new TextFieldModelController(UmpNameKey.Id) }), true);
             return dc;
         }
         static DocumentController CreatePrototypeVol()
@@ -47,6 +49,8 @@ namespace Dash
             fields.Add(VolNameKey, new TextFieldModelController("Prototype Volunteer"));
             var dc = new DocumentController(fields, VolunteerType);
             dc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
+            dc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                new TextFieldModelController[] { new TextFieldModelController(VolNameKey.Id) }), true);
             return dc;
         }
         static DocumentController CreatePrototypeGame()
@@ -56,6 +60,8 @@ namespace Dash
             fields.Add(GameTimeKey, new TextFieldModelController("Prototype Game Time"));
             var dc = new DocumentController(fields, GameType);
             dc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
+            dc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+               new TextFieldModelController[] { new TextFieldModelController(GameDateKey.Id), new TextFieldModelController(GameTimeKey.Id) }), true);
             return dc;
         }
         static DocumentController CreatePrototypeAssignment()
@@ -107,8 +113,8 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeAssignmentGameLayout   = new DocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentGameKey), 0,  0, 200, 100);
-            var prototypeAssignmentPersonLayout = new DocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentPersonKey), 0, 100, 200, 100);
+            var prototypeAssignmentGameLayout   = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentGameKey), 0,  0, 200, 100);
+            var prototypeAssignmentPersonLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentPersonKey), 0, 100, 200, 100);
             var prototypeLayout = new StackingPanel(new[] { prototypeAssignmentGameLayout.Document, prototypeAssignmentPersonLayout.Document }, true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
