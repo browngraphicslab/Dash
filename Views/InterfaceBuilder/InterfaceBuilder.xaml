@@ -44,13 +44,7 @@
 
                 <local:KeyValuePane x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValuePane>
 
-                <Grid x:Name="xDocumentPane" Grid.Column="1" Margin="1,1" Background="White" SizeChanged="xDocumentPane_SizeChanged">
-                    <ScrollViewer x:Name="xScrollViewer" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ZoomMode="Enabled" MaxZoomFactor="4"
-                              MinZoomFactor="1">
-                        <Viewbox x:Name="xDocumentHolder" Stretch="Uniform"/>
-                    </ScrollViewer>
-                    <Canvas x:Name="xDetectorCanvas"></Canvas>
-                </Grid>
+                <local:DocumentCanvasView x:Name="xDocumentPane" Grid.Column="1"></local:DocumentCanvasView>
 
                 <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
                   Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" />

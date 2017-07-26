@@ -179,7 +179,7 @@ namespace Dash
             //DisplayDocument(Document);
 
             //DisplayDocument(new PostitNote().Document);
-            //DisplayDocument(new TwoImages(false).Document);
+            DisplayDocument(new TwoImages(false).Document);
             //DocumentController numbersProto = new Numbers().Document;
             //DocumentController del = numbersProto.MakeDelegate();
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");

@@ -56,14 +56,14 @@ namespace Dash
             _documentView.RemoveScroll();
             UpdateRootLayout();
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
+            var documentCanvasViewModel = new DocumentCanvasViewModel();
+            documentCanvasViewModel.AddDocument(docController);
+            xDocumentPane.DataContext = documentCanvasViewModel;
 
 
             _documentView.DragOver += DocumentViewOnDragOver;
             _documentView.AllowDrop = true;
             _documentView.Drop += DocumentViewOnDrop;
-
-            // set the middle pane to hold the document view
-            xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
@@ -266,12 +266,6 @@ namespace Dash
                 }
                 e.Data.RequestedOperation = DataPackageOperation.Move;
             }
-        }
-
-        private void xDocumentPane_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xScrollViewer.MaxWidth = xDocumentHolder.MaxWidth = e.NewSize.Width;
-            xScrollViewer.MaxHeight = xDocumentHolder.MaxHeight = e.NewSize.Height;
         }
 
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
