@@ -9,7 +9,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="150"
-    d:DesignWidth="150">
+    d:DesignWidth="150"
+    DragEnter="RadialMenu_OnDragEnter">
     <my:MenuBase.Resources>
         <ResourceDictionary Source="Styles.xaml"/>
     </my:MenuBase.Resources>

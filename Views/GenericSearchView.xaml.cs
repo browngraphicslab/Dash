@@ -57,5 +57,10 @@ namespace Dash
 
             xMainGrid.Children.Add(searchView);
         }
+
+        private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            MainPage.Instance.xCanvas.Children.Remove(Instance);
+        }
     }
 }
