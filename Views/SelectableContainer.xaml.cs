@@ -526,8 +526,9 @@ namespace Dash
         {
             var line = new Line();
             line.Tag = "GUIDELINE";
-            line.Stroke = new SolidColorBrush(Colors.Black);
-            line.StrokeThickness = 3;
+            line.Stroke = new SolidColorBrush(Colors.CornflowerBlue);
+            line.StrokeThickness = 1;
+            line.StrokeDashArray = new DoubleCollection() {2, 2};
 
             if (isVertical)
             {
