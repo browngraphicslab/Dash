@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Dash.Models;
 using Dash.Views;
 using DashShared;
@@ -24,8 +25,9 @@ namespace Dash
 {
     public static class Actions
     {
+        
        
-        public static void AddSearch(Canvas c, Point p)
+        public static void AddSearch(object o, DragEventArgs e)
         {
             //if (!c.Children.Contains(_searchView))
             //{
@@ -50,8 +52,12 @@ namespace Dash
                 Width = 200,
                 Height = 200
             };
-            MainPage.Instance.DisplayDocument(opModel);
-            MainPage.Instance.AddGenericFilter();
+            var where = Util.GetCollectionDropPoint(
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                e.GetPosition(MainPage.Instance));
+            var pos = new Point(where.X - 30, where.Y -30);
+            MainPage.Instance.DisplayDocument(opModel, where);
+            MainPage.Instance.AddGenericFilter(o, e);
         }
 
 
@@ -107,10 +113,10 @@ namespace Dash
         }
 
 
-        public static void OnOperatorAdd(object obj)
+        public static void OnOperatorAdd(object o, DragEventArgs e)
         {
             //MainPage.Instance.AddOperator();
-            MainPage.Instance.AddOperatorsFilter();
+            MainPage.Instance.AddOperatorsFilter(o, e);
         }
 
         public static void AddOperator(object obj)
@@ -206,30 +212,24 @@ namespace Dash
                 MainPage.Instance.DisplayDocument(opModel);
         }
         
-        public static void AddCollection(object obj)
+        public static void AddCollection(object o, DragEventArgs e)
         {
-            MainPage.Instance.AddCollection(null, null);
+            MainPage.Instance.AddCollection(o, e);
         }
 
-        public static void AddApiCreator(object obj)
+        public static void AddApiCreator(object o, DragEventArgs e)
         {
-            MainPage.Instance.AddApiCreator(obj, new TappedRoutedEventArgs());
+            MainPage.Instance.AddApiCreator(o, e);
         }
 
-        public static void AddImage(object obj)
+        public static void AddDocuments(object o, DragEventArgs e)
         {
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
+            MainPage.Instance.AddDocuments(o, e);
         }
 
-        public static void AddDocuments(object obj)
+        public static void AddNotes(object o, DragEventArgs e)
         {
-            MainPage.Instance.AddDocuments(null, null);
-        }
-
-        public static void AddNotes(object obj)
-        {
-            MainPage.Instance.AddNotes(); 
+            MainPage.Instance.AddNotes(o, e); 
         }
 
         public static void SetTouchInput(object obj)
