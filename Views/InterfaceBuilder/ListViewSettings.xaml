@@ -63,10 +63,10 @@
                     </Grid>
 
                     <!--SIZE-->
-                    <!--<Grid x:Name="xSizeRow" Grid.Row="1"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>-->
+                    <Grid x:Name="xSizeRow" Grid.Row="1"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
                     <!--POSITION-->
-                    <!--<Grid x:Name="xPositionRow" Grid.Row="2"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>-->
+                    <Grid x:Name="xPositionRow" Grid.Row="2"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
 
                     <!--ALIGNMENT-->
                     <Grid x:Name="xAlignmentRow" Grid.Row="3" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>

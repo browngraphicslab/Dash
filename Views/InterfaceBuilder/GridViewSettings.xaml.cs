@@ -32,9 +32,9 @@ namespace Dash
         {
             Debug.Assert(docController.DocumentType == GridViewLayout.DocumentType);
 
-            xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
-            xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
-            xAlignmentRow.Children.Add(new AlignmentSettings(layoutDocument, context));
+            xSizeRow.Children.Add(new SizeSettings(docController, context));
+            xPositionRow.Children.Add(new PositionSettings(docController, context));
+            xAlignmentRow.Children.Add(new AlignmentSettings(docController, context));
             BindSpacing(docController, context);
         }
 
