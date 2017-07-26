@@ -16,6 +16,8 @@ namespace Dash
     {
         private static string PrototypeId = "C512FC2E-CDD1-4E94-A98F-35A65E821C08";
         public static DocumentType DocumentType = new DocumentType("3E5C2739-A511-40FF-9B2E-A875901B296D", "ListView Layout");
+        public static Key SpacingKey = new Key("////////////////////////////////////////", "Opacity Key");
+        public static double DefaultSpacing = 20;
 
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
@@ -50,6 +52,52 @@ namespace Dash
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
+        //private static void BindSpacing(ListView listView, DocumentController docController, Context context)
+        //{
+        //    var opacityController = docController.GetDereferencedField(OpacityKey, context) as NumberFieldModelController;
+        //    if (opacityController == null)
+        //    {
+        //        return;
+        //    }
+        //    var opacityBinding = new Binding
+        //    {
+        //        Source = opacityController,
+        //        Path = new PropertyPath(nameof(opacityController.Data)),
+        //        Mode = BindingMode.OneWay
+        //    };
+        //    image.SetBinding(UIElement.OpacityProperty, opacityBinding);
+        //}
+
+        //protected new static void SetupBindings(Image image, DocumentController docController,
+        //Context context)
+        //{
+        //    CourtesyDocument.SetupBindings(image, docController, context);
+
+        //    AddBinding(image, docController, OpacityKey, context, BindOpacity);
+        //    SetupImageBinding(image, docController, context);
+        //}
+
+        //protected static void SetupImageBinding(Image image, DocumentController controller,
+        //Context context)
+        //{
+        //    var data = controller.GetField(DashConstants.KeyStore.DataKey);
+        //    if (data is ReferenceFieldModelController)
+        //    {
+        //        var reference = data as ReferenceFieldModelController;
+        //        var dataDoc = reference.GetDocumentController(context);
+        //        dataDoc.AddFieldUpdatedListener(reference.FieldKey,
+        //            delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        //            {
+        //                if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
+        //                {
+        //                    return;
+        //                }
+        //                BindImageSource(image, sender, args.Context, reference.FieldKey);
+        //            });
+        //    }
+        //    BindImageSource(image, controller, context, DashConstants.KeyStore.DataKey);
+        //}
+
         public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
 
@@ -61,6 +109,10 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
+            Style itemContainerStyle = new Style { TargetType = typeof(ListViewItem)};
+            itemContainerStyle.Setters.Add(new Setter(ListView.MarginProperty, new Thickness(0,-10,0,-10)));    // paddingproperty? 
+            listView.ItemContainerStyle = itemContainerStyle; 
+
             LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
 
             var c = new Context(context);
@@ -88,7 +140,7 @@ namespace Dash
                 //SetupBindings(container, docController, context);
                 return container;
             }
-            
+            /*          // commented this out for now 
             Ellipse dragEllipse = new Ellipse
             {
                 Fill = new SolidColorBrush(Color.FromArgb(255, 53, 197, 151)),
@@ -101,7 +153,7 @@ namespace Dash
 
             var referenceToText = new ReferenceFieldModelController(dataDocument.GetId(), DashConstants.KeyStore.DataKey);
             BindOperationInteractions(dragEllipse, referenceToText.FieldReference.Resolve(context));            // TODO must test if this actually works I feel like it doesn't lol
-            
+            */ 
             return grid;
         }
 
