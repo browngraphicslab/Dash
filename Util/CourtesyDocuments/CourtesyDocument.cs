@@ -272,20 +272,20 @@ namespace Dash
         protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
-            renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
+            renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    if (view.CanLink)
+                if (view.CanLink)
                 {
-                    args.Complete();
+                    //args.Complete(); -- This was stopping manipulations from happening on the first try? 
                     view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
-                    }
+                }
             };
             renderElement.IsHoldingEnabled = true; // turn on holding
 
             // must hold on element first to fetch link node
-            renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args)
+            renderElement.Holding += delegate(object sender, HoldingRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
