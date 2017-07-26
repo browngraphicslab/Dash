@@ -23,7 +23,7 @@ namespace Dash
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            [AddedFieldKey] = TypeInfo.Document
+            [AddedFieldKey] = TypeInfo.Text // IT SHOULD BE ABLE TO HANDLE ALL TYPES FUCK YOU DAFDAKFDAYFDAFOUDAF DAKFA
         };
 
         public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
@@ -38,11 +38,12 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            var fieldToAdd = inputs[AddedFieldKey]; //fieldmodelcontroller 
+            var fieldToAdd = inputs[AddedFieldKey] as TextFieldModelController; //fieldmodelcontroller 
 
             //DocumentController of the doc you need to add fields to?? 
-            var newDoc = (outputs[OutputDocKey] as DocumentFieldModelController).Data;
-            newDoc.SetField(new Key("CREATE NEW GUID HEREERERERERERERE", "?idkhowtogethtekey"), fieldToAdd, true); 
+            //outputs[OutputDocKey] = // the document of the input... ugh
+            //var newDoc = (outputs[OutputDocKey] as DocumentFieldModelController).Data;
+            //newDoc.SetField(new Key("CREATE NEW GUID HEREERERERERERERE", "?idkhowtogethtekey"), fieldToAdd, true); 
         }
     }
 }

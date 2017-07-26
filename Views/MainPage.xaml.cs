@@ -233,7 +233,7 @@ namespace Dash
             DisplayDocument(opModel, where);
 
             DisplayDocument(new TwoImages(false).Document, where);
-            DisplayDocument(new Numbers().Document, where); 
+            DisplayDocument(new TwoImages(false).Document, where); 
 
         }
 

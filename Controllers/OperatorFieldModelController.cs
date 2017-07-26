@@ -54,5 +54,10 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
+
+        public virtual void SetDocumentController(DocumentController dc)
+        {
+
+        }
     }
 }
