@@ -612,7 +612,7 @@ namespace Dash
 
         private class RootSnapManager
         {
-            private const double Snapoffset = 30;
+            private const double Snapoffset = 5;
 
             private readonly SelectableContainer _rootContainer;
             private SelectableContainer _draggingContainer;
