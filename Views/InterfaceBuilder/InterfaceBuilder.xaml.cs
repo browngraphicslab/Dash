@@ -38,7 +38,7 @@ namespace Dash
 
             SetUpInterfaceBuilder(docController, new Context(docController));
 
-            SetUpButtons();
+            //SetUpButtons();
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding

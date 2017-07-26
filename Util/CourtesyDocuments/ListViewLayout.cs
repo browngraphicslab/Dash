@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Media;
 using Dash;
 using DashShared;
 using Windows.UI.Xaml.Shapes;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -16,7 +17,7 @@ namespace Dash
     {
         private static string PrototypeId = "C512FC2E-CDD1-4E94-A98F-35A65E821C08";
         public static DocumentType DocumentType = new DocumentType("3E5C2739-A511-40FF-9B2E-A875901B296D", "ListView Layout");
-        public static Key SpacingKey = new Key("////////////////////////////////////////", "Opacity Key");
+        public static Key SpacingKey = new Key("E89037A5-B7CC-4DD7-A89B-E15EDC69AF7C", "Opacity Key");
         public static double DefaultSpacing = 20;
 
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
@@ -24,7 +25,9 @@ namespace Dash
             Document = GetLayoutPrototype().MakeDelegate();
             var layoutDocumentCollection = new DocumentCollectionFieldModelController(layoutDocuments);
             var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
-            Document.SetFields(fields, true); //TODO add fields to constructor parameters                
+            Document.SetFields(fields, true); //TODO add fields to constructor parameters   
+
+            SetSpacingField(Document, DefaultSpacing, true);
         }
 
         public ListViewLayout() : this(new List<DocumentController>()) { }
@@ -44,7 +47,16 @@ namespace Dash
             var layoutDocCollection = new DocumentCollectionFieldModelController(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), layoutDocCollection);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
+
+            SetSpacingField(prototypeDocument, DefaultSpacing, true); 
+
             return prototypeDocument;
+        }
+
+        private static void SetSpacingField(DocumentController docController, double spacing, bool forceMask)
+        {
+            var currentSpacingField = new NumberFieldModelController(spacing);
+            docController.SetField(SpacingKey, currentSpacingField, forceMask);
         }
 
         public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
@@ -52,66 +64,67 @@ namespace Dash
             throw new NotImplementedException("We don't have the dataDocument here and right now this is never called anyway");
         }
 
-        //private static void BindSpacing(ListView listView, DocumentController docController, Context context)
-        //{
-        //    var opacityController = docController.GetDereferencedField(OpacityKey, context) as NumberFieldModelController;
-        //    if (opacityController == null)
-        //    {
-        //        return;
-        //    }
-        //    var opacityBinding = new Binding
-        //    {
-        //        Source = opacityController,
-        //        Path = new PropertyPath(nameof(opacityController.Data)),
-        //        Mode = BindingMode.OneWay
-        //    };
-        //    image.SetBinding(UIElement.OpacityProperty, opacityBinding);
-        //}
+        private static void BindSpacing(ListView listView, DocumentController docController, Context context)
+        {
+            var spacingController = docController.GetDereferencedField(SpacingKey, context) as NumberFieldModelController;
+            if (spacingController == null)
+                return;
 
-        //protected new static void SetupBindings(Image image, DocumentController docController,
-        //Context context)
-        //{
-        //    CourtesyDocument.SetupBindings(image, docController, context);
+            var spacingBinding = new Binding
+            {
+                Source = spacingController,
+                Path = new PropertyPath(nameof(spacingController.Data)),
+                Mode = BindingMode.TwoWay, 
+                Converter = new SpacingToItemContainerStyleConverter()
+            };
+            listView.SetBinding(ListView.ItemContainerStyleProperty, spacingBinding); 
+            //listView.ItemContainerStyle.SetBinding(ListView.MarginProperty, spacingBinding);
+        }
 
-        //    AddBinding(image, docController, OpacityKey, context, BindOpacity);
-        //    SetupImageBinding(image, docController, context);
-        //}
+        public class SpacingToItemContainerStyleConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                double spacing;
 
-        //protected static void SetupImageBinding(Image image, DocumentController controller,
-        //Context context)
-        //{
-        //    var data = controller.GetField(DashConstants.KeyStore.DataKey);
-        //    if (data is ReferenceFieldModelController)
-        //    {
-        //        var reference = data as ReferenceFieldModelController;
-        //        var dataDoc = reference.GetDocumentController(context);
-        //        dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-        //            delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-        //            {
-        //                if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
-        //                {
-        //                    return;
-        //                }
-        //                BindImageSource(image, sender, args.Context, reference.FieldKey);
-        //            });
-        //    }
-        //    BindImageSource(image, controller, context, DashConstants.KeyStore.DataKey);
-        //}
+                if (!double.TryParse(value.ToString(), out spacing))                             // if it's a number
+                {
+                    spacing = 0; 
+                }
+                var itemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
+                itemContainerStyle.Setters.Add(new Setter(ListView.MarginProperty, new Thickness(0, spacing, 0, spacing)));
+                return itemContainerStyle; 
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        protected new static void SetupBindings(ListView listview, DocumentController docController, Context context)
+        {
+            CourtesyDocument.SetupBindings(listview, docController, context);
+
+            AddBinding(listview, docController, SpacingKey, context, BindSpacing);
+        }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
 
             var grid = new Grid();
 
-            SetupBindings(grid, docController, context);
+            //SetupBindings(grid, docController, context);
             var listView = new ListView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
-            Style itemContainerStyle = new Style { TargetType = typeof(ListViewItem)};
-            itemContainerStyle.Setters.Add(new Setter(ListView.MarginProperty, new Thickness(0,-10,0,-10)));    // paddingproperty? 
-            listView.ItemContainerStyle = itemContainerStyle; 
+            Style itemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
+            //itemContainerStyle.Setters.Add(new Setter(ListView.MarginProperty, new Thickness(0, -10, 0, -10)));    // paddingproperty? borderthickness? 
+            listView.ItemContainerStyle = itemContainerStyle;
+            //AddBinding(listView, docController, SpacingKey, context, BindSpacing);
+            SetupBindings(listView, docController, context); 
 
             LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
 
@@ -137,9 +150,10 @@ namespace Dash
                 };
                 grid.Children.Insert(0, icon);
                 var container = new SelectableContainer(grid, docController, dataDocument);
-                //SetupBindings(container, docController, context);
+                SetupBindings(container, docController, context);
                 return container;
             }
+
             /*          // commented this out for now 
             Ellipse dragEllipse = new Ellipse
             {
