@@ -88,6 +88,7 @@ namespace Dash
 
             SetupBindings(tb.Block, docController, context);
             SetupBindings(tb.Box, docController, context);
+            tb.Box.AcceptsReturn = true;
             CourtesyDocument.SetupBindings(tb.Container, docController, context);
             // use the reference to the text to get the text field model controller
             //if (textField is TextFieldModelController)
@@ -123,6 +124,7 @@ namespace Dash
             if (isInterfaceBuilderLayout)
             {
                 var selectableContainer = new SelectableContainer(tb.Container, docController);
+                //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
 

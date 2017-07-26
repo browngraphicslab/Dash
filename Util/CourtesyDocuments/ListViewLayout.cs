@@ -53,13 +53,7 @@ namespace Dash
         {
 
             var grid = new Grid();
-            // bind the grid height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(grid, heightController);
-
-            // bind the grid width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(grid, widthController);
+            SetupBindings(grid, docController, context);
             var listView = new ListView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -88,7 +82,9 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 grid.Children.Insert(0, icon);
-                return new SelectableContainer(grid, docController, dataDocument);
+                var container = new SelectableContainer(grid, docController, dataDocument);
+                //SetupBindings(container, docController, context);
+                return container;
             }
             return grid;
         }
@@ -102,25 +98,18 @@ namespace Dash
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
                 layoutView.VerticalAlignment = VerticalAlignment.Top;
-                //if (isInterfaceBuilder)
-                //{
-                //    Border border = new Border {Child = layoutView};
-                //    itemsSource.Add(border);
-                //    layoutView.Loaded += delegate(object sender, RoutedEventArgs args)
-                //        {
-                //            border.Width = layoutView.ActualWidth + 20;
-                //            border.Height = layoutView.ActualHeight + 20;
-                //        };
-                //    layoutView.VerticalAlignment = VerticalAlignment.Center;
-                //    layoutView.HorizontalAlignment = HorizontalAlignment.Center;
-                //}
-                //else
-                //{
-                    itemsSource.Add(layoutView);
-                //}
+                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
+                itemsSource.Add(layoutView);
                 
             }
             list.ItemsSource = itemsSource;
+            list.SelectionMode = ListViewSelectionMode.None;
+            foreach (var item in list.Items)
+            {
+                var elem = (item as UIElement);
+                if (elem != null) elem.IsHitTestVisible = true;
+            }
+            
         }
 
         private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
