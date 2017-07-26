@@ -44,16 +44,20 @@ namespace Dash.StaticClasses
         public static ImmutableHashSet<string> GetKeySuggestions(List<DocumentController> collection, string text)
         {
             var collectionKeys = new HashSet<string>();
-            foreach (var doc in collection)
+            if (collection != null)
             {
-                var keyNames = new HashSet<string>();
-                foreach (var key in GetKeys(doc))
+                foreach (var doc in collection)
                 {
-                    var keyName = key.Name;
-                    keyNames.Add(keyName);
+                    var keyNames = new HashSet<string>();
+                    foreach (var key in GetKeys(doc))
+                    {
+                        var keyName = key.Name;
+                        keyNames.Add(keyName);
+                    }
+                    collectionKeys.UnionWith(keyNames);
                 }
-                collectionKeys.UnionWith(keyNames);
             }
+            
             return collectionKeys.Where(k => k.ToLower().Contains(text)).ToImmutableHashSet();
         }
 
