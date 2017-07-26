@@ -112,6 +112,9 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
+      <DependentUpon>ListViewSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -304,7 +307,6 @@
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\GuideLineViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
-    <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\InterfaceBuilder\CollectionSettings.xaml.cs">
       <DependentUpon>CollectionSettings.xaml</DependentUpon>
@@ -433,6 +435,10 @@
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SelectionElement.xaml">
       <SubType>Designer</SubType>

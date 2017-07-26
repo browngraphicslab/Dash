@@ -33,6 +33,7 @@ namespace Dash
             }
         }
 
+
         public SearchView SearchView { get; set; }
 
         public OperatorSearchView()

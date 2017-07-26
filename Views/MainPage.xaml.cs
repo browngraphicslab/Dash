@@ -76,7 +76,8 @@ namespace Dash
             MainDocView.DoubleTapped += XCanvas_OnDoubleTapped;
         }
 
-        private async void MainDocViewOnDragEnter(object sender, DragEventArgs e)
+
+        private void MainDocViewOnDragEnter(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
             e.DragUIOverride.IsGlyphVisible = false;
@@ -188,8 +189,12 @@ namespace Dash
 
         public void AddDocuments(object sender, DragEventArgs e)
         {
+            //testing listview 
+            //DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
+            //DisplayDocument(Document);
+
             //DisplayDocument(new PostitNote().Document);
-            DisplayDocument(new TwoImages(false).Document);
+            //DisplayDocument(new TwoImages(false).Document);
             //DocumentController numbersProto = new Numbers().Document;
             //DocumentController del = numbersProto.MakeDelegate();
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
@@ -204,9 +209,9 @@ namespace Dash
             //DisplayDocument(new TwoImages(false).Document);
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            //var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            //foreach (var d in new DBTest().Documents)
-            //    DisplayDocument(d, where);
+            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(d, where);
         }
 
         public void AddNotes(object o, DragEventArgs e)
