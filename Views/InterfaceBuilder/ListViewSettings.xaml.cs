@@ -32,9 +32,9 @@ namespace Dash
         {
             Debug.Assert(docController.DocumentType == ListViewLayout.DocumentType);
 
-            //xSizeRow.Children.Add(new SizeSettings(docController, context));
-            //xPositionRow.Children.Add(new PositionSettings(docController, context));
-            //xAlignmentRow.Children.Add(new AlignmentSettings(docController, context));
+            xSizeRow.Children.Add(new SizeSettings(docController, context));
+            xPositionRow.Children.Add(new PositionSettings(docController, context));
+            xAlignmentRow.Children.Add(new AlignmentSettings(docController, context));
             BindSpacing(docController, context);
         }
 
