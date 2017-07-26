@@ -96,7 +96,7 @@ namespace Dash
             }
             else
             {
-                xCanvas.Children.Add(GenericSearchView.Instance);
+                xCanvas.Children.Remove(GenericSearchView.Instance);
             }
         }
 

@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -35,7 +36,26 @@ namespace Dash
 
             SetupActiveLayoutComboBox(dataDocument, context);
 
-            xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
+//            xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
+            xEditNameButton.Tapped += XEditNameButton_Tapped;
+            xNameTextBlock.Tapped += XEditNameButton_Tapped;
+            xConfirmNameButton.Tapped += XConfirmNameButton_Tapped;
+        }
+
+        private void XConfirmNameButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xNameTextBlock.Visibility = Visibility.Visible;
+            xEditNameTextBox.Visibility = Visibility.Collapsed;
+            xEditNameButton.Visibility = Visibility.Visible;
+            xConfirmNameButton.Visibility = Visibility.Collapsed;
+        }
+
+        private void XEditNameButton_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            xNameTextBlock.Visibility = Visibility.Collapsed;
+            xEditNameTextBox.Visibility = Visibility.Visible;
+            xEditNameButton.Visibility = Visibility.Collapsed;
+            xConfirmNameButton.Visibility = Visibility.Visible;
         }
 
         private void SetupActiveLayoutComboBox(DocumentController dataDocument, Context context)
