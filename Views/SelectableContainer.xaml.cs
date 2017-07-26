@@ -711,7 +711,7 @@ namespace Dash
                 {
                     var upperLeft = new Point(toBeRenderPosition.X - newSize.X / 2, toBeRenderPosition.Y - newSize.Y / 2);
                     DrawSnapLines(upperLeft, allLines);
-                    var lowerRight = new Point(toBeRenderPosition.X - newSize.X / 2, toBeRenderPosition.Y - newSize.Y / 2);
+                    var lowerRight = new Point(toBeRenderPosition.X + newSize.X / 2, toBeRenderPosition.Y + newSize.Y / 2);
                     DrawSnapLines(lowerRight, allLines);
                 }
             }
