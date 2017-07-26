@@ -175,8 +175,8 @@ namespace Dash
         public void AddDocuments(object sender, TappedRoutedEventArgs e)
         {
             //testing listview 
-            DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
-            DisplayDocument(Document);
+            //DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
+            //DisplayDocument(Document);
 
             //DisplayDocument(new PostitNote().Document);
             //DisplayDocument(new TwoImages(false).Document);
