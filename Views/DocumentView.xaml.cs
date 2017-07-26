@@ -69,7 +69,25 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
+
+            SetUpBindings(); 
         }
+
+        private void SetUpBindings()
+        {
+            OuterGrid.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+            {
+                var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+                if (view == null) return; // we can't always assume we're on a collection
+                view.CanLink = false;
+
+                args.Handled = true;
+                (view.CurrentView as CollectionFreeformView)?.EndDrag(
+                    new OperatorView.IOReference(new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            };
+        }
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();

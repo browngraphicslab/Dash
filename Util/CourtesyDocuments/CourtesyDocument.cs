@@ -272,7 +272,7 @@ namespace Dash
         protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
-            renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; 
+            renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
             renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
