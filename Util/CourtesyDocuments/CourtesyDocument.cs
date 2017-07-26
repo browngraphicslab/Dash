@@ -279,7 +279,7 @@ namespace Dash
                     if (view.CanLink)
                 {
                     args.Complete();
-                    view.CanLink = true; // essential that this is false s.t. drag events don't get overriden
+                    view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
                     }
             };
             renderElement.IsHoldingEnabled = true; // turn on holding
@@ -317,7 +317,7 @@ namespace Dash
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = true; // was false?
+                    view.CanLink = false;
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
