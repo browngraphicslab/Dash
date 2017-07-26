@@ -11,6 +11,8 @@ using Dash;
 using Dash.Converters;
 using DashShared;
 using TextWrapping = DashShared.TextWrapping;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Dash
 {
@@ -89,6 +91,8 @@ namespace Dash
             SetupBindings(tb.Block, docController, context);
             SetupBindings(tb.Box, docController, context);
             tb.Box.AcceptsReturn = true;
+            //tb.Box.IsHitTestVisible = false;
+            //tb.Block.IsHitTestVisible = false;
             CourtesyDocument.SetupBindings(tb.Container, docController, context);
             // use the reference to the text to get the text field model controller
             //if (textField is TextFieldModelController)
@@ -193,6 +197,18 @@ namespace Dash
                     Path = new PropertyPath(nameof(numberData.Data)),
                     Mode = BindingMode.TwoWay,
                     Converter = new StringToDoubleConverter(0),
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+            } else if (data is DocumentFieldModelController)
+            {
+
+                var docData = data as DocumentFieldModelController;
+                sourceBinding = new Binding
+                {
+                    Source = docData,
+                    Path = new PropertyPath(nameof(docData.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new DocumentControllerToStringConverter(context.DocContextList.First()),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
             }

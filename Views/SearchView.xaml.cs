@@ -192,10 +192,5 @@ namespace Dash
             // doesn't update list
 //            UpdateList(xSearch.Text);
         }
-
-        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
-        }
     }
 }

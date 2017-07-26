@@ -25,12 +25,7 @@ namespace Dash
 {
     public static class Actions
     {
-
-        private static Point GetCollectionDropPoint(Point absolutePosition)
-        {
-            return Util.GetCollectionDropPoint(MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
-                absolutePosition);
-        }
+        
        
         public static void AddSearch(object o, DragEventArgs e)
         {
@@ -57,8 +52,12 @@ namespace Dash
                 Width = 200,
                 Height = 200
             };
-            MainPage.Instance.DisplayDocument(opModel);
-            MainPage.Instance.AddGenericFilter();
+            var where = Util.GetCollectionDropPoint(
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                e.GetPosition(MainPage.Instance));
+            var pos = new Point(where.X - 30, where.Y -30);
+            MainPage.Instance.DisplayDocument(opModel, where);
+            MainPage.Instance.AddGenericFilter(o, e);
         }
 
 

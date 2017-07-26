@@ -95,15 +95,14 @@ namespace Dash
             }
         }
 
-        public void AddGenericFilter()
+        public void AddGenericFilter(object o, DragEventArgs e)
         {
             if (!xCanvas.Children.Contains(GenericSearchView.Instance))
             {
                 xCanvas.Children.Add(GenericSearchView.Instance);
-            }
-            else
-            {
-                xCanvas.Children.Add(GenericSearchView.Instance);
+                Point absPos = e.GetPosition(Instance);
+                Canvas.SetLeft(GenericSearchView.Instance, absPos.X);
+                Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
         }
 
@@ -190,7 +189,7 @@ namespace Dash
         public void AddDocuments(object sender, DragEventArgs e)
         {
             //DisplayDocument(new PostitNote().Document);
-            //DisplayDocument(new TwoImages(false).Document);
+            DisplayDocument(new TwoImages(false).Document);
             //DocumentController numbersProto = new Numbers().Document;
             //DocumentController del = numbersProto.MakeDelegate();
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
@@ -205,9 +204,9 @@ namespace Dash
             //DisplayDocument(new TwoImages(false).Document);
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(d, where);
+            //var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+            //foreach (var d in new DBTest().Documents)
+            //    DisplayDocument(d, where);
         }
 
         public void AddNotes(object o, DragEventArgs e)

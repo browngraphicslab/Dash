@@ -10,7 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
     <userControl:Floating IsBoundByParent="True" IsBoundByScreen="True">
-        <Grid CornerRadius="15" MaxWidth="300" MaxHeight="800" DoubleTapped="UIElement_OnDoubleTapped">
+        <Grid CornerRadius="15" MaxWidth="300" MaxHeight="800">
             <Grid.Background>
                 <SolidColorBrush Color="SteelBlue" Opacity="0.5"></SolidColorBrush>
             </Grid.Background>

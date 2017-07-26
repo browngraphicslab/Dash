@@ -394,10 +394,14 @@ namespace Dash
             foreach (var tag in (sender as TextBox).Text.Split('#'))
                 if (tag.Contains("="))
                 {
+                    var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
+                    if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
+                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
+
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
-                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
-                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key = new Key(word, word);
+                    var word  = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu  = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key   = new Key(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {
@@ -405,27 +409,35 @@ namespace Dash
                             break;
                         }
 
-                    if (valu.StartsWith("@") && !valu.Contains("="))
+                    if (valu.StartsWith("@")) // @ means we're searching for a documents
                     {
-                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
-                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
+                        var fieldStr = valu.Substring(1, valu.Length - 1);
+                        if (valu.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
+                        {                       // @ FieldName = FieldValue
+                            var eqPos2     = fieldStr.IndexOfAny(new char[] { '=' });
+                            var fieldValue = fieldStr.Substring(eqPos2+1, Math.Max(0, fieldStr.Length - eqPos2-1)).Trim(' ', '\r');
+                            var fieldName  = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
 
-                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
-                        proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
-                    }
-                    else if (valu.StartsWith("@"))
-                    {
-                        var eqPos2 = valu.IndexOfAny(new char[] { '=' });
-                        var fieldName = valu.Substring(1, eqPos2-1).TrimEnd(' ').TrimStart(' ');
-                        var fieldValue = valu.Substring(eqPos2 + 1, Math.Max(0, valu.Length - eqPos2 - 1)).Trim(' ', '\r');
-
-                        foreach (var doc in ContentController.GetControllers<DocumentController>())
-                            foreach (var field in doc.EnumFields())
-                                if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
-                                {
-                                    docController.SetField(key, new DocumentFieldModelController(doc), true);
-                                    break;
-                                }
+                            foreach (var doc in ContentController.GetControllers<DocumentController>())
+                                foreach (var field in doc.EnumFields())
+                                    if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
+                                    {
+                                        docController.SetField(key, new DocumentFieldModelController(doc), true);
+                                        break;
+                                    }
+                        }
+                        else // search for documents that optionally reference this DocumentController and that optionally have a field matching FieldName.
+                        {    // #newField = @ [@] [FieldName]
+                            var scopeDoc = new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey);
+                            if (fieldStr.StartsWith("@"))
+                            {
+                                fieldStr = fieldStr.Substring(1, fieldStr.Length - 1);
+                            }
+                            else
+                                scopeDoc = null;
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, fieldStr);
+                            proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                        }
                     }
                     else
                     {
