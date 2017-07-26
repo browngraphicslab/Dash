@@ -248,14 +248,16 @@ namespace Dash
 
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_selectedContainer.ParentContainer != null)
-            {
-                var collection =
-                    _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
-                        DocumentCollectionFieldModelController;
-                collection?.RemoveDocument(_selectedContainer.LayoutDocument);
-                _selectedContainer.ParentContainer.SetSelectedContainer(null);
-            }
+            //if (_selectedContainer.ParentContainer != null)
+            //{
+            //    var collection =
+            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+            //            DocumentCollectionFieldModelController;
+            //    collection?.RemoveDocument(_selectedContainer.LayoutDocument);
+            //    _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            //}
+
+            throw new NotImplementedException();
         }
     }
 }
