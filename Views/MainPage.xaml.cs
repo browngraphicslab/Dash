@@ -191,8 +191,8 @@ namespace Dash
             //DisplayDocument(new TwoImages(false).Document);
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            //foreach (var d in new DBTest().Documents)
-            //    DisplayDocument(d);
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(d);
         }
 
         public void AddNotes()
