@@ -56,7 +56,9 @@ namespace Dash
             var image = new Image
             {
                 Stretch = Stretch.Fill,// set image to fill container but ignore aspect ratio :/
-                CacheMode = new BitmapCache()
+                CacheMode = new BitmapCache(),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
             };
 
             SetupBindings(image, docController, context);

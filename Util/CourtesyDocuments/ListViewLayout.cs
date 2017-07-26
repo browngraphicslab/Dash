@@ -10,6 +10,8 @@ using Dash;
 using DashShared;
 using Windows.UI.Xaml.Shapes;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Controls.Primitives;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -93,6 +95,7 @@ namespace Dash
                 var itemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
                 itemContainerStyle.Setters.Add(new Setter(ListView.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
                 itemContainerStyle.Setters.Add(new Setter(ListView.MinHeightProperty, spacing));
+
                 return itemContainerStyle; 
             }
 
