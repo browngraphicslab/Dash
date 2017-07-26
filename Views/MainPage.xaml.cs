@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
@@ -36,12 +37,6 @@ namespace Dash
         {
             InitializeComponent();
 
-            // adds items from the overlay canvas onto the freeform canvas
-            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
-            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
-            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
-            xOverlayCanvas.OnAddImageTapped += AddImage;
-
             // create the collection document model using a request
             var fields = new Dictionary<Key, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
@@ -74,17 +69,29 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
+            MainDocView.AllowDrop = true;
+            MainDocView.DragEnter += MainDocViewOnDragEnter;
+            MainDocView.Drop += MainDocView_Drop;
+            MainDocView.DoubleTapped += XCanvas_OnDoubleTapped;
         }
 
+        private async void MainDocViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsContentVisible = false;
+            e.DragUIOverride.Caption = e.DataView.Properties.Title;
+        }
 
-        public void AddOperatorsFilter()
+        public void AddOperatorsFilter(object o, DragEventArgs e)
         {
             if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
             {
                 xCanvas.Children.Add(OperatorSearchView.Instance);
-            } else
-            {
-                xCanvas.Children.Remove(OperatorSearchView.Instance);
+                Point absPos = e.GetPosition(Instance);
+                Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
+                Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
             }
         }
 
@@ -107,11 +114,15 @@ namespace Dash
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
+            if (where != null)
+            {
+                docModel.GetPositionField().Data = (Point)where;
+            }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             children?.AddDocument(docModel);
         }
 
-        public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        public void AddCollection(object sender, DragEventArgs e)
         {
             var twoImages = new TwoImages(false).Document;
             var twoImages2 = new TwoImages(false).Document;
@@ -132,9 +143,11 @@ namespace Dash
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
             col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-            DisplayDocument(col);
 
-            AddAnotherLol();
+            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+            DisplayDocument(col, where);
+
+            AddAnotherLol(where);
         }
 
         public void AddApiCreator()
@@ -143,7 +156,7 @@ namespace Dash
             DisplayDocument(a);
         }
 
-        private void AddAnotherLol()
+        private void AddAnotherLol(Point where)
         {
             var numbers = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
@@ -162,7 +175,7 @@ namespace Dash
             var layoutController = new DocumentFieldModelController(layoutDoc);
             col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
             col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true); 
-            DisplayDocument(col);
+            DisplayDocument(col, where);
         }
 
 
@@ -173,7 +186,7 @@ namespace Dash
             // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
         }
 
-        public void AddDocuments(object sender, TappedRoutedEventArgs e)
+        public void AddDocuments(object sender, DragEventArgs e)
         {
             //DisplayDocument(new PostitNote().Document);
             //DisplayDocument(new TwoImages(false).Document);
@@ -191,8 +204,9 @@ namespace Dash
             //DisplayDocument(new TwoImages(false).Document);
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
             foreach (var d in new DBTest().Documents)
-                DisplayDocument(d);
+                DisplayDocument(d, where);
         }
 
         public void AddNotes()
@@ -209,12 +223,8 @@ namespace Dash
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var child = xViewBox.Child as FrameworkElement;
-            if (child != null)
-            {
-                child.Width = e.NewSize.Width;
-                child.Height = e.NewSize.Height;
-            }
+            MainDocView.Width = e.NewSize.Width;
+            MainDocView.Height = e.NewSize.Height;
         }
 
         //// FILE DRAG AND DROP
@@ -225,11 +235,18 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private async void XCanvas_Drop(object sender, DragEventArgs e)
+        private async void MainDocView_Drop(object sender, DragEventArgs e)
         {
+            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
+            {
+                (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<object, DragEventArgs>)?.Invoke(sender, e);
+                return;
+            }
+
             var dragged = new Image();
             var url = "";
 
+            
             // load items dragged from solution explorer
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -277,7 +294,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.Copy;
+            e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
@@ -296,6 +313,5 @@ namespace Dash
             else _radialMenu.IsVisible = false;
             e.Handled = true;
         }
-
     }
 }

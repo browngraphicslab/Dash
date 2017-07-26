@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
+using Dash.Views;
 using DashShared;
 using DocumentMenu;
 
@@ -375,6 +376,10 @@ namespace Dash
 
         private async void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
+            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
+            {
+                return;
+            }
             e.Handled = true;
             RefreshItemsBinding();
             foreach (var s in e.DataView.AvailableFormats)

@@ -296,7 +296,7 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(300, 300);
-                
+                e.Handled = true; // prevent propagating
             }/*
             else
             {
@@ -308,10 +308,10 @@ namespace Dash
                 dvm.Height = MinHeight;
             }
             */
-            e.Handled = true; // prevent propagating
+
         }
 
-  #region Menu
+        #region Menu
 
 
 

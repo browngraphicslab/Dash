@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -515,5 +516,19 @@ namespace RadialMenuControl.Components
         public delegate void DragStartedEventHandler(object sender, DragStartingEventArgs e);
 
         public event DragStartedEventHandler InnerArcDragStarted;
+
+        public void OnDragStarting(DragStartingEventArgs args)
+        {
+            if (InnerArcDragStarted == null)
+            {
+                args.Cancel = true;
+            }
+            else
+            {
+                InnerArcDragStarted?.Invoke(this, args);
+                args.Data.Properties.Title = Icon + " " + Label;
+            }
+            
+        }
     }
 }

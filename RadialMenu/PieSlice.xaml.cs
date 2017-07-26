@@ -1,4 +1,5 @@
 using System;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -7,6 +8,7 @@ using Windows.UI.Xaml.Media;
 using RadialMenuControl.Components;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media.Animation;
+using Dash.Views;
 
 namespace RadialMenuControl.UserControl
 {
@@ -793,6 +795,12 @@ namespace RadialMenuControl.UserControl
         {
             if (OriginalRadialMenuButton.Type != RadialMenuButton.ButtonType.Toggle) return;
             VisualStateManager.GoToState(this, (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value)) ? "InnerReleased" : "InnerNormal", true);
+        }
+
+        private void InnerPieSlicePath_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            OriginalRadialMenuButton.OnDragStarting(args);
+            args.DragUI.SetContentFromDataPackage();
         }
     }
 }

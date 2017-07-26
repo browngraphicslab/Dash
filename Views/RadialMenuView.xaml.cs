@@ -2,10 +2,12 @@
 using RadialMenuControl.UserControl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -18,6 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Models;
@@ -37,6 +40,7 @@ namespace Dash.Views
         private TextBlock _sliderHeader;
         private StackPanel _stackPanel;
         private Floating _floatingMenu;
+        public static string RadialMenuDropKey = "A84862E6-34C3-44AC-A162-EE7DE702DAA0";
 
         /// <summary>
         /// Get or set the Diameter of the radial menu
@@ -313,15 +317,17 @@ namespace Dash.Views
             if (item.IsAction && item is RadialActionModel)
             {
                 var actionButton = item as RadialActionModel;
-                    button.InnerArcReleased += delegate
-                    {
-                        if (button.InnerNormalColor != null) actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
-                        actionButton.GenericAction?.Invoke(null);
-                    };
-                button.DragAction += actionButton.CanvasAction;
-                actionButton.CanvasAction?.Invoke(se, e);
-
-            } 
+                button.InnerArcReleased += delegate
+                {
+                    actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
+                    actionButton.GenericAction?.Invoke(null);
+                };
+                button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
+                {
+                    e.Data.RequestedOperation = DataPackageOperation.Move;
+                    e.Data.Properties[RadialMenuDropKey] = actionButton.DropAction;
+                };
+            }
             menu.AddButton(button);
             return button;
         }
@@ -458,23 +464,23 @@ namespace Dash.Views
 
             #endregion
 
-            Action<object, PointerRoutedEventArgs> addSearch = Actions.AddSearch;
+            Action<object, DragEventArgs> addSearch = Actions.AddSearch;
             var searchButton = new RadialActionModel("Search", "🔍")
             {
-                CanvasAction = addSearch
+                DropAction = addSearch
             };
 
-            Action<object, PointerRoutedEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<object, PointerRoutedEventArgs> addCollection = Actions.AddCollection;
-            Action<object, PointerRoutedEventArgs> addApiCreator = Actions.AddApiCreator;
-            Action<object, PointerRoutedEventArgs> addDocuments = Actions.AddDocuments;
-            Action<object, PointerRoutedEventArgs> addNotes = Actions.AddNotes;
+            Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
+            Action<object, DragEventArgs> addCollection = Actions.AddCollection;
+            Action<object, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            Action<object, DragEventArgs> addDocuments = Actions.AddDocuments;
+            Action<object, DragEventArgs> addNotes = Actions.AddNotes;
 
-            var operatorButton = new RadialActionModel("Operator", "↔️") { CanvasAction = onOperatorAdd };
-            var collectionButton = new RadialActionModel("Collection", "📁") { CanvasAction = addCollection };
-            var apiButton = new RadialActionModel("Api", "⚙️") { CanvasAction = addApiCreator };
-            var documentButton = new RadialActionModel("Document", "🖺") { CanvasAction = addDocuments };
-            var notesButton = new RadialActionModel("Notes", "🗋") { CanvasAction = addNotes }; 
+            var operatorButton = new RadialActionModel("Operator", "↔️") { DropAction = onOperatorAdd };
+            var collectionButton = new RadialActionModel("Collection", "📁") { DropAction = addCollection };
+            var apiButton = new RadialActionModel("Api", "⚙️") { DropAction = addApiCreator };
+            var documentButton = new RadialActionModel("Document", "🖺") { DropAction = addDocuments };
+            var notesButton = new RadialActionModel("Notes", "🗋") { DropAction = addNotes }; 
             //📄
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {

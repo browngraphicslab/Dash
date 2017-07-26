@@ -50,6 +50,25 @@ namespace Dash
         }
 
         /// <summary>
+        /// Given a position relative to the MainPage, returns the transformed position corresponding 
+        /// to the given collection's freeform view.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="absolutePosition"></param>
+        /// <returns></returns>
+        public static Point GetCollectionDropPoint(CollectionView collection, Point absolutePosition)
+        {
+            var freeForm = collection.CurrentView as CollectionFreeformView;
+            if (freeForm != null)
+            {
+                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                Debug.Assert(r != null);
+                return r.TransformPoint(absolutePosition);
+            }
+            return absolutePosition;
+        }
+
+        /// <summary>
         /// Create TranslateTransform to translate "totranslate" by "delta" amount relative to canvas space  
         /// </summary>
         /// <returns></returns>
