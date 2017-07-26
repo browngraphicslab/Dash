@@ -51,7 +51,6 @@ namespace Dash
             };
 
             xOpacitySlider.SetBinding(Slider.ValueProperty, textOpacityBinding);
-
         }
     }
 }

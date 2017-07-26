@@ -18,7 +18,7 @@ namespace Dash
         private static string PrototypeId = "C512FC2E-CDD1-4E94-A98F-35A65E821C08";
         public static DocumentType DocumentType = new DocumentType("3E5C2739-A511-40FF-9B2E-A875901B296D", "ListView Layout");
         public static Key SpacingKey = new Key("E89037A5-B7CC-4DD7-A89B-E15EDC69AF7C", "Opacity Key");
-        public static double DefaultSpacing = 10;
+        public static double DefaultSpacing = 30;
 
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
         {
@@ -78,7 +78,6 @@ namespace Dash
                 Converter = new SpacingToItemContainerStyleConverter()
             };
             listView.SetBinding(ListView.ItemContainerStyleProperty, spacingBinding); 
-            //listView.ItemContainerStyle.SetBinding(ListView.MarginProperty, spacingBinding);
         }
 
         public class SpacingToItemContainerStyleConverter : IValueConverter
@@ -92,7 +91,8 @@ namespace Dash
                     spacing = 0; 
                 }
                 var itemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
-                itemContainerStyle.Setters.Add(new Setter(ListView.MarginProperty, new Thickness(0, spacing, 0, spacing)));
+                itemContainerStyle.Setters.Add(new Setter(ListView.HorizontalContentAlignmentProperty, HorizontalAlignment.Center));
+                itemContainerStyle.Setters.Add(new Setter(ListView.MinHeightProperty, spacing));
                 return itemContainerStyle; 
             }
 
@@ -120,10 +120,9 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
             };
-            Style itemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
-            //itemContainerStyle.Setters.Add(new Setter(ListView.MarginProperty, new Thickness(0, -10, 0, -10)));    // paddingproperty? borderthickness? 
-            listView.ItemContainerStyle = itemContainerStyle;
-            //AddBinding(listView, docController, SpacingKey, context, BindSpacing);
+            listView.ItemContainerStyle = new Style { TargetType = typeof(ListViewItem) };
+
+            listView.HorizontalContentAlignment = HorizontalAlignment.Center; 
             SetupBindings(listView, docController, context); 
 
             LayoutDocuments(docController, context, listView, isInterfaceBuilderLayout);
