@@ -93,6 +93,7 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\Operators\AddFieldOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />

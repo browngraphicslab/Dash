@@ -189,6 +189,8 @@ namespace Dash
 
         public void AddDocuments(object sender, DragEventArgs e)
         {
+            
+
             //testing listview 
             //DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
             //DisplayDocument(Document);
@@ -210,8 +212,29 @@ namespace Dash
             //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
             var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(d, where);
+            //foreach (var d in new DBTest().Documents)
+            //    DisplayDocument(d, where);
+
+
+
+            // testing addfieldoperator... 
+            var opModel = OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new AddFieldOperatorController(new OperatorFieldModel("AddField")));
+            var unionView = new DocumentView
+            {
+                Width = 200,
+                Height = 200
+            };
+            var unionOpvm = new DocumentViewModel(opModel)
+            {
+                //GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+            };
+            unionView.DataContext = unionOpvm;
+            DisplayDocument(opModel, where);
+
+            DisplayDocument(new TwoImages(false).Document, where);
+            DisplayDocument(new Numbers().Document, where); 
+
         }
 
         public void AddNotes(object o, DragEventArgs e)
