@@ -57,7 +57,7 @@
             </Grid>
 
             <GridView Grid.Row="2" HorizontalAlignment="Center" Margin="294,0,258,0" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting" Width="248">
-                <Button x:Name="FreeformButton" Width="60" Height="65" Margin="5"  VerticalContentAlignment="Center"
+                <Button x:Name="FreeformButton" Width="55" Height="65" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
                     <StackPanel Orientation="Vertical">
                         <Grid>
@@ -83,16 +83,16 @@
                 </Button>
                 <Button x:Name="GridButton" Width="45" Height="65" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
-                    <StackPanel Orientation="Vertical">
-                        <Grid>
-                            <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
-                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
+                            <StackPanel Orientation="Vertical">
+                                <Grid>
+                                    <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
                                 <Run Text="▦"/>
-                            </TextBlock>
-                        </Grid>
-                        <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
-                    </StackPanel>
-                </Button>
+                                    </TextBlock>
+                                </Grid>
+                                <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
+                            </StackPanel>
+                        </Button>
 
             </GridView>
             <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Height="65" Width="73" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,222,0" Grid.Row="2">

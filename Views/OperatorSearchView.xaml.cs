@@ -33,6 +33,7 @@ namespace Dash
             }
         }
 
+
         public SearchView SearchView { get; set; }
 
         public OperatorSearchView()
@@ -56,6 +57,11 @@ namespace Dash
             categories.Add(new SearchCategoryItem(string.Empty,"CUSTOM",null,Actions.AddOperator));
 
             xMainGrid.Children.Add(SearchView = new SearchView(categories));
+        }
+
+        private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
     }
 }

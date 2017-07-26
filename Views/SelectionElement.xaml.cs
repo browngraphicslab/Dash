@@ -99,7 +99,6 @@ namespace Dash
             {
                 ParentSelectionElement?.SetSelectedElement(null);
             }
-            
         }
     }
 }

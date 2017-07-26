@@ -15,7 +15,7 @@ namespace Dash
         public object Convert(object value, Type targetType, object parameter, string language)
         {
             var binding = (WidthAndMenuOpenWrapper) value;
-            return binding.MenuOpen ? binding.Width + 50 : binding.Width;
+            return binding.MenuOpen ? binding.Width + 55 : binding.Width;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

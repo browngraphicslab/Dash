@@ -37,6 +37,7 @@ namespace Dash
 
             MatrixTransform r = to.TransformToVisual(Window.Current.Content) as MatrixTransform;
             //Debug.Assert(r != null);
+
             if (r == null) return new Point(0, 0);
             var m = r.Matrix;
             return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
@@ -47,6 +48,25 @@ namespace Dash
             GeneralTransform r = to.TransformToVisual(Window.Current.Content).Inverse;
             Debug.Assert(r != null);
             return r.TransformPoint(p);
+        }
+
+        /// <summary>
+        /// Given a position relative to the MainPage, returns the transformed position corresponding 
+        /// to the given collection's freeform view.
+        /// </summary>
+        /// <param name="collection"></param>
+        /// <param name="absolutePosition"></param>
+        /// <returns></returns>
+        public static Point GetCollectionDropPoint(CollectionView collection, Point absolutePosition)
+        {
+            var freeForm = collection.CurrentView as CollectionFreeformView;
+            if (freeForm != null)
+            {
+                var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                Debug.Assert(r != null);
+                return r.TransformPoint(absolutePosition);
+            }
+            return absolutePosition;
         }
 
         /// <summary>
@@ -304,42 +324,123 @@ namespace Dash
             await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
         }
 
+        /// <summary>
+        /// Method that sends email with specified fields directly instead of via an external app 
+        /// </summary>
         public static async void SendEmail2(string addressTo, string password, string addressFrom, string message, string subject, StorageFile attachment)
         {
             using (SmtpClient client = new SmtpClient("smtp.gmail.com", 465, true, addressFrom, password)) // gmail
             {
                 var email = new Windows.ApplicationModel.Email.EmailMessage
                 {
-                    Subject = subject, Body = message 
+                    Subject = subject,
+                    Body = message
                 };
 
                 email.To.Add(new Windows.ApplicationModel.Email.EmailRecipient(addressTo));
                 // TODO add CC? and BCC??  
-                
+
                 if (attachment != null)
                 {
                     var stream = Windows.Storage.Streams.RandomAccessStreamReference.CreateFromFile(attachment);
                     email.Attachments.Add(new Windows.ApplicationModel.Email.EmailAttachment(attachment.Name, stream));
                 }
                 SmtpResult result = await client.SendMailAsync(email);
-                
+
                 //Debug.WriteLine("SMPT RESULT: " + result.ToString());
 
-                string popupMsg = "D:"; 
+                string popupMsg = "D:";
                 if (result == SmtpResult.OK)
                 {
-                    popupMsg = "Sent!"; 
-                } else if (result == SmtpResult.AuthenticationFailed)
+                    popupMsg = "Sent!";
+                }
+                else if (result == SmtpResult.AuthenticationFailed)
                 {
-                    popupMsg = "Failed to authenticate email. Check your password and make sure to enable 'Access for less secure apps' on your gmail settings LOL WAHT A PAIN IN THE ASS I KNOW"; 
-                } else
+                    popupMsg = "Failed to authenticate email. Check your password and make sure to enable 'Access for less secure apps' on your gmail settings LOL WAHT A PAIN IN THE ASS I KNOW";
+                }
+                else
                 {
-                    popupMsg = "Something went wrong :("; 
+                    popupMsg = "Something went wrong :(";
                 }
 
                 var popup = new Windows.UI.Popups.MessageDialog(popupMsg);
-                await popup.ShowAsync(); 
+                await popup.ShowAsync();
             }
+        }
+
+        /// <summary>
+        /// Method that returns a list of different types of FieldModelControllers
+        ///                                                                 TODO what if people want to display url as textfieldmodel??? 
+        /// </summary>
+        /// <returns></returns>
+        public static IEnumerable<FieldModelController> RawToFieldModelControllerFactory(IEnumerable<object> rawValues, bool displayAsImage = false)
+        {
+            var result = new LinkedList<FieldModelController>();
+
+            foreach (object value in rawValues)
+            {
+                string stringVal = value.ToString();
+
+                double n;
+                Uri outUri;
+
+                if (double.TryParse(stringVal, out n))                             // if it's a number
+                {
+                    result.AddLast(new NumberFieldModelController(n));
+                }
+                else if (displayAsImage && Uri.TryCreate(stringVal, UriKind.Absolute, out outUri)         // if it's a url...  
+                       && Uri.IsWellFormedUriString(stringVal, UriKind.Absolute))
+                {
+                    result.AddLast(new ImageFieldModelController(outUri));
+                }
+                else
+                {
+                    result.AddLast(new TextFieldModelController(stringVal));
+                }
+            }
+            return result;
+        }
+
+        public static IList<DocumentController> FMControllerToCourtesyDocs(ref DocumentController doc, IEnumerable<FieldModelController> fms)
+        {
+            var result = new List<DocumentController>();
+            string docID = doc.GetId();
+
+            foreach (FieldModelController fm in fms)
+            {
+                Key key = new Key();                                                                                  // TODO should give it a unique key? 
+                doc.SetField(key, fm, true);
+                if (fm is TextFieldModelController || fm is NumberFieldModelController)
+                {
+                    result.Add(new TextingBox(new ReferenceFieldModelController(docID, key)).Document);
+                }
+                else if (fm is ImageFieldModelController)
+                {
+                    result.Add(new ImageBox(new ReferenceFieldModelController(docID, key)).Document);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
+            }
+            return result;
+        }
+
+        // TODO move this somewhere else 
+        public static DocumentController MakeListView(List<object> randomList)
+        {
+            IEnumerable<FieldModelController> fms = RawToFieldModelControllerFactory(randomList, true);
+
+            DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type w/ actual guid 
+            var fields = new Dictionary<Key, FieldModelController>();
+            fields.Add(DashConstants.KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
+            DocumentController Document = new DocumentController(fields, ListType);
+
+            IList<DocumentController> viewDocs = FMControllerToCourtesyDocs(ref Document, fms);
+            var layoutDoc = new ListViewLayout(viewDocs, new Point(), new Size(300, Math.Min(50 * viewDocs.Count, 400)));
+            Document.SetActiveLayout(layoutDoc.Document, true, true);
+
+            return Document; 
         }
     }
 }

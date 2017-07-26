@@ -7,7 +7,8 @@
     xmlns:userControl="using:RadialMenuControl.UserControl"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="300">
+    d:DesignWidth="300"
+    ManipulationMode="None">
     <UserControl.Resources>
         <ResourceDictionary Source="Styles.xaml"/>
     </UserControl.Resources>
@@ -17,39 +18,53 @@
             <VisualStateGroup>
                 <VisualState x:Name="InnerNormal">
                     <Storyboard SpeedRatio="2" x:Name="InnerNormalStoryBoard">
-                        <ColorAnimation To="{Binding Path=InnerNormalColor}" Duration="0:00:00.2" Storyboard.TargetName="InnerPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=InnerNormalColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="InnerPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="InnerHover">
                     <Storyboard SpeedRatio="2">
-                        <ColorAnimation To="{Binding Path=InnerHoverColor}" Duration="0:00:00.2" Storyboard.TargetName="InnerPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=InnerHoverColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="InnerPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="InnerPressed">
                     <Storyboard SpeedRatio="2">
-                        <ColorAnimation To="{Binding Path=InnerTappedColor}" Duration="0:00:00.2" Storyboard.TargetName="InnerPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=InnerTappedColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="InnerPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="InnerReleased">
                     <Storyboard SpeedRatio="2" x:Name="InnerReleasedStoryBoard">
-                        <ColorAnimation To="{Binding Path=InnerReleasedColor}" Duration="0:00:00.2" Storyboard.TargetName="InnerPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=InnerReleasedColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="InnerPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
             </VisualStateGroup>
             <VisualStateGroup x:Name="OuterStates">
                 <VisualState x:Name="OuterNormal">
                     <Storyboard SpeedRatio="2">
-                        <ColorAnimation To="{Binding Path=OuterNormalColor}" Duration="0:00:00.2" Storyboard.TargetName="OuterPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=OuterNormalColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="OuterPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="OuterHover">
                     <Storyboard SpeedRatio="2">
-                        <ColorAnimation To="{Binding Path=OuterHoverColor}" Duration="0:00:00.2" Storyboard.TargetName="OuterPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=OuterHoverColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="OuterPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
                 <VisualState x:Name="OuterPressed">
                     <Storyboard SpeedRatio="2">
-                        <ColorAnimation To="{Binding Path=OuterTappedColor}" Duration="0:00:00.2" Storyboard.TargetName="OuterPieSlicePath" Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
+                        <ColorAnimation To="{Binding Path=OuterTappedColor}" Duration="0:00:00.2"
+                                        Storyboard.TargetName="OuterPieSlicePath"
+                                        Storyboard.TargetProperty="(Fill).(SolidColorBrush.Color)" />
                     </Storyboard>
                 </VisualState>
             </VisualStateGroup>
@@ -57,13 +72,15 @@
 
         <userControl:OuterPieSlicePath x:Name="OuterPieSlicePath" />
 
-        <userControl:InnerPieSlicePath x:Name="InnerPieSlicePath"            
-            PointerPressed="innerPieSlicePath_PointerPressed"
-            PointerReleased="innerPieSlicePath_PointerReleased"
-            PointerEntered="innerPieSlicePath_PointerEntered"
-            PointerExited="innerPieSlicePath_PointerExited">
+        <userControl:InnerPieSlicePath x:Name="InnerPieSlicePath"
+                                       PointerPressed="innerPieSlicePath_PointerPressed"
+                                       PointerReleased="innerPieSlicePath_PointerReleased"
+                                       PointerEntered="innerPieSlicePath_PointerEntered"
+                                       PointerExited="innerPieSlicePath_PointerExited"
+                                       DragStarting="InnerPieSlicePath_OnDragStarting"
+                                       CanDrag="True">
         </userControl:InnerPieSlicePath>
-        <Path x:Name="IndicationArcPath"  Canvas.ZIndex="100" Canvas.Top="0" Canvas.Left="0">
+        <Path x:Name="IndicationArcPath" Canvas.ZIndex="100" Canvas.Top="0" Canvas.Left="0">
             <Path.Data>
                 <PathGeometry>
                     <PathGeometry.Figures>

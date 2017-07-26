@@ -268,9 +268,19 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            if (ViewModel.MenuOpen)
+            {
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
+            }
+            else
+            {
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            }
+            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
@@ -296,7 +306,7 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(300, 300);
-                
+                e.Handled = true; // prevent propagating
             }/*
             else
             {
@@ -308,21 +318,37 @@ namespace Dash
                 dvm.Height = MinHeight;
             }
             */
-            e.Handled = true; // prevent propagating
+
         }
 
-  #region Menu
+        #region Menu
 
 
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
-            {
                 return;
+
+            TransformGroup tg = new TransformGroup();
+            tg.Children.Add(OuterGrid.RenderTransform); 
+
+
+            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
+            {
+                ViewModel.OpenMenu();
+                tg.Children.Add(new TranslateTransform { X = -55, Y = 0 }); 
+                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+            }
+            else
+            {
+                ViewModel.CloseMenu();
+                tg.Children.Add(new TranslateTransform { X = 55, Y = 0 });
+                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
 
             OnSelected();
+
             e.Handled = true;
         }
 

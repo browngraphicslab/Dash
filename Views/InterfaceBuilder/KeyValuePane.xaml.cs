@@ -19,8 +19,6 @@ namespace Dash
         private DocumentController _documentControllerDataContext;
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
-        //private KeyFieldContainer _newKeyVal = new KeyFieldContainer(null, null);
-
         public KeyValuePane()
         {
             InitializeComponent();
@@ -62,27 +60,89 @@ namespace Dash
             }
         }
 
-        private void KeyField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-        }
-
         private void ValueField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                if (xNewKeyField.Text == "" || xNewValueField.Text == "")
-                    return; 
+                if (!xNewKeyField.IsEnabled && _selectedKV != null)
+                {
+                    TextFieldModelController textCont = _selectedKV.Controller as TextFieldModelController;
+                    if ((_selectedKV.Controller as TextFieldModelController).Data != xNewValueField.Text || _selectedKV.Key.Name != xNewKeyField.Text)
+                    {
+                        _selectedKV.Key.Name = xNewKeyField.Text;
+                        (_selectedKV.Controller as TextFieldModelController).Data = xNewValueField.Text;
+                        SetListItemSourceToCurrentDataContext();
+                    }
+                    ResetKeyValueModifier();
 
-                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // commented out cos i didn't want to waste guids on testing 
+                    return;
+                }
+                if (xNewKeyField.Text == "" || xNewValueField.Text == "")
+                    return;
+
+                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
                 var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
                 var cont = new TextFieldModelController((sender as TextBox).Text);
                 ListItemSource.Add(new KeyFieldContainer(key, cont));
 
                 _documentControllerDataContext.SetField(key, cont, true);
-
                 xNewKeyField.Text = "";
-                xNewValueField.Text = "";  
+                xNewValueField.Text = "";
             }
+            else if (e.Key == Windows.System.VirtualKey.Tab)
+            {
+                ResetKeyValueModifier();
+            }
+        }
+
+        private void KeyField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (_selectedKV == null) return;
+            if (!xNewValueField.IsEnabled && (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Tab))
+            {
+                var textCont = _selectedKV.Controller as TextFieldModelController;
+                if (textCont != null)
+                {
+                    xNewValueField.IsEnabled = true;
+                    xNewValueField.Text = textCont.Data;
+                    xNewKeyField.IsEnabled = false;
+                }
+                else
+                {
+                    if (_selectedKV.Key.Name != xNewKeyField.Text)
+                    {
+                        _selectedKV.Key.Name = xNewKeyField.Text; 
+                        SetListItemSourceToCurrentDataContext();
+                    }
+                    ResetKeyValueModifier();
+                }
+            }
+        }
+
+        private KeyFieldContainer _selectedKV;
+
+        private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            var kv = e.ClickedItem as KeyFieldContainer; 
+            if (kv == _selectedKV)
+            {
+                ResetKeyValueModifier();
+                return;    
+            }
+            _selectedKV = kv; 
+
+            xNewValueField.Text = "< Enter new key";
+            xNewKeyField.Text = _selectedKV.Key.Name;
+            xNewValueField.IsEnabled = false;
+        }
+
+        private void ResetKeyValueModifier()
+        {
+            xNewKeyField.IsEnabled = true;
+            xNewValueField.IsEnabled = true;
+            xNewValueField.Text = "";
+            xNewKeyField.Text = "";
+            _selectedKV = null;
         }
     }
 

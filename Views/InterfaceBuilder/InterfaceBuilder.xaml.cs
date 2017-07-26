@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -22,6 +23,7 @@ namespace Dash
         /// The document view of the document which is being edited
         /// </summary>
         private DocumentView _documentView;
+
         public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
         private SelectableContainer _selectedContainer;
 
@@ -36,6 +38,7 @@ namespace Dash
 
             SetUpInterfaceBuilder(docController, new Context(docController));
 
+            //SetUpButtons();
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
@@ -63,6 +66,30 @@ namespace Dash
             xDocumentHolder.Child = _documentView;
 
             xKeyValuePane.SetDataContextToDocumentController(docController);
+        }
+
+        private void SetUpButtons()
+        {
+            var listSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.List,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            ListButton.Content = new Border { Child = listSymbol };
+
+            var freeformSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.View,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            FreeformButton.Content = new Border { Child = freeformSymbol };
+
+            var gridSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.ViewAll,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            GridButton.Content = new Border { Child = gridSymbol };
         }
 
         private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -220,8 +247,9 @@ namespace Dash
             var item = e.Items.FirstOrDefault();
             if (item is Button)
             {
-                var defaultNewSize = new Size(400, 400);
+                //var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
+
                 switch (button.Name)
                 {
                     case "ListButton":
