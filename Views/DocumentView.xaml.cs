@@ -118,7 +118,7 @@ namespace Dash
             var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
-            ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(), scaleAmount);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -169,7 +169,7 @@ namespace Dash
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
             Resize(p.X, p.Y);
             ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                                new Point(ActualWidth / 2, ActualHeight / 2),
+                                                                new Point(),
                                                                 ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
@@ -402,7 +402,7 @@ namespace Dash
             var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
             var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
             ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                              ViewModel.GroupTransform.ScaleCenter,
+                                                              new Point(),
                                                               newScale);
         }
 
