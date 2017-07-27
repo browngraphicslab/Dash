@@ -155,11 +155,6 @@ namespace Dash
         private void xTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            //if (item == TypeInfo.None)
-            //{
-            //    xNewValueField.IsEnabled = false;
-            //    return;
-            //}
             
             if (item == TypeInfo.Image)
             {
