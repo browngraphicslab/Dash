@@ -13,7 +13,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Dash.Models;
-using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;

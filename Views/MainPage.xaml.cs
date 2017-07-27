@@ -9,7 +9,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Visibility = Windows.UI.Xaml.Visibility;
