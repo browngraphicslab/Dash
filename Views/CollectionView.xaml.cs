@@ -589,8 +589,9 @@ namespace Dash
 
         private void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            e.Handled = true;
+            
             if (ParentSelectionElement?.IsSelected == null || !ParentSelectionElement.IsSelected) return;
+            e.Handled = true;
             OnSelected();
 
         }
@@ -615,7 +616,7 @@ namespace Dash
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .67;
+                    image.Opacity = .3;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);
