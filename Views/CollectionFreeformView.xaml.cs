@@ -240,6 +240,19 @@ namespace Dash
         }
 
         /// <summary>
+        /// Method to add the dropped field to the documentview 
+        /// </summary>
+        public void EndDragOnDocumentView(ref DocumentController cont, OperatorView.IOReference ioReference)
+        {
+            if (_currReference != null)
+            {
+                cont.SetField(new Key("?", "keyname"), new TextFieldModelController("hi"), true); 
+                cont.SetField(ioReference.FieldReference.FieldKey, ioReference.FieldReference.Dereference(null), true); 
+            }
+            EndDrag(ioReference); 
+        }
+
+        /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>
         public void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)

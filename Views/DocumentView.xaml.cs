@@ -83,7 +83,7 @@ namespace Dash
                 view.CanLink = false;
 
                 args.Handled = true;
-                (view.CurrentView as CollectionFreeformView)?.EndDrag(
+                (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController, 
                     new OperatorView.IOReference(new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
                         OuterGrid.GetFirstAncestorOfType<DocumentView>()));
             };
