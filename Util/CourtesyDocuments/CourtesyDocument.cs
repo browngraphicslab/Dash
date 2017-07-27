@@ -272,15 +272,15 @@ namespace Dash
         protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, Key fieldKey, FieldModelController fmController)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
-            renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
+            //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
             renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
                 if (view.CanLink)
                 {
-                    //args.Complete(); -- This was stopping manipulations from happening on the first try? 
-                    view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
+                    args.Complete(); // This was stopping manipulations from happening on the first try? 
+                    //view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
                 }
             };
             renderElement.IsHoldingEnabled = true; // turn on holding
