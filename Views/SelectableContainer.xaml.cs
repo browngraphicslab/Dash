@@ -105,6 +105,7 @@ namespace Dash
             foreach (var ellipse in _draggerList)
             {
                 ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                xKeyDisplayField.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed; 
             }
         }
 
