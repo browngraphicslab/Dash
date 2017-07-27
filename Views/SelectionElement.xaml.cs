@@ -37,8 +37,13 @@ namespace Dash
             if (elem != null)
             {
                 elem.IsLowestSelected = true;
-                IsLowestSelected = false;
+                elem.SetSelectedElement(null);
+                if (IsLowestSelected) IsLowestSelected = false;
             }
+            //else if (!IsLowestSelected)
+            //{
+            //    IsLowestSelected = true;
+            //}
         }
 
         public bool IsSelected
@@ -93,7 +98,7 @@ namespace Dash
             if (!IsLowestSelected)
             {
                 ParentSelectionElement?.SetSelectedElement(this);
-                SetSelectedElement(null);
+                //SetSelectedElement(null);
             }
             else
             {
