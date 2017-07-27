@@ -18,7 +18,7 @@
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid Background="LightBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="150"/>
@@ -30,9 +30,9 @@
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
-                  ItemClick="xKeyValueListView_ItemClick" IsItemClickEnabled="true"
+                   IsItemClickEnabled="true"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
-
+            <!--ItemClick="xKeyValueListView_ItemClick"-->
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <!--Make the list view items stretch to the full width of the list view-->
@@ -61,14 +61,27 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <!--<Grid Grid.Row="3">
+        <Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="xNewKeyField" TextAlignment="Left" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown"  BorderBrush="LightBlue" ></TextBox>
-            <TextBox x:Name="xNewValueField" TextAlignment="Left" PlaceholderText="Value to add" KeyDown="ValueField_KeyDown" BorderBrush="LightBlue" Grid.Column="1"></TextBox>
-            --><!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>--><!--
-        </Grid>-->
+            <TextBox x:Name="xNewKeyField" TextAlignment="Left" HorizontalAlignment ="Stretch" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="LightBlue" ></TextBox>
+            <ComboBox x:Name="xTypeComboBox" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged">
+                <!--<ComboBoxItem Content="{Binding Path=}"></ComboBoxItem>-->
+            </ComboBox>
+            <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Image x:Name="xDefaultImage" Source="ms-appx://Dash/Assets/DefaultImage.png" HorizontalAlignment ="Stretch"></Image>
+                <TextBox x:Name="xNewValueField" Grid.Row="1" HorizontalAlignment ="Stretch" TextChanged="xNewValueField_TextChanged"
+                         TextAlignment="Left" PlaceholderText="Value" BorderBrush="LightBlue"></TextBox>
+            </Grid>
+            <Button x:Name="xAddButton" Grid.Column="3" FontSize="15" Height="32" Width="32" HorizontalAlignment="Right" IsTapEnabled="True" Tapped="AddButton_Tapped"></Button>
+        </Grid>
     </Grid>
 </UserControl>
