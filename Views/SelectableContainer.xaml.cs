@@ -452,6 +452,9 @@ namespace Dash
             Canvas.SetTop(xBottomLeftDragger, canvasHeight);
             Canvas.SetLeft(xCenterDragger, (canvasWidth - manipulatorWidth) / 2);
             Canvas.SetTop(xCenterDragger, (canvasHeight - manipulatorHeight) / 2);
+
+            Canvas.SetLeft(xKeyDisplayField, 5);
+            Canvas.SetTop(xKeyDisplayField, -xKeyDisplayField.ActualHeight);
         }
 
         private void XManipulatorCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)
