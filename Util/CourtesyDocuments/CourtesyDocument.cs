@@ -269,7 +269,7 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, Key fieldKey, FieldModelController fmController)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
             renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
@@ -292,7 +292,7 @@ namespace Dash
                 if (view == null) return; // we can't always assume we're on a collection
                     view.CanLink = true;
                 if (view.CurrentView is CollectionFreeformView)
-                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(reference, true, view.PointerArgs, renderElement,
+                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };
@@ -310,7 +310,7 @@ namespace Dash
                 {
                     view.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
-                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(reference, true, args, renderElement,
+                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, args, renderElement,
                             renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -322,7 +322,7 @@ namespace Dash
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
-                    new OperatorView.IOReference(reference, false, args, renderElement,
+                    new OperatorView.IOReference(fieldKey, fmController, reference, false, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };

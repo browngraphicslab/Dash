@@ -84,7 +84,7 @@ namespace Dash
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController, 
-                    new OperatorView.IOReference(new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                    new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
                         OuterGrid.GetFirstAncestorOfType<DocumentView>()));
             };
         }

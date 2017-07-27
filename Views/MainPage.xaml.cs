@@ -218,19 +218,19 @@ namespace Dash
 
 
             // testing addfieldoperator... 
-            var opModel = OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new AddFieldOperatorController(new OperatorFieldModel("AddField")));
-            var unionView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
-            var unionOpvm = new DocumentViewModel(opModel)
-            {
-                //GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-            };
-            unionView.DataContext = unionOpvm;
-            DisplayDocument(opModel, where);
+            //var opModel = OperatorDocumentModel.CreateOperatorDocumentModel(
+            //            new AddFieldOperatorController(new OperatorFieldModel("AddField")));
+            //var unionView = new DocumentView
+            //{
+            //    Width = 200,
+            //    Height = 200
+            //};
+            //var unionOpvm = new DocumentViewModel(opModel)
+            //{
+            //    //GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+            //};
+            //unionView.DataContext = unionOpvm;
+            //DisplayDocument(opModel, where);
 
             DisplayDocument(new TwoImages(false).Document, where);
             DisplayDocument(new TwoImages(false).Document, where); 
