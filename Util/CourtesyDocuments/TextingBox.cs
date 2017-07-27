@@ -91,31 +91,7 @@ namespace Dash
             SetupBindings(tb.Block, docController, context);
             SetupBindings(tb.Box, docController, context);
             tb.Box.AcceptsReturn = true;
-            //tb.Box.IsHitTestVisible = false;
-            //tb.Block.IsHitTestVisible = false;
             CourtesyDocument.SetupBindings(tb.Container, docController, context);
-            // use the reference to the text to get the text field model controller
-            //if (textField is TextFieldModelController)
-            //{
-            //    TextBox textBox = new TextBox();
-            //    SetupBindings(textBox, docController, context);
-            //    tb = textBox;
-            //    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-            //    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-            //    //textBox.TextWrapping = Windows.UI.Xaml.TextWrapping.Wrap;
-            //}
-            //else if (textField is NumberFieldModelController)
-            //{
-            //    TextBox textBox = new TextBox();
-            //    SetupBindings(textBox, docController, context);
-            //    tb = textBox;
-            //    textBox.GotFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.None;
-            //    textBox.LostFocus += (s, e) => textBox.ManipulationMode = ManipulationModes.All;
-            //    textBox.BorderThickness = new Thickness(5);
-            //    textBox.BorderBrush = new SolidColorBrush(Colors.Gray);
-            //    textBox.AcceptsReturn = true;
-            //}
-
 
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
