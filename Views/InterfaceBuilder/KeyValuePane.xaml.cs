@@ -30,6 +30,7 @@ namespace Dash
 
             ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
+            xTypeComboBox.SelectedItem = TypeInfo.None; 
         }
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
@@ -68,7 +69,38 @@ namespace Dash
 
         private void AddButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
+            if ((string)xAddButton.Content == "⏎")
+            {
+                // only execute if all fields are specified 
+                if (xNewKeyField.Text != "" && (TypeInfo)xTypeComboBox.SelectedItem != TypeInfo.None && xNewValueField.Text != "")
+                {
+                    AddKeyValuePair(); 
+                }
+            }
             ToggleAddKVPane();
+        }
+
+        private void AddKeyValuePair()
+        {
+            var item = (TypeInfo)xTypeComboBox.SelectedItem;
+            Key key = new Key((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                                                  // TODO change this create actual guids 
+            FieldModelController fmController = new TextFieldModelController("something went wrong"); 
+            if (item == TypeInfo.Number)
+            {
+                double number;
+                if (double.TryParse(xNewValueField.Text, out number))   
+                    fmController = new NumberFieldModelController(number);
+            } 
+            else if (item == TypeInfo.Image)
+            {
+                fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
+            }
+            else if (item == TypeInfo.Text)
+            {
+                fmController = new TextFieldModelController(xNewValueField.Text);
+            }
+            ListItemSource.Add(new KeyFieldContainer(key, fmController));
+            _documentControllerDataContext.SetField(key, fmController, true);
         }
 
         private void ToggleAddKVPane()
@@ -123,22 +155,29 @@ namespace Dash
         private void xTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            if (item == TypeInfo.None)
-            {
-                xNewValueField.IsEnabled = false;
-                return;
-            }
-
-            xNewValueField.IsEnabled = true;
+            //if (item == TypeInfo.None)
+            //{
+            //    xNewValueField.IsEnabled = false;
+            //    return;
+            //}
+            
             if (item == TypeInfo.Image)
             {
+                xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Text = ImageBox.DefaultImageUri.AbsoluteUri; 
             }
             else if (item == TypeInfo.Text || item == TypeInfo.Number)
             {
+                xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
             }
+            else
+            {
+                xNewValueField.IsEnabled = false;
+                return;
+            }
+
         }
 
         private void xNewValueField_TextChanged(object sender, TextChangedEventArgs e)

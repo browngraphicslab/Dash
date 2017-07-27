@@ -68,7 +68,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="xNewKeyField" TextAlignment="Left" HorizontalAlignment ="Stretch" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="LightBlue" ></TextBox>
+            <TextBox x:Name="xNewKeyField" Text="" TextAlignment="Left" Height="32" HorizontalAlignment ="Stretch" VerticalAlignment ="Bottom" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="LightBlue" ></TextBox>
             <ComboBox x:Name="xTypeComboBox" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged">
                 <!--<ComboBoxItem Content="{Binding Path=}"></ComboBoxItem>-->
             </ComboBox>
@@ -79,9 +79,9 @@
                 </Grid.RowDefinitions>
                 <Image x:Name="xDefaultImage" Source="ms-appx://Dash/Assets/DefaultImage.png" HorizontalAlignment ="Stretch"></Image>
                 <TextBox x:Name="xNewValueField" Grid.Row="1" HorizontalAlignment ="Stretch" TextChanged="xNewValueField_TextChanged"
-                         TextAlignment="Left" PlaceholderText="Value" BorderBrush="LightBlue"></TextBox>
+                         Text="" TextAlignment="Left" PlaceholderText="Value" BorderBrush="LightBlue"></TextBox>
             </Grid>
-            <Button x:Name="xAddButton" Grid.Column="3" FontSize="15" Height="32" Width="32" HorizontalAlignment="Right" IsTapEnabled="True" Tapped="AddButton_Tapped"></Button>
+            <Button x:Name="xAddButton" Grid.Column="3" FontSize="15" Height="32" Width="32" HorizontalAlignment="Right" VerticalAlignment ="Bottom" IsTapEnabled="True" Tapped="AddButton_Tapped"></Button>
         </Grid>
     </Grid>
 </UserControl>
