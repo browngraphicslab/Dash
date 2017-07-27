@@ -359,7 +359,9 @@
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OverlayMenu.xaml.cs" />
+    <Compile Include="Views\OverlayMenu.xaml.cs">
+      <DependentUpon>OverlayMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RadialMenuView.xaml.cs">
       <DependentUpon>RadialMenuView.xaml</DependentUpon>
     </Compile>

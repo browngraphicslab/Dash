@@ -63,7 +63,8 @@ namespace Dash
 
         private void SetUpDocumentView()
         {
-            _editingDocView = xDocumentPane.GetDocumentView(_editingDocument.GetId());
+            var editingDocumentId = _editingDocument.GetId();
+            _editingDocView = xDocumentPane.GetDocumentView(editingDocumentId);
 
             if (_editingDocView != null)
             {
@@ -71,6 +72,7 @@ namespace Dash
                 _editingDocView.DragOver += DocumentViewOnDragOver;
                 _editingDocView.AllowDrop = true;
                 _editingDocView.Drop += DocumentViewOnDrop;
+                xDocumentPane.RecenterViewOnDocument(editingDocumentId);
             }
         }
 

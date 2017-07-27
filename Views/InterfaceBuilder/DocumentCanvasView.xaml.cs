@@ -9,6 +9,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -38,12 +39,22 @@ namespace Dash
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
+        private const double _recenterMargin = 50;
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
 
         public DocumentCanvasView()
         {
             this.InitializeComponent();
             DataContextChanged += DocumentCanvasView_DataContextChanged;
+
+            var recenterButton =
+                new MenuButton(Symbol.MapPin, "Recenter", Colors.SteelBlue, OnRecenterTapped)
+                {
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    Margin = new Thickness(10, 0, 0, 10)
+                };
+            xOuterGrid.Children.Add(recenterButton);
         }
 
         private void DocumentCanvasView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -224,36 +235,6 @@ namespace Dash
             SetTransformOnBackground(composite);
         }
 
-        private void SetTransformOnBackground(TransformGroup composite)
-        {
-            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
-            //var aliasSafeScale = composite.Value.M11;
-
-
-            _bgBrush.Transform = new Matrix3x2((float) aliasSafeScale,
-                (float) composite.Value.M12,
-                (float) composite.Value.M21,
-                (float) aliasSafeScale,
-                (float) composite.Value.OffsetX,
-                (float) composite.Value.OffsetY);
-            xBackgroundCanvas.Invalidate();
-        }
-
-        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
-        {
-            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
-            {
-                currentScale /= numberOfBackgroundRows;
-            }
-
-            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
-            {
-                currentScale *= numberOfBackgroundRows;
-            }
-
-            return currentScale;
-        }
-
         /// <summary>
         /// Make translation inertia slow down faster
         /// </summary>
@@ -278,14 +259,104 @@ namespace Dash
             }
         }
 
-        public DocumentView GetDocumentView(string documentId)
+
+        #region Recentering
+
+        private void OnRecenterTapped()
         {
-            return xItemsControl.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DocumentController.GetId() == documentId); 
+            RecenterViewOnDocument();
+        }
+
+        public void RecenterViewOnDocument(string documentId = null)
+        {
+            var documentView = GetDocumentView(documentId);
+
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+
+            // get document coordinates in canvas space
+            var docTransform = documentView.TransformToVisual(canvas);
+            var docUpperLeft = docTransform.TransformPoint(new Point());
+            var docLowerRight = docTransform.TransformPoint(new Point(documentView.ActualWidth, documentView.ActualHeight));
+            var docRect = new Rect(docUpperLeft, docLowerRight);
+            var docCenter = new Point((docRect.Left + docRect.Right) / 2, (docRect.Top + docRect.Bottom) / 2);
+
+            // translate document so it's center is in the upper left corner
+            var translate = new TranslateTransform
+            {
+                X = -docCenter.X,
+                Y = -docCenter.Y
+            };
+
+            // translate canvas so that the upper left corner is in the center
+            var canvasCenter = new Point(xOuterGrid.ActualWidth / 2, xOuterGrid.ActualHeight / 2);
+            var canvasTranslate = new TranslateTransform
+            {
+                X = canvasCenter.X,
+                Y = canvasCenter.Y
+            };
+
+            // find the canvas scale needed so that the doc fits the canvas width or height
+            var docScaleX = xOuterGrid.ActualWidth / (docRect.Width + _recenterMargin);
+            var docScaleY = xOuterGrid.ActualHeight / (docRect.Height + _recenterMargin);
+
+            // we scale by the minimum so that the larger side of the document fills the canvas
+            var docScale = Math.Min(docScaleX, docScaleY);
+
+            var scale = new ScaleTransform
+            {
+                CenterX = 0,
+                CenterY = 0,
+                ScaleX = docScale,
+                ScaleY = docScale
+            };
+
+
+            //Create initial composite transform
+            var composite = new TransformGroup();
+            composite.Children.Add(translate); // doc center in upper left
+            composite.Children.Add(scale); // scale canvas so doc fills it
+            composite.Children.Add(canvasTranslate); // move canvas upper left to center
+
+
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            SetTransformOnBackground(composite);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// if documentId gets the first document it finds on the document canvas, otherwise returns the document associated with the passed in id
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <returns></returns>
+        public DocumentView GetDocumentView(string documentId = null)
+        {
+            return xItemsControl.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => documentId == null || dv.ViewModel.DocumentController.GetId() == documentId); 
         }
 
         private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
         {
             xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+        }
+
+        #region BackgroundTiling
+
+
+        private void SetTransformOnBackground(TransformGroup composite)
+        {
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)composite.Value.M12,
+                    (float)composite.Value.M21,
+                    (float)aliasSafeScale,
+                    (float)composite.Value.OffsetX,
+                    (float)composite.Value.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
@@ -311,5 +382,22 @@ namespace Dash
             var session = args.DrawingSession;
             session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
         }
+
+        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+        {
+            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+            {
+                currentScale /= numberOfBackgroundRows;
+            }
+
+            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            {
+                currentScale *= numberOfBackgroundRows;
+            }
+
+            return currentScale;
+        }
+
+        #endregion
     }
 }
