@@ -63,8 +63,11 @@ namespace Dash
 
             SetupBindings(image, docController, context);
 
+
             // set up interactions with operations
-            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context));
+            var imageFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as ImageFieldModelController;
+            var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), reference.FieldKey, imageFMController);
 
             if (isInterfaceBuilderLayout)
             {

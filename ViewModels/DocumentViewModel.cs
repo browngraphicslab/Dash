@@ -214,7 +214,7 @@ namespace Dash
             if (IsInInterfaceBuilder = isInInterfaceBuilder)
                 ManipulationMode = ManipulationModes.None;
             DocumentController = documentController;
-            if(documentController.DocumentType==OperatorBox.DocumentType) BackgroundBrush = new SolidColorBrush(Colors.White);
+            BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
 

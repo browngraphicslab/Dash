@@ -121,7 +121,7 @@ namespace Dash
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             children?.AddDocument(docModel);
         }
-
+        
         #region MOVED TO ACTIONS.CS
 
         //public void AddCollection(object sender, DragEventArgs e)

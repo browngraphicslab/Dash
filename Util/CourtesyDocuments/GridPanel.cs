@@ -40,7 +40,7 @@ namespace Dash
 
         public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilder)
         {
-            return MakeView(docController, context, isInterfaceBuilder);
+            return MakeView(docController, context, null, isInterfaceBuilder);
         }
 
         protected static void BindRowDefinitions(Grid element, DocumentController docController,
@@ -95,7 +95,7 @@ namespace Dash
             AddBinding(grid, docController, GridColumnsTypeKey, context, BindColumnDefinitions);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilder)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilder)
         {
             context = context ?? new Context();
             context.AddDocumentContext(docController);
@@ -110,6 +110,12 @@ namespace Dash
             {
                 var element = documentController.MakeViewUI(context, isInterfaceBuilder);
                 grid.Children.Add(element);
+            }
+            if (isInterfaceBuilder)
+            {
+                var container = new SelectableContainer(grid, docController, dataDocument);
+                SetupBindings(container, docController, context);
+                return container;
             }
             return grid;
         }

@@ -237,6 +237,19 @@ namespace Dash
                 _lineDict.Add(ioReference.FieldReference, _connectionLine);
                 _connectionLine = null;
             }
+            CancelDrag(ioReference.PointerArgs.Pointer);
+        }
+
+        /// <summary>
+        /// Method to add the dropped field to the documentview 
+        /// </summary>
+        public void EndDragOnDocumentView(ref DocumentController cont, OperatorView.IOReference ioReference)
+        {
+            if (_currReference != null)
+            {
+                cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
+                EndDrag(ioReference); 
+            }
         }
 
         /// <summary>

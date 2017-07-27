@@ -310,7 +310,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
@@ -320,7 +320,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
@@ -575,19 +575,20 @@ namespace Dash
 
         #endregion
 
-        public void GetJson()
+        private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
             //Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
         }
-        public void ScreenCap()
+
+        private void ScreenCap()
         {
             Util.ExportAsImage(xOuterGrid);
         }
 
         #region Collection Activation
 
-        public void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
+        private void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
         {
             if (ParentDocument != null && ParentDocument.ViewModel.IsInInterfaceBuilder) return;
             if (ParentDocument != null && ParentDocument.ViewModel.DocumentController.DocumentType == MainPage.MainDocumentType)
@@ -623,7 +624,7 @@ namespace Dash
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .67;
+                    image.Opacity = .3;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);
