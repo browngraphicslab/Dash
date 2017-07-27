@@ -121,9 +121,13 @@ namespace Dash
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                var textFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as TextFieldModelController;
+                var fmController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+                if (fmController is TextFieldModelController)
+                    fmController = fmController as TextFieldModelController;
+                else if (fmController is NumberFieldModelController)
+                    fmController = fmController as NumberFieldModelController; 
                 var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, textFMController);
+                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
             if (isInterfaceBuilderLayout)

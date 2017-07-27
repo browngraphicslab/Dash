@@ -213,8 +213,8 @@ namespace Dash
             //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
 
             var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            //foreach (var d in new DBTest().Documents)
-            //    DisplayDocument(d, where);
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(d, where);
 
 
 
@@ -233,8 +233,8 @@ namespace Dash
             //unionView.DataContext = unionOpvm;
             //DisplayDocument(opModel, where);
 
-            DisplayDocument(new TwoImages(false).Document, where);
-            DisplayDocument(new TwoImages(false).Document, where); 
+            //DisplayDocument(new TwoImages(false).Document, where);
+            //DisplayDocument(new TwoImages(false).Document, where); 
 
         }
 
