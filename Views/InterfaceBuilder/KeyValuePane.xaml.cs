@@ -60,6 +60,41 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// A container which represents a single row in the list created by the <see cref="KeyValuePane"/>
+        /// </summary>
+        public class KeyFieldContainer
+        {
+            public Key Key { get; }
+            public FieldModelController Controller { get; }
+
+            public string Type { get; }
+
+            public KeyFieldContainer(Key key, FieldModelController controller)
+            {
+                Key = key;
+                Controller = controller;
+                Type = (controller.TypeInfo).ToString();
+            }
+        }
+        
+        private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            
+            //var kv = e.ClickedItem as KeyFieldContainer;
+            //if (kv == _selectedKV)
+            //{
+            //    ResetKeyValueModifier();
+            //    return;
+            //}
+            //_selectedKV = kv;
+
+            //xNewValueField.Text = "< Enter new key";
+            //xNewKeyField.Text = _selectedKV.Key.Name;
+            //xNewValueField.IsEnabled = false;
+        }
+
+        /* 
         private void ValueField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
@@ -121,20 +156,7 @@ namespace Dash
 
         private KeyFieldContainer _selectedKV;
 
-        private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
-        {
-            var kv = e.ClickedItem as KeyFieldContainer; 
-            if (kv == _selectedKV)
-            {
-                ResetKeyValueModifier();
-                return;    
-            }
-            _selectedKV = kv; 
-
-            xNewValueField.Text = "< Enter new key";
-            xNewKeyField.Text = _selectedKV.Key.Name;
-            xNewValueField.IsEnabled = false;
-        }
+        
 
         private void ResetKeyValueModifier()
         {
@@ -145,19 +167,6 @@ namespace Dash
             _selectedKV = null;
         }
     }
-
-    /// <summary>
-    /// A container which represents a single row in the list created by the <see cref="KeyValuePane"/>
-    /// </summary>
-    public class KeyFieldContainer
-    {
-        public Key Key { get; }
-        public FieldModelController Controller { get; }
-
-        public KeyFieldContainer(Key key, FieldModelController controller)
-        {
-            Key = key;
-            Controller = controller;
-        }
+    */ // the old editable keyvalue insert thingy 
     }
 }

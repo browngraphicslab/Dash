@@ -9,7 +9,7 @@
     xmlns:collections="using:System.Collections.Generic"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="450">
 
     <Grid Background="White">
         <Grid.RowDefinitions>
@@ -21,10 +21,12 @@
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock TextAlignment="Center">Keys</TextBlock>
-            <TextBlock Grid.Column="1" TextAlignment="Center">Values</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center">Type</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center">Values</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
@@ -41,28 +43,32 @@
             </ListView.ItemContainerStyle>
 
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:KeyFieldContainer">
+                <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
                         </ScrollViewer>
-                        <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                            <TextBlock Text="{x:Bind Path=Type}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
+                        </ScrollViewer>
+                        <Border Grid.Column="2" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Grid Grid.Row="3">
+        <!--<Grid Grid.Row="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="xNewKeyField" TextAlignment="Left" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown"  BorderBrush="LightBlue" ></TextBox>
             <TextBox x:Name="xNewValueField" TextAlignment="Left" PlaceholderText="Value to add" KeyDown="ValueField_KeyDown" BorderBrush="LightBlue" Grid.Column="1"></TextBox>
-            <!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>-->
-        </Grid>
+            --><!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>--><!--
+        </Grid>-->
     </Grid>
 </UserControl>
