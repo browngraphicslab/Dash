@@ -190,6 +190,16 @@ namespace Dash
             } else if (type == "Filter")
             {
                 opModel = OperatorDocumentModel.CreateFilterDocumentController();
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                view.DataContext = opvm;
             }
             else if (type == "ImageToUri")
             {
