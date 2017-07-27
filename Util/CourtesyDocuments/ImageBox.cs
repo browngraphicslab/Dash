@@ -25,11 +25,8 @@ namespace Dash
         public static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         private static string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
 
-        private static ReferenceFieldModelController _referenceFMController; 
-
         public ImageBox(FieldModelController refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
         {
-            _referenceFMController = refToImage as ReferenceFieldModelController; 
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
@@ -66,15 +63,11 @@ namespace Dash
 
             SetupBindings(image, docController, context);
 
-            var data = docController.GetField(DashConstants.KeyStore.DataKey);
-            ImageFieldModelController imageFMController = null; 
-            //if (data is ReferenceFieldModelController)  
-            //    imageFMController = docController.GetDereferencedField((data as ReferenceFieldModelController).FieldKey, context) as ImageFieldModelController;
-            //else 
-                imageFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as ImageFieldModelController;
+
             // set up interactions with operations
-            //BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), _referenceFMController.FieldKey, _referenceFMController);
-            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), new Key("??", "pleaseshowup"), imageFMController);
+            var imageFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as ImageFieldModelController;
+            var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), reference.FieldKey, imageFMController);
 
             if (isInterfaceBuilderLayout)
             {

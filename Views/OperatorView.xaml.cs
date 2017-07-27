@@ -48,7 +48,7 @@ namespace Dash
             public FieldModelController FMController { get;  set;}
 
             public Key FieldKey { get; set; }
-            public IOReference(Key fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container/*, bool isReference = false*/)
+            public IOReference(Key fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
             {
                 FieldKey = fieldKey; 
                 FMController = controller; 
@@ -57,7 +57,6 @@ namespace Dash
                 PointerArgs = args;
                 FrameworkElement = e;
                 ContainerView = container;
-                //IsReference = isReference;
             }
         }
 

@@ -33,11 +33,8 @@ namespace Dash
         public static double DefaultFontSize = 15;
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        private static ReferenceFieldModelController _referenceFMController; 
-
         public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20)
         {
-            _referenceFMController = refToText as ReferenceFieldModelController; 
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
@@ -119,12 +116,14 @@ namespace Dash
             //    textBox.AcceptsReturn = true;
             //}
 
+
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), _referenceFMController.FieldKey, _referenceFMController.Dereference(context));
-                //BindOperationInteractions(tb.Box, referenceToText.FieldReference.Resolve(context));
+                var textFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as TextFieldModelController;
+                var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, textFMController);
             }
 
             if (isInterfaceBuilderLayout)

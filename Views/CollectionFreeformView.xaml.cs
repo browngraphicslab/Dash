@@ -237,6 +237,7 @@ namespace Dash
                 _lineDict.Add(ioReference.FieldReference, _connectionLine);
                 _connectionLine = null;
             }
+            CancelDrag(ioReference.PointerArgs.Pointer);
         }
 
         /// <summary>
@@ -246,11 +247,9 @@ namespace Dash
         {
             if (_currReference != null)
             {
-                cont.SetField(new Key("?", "keyname"), new TextFieldModelController("hi"), true); 
-                //cont.SetField(ioReference.FieldReference.FieldKey, ioReference.FieldReference.Dereference(null), true);
-                cont.SetField(_currReference.FieldKey, _currReference.FMController, true); 
+                cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
+                EndDrag(ioReference); 
             }
-            EndDrag(ioReference); 
         }
 
         /// <summary>
