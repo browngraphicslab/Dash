@@ -7,70 +7,50 @@
     mc:Ignorable="d"
     d:DesignHeight="160"
     d:DesignWidth="270">
-
-    <Grid x:Name="FilterGrid" Visibility="{Binding FilterViewVisibility}">
-        <Grid x:Name="xMainGrid" VerticalAlignment="Center">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="35" />
-                <ColumnDefinition Width="200" />
-                <ColumnDefinition Width="35" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="30"></RowDefinition>
-                <RowDefinition Height="35" />
-                <RowDefinition Height="10" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="10" />
-                <RowDefinition Height="35" />
-            </Grid.RowDefinitions>
-            <TextBlock Grid.Column="1" HorizontalAlignment="Center" Foreground="White" FontWeight="Bold">FILTER COLLECTION</TextBlock>
-            <Grid Grid.Row="1" Grid.Column="1" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
-                <Grid.Resources>
-                    <Storyboard x:Name="xHideFieldBox">
-                        <FadeOutThemeAnimation TargetName="xFieldBox" />
-                    </Storyboard>
-                    <Storyboard x:Name="xShowFieldBox" Duration="0:0:1">
-                        <FadeInThemeAnimation TargetName="xFieldBox" />
-                    </Storyboard>
-                </Grid.Resources>
+    <StackPanel x:Name="xStackPanel" Grid.Column="1" Height="140">
+        <TextBlock HorizontalAlignment="Center" Foreground="White" VerticalAlignment="Center" FontWeight="Light" Margin="36,0,36,0">FILTER COLLECTION</TextBlock>
+        <Grid x:Name="xMainGrid" Height="120">
+            <Grid.Resources>
+                <Storyboard x:Name="xHideFieldBox">
+                    <FadeOutThemeAnimation TargetName="xFieldBox" />
+                </Storyboard>
+                <Storyboard x:Name="xShowFieldBox" Duration="0:0:1">
+                    <FadeInThemeAnimation TargetName="xFieldBox" />
+                </Storyboard>
+                <Storyboard x:Name="xCollapseMainGrid" Storyboard.TargetName="xMainGrid"
+                                Completed="xCollapseMainGrid_Completed">
+                    <DoubleAnimation Storyboard.TargetProperty="Height" From="120" To="85"
+                                         Duration="0:0:0.3" EnableDependentAnimation="True" />
+                </Storyboard>
+                <Storyboard x:Name="xExpandMainGrid" Storyboard.TargetName="xMainGrid"
+                                Completed="xExpandMainGrid_Completed">
+                    <DoubleAnimation Storyboard.TargetProperty="Height" From="85" To="120"
+                                         Duration="0:0:0.3" EnableDependentAnimation="True" />
+                </Storyboard>
+            </Grid.Resources>
+            <Grid Height="35" VerticalAlignment="Top">
                 <ComboBox x:Name="xComboBox" Width="200" Height="30" HorizontalAlignment="Center"
-                          VerticalAlignment="Center" d:LayoutOverrides="Height" BorderBrush="LightSlateGray"
-                          SelectionChanged="XComboBox_OnSelectionChanged">
+                              VerticalAlignment="Center" d:LayoutOverrides="Height" BorderBrush="LightSlateGray"
+                              SelectionChanged="XComboBox_OnSelectionChanged">
                     <ComboBoxItem x:Name="xHasField" Tapped="hasField_Tapped" Content="Has field" />
                     <ComboBoxItem x:Name="xFieldContains" Tapped="fieldContainsOrEquals_Tapped"
-                                  Content="Field contains" />
+                                      Content="Field contains" />
                     <ComboBoxItem x:Name="xFieldEquals" Tapped="fieldContainsOrEquals_Tapped" Content="Field equals" />
                 </ComboBox>
             </Grid>
-            <Grid Grid.Row="3" Grid.Column="1" x:Name="xFieldBoxColumn" Width="200"
-                  d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
-                <Grid.Resources>
-                    <Storyboard x:Name="xCollapseMainGrid" Storyboard.TargetName="xMainGrid"
-                                Completed="xCollapseMainGrid_Completed">
-                        <DoubleAnimation Storyboard.TargetProperty="Height" From="160" To="125"
-                                         Duration="0:0:0.3" EnableDependentAnimation="True" />
-                    </Storyboard>
-                    <Storyboard x:Name="xExpandMainGrid" Storyboard.TargetName="xMainGrid"
-                                Completed="xExpandMainGrid_Completed">
-                        <DoubleAnimation Storyboard.TargetProperty="Height" From="125" To="160"
-                                         Duration="0:0:0.3" EnableDependentAnimation="True" />
-                    </Storyboard>
-                </Grid.Resources>
+            <Grid  x:Name="xFieldBoxGrid" Width="200" Height="32" VerticalAlignment="Center" Background="White">
                 <AutoSuggestBox x:Name="xFieldBox" PlaceholderText="Enter field here"
-                                Height="32" Width="200" BorderBrush="LightSlateGray" AutoMaximizeSuggestionArea="False"
-                                TextChanged="XFieldBox_OnTextChanged" />
+                                    Height="32" Width="200" BorderBrush="LightSlateGray" AutoMaximizeSuggestionArea="False"
+                                    TextChanged="XFieldBox_OnTextChanged" Background="White" />
             </Grid>
-            <Grid Grid.Row="6" Grid.Column="1" d:LayoutOverrides="LeftMargin, RightMargin, TopMargin, BottomMargin">
+            <Grid x:Name="xSearchGrid" Height="32" VerticalAlignment="Bottom" HorizontalAlignment="Center" Background="White" Width="200">
                 <TextBox x:Name="xSearchBox" PlaceholderText="Search" VerticalAlignment="Stretch" Height="30"
-                         BorderBrush="LightSlateGray" TextChanged="xSearchBox_TextChanged" />
+                             BorderBrush="LightSlateGray" TextChanged="xSearchBox_TextChanged" Width="200"/>
                 <AutoSuggestBox x:Name="xSearchFieldBox" PlaceholderText="Enter field here"
-                                Height="30" BorderBrush="LightSlateGray" TextChanged="XFieldBox_OnTextChanged"
-                                AutoMaximizeSuggestionArea="False" Margin="0,30,0,0" Visibility="Collapsed"
-                                UpdateTextOnSelect="True" />
+                                    Height="30" BorderBrush="LightSlateGray" TextChanged="XFieldBox_OnTextChanged"
+                                    AutoMaximizeSuggestionArea="False" Visibility="Collapsed"
+                                    UpdateTextOnSelect="True" Width="200" Background="White"/>
             </Grid>
         </Grid>
-        <Button x:Name="xFilterButton" Visibility="Collapsed" Content="Filter" Width="75" VerticalAlignment="Center"
-                HorizontalAlignment="Center" Style="{StaticResource xBlueTextButtonStyle}" FontSize="20" Height="30"
-                Margin="30" />
-    </Grid>
+    </StackPanel>
 </UserControl>
