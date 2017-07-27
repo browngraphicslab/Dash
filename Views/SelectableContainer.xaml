@@ -12,8 +12,7 @@
         </Grid>
         
         <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged">
-            <Button x:Name="xKeyDisplayField" VerticalAlignment="Top" HorizontalAlignment="Left" Height="15" Width="50" IsHitTestVisible="False" VerticalContentAlignment="Top"
-                Content="????" FontSize="10" ></Button>
+            <Button x:Name="xKeyDisplayField" Height="Auto" Width="Auto" IsHitTestVisible="False" FontSize="10" ></Button>
             <Ellipse x:Name="xBottomLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
             <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
             <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
