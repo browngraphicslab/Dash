@@ -31,9 +31,9 @@ namespace Dash
     {
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
-        public double CanvasScale { get; set; } = 1;
+        private double _canvasScale { get; set; } = 1;
         public const float MaxScale = 10;
-        public const float MinScale = 0.001f;
+        public const float MinScale = 0.1f;
         private DocumentCanvasViewModel _vm;
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
@@ -102,7 +102,7 @@ namespace Dash
             };
 
             //Clamp the zoom
-            CanvasScale *= delta.Scale;
+            _canvasScale *= delta.Scale;
             ClampScale(scale);
 
 
@@ -204,7 +204,7 @@ namespace Dash
             var scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
                 Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
             scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
-            CanvasScale *= (float)scaleAmount;
+            _canvasScale *= (float)scaleAmount;
             Debug.Assert(canvas.RenderTransform != null);
             var p = point.Position;
             //Create initial ScaleTransform 
@@ -245,15 +245,15 @@ namespace Dash
 
         private void ClampScale(ScaleTransform scale)
         {
-            if (CanvasScale > MaxScale)
+            if (_canvasScale > MaxScale)
             {
-                CanvasScale = MaxScale;
+                _canvasScale = MaxScale;
                 scale.ScaleX = 1;
                 scale.ScaleY = 1;
             }
-            if (CanvasScale < MinScale)
+            if (_canvasScale < MinScale)
             {
-                CanvasScale = MinScale;
+                _canvasScale = MinScale;
                 scale.ScaleX = 1;
                 scale.ScaleY = 1;
             }
@@ -311,6 +311,8 @@ namespace Dash
                 ScaleY = docScale
             };
 
+            // update the canvas scale for clamping
+            _canvasScale = docScale;
 
             //Create initial composite transform
             var composite = new TransformGroup();

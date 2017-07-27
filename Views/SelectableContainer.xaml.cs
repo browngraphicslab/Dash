@@ -20,6 +20,8 @@ using Windows.Security.Cryptography.Core;
 using Windows.UI;
 using Windows.UI.Text;
 using Windows.UI.Xaml.Shapes;
+using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
@@ -123,6 +125,10 @@ namespace Dash
             Loaded += SelectableContainer_Loaded;
             Unloaded += SelectableContainer_Unloaded;
             Tapped += CompositeLayoutContainer_Tapped;
+
+            var refToField = (layoutDocument.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController);
+            var keyName = refToField?.FieldKey.Name ?? "NO KEY NAME";
+            xKeyNameTextBox.Text = keyName;
         }
 
         private void SelectableContainer_Unloaded(object sender, RoutedEventArgs e)
