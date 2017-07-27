@@ -21,16 +21,16 @@ namespace Dash
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class ListViewSettings : UserControl
+    public sealed partial class GridViewSettings : UserControl
     {
-        public ListViewSettings()
+        public GridViewSettings()
         {
             this.InitializeComponent();
         }
 
-        public ListViewSettings(DocumentController docController, Context context) : this()
+        public GridViewSettings(DocumentController docController, Context context) : this()
         {
-            Debug.Assert(docController.DocumentType == ListViewLayout.DocumentType);
+            Debug.Assert(docController.DocumentType == GridViewLayout.DocumentType);
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
@@ -41,7 +41,7 @@ namespace Dash
         private void BindSpacing(DocumentController docController, Context context)
         {
             var spacingController =
-                    docController.GetDereferencedField(ListViewLayout.SpacingKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(GridViewLayout.SpacingKey, context) as NumberFieldModelController;
             Debug.Assert(spacingController != null);
 
             var spacingBinding = new Binding()

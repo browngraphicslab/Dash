@@ -19,6 +19,8 @@ namespace Dash
         public static Key CollectionKey = new Key("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
 
 
+        public List<DocumentController> Data { get { return _documents; } }
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client

@@ -118,7 +118,7 @@ namespace Dash.Controllers.Operators
                 if (pattern.Count == 1)
                 {
                     documents.Add(dmc);
-                    textStr += "Document(" + new DocumentControllerToStringConverter(dmc).ConvertDataToXaml(dmc) + ")";
+                    textStr += "Document(" + new DocumentControllerToStringConverter().ConvertDataToXaml(dmc) + ")";
                     break;
                 }
                 else if (pfield.Value is DocumentFieldModelController)
