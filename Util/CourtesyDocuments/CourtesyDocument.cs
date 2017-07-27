@@ -294,7 +294,6 @@ namespace Dash
                 if (view.CurrentView is CollectionFreeformView)
                     (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
-
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
             {

@@ -103,14 +103,6 @@ namespace Dash
             
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            //ParentDocument.HasCollection = true;
-            ////Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            //ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
-            //ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
-            //                                    ParentDocument.xBorder.Margin.Top + 5,
-            //                                    ParentDocument.xBorder.Margin.Right,
-            //                                    ParentDocument.xBorder.Margin.Bottom);
-
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 ParentDocument.HasCollection = true;
@@ -376,8 +368,17 @@ namespace Dash
 
         private async void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
+            
             if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
             {
+                var action =
+                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<CollectionView, DragEventArgs>;
+                if (action != null)
+                {
+                    action.Invoke(this, e);
+                    e.Handled = true;
+                }
+                    
                 return;
             }
             e.Handled = true;
@@ -589,11 +590,18 @@ namespace Dash
 
         private void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            
-            if (ParentSelectionElement?.IsSelected == null || !ParentSelectionElement.IsSelected) return;
-            e.Handled = true;
-            OnSelected();
-
+            if (ParentDocument != null && ParentDocument.ViewModel.IsInInterfaceBuilder) return;
+            if (ParentDocument != null && ParentDocument.ViewModel.DocumentController.DocumentType == MainPage.MainDocumentType)
+            {
+                SetSelectedElement(null);
+                e.Handled = true;
+                return;
+            }
+            if (ParentSelectionElement?.IsSelected != null && ParentSelectionElement.IsSelected)
+            {
+                OnSelected();
+                e.Handled = true;
+            }
         }
 
         #endregion
