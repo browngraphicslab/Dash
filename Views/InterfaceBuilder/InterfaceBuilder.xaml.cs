@@ -48,7 +48,6 @@ namespace Dash
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
             _editingDocument = docController;
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
             var documentCanvasViewModel = new DocumentCanvasViewModel(true);
             xDocumentPane.DataContext = documentCanvasViewModel;
             documentCanvasViewModel.AddDocument(docController, true);
@@ -72,6 +71,8 @@ namespace Dash
                 _editingDocView.DragOver += DocumentViewOnDragOver;
                 _editingDocView.AllowDrop = true;
                 _editingDocView.Drop += DocumentViewOnDrop;
+                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
                 xDocumentPane.RecenterViewOnDocument(editingDocumentId);
             }
         }
@@ -100,7 +101,7 @@ namespace Dash
             GridButton.Content = new Border { Child = gridSymbol };
         }
 
-        private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
         {
             UpdateRootLayout();
         }

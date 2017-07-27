@@ -60,6 +60,7 @@ namespace Dash
         private ManipulationControls _manipulator;
         private bool _isLowestSelected;
         private RootSnapManager _rootSnapManager;
+        private ManipulationControls _centerManipulator;
 
         public FrameworkElement ContentElement
         {
@@ -77,7 +78,7 @@ namespace Dash
             set
             {
                 _isSelected = IsRoot() || value;
-                ContentElement.IsHitTestVisible = value;
+                //ContentElement.IsHitTestVisible = value;
                 if (_isSelected)
                 {
                     //XGrid.BorderThickness = new Thickness(3);
@@ -97,6 +98,19 @@ namespace Dash
             {
                 _isLowestSelected = value;
                 SetEllipseVisibility();
+                SetManipulationTranslationOnCenter();
+            }
+        }
+
+        private void SetManipulationTranslationOnCenter()
+        {
+            if (IsLowestSelected)
+            {
+                _centerManipulator?.AddAllAndHandle();
+            }
+            else
+            {
+                _centerManipulator?.RemoveAllAndDontHandle();
             }
         }
 
@@ -113,7 +127,6 @@ namespace Dash
         public SelectableContainer(FrameworkElement contentElement, DocumentController layoutDocument, DocumentController dataDocument = null)
         {
             InitializeComponent();
-            InitiateManipulators();
             ContentElement = contentElement;
             ContentElement.SizeChanged += ContentElement_SizeChanged;
             LayoutDocument = layoutDocument;
@@ -140,7 +153,8 @@ namespace Dash
         {
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             _parentContainer?.AddChild(this);
-            IsSelected = false;
+            InitiateManipulators();
+            IsSelected = IsRoot();
             SetEllipseVisibility();
             SetContent();
             if (IsRoot())
@@ -155,7 +169,7 @@ namespace Dash
             return _parentContainer == null;
         }
 
-        // TODO THIS WILL CAUSE ERROS WITH CHILD NOT EXISTING
+        // TODO THIS WILL CAUSE ERRORS WITH CHILD NOT EXISTING
         private void OnContentChanged()
         {
             SetContent();
@@ -165,7 +179,7 @@ namespace Dash
         {
             if (XLayoutDisplay == null) return;
             XLayoutDisplay.Content = ContentElement;
-            ContentElement.IsHitTestVisible = IsSelected;
+            //ContentElement.IsHitTestVisible = IsSelected;
         }
 
         #region Selection
@@ -225,7 +239,6 @@ namespace Dash
                 xTopLeftDragger,
                 xBottomRightDragger,
                 xTopRightDragger,
-                xCenterDragger
             };
 
             _lineMap = new Dictionary<Ellipse, LinesAndTextBlocks>
@@ -247,8 +260,11 @@ namespace Dash
             }
 
             // manipulation translated
-            var centerManipulator = new ManipulationControls(xCenterDragger);
-            centerManipulator.OnManipulatorTranslated += CenterManipulatorOnOnManipulatorTranslated;
+            if (!IsRoot())
+            {
+                _centerManipulator = new ManipulationControls(XGrid);
+                _centerManipulator.OnManipulatorTranslated += CenterManipulatorOnOnManipulatorTranslated;
+            }
             var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
             bottomLeftManipulator.OnManipulatorTranslated += BottomLeftManipulator_OnManipulatorTranslated;
             var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
@@ -263,6 +279,9 @@ namespace Dash
             {
                 ellipse.ManipulationStarted += Manipulator_OnManipulationStarted;
             }
+
+            XGrid.ManipulationCompleted += Manipulator_OnManipulationCompleted;
+            XGrid.ManipulationStarted += Manipulator_OnManipulationStarted;
         }
 
         private void Manipulator_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -271,7 +290,7 @@ namespace Dash
 
             SnapBehavior snapBehavior = 0;
             var snapPoint = new Point();
-            if (sender.Equals(xCenterDragger))
+            if (sender.Equals(XGrid))
             {
                 snapBehavior = SnapBehavior.Center;
                 snapPoint.X = ActualWidth / 2;
@@ -302,13 +321,18 @@ namespace Dash
             }
 
             snapManager.SetDraggingContainer(this, snapBehavior, snapPoint);
+
+            e.Handled = true;
         }
+
 
         private void Manipulator_OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
             HideManipulatorMeasurements();
             var snapManager = GetRootSnapManager();
             snapManager.DisposeDraggingContainer(this);
+            e.Handled = true;
+
         }
 
         private Point ChangePosition(double deltaX, double deltaY)
@@ -378,7 +402,7 @@ namespace Dash
         {
             SetPressedEllipse(xTopRightDragger);
             var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
-            var posChange = ChangePosition(0, -sizeChange.Y);
+            ChangePosition(0, -sizeChange.Y);
             var snapManager = GetRootSnapManager();
             snapManager.UpdateDraggingContainer(e.Translate);
         }
@@ -387,7 +411,7 @@ namespace Dash
         {
             SetPressedEllipse(xTopLeftDragger);
             var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
-            var posChange = ChangePosition(-sizeChange.X, -sizeChange.Y);
+            ChangePosition(-sizeChange.X, -sizeChange.Y);
             var snapManager = GetRootSnapManager();
             snapManager.UpdateDraggingContainer(e.Translate);
         }
@@ -395,8 +419,7 @@ namespace Dash
         private void BottomRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
             SetPressedEllipse(xBottomRightDragger);
-            var sizeChange = ChangeSize(e.Translate.X, e.Translate.Y);
-            var posChange = new Point();
+            ChangeSize(e.Translate.X, e.Translate.Y);
             var snapManager = GetRootSnapManager();
             snapManager.UpdateDraggingContainer(e.Translate);
         }
@@ -405,15 +428,14 @@ namespace Dash
         {
             SetPressedEllipse(xBottomLeftDragger);
             var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
-            var posChange = ChangePosition(-sizeChange.X, 0);
+            ChangePosition(-sizeChange.X, 0);
             var snapManager = GetRootSnapManager();
             snapManager.UpdateDraggingContainer(e.Translate);
         }
 
         private void CenterManipulatorOnOnManipulatorTranslated(TransformGroupData e)
         {
-            var posChange = ChangePosition(e.Translate.X, e.Translate.Y);
-            var sizeChange = new Point();
+            ChangePosition(e.Translate.X, e.Translate.Y);
             var snapManager = GetRootSnapManager();
             snapManager.UpdateDraggingContainer(e.Translate);
         }
@@ -455,8 +477,6 @@ namespace Dash
             Canvas.SetTop(xBottomRightDragger, canvasHeight);
             Canvas.SetLeft(xBottomLeftDragger, -manipulatorWidth);
             Canvas.SetTop(xBottomLeftDragger, canvasHeight);
-            Canvas.SetLeft(xCenterDragger, (canvasWidth - manipulatorWidth) / 2);
-            Canvas.SetTop(xCenterDragger, (canvasHeight - manipulatorHeight) / 2);
         }
 
         private void XManipulatorCanvas_OnSizeChanged(object sender, SizeChangedEventArgs e)

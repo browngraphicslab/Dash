@@ -19,6 +19,7 @@ namespace Dash {
         private const float MaxScale = 2.0f;
         private bool _disabled;
         private FrameworkElement _element;
+        private bool _handle;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -41,9 +42,19 @@ namespace Dash {
 
         public void RemoveAllButHandle()
         {
+            RemoveAllSetHandle(true);
+        }
+        public void RemoveAllAndDontHandle()
+        {
+            RemoveAllSetHandle(false);
+        }
+
+        private void RemoveAllSetHandle(bool handle)
+        {
             if (_disabled) return;
             _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
             _element.ManipulationDelta += EmptyManipulationDelta;
+            _handle = handle;
             _disabled = true;
         }
 
@@ -51,7 +62,7 @@ namespace Dash {
 
         private void EmptyManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            e.Handled = true;
+            e.Handled = _handle;
         }
 
         /// <summary>

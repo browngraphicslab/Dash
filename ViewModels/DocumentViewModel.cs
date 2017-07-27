@@ -15,6 +15,10 @@ namespace Dash
 
     public class DocumentViewModel : ViewModelBase
     {
+
+        public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);
+        public event OnContentChangedHandler OnContentChanged;
+
         // == MEMBERS, GETTERS, SETTERS ==
         private ManipulationModes _manipulationMode;
         private double _height;
@@ -234,6 +238,7 @@ namespace Dash
         private void OnActiveLayoutChanged()
         {
             Content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
+            OnContentChanged?.Invoke(this, Content);
 
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
