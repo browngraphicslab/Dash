@@ -325,7 +325,18 @@ namespace Dash.Views
                 button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
                 {
                     e.Data.RequestedOperation = DataPackageOperation.Move;
-                    e.Data.Properties[RadialMenuDropKey] = actionButton.DropAction;
+                    if (actionButton.CollectionDropAction != null)
+                    {
+                        e.Data.Properties[RadialMenuDropKey] = actionButton.CollectionDropAction;
+                    } else if (actionButton.GenericDropAction != null)
+                    {
+                        e.Data.Properties[RadialMenuDropKey] = actionButton.GenericDropAction;
+                    }
+                    else
+                    {
+                        e.Cancel = true;
+                    }
+                    
                 };
             }
             menu.AddButton(button);
@@ -464,23 +475,23 @@ namespace Dash.Views
 
             #endregion
 
-            Action<object, DragEventArgs> addSearch = Actions.AddSearch;
+            Action<CollectionView, DragEventArgs> addSearch = Actions.AddSearch;
             var searchButton = new RadialActionModel("Search", "🔍")
             {
-                DropAction = addSearch
+                CollectionDropAction = addSearch
             };
 
             Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<object, DragEventArgs> addCollection = Actions.AddCollection;
-            Action<object, DragEventArgs> addApiCreator = Actions.AddApiCreator;
-            Action<object, DragEventArgs> addDocuments = Actions.AddDocuments;
-            Action<object, DragEventArgs> addNotes = Actions.AddNotes;
+            Action<CollectionView, DragEventArgs> addCollection = Actions.AddCollection;
+            Action<CollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            Action<CollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
+            Action<CollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
-            var operatorButton = new RadialActionModel("Operator", "↔️") { DropAction = onOperatorAdd };
-            var collectionButton = new RadialActionModel("Collection", "📁") { DropAction = addCollection };
-            var apiButton = new RadialActionModel("Api", "⚙️") { DropAction = addApiCreator };
-            var documentButton = new RadialActionModel("Document", "🖺") { DropAction = addDocuments };
-            var notesButton = new RadialActionModel("Notes", "🗋") { DropAction = addNotes }; 
+            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd };
+            var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
+            var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
+            var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments };
+            var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
             //📄
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {

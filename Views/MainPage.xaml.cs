@@ -122,110 +122,106 @@ namespace Dash
             children?.AddDocument(docModel);
         }
 
-        public void AddCollection(object sender, DragEventArgs e)
-        {
-            var twoImages = new TwoImages(false).Document;
-            var twoImages2 = new TwoImages(false).Document;
-            var numbers = new Numbers().Document;
+        #region MOVED TO ACTIONS.CS
 
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                {
-                    DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(new[] {numbers})
-                }
-            };
+        //public void AddCollection(object sender, DragEventArgs e)
+        //{
+        //    var twoImages = new TwoImages(false).Document;
+        //    var twoImages2 = new TwoImages(false).Document;
+        //    var numbers = new Numbers().Document;
 
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
+        //    var fields = new Dictionary<Key, FieldModelController>
+        //    {
+        //        {
+        //            DocumentCollectionFieldModelController.CollectionKey,
+        //            new DocumentCollectionFieldModelController(new[] {numbers})
+        //        }
+        //    };
 
-            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            DisplayDocument(col, where);
+        //    var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+        //    var layoutDoc =
+        //        new CollectionBox(new ReferenceFieldModelController(col.GetId(),
+        //            DocumentCollectionFieldModelController.CollectionKey)).Document;
+        //    var layoutController = new DocumentFieldModelController(layoutDoc);
+        //    col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+        //    col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
 
-            AddAnotherLol(where);
-        }
+        //    var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+        //    DisplayDocument(col, where);
 
-        public void AddApiCreator(object o, DragEventArgs e)
-        {
-            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            var a = new ApiDocumentModel().Document;
-            DisplayDocument(a, where);
-        }
+        //    AddAnotherLol(where);
+        //}
 
-        private void AddAnotherLol(Point where)
-        {
-            var numbers = new Numbers().Document;
-            var twoImages2 = new TwoImages(false).Document;
+        //public void AddApiCreator(object o, DragEventArgs e)
+        //{
+        //    var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+        //    var a = new ApiDocumentModel().Document;
+        //    DisplayDocument(a, where);
+        //}
 
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(new[]
-                    {numbers, twoImages2})
-            };
+        //private void AddAnotherLol(Point where)
+        //{
+        //    var numbers = new Numbers().Document;
+        //    var twoImages2 = new TwoImages(false).Document;
 
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true); 
-            DisplayDocument(col, where);
-        }
+        //    var fields = new Dictionary<Key, FieldModelController>
+        //    {
+        //        [DocumentCollectionFieldModelController.CollectionKey] =
+        //        new DocumentCollectionFieldModelController(new[]
+        //            {numbers, twoImages2})
+        //    };
 
+        //    var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+        //    var layoutDoc =
+        //        new CollectionBox(new ReferenceFieldModelController(col.GetId(),
+        //            DocumentCollectionFieldModelController.CollectionKey)).Document;
+        //    var layoutController = new DocumentFieldModelController(layoutDoc);
+        //    col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+        //    col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true); 
+        //    DisplayDocument(col, where);
+        //}
 
-        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            throw new NotImplementedException();
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
-        }
+        //public void AddDocuments(object sender, DragEventArgs e)
+        //{
+        //    //testing listview 
+        //    //DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
+        //    //DisplayDocument(Document);
 
-        public void AddDocuments(object sender, DragEventArgs e)
-        {
-            //testing listview 
-            //DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
-            //DisplayDocument(Document);
+        //    //DisplayDocument(new PostitNote().Document);
+        //    //DisplayDocument(new TwoImages(false).Document);
+        //    //DocumentController numbersProto = new Numbers().Document;
+        //    //DocumentController del = numbersProto.MakeDelegate();
+        //    //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
+        //    //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+        //    //del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
+        //    //var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
+        //    //var layoutDel = layout.Data.MakeDelegate();
+        //    //layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
+        //    //del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
+        //    //DisplayDocument(numbersProto);
+        //    //DisplayDocument(del);
+        //    //DisplayDocument(new TwoImages(false).Document);
+        //    //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
+        //    //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
 
-            //DisplayDocument(new PostitNote().Document);
-            //DisplayDocument(new TwoImages(false).Document);
-            //DocumentController numbersProto = new Numbers().Document;
-            //DocumentController del = numbersProto.MakeDelegate();
-            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            //del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
-            //var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-            //var layoutDel = layout.Data.MakeDelegate();
-            //layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
-            //del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-            //DisplayDocument(numbersProto);
-            //DisplayDocument(del);
-            //DisplayDocument(new TwoImages(false).Document);
-            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
+        //    var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+        //    foreach (var d in new DBTest().Documents)
+        //        DisplayDocument(d, where);
+        //}
 
-            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(d, where);
-        }
+        //public void AddNotes(object o, DragEventArgs e)
+        //{
+        //    //DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
+        //    //DisplayDocument(rtfNote);
+        //    var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
+        //    DocumentController postitNote = new PostitNote(PostitNote.DocumentType).Document;
+        //    DisplayDocument(postitNote, where);
 
-        public void AddNotes(object o, DragEventArgs e)
-        {
-            //DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
-            //DisplayDocument(rtfNote);
-            var where = Util.GetCollectionDropPoint(MainDocView.GetFirstDescendantOfType<CollectionView>(), e.GetPosition(Instance));
-            DocumentController postitNote = new PostitNote(PostitNote.DocumentType).Document;
-            DisplayDocument(postitNote, where);
+        //    //DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
+        //    //DisplayDocument(imageNote);
+        //}
 
-            //DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
-            //DisplayDocument(imageNote);
-        }
+        #endregion
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -316,7 +312,7 @@ namespace Dash
         {
             if (!_radialMenu.IsVisible)
                 _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
-            else _radialMenu.IsVisible = false;
+            //else _radialMenu.IsVisible = false;
             e.Handled = true;
         }
     }

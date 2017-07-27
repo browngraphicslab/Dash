@@ -330,23 +330,6 @@ namespace Dash
             if (ViewModel.IsInInterfaceBuilder)
                 return;
 
-            TransformGroup tg = new TransformGroup();
-            tg.Children.Add(OuterGrid.RenderTransform); 
-
-
-            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
-            {
-                ViewModel.OpenMenu();
-                tg.Children.Add(new TranslateTransform { X = -55, Y = 0 }); 
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
-            }
-            else
-            {
-                ViewModel.CloseMenu();
-                tg.Children.Add(new TranslateTransform { X = 55, Y = 0 });
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
-            }
-
             OnSelected();
 
             e.Handled = true;
@@ -488,11 +471,23 @@ namespace Dash
 
         public override void OnLowestActivated(bool isLowestSelected)
         {
-            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
-                ViewModel?.OpenMenu();
-            else
-                ViewModel?.CloseMenu();
+            if (ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType)
+            {
+                TransformGroup tg = new TransformGroup();
+                tg.Children.Add(OuterGrid.RenderTransform);
+                if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+                {
+                    ViewModel?.OpenMenu();
+                    tg.Children.Add(new TranslateTransform {X = -55, Y = 0});
+                    OuterGrid.RenderTransform = new MatrixTransform {Matrix = tg.Value};
+                }
+                else if (_docMenu.Visibility == Visibility.Visible)
+                {
+                    ViewModel?.CloseMenu();
+                    tg.Children.Add(new TranslateTransform {X = 55, Y = 0});
+                    OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
+                }
+            }
         }
-        
     }
 }
