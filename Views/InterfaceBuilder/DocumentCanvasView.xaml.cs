@@ -232,10 +232,14 @@ namespace Dash
             }
         }
 
-
-        private void UIElement_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        public DocumentView GetDocumentView(string documentId)
         {
-            e.Handled = true;
+            return xItemsControl.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => dv.ViewModel.DocumentController.GetId() == documentId); 
+        }
+
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
         }
     }
 }

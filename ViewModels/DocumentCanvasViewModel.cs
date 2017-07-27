@@ -9,6 +9,7 @@ namespace Dash
 {
     public class DocumentCanvasViewModel : ViewModelBase
     {
+        private readonly bool _isInInterfaceBuilder;
         private ObservableCollection<DocumentViewModel> _documentViews;
 
         public ObservableCollection<DocumentViewModel> DocumentViews
@@ -17,15 +18,16 @@ namespace Dash
             set { SetProperty(ref _documentViews, value); }
         }
 
-        public DocumentCanvasViewModel()
+        public DocumentCanvasViewModel(bool isInInterfaceBuilder)
         {
+            _isInInterfaceBuilder = isInInterfaceBuilder;
             DocumentViews = new ObservableCollection<DocumentViewModel>();
         }
 
 
-        public void AddDocument(DocumentController newDocument)
+        public void AddDocument(DocumentController newDocument, bool isInInterfaceBuilder)
         {
-            var docVm = new DocumentViewModel(newDocument);
+            var docVm = new DocumentViewModel(newDocument, isInInterfaceBuilder);
 
             DocumentViews.Add(docVm);
         }
@@ -38,6 +40,5 @@ namespace Dash
                 DocumentViews.Remove(docVmToRemove);
             }
         }
-
     }
 }

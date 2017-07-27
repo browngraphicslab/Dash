@@ -260,10 +260,19 @@ namespace Dash
                 return;
 
             initDocumentOnDataContext();
-
             SetUpMenu();
             ViewModel.CloseMenu();
 
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                SetInterfaceBuilderSpecificSettings();
+            }
+
+        }
+
+        private void SetInterfaceBuilderSpecificSettings()
+        {
+            RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)

@@ -19,7 +19,8 @@ namespace Dash
         private ManipulationModes _manipulationMode;
         private double _height;
         private double _width;
-        private TransformGroupData _trans;
+        private TransformGroupData _normalGroupTransform;
+        private TransformGroupData _interfaceBuilderGroupTransform;
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
@@ -129,10 +130,16 @@ namespace Dash
 
         public TransformGroupData GroupTransform
         {
-            get { return _trans; }
+            get { return IsInInterfaceBuilder ? _interfaceBuilderGroupTransform : _normalGroupTransform; }
             set
             {
-                if (SetProperty(ref _trans, value))
+                if (IsInInterfaceBuilder)
+                {
+                    SetProperty(ref _interfaceBuilderGroupTransform, value);
+                    return;
+                }
+
+                if (SetProperty(ref _normalGroupTransform, value))
                 {
                     // get layout
                     var context = new Context(DocumentController);
@@ -161,12 +168,6 @@ namespace Dash
             }
         }
 
-        public ManipulationModes ManipulationMode
-        {
-            get { return _manipulationMode; }
-            set { SetProperty(ref _manipulationMode, value); }
-        }
-
         public Brush BackgroundBrush
         {
             get { return _backgroundBrush; }
@@ -177,18 +178,6 @@ namespace Dash
         {
             get { return _borderBrush; }
             set { SetProperty(ref _borderBrush, value); }
-        }
-
-        public bool IsDetailedUserInterfaceVisible
-        {
-            get { return _isDetailedUserInterfaceVisible; }
-            set { SetProperty(ref _isDetailedUserInterfaceVisible, value); }
-        }
-
-        public bool IsMoveable
-        {
-            get { return _isMoveable; }
-            set { SetProperty(ref _isMoveable, value); }
         }
 
         public Visibility DocMenuVisibility
@@ -211,14 +200,14 @@ namespace Dash
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
         {
-            if (IsInInterfaceBuilder = isInInterfaceBuilder)
-                ManipulationMode = ManipulationModes.None;
+            IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
 
             SetUpSmallIcon();
+            _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
             OnActiveLayoutChanged();
             WidthBinding = new WidthAndMenuOpenWrapper();
@@ -245,9 +234,14 @@ namespace Dash
         private void OnActiveLayoutChanged()
         {
             Content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
+
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
-            ListenToTransformGroupField(DocumentController);
+
+            if (!IsInInterfaceBuilder)
+            {
+                ListenToTransformGroupField(DocumentController);
+            }
         }
 
         private void ListenToTransformGroupField(DocumentController docController)

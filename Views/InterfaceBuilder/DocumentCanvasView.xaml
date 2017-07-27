@@ -10,9 +10,13 @@
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:DocumentCanvasViewModel}"
     PointerWheelChanged="UserControl_PointerWheelChanged"
     ManipulationMode="All"
-    ManipulationDelta="UserControl_ManipulationDelta">
+    ManipulationDelta="UserControl_ManipulationDelta"
+    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting">
 
-    <Grid x:Name="xOuterGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid x:Name="xOuterGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ManipulationMode="All" Background="LightBlue" SizeChanged="XOuterGrid_OnSizeChanged">
+        <Grid.Clip>
+            <RectangleGeometry x:Name="xClippingRect"/>
+        </Grid.Clip>
         <ItemsControl x:Name="xItemsControl">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -27,11 +31,9 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <local:DocumentView DataContext="{Binding}" ManipulationDelta="UIElement_OnManipulationDelta" ManipulationMode="TranslateX, TranslateY">
-                        <local:DocumentView.RenderTransform>
-                            <MatrixTransform>
-                            </MatrixTransform>
-                        </local:DocumentView.RenderTransform>
+                    <local:DocumentView DataContext="{Binding}"
+                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}">
+                                        
                     </local:DocumentView>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

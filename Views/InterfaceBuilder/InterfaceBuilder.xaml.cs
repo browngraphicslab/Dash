@@ -18,16 +18,13 @@ namespace Dash
 {
     public sealed partial class InterfaceBuilder : WindowTemplate
     {
-
-        /// <summary>
-        /// The document view of the document which is being edited
-        /// </summary>
-        private DocumentView _documentView;
-
         public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
         private SelectableContainer _selectedContainer;
 
-        public enum DisplayTypeEnum { List, Grid, Freeform } 
+        public enum DisplayTypeEnum { List, Grid, Freeform }
+
+        private DocumentController _editingDocument;
+        private DocumentView _editingDocView;
 
 
         public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
@@ -50,22 +47,31 @@ namespace Dash
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            var docViewModel = new DocumentViewModel(docController, true);
-            _documentView = new DocumentView(docViewModel);
-            _documentView.Manipulator.RemoveAllButHandle();
-            _documentView.RemoveScroll();
-            UpdateRootLayout();
+            _editingDocument = docController;
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
-            var documentCanvasViewModel = new DocumentCanvasViewModel();
-            documentCanvasViewModel.AddDocument(docController);
+            var documentCanvasViewModel = new DocumentCanvasViewModel(true);
             xDocumentPane.DataContext = documentCanvasViewModel;
-
-
-            _documentView.DragOver += DocumentViewOnDragOver;
-            _documentView.AllowDrop = true;
-            _documentView.Drop += DocumentViewOnDrop;
-
+            documentCanvasViewModel.AddDocument(docController, true);
+            xDocumentPane.Loaded += xDocumentPaneLoaded;
             xKeyValuePane.SetDataContextToDocumentController(docController);
+        }
+
+        private void xDocumentPaneLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            SetUpDocumentView();
+        }
+
+        private void SetUpDocumentView()
+        {
+            _editingDocView = xDocumentPane.GetDocumentView(_editingDocument.GetId());
+
+            if (_editingDocView != null)
+            {
+                UpdateRootLayout();
+                _editingDocView.DragOver += DocumentViewOnDragOver;
+                _editingDocView.AllowDrop = true;
+                _editingDocView.Drop += DocumentViewOnDrop;
+            }
         }
 
         private void SetUpButtons()
@@ -99,7 +105,7 @@ namespace Dash
 
         private void UpdateRootLayout()
         {
-            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
+            var rootSelectableContainer = _editingDocView?.ViewModel.Content as SelectableContainer;
             Debug.Assert(rootSelectableContainer != null);
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
         }
@@ -203,7 +209,7 @@ namespace Dash
 
         private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
         {
-            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _documentView)
+            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
                 .FirstOrDefault(AssertIsCompositeLayout);
             return elem as SelectableContainer;
         }

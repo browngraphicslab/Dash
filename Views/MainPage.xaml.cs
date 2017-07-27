@@ -51,11 +51,7 @@ namespace Dash
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(MainDocument)
-            {
-                IsDetailedUserInterfaceVisible = false,
-                IsMoveable = false
-            };
+            MainDocView.DataContext = new DocumentViewModel(MainDocument);
 
             // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
