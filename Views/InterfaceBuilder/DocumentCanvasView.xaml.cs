@@ -30,10 +30,10 @@ namespace Dash
     public sealed partial class DocumentCanvasView : UserControl
     {
 
-        public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
+        private Rect _bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         private double _canvasScale { get; set; } = 1;
-        public const float MaxScale = 10;
-        public const float MinScale = 0.1f;
+        private const float MaxScale = 10;
+        private const float MinScale = 0.1f;
         private DocumentCanvasViewModel _vm;
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
@@ -128,50 +128,50 @@ namespace Dash
             var outOfBounds = false;
             //Create a canvas space translation to correct the translation if necessary
             var fixTranslate = new TranslateTransform();
-            if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
+            if (topLeft.X < _bounds.Left && bottomRight.X > _bounds.Right)
             {
                 translate.X = 0;
                 fixTranslate.X = 0;
-                var scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
+                var scaleAmount = (bottomRight.X - topLeft.X) / _bounds.Width;
                 scale.ScaleY = scaleAmount;
                 scale.ScaleX = scaleAmount;
                 outOfBounds = true;
             }
-            else if (topLeft.X < Bounds.Left)
+            else if (topLeft.X < _bounds.Left)
             {
                 translate.X = 0;
                 fixTranslate.X = preTopLeft.X;
-                scale.CenterX = Bounds.Left;
+                scale.CenterX = _bounds.Left;
                 outOfBounds = true;
             }
-            else if (bottomRight.X > Bounds.Right)
+            else if (bottomRight.X > _bounds.Right)
             {
                 translate.X = 0;
-                fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
-                scale.CenterX = Bounds.Right;
+                fixTranslate.X = -(_bounds.Right - preBottomRight.X - 1);
+                scale.CenterX = _bounds.Right;
                 outOfBounds = true;
             }
-            if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
+            if (topLeft.Y < _bounds.Top && bottomRight.Y > _bounds.Bottom)
             {
                 translate.Y = 0;
                 fixTranslate.Y = 0;
-                var scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
+                var scaleAmount = (bottomRight.Y - topLeft.Y) / _bounds.Height;
                 scale.ScaleX = scaleAmount;
                 scale.ScaleY = scaleAmount;
                 outOfBounds = true;
             }
-            else if (topLeft.Y < Bounds.Top)
+            else if (topLeft.Y < _bounds.Top)
             {
                 translate.Y = 0;
                 fixTranslate.Y = preTopLeft.Y;
-                scale.CenterY = Bounds.Top;
+                scale.CenterY = _bounds.Top;
                 outOfBounds = true;
             }
-            else if (bottomRight.Y > Bounds.Bottom)
+            else if (bottomRight.Y > _bounds.Bottom)
             {
                 translate.Y = 0;
-                fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
-                scale.CenterY = Bounds.Bottom;
+                fixTranslate.Y = -(_bounds.Bottom - preBottomRight.Y - 1);
+                scale.CenterY = _bounds.Bottom;
                 outOfBounds = true;
             }
 
@@ -223,12 +223,6 @@ namespace Dash
             var composite = new TransformGroup();
             composite.Children.Add(scale);
             composite.Children.Add(canvas.RenderTransform);
-
-            var inverse = composite.Inverse;
-            Debug.Assert(inverse != null);
-            var renderInverse = canvas.RenderTransform.Inverse;
-            Debug.Assert(inverse != null);
-            Debug.Assert(renderInverse != null);
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
 
