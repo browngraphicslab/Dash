@@ -209,7 +209,20 @@ namespace Dash
                     Source = docData,
                     Path = new PropertyPath(nameof(docData.Data)),
                     Mode = BindingMode.TwoWay,
-                    Converter = new DocumentControllerToStringConverter(context.DocContextList.First()),
+                    Converter = new DocumentControllerToStringConverter(),
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+            }
+            else if (data is DocumentCollectionFieldModelController)
+            {
+
+                var docData = data as DocumentCollectionFieldModelController;
+                sourceBinding = new Binding
+                {
+                    Source = docData,
+                    Path = new PropertyPath(nameof(docData.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new DocumentCollectionToStringConverter(),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
             }
