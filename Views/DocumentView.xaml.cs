@@ -133,12 +133,12 @@ namespace Dash
         /// </summary>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
-        public void Resize(double dx = 0, double dy = 0)
+        public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
             dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
-
+            return new Size(dvm.Width, dvm.Height);
         }
 
         /// <summary>
@@ -167,10 +167,14 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                                new Point(ActualWidth / 2, ActualHeight / 2),
-                                                                ViewModel.GroupTransform.ScaleAmount);
+            var s = Resize(p.X, p.Y);
+            var position = ViewModel.GroupTransform.Translate;
+            var dx = Math.Max(p.X, 0);
+            var dy = Math.Max(p.Y, 0);
+            //p = new Point(dx, dy);
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
+                                                                new Point(s.Width / 2.0f, s.Height / 2.0f),
+                                                                ViewModel.GroupTransform.ScaleAmount); 
             e.Handled = true;
         }
 
