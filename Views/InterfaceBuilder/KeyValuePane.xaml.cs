@@ -197,6 +197,10 @@ namespace Dash
 
         private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
+            if (_tb != null)
+            {
+                MainPage.Instance.xCanvas.Children.Remove(_tb); 
+            }
             FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
 
             var posInKVPane = e.GetPosition(xOuterGrid);
@@ -212,17 +216,17 @@ namespace Dash
             var ttv = containerGrid.TransformToVisual(Window.Current.Content);
             var p = ttv.TransformPoint(posInKVPane);
 
-            TextBox tb = new TextBox(); 
+            _tb = new TextBox(); 
 
             if (tappedSource is TextBlock)
             {
                 TextBlock block = tappedSource as TextBlock;
-                tb.Text = block.Text; 
-                tb.Focus(FocusState.Programmatic); 
-                Canvas.SetLeft(tb, p.X);
-                Canvas.SetTop(tb, p.Y); 
-                MainPage.Instance.xCanvas.Children.Add(tb); // make sure to delete these later! 
-                SetTextBoxEvents(tb); 
+                _tb.Text = block.Text;
+                _tb.Focus(FocusState.Programmatic); 
+                Canvas.SetLeft(_tb, p.X);
+                Canvas.SetTop(_tb, p.Y); 
+                MainPage.Instance.xCanvas.Children.Add(_tb); // make sure to delete these later! 
+                SetTextBoxEvents(_tb); 
             }
             else if (tappedSource is Image)
             {
@@ -273,6 +277,7 @@ namespace Dash
         }
 
         private KeyFieldContainer _selectedKV = null;
+        private TextBox _tb = null; 
         private bool _editKey = false; 
 
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
