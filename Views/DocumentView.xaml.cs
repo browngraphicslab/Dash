@@ -68,13 +68,30 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
+
+            //When a field is dragged onto documentview, adds that field to the document 
+            OuterGrid.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
+            {
+                var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+                if (view == null) return; // we can't always assume we're on a collection		
+
+                view.CanLink = false;
+
+                args.Handled = true;
+                (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
+                    new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            };
         }
-        private void This_Loaded(object sender, RoutedEventArgs e)
+        
+
+    private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
         }
 
-        private void SetUpMenu() {
+        private void SetUpMenu()
+        {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
             var documentButtons = new List<MenuButton>()
@@ -122,7 +139,7 @@ namespace Dash
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
-            DataContext = documentViewModel;          
+            DataContext = documentViewModel;
         }
 
         /// <summary>
@@ -173,7 +190,7 @@ namespace Dash
             //p = new Point(dx, dy);
             ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
                                                                 new Point(s.Width / 2.0f, s.Height / 2.0f),
-                                                                ViewModel.GroupTransform.ScaleAmount); 
+                                                                ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
 
@@ -219,23 +236,29 @@ namespace Dash
         }
 
 
-        void initDocumentOnDataContext() {
+        void initDocumentOnDataContext()
+        {
 
             // document type specific styles >> use VERY sparringly
             var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
-            if (docType.Type != null) {
+            if (docType.Type != null)
+            {
                 // hide white background & drop shadow on operator views
-                if (docType.Type.Equals("operator")) {
+                if (docType.Type.Equals("operator"))
+                {
                     XGrid.Background = new SolidColorBrush(Colors.Transparent);
                     xBorder.Opacity = 0;
                 }
-            } else {
+            }
+            else
+            {
 
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
-            var sourceBinding = new Binding {
+            var sourceBinding = new Binding
+            {
                 Source = ViewModel.DocumentController.DocumentModel.DocumentType,
                 Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
@@ -294,7 +317,8 @@ namespace Dash
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
-             if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight) {
+            if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight)
+            {
                 updateIcon();
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -302,7 +326,9 @@ namespace Dash
                 xDragImage.Opacity = 0;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
-            } else {
+            }
+            else
+            {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -311,12 +337,13 @@ namespace Dash
             }
         }
 
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
             // if in icon view expand to default size
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(300, 300);
-                
+
             }/*
             else
             {
@@ -331,7 +358,7 @@ namespace Dash
             e.Handled = true; // prevent propagating
         }
 
-  #region Menu
+        #region Menu
 
 
 
@@ -402,7 +429,7 @@ namespace Dash
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0, 0), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
@@ -415,9 +442,9 @@ namespace Dash
                 if (tag.Contains("="))
                 {
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
-                    var word  = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
-                    var valu  = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key   = new Key(word, word);
+                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key = new Key(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {
@@ -433,9 +460,9 @@ namespace Dash
                         var fieldStr = valu.Substring(1, valu.Length - 1);
                         if (valu.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
                         {                       // @ FieldName = FieldValue
-                            var eqPos2     = fieldStr.IndexOfAny(new char[] { '=' });
-                            var fieldValue = fieldStr.Substring(eqPos2+1, Math.Max(0, fieldStr.Length - eqPos2-1)).Trim(' ', '\r');
-                            var fieldName  = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
+                            var eqPos2 = fieldStr.IndexOfAny(new char[] { '=' });
+                            var fieldValue = fieldStr.Substring(eqPos2 + 1, Math.Max(0, fieldStr.Length - eqPos2 - 1)).Trim(' ', '\r');
+                            var fieldName = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
 
                             foreach (var doc in ContentController.GetControllers<DocumentController>())
                                 foreach (var field in doc.EnumFields())
@@ -479,7 +506,7 @@ namespace Dash
 
         protected override void OnActivated(bool isSelected)
         {
-            
+
         }
 
         public override void OnLowestActivated(bool isLowestSelected)
@@ -489,6 +516,6 @@ namespace Dash
             else
                 ViewModel?.CloseMenu();
         }
-        
+
     }
 }
