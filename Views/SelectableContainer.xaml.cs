@@ -104,7 +104,7 @@ namespace Dash
 
             foreach (var ellipse in _draggerList)
             {
-                ellipse.Visibility = isVisible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+                ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -218,7 +218,7 @@ namespace Dash
 
         private void InitiateManipulators()
         {
-           _draggerList = new List<Ellipse>
+            _draggerList = new List<Ellipse>
             {
                 xBottomLeftDragger,
                 xTopLeftDragger,
@@ -555,7 +555,7 @@ namespace Dash
 
         private void AddSnapLine(double lineCoordinate, bool isVertical)
         {
-            var lines = new List<Line> {NewLine(), NewLine(), NewLine(), NewLine()};
+            var lines = new List<Line> { NewLine(), NewLine(), NewLine(), NewLine() };
 
             for (int i = 0; i < lines.Count; i++)
             {
@@ -579,20 +579,18 @@ namespace Dash
                 }
                 xManipulatorCanvas.Children.Add(line);
             }
-
-            Line NewLine()
-            {
-                return new Line
-                {
-                    Tag = "GUIDELINE",
-                    Stroke = new SolidColorBrush(Colors.CornflowerBlue),
-                    StrokeThickness = 1,
-                    StrokeDashArray = new DoubleCollection() { 2, 2 },
-                    UseLayoutRounding = true
-                };
-            }
         }
-
+        Line NewLine()
+        {
+            return new Line
+            {
+                Tag = "GUIDELINE",
+                Stroke = new SolidColorBrush(Colors.CornflowerBlue),
+                StrokeThickness = 1,
+                StrokeDashArray = new DoubleCollection() { 2, 2 },
+                UseLayoutRounding = true
+            };
+        }
 
         private void ClearSnapLines()
         {

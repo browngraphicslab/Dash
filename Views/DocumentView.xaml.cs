@@ -254,7 +254,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null)
+            if (ViewModel != null || DataContext == null)
                 return;
 
             ViewModel = DataContext as DocumentViewModel;
@@ -275,12 +275,22 @@ namespace Dash
 
         private void SetInterfaceBuilderSpecificSettings()
         {
+            //if (ViewModel != null && ViewModel.MenuOpen)
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
+            //}
+            //else
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            //}
             RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
@@ -407,45 +417,17 @@ namespace Dash
                 if (tag.Contains("="))
                 {
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
-                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
-                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key = new Key(word, word);
+                    var word  = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu  = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key   = new Key(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {
                             key = keyFields.Key;
                             break;
                         }
-
-                    if (valu.StartsWith("@") && !valu.Contains("="))
-                    {
-                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
-                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-
-                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
-                        proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
-                    }
-                    else if (valu.StartsWith("@"))
-                    {
-                        var eqPos2 = valu.IndexOfAny(new char[] { '=' });
-                        var fieldName = valu.Substring(1, eqPos2-1).TrimEnd(' ').TrimStart(' ');
-                        var fieldValue = valu.Substring(eqPos2 + 1, Math.Max(0, valu.Length - eqPos2 - 1)).Trim(' ', '\r');
-
-                        foreach (var doc in ContentController.GetControllers<DocumentController>())
-                            foreach (var field in doc.EnumFields())
-                                if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
-                                {
-                                    docController.SetField(key, new DocumentFieldModelController(doc), true);
-                                    break;
-                                }
-                    }
-                    else
-                    {
-                        var tagField = docController.GetDereferencedField(new Key(word, word), null);
-                        if (tagField is TextFieldModelController)
-                            (tagField as TextFieldModelController).Data = valu;
-                        else docController.SetField(key, new TextFieldModelController(valu), true);
-                    }
+                    DBTest.ResetCycleDetection();
+                    docController.ParseDocField(key, valu);
                 }
         }
 

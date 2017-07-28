@@ -27,11 +27,11 @@ namespace Dash
             {
                 if (SetProperty(ref RichTextFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated();
                     // update local
                     // update server
                 }
 
-                OnFieldModelUpdated();
             }
         }
 
