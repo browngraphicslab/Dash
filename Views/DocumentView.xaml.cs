@@ -114,7 +114,7 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh.a
-            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2);
+            var scaleCenter = new Point(/*ActualWidth / 2, ActualHeight / 2*/);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -171,8 +171,8 @@ namespace Dash
             var dx = Math.Max(p.X, 0);
             var dy = Math.Max(p.Y, 0);
             //p = new Point(dx, dy);
-            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
-                                                                new Point(s.Width / 2.0f, s.Height / 2.0f),
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
+                                                                new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
                                                                 ViewModel.GroupTransform.ScaleAmount); 
             e.Handled = true;
         }
