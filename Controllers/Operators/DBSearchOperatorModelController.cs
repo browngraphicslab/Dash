@@ -122,8 +122,7 @@ namespace Dash.Controllers.Operators
                 {
                     if (targetDocument == null)
                     {
-                        if (dmc.DocumentType != DashConstants.DocumentTypeStore.CollectionDocument)
-                            docsInSearchScope.Add(dmc);
+                        docsInSearchScope.Add(dmc);
                     }
                     if (CheckForFieldReferencingTarget(targetDocument, dmc) != null)
                         docsInSearchScope.Add(dmc);

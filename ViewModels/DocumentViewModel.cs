@@ -202,7 +202,7 @@ namespace Dash
         public DocumentViewModel() { }
 
 
-        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null)
         {
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
@@ -213,7 +213,8 @@ namespace Dash
             SetUpSmallIcon();
             _interfaceBuilderGroupTransform = new TransformGroupData(new Point(), new Point(), new Point(1, 1));
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
-            OnActiveLayoutChanged();
+            newContext.AddDocumentContext(DocumentController);
+            OnActiveLayoutChanged(newContext);
             WidthBinding = new WidthAndMenuOpenWrapper();
         }
 
@@ -233,11 +234,11 @@ namespace Dash
         private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             Debug.Assert(args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey));
-            OnActiveLayoutChanged();
+            OnActiveLayoutChanged(new Dash.Context(DocumentController));
         }
-        private void OnActiveLayoutChanged()
+        private void OnActiveLayoutChanged(Context context)
         {
-            Content = DocumentController.MakeViewUI(new Context(DocumentController), IsInInterfaceBuilder);
+            Content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
             OnContentChanged?.Invoke(this, Content);
 
             ListenToHeightField(DocumentController);
