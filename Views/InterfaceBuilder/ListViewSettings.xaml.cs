@@ -19,7 +19,7 @@ using Windows.UI.Xaml.Navigation;
 namespace Dash
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// Settings pane that shows up in interfacebuilder when listview is selected (as composite view) 
     /// </summary>
     public sealed partial class ListViewSettings : UserControl
     {
@@ -38,6 +38,9 @@ namespace Dash
             BindSpacing(docController, context);
         }
 
+        /// <summary>
+        /// Bind the value of spacingSlider to the spacing between the items in listview  
+        /// </summary>
         private void BindSpacing(DocumentController docController, Context context)
         {
             var spacingController =

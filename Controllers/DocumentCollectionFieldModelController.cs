@@ -92,7 +92,7 @@ namespace Dash
         public override FrameworkElement GetTableCellView()
         {
             //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-            return GetTableCellViewForCollectionAndLists(false, BindTextOrSetOnce); 
+            return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce); 
         }
 
         public override FieldModelController GetDefaultController()
@@ -102,7 +102,7 @@ namespace Dash
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
-            textBlock.Text = string.Format("A Collection of {0} Document(s)", _documents.Count());
+            textBlock.Text = string.Format("{0} Document(s)", _documents.Count());
         }
 
 

@@ -80,9 +80,9 @@ namespace Dash
             //{
             //    block.Text = "[" + string.Join(", ", TypedData) + "]";
             //});
-            return GetTableCellViewForCollectionAndLists(true, delegate (TextBlock block)
+            return GetTableCellViewForCollectionAndLists("📜", delegate (TextBlock block)
             {
-                block.Text = string.Format("A List of {0} object(s)", TypedData.Count());           //TODO make a factory and specify what objects it contains ,,,, 
+                block.Text = string.Format("{0} object(s)", TypedData.Count());           //TODO make a factory and specify what objects it contains ,,,, 
             }); 
         }
 

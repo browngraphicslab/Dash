@@ -62,6 +62,9 @@ namespace Dash
             throw new NotImplementedException("We don't have access to the data document here");
         }
 
+        /// <summary>
+        /// Bind the spacing between items in gridview 
+        /// </summary>
         private static void BindSpacing(GridView gridView, DocumentController docController, Context context)
         {
             var spacingController = docController.GetDereferencedField(SpacingKey, context) as NumberFieldModelController;
@@ -78,13 +81,16 @@ namespace Dash
             gridView.SetBinding(ListView.ItemContainerStyleProperty, spacingBinding);
         }
 
+        /// <summary>
+        /// Converter that uses the spacing value to create an ItemContainerStyle that gridview can bind to 
+        /// </summary>
         public class SpacingToItemContainerStyleConverter : IValueConverter
         {
             public object Convert(object value, Type targetType, object parameter, string language)
             {
                 double spacing;
 
-                if (!double.TryParse(value.ToString(), out spacing))                             // if it's a number
+                if (!double.TryParse(value.ToString(), out spacing))       // if it's a number
                 {
                     spacing = 0;
                 }
@@ -103,7 +109,6 @@ namespace Dash
         protected new static void SetupBindings(GridView gridView, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(gridView, docController, context);
-
             AddBinding(gridView, docController, SpacingKey, context, BindSpacing);
         }
 
@@ -111,7 +116,6 @@ namespace Dash
         {
 
             var grid = new Grid();
-            //SetupBindings(grid, docController, context);
             var gridView = new GridView
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,

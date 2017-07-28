@@ -35,8 +35,6 @@ namespace Dash
 
             SetUpInterfaceBuilder(docController, new Context(docController));
 
-            //SetUpButtons();
-
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
             {
@@ -75,30 +73,6 @@ namespace Dash
                 _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
                 xDocumentPane.RecenterViewOnDocument(editingDocumentId);
             }
-        }
-
-        private void SetUpButtons()
-        {
-            var listSymbol = new SymbolIcon()
-            {
-                Symbol = Symbol.List,
-                Foreground = new SolidColorBrush(Colors.White)
-            };
-            ListButton.Content = new Border { Child = listSymbol };
-
-            var freeformSymbol = new SymbolIcon()
-            {
-                Symbol = Symbol.View,
-                Foreground = new SolidColorBrush(Colors.White)
-            };
-            FreeformButton.Content = new Border { Child = freeformSymbol };
-
-            var gridSymbol = new SymbolIcon()
-            {
-                Symbol = Symbol.ViewAll,
-                Foreground = new SolidColorBrush(Colors.White)
-            };
-            GridButton.Content = new Border { Child = gridSymbol };
         }
 
         private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)

@@ -116,7 +116,10 @@ namespace Dash
             return scrollViewer;
         }
 
-        protected Grid GetTableCellViewForCollectionAndLists(bool isList, Action<TextBlock> bindTextOrSetOnce)
+        /// <summary>
+        /// Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock displaying the number of items stored in collection/list 
+        /// </summary>
+        protected Grid GetTableCellViewForCollectionAndLists(string icon, Action<TextBlock> bindTextOrSetOnce)
         {
             Grid grid = new Grid
             {
@@ -131,13 +134,9 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Top,
                 TextAlignment = TextAlignment.Center, 
-                FontSize = 40
+                FontSize = 40, 
+                Text = icon 
             };
-            if (isList)
-                symbol.Text = "📜"; // "⧉";
-            else
-                symbol.Text = "📁"; 
-
             grid.Children.Add(symbol); 
 
             var textBlock = new TextBlock
