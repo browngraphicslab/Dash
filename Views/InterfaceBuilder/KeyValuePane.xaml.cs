@@ -188,18 +188,22 @@ namespace Dash
             else if (item == TypeInfo.Number)
             {
                 double num;
-                if (!double.TryParse(value, out num))                             // if it's not a number
+                if (!double.TryParse(value, out num)) // if it's not a number
                 {
                     return; 
                 }
             }
         }
 
+
         private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
+            // if there's already an editing textbox, get rid of it
             if (_tb != null)
             {
-                MainPage.Instance.xCanvas.Children.Remove(_tb); 
+                MainPage.Instance.xCanvas.Children.Remove(_tb);
+                _tb = null; 
+                return; 
             }
             FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
 
@@ -216,22 +220,22 @@ namespace Dash
             var ttv = containerGrid.TransformToVisual(Window.Current.Content);
             var p = ttv.TransformPoint(posInKVPane);
 
-            _tb = new TextBox(); 
+            _tb = new TextBox();
+            _tb.IsFocusEngagementEnabled = true; 
+            _tb.Focus(FocusState.Programmatic);                     // TODO this doesn't work and I want to jump off a cliff 
 
             if (tappedSource is TextBlock)
             {
-                TextBlock block = tappedSource as TextBlock;
-                _tb.Text = block.Text;
-                _tb.Focus(FocusState.Programmatic); 
-                Canvas.SetLeft(_tb, p.X);
-                Canvas.SetTop(_tb, p.Y); 
-                MainPage.Instance.xCanvas.Children.Add(_tb); // make sure to delete these later! 
-                SetTextBoxEvents(_tb); 
+                _tb.Text = (tappedSource as TextBlock).Text;
             }
             else if (tappedSource is Image)
             {
-
+                _tb.Text = (tappedSource as Image).BaseUri.AbsoluteUri; 
             }
+            Canvas.SetLeft(_tb, p.X);
+            Canvas.SetTop(_tb, p.Y);
+            MainPage.Instance.xCanvas.Children.Add(_tb);
+            SetTextBoxEvents(_tb);
         }
         
         private void SetTextBoxEvents(TextBox tb)
@@ -243,10 +247,16 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        var textCont = _selectedKV.Controller as TextFieldModelController;
-                        textCont.Data = tb.Text; 
+                        if (_editKey)
+                            _selectedKV.Key.Name = tb.Text;
+                        else
+                        {
+                            var textCont = _selectedKV.Controller as TextFieldModelController;
+                            textCont.Data = tb.Text;
+                        }
                         SetListItemSourceToCurrentDataContext();
                         MainPage.Instance.xCanvas.Children.Remove(tb);
+                        _tb = null; 
                     }
                 }; 
             }
@@ -256,24 +266,43 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        var textCont = _selectedKV.Controller as NumberFieldModelController;
-                        double number;
-                        if (double.TryParse(tb.Text, out number))
-                            textCont.Data = number; 
+                        if (_editKey)
+                            _selectedKV.Key.Name = tb.Text;
+                        else
+                        {
+                            var textCont = _selectedKV.Controller as NumberFieldModelController;
+                            double number;
+                            if (double.TryParse(tb.Text, out number))
+                                textCont.Data = number;
+                            
+                        }
                         SetListItemSourceToCurrentDataContext();
                         MainPage.Instance.xCanvas.Children.Remove(tb);
+                        _tb = null; 
                     }
                 };
             }
             else if (type == TypeInfo.Image)
             {
-
+                tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        if (_editKey)
+                            _selectedKV.Key.Name = tb.Text;
+                        else
+                        {
+                            var textCont = _selectedKV.Controller as ImageFieldModelController;
+                            (textCont.Data as BitmapImage).UriSource = new Uri(tb.Text);
+                        }
+                        SetListItemSourceToCurrentDataContext();
+                        MainPage.Instance.xCanvas.Children.Remove(tb);
+                        _tb = null; 
+                    }
+                };
             }
 
-            tb.LostFocus += (s, e) =>
-            {
-                MainPage.Instance.xCanvas.Children.Remove(tb); 
-            }; 
+            tb.LostFocus += (s, e) => MainPage.Instance.xCanvas.Children.Remove(tb); 
         }
 
         private KeyFieldContainer _selectedKV = null;
