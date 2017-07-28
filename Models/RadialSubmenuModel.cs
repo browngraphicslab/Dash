@@ -5,10 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
-using Dash.Views;
 using RadialMenuControl.UserControl;
 
-namespace Dash.Models
+namespace Dash
 {
     class RadialSubmenuModel:RadialItemModel
     {

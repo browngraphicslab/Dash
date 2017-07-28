@@ -8,7 +8,6 @@ using Windows.UI.Xaml.Media;
 using RadialMenuControl.Components;
 using Windows.Foundation;
 using Windows.UI.Xaml.Media.Animation;
-using Dash.Views;
 
 namespace RadialMenuControl.UserControl
 {

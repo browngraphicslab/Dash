@@ -45,6 +45,7 @@ namespace Dash.StaticClasses
         {
             var collectionKeys = new HashSet<string>();
             if (collection != null)
+            {
                 foreach (var doc in collection)
                 {
                     var keyNames = new HashSet<string>();
@@ -55,6 +56,8 @@ namespace Dash.StaticClasses
                     }
                     collectionKeys.UnionWith(keyNames);
                 }
+            }
+            
             return collectionKeys.Where(k => k.ToLower().Contains(text)).ToImmutableHashSet();
         }
 

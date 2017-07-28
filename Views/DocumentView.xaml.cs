@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
@@ -133,12 +132,12 @@ namespace Dash
         /// </summary>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
-        public void Resize(double dx = 0, double dy = 0)
+        public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
             dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
-
+            return new Size(dvm.Width, dvm.Height);
         }
 
         /// <summary>
@@ -167,10 +166,14 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                                new Point(ActualWidth / 2, ActualHeight / 2),
-                                                                ViewModel.GroupTransform.ScaleAmount);
+            var s = Resize(p.X, p.Y);
+            var position = ViewModel.GroupTransform.Translate;
+            var dx = Math.Max(p.X, 0);
+            var dy = Math.Max(p.Y, 0);
+            //p = new Point(dx, dy);
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
+                                                                new Point(s.Width / 2.0f, s.Height / 2.0f),
+                                                                ViewModel.GroupTransform.ScaleAmount); 
             e.Handled = true;
         }
 
@@ -260,26 +263,34 @@ namespace Dash
                 return;
 
             initDocumentOnDataContext();
-
             SetUpMenu();
             ViewModel.CloseMenu();
 
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                SetInterfaceBuilderSpecificSettings();
+            }
+
+        }
+
+        private void SetInterfaceBuilderSpecificSettings()
+        {
+            //if (ViewModel != null && ViewModel.MenuOpen)
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
+            //}
+            //else
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            //}
+            RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ViewModel != null && ViewModel.MenuOpen)
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
-            }
-            else
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
-
+            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
@@ -305,7 +316,7 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(300, 300);
-                e.Handled = true; // prevent propagating
+                
             }/*
             else
             {
@@ -317,37 +328,21 @@ namespace Dash
                 dvm.Height = MinHeight;
             }
             */
-
+            e.Handled = true; // prevent propagating
         }
 
-        #region Menu
+  #region Menu
 
 
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
+            {
                 return;
-
-            TransformGroup tg = new TransformGroup();
-            tg.Children.Add(OuterGrid.RenderTransform); 
-
-
-            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
-            {
-                ViewModel.OpenMenu();
-                tg.Children.Add(new TranslateTransform { X = -55, Y = 0 }); 
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
-            }
-            else
-            {
-                ViewModel.CloseMenu();
-                tg.Children.Add(new TranslateTransform { X = 55, Y = 0 });
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
 
             OnSelected();
-
             e.Handled = true;
         }
 
@@ -419,10 +414,6 @@ namespace Dash
             foreach (var tag in (sender as TextBox).Text.Split('#'))
                 if (tag.Contains("="))
                 {
-                    var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
-                    if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
-                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
                     var word  = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
                     var valu  = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
@@ -434,8 +425,11 @@ namespace Dash
                             break;
                         }
 
-                    if (valu.StartsWith("@")) // @ means we're searching for a documents
+                    if (valu.StartsWith("@") && !valu.Contains("="))
                     {
+                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
+                        if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
+                            proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
                         var fieldStr = valu.Substring(1, valu.Length - 1);
                         if (valu.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
                         {                       // @ FieldName = FieldValue

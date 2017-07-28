@@ -11,7 +11,6 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
-using Dash.Views;
 
 namespace Dash
 {

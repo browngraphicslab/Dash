@@ -56,7 +56,6 @@ namespace Dash.Controllers.Operators
         {
             OperatorFieldModel = operatorFieldModel;
         }
-        //Input keys
 
         //Output keys
         public static readonly Key ResultsKey      = new Key("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");

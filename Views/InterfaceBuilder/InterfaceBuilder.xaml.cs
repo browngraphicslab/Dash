@@ -18,16 +18,13 @@ namespace Dash
 {
     public sealed partial class InterfaceBuilder : WindowTemplate
     {
-
-        /// <summary>
-        /// The document view of the document which is being edited
-        /// </summary>
-        private DocumentView _documentView;
-
         public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
         private SelectableContainer _selectedContainer;
 
-        public enum DisplayTypeEnum { List, Grid, Freeform } 
+        public enum DisplayTypeEnum { List, Grid, Freeform }
+
+        private DocumentController _editingDocument;
+        private DocumentView _editingDocView;
 
 
         public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
@@ -50,22 +47,34 @@ namespace Dash
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            var docViewModel = new DocumentViewModel(docController, true);
-            _documentView = new DocumentView(docViewModel);
-            _documentView.Manipulator.RemoveAllButHandle();
-            _documentView.RemoveScroll();
-            UpdateRootLayout();
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
-
-
-            _documentView.DragOver += DocumentViewOnDragOver;
-            _documentView.AllowDrop = true;
-            _documentView.Drop += DocumentViewOnDrop;
-
-            // set the middle pane to hold the document view
-            xDocumentHolder.Child = _documentView;
-
+            _editingDocument = docController;
+            var documentCanvasViewModel = new DocumentCanvasViewModel(true);
+            xDocumentPane.DataContext = documentCanvasViewModel;
+            documentCanvasViewModel.AddDocument(docController, true);
+            xDocumentPane.Loaded += xDocumentPaneLoaded;
             xKeyValuePane.SetDataContextToDocumentController(docController);
+        }
+
+        private void xDocumentPaneLoaded(object sender, RoutedEventArgs routedEventArgs)
+        {
+            SetUpDocumentView();
+        }
+
+        private void SetUpDocumentView()
+        {
+            var editingDocumentId = _editingDocument.GetId();
+            _editingDocView = xDocumentPane.GetDocumentView(editingDocumentId);
+
+            if (_editingDocView != null)
+            {
+                UpdateRootLayout();
+                _editingDocView.DragOver += DocumentViewOnDragOver;
+                _editingDocView.AllowDrop = true;
+                _editingDocView.Drop += DocumentViewOnDrop;
+                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
+                xDocumentPane.RecenterViewOnDocument(editingDocumentId);
+            }
         }
 
         private void SetUpButtons()
@@ -92,14 +101,14 @@ namespace Dash
             GridButton.Content = new Border { Child = gridSymbol };
         }
 
-        private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
         {
             UpdateRootLayout();
         }
 
         private void UpdateRootLayout()
         {
-            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
+            var rootSelectableContainer = _editingDocView?.ViewModel.Content as SelectableContainer;
             Debug.Assert(rootSelectableContainer != null);
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
         }
@@ -203,7 +212,7 @@ namespace Dash
 
         private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
         {
-            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _documentView)
+            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
                 .FirstOrDefault(AssertIsCompositeLayout);
             return elem as SelectableContainer;
         }
@@ -266,12 +275,6 @@ namespace Dash
                 }
                 e.Data.RequestedOperation = DataPackageOperation.Move;
             }
-        }
-
-        private void xDocumentPane_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xScrollViewer.MaxWidth = xDocumentHolder.MaxWidth = e.NewSize.Width;
-            xScrollViewer.MaxHeight = xDocumentHolder.MaxHeight = e.NewSize.Height;
         }
 
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)

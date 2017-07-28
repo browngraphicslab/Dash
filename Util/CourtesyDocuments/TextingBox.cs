@@ -93,12 +93,18 @@ namespace Dash
             tb.Box.AcceptsReturn = true;
             CourtesyDocument.SetupBindings(tb.Container, docController, context);
 
+
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context));
-                //BindOperationInteractions(tb.Box, referenceToText.FieldReference.Resolve(context));
+                var fmController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+                if (fmController is TextFieldModelController)
+                    fmController = fmController as TextFieldModelController;
+                else if (fmController is NumberFieldModelController)
+                    fmController = fmController as NumberFieldModelController; 
+                var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
             if (isInterfaceBuilderLayout)

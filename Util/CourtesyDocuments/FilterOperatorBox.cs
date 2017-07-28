@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.UI.Xaml;
-using Dash.Views;
 using DashShared;
 
 namespace Dash

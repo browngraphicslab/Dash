@@ -563,7 +563,7 @@ namespace Dash
             }
             if (DocumentType == GridPanel.GridPanelDocumentType)
             {
-                return GridPanel.MakeView(this, context, isInterfaceBuilder);
+                return GridPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == FilterOperatorBox.DocumentType)
             {
