@@ -400,6 +400,7 @@
     <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
+    <Content Include="Assets\tilegrid.gif" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
