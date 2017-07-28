@@ -80,6 +80,7 @@ namespace Dash
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             UpdateViewModels(CollectionFieldModelController, context);
             var copiedContext = new Context(context);
+          
             collection.FieldModelUpdated += delegate (FieldModelController sender, Context context1)
             {
                 UpdateViewModels(sender.DereferenceToRoot<DocumentCollectionFieldModelController>(context1),
@@ -174,8 +175,7 @@ namespace Dash
                 {
                     if (ViewModelContains(DataBindingSource, docController)) continue;
                     var recursive1 =
-                    (docController.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey,
-                        context) as DocumentCollectionFieldModelController)?.GetDocuments().Contains(docController);
+                    (docController.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey,context) as DocumentCollectionFieldModelController)?.GetDocuments().Contains(docController);
                     if (recursive1.HasValue && (bool)recursive1)
                         continue;
                     var recursive2 =
