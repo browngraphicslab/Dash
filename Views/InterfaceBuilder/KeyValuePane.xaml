@@ -11,14 +11,14 @@
     d:DesignHeight="300"
     d:DesignWidth="450">
 
-    <Grid x:Name="xOuterGrid" Background="White">
+    <Grid x:Name="xOuterGrid" Background="White" BorderThickness="0,1,0,1" BorderBrush="{StaticResource WindowsBlue}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="7*"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xHeaderGrid"  Background="LightBlue">
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,3" BorderBrush="{StaticResource WindowsBlue}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="90"/>
@@ -26,7 +26,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" >Keys</TextBlock>
             <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
-            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch">Values</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"

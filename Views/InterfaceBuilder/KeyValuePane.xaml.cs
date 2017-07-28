@@ -127,8 +127,7 @@ namespace Dash
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xNewKeyField.Focus(FocusState.Programmatic);
-                xNewKeyField.SelectAll(); 
+                FocusOn(xNewKeyField);
             }
             else
             {
@@ -179,15 +178,13 @@ namespace Dash
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Text = ImageBox.DefaultImageUri.AbsoluteUri;
-                xNewValueField.Focus(FocusState.Programmatic);
-                xNewValueField.SelectAll(); 
+                FocusOn(xNewValueField); 
             }
             else if (item == TypeInfo.Text || item == TypeInfo.Number)
             {
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xNewValueField.Focus(FocusState.Programmatic);
-                xNewValueField.SelectAll();
+                FocusOn(xNewValueField);
             }
             else
             {
@@ -258,8 +255,7 @@ namespace Dash
             Canvas.SetTop(_tb, p.Y);
             MainPage.Instance.xCanvas.Children.Add(_tb);
             SetTextBoxEvents();
-            _tb.SelectAll();                                     // TODO likewise this doesn't work either and I will jump off a second cliff 
-            _tb.Focus(FocusState.Programmatic);                     // TODO this doesn't work and I want to jump off a cliff
+            FocusOn(_tb); 
         }
 
         /// <summary>
@@ -340,7 +336,7 @@ namespace Dash
         }
 
         private KeyFieldContainer _selectedKV = null;
-        private TextBox _tb = null;             // there is no need for this if only lostfocus worked but it doesn't and i want to ju 
+        private TextBox _tb = null;           
         private bool _editKey = false;
 
 

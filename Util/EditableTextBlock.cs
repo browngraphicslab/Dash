@@ -44,7 +44,8 @@ namespace Dash
                 e.Handled = true;
                 Block.Visibility = Visibility.Collapsed;
                 Box.Visibility = Visibility.Visible;
-                Box.Focus(FocusState.Pointer);
+                Box.Focus(FocusState.Programmatic);
+                Box.SelectAll(); 
             };
 
             Container.Children.Add(Block);
