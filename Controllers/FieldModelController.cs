@@ -6,6 +6,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -99,8 +100,8 @@ namespace Dash
                 TextAlignment = TextAlignment.Center,
                 TextWrapping = TextWrapping.NoWrap
             };
-
             bindTextOrSetOnce(textBlock);
+            
 
             var scrollViewer = new ScrollViewer
             {

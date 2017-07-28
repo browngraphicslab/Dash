@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using System;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -194,23 +195,94 @@ namespace Dash
             }
         }
 
+        private void Grid_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
+        {
+            FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
 
-        /* 
+            var posInKVPane = e.GetPosition(xOuterGrid);
+
+            if (posInKVPane.X < xHeaderGrid.ColumnDefinitions[0].ActualWidth)
+                _editKey = true;
+            else if (posInKVPane.X > xHeaderGrid.ColumnDefinitions[0].ActualWidth + xHeaderGrid.ColumnDefinitions[1].ActualWidth)
+                _editKey = false;
+            else
+                return; 
+
+            var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
+            var ttv = containerGrid.TransformToVisual(Window.Current.Content);
+            var p = ttv.TransformPoint(posInKVPane);
+
+            TextBox tb = new TextBox(); 
+
+            if (tappedSource is TextBlock)
+            {
+                TextBlock block = tappedSource as TextBlock;
+                tb.Text = block.Text; 
+                tb.Focus(FocusState.Programmatic); 
+                Canvas.SetLeft(tb, p.X);
+                Canvas.SetTop(tb, p.Y); 
+                MainPage.Instance.xCanvas.Children.Add(tb); // make sure to delete these later! 
+                SetTextBoxEvents(tb); 
+            }
+            else if (tappedSource is Image)
+            {
+
+            }
+        }
+        
+        private void SetTextBoxEvents(TextBox tb)
+        {
+            TypeInfo type = _selectedKV.Controller.TypeInfo; 
+            if (type == TypeInfo.Text)
+            {
+                tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        var textCont = _selectedKV.Controller as TextFieldModelController;
+                        textCont.Data = tb.Text; 
+                        SetListItemSourceToCurrentDataContext();
+                        MainPage.Instance.xCanvas.Children.Remove(tb);
+                    }
+                }; 
+            }
+            else if (type == TypeInfo.Number)
+            {
+                tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        var textCont = _selectedKV.Controller as NumberFieldModelController;
+                        double number;
+                        if (double.TryParse(tb.Text, out number))
+                            textCont.Data = number; 
+                        SetListItemSourceToCurrentDataContext();
+                        MainPage.Instance.xCanvas.Children.Remove(tb);
+                    }
+                };
+            }
+            else if (type == TypeInfo.Image)
+            {
+
+            }
+
+            tb.LostFocus += (s, e) =>
+            {
+                MainPage.Instance.xCanvas.Children.Remove(tb); 
+            }; 
+        }
+
+        private KeyFieldContainer _selectedKV = null;
+        private bool _editKey = false; 
+
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-
-            var kv = e.ClickedItem as KeyFieldContainer;
-            if (kv == _selectedKV)
-            {
-                ResetKeyValueModifier();
-                return;
-            }
-            _selectedKV = kv;
-
-            xNewValueField.Text = "< Enter new key";
-            xNewKeyField.Text = _selectedKV.Key.Name;
-            xNewValueField.IsEnabled = false;
+            _selectedKV = e.ClickedItem as KeyFieldContainer; 
         }
+
+
+        /* 
+
         private void ValueField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
@@ -269,20 +341,7 @@ namespace Dash
                 }
             }
         }
-
-        private KeyFieldContainer _selectedKV;
-
         
-
-        private void ResetKeyValueModifier()
-        {
-            xNewKeyField.IsEnabled = true;
-            xNewValueField.IsEnabled = true;
-            xNewValueField.Text = "";
-            xNewKeyField.Text = "";
-            _selectedKV = null;
-        }
-    }
     */ // the old editable keyvalue insert thingy 
     }
 }

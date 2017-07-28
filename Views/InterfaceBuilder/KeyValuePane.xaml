@@ -11,28 +11,27 @@
     d:DesignHeight="300"
     d:DesignWidth="450">
 
-    <Grid Background="White">
+    <Grid x:Name="xOuterGrid" Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="7*"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid Background="LightBlue">
+        <Grid x:Name="xHeaderGrid"  Background="LightBlue">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="150"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock TextAlignment="Center">Keys</TextBlock>
-            <TextBlock Grid.Column="1" TextAlignment="Center">Type</TextBlock>
-            <TextBlock Grid.Column="2" TextAlignment="Center">Values</TextBlock>
+            <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" >Keys</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch">Values</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
-                   IsItemClickEnabled="true"
+                  IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
-            <!--ItemClick="xKeyValueListView_ItemClick"-->
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <!--Make the list view items stretch to the full width of the list view-->
@@ -44,7 +43,7 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
-                    <Grid>
+                    <Grid  Tapped="Grid_Tapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>

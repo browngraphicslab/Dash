@@ -12,8 +12,8 @@ namespace Dash
 {
     public class EditableTextBlock
     {
-        public TextBox Box { get; }
-        public TextBlock Block { get; } = new TextBlock();
+        public TextBox Box { get; set; }
+        public TextBlock Block { get; set; } = new TextBlock();
 
         public Canvas Container { get; } = new Canvas(); 
 
