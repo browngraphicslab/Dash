@@ -15,7 +15,6 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Converters;
 using DashShared;
 using Windows.UI.Xaml.Controls.Primitives;
-using Dash.Views;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
