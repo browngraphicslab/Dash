@@ -96,6 +96,8 @@
     <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\Request.cs" />
+    <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
