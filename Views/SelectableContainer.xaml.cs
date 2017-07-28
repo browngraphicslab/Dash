@@ -78,14 +78,8 @@ namespace Dash
             set
             {
                 _isSelected = IsRoot() || value;
-                //ContentElement.IsHitTestVisible = value;
-                if (_isSelected)
+                if (!_isSelected)
                 {
-                    //XGrid.BorderThickness = new Thickness(3);
-                }
-                else
-                {
-                    //XGrid.BorderThickness = new Thickness(1);
                     IsLowestSelected = false;
                 }
             }
@@ -569,29 +563,44 @@ namespace Dash
 
         private void AddSnapLine(double lineCoordinate, bool isVertical)
         {
-            var line = new Line();
-            line.Tag = "GUIDELINE";
-            line.Stroke = new SolidColorBrush(Colors.CornflowerBlue);
-            line.StrokeThickness = 1;
-            line.StrokeDashArray = new DoubleCollection() {2, 2};
+            var lines = new List<Line> {NewLine(), NewLine(), NewLine(), NewLine()};
 
-            if (isVertical)
+            for (int i = 0; i < lines.Count; i++)
             {
-                line.X1 = lineCoordinate;
-                line.X2 = lineCoordinate;
-                line.Y1 = 0;
-                line.Y2 = ActualHeight;
-            }
-            else
-            {
-                line.X1 = 0;
-                line.X2 = ActualWidth;
-                line.Y1 = lineCoordinate;
-                line.Y2 = lineCoordinate;
+                var line = lines[i];
+                if (isVertical)
+                {
+                    var lineLength = ActualHeight / lines.Count;
+                    line.X1 = lineCoordinate;
+                    line.X2 = lineCoordinate;
+                    line.Y1 = lineLength * i;
+                    line.Y2 = lineLength * (i + 1);
+                }
+                else
+                {
+                    var lineLength = ActualWidth / lines.Count;
+                    line.X1 = lineLength * i;
+                    line.X2 = lineLength * (i + 1);
+                    line.Y1 = lineCoordinate;
+                    line.Y2 = lineCoordinate;
+
+                }
+                xManipulatorCanvas.Children.Add(line);
             }
 
-            xManipulatorCanvas.Children.Add(line);
+            Line NewLine()
+            {
+                return new Line
+                {
+                    Tag = "GUIDELINE",
+                    Stroke = new SolidColorBrush(Colors.CornflowerBlue),
+                    StrokeThickness = 1,
+                    StrokeDashArray = new DoubleCollection() { 2, 2 },
+                    UseLayoutRounding = true
+                };
+            }
         }
+
 
         private void ClearSnapLines()
         {
