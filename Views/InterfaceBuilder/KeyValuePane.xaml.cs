@@ -57,6 +57,12 @@ namespace Dash
                 ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
         }
 
+        private void FocusOn(TextBox tb)
+        {
+            tb.Focus(FocusState.Programmatic);
+            tb.SelectAll(); 
+        }
+
 
         private void XKeyValueListView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
@@ -121,6 +127,8 @@ namespace Dash
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xNewKeyField.Focus(FocusState.Programmatic);
+                xNewKeyField.SelectAll(); 
             }
             else
             {
@@ -171,11 +179,15 @@ namespace Dash
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Text = ImageBox.DefaultImageUri.AbsoluteUri;
+                xNewValueField.Focus(FocusState.Programmatic);
+                xNewValueField.SelectAll(); 
             }
             else if (item == TypeInfo.Text || item == TypeInfo.Number)
             {
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xNewValueField.Focus(FocusState.Programmatic);
+                xNewValueField.SelectAll();
             }
             else
             {
@@ -233,7 +245,6 @@ namespace Dash
             var p = ttv.TransformPoint(posInKVPane);
 
             _tb = new TextBox();
-            _tb.Focus(FocusState.Programmatic);                     // TODO this doesn't work and I want to jump off a cliff
 
             //set the editing textbox's initial value appropriately 
             if (tappedSource is TextBlock)
@@ -248,6 +259,7 @@ namespace Dash
             MainPage.Instance.xCanvas.Children.Add(_tb);
             SetTextBoxEvents();
             _tb.SelectAll();                                     // TODO likewise this doesn't work either and I will jump off a second cliff 
+            _tb.Focus(FocusState.Programmatic);                     // TODO this doesn't work and I want to jump off a cliff
         }
 
         /// <summary>
