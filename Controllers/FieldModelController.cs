@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -113,6 +114,44 @@ namespace Dash
             };
 
             return scrollViewer;
+        }
+
+        protected Grid GetTableCellViewForCollectionAndLists(bool isList, Action<TextBlock> bindTextOrSetOnce)
+        {
+            Grid grid = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var symbol = new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
+                TextAlignment = TextAlignment.Center, 
+                FontSize = 40
+            };
+            if (isList)
+                symbol.Text = "📜"; // "⧉";
+            else
+                symbol.Text = "📁"; 
+
+            grid.Children.Add(symbol); 
+
+            var textBlock = new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Top,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap
+            };
+            bindTextOrSetOnce(textBlock);
+            grid.Children.Add(textBlock); 
+            Grid.SetRow(textBlock, 1);
+
+            return grid; 
         }
 
         public override bool Equals(object obj)

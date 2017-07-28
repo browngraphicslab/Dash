@@ -76,10 +76,14 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            return GetTableCellViewOfScrollableText(delegate (TextBlock block)
+            //return GetTableCellViewOfScrollableText(delegate (TextBlock block)
+            //{
+            //    block.Text = "[" + string.Join(", ", TypedData) + "]";
+            //});
+            return GetTableCellViewForCollectionAndLists(true, delegate (TextBlock block)
             {
                 block.Text = "[" + string.Join(", ", TypedData) + "]";
-            });
+            }); 
         }
 
         public override FieldModelController Copy()

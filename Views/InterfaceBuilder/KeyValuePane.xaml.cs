@@ -31,7 +31,7 @@ namespace Dash
 
             ToggleAddKVPane();
             xTypeComboBox.ItemsSource = Enum.GetValues(typeof(TypeInfo));
-            xTypeComboBox.SelectedItem = TypeInfo.None; 
+            xTypeComboBox.SelectedItem = TypeInfo.None;
         }
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
@@ -78,7 +78,7 @@ namespace Dash
                 // only execute if all fields are specified 
                 if (xNewKeyField.Text != "" && (TypeInfo)xTypeComboBox.SelectedItem != TypeInfo.None && xNewValueField.Text != "")
                 {
-                    AddKeyValuePair(); 
+                    AddKeyValuePair();
                 }
             }
             ToggleAddKVPane();
@@ -90,13 +90,13 @@ namespace Dash
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
             Key key = new Key((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
-            FieldModelController fmController = new TextFieldModelController("something went wrong"); 
+            FieldModelController fmController = new TextFieldModelController("something went wrong");
             if (item == TypeInfo.Number)
             {
                 double number;
-                if (double.TryParse(xNewValueField.Text, out number))   
+                if (double.TryParse(xNewValueField.Text, out number))
                     fmController = new NumberFieldModelController(number);
-            } 
+            }
             else if (item == TypeInfo.Image)
             {
                 fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
@@ -165,12 +165,12 @@ namespace Dash
         private void xTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            
+
             if (item == TypeInfo.Image)
             {
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xNewValueField.Text = ImageBox.DefaultImageUri.AbsoluteUri; 
+                xNewValueField.Text = ImageBox.DefaultImageUri.AbsoluteUri;
             }
             else if (item == TypeInfo.Text || item == TypeInfo.Number)
             {
@@ -187,20 +187,20 @@ namespace Dash
 
         private void xNewValueField_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string value = xNewValueField.Text; 
+            string value = xNewValueField.Text;
             if (value == "") return;
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
 
             // if image, show the inputed url's image as preview 
             if (item == TypeInfo.Image)
             {
-                xDefaultImage.Source = new BitmapImage(new Uri(value)); 
+                xDefaultImage.Source = new BitmapImage(new Uri(value));
             }
             else if (item == TypeInfo.Number)
             {
                 double num;
                 if (!double.TryParse(value, out num)) // if it's not a number, don't update
-                    return; 
+                    return;
             }
         }
 
@@ -212,8 +212,8 @@ namespace Dash
             // if there's already an editing textbox, get rid of it
             if (_tb != null)
             {
-                RemoveEditingTextBox(); 
-                return; 
+                RemoveEditingTextBox();
+                return;
             }
 
             FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
@@ -225,7 +225,7 @@ namespace Dash
             else if (posInKVPane.X > xHeaderGrid.ColumnDefinitions[0].ActualWidth + xHeaderGrid.ColumnDefinitions[1].ActualWidth)
                 _editKey = false;
             else
-                return; 
+                return;
 
             //get position of mouse in screenspace 
             var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
@@ -234,12 +234,13 @@ namespace Dash
 
             _tb = new TextBox();
             _tb.Focus(FocusState.Programmatic);                     // TODO this doesn't work and I want to jump off a cliff
-            
+
             //set the editing textbox's initial value appropriately 
             if (tappedSource is TextBlock)
                 _tb.Text = (tappedSource as TextBlock).Text;
             else if (tappedSource is Image)
                 _tb.Text = (tappedSource as Image).BaseUri.AbsoluteUri;
+            else throw new NotImplementedException();
 
             //add textbox graphically and set up events 
             Canvas.SetLeft(_tb, p.X);
@@ -248,30 +249,42 @@ namespace Dash
             SetTextBoxEvents();
             _tb.SelectAll();                                     // TODO likewise this doesn't work either and I will jump off a second cliff 
         }
-        
+
         /// <summary>
         /// Textbox will update keyvaluepane on enter 
         /// </summary>
         private void SetTextBoxEvents()
         {
-            TypeInfo type = _selectedKV.Controller.TypeInfo; 
+            _tb.LostFocus += (s, e) => RemoveEditingTextBox();
+
+            // if key was pressed, just edit the key value (don't have to update the fieldmodelcontrollers) 
+            if (_editKey)
+            {
+                _tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        _selectedKV.Key.Name = _tb.Text;
+                        SetListItemSourceToCurrentDataContext();
+                        RemoveEditingTextBox();
+                    }
+                };
+                return;
+            }
+
+            TypeInfo type = _selectedKV.Controller.TypeInfo;
             if (type == TypeInfo.Text)
             {
                 _tb.KeyDown += (s, e) =>
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        if (_editKey)
-                            _selectedKV.Key.Name = _tb.Text;
-                        else
-                        {
-                            var textCont = _selectedKV.Controller as TextFieldModelController;
-                            textCont.Data = _tb.Text;
-                        }
+                        var textCont = _selectedKV.Controller as TextFieldModelController;
+                        textCont.Data = _tb.Text;
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
                     }
-                }; 
+                };
             }
             else if (type == TypeInfo.Number)
             {
@@ -279,16 +292,11 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        if (_editKey)
-                            _selectedKV.Key.Name = _tb.Text;
-                        else
-                        {
-                            var textCont = _selectedKV.Controller as NumberFieldModelController;
-                            double number;
-                            if (double.TryParse(_tb.Text, out number))
-                                textCont.Data = number;
-                            
-                        }
+                        var textCont = _selectedKV.Controller as NumberFieldModelController;
+                        double number;
+                        if (double.TryParse(_tb.Text, out number))
+                            textCont.Data = number;
+
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
                     }
@@ -300,36 +308,33 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        if (_editKey)
-                            _selectedKV.Key.Name = _tb.Text;
-                        else
-                        {
-                            var textCont = _selectedKV.Controller as ImageFieldModelController;
-                            (textCont.Data as BitmapImage).UriSource = new Uri(_tb.Text);
-                        }
+                        var textCont = _selectedKV.Controller as ImageFieldModelController;
+                        (textCont.Data as BitmapImage).UriSource = new Uri(_tb.Text);
+
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
                     }
                 };
             }
-
-            _tb.LostFocus += (s, e) => RemoveEditingTextBox(); 
+            else
+                throw new NotImplementedException();
+            
         }
 
         private void RemoveEditingTextBox()
         {
             MainPage.Instance.xCanvas.Children.Remove(_tb);
-            _tb = null; 
+            _tb = null;
         }
 
         private KeyFieldContainer _selectedKV = null;
         private TextBox _tb = null;             // there is no need for this if only lostfocus worked but it doesn't and i want to ju 
-        private bool _editKey = false; 
+        private bool _editKey = false;
 
-        
+
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            _selectedKV = e.ClickedItem as KeyFieldContainer; 
+            _selectedKV = e.ClickedItem as KeyFieldContainer;
         }
     }
 }

@@ -72,7 +72,6 @@ namespace Dash
 
             OnFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
-
         }
 
         /// <summary>
@@ -92,7 +91,8 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+            //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+            return GetTableCellViewForCollectionAndLists(false, BindTextOrSetOnce); 
         }
 
         public override FieldModelController GetDefaultController()
@@ -102,7 +102,7 @@ namespace Dash
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
-            textBlock.Text = "A Collection of Documents";
+            textBlock.Text = string.Format("A Collection of {0} Document(s)", _documents.Count());
         }
 
 

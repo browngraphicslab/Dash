@@ -492,7 +492,7 @@ namespace Dash.Views
             var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
             var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments };
             var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
-            //📄
+            
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {
                 operatorButton,
