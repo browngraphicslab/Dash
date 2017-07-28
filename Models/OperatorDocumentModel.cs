@@ -41,7 +41,6 @@ namespace Dash
         {
             Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
             fields[OperatorKey] = new FilterOperator(new OperatorFieldModel("Filter"));
-            fields[FilterOperator.FilterParameterKey] = new DocumentFieldModelController(new DocumentController(new Dictionary<Key, FieldModelController>(), FilterOperator.FilterParams));
             var doc = new DocumentController(fields, FilterOperator.FilterType);
 
             var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;

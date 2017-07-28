@@ -11,6 +11,8 @@ using Dash;
 using Dash.Converters;
 using DashShared;
 using TextWrapping = DashShared.TextWrapping;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Dash
 {
@@ -28,7 +30,7 @@ namespace Dash
         public static string DefaultText = "Default Text";
         public static double DefaultFontWeight = 100;
         public static double DefaultTextAlignment = (int)TextAlignment.Left;
-        public static double DefaultFontSize = 12;
+        public static double DefaultFontSize = 15;
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
         public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20)
@@ -88,6 +90,9 @@ namespace Dash
 
             SetupBindings(tb.Block, docController, context);
             SetupBindings(tb.Box, docController, context);
+            tb.Box.AcceptsReturn = true;
+            //tb.Box.IsHitTestVisible = false;
+            //tb.Block.IsHitTestVisible = false;
             CourtesyDocument.SetupBindings(tb.Container, docController, context);
             // use the reference to the text to get the text field model controller
             //if (textField is TextFieldModelController)
@@ -111,18 +116,24 @@ namespace Dash
             //    textBox.AcceptsReturn = true;
             //}
 
+
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context));
-                BindOperationInteractions(tb.Box, referenceToText.FieldReference.Resolve(context));
-
+                var fmController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+                if (fmController is TextFieldModelController)
+                    fmController = fmController as TextFieldModelController;
+                else if (fmController is NumberFieldModelController)
+                    fmController = fmController as NumberFieldModelController; 
+                var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
             if (isInterfaceBuilderLayout)
             {
                 var selectableContainer = new SelectableContainer(tb.Container, docController);
+                //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
 
@@ -191,6 +202,31 @@ namespace Dash
                     Path = new PropertyPath(nameof(numberData.Data)),
                     Mode = BindingMode.TwoWay,
                     Converter = new StringToDoubleConverter(0),
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+            } else if (data is DocumentFieldModelController)
+            {
+
+                var docData = data as DocumentFieldModelController;
+                sourceBinding = new Binding
+                {
+                    Source = docData,
+                    Path = new PropertyPath(nameof(docData.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new DocumentControllerToStringConverter(),
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                };
+            }
+            else if (data is DocumentCollectionFieldModelController)
+            {
+
+                var docData = data as DocumentCollectionFieldModelController;
+                sourceBinding = new Binding
+                {
+                    Source = docData,
+                    Path = new PropertyPath(nameof(docData.Data)),
+                    Mode = BindingMode.TwoWay,
+                    Converter = new DocumentCollectionToStringConverter(),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
             }

@@ -204,6 +204,7 @@ namespace Dash
             return result;
         }
 
+        //TODO Make SetField not call execute when called from SetFields
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="Key" /> at the first
         ///     prototype in the hierarchy that contains it. If the <see cref="Key" /> is not used at any level then it is
@@ -511,8 +512,7 @@ namespace Dash
 
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
-            context = context ?? new Context();
-            //context = context == null ? new Context() : new Context(context);//TODO Should we copy the context or not?
+            context = new Context(context);
             context.AddDocumentContext(this);
 
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
@@ -562,7 +562,7 @@ namespace Dash
             }
             if (DocumentType == GridPanel.GridPanelDocumentType)
             {
-                return GridPanel.MakeView(this, context, isInterfaceBuilder);
+                return GridPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == FilterOperatorBox.DocumentType)
             {

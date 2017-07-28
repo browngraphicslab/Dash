@@ -19,6 +19,8 @@ namespace Dash
 
         public EditableTextBlock()
         {
+            Block.TextWrapping = TextWrapping.Wrap; 
+
             Box = new TextBox
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -26,6 +28,8 @@ namespace Dash
                 TextWrapping = TextWrapping.Wrap,
                 Visibility = Visibility.Collapsed
             };
+
+            Box.PointerWheelChanged += (s, e) => e.Handled = true; 
 
             Box.ManipulationDelta += (s, e) => e.Handled = true; 
 

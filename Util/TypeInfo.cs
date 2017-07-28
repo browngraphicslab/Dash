@@ -82,7 +82,10 @@ namespace Dash
 
         public static TypeInfo TypeToTypeInfo(Type type)
         {
-            return TypeDict[type];
+            if (TypeDict.ContainsKey(type))
+                return TypeDict[type];
+
+            return TypeInfo.None;
         }
     }
 }

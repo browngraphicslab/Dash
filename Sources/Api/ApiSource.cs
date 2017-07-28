@@ -217,7 +217,6 @@ namespace Dash {
             // generate and store response document by parsing HTTP output
             // first try to parse it as a list of objects
             responseAsDocuments = new List<DocumentController>();
-            var apiDocType = new DocumentType(apiURI.Host.ToString().Split('.').First(), apiURI.Host.ToString().Split('.').First());
             try {
 
                 DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), message.RequestUri.ToString());
@@ -225,8 +224,9 @@ namespace Dash {
                 var dcfm = documentController.EnumFields()
                     .FirstOrDefault(keyFieldPair => keyFieldPair.Value is DocumentCollectionFieldModelController).Value as DocumentCollectionFieldModelController;
 
-                ResponseAsDocuments = new List<DocumentController>(dcfm.GetDocuments());
-                ResponseAsDocuments.Add(documentController);
+                ResponseAsDocuments = new List<DocumentController>();
+                //ResponseAsDocuments.Add(documentController); // the collection
+                ResponseAsDocuments.AddRange(dcfm.GetDocuments());
 
             } catch (InvalidOperationException e) {
                 Debug.Fail("the json util failed");

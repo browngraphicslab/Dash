@@ -269,31 +269,31 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, Key fieldKey, FieldModelController fmController)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
-            renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
+            //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
+            renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    if (view.CanLink)
+                if (view.CanLink)
                 {
-                    args.Complete();
-                    view.CanLink = true; // essential that this is false s.t. drag events don't get overriden
-                    }
+                    args.Complete(); // This was stopping manipulations from happening on the first try? 
+                    //view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
+                }
             };
             renderElement.IsHoldingEnabled = true; // turn on holding
 
             // must hold on element first to fetch link node
-            renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args)
+            renderElement.Holding += delegate(object sender, HoldingRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
                     view.CanLink = true;
                 if (view.CurrentView is CollectionFreeformView)
-                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(reference, true, view.PointerArgs, renderElement,
+                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
-
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
             {
@@ -309,7 +309,7 @@ namespace Dash
                 {
                     view.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
-                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(reference, true, args, renderElement,
+                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, args, renderElement,
                             renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -317,11 +317,11 @@ namespace Dash
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = true; // was false?
+                    view.CanLink = false;
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
-                    new OperatorView.IOReference(reference, false, args, renderElement,
+                    new OperatorView.IOReference(fieldKey, fmController, reference, false, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };
@@ -427,7 +427,9 @@ namespace Dash
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
         {
+            var currentHeight = document.GetHeightField().Data;
             document.SetField(CourtesyDocument.VerticalAlignmentKey, new TextFieldModelController(alignment.ToString()), true);
+            document.SetHeight(currentHeight);
         }
 
         public static VerticalAlignment GetVerticalAlignment(this DocumentController document)

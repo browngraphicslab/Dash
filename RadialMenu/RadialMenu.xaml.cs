@@ -726,5 +726,10 @@ namespace RadialMenuControl.UserControl
         }
 
         #endregion
+
+        private void RadialMenu_OnDragEnter(object sender, DragEventArgs e)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

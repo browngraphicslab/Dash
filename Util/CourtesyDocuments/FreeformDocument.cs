@@ -53,14 +53,11 @@ namespace Dash
         {
 
             var grid = new Grid();
-            // bind the grid height
-            var heightController = GetHeightField(docController, context);
-            BindHeight(grid, heightController);
-
-            // bind the grid width
-            var widthController = GetWidthField(docController, context);
-            BindWidth(grid, widthController);
+            SetupBindings(grid, docController, context);
             LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
+
+            grid.Clip = new RectangleGeometry();
+            grid.SizeChanged += delegate(object sender, SizeChangedEventArgs args) { grid.Clip.Rect = new Rect(0,0,args.NewSize.Width,args.NewSize.Height); };
 
             var c = new Context(context);
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
@@ -82,7 +79,9 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Center
                 };
                 grid.Children.Insert(0, icon);
-                return new SelectableContainer(grid, docController, dataDocument);
+                var container = new SelectableContainer(grid, docController, dataDocument);
+                SetupBindings(container, docController, context);
+                return container;
             }
             return grid;
         }
@@ -111,6 +110,8 @@ namespace Dash
 
                 var positionField = layoutDocument.GetPositionField(context);
                 BindTranslation(layoutView, positionField);
+
+                if(isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
 
                 grid.Children.Add(layoutView);
             }

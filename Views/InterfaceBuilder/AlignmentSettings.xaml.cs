@@ -19,6 +19,7 @@ namespace Dash
 {
     public sealed partial class AlignmentSettings : UserControl
     {
+
         private readonly DocumentController _editedLayoutDocument;
 
         public AlignmentSettings()

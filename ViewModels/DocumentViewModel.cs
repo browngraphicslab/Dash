@@ -196,9 +196,9 @@ namespace Dash
             get { return _docMenuVisibility; }
             set { SetProperty(ref _docMenuVisibility, value); }
         }
-        
+
         public readonly bool IsInInterfaceBuilder;
-        
+
         public GridLength MenuColumnWidth
         {
             get { return _menuColumnWidth; }
@@ -208,7 +208,7 @@ namespace Dash
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
-  
+
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false)
         {
             if (IsInInterfaceBuilder = isInInterfaceBuilder)
@@ -216,7 +216,7 @@ namespace Dash
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
-            DataBindingSource.Add(documentController.DocumentModel);     
+            DataBindingSource.Add(documentController.DocumentModel);
 
             SetUpSmallIcon();
             documentController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
@@ -275,7 +275,7 @@ namespace Dash
                     scaleAmountFieldModelController.FieldModelUpdated +=
                         ScaleAmountFieldModelController_FieldModelUpdatedEvent;
             }
-            
+
         }
 
         private void ListenToWidthField(DocumentController docController)
@@ -380,7 +380,9 @@ namespace Dash
         public void OpenMenu()
         {
             DocMenuVisibility = Visibility.Visible;
-            MenuColumnWidth = new GridLength(50);
+
+            MenuColumnWidth = new GridLength(55);
+
             MenuOpen = true;
         }
 

@@ -56,17 +56,56 @@
                   Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" />
             </Grid>
 
-            <GridView Grid.Row="2" HorizontalAlignment="Center" Margin="312,0,311,0" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting">
-                <Button x:Name="ListButton" Content="🖹" Width="45" Height="45" Margin="5"  VerticalContentAlignment="Center"
-                        FontSize="25" IsHitTestVisible="False">
+            <GridView Grid.Row="2" HorizontalAlignment="Center" Margin="294,0,258,0" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting" Width="248">
+                <Button x:Name="FreeformButton" Width="55" Height="65" Margin="5"  VerticalContentAlignment="Center"
+                        FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
+                    <StackPanel Orientation="Vertical">
+                        <Grid>
+                            <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
+                            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="#FFFDFDFD" Height="29" Margin="7,-2,7,0">
+                                <Run Text="⊡"/>
+                            </TextBlock>
+                        </Grid>
+                        <TextBlock FontSize="12" HorizontalAlignment="Center" Padding="0">FREEFORM</TextBlock>
+                    </StackPanel>
                 </Button>
-                <Button x:Name="GridButton" Content="▦" Width="45" Height="45" Margin="5"
-                        VerticalContentAlignment="Center" FontSize="25" IsHitTestVisible="False">
+                <Button x:Name="ListButton"  Width="45" Height="65" Margin="5"  VerticalContentAlignment="Center" Padding="0"
+                        FontSize="25" IsHitTestVisible="False" Background="Transparent">
+                    <StackPanel Orientation="Vertical">
+                        <Grid>
+                            <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
+                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
+                                <Run Text="🖹"/>
+                            </TextBlock>
+                        </Grid>
+                        <TextBlock FontSize="12" HorizontalAlignment="Center">LIST</TextBlock>
+                    </StackPanel>
                 </Button>
-                <Button x:Name="FreeformButton" Content="⊡" Width="45" Height="45" Margin="5"
-                        VerticalContentAlignment="Center" FontSize="25" IsHitTestVisible="False">
-                </Button>
+                <Button x:Name="GridButton" Width="45" Height="65" Margin="5"  VerticalContentAlignment="Center"
+                        FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
+                            <StackPanel Orientation="Vertical">
+                                <Grid>
+                                    <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
+                                <Run Text="▦"/>
+                                    </TextBlock>
+                                </Grid>
+                                <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
+                            </StackPanel>
+                        </Button>
+
             </GridView>
+            <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Height="65" Width="73" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,222,0" Grid.Row="2">
+                <StackPanel Orientation="Vertical">
+                    <Grid>
+                        <Ellipse Width="35" Height="35" Fill="#FFE60404"/>
+                        <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Center" Foreground="#FFFDFDFD" Height="29">
+                            <Run Text="🗑️"/>
+                        </TextBlock>
+                    </Grid>
+                    <TextBlock FontSize="12" HorizontalAlignment="Center">DELETE</TextBlock>
+                </StackPanel>
+            </Button>
         </Grid>
     </local:WindowTemplate.InnerContent>
 </local:WindowTemplate>

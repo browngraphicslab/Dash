@@ -2,10 +2,12 @@
 using RadialMenuControl.UserControl;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
@@ -18,6 +20,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Media.Imaging;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
 using Dash.Models;
@@ -37,6 +40,7 @@ namespace Dash.Views
         private TextBlock _sliderHeader;
         private StackPanel _stackPanel;
         private Floating _floatingMenu;
+        public static string RadialMenuDropKey = "A84862E6-34C3-44AC-A162-EE7DE702DAA0";
 
         /// <summary>
         /// Get or set the Diameter of the radial menu
@@ -313,16 +317,28 @@ namespace Dash.Views
             if (item.IsAction && item is RadialActionModel)
             {
                 var actionButton = item as RadialActionModel;
-                button.InnerArcReleased += delegate(object sender, PointerRoutedEventArgs e)
+                button.InnerArcReleased += delegate
                 {
-                    actionButton.CanvasAction?.Invoke(_parentCanvas, e.GetCurrentPoint(_parentCanvas).Position);
-                    if (button.InnerNormalColor != null)
-                        actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
+                    actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
                     actionButton.GenericAction?.Invoke(null);
+                };
+                button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
+                {
+                    e.Data.RequestedOperation = DataPackageOperation.Move;
+                    if (actionButton.CollectionDropAction != null)
+                    {
+                        e.Data.Properties[RadialMenuDropKey] = actionButton.CollectionDropAction;
+                    } else if (actionButton.GenericDropAction != null)
+                    {
+                        e.Data.Properties[RadialMenuDropKey] = actionButton.GenericDropAction;
+                    }
+                    else
+                    {
+                        e.Cancel = true;
+                    }
                     
                 };
-                
-            } 
+            }
             menu.AddButton(button);
             return button;
         }
@@ -377,8 +393,6 @@ namespace Dash.Views
         /// <param name="canvas"></param>
         private void SampleRadialMenu(Canvas canvas)
         {
-            
-
             #region Ink Controls
 
             Action<object> choosePen = Actions.ChoosePen;
@@ -461,25 +475,23 @@ namespace Dash.Views
 
             #endregion
 
-            Action<Canvas, Point> addSearch = Actions.AddSearch;
+            Action<CollectionView, DragEventArgs> addSearch = Actions.AddSearch;
             var searchButton = new RadialActionModel("Search", "🔍")
             {
-                CanvasAction = addSearch
+                CollectionDropAction = addSearch
             };
 
+            Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
+            Action<CollectionView, DragEventArgs> addCollection = Actions.AddCollection;
+            Action<CollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            Action<CollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
+            Action<CollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
-
-            Action<object> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<object> addCollection = Actions.AddCollection;
-            Action<object> addApiCreator = Actions.AddApiCreator;
-            Action<object> addDocuments = Actions.AddDocuments;
-            Action<object> addNotes = Actions.AddNotes;
-
-            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericAction = onOperatorAdd };
-            var collectionButton = new RadialActionModel("Collection", "📁") { GenericAction = addCollection };
-            var apiButton = new RadialActionModel("Api", "⚙️") { GenericAction = addApiCreator };
-            var documentButton = new RadialActionModel("Document", "🖺") { GenericAction = addDocuments };
-            var notesButton = new RadialActionModel("Notes", "🗋") { GenericAction = addNotes }; 
+            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd };
+            var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
+            var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
+            var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments };
+            var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
             //📄
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {

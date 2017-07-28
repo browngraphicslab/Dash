@@ -27,7 +27,7 @@
           x:FieldModifier="public"
               SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="50"/>
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         
@@ -51,7 +51,7 @@
         
         <Canvas x:Name="xMenuCanvas" Grid.Column="0"/>
         <Grid Grid.Column="1">
-            <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#07000000" Margin="5,5,-10,-10" />
+            <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#33031A2C" Margin="5,5,-10,-10" />
             <!-- Container for document fields view -->
             <Grid x:Name="XGrid" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
                 <Grid.Clip>

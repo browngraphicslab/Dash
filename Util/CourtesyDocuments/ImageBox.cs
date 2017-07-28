@@ -56,17 +56,24 @@ namespace Dash
             var image = new Image
             {
                 Stretch = Stretch.Fill,// set image to fill container but ignore aspect ratio :/
-                CacheMode = new BitmapCache()
+                CacheMode = new BitmapCache(),
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch,
             };
 
             SetupBindings(image, docController, context);
 
+
             // set up interactions with operations
-            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context));
+            var imageFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as ImageFieldModelController;
+            var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+            BindOperationInteractions(image, GetImageReference(docController).FieldReference.Resolve(context), reference.FieldKey, imageFMController);
 
             if (isInterfaceBuilderLayout)
             {
-                return new SelectableContainer(image, docController);
+                var selectableContainer = new SelectableContainer(image, docController);
+                //SetupBindings(selectableContainer, docController, context);
+                return selectableContainer;
             }
             return image;
         }

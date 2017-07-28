@@ -157,6 +157,11 @@
             <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
             <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
         </Style>
+        <ItemsPanelTemplate x:Key="ListViewLayoutTemplate">
+            <DataTemplate>
+                <StackPanel Orientation="Vertical"></StackPanel>
+            </DataTemplate>
+        </ItemsPanelTemplate>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
         <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>

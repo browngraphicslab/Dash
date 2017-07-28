@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using DashShared;
 using System.Linq;
+using Dash.Converters;
 
 namespace Dash.Controllers.Operators
 {
@@ -42,17 +43,19 @@ namespace Dash.Controllers.Operators
             var searchFieldModel = new DBSearchOperatorFieldModel("Search", fieldRef);
             var searchFieldController = new DBSearchOperatorFieldModelController(searchFieldModel);
             var searchOp = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
-            searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
+            if (fieldContainingSearchForDoc != null)
+                searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
             return searchOp;
         }
         public DBSearchOperatorFieldModelController(DBSearchOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
             OperatorFieldModel = operatorFieldModel;
         }
-        //Input keys
 
         //Output keys
         public static readonly Key ResultsKey = new Key("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
+
+        //Input keys
         public static readonly Key SearchForDocKey = new Key("C544405C-6389-4F6D-8C17-31DEB14409D4", "SearchForDoc");
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
@@ -113,36 +116,20 @@ namespace Dash.Controllers.Operators
             // loop through each field to find on that matches the field name pattern 
             foreach (var pfield in dmc.EnumFields().Where((pf)=>pf.Key.Name == pattern[0] || pattern[0] == ""))
             {
-                if (pattern.Count == 1)  
+                if (pattern.Count == 1)
                 {
-                    if (dmc.GetField(DashConstants.KeyStore.DelegatesKey, true) == null)
-                    {
-                        documents.Add(dmc);
-                        if (pfield.Value is DocumentFieldModelController)
-                        {
-                            textStr += "Document(";
-                            foreach (var f in (pfield.Value as DocumentFieldModelController).Data.EnumFields().Where((pf) => !pf.Key.Name.StartsWith("_")))
-                            {
-                                textStr += f.Key.Name + "=" + f.Value + " ";
-                            }
-                            textStr += ")";
-
-                        }
-                        else textStr += pfield.Value + " ";
-                    }
+                    documents.Add(dmc);
+                    textStr += "Document(" + new DocumentControllerToStringConverter().ConvertDataToXaml(dmc) + ")";
                     break;
                 }
-                else if (pfield.Value is DocumentFieldModelController)  
+                else if (pfield.Value is DocumentFieldModelController)
                     foreach (var f in (pfield.Value as DocumentFieldModelController).Data.EnumFields())
                     {
-                        if (pattern[1][0] == '~')
+                        if ((pattern[1] != "" && pattern[1][0] == '~' && f.Key.Name.Contains(pattern[1].Substring(1, pattern.Count - 1))) || f.Key.Name == pattern[1])
                         {
-                            if (f.Key.Name.Contains(pattern[1].Substring(1, pattern.Count - 1)))
-                                textStr += f.Value + " ";
+                            textStr += f.Value + " ";
+                            documents.Add(ContentController.GetController<DocumentController>((pfield.Value as DocumentFieldModelController).Data.DocumentModel.Id));
                         }
-                        else
-                            if (f.Key.Name == pattern[1])
-                                textStr += f.Value + " ";
                     }
             }
 
