@@ -30,7 +30,6 @@ namespace Dash
             serviceCollection.AddTransient<ShapeEndpoint, ShapeEndpoint>();
             serviceCollection.AddSingleton<DocumentEndpoint, DocumentEndpoint>(); //TODO change to transient
             serviceCollection.AddSingleton<TypeEndpoint, TypeEndpoint>(); //TODO change to transient
-            serviceCollection.AddSingleton<KeyEndpoint, KeyEndpoint>(); //TODO change to transient
 
             // Examples to be removed
             serviceCollection.AddSingleton<PricePerSquareFootApi, PricePerSquareFootApi>(); //TODO remove this its an example

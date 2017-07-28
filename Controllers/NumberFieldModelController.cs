@@ -7,6 +7,18 @@ using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
+    #region LocalController
+    /// <summary>
+    /// Represents and controls a number field. Instances of this are NOT stored on the server.
+    /// </summary>
+    public class LocalNumberFieldModelController : NumberFieldModelController
+    {
+        // == CONSTRUCTORS ==
+        public LocalNumberFieldModelController(double data = 0) : base(data) { }
+        protected override bool IsLocal { get { return true; } }
+    }
+    #endregion
+
     public class NumberFieldModelController : FieldModelController
     {
         public NumberFieldModelController(double data = 0) : base(new NumberFieldModel(data))

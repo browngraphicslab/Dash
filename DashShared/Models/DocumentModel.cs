@@ -54,45 +54,5 @@ namespace DashShared
             Fields = fields.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
             Map.Add(Id, this);
         }
-
-        
-
-
-
-
-
-        //public IEnumerable<KeyValuePair<Key, FieldModel>> PropFields => EnumFields();
-
-        //public IEnumerable<KeyValuePair<Key, FieldModel>> EnumFields(bool ignorePrototype = false)
-        //{
-        //    foreach (KeyValuePair<Key, FieldModel> fieldModel in Fields)
-        //    {
-        //        yield return fieldModel;
-        //    }
-
-        //    if (!ignorePrototype) {
-        //        var prototype = GetPrototype();
-        //        if (prototype != null)
-        //            foreach (var field in prototype.EnumFields())
-        //                yield return field;
-        //    }
-        //}
-
-
-
-
-        //void notifyDelegates(ReferenceFieldModel refModel)
-        //{
-        //    //OnDocumentFieldUpdated(refModel);
-        //    //if (refModel.FieldKey != DelegatesKey)
-        //    //{
-        //    //    var delegates = Fields.ContainsKey(DelegatesKey) ? Fields[DelegatesKey] as DocumentCollectionFieldModel : null;
-        //    //    if (delegates != null)
-        //    //        foreach (var d in delegates.EnumDocuments())
-        //    //            d.notifyDelegates(refModel);
-        //    //}
-        //}
-
-
     }
 }

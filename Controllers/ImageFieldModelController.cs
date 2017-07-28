@@ -7,6 +7,18 @@ using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
 {
+    #region LocalController
+    /// <summary>
+    /// Represents and controls a number field. Instances of this are NOT stored on the server.
+    /// </summary>
+    public class LocalImageFieldModelController : ImageFieldModelController
+    {
+        // == CONSTRUCTORS ==
+        public LocalImageFieldModelController(Uri data) : base(data) { }
+        protected override bool IsLocal { get { return true; } }
+    }
+    #endregion
+
     public class ImageFieldModelController : FieldModelController
     {
         public ImageFieldModelController() : base(new ImageFieldModel()) { }

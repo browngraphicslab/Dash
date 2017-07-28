@@ -21,7 +21,7 @@ namespace DashShared
 
         protected override FieldModelDTO GetFieldDTOHelper()
         {
-            return new FieldModelDTO(TypeInfo.Reference, Data);
+            return new FieldModelDTO(TypeInfo.Number, Data);
         }
     }
 }
