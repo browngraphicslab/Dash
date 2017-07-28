@@ -7,6 +7,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using System;
+using Dash.Controllers.Operators;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -82,10 +83,11 @@ namespace Dash
 
                 //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
                 var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
-                var cont = new TextFieldModelController((sender as TextBox).Text);
-                ListItemSource.Add(new KeyFieldContainer(key, cont));
 
-                _documentControllerDataContext.SetField(key, cont, true);
+                DBTest.ResetCycleDetection();
+                _documentControllerDataContext.ParseDocField(key, (sender as TextBox).Text);
+                ListItemSource.Add(new KeyFieldContainer(key, _documentControllerDataContext.GetDereferencedField(key, null)));
+
                 xNewKeyField.Text = "";
                 xNewValueField.Text = "";
             }
