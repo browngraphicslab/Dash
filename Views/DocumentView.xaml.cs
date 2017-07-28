@@ -68,24 +68,26 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
-
-            //When a field is dragged onto documentview, adds that field to the document 
-            OuterGrid.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
-            {
-                var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
-                if (view == null) return; // we can't always assume we're on a collection		
-
-                view.CanLink = false;
-
-                args.Handled = true;
-                (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
-                    new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
-                        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-            };
         }
-        
 
-    private void This_Loaded(object sender, RoutedEventArgs e)
+
+        /// <summary>
+        /// When a field is dragged onto documentview, adds that field to the document 
+        /// </summary>
+        private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
+        {
+            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            if (view == null) return; // we can't always assume we're on a collection		
+
+            view.CanLink = false;
+
+            args.Handled = true;
+            (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
+                new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                    OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+        }
+
+        private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
         }
@@ -508,6 +510,7 @@ namespace Dash
         {
 
         }
+
 
         public override void OnLowestActivated(bool isLowestSelected)
         {

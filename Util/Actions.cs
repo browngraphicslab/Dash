@@ -288,9 +288,6 @@ namespace Dash
         {
             var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
 
-            DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
-            DisplayDocument(col, Document, where);
-
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(col, d, where);
         }
