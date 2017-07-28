@@ -51,10 +51,11 @@ namespace Dash.Controllers.Operators
         {
             OperatorFieldModel = operatorFieldModel;
         }
-        //Input keys
 
         //Output keys
         public static readonly Key ResultsKey = new Key("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
+
+        //Input keys
         public static readonly Key SearchForDocKey = new Key("C544405C-6389-4F6D-8C17-31DEB14409D4", "SearchForDoc");
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
@@ -118,7 +119,7 @@ namespace Dash.Controllers.Operators
                 if (pattern.Count == 1)
                 {
                     documents.Add(dmc);
-                    textStr += "Document(" + new DocumentControllerToStringConverter(dmc).ConvertDataToXaml(dmc) + ")";
+                    textStr += "Document(" + new DocumentControllerToStringConverter().ConvertDataToXaml(dmc) + ")";
                     break;
                 }
                 else if (pfield.Value is DocumentFieldModelController)

@@ -2,7 +2,7 @@
     x:Class="Dash.SelectableContainer"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash.Views"
+    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
@@ -42,3 +42,51 @@
         </Canvas>
     </Grid>
 </UserControl>
+
+
+<!--<UserControl
+    x:Class="Dash.SelectableContainer"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="*"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="XGrid" BorderBrush="{StaticResource WindowsBlue}" Background="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Grid.Row="1">
+                <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
+            </Grid>
+
+            <Button x:Name="xKeyDisplayField" HorizontalAlignment="Left" Height="10" Width="50" Content="????" IsTapEnabled="False" Grid.Row="0"></Button>
+            <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged" Grid.Row="1">
+                <Ellipse x:Name="xBottomLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+                <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+                <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+                <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+                <Ellipse x:Name="xCenterDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+                <Line x:Name="xTopHLine" StrokeThickness="1" X1="5" Y1="-10" Y2="-10" Stroke="{StaticResource WindowsBlue}" Visibility="Collapsed"></Line>
+                <Line x:Name="xLeftVLine" StrokeThickness="1" Y1="5" X1="-10" X2="-10" Stroke="{StaticResource WindowsBlue}" Visibility="Collapsed"></Line>
+                <Line x:Name="xBottomHLine" StrokeThickness="1" X1="5" Stroke="{StaticResource WindowsBlue}" Visibility="Collapsed"></Line>
+                <Line x:Name="xRightVLine" StrokeThickness="1" Y1="5" Stroke="{StaticResource WindowsBlue}" Visibility="Collapsed"></Line>
+                <Border x:Name="xTopWidthTextBoxBorder" Background="LightGray" Height="20" CornerRadius="3">
+                    <TextBlock x:Name="xTopWidthTextBox"></TextBlock>
+                </Border>
+                <Border x:Name="xLeftHeightTextBoxBorder" Background="LightGray" Height="20" CornerRadius="3">
+                    <TextBlock x:Name="xLeftHeightTextBox"></TextBlock>
+                </Border>
+                <Border x:Name="xBottomWidthTextBoxBorder" Background="LightGray" Height="20" CornerRadius="3">
+                    <TextBlock x:Name="xBottomWidthTextBox"></TextBlock>
+                </Border>
+                <Border x:Name="xRightHeightTextBoxBorder" Background="LightGray" Height="20" CornerRadius="3">
+                    <TextBlock x:Name="xRightHeightTextBox"></TextBlock>
+                </Border>
+            </Canvas>
+        </Grid>
+    </Grid>
+</UserControl>-->

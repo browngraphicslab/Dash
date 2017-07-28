@@ -1,27 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.DataTransfer;
-using Windows.Security.Cryptography.Core;
 using Windows.UI;
-using Windows.UI.Text;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
+
 
 namespace Dash
 {
@@ -114,7 +104,7 @@ namespace Dash
 
             foreach (var ellipse in _draggerList)
             {
-                ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+                ellipse.Visibility = isVisible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
             }
         }
 
@@ -125,6 +115,7 @@ namespace Dash
             ContentElement.SizeChanged += ContentElement_SizeChanged;
             LayoutDocument = layoutDocument;
             DataDocument = dataDocument;
+            InitiateManipulators();
 
             RenderTransform = new TranslateTransform();
             _childContainers = new List<SelectableContainer>();
@@ -227,7 +218,7 @@ namespace Dash
 
         private void InitiateManipulators()
         {
-            _draggerList = new List<Ellipse>
+           _draggerList = new List<Ellipse>
             {
                 xBottomLeftDragger,
                 xTopLeftDragger,
@@ -441,7 +432,8 @@ namespace Dash
                 = _lineMap[_pressedEllipse].VLine.Visibility
                     = _lineMap[_pressedEllipse].WidthBorder.Visibility
                         = _lineMap[_pressedEllipse].HeightBorder.Visibility
-                            = Visibility.Visible;
+                            = Windows.UI.Xaml.Visibility.Visible;
+            ;
         }
 
         private void HideManipulatorMeasurements()
@@ -454,7 +446,7 @@ namespace Dash
                                 = xBottomWidthTextBoxBorder.Visibility
                                     = xLeftHeightTextBoxBorder.Visibility
                                         = xRightHeightTextBoxBorder.Visibility
-                                            = Visibility.Collapsed;
+                                            = Windows.UI.Xaml.Visibility.Collapsed;
         }
 
         private void LayoutManipulators()

@@ -116,6 +116,9 @@
     <Compile Include="Views\InterfaceBuilder\DocumentCanvasView.xaml.cs">
       <DependentUpon>DocumentCanvasView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
+      <DependentUpon>GridViewSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
     </Compile>
@@ -443,6 +446,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\DocumentCanvasView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

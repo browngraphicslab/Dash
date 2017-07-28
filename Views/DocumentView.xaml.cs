@@ -132,12 +132,12 @@ namespace Dash
         /// </summary>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
-        public void Resize(double dx = 0, double dy = 0)
+        public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
             dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
-
+            return new Size(dvm.Width, dvm.Height);
         }
 
         /// <summary>
@@ -166,10 +166,14 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                                new Point(ActualWidth / 2, ActualHeight / 2),
-                                                                ViewModel.GroupTransform.ScaleAmount);
+            var s = Resize(p.X, p.Y);
+            var position = ViewModel.GroupTransform.Translate;
+            var dx = Math.Max(p.X, 0);
+            var dy = Math.Max(p.Y, 0);
+            //p = new Point(dx, dy);
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
+                                                                new Point(s.Width / 2.0f, s.Height / 2.0f),
+                                                                ViewModel.GroupTransform.ScaleAmount); 
             e.Handled = true;
         }
 
@@ -276,19 +280,9 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ViewModel.MenuOpen)
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
-            }
-            else
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
-            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
+            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
@@ -336,27 +330,11 @@ namespace Dash
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
+            {
                 return;
-
-            TransformGroup tg = new TransformGroup();
-            tg.Children.Add(OuterGrid.RenderTransform); 
-
-
-            if (_docMenu.Visibility == Visibility.Collapsed && xIcon.Visibility == Visibility.Collapsed && !HasCollection)
-            {
-                ViewModel.OpenMenu();
-                tg.Children.Add(new TranslateTransform { X = -55, Y = 0 }); 
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
-            }
-            else
-            {
-                ViewModel.CloseMenu();
-                tg.Children.Add(new TranslateTransform { X = 55, Y = 0 });
-                OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
             }
 
             OnSelected();
-
             e.Handled = true;
         }
 
@@ -428,14 +406,10 @@ namespace Dash
             foreach (var tag in (sender as TextBox).Text.Split('#'))
                 if (tag.Contains("="))
                 {
-                    var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
-                    if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
-                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
-                    var word  = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
-                    var valu  = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key   = new Key(word, word);
+                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key = new Key(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {
@@ -443,35 +417,27 @@ namespace Dash
                             break;
                         }
 
-                    if (valu.StartsWith("@")) // @ means we're searching for a documents
+                    if (valu.StartsWith("@") && !valu.Contains("="))
                     {
-                        var fieldStr = valu.Substring(1, valu.Length - 1);
-                        if (valu.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
-                        {                       // @ FieldName = FieldValue
-                            var eqPos2     = fieldStr.IndexOfAny(new char[] { '=' });
-                            var fieldValue = fieldStr.Substring(eqPos2+1, Math.Max(0, fieldStr.Length - eqPos2-1)).Trim(' ', '\r');
-                            var fieldName  = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
+                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
+                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
 
-                            foreach (var doc in ContentController.GetControllers<DocumentController>())
-                                foreach (var field in doc.EnumFields())
-                                    if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
-                                    {
-                                        docController.SetField(key, new DocumentFieldModelController(doc), true);
-                                        break;
-                                    }
-                        }
-                        else // search for documents that optionally reference this DocumentController and that optionally have a field matching FieldName.
-                        {    // #newField = @ [@] [FieldName]
-                            var scopeDoc = new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey);
-                            if (fieldStr.StartsWith("@"))
-                            {
-                                fieldStr = fieldStr.Substring(1, fieldStr.Length - 1);
-                            }
-                            else
-                                scopeDoc = null;
-                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, fieldStr);
-                            proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
-                        }
+                        var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey), valu.Substring(1, valu.Length - 1));
+                        proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                    }
+                    else if (valu.StartsWith("@"))
+                    {
+                        var eqPos2 = valu.IndexOfAny(new char[] { '=' });
+                        var fieldName = valu.Substring(1, eqPos2-1).TrimEnd(' ').TrimStart(' ');
+                        var fieldValue = valu.Substring(eqPos2 + 1, Math.Max(0, valu.Length - eqPos2 - 1)).Trim(' ', '\r');
+
+                        foreach (var doc in ContentController.GetControllers<DocumentController>())
+                            foreach (var field in doc.EnumFields())
+                                if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
+                                {
+                                    docController.SetField(key, new DocumentFieldModelController(doc), true);
+                                    break;
+                                }
                     }
                     else
                     {

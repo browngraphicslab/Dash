@@ -38,21 +38,25 @@ namespace Dash
         {
             public FieldReference FieldReference { get; set; }
             public bool IsOutput { get; set; }
-            public bool IsReference { get; set; }
+            //public bool IsReference { get; set; }
 
             public PointerRoutedEventArgs PointerArgs { get; set; }
 
             public FrameworkElement FrameworkElement { get; set; }
             public DocumentView ContainerView { get; set; }
 
-            public IOReference(FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container, bool isReference = false)
+            public FieldModelController FMController { get;  set;}
+
+            public Key FieldKey { get; set; }
+            public IOReference(Key fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
             {
+                FieldKey = fieldKey; 
+                FMController = controller; 
                 FieldReference = fieldReference;
                 IsOutput = isOutput;
                 PointerArgs = args;
                 FrameworkElement = e;
                 ContainerView = container;
-                IsReference = isReference;
             }
         }
 
@@ -107,16 +111,13 @@ namespace Dash
         /// <param name="e"></param>
         void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
         {
-
-
             string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).CanLink = true;
             (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
-
         }
 
 
@@ -159,7 +160,7 @@ namespace Dash
             string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>(), true);
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
 

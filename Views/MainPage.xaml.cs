@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
@@ -35,12 +36,6 @@ namespace Dash
         {
             InitializeComponent();
 
-            // adds items from the overlay canvas onto the freeform canvas
-            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
-            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
-            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
-            xOverlayCanvas.OnAddImageTapped += AddImage;
-
             // create the collection document model using a request
             var fields = new Dictionary<Key, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
@@ -69,28 +64,41 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
+            MainDocView.AllowDrop = true;
+            MainDocView.DragEnter += MainDocViewOnDragEnter;
+            MainDocView.Drop += MainDocView_Drop;
+            MainDocView.DoubleTapped += XCanvas_OnDoubleTapped;
         }
 
-        public void AddOperatorsFilter()
+
+        private void MainDocViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsContentVisible = false;
+            e.DragUIOverride.Caption = e.DataView.Properties.Title;
+        }
+
+        public void AddOperatorsFilter(object o, DragEventArgs e)
         {
             if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
             {
                 xCanvas.Children.Add(OperatorSearchView.Instance);
-            } else
-            {
-                xCanvas.Children.Remove(OperatorSearchView.Instance);
+                Point absPos = e.GetPosition(Instance);
+                Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
+                Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
             }
         }
 
-        public void AddGenericFilter()
+        public void AddGenericFilter(object o, DragEventArgs e)
         {
             if (!xCanvas.Children.Contains(GenericSearchView.Instance))
             {
                 xCanvas.Children.Add(GenericSearchView.Instance);
-            }
-            else
-            {
-                xCanvas.Children.Add(GenericSearchView.Instance);
+                Point absPos = e.GetPosition(Instance);
+                Canvas.SetLeft(GenericSearchView.Instance, absPos.X);
+                Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
         }
 
@@ -101,119 +109,18 @@ namespace Dash
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
+            if (where != null)
+            {
+                docModel.GetPositionField().Data = (Point)where;
+            }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             children?.AddDocument(docModel);
         }
 
-        public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            var twoImages = new TwoImages(false).Document;
-            var twoImages2 = new TwoImages(false).Document;
-            var numbers = new Numbers().Document;
-
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                {
-                    DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(new[] {numbers})
-                }
-            };
-
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-            DisplayDocument(col);
-
-            AddAnotherLol();
-        }
-
-        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            var a = new ApiDocumentModel().Document;
-            DisplayDocument(a);
-        }
-
-        private void AddAnotherLol()
-        {
-            var numbers = new Numbers().Document;
-            var twoImages2 = new TwoImages(false).Document;
-
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(new[]
-                    {numbers, twoImages2})
-            };
-
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-            DisplayDocument(col);
-        }
-
-
-        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            throw new NotImplementedException();
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
-        }
-
-        public void AddDocuments(object sender, TappedRoutedEventArgs e)
-        {
-            //testing listview 
-            //DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
-            //DisplayDocument(Document);
-
-            //DisplayDocument(new PostitNote().Document);
-            DisplayDocument(new TwoImages(false).Document);
-            //DocumentController numbersProto = new Numbers().Document;
-            //DocumentController del = numbersProto.MakeDelegate();
-            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            //del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
-            //var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-            //var layoutDel = layout.Data.MakeDelegate();
-            //layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
-            //del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-            //DisplayDocument(numbersProto);
-            //DisplayDocument(del);
-            //DisplayDocument(new TwoImages(false).Document);
-            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-
-            //foreach (var d in new DBTest().Documents)
-            //    DisplayDocument(d);
-        }
-
-        public void AddNotes()
-        {
-            //DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
-            //DisplayDocument(rtfNote);
-
-            DocumentController postitNote = new PostitNote(PostitNote.DocumentType).Document;
-            DisplayDocument(postitNote);
-
-            //DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
-            //DisplayDocument(imageNote);
-        }
-
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var child = xViewBox.Child as FrameworkElement;
-            if (child != null)
-            {
-                child.Width = e.NewSize.Width;
-                child.Height = e.NewSize.Height;
-            }
+            MainDocView.Width = e.NewSize.Width;
+            MainDocView.Height = e.NewSize.Height;
         }
 
         //// FILE DRAG AND DROP
@@ -224,11 +131,18 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private async void XCanvas_Drop(object sender, DragEventArgs e)
+        private async void MainDocView_Drop(object sender, DragEventArgs e)
         {
+            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
+            {
+                (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<object, DragEventArgs>)?.Invoke(sender, e);
+                return;
+            }
+
             var dragged = new Image();
             var url = "";
 
+            
             // load items dragged from solution explorer
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -276,7 +190,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.Copy;
+            e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
@@ -292,9 +206,8 @@ namespace Dash
         {
             if (!_radialMenu.IsVisible)
                 _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
-            else _radialMenu.IsVisible = false;
+            //else _radialMenu.IsVisible = false;
             e.Handled = true;
         }
-
     }
 }

@@ -12,6 +12,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Dash.Models;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +24,9 @@ namespace Dash
 {
     public static class Actions
     {
+        
        
-        public static void AddSearch(Canvas c, Point p)
+        public static void AddSearch(object o, DragEventArgs e)
         {
             //if (!c.Children.Contains(_searchView))
             //{
@@ -49,8 +51,12 @@ namespace Dash
                 Width = 200,
                 Height = 200
             };
-            MainPage.Instance.DisplayDocument(opModel);
-            MainPage.Instance.AddGenericFilter();
+            var where = Util.GetCollectionDropPoint(
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                e.GetPosition(MainPage.Instance));
+            var pos = new Point(where.X - 30, where.Y -30);
+            MainPage.Instance.DisplayDocument(opModel, where);
+            MainPage.Instance.AddGenericFilter(o, e);
         }
 
 
@@ -106,10 +112,10 @@ namespace Dash
         }
 
 
-        public static void OnOperatorAdd(object obj)
+        public static void OnOperatorAdd(object o, DragEventArgs e)
         {
             //MainPage.Instance.AddOperator();
-            MainPage.Instance.AddOperatorsFilter();
+            MainPage.Instance.AddOperatorsFilter(o, e);
         }
 
         public static void AddOperator(object obj)
@@ -183,6 +189,16 @@ namespace Dash
             } else if (type == "Filter")
             {
                 opModel = OperatorDocumentModel.CreateFilterDocumentController();
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                view.DataContext = opvm;
             }
             else if (type == "ImageToUri")
             {
@@ -205,30 +221,87 @@ namespace Dash
                 MainPage.Instance.DisplayDocument(opModel);
         }
         
-        public static void AddCollection(object obj)
+        public static void AddCollection(CollectionView collection, DragEventArgs e)
         {
-            MainPage.Instance.AddCollection(null, null);
+            //Get transformed position of drop event
+            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+
+            //Make first collection
+            var numbers = new Numbers().Document;
+            var fields = new Dictionary<Key, FieldModelController>
+            {
+                {
+                    DocumentCollectionFieldModelController.CollectionKey,
+                    new DocumentCollectionFieldModelController(new[] {numbers})
+                }
+            };
+            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var layoutDoc =
+                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController = new DocumentFieldModelController(layoutDoc);
+            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+            col.SetField(DashConstants.KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc}), true);
+
+            //Make second collection
+            var numbers2 = new Numbers().Document;
+            var twoImages2 = new TwoImages(false).Document;
+            var fields2 = new Dictionary<Key, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new[]
+                    {numbers2, twoImages2})
+            };
+            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var layoutDoc2 =
+                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
+            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc2}), true);
+
+            //Display collections
+            DisplayDocument(collection, col2, where);
+            DisplayDocument(collection, col, where);
         }
 
-        public static void AddApiCreator(object obj)
+        /// <summary>
+        ///     Adds new documents to the MainView document. New documents are added as children of the Main document.
+        /// </summary>
+        /// <param name="docModel"></param>
+        /// <param name="where"></param>
+        /// <param name="collection"></param>
+        public static void DisplayDocument(CollectionView collection, DocumentController docModel, Point? where = null)
         {
-            MainPage.Instance.AddApiCreator(obj, new TappedRoutedEventArgs());
+            if (where != null)
+            {
+                docModel.GetPositionField().Data = (Point)where;
+            }
+            var children = collection.ViewModel.CollectionFieldModelController;
+            children?.AddDocument(docModel);
         }
 
-        public static void AddImage(object obj)
+        public static void AddApiCreator(CollectionView collection, DragEventArgs e)
         {
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
+            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var a = new ApiDocumentModel().Document;
+            DisplayDocument(collection, a, where);
         }
 
-        public static void AddDocuments(object obj)
+        public static void AddDocuments(CollectionView col, DragEventArgs e)
         {
-            MainPage.Instance.AddDocuments(null, null);
+            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(col, d, where);
         }
 
-        public static void AddNotes(object obj)
+        public static void AddNotes(CollectionView col, DragEventArgs e)
         {
-            MainPage.Instance.AddNotes(); 
+            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            DocumentController postitNote = new NoteDocuments.PostitNote(NoteDocuments.PostitNote.DocumentType).Document;
+            DisplayDocument(col, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)
