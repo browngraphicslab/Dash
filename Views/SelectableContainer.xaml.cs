@@ -547,6 +547,26 @@ namespace Dash
 
         #region guidelinesAndSnapping
 
+
+        private SelectableContainer GetPositioningContainer()
+        {
+            if (_parentContainer == null) return null;
+
+            if (_parentContainer.IsPositioningContainer())
+            {
+                return _parentContainer;
+            }
+
+            return null;
+            // we could recursively search up the tree but position only makes sense if your direct parent supports it
+            //return _parentContainer.GetPositioningContainer();
+        }
+
+        private bool IsPositioningContainer()
+        {
+            return LayoutDocument.DocumentType.Equals(DashConstants.DocumentTypeStore.FreeFormDocumentLayout);
+        }
+
         private void AddSnapLine(double lineCoordinate, bool isVertical)
         {
             var line = new Line();
@@ -642,9 +662,11 @@ namespace Dash
             private readonly SelectableContainer _rootContainer;
             private SelectableContainer _draggingContainer;
             private SnapBehavior _dragSnapBehavior;
-            private Point _actual;
-            private Point _start;
-            private Point _startSize;
+            private Point _actual; // in root coordinatees
+            private Point _start; // in root coordinates
+            private Point _startSize; // in root coordinates as long as we don't have scaling within composites
+            private SelectableContainer _positioningContainer;
+            private bool _ignoreSnap;
 
             public RootSnapManager(SelectableContainer rootContainer)
             {
@@ -656,6 +678,14 @@ namespace Dash
             {
                 _draggingContainer = draggingContainer;
                 _dragSnapBehavior = snapBehavior;
+                _positioningContainer = _draggingContainer.GetPositioningContainer();
+
+                // if there is no positioning container we can't snap cause we can't change position so ignore until the next manipulation starts
+                if (_positioningContainer == null)
+                {
+                    _ignoreSnap = true;
+                    return;
+                }
 
                 var transform = GetChildToRootTransform(_draggingContainer);
                 _actual = transform.TransformPoint(actual);
@@ -667,11 +697,14 @@ namespace Dash
             public void DisposeDraggingContainer(SelectableContainer draggingContainer)
             {
                 _rootContainer.ClearSnapLines();
+                _ignoreSnap = false;
             }
 
             // manipulation translate
             public void UpdateDraggingContainer(Point translate)
             {
+                if (_ignoreSnap) return;
+
                 _rootContainer.ClearSnapLines();
                 var allContainers = _rootContainer.GetAllChildren();
                 var allLines = CalculateLines(allContainers);
@@ -679,7 +712,7 @@ namespace Dash
                 _actual.X += translate.X;
                 _actual.Y += translate.Y;
 
-                var newPosition = _draggingContainer.GetPosition();
+                var newPosition = GetDraggingContainerPositionInRootCoordinates();
                 var newSize = _draggingContainer.GetSize();
 
                 Point toBeRenderPosition;
@@ -728,6 +761,7 @@ namespace Dash
                     newPosition.Y = toBeRenderPosition.Y - _draggingContainer.ActualHeight / 2;
                 }
 
+                newPosition = TransformRootCoordinatesToPositioningContainerCoordinates(newPosition);
                 _draggingContainer.SetPosition(newPosition.X, newPosition.Y);
                 _draggingContainer.SetSize(newSize.X, newSize.Y);
 
@@ -739,6 +773,19 @@ namespace Dash
                     var lowerRight = new Point(toBeRenderPosition.X + newSize.X / 2, toBeRenderPosition.Y + newSize.Y / 2);
                     DrawSnapLines(lowerRight, allLines);
                 }
+            }
+
+            private Point TransformRootCoordinatesToPositioningContainerCoordinates(Point rootCoordinate)
+            {
+                var transform = GetRootToChildTransform(_positioningContainer);
+                return transform.TransformPoint(rootCoordinate);
+            }
+
+            private Point GetDraggingContainerPositionInRootCoordinates()
+            {
+                var dragPosition = _draggingContainer.GetPosition();
+                var transform = GetChildToRootTransform(_positioningContainer);
+                return transform.TransformPoint(dragPosition);
             }
 
             private void DrawSnapLines(Point toBeRenderPosition, Lines allLines)
@@ -820,6 +867,11 @@ namespace Dash
             private GeneralTransform GetChildToRootTransform(SelectableContainer child)
             {
                 return child.TransformToVisual(_rootContainer);
+            }
+
+            private GeneralTransform GetRootToChildTransform(SelectableContainer child)
+            {
+                return _rootContainer.TransformToVisual(child);
             }
 
             private class Lines
