@@ -218,7 +218,7 @@ namespace Dash
 
         private void InitiateManipulators()
         {
-           _draggerList = new List<Ellipse>
+            _draggerList = new List<Ellipse>
             {
                 xBottomLeftDragger,
                 xTopLeftDragger,
@@ -555,7 +555,7 @@ namespace Dash
 
         private void AddSnapLine(double lineCoordinate, bool isVertical)
         {
-            var lines = new List<Line> {NewLine(), NewLine(), NewLine(), NewLine()};
+            var lines = new List<Line> { NewLine(), NewLine(), NewLine(), NewLine() };
 
             for (int i = 0; i < lines.Count; i++)
             {
@@ -579,8 +579,6 @@ namespace Dash
                 }
                 xManipulatorCanvas.Children.Add(line);
             }
-
-
         }
         Line NewLine()
         {

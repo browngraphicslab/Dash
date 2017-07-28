@@ -114,8 +114,10 @@ namespace Dash
                 docModel.GetPositionField().Data = (Point)where;
             }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+            DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
         }
+
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {

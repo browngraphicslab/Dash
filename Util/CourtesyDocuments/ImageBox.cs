@@ -23,7 +23,7 @@ namespace Dash
         public static readonly Key OpacityKey = new Key("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
         public static readonly Key ClipKey = new Key("8411212B-D56B-4B08-A0B3-094876D2BED2", "Clip Location Key");
         private const double DefaultOpacity = 1;
-        private readonly RectangleGeometry _defaultClip = new RectangleGeometry {Rect = new Rect(0,0,50,50)};
+        private readonly RectangleGeometry _defaultClip = new RectangleGeometry {Rect = new Rect(0,0,100,100)};
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         private static string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
 
@@ -154,7 +154,7 @@ namespace Dash
             image.Clip = new RectangleGeometry
             {
                 Rect = new Rect(data.X * image.ActualWidth / 100, 
-                                data.Y * image.ActualWidth / 100, 
+                                data.Y * image.ActualHeight / 100, 
                                 data.Width * image.ActualWidth / 100, 
                                 data.Height * image.ActualHeight / 100)
             };
