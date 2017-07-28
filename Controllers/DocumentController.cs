@@ -89,6 +89,7 @@ namespace Dash
             }
             // Add Events
         }
+        
 
 
         /// <summary>
@@ -462,8 +463,8 @@ namespace Dash
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
                     var field = GetField(opFieldInput);
-                    inputs[opFieldInput] = field?.DereferenceToRoot(context) ??
-                        TypeInfoHelper.CreateFieldModelController(opField.Inputs[opFieldInput]);
+                    inputs[opFieldInput] = field?.DereferenceToRoot(context) ??// TODO: why do we do this? You shouldnt make controllers before you need them
+                        TypeInfoHelper.CreateFieldModelController(opField.Inputs[opFieldInput]); 
                 }
                 opField.Execute(inputs, outputs);
                 foreach (var fieldModel in outputs)

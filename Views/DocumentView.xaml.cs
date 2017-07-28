@@ -19,7 +19,6 @@ using Dash.Controllers.Operators;
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
-
     public sealed partial class DocumentView : SelectionElement
     {
         public string DebugName = "";

@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using DashShared;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace Dash
 {
@@ -52,9 +54,13 @@ namespace Dash
         {
             try
             {
+                var a = JsonConvert.SerializeObject(bodyObject);
+
                 // make the post request and get the result
-                var response = PostAsJson ? Connection.PostAsJsonAsync(DashConstants.ServerBaseUrl + path, bodyObject).Result :
+                var response = PostAsJson ? Connection.PostAsync(DashConstants.ServerBaseUrl + path, new StringContent(a,Encoding.UTF8,"application/json")).Result :
                                             Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent).Result;
+
+                Debug.WriteLine(response.RequestMessage.Content);
 
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)

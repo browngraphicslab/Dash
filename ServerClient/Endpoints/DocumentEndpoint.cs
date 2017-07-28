@@ -1,117 +1,119 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Net.Http;
+using System.Threading.Tasks;
 using DashShared;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Dash
 {
     public class DocumentEndpoint
     {
+        private ServerEndpoint _connection;
 
-        #region RemovedFakeLocal
+        public DocumentEndpoint(ServerEndpoint connection)
+        {
+            _connection = connection;
+        }
+
 
         /// <summary>
-        /// Fake dictionary of string (document id) to document model
+        /// Converts Dash client-side representation of the DocModel into the server-side DashShared DocumentModel
         /// </summary>
-        private Dictionary<string, DocumentModel> _documents;
+        private ServerDocumentModel convertToServerModel(DocumentModel newDocument) {
+            return new ServerDocumentModel(newDocument.Fields, newDocument.DocumentType, newDocument.Id);
+        }
 
         /// <summary>
-        /// The number of documents we currently have
+        /// Converts Dash server-side representation of the DocModel into the client-side DashShared DocumentModel
         /// </summary>
-        private int _numDocs;
-
-        #endregion
+        private DocumentModel convertToClientModel(ServerDocumentModel newDocument)
+        {
+            Dictionary<Key, string> fields = new Dictionary<Key, string>();
+            foreach (KeyValuePair<string,string> item in newDocument.Fields)
+                fields.Add(new Key(item.Key), item.Value);
+            return new DocumentModel(fields, newDocument.DocumentType);
+        }
 
         /// <summary>
-        /// Controller for getting new types
+        /// Adds a new Document to the DashWebServer and returns that DocumentModel.
         /// </summary>
-        private readonly TypeEndpoint _typeEndpoint;
-
-        public DocumentEndpoint(TypeEndpoint typeEndpoint)
+        /// <param name="newDocument"></param>
+        /// <returns></returns>
+        public async Task<Result<DocumentModel>> AddDocument(DocumentModel newDocument)
         {
-            _typeEndpoint = typeEndpoint;
-            _documents = new Dictionary<string, DocumentModel>();
+            try
+            {
+                // convert from Dash DocumentModel to DashShared DocumentModel (server representation)
+                var s = convertToServerModel(newDocument);
+                HttpResponseMessage result = _connection.Post("api/Document", s);
+                ServerDocumentModel resultdoc = await result.Content.ReadAsAsync<ServerDocumentModel>();
+                return new Result<DocumentModel>(true,convertToClientModel(resultdoc));
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+            }
         }
 
-        public FieldModel GetFieldInDocument(string docId, Key field)
+        /// <summary>
+        /// Updates an existing Document in the DashWebServer and returns the updated document model.
+        /// </summary>
+        /// <param name="DocumentToUpdate"></param>
+        /// <returns></returns>
+        public async Task<Result<DocumentModel>> UpdateDocument(DocumentModel DocumentToUpdate)
         {
-            throw new NotImplementedException();
-
-            //DocumentModel model = _documents[docId];
-            //return model?.Field(field);
+            try
+            {
+                HttpResponseMessage result = _connection.Put("api/Document",convertToServerModel(DocumentToUpdate));
+                DocumentModel resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
+                return new Result<DocumentModel>(true, resultdoc);
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+            }
+            
         }
 
-        public FieldModel GetFieldInDocument(ReferenceFieldModel referenceFieldModel)
+        /// <summary>
+        /// Fetches a document with the given ID from the server.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<Result<DocumentModel>> GetDocument(string id)
         {
-            throw new NotImplementedException();
-
-            //DocumentModel model = _documents[referenceFieldModel.DocId];
-            //if (model != null)
-            //{
-            //    return model.Field(referenceFieldModel.FieldKey);
-            //}
-            //return null;
+            try
+            {
+                ServerDocumentModel result = await _connection.GetItem<ServerDocumentModel>($"api/Document/{id}");
+                return new Result<DocumentModel>(true,convertToClientModel(result));
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
+            }
         }
 
-        public IEnumerable<DocumentModel> GetDelegates(string protoId)
+        /// <summary>
+        /// Deletes a document with the given ID from the server.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
+        public Result DeleteDocument(DocumentModel document)
         {
-            throw new NotImplementedException();
-
-            //foreach (var doc in _documents)
-            //{
-            //    var docsProto = doc.Value.Field(DocumentModel.PrototypeKey) as DocumentModelFieldModel;
-            //    if (docsProto != null && docsProto.Data.Id == protoId)
-            //        yield return doc.Value;
-            //}
-        }
-
-        public DocumentModel GetDocumentAsync(string docId)
-        {
-            return _documents[docId];
-        }
-
-        public void DeleteDocumentAsync(DocumentModel model)
-        {
-            _documents.Remove(model.Id);
-        }
-
-        public DocumentModel UpdateDocumentAsync(DocumentModel model)
-        {
-            _documents[model.Id] = model;
-            return model;
-        }
-
-        public DocumentModel CreateDocumentAsync(string type)
-        {
-            throw new NotImplementedException();
-
-            //var id = $"{_numDocs++}";
-
-            //var newDoc = new DocumentModel
-            //{
-            //    DocumentType = _typeEndpoint.CreateTypeAsync(type),
-            //    Id = id
-            //};
-
-            //_documents[id] = newDoc;
-
-            //return newDoc;
-        }
-
-        public DocumentModel CreateDocumentAsync(DocumentType type)
-        {
-            throw new NotImplementedException();
-
-            //var id = $"{_numDocs++}";
-
-            //var newDoc = new DocumentModel
-            //{
-            //    DocumentType = type,
-            //    Id = id
-            //};
-
-            //_documents[id] = newDoc;
-
-            //return newDoc;
+            string id = document.Id;
+            try
+            {
+                _connection.Delete($"api/Document/{id}");
+                return new Result(true);
+            }
+            catch (ApiException e)
+            {
+                // return the error message
+                return new Result(false, string.Join("\n", e.Errors));
+            }
         }
     }
 }

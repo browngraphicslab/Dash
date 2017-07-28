@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dash.Models;
 using Dash.StaticClasses;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash
 {

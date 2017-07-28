@@ -613,19 +613,24 @@ namespace Dash
         {
             xBackgroundTileContainer.Children.Clear();
             new ManipulationControls(xBackgroundTileContainer);
-            var width = 150;
-            var height = 150;
-            for (double x = 0; x < Grid.ActualWidth; x += width)
+            var width = 3000;
+            var height = 3000;
+
+            for (double x = 0; x < Grid.ActualWidth; x += width * .75)
             {
-                for (double y = 0; y < Grid.ActualHeight; y += height)
+                for (double y = 0; y < Grid.ActualHeight; y += height * .75)
                 {
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .3;
+                    image.Opacity = .8;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);
+                    ScaleTransform scale = new ScaleTransform();
+                    scale.ScaleX = .75;
+                    scale.ScaleY = .75;
+                    image.RenderTransform = scale;
                     xBackgroundTileContainer.Children.Add(image);
                 }
             }

@@ -9,53 +9,41 @@ using TextWrapping = Windows.UI.Xaml.TextWrapping;
 
 namespace Dash
 {
-    public abstract class FieldModelController : ViewModelBase, IController, IDisposable
+    public abstract class FieldModelController : ViewModelBase, IController
     {
-        /// <summary>
-        ///     The fieldModel associated with this <see cref="FieldModelController"/>, You should only set values on the controller, never directly
-        ///     on the fieldModel!
-        /// </summary>
+        // == FIELDS & EVENTS ==
         public FieldModel FieldModel { get; set; }
         public delegate void FieldModelUpdatedHandler(FieldModelController sender, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
+        protected virtual bool IsLocal { get { return false; } }
 
         protected void OnFieldModelUpdated(Context context = null)
         {
             FieldModelUpdated?.Invoke(this, context);
         }
 
+        // == CONSTRUCTOR ==
         /// <summary>
-        ///     A wrapper for <see cref="Dash.FieldModel.OutputReferences" />. Change this to propogate changes
-        ///     to the server and across the client
+        /// Creates a new FieldModelController from a given FieldModel
         /// </summary>
-        public ObservableCollection<ReferenceFieldModelController> OutputReferences;
-
-        public abstract TypeInfo TypeInfo { get; }
-
-        public virtual bool CheckType(FieldModelController fmc)
+        /// <param name="fieldModel"></param>
+        protected FieldModelController(FieldModel fieldModel = null)
         {
-            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
+            if (fieldModel != null)
+            {
+                // Initialize Local Variables
+                FieldModel = fieldModel;
+                ContentController.AddModel(fieldModel);
+                ContentController.AddController(this);
+
+                if (IsLocal)
+                {
+                    Debug.WriteLine("it is local");
+                }
+            }
         }
 
-        /// <summary>
-        ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
-        ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        protected virtual void UpdateValue(FieldModelController fieldModel)
-        {
-        }
-
-        protected FieldModelController(FieldModel fieldModel)
-        {
-            // Initialize Local Variables
-            FieldModel = fieldModel;
-            ContentController.AddModel(fieldModel);
-            ContentController.AddController(this);
-
-            // Add Events
-        }
-
+        // == METHODS ==
 
         /// <summary>
         /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
@@ -64,27 +52,6 @@ namespace Dash
         {
             return FieldModel.Id;
         }
-
-        public virtual FieldModelController Dereference(Context context)
-        {
-            return this;
-        }
-
-        public virtual FieldModelController DereferenceToRoot(Context context)
-        {
-            return this;
-        }
-
-        public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
-        {
-            return DereferenceToRoot(context) as T;
-        }
-
-        /// <summary>
-        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
-        /// </summary>
-        /// <returns></returns>
-        public abstract FrameworkElement GetTableCellView();
 
         /// <summary>
         /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll
@@ -114,6 +81,15 @@ namespace Dash
             return scrollViewer;
         }
 
+        /// <summary>
+        /// Typed Copy() command.
+        /// </summary>
+        public T Copy<T>() where T : FieldModelController
+        {
+            return Copy() as T;
+        }
+
+        // - OVERRIDEN -
         public override bool Equals(object obj)
         {
             FieldModelController cont = obj as FieldModelController;
@@ -129,17 +105,68 @@ namespace Dash
             return FieldModel.GetHashCode();
         }
 
+        // - VIRTUAL -
+        /// <summary>
+        /// Dereferences the current FieldModelController by one level. Override this in special cases. Normally,
+        /// this method just returns 'this' FieldModelController.
+        /// </summary>
+        public virtual FieldModelController Dereference(Context context)
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Dereferences the current FieldModelController until Dereference() does not return a ReferenceFieldController.
+        /// Usually, this method just returns 'this' FieldModelController.
+        /// </summary>
+        public virtual FieldModelController DereferenceToRoot(Context context)
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Typed version of DereferenceToRoot().
+        /// </summary>
+        public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
+        {
+            return DereferenceToRoot(context) as T;
+        }
+
+        /// <summary>
+        /// Returns true if this FieldModelController and fmc's TypeInfo fields are the same and are non-None.
+        /// </summary>
+        public virtual bool CheckType(FieldModelController fmc)
+        {
+            return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
+        }
+
+        /// <summary>
+        ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
+        ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
+        /// </summary>
+        /// <param name="fieldReference"></param>
+        protected virtual void UpdateValue(FieldModelController fieldModel) { }
+
+        /// <summary>
+        /// TODO: Tyler what does this do?
+        /// </summary>
+        public virtual void Dispose() { }
+
+        // - ABSTRACT -
+        /// <summary>
+        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
+        /// </summary>
+        /// <returns></returns>
+        public abstract FrameworkElement GetTableCellView();
+
+        /// <summary>
+        /// Returns a copy the given FieldModelController which references a new FieldModel / FieldModelDTO.
+        /// </summary>
+        /// <returns></returns>
         public abstract FieldModelController Copy();
 
-        public T Copy<T>() where T : FieldModelController
-        {
-            return Copy() as T;
-        }
-
         public abstract FieldModelController GetDefaultController();
+        public abstract TypeInfo TypeInfo { get; }
 
-        public virtual void Dispose()
-        {
-        }
     }
 }

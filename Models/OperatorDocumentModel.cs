@@ -17,15 +17,6 @@ namespace Dash
             IDictionary<Key, TypeInfo> outputs = opController.Outputs;
             Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
             fields[OperatorKey] = opController;
-            //TODO These loops make overloading not possible
-            //foreach (var typeInfo in inputs)
-            //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
-            //}
-            //foreach (var typeInfo in outputs)
-            //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
-            //}
             
             var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());

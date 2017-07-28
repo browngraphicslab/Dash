@@ -1,4 +1,7 @@
-﻿namespace Dash
+﻿using System;
+using DashShared;
+
+namespace DashShared
 {
     /// <summary>
     ///     A field model used to represent a Document
@@ -17,6 +20,11 @@
         public DocumentModelFieldModel(DocumentModel data)
         {
             Data = data;
+        }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            return new FieldModelDTO(TypeInfo.Document, Data);
         }
     }
 }

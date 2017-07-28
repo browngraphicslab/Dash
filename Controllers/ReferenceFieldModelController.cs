@@ -9,11 +9,11 @@ namespace Dash
 {
     public class ReferenceFieldModelController : FieldModelController
     {
-        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference))
+        public FieldReference Reference;
+
+        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference.FieldKey))
         {
-            // bcz: TODO check DocContextList - maybe this should come from the constructor?
-            //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
-            //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
+            this.Reference = reference;
             var docController = reference.GetDocumentController(null);
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
@@ -21,11 +21,7 @@ namespace Dash
         public ReferenceFieldModelController(string documentId, Key fieldKey) : this(
             new DocumentFieldReference(documentId, fieldKey))
         { }
-
-        public ReferenceFieldModelController(FieldReference documentReference, Key fieldKey) : this(
-            new DocumentPointerFieldReference(documentReference, fieldKey))
-        {
-        }
+        
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
@@ -40,8 +36,8 @@ namespace Dash
 
         public FieldReference FieldReference
         {
-            get { return ReferenceFieldModel.Reference; }
-            set { ReferenceFieldModel.Reference = value; }
+            get { return Reference; }
+            set { ReferenceFieldModel.Reference = value.FieldKey; }
         }
 
         public Key FieldKey => FieldReference.FieldKey;

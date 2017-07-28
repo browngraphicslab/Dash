@@ -42,18 +42,42 @@
     <Compile Include="DashUI\DashUI.cs" />
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
+    <Compile Include="Models\ApiSourceFieldModelController.cs" />
     <Compile Include="Models\AuthenticationTokenModel.cs" />
+    <Compile Include="Models\DocumentCollectionFieldModel.cs" />
+    <Compile Include="Models\DocumentModel.cs" />
+    <Compile Include="Models\DocumentModelFieldModel.cs" />
     <Compile Include="Models\DocumentType.cs" />
     <Compile Include="Models\EntityBase.cs" />
     <Compile Include="Models\AuthorizableEntityBase.cs" />
+    <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Models\FieldModelDTO.cs" />
+    <Compile Include="Models\FilterModel.cs" />
+    <Compile Include="Models\FreeformModel.cs" />
+    <Compile Include="Models\GuideLineModel.cs" />
+    <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\Key.cs" />
+    <Compile Include="Models\ListFieldModel.cs" />
+    <Compile Include="Models\NumberFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
+    <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
+    <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
+    <Compile Include="Models\PointFieldModel.cs" />
+    <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\Result.cs" />
+    <Compile Include="Models\RichTextFieldModel.cs" />
+    <Compile Include="Models\ServerDocumentModel.cs" />
     <Compile Include="Models\ShapeModel.cs" />
+    <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="project.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\OperatorModels\Set\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
 
-namespace Dash
+namespace DashShared
 {
     /// <summary>
     /// A field model which encapsulates a list of Documents
@@ -34,5 +35,10 @@ namespace Dash
             Debug.Assert(documents != null);
             Data = documents;
         }
+
+        protected override FieldModelDTO GetFieldDTOHelper() 
+        {
+            return new FieldModelDTO(TypeInfo.Collection, Data);
+        }  
     }
 }

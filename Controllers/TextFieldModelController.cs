@@ -1,9 +1,22 @@
-﻿ using Windows.UI.Xaml;
+﻿using DashShared;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
+    #region LocalController
+    /// <summary>
+    /// Represents and controls a text field. Instances of this are NOT stored on the server.
+    /// </summary>
+    public class LocalTextFieldModelController : TextFieldModelController
+    {
+        // == CONSTRUCTORS ==
+        public LocalTextFieldModelController(string data) : base(data) { }
+        protected override bool IsLocal { get { return true; } }
+    }
+    #endregion
+
     public class TextFieldModelController : FieldModelController
     {
         public TextFieldModelController(string data) : base(new TextFieldModel(data))

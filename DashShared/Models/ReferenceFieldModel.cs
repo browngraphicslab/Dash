@@ -1,12 +1,14 @@
-﻿using DashShared;
+﻿using System;
+using DashShared;
 
 namespace Dash
 {
     public class ReferenceFieldModel : FieldModel
     {
-        public FieldReference Reference;
+        //public FieldReference Reference;
+        public Key Reference;
 
-        public ReferenceFieldModel(FieldReference reference)
+        public ReferenceFieldModel(Key reference)
         {
             Reference = reference;
         }
@@ -25,6 +27,11 @@ namespace Dash
         public override int GetHashCode()
         {
             return Reference.GetHashCode();
+        }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            return new FieldModelDTO(TypeInfo.Reference, Reference);
         }
     }
 }
