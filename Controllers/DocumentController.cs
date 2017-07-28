@@ -540,10 +540,6 @@ namespace Dash
             {
                 return OperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == ApiDocumentModel.DocumentType)
-            {
-                return ApiDocumentModel.MakeView(this, context, isInterfaceBuilder);
-            }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
                 return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
@@ -568,6 +564,11 @@ namespace Dash
             {
                 return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
+            if (DocumentType == ApiOperatorBox.DocumentType)
+            {
+                return ApiOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
+
 
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);

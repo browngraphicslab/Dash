@@ -28,9 +28,11 @@ namespace Dash {
         public CheckBox XRequired { get { return xRequired; } }
 
         public DocumentController docModelRef;
+        
 
         // == CONSTRUCTORS == 
-        public ApiCreatorProperty(ApiCreatorPropertyGenerator parent) {
+        public ApiCreatorProperty(ApiCreatorPropertyGenerator parent)
+        {
             DataContext = this;
             this.InitializeComponent();
             this.parent = parent;
@@ -57,6 +59,8 @@ namespace Dash {
 
                 // propagate changes to the document model
                 ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
+
+                
 
                 if (listView.Items.Count == 0)
                     listView.Visibility = Visibility.Collapsed;
