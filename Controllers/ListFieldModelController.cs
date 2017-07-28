@@ -82,7 +82,7 @@ namespace Dash
             //});
             return GetTableCellViewForCollectionAndLists(true, delegate (TextBlock block)
             {
-                block.Text = "[" + string.Join(", ", TypedData) + "]";
+                block.Text = string.Format("A List of {0} object(s)", TypedData.Count()); 
             }); 
         }
 
