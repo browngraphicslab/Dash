@@ -76,9 +76,9 @@ namespace Dash
         public DocumentView ParentDocument { get; set; }
 
 
-        public CollectionView(CollectionViewModel vm) : base()
+        public CollectionView(CollectionViewModel vm)
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ViewModel = vm;
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;

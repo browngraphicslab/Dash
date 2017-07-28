@@ -93,6 +93,9 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClipSettings.xaml.cs">
+      <DependentUpon>ClipSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
@@ -443,6 +446,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

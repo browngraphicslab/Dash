@@ -104,7 +104,7 @@ namespace Dash
 
             foreach (var ellipse in _draggerList)
             {
-                ellipse.Visibility = isVisible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+                ellipse.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 
@@ -580,19 +580,19 @@ namespace Dash
                 xManipulatorCanvas.Children.Add(line);
             }
 
-            Line NewLine()
-            {
-                return new Line
-                {
-                    Tag = "GUIDELINE",
-                    Stroke = new SolidColorBrush(Colors.CornflowerBlue),
-                    StrokeThickness = 1,
-                    StrokeDashArray = new DoubleCollection() { 2, 2 },
-                    UseLayoutRounding = true
-                };
-            }
-        }
 
+        }
+        Line NewLine()
+        {
+            return new Line
+            {
+                Tag = "GUIDELINE",
+                Stroke = new SolidColorBrush(Colors.CornflowerBlue),
+                StrokeThickness = 1,
+                StrokeDashArray = new DoubleCollection() { 2, 2 },
+                UseLayoutRounding = true
+            };
+        }
 
         private void ClearSnapLines()
         {
