@@ -20,9 +20,11 @@ namespace Dash
     {
 
         public static DocumentType DocumentType = new DocumentType("3A6F92CC-D8DC-448B-9D3E-A1E04C2C77B3", "Image Box");
-        public static Key OpacityKey = new Key("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
-        public static double DefaultOpacity = 1;
-        public static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
+        public static readonly Key OpacityKey = new Key("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
+        public static readonly Key ClipKey = new Key("8411212B-D56B-4B08-A0B3-094876D2BED2", "Clip Location Key");
+        private const double DefaultOpacity = 1;
+        private readonly RectangleGeometry _defaultClip = new RectangleGeometry {Rect = new Rect(0,0,0.5,0.5)};
+        private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         private static string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
 
         public ImageBox(FieldModelController refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
@@ -31,14 +33,21 @@ namespace Dash
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
             SetOpacityField(Document, DefaultOpacity, true, null);
+            SetClipField(Document, _defaultClip, true, null);
         }
 
-        protected new static void SetupBindings(Image image, DocumentController docController,
+        private static void SetClipField(DocumentController docController, RectangleGeometry defaultClip, bool forceMask, Context context)
+        {
+            var currentClipField = new RectFieldModelController(defaultClip.Rect);
+            docController.SetField(OpacityKey, currentClipField, forceMask);
+        }
+
+        protected static void SetupBindings(Image image, DocumentController docController,
             Context context)
         {
             CourtesyDocument.SetupBindings(image, docController, context);
-
             AddBinding(image, docController, OpacityKey, context, BindOpacity);
+            AddBinding(image, docController, ClipKey, context, BindClip);
             SetupImageBinding(image, docController, context);
         }
 
@@ -115,6 +124,19 @@ namespace Dash
             image.SetBinding(Image.SourceProperty, sourceBinding);
         }
 
+        private static void BindClip(Image image, DocumentController docController, Context context)
+        {
+            var clipController =
+                docController.GetDereferencedField(ClipKey, context) as RectFieldModelController;
+            if (clipController == null) {Debug.WriteLine("AINT NO CLIP IN THIS BIHH"); return;}
+            Debug.WriteLine("ISCLIPS");
+            var data = clipController.Data;
+            clipController.FieldModelUpdated += (ss, cc) =>
+            {
+                image.Clip = new RectangleGeometry {Rect = new Rect(data.X, data.Y, data.Width * image.ActualWidth, data.Height * image.ActualHeight)};
+            };
+        }
+
         private static void BindOpacity(Image image, DocumentController docController, Context context)
         {
             var opacityController = docController.GetDereferencedField(OpacityKey, context) as NumberFieldModelController;
@@ -152,13 +174,11 @@ namespace Dash
 
         #region FieldGettersAndSetters
 
-        private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask,
-            Context context)
+        private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask, Context context)
         {
             var currentOpacityField = new NumberFieldModelController(opacity);
-            docController.SetField(OpacityKey, currentOpacityField,
-                forceMask); // set the field here so that forceMask is respected
-
+            docController.SetField(OpacityKey, currentOpacityField, forceMask); 
+            // set the field here so that forceMask is respected
         }
 
         private static ReferenceFieldModelController GetImageReference(DocumentController docController)

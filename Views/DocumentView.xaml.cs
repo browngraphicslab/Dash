@@ -277,7 +277,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null)
+            if (ViewModel != null || DataContext == null)
                 return;
 
             ViewModel = DataContext as DocumentViewModel;
@@ -294,14 +294,7 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ViewModel.MenuOpen)
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
-            }
-            else
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
+            ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
 
             if (ViewModel != null)
