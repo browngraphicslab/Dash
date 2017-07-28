@@ -5,9 +5,10 @@ namespace Dash
 {
     public class ReferenceFieldModel : FieldModel
     {
-        public FieldReference Reference;
+        //public FieldReference Reference;
+        public Key Reference;
 
-        public ReferenceFieldModel(FieldReference reference)
+        public ReferenceFieldModel(Key reference)
         {
             Reference = reference;
         }

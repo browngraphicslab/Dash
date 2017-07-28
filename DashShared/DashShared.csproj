@@ -63,6 +63,7 @@
     <Compile Include="Models\OperatorModels\Arithmetic\SubtractFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Models\PointFieldModel.cs" />
+    <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\Result.cs" />
     <Compile Include="Models\RichTextFieldModel.cs" />
     <Compile Include="Models\ServerDocumentModel.cs" />

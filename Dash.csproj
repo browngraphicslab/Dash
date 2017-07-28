@@ -95,8 +95,6 @@
   <ItemGroup>
     <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
-    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
-    <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
@@ -157,7 +155,6 @@
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
     <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
     <Compile Include="Util\DocumentFieldReference.cs" />
-    <Compile Include="Models\DocumentPointerFieldReference.cs" />
     <Compile Include="Util\FieldReference.cs" />
     <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
     <Compile Include="Views\RichTextSettings.xaml.cs">
