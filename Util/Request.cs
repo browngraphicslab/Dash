@@ -49,10 +49,12 @@ namespace Dash
             Headers = headers;
             foreach (KeyValuePair<string, ApiProperty> entry in headers)
             {
+                
                 // add custom header properties to request
                 if (!Message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
                     return null;
-                ; // TODO: have some error happen here
+                    // TODO: have some error happen here
+                    //TODO check for spaces in key or value text?
             }
             return this;
         }
@@ -60,16 +62,7 @@ namespace Dash
         public Request SetMessageBody(HttpFormUrlEncodedContent messageBody)
         {
             MessageBody = messageBody;
-            // if get, we add parameters to the URI either in URL for GET or in body for POST requests
-            if (RequestType == HttpMethod.Get)
-            {
-                if (!string.IsNullOrWhiteSpace(messageBody.ToString()))
-                    Message.RequestUri = new Uri(ApiUri.OriginalString + "?" + messageBody.ToString());
-            }
-            else
-            {
-                Message.Content = MessageBody;
-            }
+            
             return this;
         }
 
@@ -79,32 +72,18 @@ namespace Dash
             return this;
         }
 
-        public Request TrySetToken()
-        {
-            if (
-                !(string.IsNullOrWhiteSpace(ApiUri.AbsolutePath) || string.IsNullOrWhiteSpace(Key) ||
-                  string.IsNullOrWhiteSpace(Secret)))
-            {
-                TokenMsg = new HttpRequestMessage(HttpMethod.Post, AuthUri);
-                //var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
-                //var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray)); //TODO is this needed
-
-                // apply auth headers & parameters
-                TokenMsg.Content = MessageBody; //TODO is this right??
-                TokenMsg.Headers.Authorization = new HttpCredentialsHeaderValue("Basic",
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes(
-                        string.Format("{0}:{1}", Key, Secret))));
-                foreach (KeyValuePair<string, ApiProperty> entry in AuthHeaders)
-                {
-                    if (!TokenMsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
-                        return null;
-                }
-            }
-            return this;
-        }
-
         public async Task<Request> TrySetResponse()
         {
+            // if get, we add parameters to the URI either in URL for GET or in body for POST requests
+            if (RequestType == HttpMethod.Get)
+            {
+                if (!string.IsNullOrWhiteSpace(MessageBody.ToString()))
+                    Message.RequestUri = new Uri(ApiUri.OriginalString + "?" + MessageBody.ToString());
+            }
+            else
+            {
+                Message.Content = MessageBody;
+            }
             if (
                 !(string.IsNullOrWhiteSpace(ApiUri.AbsolutePath) || string.IsNullOrWhiteSpace(Key) ||
                   string.IsNullOrWhiteSpace(Secret)))

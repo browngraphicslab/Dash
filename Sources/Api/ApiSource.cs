@@ -163,7 +163,7 @@ namespace Dash {
             }
 
             var trySetResponse = new Request(requestType, new Uri(apiUrlTB.Text)).SetHeaders(headers)?
-                .SetMessageBody(new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(parameters)))
+                .SetMessageBody(new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(parameters))) // <-- What is this?
                 .SetAuthUri(authURI)
                 .SetAuthHeaders(authHeaders).TrySetResponse();
             if (trySetResponse != null)
