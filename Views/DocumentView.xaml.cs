@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
@@ -264,10 +263,19 @@ namespace Dash
                 return;
 
             initDocumentOnDataContext();
-
             SetUpMenu();
             ViewModel.CloseMenu();
 
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                SetInterfaceBuilderSpecificSettings();
+            }
+
+        }
+
+        private void SetInterfaceBuilderSpecificSettings()
+        {
+            RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)

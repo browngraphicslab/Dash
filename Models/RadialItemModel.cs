@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 
-namespace Dash.Models
+namespace Dash
 {
     public class RadialItemModel
     {
