@@ -21,11 +21,7 @@ namespace Dash
         public ReferenceFieldModelController(string documentId, Key fieldKey) : this(
             new DocumentFieldReference(documentId, fieldKey))
         { }
-
-        public ReferenceFieldModelController(FieldReference documentReference, Key fieldKey) : this(
-            new DocumentPointerFieldReference(documentReference, fieldKey))
-        {
-        }
+        
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
