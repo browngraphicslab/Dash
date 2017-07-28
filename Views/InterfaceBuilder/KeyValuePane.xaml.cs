@@ -198,25 +198,26 @@ namespace Dash
 
         }
 
+        /// <summary>
+        /// If a new Image field is being added, update the preview (xDefaultImage) with the inputed url  
+        /// </summary>
         private void xNewValueField_TextChanged(object sender, TextChangedEventArgs e)
         {
             string value = xNewValueField.Text;
-            if (value == "") return;
-            var item = (TypeInfo)xTypeComboBox.SelectedItem;
 
-            // if image, show the inputed url's image as preview 
-            if (item == TypeInfo.Image)
+            if (value != "" && (TypeInfo)xTypeComboBox.SelectedItem == TypeInfo.Image)
             {
-                xDefaultImage.Source = new BitmapImage(new Uri(value));
-            }
-            else if (item == TypeInfo.Number)
-            {
-                double num;
-                if (!double.TryParse(value, out num)) // if it's not a number, don't update
-                    return;
+                Uri outUri; 
+                if (Uri.TryCreate(value, UriKind.Absolute, out outUri))
+                {
+                    xDefaultImage.Source = new BitmapImage(outUri);
+                } else
+                {
+                    xDefaultImage.Source = new BitmapImage(new Uri(ImageBox.DefaultImageUri.AbsoluteUri)); 
+                }
             }
         }
-
+        
         /// <summary>
         /// when item in keyvaluepane is clicked, show a textbox used to edit keys / values at clicked position 
         /// </summary>
@@ -343,10 +344,14 @@ namespace Dash
         private TextBox _tb = null;           
         private bool _editKey = false;
 
-
+        /// <summary>
+        /// Identifies the row that is being modified currently 
+        /// </summary>
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             _selectedKV = e.ClickedItem as KeyFieldContainer;
         }
+
+        
     }
 }
