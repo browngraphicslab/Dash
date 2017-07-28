@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DashShared;
+using System;
 using Windows.Security.Authentication.Web.Provider;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;

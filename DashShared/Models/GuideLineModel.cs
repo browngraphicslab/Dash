@@ -1,4 +1,4 @@
-﻿namespace Dash
+﻿namespace DashShared
 {
     public class GuideLineModel
     {

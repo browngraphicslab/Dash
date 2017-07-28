@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Dash.Models
+namespace DashShared.Models
 {
     public class FilterModel
     {

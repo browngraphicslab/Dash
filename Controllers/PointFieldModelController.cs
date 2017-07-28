@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using DashShared;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -8,7 +9,7 @@ namespace Dash
 {
     public class PointFieldModelController : FieldModelController
     {
-        public PointFieldModelController(Point data) :base(new PointFieldModel(data)) { }
+        public PointFieldModelController(Point data) :base(new PointFieldModel(new PointFieldModel.Point(data.X,data.Y))) { }
         public PointFieldModelController(double x, double y) : base(new PointFieldModel(x, y)) { }
 
         /// <summary>
@@ -46,10 +47,11 @@ namespace Dash
 
         public Point Data
         {
-            get { return PointFieldModel.Data; }
+            get { return new Point(PointFieldModel.Data.X, PointFieldModel.Data.Y); }
             set
             {
-                if (SetProperty(ref PointFieldModel.Data, value))
+                
+                if (SetProperty(ref PointFieldModel.Data, new PointFieldModel.Point(value.X, value.Y)))
                 {
                     // update local
                     // update server

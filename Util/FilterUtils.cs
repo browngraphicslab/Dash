@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using Dash.Models;
 using DashShared;
+using DashShared.Models;
 
 namespace Dash.StaticClasses
 {

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dash
+namespace DashShared
 {
     /// <summary>
     /// A Field Model which holds rich text data
@@ -22,5 +23,11 @@ namespace Dash
         {
             Data = data;
         }
+        
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            return new FieldModelDTO(TypeInfo.RichText, Data);
+        }
+
     }
 }
