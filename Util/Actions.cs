@@ -39,13 +39,7 @@ namespace Dash
             //{
             //    c.Children.Remove(_searchView);
             //}
-            var opModel = DBSearchOperatorFieldModelController.CreateSearch(new DocumentFieldModelController(null), "UmpName");
-            
-            //var searchFieldController = new DBSearchOperatorFieldModelController(new DBSearchOperatorFieldModel("Search", "UmpName"));
-
-            //var opModel = OperatorDocumentModel.CreateOperatorDocumentModel(searchFieldController);
-          
-            //opModel.SetField(ForceUpdateKey, new DocumentReferenceController(GlobalDoc.GetId(), ForceUpdateKey), true);
+            var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var searchView = new DocumentView
             {

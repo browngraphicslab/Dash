@@ -119,6 +119,7 @@ namespace Dash
                 docModel.GetPositionField().Data = (Point)where;
             }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+            DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
         }
 
@@ -136,7 +137,7 @@ namespace Dash
                 }
             };
 
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc =
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -169,7 +170,7 @@ namespace Dash
                     {numbers, twoImages2})
             };
 
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc =
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;

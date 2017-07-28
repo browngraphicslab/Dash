@@ -268,7 +268,7 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ViewModel.MenuOpen)
+            if (ViewModel != null && ViewModel.MenuOpen)
             {
                 ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
             }
@@ -276,7 +276,6 @@ namespace Dash
             {
                 ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
-            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
 
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
@@ -448,6 +447,7 @@ namespace Dash
                                 foreach (var field in doc.EnumFields())
                                     if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
                                     {
+                                        DBTest.ResetCycleDetection();
                                         docController.SetField(key, new DocumentFieldModelController(doc), true);
                                         break;
                                     }
@@ -461,12 +461,14 @@ namespace Dash
                             }
                             else
                                 scopeDoc = null;
-                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, fieldStr);
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, DBTest.DBNull, fieldStr, fieldStr);
+                            DBTest.ResetCycleDetection();
                             proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
                         }
                     }
                     else
                     {
+                        DBTest.ResetCycleDetection();
                         var tagField = docController.GetDereferencedField(new Key(word, word), null);
                         if (tagField is TextFieldModelController)
                             (tagField as TextFieldModelController).Data = valu;

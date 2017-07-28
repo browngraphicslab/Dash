@@ -67,25 +67,11 @@ namespace Dash
             set { XPresenter.Content = value; }
         }
 
-        private void SearchString_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var opCont = (DataContext as DocumentFieldReference).DereferenceToRoot<OperatorFieldModelController>(null) as DBSearchOperatorFieldModelController;
-
-            if (opCont != null)
-                (opCont as DBSearchOperatorFieldModelController).Pattern = (sender as TextBox).Text;
-            
-            DBSearchOperatorFieldModelController.ForceUpdate(DataContext as DocumentFieldReference);
-        }
-
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
 
-            if (opCont is DBSearchOperatorFieldModelController)
-            {
-                SearchString.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                SearchString.Text = (opCont as DBSearchOperatorFieldModelController).Pattern; 
-            }
+           
             Binding inputsBinding = new Binding
             {
                 Source = opCont.Inputs,
