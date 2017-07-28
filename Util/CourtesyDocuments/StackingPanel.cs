@@ -56,7 +56,7 @@ namespace Dash
         /// <param name="isInterfaceBuilderLayout"></param>
         /// <param name="dataDocument"></param>
         /// <returns></returns>
-        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
+        public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout)
         {
             if ((docController.GetDereferencedField(StyleKey, context) as TextFieldModelController).TextFieldModel.Data == "Free Form")
                 return MakeFreeFormView(docController, context, isInterfaceBuilderLayout, dataDocument);

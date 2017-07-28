@@ -30,6 +30,9 @@ namespace Dash
     public sealed partial class DocumentCanvasView : UserControl
     {
 
+        public delegate void OnDocumentViewLoadedHandler(DocumentCanvasView sender, DocumentView documentView);
+        public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
+
         private Rect _bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         private double _canvasScale { get; set; } = 1;
         private const float MaxScale = 10;
@@ -253,6 +256,26 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// if documentId gets the first document it finds on the document canvas, otherwise returns the document associated with the passed in id
+        /// </summary>
+        /// <param name="documentId"></param>
+        /// <returns></returns>
+        private DocumentView GetDocumentView(string documentId = null)
+        {
+            return xItemsControl.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => documentId == null || dv.ViewModel.DocumentController.GetId() == documentId);
+        }
+
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+        }
+
+        private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
+        {
+            OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
+        }
+
 
         #region Recentering
 
@@ -321,21 +344,6 @@ namespace Dash
 
         #endregion
 
-        /// <summary>
-        /// if documentId gets the first document it finds on the document canvas, otherwise returns the document associated with the passed in id
-        /// </summary>
-        /// <param name="documentId"></param>
-        /// <returns></returns>
-        public DocumentView GetDocumentView(string documentId = null)
-        {
-            return xItemsControl.GetDescendantsOfType<DocumentView>().FirstOrDefault(dv => documentId == null || dv.ViewModel.DocumentController.GetId() == documentId); 
-        }
-
-        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
-        }
-
         #region BackgroundTiling
 
 
@@ -395,5 +403,7 @@ namespace Dash
         }
 
         #endregion
+
+
     }
 }

@@ -35,7 +35,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <local:DocumentView DataContext="{Binding}"
-                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}">
+                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" Loaded="DocumentViewOnLoaded">
                                         
                     </local:DocumentView>
                 </DataTemplate>

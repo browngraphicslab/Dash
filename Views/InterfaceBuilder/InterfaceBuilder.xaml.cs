@@ -48,22 +48,27 @@ namespace Dash
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
             _editingDocument = docController;
+            xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
+            xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
             var documentCanvasViewModel = new DocumentCanvasViewModel(true);
             xDocumentPane.DataContext = documentCanvasViewModel;
             documentCanvasViewModel.AddDocument(docController, true);
-            xDocumentPane.Loaded += xDocumentPaneLoaded;
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
-        private void xDocumentPaneLoaded(object sender, RoutedEventArgs routedEventArgs)
+        private void DocumentPaneOnDocumentViewLoaded(DocumentCanvasView sender, DocumentView documentView)
         {
-            SetUpDocumentView();
+            SetUpDocumentView(documentView);
         }
 
-        private void SetUpDocumentView()
+        private void SetUpDocumentView(DocumentView documentView)
         {
             var editingDocumentId = _editingDocument.GetId();
-            _editingDocView = xDocumentPane.GetDocumentView(editingDocumentId);
+            if (documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            {
+                return;
+            }
+            _editingDocView = documentView;
 
             if (_editingDocView != null)
             {
