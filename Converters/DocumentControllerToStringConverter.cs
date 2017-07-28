@@ -14,32 +14,51 @@ namespace Dash.Converters
         {
         }
 
+        string GetPrimaryKeyString(DocumentController data)
+        {
+            var keyList = data.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                var docString = "<";
+                foreach (var k in keys.Data)
+                {
+                    var keyField = data.GetDereferencedField(new Key((k as TextFieldModelController).Data), null);
+                    if (keyField is TextFieldModelController)
+                        docString += (keyField as TextFieldModelController).Data + " ";
+                    else if (keyField is DocumentFieldModelController)
+                    {
+                        docString += GetPrimaryKeyString((keyField as DocumentFieldModelController).Data);
+                    }
+                }
+                return docString.TrimEnd(' ') + ">";
+            }
+            return "";
+        }
+
         public override string ConvertDataToXaml(List<DocumentController> dataList, object parameter = null)
         {
-            var docListString = "<";
+            var docListString = "{";
             foreach (var data in dataList)
             {
-                var keyList = data.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null);
-                var keys = keyList as ListFieldModelController<TextFieldModelController>;
-                if (keys != null)
-                {
-                    var docString = "<";
-                    foreach (var k in keys.Data)
-                    {
-                        var keyField = data.GetDereferencedField(new Key((k as TextFieldModelController).Data), null);
-                        if (keyField is TextFieldModelController)
-                            docString += (keyField as TextFieldModelController).Data + " ";
-                    }
-                    docListString +=  docString.TrimEnd(' ') + ">";
-                }
+                docListString += GetPrimaryKeyString(data) + " ";
             }
-            docListString += ">";
+            docListString = docListString.Trim(' ');
+            docListString += "}";
             return docListString;
         }
 
         public override List<DocumentController> ConvertXamlToData(string xaml, object parameter = null)
         {
-            throw new Exception("Can't parse a Document Collection yet.");
+            var docList = new List<DocumentController>();
+            var docs = xaml.Trim('{','}').Split('>');
+            foreach (var d in docs)
+            {
+                var doc = new DocumentControllerToStringConverter().ConvertXamlToData(d + '>');
+                if (doc != null)
+                    docList.Add(doc);
+            }
+            return docList;
         }
     }
 
@@ -73,7 +92,7 @@ namespace Dash.Converters
         public override DocumentController ConvertXamlToData(string xaml, object parameter = null)
         {
             var values = xaml.TrimStart('<').TrimEnd('>').Split(' ');
-            var keyList = _doc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null);
+            var keyList = _doc?.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null);
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
@@ -96,7 +115,8 @@ namespace Dash.Converters
                                     found = false;
                                     break;
                                 }
-                            } else
+                            }
+                            else
                             {
                                 found = false;
                                 break;
@@ -108,47 +128,47 @@ namespace Dash.Converters
                             return dmc;
                         }
                     }
-                foreach (var dmc in ContentController.GetControllers<DocumentController>())
-                    if (!dmc.DocumentType.Type.Contains("Box") &&
-                        dmc.DocumentType != StackingPanel.DocumentType &&
-                        dmc.DocumentType != GridPanel.GridPanelDocumentType &&
-                        dmc.DocumentType != GridViewLayout.DocumentType)
+            }
+            foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                if (!dmc.DocumentType.Type.Contains("Box") &&
+                    dmc.DocumentType != StackingPanel.DocumentType &&
+                    dmc.DocumentType != GridPanel.GridPanelDocumentType &&
+                    dmc.DocumentType != GridViewLayout.DocumentType)
+                {
+                    var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
+                    if (primaryKeys != null)
                     {
-                        var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
-                        if (primaryKeys != null)
+                        bool found = true;
+                        foreach (var value in values)
                         {
-                            bool found = true;
-                            foreach (var value in values)
+                            bool foundValue = false;
+                            foreach (var kf in primaryKeys.Data)
                             {
-                                bool foundValue = false;
-                                foreach (var kf in primaryKeys.Data)
+                                var key = new Key((kf as TextFieldModelController).Data);
+                                var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
+                                if (derefValue != null)
                                 {
-                                    var key = new Key((kf as TextFieldModelController).Data);
-                                    var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
-                                    if (derefValue != null)
+                                    if (value == derefValue)
                                     {
-                                        if (value == derefValue)
-                                        {
-                                            foundValue = true;
-                                            break;
-                                        }
+                                        foundValue = true;
+                                        break;
                                     }
                                 }
-                                if (!foundValue)
-                                {
-                                    found = false;
-                                    break;
-                                }
                             }
-                            if (found)
+                            if (!foundValue)
                             {
-                                _doc = dmc;
-                                return dmc;
+                                found = false;
+                                break;
                             }
                         }
-                }
+                        if (found)
+                        {
+                            _doc = dmc;
+                            return dmc;
+                        }
+                    }
             }
-            return _doc;
+            return DBTest.DBNull;
         }
     }
 }

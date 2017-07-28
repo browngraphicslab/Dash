@@ -33,12 +33,12 @@ namespace Dash
         public static double DefaultFontSize = 15;
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20)
+        public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight=null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            SetFontWeightField(Document, DefaultFontWeight, true, null);
+            SetFontWeightField(Document, weight == null ? DefaultFontWeight : (double)weight.Weight, true, null);
             SetFontSizeField(Document, DefaultFontSize, true, null);
             SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
         }
@@ -127,7 +127,13 @@ namespace Dash
             else if (element is TextBox)
             {
                 element.SetBinding(textBoxProperty, binding);
+                (element as TextBox).KeyDown += TextingBox_KeyDown;
             }
+        }
+
+        private static void TextingBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            DBTest.ResetCycleDetection();
         }
 
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
@@ -182,8 +188,8 @@ namespace Dash
                 };
             } else if (data is DocumentFieldModelController)
             {
-
                 var docData = data as DocumentFieldModelController;
+
                 sourceBinding = new Binding
                 {
                     Source = docData,
@@ -192,6 +198,21 @@ namespace Dash
                     Converter = new DocumentControllerToStringConverter(),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
+                if (docData.Data != null)
+                {
+                    docData.Data.DocumentFieldUpdated += ((sender, ctxt) =>
+                    {
+                        sourceBinding = new Binding
+                        {
+                            Source = docData,
+                            Path = new PropertyPath(nameof(docData.Data)),
+                            Mode = BindingMode.TwoWay,
+                            Converter = new DocumentControllerToStringConverter(),
+                            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                        };
+                        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+                    });
+                }
             }
             else if (data is DocumentCollectionFieldModelController)
             {
@@ -205,9 +226,27 @@ namespace Dash
                     Converter = new DocumentCollectionToStringConverter(),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
+                //foreach (var ldoc in docData.Data)
+                //    ldoc.DocumentFieldUpdated += ((sender, ctxt) =>
+                //    {
+                //        sourceBinding = new Binding
+                //        {
+                //            Source = docData,
+                //            Path = new PropertyPath(nameof(docData.Data)),
+                //            Mode = BindingMode.TwoWay,
+                //            Converter = new DocumentCollectionToStringConverter(),
+                //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                //        };
+                //        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+                //    });
             }
             if (sourceBinding != null)
                 BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+        }
+
+        private static void DocData_FieldModelUpdated(FieldModelController sender, Context context)
+        {
+            throw new NotImplementedException();
         }
 
         protected static void BindTextAllignment(FrameworkElement element, DocumentController docController, Context context)

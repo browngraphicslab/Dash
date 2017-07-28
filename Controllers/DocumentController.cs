@@ -232,7 +232,7 @@ namespace Dash
             }
 
             proto._fields[key] = field;
-            proto.DocumentModel.Fields[key] = field.FieldModel.Id;
+            proto.DocumentModel.Fields[key] = field == null ? "" : field.FieldModel.Id;
 
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
@@ -242,16 +242,17 @@ namespace Dash
                 Execute(c, true);
             }
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this), false), true);
-            field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
-            {
-                context = context ?? new Context();
-                context.AddDocumentContext(this);
-                if (ShouldExecute(context, reference.FieldKey))
+            if (field != null)
+                field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
                 {
-                    Execute(context, true);
-                }
-                OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false), true);//TODO Should be Action.Update
-            };
+                    context = context ?? new Context();
+                    context.AddDocumentContext(this);
+                    if (ShouldExecute(context, reference.FieldKey))
+                    {
+                        Execute(context, true);
+                    }
+                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false), true);//TODO Should be Action.Update
+                };
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
@@ -567,6 +568,10 @@ namespace Dash
             if (DocumentType == FilterOperatorBox.DocumentType)
             {
                 return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == DBSearchOperatorBox.DocumentType)
+            {
+                return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
 
             // if document is not a known UI View, then see if it contains a Layout view field

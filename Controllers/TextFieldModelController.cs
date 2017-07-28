@@ -24,10 +24,10 @@ namespace Dash
             {
                 if (SetProperty(ref TextFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated();
                     // update local
                     // update server
                 }
-                OnFieldModelUpdated();
             }
         }
 

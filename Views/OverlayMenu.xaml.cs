@@ -14,10 +14,11 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace DocumentMenu
+namespace Dash
 {
     public sealed partial class OverlayMenu : UserControl
     {
@@ -32,7 +33,8 @@ namespace DocumentMenu
             if (collectionButtons == null)
             {
                 this.MakeDocumentMenu();
-            } else
+            }
+            else
             {
                 this.MakeCollectionMenu();
             }
@@ -58,7 +60,7 @@ namespace DocumentMenu
 
         private void MakeDocumentMenu()
         {
-            foreach(var button in _documentButtons)
+            foreach (var button in _documentButtons)
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }
@@ -67,11 +69,11 @@ namespace DocumentMenu
 
         private void MakeCollectionMenu()
         {
-            foreach(var button in _collectionButtons)
+            foreach (var button in _collectionButtons)
             {
                 xCollectionButtonsStackPanel.Children.Add(button);
             }
-            foreach(var button in _documentButtons)
+            foreach (var button in _documentButtons)
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }

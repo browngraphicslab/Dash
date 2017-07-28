@@ -10,7 +10,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using Visibility = Windows.UI.Xaml.Visibility;
@@ -46,11 +45,7 @@ namespace Dash
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(MainDocument)
-            {
-                IsDetailedUserInterfaceVisible = false,
-                IsMoveable = false
-            };
+            MainDocView.DataContext = new DocumentViewModel(MainDocument);
 
             // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
@@ -119,11 +114,9 @@ namespace Dash
                 docModel.GetPositionField().Data = (Point)where;
             }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+            DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
         }
-        
-        #region MOVED TO ACTIONS.CS
-        #endregion
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {

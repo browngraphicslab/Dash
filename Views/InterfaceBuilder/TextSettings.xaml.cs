@@ -7,7 +7,6 @@ using DashShared;
 using FontWeights = Windows.UI.Text.FontWeights;
 using System.Collections.Generic;
 using Dash.Converters;
-using Dash.Views;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 

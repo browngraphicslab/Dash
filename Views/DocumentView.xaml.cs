@@ -10,7 +10,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
@@ -69,33 +68,13 @@ namespace Dash
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
-
-            SetUpBindings();
         }
-
-        private void SetUpBindings()
-        {
-            OuterGrid.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
-            {
-                var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
-                if (view == null) return; // we can't always assume we're on a collection
-
-                view.CanLink = false;
-
-                args.Handled = true;
-                (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController, 
-                    new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
-                        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-            };
-        }
-
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
         }
 
-        private void SetUpMenu()
-        {
+        private void SetUpMenu() {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
             var documentButtons = new List<MenuButton>()
@@ -138,12 +117,12 @@ namespace Dash
             var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
-            ViewModel.GroupTransform = new TransformGroupData(translate, new Point(), scaleAmount);
+            ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
-            DataContext = documentViewModel;
+            DataContext = documentViewModel;          
         }
 
         /// <summary>
@@ -153,12 +132,12 @@ namespace Dash
         /// </summary>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
-        public void Resize(double dx = 0, double dy = 0)
+        public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
             dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
             dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
-
+            return new Size(dvm.Width, dvm.Height);
         }
 
         /// <summary>
@@ -187,10 +166,14 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                                new Point(),
-                                                                ViewModel.GroupTransform.ScaleAmount);
+            var s = Resize(p.X, p.Y);
+            var position = ViewModel.GroupTransform.Translate;
+            var dx = Math.Max(p.X, 0);
+            var dy = Math.Max(p.Y, 0);
+            //p = new Point(dx, dy);
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
+                                                                new Point(s.Width / 2.0f, s.Height / 2.0f),
+                                                                ViewModel.GroupTransform.ScaleAmount); 
             e.Handled = true;
         }
 
@@ -236,29 +219,23 @@ namespace Dash
         }
 
 
-        void initDocumentOnDataContext()
-        {
+        void initDocumentOnDataContext() {
 
             // document type specific styles >> use VERY sparringly
             var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
-            if (docType.Type != null)
-            {
+            if (docType.Type != null) {
                 // hide white background & drop shadow on operator views
-                if (docType.Type.Equals("operator"))
-                {
+                if (docType.Type.Equals("operator")) {
                     XGrid.Background = new SolidColorBrush(Colors.Transparent);
                     xBorder.Opacity = 0;
                 }
-            }
-            else
-            {
+            } else {
 
                 ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
             }
 
             // if there is a readable document type, use that as label
-            var sourceBinding = new Binding
-            {
+            var sourceBinding = new Binding {
                 Source = ViewModel.DocumentController.DocumentModel.DocumentType,
                 Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
                 Mode = BindingMode.TwoWay,
@@ -286,32 +263,38 @@ namespace Dash
                 return;
 
             initDocumentOnDataContext();
-
             SetUpMenu();
             ViewModel.CloseMenu();
 
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                SetInterfaceBuilderSpecificSettings();
+            }
+
+        }
+
+        private void SetInterfaceBuilderSpecificSettings()
+        {
+            //if (ViewModel != null && ViewModel.MenuOpen)
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
+            //}
+            //else
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            //}
+            RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ViewModel.MenuOpen)
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
-            }
-            else
-            {
-                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            }
-            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
+            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
-            if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight)
-            {
+             if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight) {
                 updateIcon();
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -319,9 +302,7 @@ namespace Dash
                 xDragImage.Opacity = 0;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
-            }
-            else
-            {
+            } else {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -330,13 +311,12 @@ namespace Dash
             }
         }
 
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
+        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
             // if in icon view expand to default size
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(300, 300);
-                e.Handled = true; // prevent propagating
+                
             }/*
             else
             {
@@ -348,20 +328,21 @@ namespace Dash
                 dvm.Height = MinHeight;
             }
             */
-
+            e.Handled = true; // prevent propagating
         }
 
-        #region Menu
+  #region Menu
 
 
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
+            {
                 return;
-            
-            OnSelected();
+            }
 
+            OnSelected();
             e.Handled = true;
         }
 
@@ -415,13 +396,13 @@ namespace Dash
             var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
             var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
             ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                              new Point(),
+                                                              ViewModel.GroupTransform.ScaleCenter,
                                                               newScale);
         }
 
         private void OpenLayout()
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0, 0), this);
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0,0), this);
         }
 
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
@@ -433,14 +414,10 @@ namespace Dash
             foreach (var tag in (sender as TextBox).Text.Split('#'))
                 if (tag.Contains("="))
                 {
-                    var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
-                    if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
-                        proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-
                     var eqPos = tag.IndexOfAny(new char[] { '=' });
-                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
-                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key = new Key(word, word);
+                    var word  = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu  = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key   = new Key(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {
@@ -448,19 +425,23 @@ namespace Dash
                             break;
                         }
 
-                    if (valu.StartsWith("@")) // @ means we're searching for a documents
+                    if (valu.StartsWith("@") && !valu.Contains("="))
                     {
+                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
+                        if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
+                            proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
                         var fieldStr = valu.Substring(1, valu.Length - 1);
                         if (valu.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
                         {                       // @ FieldName = FieldValue
-                            var eqPos2 = fieldStr.IndexOfAny(new char[] { '=' });
-                            var fieldValue = fieldStr.Substring(eqPos2 + 1, Math.Max(0, fieldStr.Length - eqPos2 - 1)).Trim(' ', '\r');
-                            var fieldName = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
+                            var eqPos2     = fieldStr.IndexOfAny(new char[] { '=' });
+                            var fieldValue = fieldStr.Substring(eqPos2+1, Math.Max(0, fieldStr.Length - eqPos2-1)).Trim(' ', '\r');
+                            var fieldName  = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
 
                             foreach (var doc in ContentController.GetControllers<DocumentController>())
                                 foreach (var field in doc.EnumFields())
                                     if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
                                     {
+                                        DBTest.ResetCycleDetection();
                                         docController.SetField(key, new DocumentFieldModelController(doc), true);
                                         break;
                                     }
@@ -474,12 +455,14 @@ namespace Dash
                             }
                             else
                                 scopeDoc = null;
-                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, fieldStr);
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, DBTest.DBNull, fieldStr, fieldStr);
+                            DBTest.ResetCycleDetection();
                             proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
                         }
                     }
                     else
                     {
+                        DBTest.ResetCycleDetection();
                         var tagField = docController.GetDereferencedField(new Key(word, word), null);
                         if (tagField is TextFieldModelController)
                             (tagField as TextFieldModelController).Data = valu;
@@ -496,28 +479,16 @@ namespace Dash
 
         protected override void OnActivated(bool isSelected)
         {
-
+            
         }
 
         public override void OnLowestActivated(bool isLowestSelected)
         {
-            if (ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType)
-            {
-                TransformGroup tg = new TransformGroup();
-                tg.Children.Add(OuterGrid.RenderTransform);
-                if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
-                {
-                    ViewModel?.OpenMenu();
-                    tg.Children.Add(new TranslateTransform {X = -55, Y = 0});
-                    OuterGrid.RenderTransform = new MatrixTransform {Matrix = tg.Value};
-                }
-                else if (_docMenu.Visibility == Visibility.Visible)
-                {
-                    ViewModel?.CloseMenu();
-                    tg.Children.Add(new TranslateTransform {X = 55, Y = 0});
-                    OuterGrid.RenderTransform = new MatrixTransform { Matrix = tg.Value };
-                }
-            }
+            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+                ViewModel?.OpenMenu();
+            else
+                ViewModel?.CloseMenu();
         }
+        
     }
 }

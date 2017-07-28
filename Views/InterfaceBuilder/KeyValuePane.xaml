@@ -43,7 +43,7 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
-                    <Grid  Tapped="Grid_Tapped">
+                    <Grid Tapped="Grid_Tapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="90"/>
@@ -60,7 +60,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Grid Grid.Row="3">
+        <Grid Grid.Row="3" x:Name="xImageGrid" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>

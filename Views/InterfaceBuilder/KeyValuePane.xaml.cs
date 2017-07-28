@@ -79,7 +79,7 @@ namespace Dash
 
         private void AddButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if ((string)xAddButton.Content == "⏎")
+            if ((string)xAddButton.Content == "↵")
             {
                 // only execute if all fields are specified 
                 if (xNewKeyField.Text != "" && (TypeInfo)xTypeComboBox.SelectedItem != TypeInfo.None && xNewValueField.Text != "")
@@ -123,7 +123,7 @@ namespace Dash
             _addKVPaneOpen = !_addKVPaneOpen;
             if (_addKVPaneOpen)
             {
-                xAddButton.Content = "⏎";
+                xAddButton.Content = "↵";
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -138,6 +138,7 @@ namespace Dash
                 xNewValueField.IsEnabled = false;
                 xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xImageGrid.BorderThickness = new Thickness(0);
             }
         }
         /// <summary>
@@ -165,6 +166,7 @@ namespace Dash
             else
             {
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xImageGrid.BorderThickness = new Thickness(0);
                 xTypeComboBox.IsEnabled = false;
             }
         }
@@ -177,6 +179,7 @@ namespace Dash
             {
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xImageGrid.BorderThickness = new Thickness(0, 3, 0, 0); 
                 xNewValueField.Text = ImageBox.DefaultImageUri.AbsoluteUri;
                 FocusOn(xNewValueField); 
             }
@@ -184,6 +187,7 @@ namespace Dash
             {
                 xNewValueField.IsEnabled = true;
                 xDefaultImage.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xImageGrid.BorderThickness = new Thickness(0);
                 FocusOn(xNewValueField);
             }
             else
