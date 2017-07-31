@@ -122,8 +122,9 @@ namespace Dash
             var border = searchView.GetFirstDescendantOfType<Border>();
             var position = new Point(Canvas.GetLeft(border) + searchView.ActualWidth, Canvas.GetTop(border));
             var translate = new Point();
-            if (freeForm == MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView)
+            if (freeForm == MainPage.Instance.GetMainCollectionView().CurrentView)
             {
+                Debug.Assert(freeForm != null);
                 var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
                 Debug.Assert(r != null);
                 translate = r.TransformPoint(new Point(position.X, position.Y));

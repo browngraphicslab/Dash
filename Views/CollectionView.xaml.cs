@@ -95,7 +95,6 @@ namespace Dash
             var menuItem = new MenuFlyoutItem {Text = "Add Operators"};
             menuItem.Click += MenuItem_Click;
             _flyout.Items?.Add(menuItem);
-
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -151,19 +150,17 @@ namespace Dash
                     var ofm =
                         docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
                             OperatorFieldModelController;
-                    if (ofm != null)
+                    if (ofm == null) continue;
+                    foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
                     {
-                        foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
+                        foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                         {
-                            foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
-                            {
-                                var irfm =
-                                    new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
-                                var orfm =
-                                    new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
-                                //Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
-                                //    orfm.DereferenceToRoot().GetId());
-                            }
+                            var irfm =
+                                new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
+                            var orfm =
+                                new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
+                            //Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
+                            //    orfm.DereferenceToRoot().GetId());
                         }
                     }
                 }
@@ -199,22 +196,18 @@ namespace Dash
         private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
         {
             //RefreshItemsBinding();
-            if (e.CollectionChange == CollectionChange.ItemInserted)
+            if (e.CollectionChange != CollectionChange.ItemInserted) return;
+            var docVM = sender[(int)e.Index] as DocumentViewModel;
+            Debug.Assert(docVM != null);
+            OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController;
+            if (ofm == null) return;
+            foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
             {
-                var docVM = sender[(int)e.Index] as DocumentViewModel;
-                Debug.Assert(docVM != null);
-                OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController;
-                if (ofm != null)
+                foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
                 {
-                    foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
-                    {
-                        foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
-                        {
-                            var irfm = new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
-                            var orfm = new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
-                            Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
-                        }
-                    }
+                    var irfm = new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
+                    var orfm = new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
+                    Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
                 }
             }
             //else if (e.CollectionChange == CollectionChange.ItemRemoved)
@@ -262,13 +255,13 @@ namespace Dash
             //Calculate bottomRight corner of screen in canvas space before and after resize 
             Debug.Assert(DocumentViewContainerGrid.RenderTransform != null);
             Debug.Assert(DocumentViewContainerGrid.RenderTransform.Inverse != null);
-            Point oldBottomRight =
+            var oldBottomRight =
                 DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
-            Point bottomRight =
+            var bottomRight =
                 DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
 
             //Check if new bottom right is out of bounds
-            bool outOfBounds = false;
+            var outOfBounds = false;
             if (bottomRight.X > Grid.ActualWidth - 1)
             {
                 translate.X = -(oldBottomRight.X - bottomRight.X);
@@ -282,7 +275,7 @@ namespace Dash
             //If it is out of bounds, translate so that is is in bounds
             if (outOfBounds)
             {
-                TransformGroup composite = new TransformGroup();
+                var composite = new TransformGroup();
                 composite.Children.Add(translate);
                 composite.Children.Add(DocumentViewContainerGrid.RenderTransform);
                 DocumentViewContainerGrid.RenderTransform = new MatrixTransform { Matrix = composite.Value };
@@ -324,28 +317,28 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
-            Ellipse el = sender as Ellipse;
-            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
-            CollectionView view = ParentCollection;
+            var docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            var el = sender as Ellipse;
+            var outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            var ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
+            var view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
-            Ellipse el = sender as Ellipse;
-            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
-            CollectionView view = ParentCollection;
+            var docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
+            var el = sender as Ellipse;
+            var outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            var ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
+            var view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
 
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
-            ItemsCarrier carrier = ItemsCarrier.GetInstance();
+            var carrier = ItemsCarrier.GetInstance();
             carrier.Source = ViewModel;
             foreach (var item in e.Items)
                 carrier.Payload.Add(item as DocumentViewModel);
@@ -370,10 +363,10 @@ namespace Dash
         {
             var docControllers = docViewModels.Select(item => item.DocumentController);
             var controller = ViewModel.CollectionFieldModelController;
-            if (controller != null)
-                foreach (var item in docControllers)
-                    if (add) controller.AddDocument(item);
-                    else controller.RemoveDocument(item);
+            if (controller == null) return;
+            foreach (var item in docControllers)
+                if (add) controller.AddDocument(item);
+                else controller.RemoveDocument(item);
         }
 
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
@@ -390,12 +383,10 @@ namespace Dash
             {
                 var action =
                     e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<CollectionView, DragEventArgs>;
-                if (action != null)
-                {
-                    action.Invoke(this, e);
-                    e.Handled = true;
-                }
-                    
+                if (action == null) return;
+                action.Invoke(this, e);
+                e.Handled = true;
+
                 return;
             }
             e.Handled = true;
@@ -457,7 +448,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void SetFreeformView()
+        private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
             ManipulationMode = ManipulationModes.All;
@@ -470,7 +461,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void SetListView()
+        private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
             ManipulationMode = ManipulationModes.None;
@@ -483,7 +474,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        public void SetGridView()
+        private void SetGridView()
         {
             if (CurrentView is CollectionGridView) return;
             ManipulationMode = ManipulationModes.None;
@@ -683,6 +674,7 @@ namespace Dash
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+            if (this == MainPage.Instance.GetMainCollectionView()) return;
             e.Handled = true;
             var thisUi = this as UIElement;
             var position = e.GetPosition(thisUi);
