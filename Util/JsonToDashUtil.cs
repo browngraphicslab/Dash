@@ -21,7 +21,7 @@ namespace Dash
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            var task = ParseSingleItem();
+            var task = ParseA();
             task.Wait();
             stopwatch.Stop();
             return JsonDocument;
@@ -48,6 +48,12 @@ namespace Dash
             JsonDocument = Parse(jsonString, "ms-appx:///Assets/youtubeJson.txt");
         }
 
+        public static async Task ParseA()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/a.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            JsonDocument = Parse(jsonString, file.Path);
+        }
 
         public static async Task ParseCustomer()
         {

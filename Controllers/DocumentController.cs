@@ -658,7 +658,7 @@ namespace Dash
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
             }
             DocumentFieldUpdated?.Invoke(sender, args);
-            if (updateDelegates)
+            if (updateDelegates && !args.Reference.FieldKey.Equals(DashConstants.KeyStore.DelegatesKey))
             {
                 PrototypeFieldUpdated?.Invoke(sender, args);
             }

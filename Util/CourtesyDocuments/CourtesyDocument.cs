@@ -69,15 +69,22 @@ namespace Dash
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
 
         protected static void AddBinding<T>(T element, DocumentController docController, Key k, Context context,
-            BindingDelegate<T> bindingDelegate)
+            BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
-            bindingDelegate.Invoke(element, docController, context);
-            docController.AddFieldUpdatedListener(k,
-                delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                {
-                    if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
-                    bindingDelegate(element, sender, args.Context);//TODO Should be context or args.Context?
-                });
+            DocumentController.OnDocumentFieldUpdatedHandler handler = (sender, args) =>
+            {
+                if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
+                bindingDelegate(element, sender, args.Context); //TODO Should be context or args.Context?
+            };
+            element.Loaded += delegate
+            {
+                bindingDelegate(element, docController, context);
+                docController.AddFieldUpdatedListener(k, handler);
+            };
+            element.Unloaded += delegate
+            {
+                docController.RemoveFieldUpdatedListener(k, handler);
+            };
         }
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
