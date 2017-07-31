@@ -462,8 +462,11 @@ namespace Dash
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
                     var field = GetField(opFieldInput);
-                    inputs[opFieldInput] = field?.DereferenceToRoot(context) ??
-                        TypeInfoHelper.CreateFieldModelController(opField.Inputs[opFieldInput]);
+                    field = field?.DereferenceToRoot(context);
+                    if (field != null)
+                    {
+                        inputs[opFieldInput] = field;
+                    }
                 }
                 opField.Execute(inputs, outputs);
                 foreach (var fieldModel in outputs)
