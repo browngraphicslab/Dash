@@ -6,7 +6,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
-    xmlns:documentMenu="using:DocumentMenu"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:DocumentCanvasViewModel}"
@@ -35,7 +34,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <local:DocumentView DataContext="{Binding}"
-                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}">
+                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" Loaded="DocumentViewOnLoaded">
                                         
                     </local:DocumentView>
                 </DataTemplate>

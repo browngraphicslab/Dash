@@ -35,8 +35,9 @@ namespace Dash
 
 
         public SearchView SearchView { get; set; }
+        public static CollectionView AddsToThisCollection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
 
-        public OperatorSearchView()
+        private OperatorSearchView()
         {
             this.InitializeComponent();
             this.MakeView();
@@ -47,7 +48,7 @@ namespace Dash
             var arithmetics = new ObservableCollection<object>() { "Divide" };
             var sets = new ObservableCollection<object>() { "Union", "Intersection", "Filter" };
             var maps = new ObservableCollection<object>() { "ImageToUri" };
-            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri" };
+            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri", "Filter", "Api" };
 
             var categories = new List<SearchCategoryItem>();
             categories.Add(new SearchCategoryItem("∀", "ALL",all, Actions.AddOperator));

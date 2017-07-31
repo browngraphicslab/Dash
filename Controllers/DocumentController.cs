@@ -4,7 +4,7 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
-
+using Dash.Controllers.Operators;
 
 namespace Dash
 {
@@ -145,6 +145,56 @@ namespace Dash
             return GetId().GetHashCode();
         }
 
+        /// <summary>
+        /// parses text input into a field controller
+        /// </summary>
+        /// <param name="docController"></param>
+        /// <param name="key"></param>
+        /// <param name="textInput"></param>
+        public void ParseDocField(Key key, string textInput)
+        {
+            if (textInput.StartsWith("@"))
+            {
+                var proto = GetPrototype() == null ? this : GetPrototype();
+                if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
+                    proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
+                var fieldStr = textInput.Substring(1, textInput.Length - 1);
+                if (textInput.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
+                {                       // @ FieldName = FieldValue
+                    var eqPos2 = fieldStr.IndexOfAny(new char[] { '=' });
+                    var fieldValue = fieldStr.Substring(eqPos2 + 1, System.Math.Max(0, fieldStr.Length - eqPos2 - 1)).Trim(' ', '\r');
+                    var fieldName = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
+
+                    foreach (var doc in ContentController.GetControllers<DocumentController>())
+                        foreach (var field in doc.EnumFields())
+                            if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
+                            {
+                                SetField(key, new DocumentFieldModelController(doc), true);
+                                break;
+                            }
+                }
+                else // search for documents that optionally reference this DocumentController and that optionally have a field matching FieldName.
+                {    // #newField = @ [@] [FieldName]
+                    var scopeDoc = new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey);
+                    if (fieldStr.StartsWith("@"))
+                    {
+                        fieldStr = fieldStr.Substring(1, fieldStr.Length - 1);
+                    }
+                    else
+                        scopeDoc = null;
+                    var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, DBTest.DBDoc, fieldStr, fieldStr);
+                    DBTest.ResetCycleDetection();
+                    proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                }
+            }
+            else
+            {
+                var tagField = GetDereferencedField(key, null);
+                if (tagField is TextFieldModelController)
+                    (tagField as TextFieldModelController).Data = textInput;
+                else SetField(key, new TextFieldModelController(textInput), true);
+            }
+        }
 
         /// <summary>
         ///     Returns the first level of inheritance which references the passed in <see cref="Key" /> or
@@ -533,6 +583,10 @@ namespace Dash
             {
                 return StackingPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
+            if (DocumentType == WebBox.DocumentType)
+            {
+                return WebBox.MakeView(this, context, isInterfaceBuilder);
+            }
             if (DocumentType == CollectionBox.DocumentType)
             {
                 return CollectionBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
@@ -540,10 +594,6 @@ namespace Dash
             if (DocumentType == OperatorBox.DocumentType)
             {
                 return OperatorBox.MakeView(this, context, isInterfaceBuilder);
-            }
-            if (DocumentType == ApiDocumentModel.DocumentType)
-            {
-                return ApiDocumentModel.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
@@ -573,7 +623,10 @@ namespace Dash
             {
                 return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-
+            if (DocumentType == ApiOperatorBox.DocumentType)
+            {
+                return ApiOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
             // if document is not a known UI View, then see if it contains a Layout view field
             var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
@@ -609,7 +662,7 @@ namespace Dash
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
             }
             DocumentFieldUpdated?.Invoke(sender, args);
-            if (updateDelegates)
+            if (updateDelegates && !args.Reference.FieldKey.Equals(DashConstants.KeyStore.DelegatesKey))
             {
                 PrototypeFieldUpdated?.Invoke(sender, args);
             }

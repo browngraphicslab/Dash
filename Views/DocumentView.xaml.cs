@@ -133,7 +133,7 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh.a
-            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2);
+            var scaleCenter = new Point(/*ActualWidth / 2, ActualHeight / 2*/);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -190,9 +190,11 @@ namespace Dash
             var dx = Math.Max(p.X, 0);
             var dy = Math.Max(p.Y, 0);
             //p = new Point(dx, dy);
-            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X - p.X / 2.0f, position.Y - p.Y / 2.0f),
-                                                                new Point(s.Width / 2.0f, s.Height / 2.0f),
-                                                                ViewModel.GroupTransform.ScaleAmount);
+
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
+                                                                new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
+                                                                ViewModel.GroupTransform.ScaleAmount); 
+
             e.Handled = true;
         }
 
@@ -279,7 +281,7 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null)
+            if (ViewModel != null || DataContext == null)
                 return;
 
             ViewModel = DataContext as DocumentViewModel;
@@ -313,7 +315,9 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
@@ -454,49 +458,8 @@ namespace Dash
                             break;
                         }
 
-                    if (valu.StartsWith("@") && !valu.Contains("="))
-                    {
-                        var proto = docController.GetPrototype() == null ? docController : docController.GetPrototype();
-                        if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
-                            proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
-                        var fieldStr = valu.Substring(1, valu.Length - 1);
-                        if (valu.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
-                        {                       // @ FieldName = FieldValue
-                            var eqPos2 = fieldStr.IndexOfAny(new char[] { '=' });
-                            var fieldValue = fieldStr.Substring(eqPos2 + 1, Math.Max(0, fieldStr.Length - eqPos2 - 1)).Trim(' ', '\r');
-                            var fieldName = fieldStr.Substring(0, eqPos2).TrimEnd(' ').TrimStart(' ');
-
-                            foreach (var doc in ContentController.GetControllers<DocumentController>())
-                                foreach (var field in doc.EnumFields())
-                                    if (field.Key.Name == fieldName && (field.Value as TextFieldModelController)?.Data == fieldValue)
-                                    {
-                                        DBTest.ResetCycleDetection();
-                                        docController.SetField(key, new DocumentFieldModelController(doc), true);
-                                        break;
-                                    }
-                        }
-                        else // search for documents that optionally reference this DocumentController and that optionally have a field matching FieldName.
-                        {    // #newField = @ [@] [FieldName]
-                            var scopeDoc = new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey);
-                            if (fieldStr.StartsWith("@"))
-                            {
-                                fieldStr = fieldStr.Substring(1, fieldStr.Length - 1);
-                            }
-                            else
-                                scopeDoc = null;
-                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, DBTest.DBNull, fieldStr, fieldStr);
-                            DBTest.ResetCycleDetection();
-                            proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
-                        }
-                    }
-                    else
-                    {
-                        DBTest.ResetCycleDetection();
-                        var tagField = docController.GetDereferencedField(new Key(word, word), null);
-                        if (tagField is TextFieldModelController)
-                            (tagField as TextFieldModelController).Data = valu;
-                        else docController.SetField(key, new TextFieldModelController(valu), true);
-                    }
+                    DBTest.ResetCycleDetection();
+                    docController.ParseDocField(key, valu);
                 }
         }
 

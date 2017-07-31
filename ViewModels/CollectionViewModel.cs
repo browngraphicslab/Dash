@@ -172,17 +172,9 @@ namespace Dash
             {
                 if (!context.DocContextList.Contains(docController) && !docController.DocumentType.Type.Contains("Box"))
                 {
-                    if (ViewModelContains(DataBindingSource, docController)) continue;
-                    var recursive1 =
-                    (docController.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey,context) as DocumentCollectionFieldModelController)?.GetDocuments().Contains(docController);
-                    if (recursive1.HasValue && (bool)recursive1)
+                    if (ViewModelContains(DataBindingSource, docController))
                         continue;
-                    var recursive2 =
-                    (docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as
-                        DocumentCollectionFieldModelController)?.GetDocuments().Contains(docController);
-                    if (recursive2.HasValue && (bool)recursive2)
-                        continue;
-                    var viewModel = new DocumentViewModel(docController);
+                    var viewModel = new DocumentViewModel(docController, false, context);
 
                     if (carriedControllers.Contains(docController))
                     {
