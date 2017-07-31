@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.Foundation.Metadata;
 using DashShared;
 
 namespace Dash
@@ -10,6 +11,12 @@ namespace Dash
         {
             OperatorFieldModel = operatorFieldModel;
         }
+
+        public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
+        {
+            
+        }
+
         //Input keys
         public static readonly Key AKey = new Key("AAC1631C-9DC3-48FC-984A-EE0D80C9A397", "A");
         public static readonly Key BKey = new Key("A757D709-8D83-44C9-B047-D5DB6420F51F", "B");

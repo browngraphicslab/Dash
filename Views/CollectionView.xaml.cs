@@ -13,6 +13,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
+using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -75,15 +76,53 @@ namespace Dash
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
+        private MenuFlyout _flyout;
 
         public CollectionView(CollectionViewModel vm)
         {
             InitializeComponent();
+            InitializeFlyout();
             ViewModel = vm;
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
             SetEventHandlers();
             CanLink = true;
+        }
+
+        private void InitializeFlyout()
+        {
+            _flyout = new MenuFlyout();
+            var menuItem = new MenuFlyoutItem {Text = "Add Operators"};
+            menuItem.Click += MenuItem_Click;
+            _flyout.Items?.Add(menuItem);
+
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var xCanvas = MainPage.Instance.xCanvas;
+            if(!xCanvas.Children.Contains(OperatorSearchView.Instance))
+                xCanvas.Children.Add(OperatorSearchView.Instance);
+
+            // set the operator menu to the current location of the flyout
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+
+            // reset the render transform on the operator search view
+            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
+
+            
+
+            var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+            if (floatBorder != null)
+            {
+                Canvas.SetLeft(floatBorder, 0);
+                Canvas.SetTop(floatBorder, 0);
+            }
+            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X - 250);
+            Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
+            OperatorSearchView.AddsToThisCollection = this;
         }
 
         private void SetEventHandlers()
@@ -98,7 +137,6 @@ namespace Dash
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
-            
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ParentDocument == MainPage.Instance.MainDocView)
@@ -660,6 +698,14 @@ namespace Dash
         private void CollectionView_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             (CurrentView as CollectionFreeformView)?.UserControl_PointerWheelChanged(sender, e);
+        }
+
+        private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var thisUi = this as UIElement;
+            var position = e.GetPosition(thisUi);
+            _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
         }
     }
 }

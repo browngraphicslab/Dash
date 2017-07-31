@@ -25,6 +25,15 @@ namespace Dash
             [UnionKey] = TypeInfo.Collection
         };
 
+        public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
+            OperatorFieldModel = operatorFieldModel;
+        }
+
+        public UnionOperatorFieldModelController() : base(new OperatorFieldModel("Union"))
+        {
+        }
+
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
@@ -43,11 +52,6 @@ namespace Dash
             // Union by Document ID 
             //(doc.GetField(UnionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Union(setB.GetDocuments()).ToList());
 
-        }
-
-        public UnionOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
-        {
-            OperatorFieldModel = operatorFieldModel;
         }
 
         public override FieldModelController Copy()

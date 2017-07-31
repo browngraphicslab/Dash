@@ -35,8 +35,9 @@ namespace Dash
 
 
         public SearchView SearchView { get; set; }
+        public static CollectionView AddsToThisCollection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
 
-        public OperatorSearchView()
+        private OperatorSearchView()
         {
             this.InitializeComponent();
             this.MakeView();
@@ -44,10 +45,43 @@ namespace Dash
 
         private void MakeView()
         {
-            var arithmetics = new ObservableCollection<object>() { "Divide" };
-            var sets = new ObservableCollection<object>() { "Union", "Intersection", "Filter" };
-            var maps = new ObservableCollection<object>() { "ImageToUri", "Map" };
-            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri", "Filter", "Api" };
+            // set up the operators, these are all functions which produces new operator documents
+            var divide = new Func<DocumentController>(
+                () => OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()));
+            var union = new Func<DocumentController>(
+                () => OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorFieldModelController()));
+            var intersection = new Func<DocumentController>(
+                () => OperatorDocumentModel.CreateOperatorDocumentModel(new IntersectionOperatorModelController()));
+            var filter = new Func<DocumentController>(OperatorDocumentModel.CreateFilterDocumentController);
+            var imagetoUri = new Func<DocumentController>(
+                () => OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController()));
+            var api = new Func<DocumentController>(OperatorDocumentModel.CreateApiDocumentController);
+            var map = new Func<DocumentController>(OperatorDocumentModel.CreateMapDocumentController);
+
+
+            var arithmetics = new ObservableCollection<KeyValuePair<string, object>>
+            {
+                new KeyValuePair<string, object>("divide", divide)
+            };
+            var sets = new ObservableCollection<KeyValuePair<string, object>> {
+                new KeyValuePair<string, object>("union", union),
+                new KeyValuePair<string, object>("intersection", intersection),
+                new KeyValuePair<string, object>("filter", filter)
+            };
+            var maps = new ObservableCollection<KeyValuePair<string, object>>
+            {
+                new KeyValuePair<string, object>("imageToUri", imagetoUri),
+                new KeyValuePair<string, object>("map", map)
+            };
+            var all = new ObservableCollection<KeyValuePair<string, object>>
+            {
+                new KeyValuePair<string, object>("divide", divide),
+                new KeyValuePair<string, object>("union", union),
+                new KeyValuePair<string, object>("intersection", intersection),
+                new KeyValuePair<string, object>("imageToUri", imagetoUri),
+                new KeyValuePair<string, object>("filter", filter),
+                new KeyValuePair<string, object>("api", api),
+            };
 
             var categories = new List<SearchCategoryItem>();
             categories.Add(new SearchCategoryItem("∀", "ALL",all, Actions.AddOperator));

@@ -12,7 +12,8 @@
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All"
     ManipulationDelta="CollectionView_OnManipulationDelta"
-    PointerWheelChanged="CollectionView_OnPointerWheelChanged">
+    PointerWheelChanged="CollectionView_OnPointerWheelChanged"
+    RightTapped="CollectionView_OnRightTapped">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>

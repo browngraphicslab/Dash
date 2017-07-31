@@ -29,6 +29,10 @@ namespace Dash
         {
         }
 
+        public IntersectionOperatorModelController() : base(new OperatorFieldModel("Intersection"))
+        {
+        }
+
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
