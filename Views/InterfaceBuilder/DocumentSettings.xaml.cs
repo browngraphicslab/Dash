@@ -36,6 +36,19 @@ namespace Dash
             SetupActiveLayoutComboBox(dataDocument, context);
 
             xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
+            
+            xAddLayoutComboBox.ItemsSource = new List<string> { "⊡ Freeform", "▤ List", "⊞ Grid" };
+            xAddLayoutComboBox.SelectionChanged += (s, e) => {
+                SetNewActiveLayout((string)xAddLayoutComboBox.SelectedItem); 
+
+                xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xAddLayoutButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            };
+            xAddLayoutComboBox.LostFocus += (s, e) =>
+            {
+                xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xAddLayoutButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            };
         }
 
         private void SetupActiveLayoutComboBox(DocumentController dataDocument, Context context)
@@ -65,6 +78,7 @@ namespace Dash
             _dataDocument.SetActiveLayout(selectedLayoutDocument, true, false);
         }
 
+
         private void DataDocument_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             var newLayout = (args.NewValue as DocumentFieldModelController).Data;
@@ -89,17 +103,28 @@ namespace Dash
         // to be rewritten this just cycles through our possible layouts for documents
         private void CreateNewActiveLayout_TEMP(object sender, TappedRoutedEventArgs e)
         {
+            xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
+            (sender as Button).Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            xAddLayoutComboBox.IsDropDownOpen = true;
+        }
+
+        /// <summary>
+        /// Add appropriate layout as specified by the parameter 
+        /// </summary>
+        private void SetNewActiveLayout(string layout)
+        {
             var currActiveLayout = _dataDocument.GetActiveLayout(_context).Data;
             var currPos = currActiveLayout.GetPositionField(_context).Data;
             var currWidth = currActiveLayout.GetWidthField(_context).Data;
             var currHeight = currActiveLayout.GetHeightField(_context).Data;
             DocumentController newLayout = null;
-            if (currActiveLayout.DocumentType.Equals(DashConstants.DocumentTypeStore.FreeFormDocumentLayout))
+
+            if (layout == "⊞ Grid")
             {
                 newLayout = new GridViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
             }
-            else if (currActiveLayout.DocumentType.Equals(GridViewLayout.DocumentType))
+            else if (layout == "▤ List")
             {
                 newLayout = new ListViewLayout(new List<DocumentController>(), currPos,
                     new Size(currWidth, currHeight)).Document;
@@ -131,7 +156,6 @@ namespace Dash
                 delegateNewLayout.SetFields(defaultLayoutFields, true);
                 dataDocDelegate.SetActiveLayout(delegateNewLayout, true, false);
             }
-
         }
     }
 }
