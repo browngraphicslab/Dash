@@ -114,117 +114,32 @@ namespace Dash
 
         public static void AddOperator(object obj)
         {
-            DocumentController opModel = null;
-            var type = obj as string;
+            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
+
+            if (freeForm == null)
+            {
+                return;
+            }
 
             var searchView = OperatorSearchView.Instance.SearchView;
-            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
-            var border = searchView.GetFirstDescendantOfType<Border>();
-            var position = new Point(Canvas.GetLeft(border) + searchView.ActualWidth, Canvas.GetTop(border));
-            var translate = new Point();
-            if (freeForm == MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView)
-            {
-                var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-                Debug.Assert(r != null);
-                translate = r.TransformPoint(new Point(position.X, position.Y));
-            }
+            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+            Debug.Assert(transform != null);
+            var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
 
-            if (type == null) return;
-            if (type == "Divide")
+
+            var opCreator = obj as KeyValuePair<string, object>? ?? new KeyValuePair<string, object>();
+            var opController = (opCreator.Value as Func<DocumentController>)?.Invoke();
+
+
+            var opvm = new DocumentViewModel(opController)
             {
-                opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-                view.DataContext = opvm;
+                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+            };
+
+            if (opController != null)
+            {
+                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opController);
             }
-            else if (type == "Union")
-            {
-                opModel =
-                    OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new UnionOperatorFieldModelController(new OperatorFieldModel(type)));
-                var unionView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var unionOpvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                unionView.DataContext = unionOpvm;
-            }
-            else if (type == "Intersection")
-            {
-                // add union operator for testing 
-                opModel =
-                    OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new IntersectionOperatorModelController(new OperatorFieldModel(type)));
-                var intersectView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var intersectOpvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                intersectView.DataContext = intersectOpvm;
-            } else if (type == "Filter")
-            {
-                opModel = OperatorDocumentModel.CreateFilterDocumentController();
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                view.DataContext = opvm;
-            } else if (type == "Api")
-            {
-                opModel = OperatorDocumentModel.CreateApiDocumentController();
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                view.DataContext = opvm;
-            }
-            else if (type == "ImageToUri")
-            {
-                // add image url -> image operator for testing
-                opModel =
-                    OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new ImageOperatorFieldModelController(new OperatorFieldModel(type)));
-                var imgOpView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var imgOpvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                imgOpView.DataContext = imgOpvm;
-            }
-            if (opModel != null)
-                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opModel);
         }
         
         public static void AddCollection(CollectionView collection, DragEventArgs e)

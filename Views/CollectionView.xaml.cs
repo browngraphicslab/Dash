@@ -103,6 +103,25 @@ namespace Dash
             var xCanvas = MainPage.Instance.xCanvas;
             if(!xCanvas.Children.Contains(OperatorSearchView.Instance))
                 xCanvas.Children.Add(OperatorSearchView.Instance);
+
+            // set the operator menu to the current location of the flyout
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+
+            // reset the render transform on the operator search view
+            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
+
+            
+
+            var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+            if (floatBorder != null)
+            {
+                Canvas.SetLeft(floatBorder, 0);
+                Canvas.SetTop(floatBorder, 0);
+            }
+            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X - 250);
+            Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
         }
 
