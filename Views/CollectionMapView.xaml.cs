@@ -30,7 +30,16 @@ namespace Dash.Views
 
         private void CollectionMapView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            throw new NotImplementedException();
+            var refToOp = args.NewValue as FieldReference;
+            var doc = refToOp.GetDocumentController(null);
+            _operatorDoc = doc;
+
+            doc.AddFieldUpdatedListener(CollectionMapOperator.InputOperatorKey, InputOperatorChanged);
+        }
+
+        private void InputOperatorChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            
         }
     }
 }

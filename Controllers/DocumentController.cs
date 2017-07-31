@@ -254,7 +254,51 @@ namespace Dash
             return result;
         }
 
-        //TODO Make SetField not call execute when called from SetFields
+        private bool SetFieldHelper(Key key, FieldModelController field, bool forceMask, out FieldModelController replacedField)
+        {
+            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
+
+            FieldModelController oldField;
+            proto._fields.TryGetValue(key, out oldField);
+
+            // if the fields are reference equal just return
+            if (ReferenceEquals(oldField, field))
+            {
+                replacedField = null;
+                return false;
+            }
+            oldField?.Dispose();
+
+            proto._fields[key] = field;
+            proto.DocumentModel.Fields[key] = field == null ? "" : field.FieldModel.Id;
+
+            replacedField = oldField;
+            return true;
+        }
+
+        private void SetupNewFieldListeners(Key key, FieldModelController newField, FieldModelController oldField)
+        {
+            FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
+            var reference = new DocumentFieldReference(GetId(), key);
+            Context c = new Context(this);
+            if (ShouldExecute(c, key))
+            {
+                Execute(c, true);
+            }
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, new Context(this), false), true);
+            if (newField != null)
+                newField.FieldModelUpdated += delegate (FieldModelController sender, Context context)
+                {
+                    context = context ?? new Context();
+                    context.AddDocumentContext(this);
+                    if (ShouldExecute(context, reference.FieldKey))
+                    {
+                        Execute(context, true);
+                    }
+                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false), true);//TODO Should be Action.Update
+                };
+        }
+
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="Key" /> at the first
         ///     prototype in the hierarchy that contains it. If the <see cref="Key" /> is not used at any level then it is
@@ -269,40 +313,13 @@ namespace Dash
         /// <param name="forceMask"></param>
         public void SetField(Key key, FieldModelController field, bool forceMask)
         {
-            var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
-
             FieldModelController oldField;
-            proto._fields.TryGetValue(key, out oldField);
-            oldField?.Dispose();
-
-            // if the fields are reference equal just return
-            if (ReferenceEquals(oldField, field))
+            if (!SetFieldHelper(key, field, forceMask, out oldField))
             {
                 return;
             }
 
-            proto._fields[key] = field;
-            proto.DocumentModel.Fields[key] = field == null ? "" : field.FieldModel.Id;
-
-            FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
-            var reference = new DocumentFieldReference(GetId(), key);
-            Context c = new Context(this);
-            if (ShouldExecute(c, key))
-            {
-                Execute(c, true);
-            }
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, field, action, reference, new Context(this), false), true);
-            if (field != null)
-                field.FieldModelUpdated += delegate (FieldModelController sender, Context context)
-                {
-                    context = context ?? new Context();
-                    context.AddDocumentContext(this);
-                    if (ShouldExecute(context, reference.FieldKey))
-                    {
-                        Execute(context, true);
-                    }
-                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false), true);//TODO Should be Action.Update
-                };
+            SetupNewFieldListeners(key, field, oldField);
 
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
@@ -340,8 +357,21 @@ namespace Dash
         /// <param name="forceMask"></param>
         public void SetFields(IDictionary<Key, FieldModelController> fields, bool forceMask)
         {
-            foreach (var f in fields)
-                SetField(f.Key, f.Value, forceMask);
+            Dictionary<FieldModelController, KeyValuePair<Key, FieldModelController>> oldFields =
+                new Dictionary<FieldModelController, KeyValuePair<Key, FieldModelController>>();
+            foreach (var field in fields)
+            {
+                FieldModelController oldField;
+                if (SetFieldHelper(field.Key, field.Value, forceMask, out oldField))
+                {
+                    oldFields[oldField] = field;
+                }
+            }
+
+            foreach (var f in oldFields)
+            {
+                SetupNewFieldListeners(f.Value.Key, f.Value.Value, f.Key);
+            }
         }
 
 

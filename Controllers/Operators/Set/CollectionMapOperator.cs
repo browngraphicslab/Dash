@@ -66,7 +66,7 @@ namespace Dash
             for (int i = 0; i < numDocuments; i++)
             {
                 operatorInputs.Clear();
-                for(int j = 0; j < keys.Count; ++i)
+                for(int j = 0; j < collections.Count; ++i)
                 {
                     operatorInputs[operatorController.Inputs[j].Key] = collections[j][i].GetField(keys[j]);
                 }
