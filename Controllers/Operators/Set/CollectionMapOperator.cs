@@ -10,6 +10,8 @@ namespace Dash
 {
     class CollectionMapOperator : OperatorFieldModelController
     {
+        public static readonly DocumentType MapType = new DocumentType("60B60218-966F-47F1-8291-B2FD5EEE444F", "Map");
+
         public static readonly Key InputOperatorKey = new Key("520F5DC4-005E-4F0D-91A3-099358990E40", "Input Operator");
 
         public static readonly Key OutputCollectionKey = new Key("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
@@ -32,6 +34,22 @@ namespace Dash
         {
             [OutputCollectionKey] = TypeInfo.Collection
         };
+
+        public void ResetInputKeys()
+        {
+            Inputs.Clear();
+            Inputs[InputOperatorKey] = TypeInfo.Operator;
+        }
+
+        public void UpdateInputs(OperatorFieldModelController controller)
+        {
+            Inputs.Clear();
+            Inputs[InputOperatorKey] = TypeInfo.Operator;
+            foreach (var controllerInput in controller.Inputs)
+            {
+                Inputs[controllerInput.Key] = TypeInfo.Collection;
+            }
+        }
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {

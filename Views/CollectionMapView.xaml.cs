@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -27,7 +28,8 @@ namespace Dash
 
             XOperatorType.ItemsSource = new List<string>
             {
-                "Test"
+                "Test",
+                "Test2"
             };
 
             XOperatorType.SelectionChanged += XOperatorType_SelectionChanged;
@@ -39,19 +41,21 @@ namespace Dash
         }
 
         private DocumentController _operatorDoc;
+        private CollectionMapOperator _operator;
 
         private void CollectionMapView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var refToOp = args.NewValue as FieldReference;
             var doc = refToOp.GetDocumentController(null);
             _operatorDoc = doc;
+            _operator = doc.GetField(OperatorDocumentModel.OperatorKey) as CollectionMapOperator;
 
             doc.AddFieldUpdatedListener(CollectionMapOperator.InputOperatorKey, InputOperatorChanged);
         }
 
         private void InputOperatorChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
-            
+            _operator.UpdateInputs(args.NewValue as OperatorFieldModelController);
         }
     }
 }
