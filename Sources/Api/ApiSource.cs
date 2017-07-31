@@ -66,8 +66,6 @@ namespace Dash {
         /// </summary>
         /// <param name="g"></param>
         public bool updateDocumentModelResults() {
-            
-
             ApiDocumentModel.setResults(docController, responseAsDocuments);
             return true;
         }
@@ -162,10 +160,14 @@ namespace Dash {
                 return;
             }
 
-            var trySetResponse = new Request(requestType, new Uri(apiUrlTB.Text)).SetHeaders(headers)?
-                .SetMessageBody(new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(parameters))) // <-- What is this?
+            var strHeaders = apiPropertyDictionaryToStringDictionary(headers);
+            var strParams = apiPropertyDictionaryToStringDictionary(parameters);
+            var strAuthHeaders = apiPropertyDictionaryToStringDictionary(authHeaders);
+
+            var trySetResponse = new Request(requestType, new Uri(apiUrlTB.Text)).SetHeaders(strHeaders)?
+                .SetMessageBody(new HttpFormUrlEncodedContent(strParams))
                 .SetAuthUri(authURI)
-                .SetAuthHeaders(authHeaders).TrySetResponse();
+                .SetAuthHeaders(strAuthHeaders).TrySetResponse();
             if (trySetResponse != null)
             {
                 await trySetResponse;

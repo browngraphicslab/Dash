@@ -193,6 +193,19 @@ namespace Dash
                     GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
                 };
                 view.DataContext = opvm;
+            } else if (type == "Api")
+            {
+                opModel = OperatorDocumentModel.CreateApiDocumentController();
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                view.DataContext = opvm;
             }
             else if (type == "ImageToUri")
             {

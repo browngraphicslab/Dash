@@ -30,7 +30,7 @@ namespace Dash
 
         protected string Secret, Key;
 
-        protected Dictionary<string, ApiProperty> Headers, Parameters, AuthHeaders, AuthParameters;
+        protected Dictionary<string, string> Headers, Parameters, AuthHeaders, AuthParameters;
 
         protected HttpClient Client;
 
@@ -47,14 +47,14 @@ namespace Dash
             return this;
         }
 
-        public Request SetHeaders(Dictionary<string, ApiProperty> headers)
+        public Request SetHeaders(Dictionary<string, string> headers)
         {
             Headers = headers;
-            foreach (KeyValuePair<string, ApiProperty> entry in headers)
+            foreach (KeyValuePair<string, string> entry in headers)
             {
                 
                 // add custom header properties to request
-                if (!Message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
+                if (!Message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value))
                     return null;
                     // TODO: have some error happen here
                     //TODO check for spaces in key or value text?
@@ -69,7 +69,7 @@ namespace Dash
             return this;
         }
 
-        public Request SetAuthHeaders(Dictionary<string, ApiProperty> authHeaders)
+        public Request SetAuthHeaders(Dictionary<string, string> authHeaders)
         {
             AuthHeaders = authHeaders;
             return this;
@@ -100,9 +100,9 @@ namespace Dash
                 TokenMsg.Headers.Authorization = new HttpCredentialsHeaderValue("Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes(
                         string.Format("{0}:{1}", Key, Secret))));
-                foreach (KeyValuePair<string, ApiProperty> entry in AuthHeaders)
+                foreach (KeyValuePair<string, string> entry in AuthHeaders)
                 {
-                    if (!TokenMsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
+                    if (!TokenMsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value))
                         return null;
                 }
                 // fetch token
@@ -129,7 +129,7 @@ namespace Dash
                 DocumentCollectionFieldModelController;
                 if (dcfm != null) return new List<DocumentController>(dcfm.GetDocuments());
             }
-            catch (InvalidOperationException)
+            catch (Exception)
             {
                 Debug.Fail("the json util failed");
             }

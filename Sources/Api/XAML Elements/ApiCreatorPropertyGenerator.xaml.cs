@@ -14,6 +14,10 @@ namespace Dash
         public DashShared.Key parameterCollectionKey;
         public ApiSourceDisplay SourceDisplay;
 
+        public delegate void OnParametersChangedEventHandler(ApiCreatorPropertyGenerator generator, ApiCreatorProperty property);
+
+        public event OnParametersChangedEventHandler OnParametersChanged;
+
         private DocumentController docModel;
         public DocumentController DocModel {
             get { return this.docModel; }
@@ -78,6 +82,8 @@ namespace Dash
                 docModel, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
                 stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
             stackPanel.docModelRef = c; // update to contain ref to docmodel generated
+
+            OnParametersChanged?.Invoke(this, stackPanel);
         }
     }
 }
