@@ -22,11 +22,20 @@ namespace Dash
 
         public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>();
 
+        public Dictionary<Key, ReferenceFieldModelController> InputFieldReferences = new Dictionary<Key, ReferenceFieldModelController>();
+        public Dictionary<Key, ReferenceFieldModelController> OutputFieldReferences = new Dictionary<Key, ReferenceFieldModelController>();
+
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            foreach (var output in Outputs.Keys)
+            Context c = new Context();
+            foreach (var reference in InputFieldReferences)
             {
-                //outputs[output] = ;
+                var doc = reference.Value.GetDocumentController(c);
+                doc.SetField(reference.Value.FieldKey, inputs[reference.Key], true);
+            }
+            foreach (var output in OutputFieldReferences)
+            {
+                outputs[output.Key] = output.Value.DereferenceToRoot(c);
             }
         }
     }

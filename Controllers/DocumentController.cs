@@ -276,26 +276,21 @@ namespace Dash
             return true;
         }
 
-        private void SetupNewFieldListeners(Key key, FieldModelController newField, FieldModelController oldField)
+        private void SetupNewFieldListeners(Key key, FieldModelController newField, FieldModelController oldField, Context context)
         {
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
-            Context c = new Context(this);
-            if (ShouldExecute(c, key))
-            {
-                Execute(c, true);
-            }
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, new Context(this), false), true);
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, context, false), true);
             if (newField != null)
-                newField.FieldModelUpdated += delegate (FieldModelController sender, Context context)
+                newField.FieldModelUpdated += delegate (FieldModelController sender, Context c)
                 {
-                    context = context ?? new Context();
-                    context.AddDocumentContext(this);
-                    if (ShouldExecute(context, reference.FieldKey))
+                    c = c ?? new Context();
+                    c.AddDocumentContext(this);
+                    if (ShouldExecute(c, reference.FieldKey))
                     {
-                        Execute(context, true);
+                        Execute(c, true);
                     }
-                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, context, false), true);//TODO Should be Action.Update
+                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, c, false), true);//TODO Should be Action.Update
                 };
         }
 
@@ -319,8 +314,13 @@ namespace Dash
                 return;
             }
 
-            SetupNewFieldListeners(key, field, oldField);
+            SetupNewFieldListeners(key, field, oldField, new Context(this));
 
+            Context c = new Context(this);
+            if (ShouldExecute(c, key))
+            {
+                Execute(c, true);
+            }
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
         }
@@ -359,18 +359,27 @@ namespace Dash
         {
             Dictionary<FieldModelController, KeyValuePair<Key, FieldModelController>> oldFields =
                 new Dictionary<FieldModelController, KeyValuePair<Key, FieldModelController>>();
+
+            Context c = new Context(this);
+            bool shouldExecute = false;
             foreach (var field in fields)
             {
                 FieldModelController oldField;
                 if (SetFieldHelper(field.Key, field.Value, forceMask, out oldField))
                 {
+                    shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
                     oldFields[oldField] = field;
                 }
             }
 
             foreach (var f in oldFields)
             {
-                SetupNewFieldListeners(f.Value.Key, f.Value.Value, f.Key);
+                SetupNewFieldListeners(f.Value.Key, f.Value.Value, f.Key, c);
+            }
+
+            if (shouldExecute)
+            {
+                Execute(c, true);
             }
         }
 
