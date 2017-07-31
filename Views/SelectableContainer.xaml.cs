@@ -338,8 +338,11 @@ namespace Dash
                 case VerticalAlignment.Center:
                     Y = (ContentElement.ActualHeight - LayoutDocument.GetHeightField().Data)/2;
                     break;
+                case VerticalAlignment.Stretch:
+                    LayoutDocument.SetHeight(ContentElement.ActualHeight); 
+                    break; 
             }
-            LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top); 
+            if (verticalAlignment != VerticalAlignment.Top) LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top); 
 
             var horizontalAlignment = LayoutDocument.GetHorizontalAlignment();
             switch (horizontalAlignment)
@@ -350,8 +353,11 @@ namespace Dash
                 case HorizontalAlignment.Center:
                     Y = (ContentElement.ActualWidth - LayoutDocument.GetWidthField().Data) / 2;
                     break;
+                case HorizontalAlignment.Stretch:
+                    LayoutDocument.SetWidth(ContentElement.ActualWidth); 
+                    break; 
             }
-            LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
+            if (horizontalAlignment != HorizontalAlignment.Left) LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
 
             positionController.Data = new Point(X + deltaX, Y + deltaY); 
             return actualChange;

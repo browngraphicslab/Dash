@@ -22,6 +22,9 @@ namespace Dash
 
         private readonly DocumentController _editedLayoutDocument;
 
+        private double _tempHeight;
+        private double _tempWidth; 
+
         public AlignmentSettings()
         {
             this.InitializeComponent();
@@ -30,6 +33,9 @@ namespace Dash
         public AlignmentSettings(DocumentController editedLayoutDocument, Context context): this()
         {
             _editedLayoutDocument = editedLayoutDocument;
+            _tempHeight = editedLayoutDocument.GetHeightField().Data;
+            _tempWidth = editedLayoutDocument.GetWidthField().Data; 
+
             editedLayoutDocument.AddFieldUpdatedListener(CourtesyDocument.HorizontalAlignmentKey, HorizontalAlignmentChanged);
             editedLayoutDocument.AddFieldUpdatedListener(CourtesyDocument.VerticalAlignmentKey, VerticalAlignmentChanged);
 
@@ -53,18 +59,22 @@ namespace Dash
             xVerticalAlignmentComboBox.SelectedItem = selectedItem;
         }
 
+        
+
         private void XVerticalAlignmentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var verticalAlignment = (VerticalAlignment)xVerticalAlignmentComboBox.SelectedIndex;
             if (verticalAlignment == _editedLayoutDocument.GetVerticalAlignment()) return;
 
             var pos = _editedLayoutDocument.GetPositionField();
-            pos.Data = new Point(pos.Data.X, 0); 
+            pos.Data = new Point(pos.Data.X, 0);
 
+            _editedLayoutDocument.SetHeight(_tempHeight);
             _editedLayoutDocument.SetVerticalAlignment(verticalAlignment);
             if (verticalAlignment == VerticalAlignment.Stretch)
             {
                 var hf = _editedLayoutDocument.GetHeightField();
+                _tempHeight = hf.Data; 
                 hf.Data = double.NaN;
             }
         }
@@ -77,10 +87,12 @@ namespace Dash
             var pos = _editedLayoutDocument.GetPositionField();
             pos.Data = new Point(0, pos.Data.Y);
 
+            _editedLayoutDocument.SetWidth(_tempWidth); 
             _editedLayoutDocument.SetHorizontalAlignment(horizontalAlignment);
             if (horizontalAlignment == HorizontalAlignment.Stretch)
             {
                 var wf = _editedLayoutDocument.GetWidthField();
+                _tempWidth = wf.Data; 
                 wf.Data = double.NaN;
             }
         }
