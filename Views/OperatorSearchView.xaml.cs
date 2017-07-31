@@ -35,8 +35,9 @@ namespace Dash
 
 
         public SearchView SearchView { get; set; }
+        public static CollectionView AddsToThisCollection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
 
-        public OperatorSearchView()
+        private OperatorSearchView()
         {
             this.InitializeComponent();
             this.MakeView();
