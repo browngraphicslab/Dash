@@ -66,8 +66,6 @@ namespace Dash {
         /// </summary>
         /// <param name="g"></param>
         public bool updateDocumentModelResults() {
-            
-
             ApiDocumentModel.setResults(docController, responseAsDocuments);
             return true;
         }
@@ -154,7 +152,6 @@ namespace Dash {
         public async virtual void makeRequest() {
             // load in parameters from listViews
             updateParametersFromListView();
-            var apiURI = new Uri(apiUrlTB.Text);
             
             // check that all required fields are filled
             if (!(requiredPropertiesValid(parameters) &&
@@ -163,77 +160,23 @@ namespace Dash {
                 return;
             }
 
-            // initialize request message and headers
-            HttpRequestMessage message = new HttpRequestMessage(requestType, apiURI);
+            var strHeaders = apiPropertyDictionaryToStringDictionary(headers);
+            var strParams = apiPropertyDictionaryToStringDictionary(parameters);
+            var strAuthHeaders = apiPropertyDictionaryToStringDictionary(authHeaders);
 
-            // populate headers with user input
-            foreach (KeyValuePair<string, ApiProperty> entry in headers) {
-                // add custom header properties to request
-                if (!message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
-                    return; // TODO: have some error happen here
+            var trySetResponse = new Request(requestType, new Uri(apiUrlTB.Text)).SetHeaders(strHeaders)?
+                .SetMessageBody(new HttpFormUrlEncodedContent(strParams))
+                .SetAuthUri(authURI)
+                .SetAuthHeaders(strAuthHeaders).TrySetResponse();
+            if (trySetResponse != null)
+            {
+                await trySetResponse;
+                ResponseAsDocuments = trySetResponse.Result?.GetResponseAsDocuments();
+                if (ResponseAsDocuments == null) return;
+                updateDocumentModelResults();
             }
-
-            // populate parameters with URL encoded user input
-            HttpFormUrlEncodedContent messageBody
-                = new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(parameters));
-
-            // if get, we add parameters to the URI either in URL for GET or in body for POST requests
-            if (requestType == HttpMethod.Get) {
-                if (!String.IsNullOrWhiteSpace(messageBody.ToString()))
-                    message.RequestUri = new Uri(apiURI.OriginalString + "?" + messageBody.ToString());
-            } else {
-                message.Content = messageBody;
-            }
-
-
-            // fetch authentication token if required
-            if (!(string.IsNullOrWhiteSpace(apiURI.AbsolutePath) || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))) {
-                string token;
-                HttpRequestMessage tokenmsg = new HttpRequestMessage(HttpMethod.Post, authURI);
-                var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
-                var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
-                // apply auth headers & parameters
-                tokenmsg.Content = new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(authParameters));
-                tokenmsg.Headers.Authorization = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(
-                    string.Format("{0}:{1}", key, secret))));
-                foreach (KeyValuePair<string, ApiProperty> entry in authHeaders) {
-                    if (!tokenmsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
-                        return;
-                }
-                // fetch token
-                response = await client.SendRequestAsync(tokenmsg);
-
-                // parse resulting bearer token
-                JObject resultObject = JObject.Parse(response.Content.ToString());
-                token = (string)resultObject.GetValue("access_token");
-                message.Headers.Authorization = new HttpCredentialsHeaderValue("Bearer", token);
-            }
-
-            // send message
-            response = await client.SendRequestAsync(message);
-            Debug.WriteLine("Content: " + response.Content.ToString());
-
-            // generate and store response document by parsing HTTP output
-            // first try to parse it as a list of objects
-            responseAsDocuments = new List<DocumentController>();
-            try {
-
-                DocumentController documentController = JsonToDashUtil.Parse(response.Content.ToString(), message.RequestUri.ToString());
-
-                var dcfm = documentController.EnumFields()
-                    .FirstOrDefault(keyFieldPair => keyFieldPair.Value is DocumentCollectionFieldModelController).Value as DocumentCollectionFieldModelController;
-
-                ResponseAsDocuments = new List<DocumentController>();
-                //ResponseAsDocuments.Add(documentController); // the collection
-                ResponseAsDocuments.AddRange(dcfm.GetDocuments());
-
-            } catch (InvalidOperationException e) {
-                Debug.Fail("the json util failed");
-            }
-
             // add document to children
-            updateDocumentModelResults();
+            
         }
 
         // recursively yield all children of json

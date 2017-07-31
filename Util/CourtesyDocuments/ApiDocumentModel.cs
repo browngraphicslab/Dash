@@ -14,8 +14,7 @@ namespace Dash
     /// </summary>
     internal class ApiDocumentModel : CourtesyDocument
     {
-        public static DocumentType DocumentType =
-            new DocumentType("453ACC23-14EF-4990-A36D-53D5EBE2734D", "Api Source Creator");
+        public static DocumentType DocumentType = ApiOperator.ApiType;
 
         public static Key BaseUrlKey = new Key("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
         public static Key HttpMethodKey = new Key("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
@@ -62,7 +61,7 @@ namespace Dash
             };
             Document = new DocumentController(fields, DocumentType);
             Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
-            Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
+            //Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
         /// <summary>
@@ -274,21 +273,6 @@ namespace Dash
             apiDisplay.UrlTB.Text = "https://itunes.apple.com/search";
             Debug.WriteLine((docController.GetDereferencedField(BaseUrlKey, context) as TextFieldModelController).Data);
 
-            // generate collection view preview for results
-            var resultView =
-                docController.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, context) as
-                    DocumentCollectionFieldModelController;
-
-            // make collection view display framework element
-            var data = resultView;
-            var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            Debug.Assert(collectionFieldModelController != null);
-
-            var collectionViewModel = new CollectionViewModel(collectionFieldModelController, context); //  collectionFieldModelController);
-            var collectionDisplay = new CollectionView(collectionViewModel);
-
-
-
             // this binding makes it s.t. either only the ApiSource or the ApiSourceCreator is visible at a single time
             // TODO: should clients be able to decide for themselves how this is displaying (separate superuser and regular user)
             // or should everyone just see the same view ?
@@ -309,15 +293,8 @@ namespace Dash
             containerGrid.RowDefinitions.Add(new RowDefinition());
             containerGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(450) });
             containerGrid.ColumnDefinitions.Add(new ColumnDefinition());
-            Grid.SetColumn(collectionDisplay, 1);
             containerGrid.Children.Add(apiDisplay);
             containerGrid.Children.Add(sourceDisplay);
-            containerGrid.Children.Add(collectionDisplay);
-
-            collectionDisplay.HorizontalAlignment = HorizontalAlignment.Stretch;
-            collectionDisplay.VerticalAlignment = VerticalAlignment.Stretch;
-            collectionDisplay.Height = double.NaN;
-
 
             // return all results
             if (isInterfaceBuilderLayout) {

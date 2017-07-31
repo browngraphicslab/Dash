@@ -8,6 +8,7 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using System;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Controllers.Operators;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 

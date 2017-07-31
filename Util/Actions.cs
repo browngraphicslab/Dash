@@ -193,6 +193,19 @@ namespace Dash
                     GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
                 };
                 view.DataContext = opvm;
+            } else if (type == "Api")
+            {
+                opModel = OperatorDocumentModel.CreateApiDocumentController();
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                view.DataContext = opvm;
             }
             else if (type == "ImageToUri")
             {
@@ -287,9 +300,6 @@ namespace Dash
         public static void AddDocuments(CollectionView col, DragEventArgs e)
         {
             var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
-
-            DocumentController Document = Util.MakeListView(new List<object> { "hi", "123", 456, "http://////fakeurll???", "ms-appx://Dash/Assets/cat.jpg" });
-            DisplayDocument(col, Document, where);
 
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(col, d, where);

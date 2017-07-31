@@ -11,5 +11,6 @@
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
         <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
+        <Button Tapped="UIElement_OnTapped">TEST TEST TEST</Button>
     </Grid>
 </Page>
