@@ -40,7 +40,7 @@ namespace Dash
         }
 
         private void SetActiveHorizontalAlignment()
-        {
+        {            
             var horizontalAlignment = _editedLayoutDocument.GetHorizontalAlignment();
             var selectedItem = xHorizontalAlignmentComboBox.Items.Cast<ComboBoxItem>().FirstOrDefault(cbi => (cbi.Content as string).Equals(horizontalAlignment.ToString()));
             xHorizontalAlignmentComboBox.SelectedItem = selectedItem;
@@ -58,19 +58,27 @@ namespace Dash
             var verticalAlignment = (VerticalAlignment)xVerticalAlignmentComboBox.SelectedIndex;
             if (verticalAlignment == _editedLayoutDocument.GetVerticalAlignment()) return;
 
+            var pos = _editedLayoutDocument.GetPositionField();
+            var saved = pos; 
+            pos.Data = new Point(pos.Data.X, 0); 
+
             _editedLayoutDocument.SetVerticalAlignment(verticalAlignment);
             if (verticalAlignment == VerticalAlignment.Stretch)
             {
                 var hf = _editedLayoutDocument.GetHeightField();
                 hf.Data = double.NaN;
             }
+            pos.Data = saved.Data; 
         }
 
         private void XHorizontalAlignmentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var horizontalAlignment = (HorizontalAlignment)xHorizontalAlignmentComboBox.SelectedIndex;
-
             if (horizontalAlignment == _editedLayoutDocument.GetHorizontalAlignment()) return;
+
+            var pos = _editedLayoutDocument.GetPositionField();
+            pos.Data = new Point(0, pos.Data.Y);
+
             _editedLayoutDocument.SetHorizontalAlignment(horizontalAlignment);
             if (horizontalAlignment == HorizontalAlignment.Stretch)
             {

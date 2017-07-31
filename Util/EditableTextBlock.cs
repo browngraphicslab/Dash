@@ -39,7 +39,7 @@ namespace Dash
                 Block.Visibility = Visibility.Visible;
             };
 
-            Block.Tapped += (s, e) =>
+            Block.DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
                 Block.Visibility = Visibility.Collapsed;
