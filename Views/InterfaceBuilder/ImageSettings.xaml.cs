@@ -21,6 +21,7 @@ namespace Dash
             Debug.Assert(docController.DocumentType == ImageBox.DocumentType, "You can only create image settings for an ImageBox");
 
             xSizeRow.Children.Add(new SizeSettings(docController, context));
+            xCropRow.Children.Add(new ClipSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
             xAlignmentRow.Children.Add(new AlignmentSettings(docController, context));
             BindOpacity(docController, context);
@@ -32,7 +33,7 @@ namespace Dash
                     docController.GetDereferencedField(ImageBox.OpacityKey, context) as NumberFieldModelController;
             Debug.Assert(opacityController != null);
 
-            var opacityBinding = new Binding()
+            var opacityBinding = new Binding
             {
                 Source = opacityController,
                 Path = new PropertyPath(nameof(opacityController.Data)),
@@ -41,14 +42,13 @@ namespace Dash
             };
             xOpacitySliderTextbox.SetBinding(TextBox.TextProperty, opacityBinding);
 
-            var textOpacityBinding = new Binding()
+            var textOpacityBinding = new Binding
             {
                 Source = xOpacitySliderTextbox,
                 Path = new PropertyPath(nameof(xOpacitySliderTextbox.Text)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-
             xOpacitySlider.SetBinding(Slider.ValueProperty, textOpacityBinding);
         }
     }

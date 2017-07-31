@@ -75,10 +75,7 @@ namespace Dash
             docController.AddFieldUpdatedListener(k,
                 delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                 {
-                    if (args.Action == DocumentController.FieldUpdatedAction.Update)
-                    {
-                        return;
-                    }
+                    if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
                     bindingDelegate(element, sender, args.Context);//TODO Should be context or args.Context?
                 });
         }
