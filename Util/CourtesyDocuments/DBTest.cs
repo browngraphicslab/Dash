@@ -13,6 +13,7 @@ namespace Dash
         public static DocumentType GameType = new DocumentType("6830665B-8300-430D-9854-4DD13488A6CF", "Game");
         public static DocumentType AssignmentType = new DocumentType("FBAD8901-2453-4ADC-9076-D5ED83F46B9B", "Assignment");
         public static DocumentType VolunteerType  = new DocumentType("CC865EF7-A0C3-4740-9E02-3D6E1ACCC7D1", "Volunteer");
+        public static DocumentType WebType = new DocumentType("ED1EDECE-2434-4BDB-A8E8-3DF7A0CE4BB0", "Web Doc");
 
         public static Key NullDocNameKey = new Key("3E74836B-CDD2-4F0A-9031-6786B03A40A4");
 
@@ -32,6 +33,8 @@ namespace Dash
         public static Key VolNameKey         = new Key("3908F612-15FC-492C-A6E1-239EFCDC5ED5", "VolName");
         public static Key VolNameLabelKey    = new Key("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolName");
 
+        public static Key WebUrlKey = new Key("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");
+
         public static DocumentController DBNull = CreateNull();
         public static DocumentController DBDoc = CreateDB();
 
@@ -39,11 +42,13 @@ namespace Dash
         public static DocumentController PrototypeGame = CreatePrototypeGame();
         public static DocumentController PrototypeVol = CreatePrototypeVol();
         public static DocumentController PrototypeAssign = CreatePrototypeAssignment();
+        public static DocumentController PrototypeWeb = CreatePrototypeWeb();
 
         public static DocumentController PrototypeUmpLayout = CreatePrototypeUmpLayout();
         public static DocumentController PrototypeGameLayout = CreatePrototypeGameLayout();
         public static DocumentController PrototypeVolLayout = CreatePrototypeVolLayout();
         public static DocumentController PrototypeAssignmentLayout = CreatePrototypeAssignmentLayout();
+        public static DocumentController PrototypeWebLayout = CreatePrototypeWebLayout();
 
         static DocumentController CreateNull()
         {
@@ -114,6 +119,16 @@ namespace Dash
                 new TextFieldModelController[] { new TextFieldModelController(AssigmentGameKey.Id), new TextFieldModelController(AssigmentPersonKey.Id) }), true);
             return dc;
         }
+        static DocumentController CreatePrototypeWeb()
+        {
+            var fields = new Dictionary<Key, FieldModelController>();
+            fields.Add(WebUrlKey, new TextFieldModelController("http://www.cs.brown.edu"));
+            var dc = new DocumentController(fields, WebType);
+            dc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
+            dc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                new TextFieldModelController[] { new TextFieldModelController(WebUrlKey.Id) }), true);
+            return dc;
+        }
 
         static DocumentController CreatePrototypeUmpLayout()
         {
@@ -181,6 +196,16 @@ namespace Dash
 
             return prototypeLayout.Document;
         }
+        static DocumentController CreatePrototypeWebLayout()
+        {
+            // set the default layout parameters on prototypes of field layout documents
+            // these prototypes will be overridden by delegates when an instance is created
+            var prototypeLayout = new WebBox(new ReferenceFieldModelController(PrototypeWeb.GetId(), WebUrlKey), 0, 0, 200, 50);
+            prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+            prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
+
+            return prototypeLayout.Document;
+        }
         /// <summary>
         /// Sets the active layout on the <paramref name="dataDocument"/> to the passed in <paramref name="layoutDoc"/>
         /// </summary>
@@ -199,6 +224,7 @@ namespace Dash
             var game2Doc = PrototypeGame.MakeDelegate();
             var game3Doc = PrototypeGame.MakeDelegate();
             var Ass1Doc = PrototypeAssign.MakeDelegate();
+            var WebDoc = PrototypeWeb.MakeDelegate();
 
 
             {
@@ -296,6 +322,15 @@ namespace Dash
                 SetLayoutForDocument(game3Doc, game3Layout, forceMask: true, addToLayoutList: true);
                 Documents.Add(game3Doc);
             }
+            {
+                WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
+                WebDoc.SetField(WebUrlKey, new TextFieldModelController("http://www.msn.com"), true);
+                var webLayout = PrototypeWebLayout.MakeDelegate();
+                webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                SetLayoutForDocument(WebDoc, webLayout, forceMask: true, addToLayoutList: true);
+                Documents.Add(WebDoc);
+            }
+
             DBDoc.SetField(DashConstants.KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
             DBDoc.DocumentFieldUpdated += DBDoc_DocumentFieldUpdated;
                 
