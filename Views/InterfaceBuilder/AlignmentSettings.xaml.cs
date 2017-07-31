@@ -69,7 +69,7 @@ namespace Dash
             var pos = _editedLayoutDocument.GetPositionField();
             pos.Data = new Point(pos.Data.X, 0);
 
-            _editedLayoutDocument.SetHeight(_tempHeight);
+            if (Double.IsNaN(_editedLayoutDocument.GetHeightField().Data)) _editedLayoutDocument.SetHeight(_tempHeight);
             _editedLayoutDocument.SetVerticalAlignment(verticalAlignment);
             if (verticalAlignment == VerticalAlignment.Stretch)
             {
@@ -87,7 +87,7 @@ namespace Dash
             var pos = _editedLayoutDocument.GetPositionField();
             pos.Data = new Point(0, pos.Data.Y);
 
-            _editedLayoutDocument.SetWidth(_tempWidth); 
+            if (Double.IsNaN(_editedLayoutDocument.GetWidthField().Data)) _editedLayoutDocument.SetWidth(_tempWidth); 
             _editedLayoutDocument.SetHorizontalAlignment(horizontalAlignment);
             if (horizontalAlignment == HorizontalAlignment.Stretch)
             {
