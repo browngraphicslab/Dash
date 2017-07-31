@@ -503,27 +503,27 @@ namespace Dash
             });
 
             //TODO maybe this shouldn't go here 
-            Action<object> sendEmail = sendEmailHelper;
-            var emailButton = new RadialActionModel("Email", "📧")
-            {
-                GenericAction = sendEmail
-            };
+            //Action<object> sendEmail = sendEmailHelper;
+            //var emailButton = new RadialActionModel("Email", "📧")
+            //{
+            //    GenericAction = sendEmail
+            //};
 
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
                 inkOptions,
                 addOptionsMenu,
-                emailButton
+                //emailButton
             });
 
             
         }
 
-        private void sendEmailHelper(object obj)
-        {
-            _parentCanvas.Children.Add(new EmailView()); 
-        }
+        //private void sendEmailHelper(object obj)
+        //{
+        //    _parentCanvas.Children.Add(new EmailView()); 
+        //}
 
         private void InitializeColors()
         {

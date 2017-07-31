@@ -100,8 +100,11 @@ namespace Dash
             if (item == TypeInfo.Number)
             {
                 double number;
+                // if specified type is number only add a new keyvalue pair if the value is a number 
                 if (double.TryParse(xNewValueField.Text, out number))
                     fmController = new NumberFieldModelController(number);
+                else
+                    return; 
             }
             else if (item == TypeInfo.Image)
             {

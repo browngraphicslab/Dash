@@ -36,10 +36,18 @@ namespace Dash
             SetupActiveLayoutComboBox(dataDocument, context);
 
             xAddLayoutButton.Tapped += CreateNewActiveLayout_TEMP;
-            
+
+            SetupNewLayoutDropDown(); 
+        }
+
+        /// <summary>
+        /// Set up the dropdown menu that appears once xAddLayoutButton is pressed; can choose from freeform, list, grid 
+        /// </summary>
+        private void SetupNewLayoutDropDown()
+        {
             xAddLayoutComboBox.ItemsSource = new List<string> { "⊡ Freeform", "▤ List", "⊞ Grid" };
             xAddLayoutComboBox.SelectionChanged += (s, e) => {
-                SetNewActiveLayout((string)xAddLayoutComboBox.SelectedItem); 
+                SetNewActiveLayout((string)xAddLayoutComboBox.SelectedItem);
 
                 xAddLayoutComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xAddLayoutButton.Visibility = Windows.UI.Xaml.Visibility.Visible;
