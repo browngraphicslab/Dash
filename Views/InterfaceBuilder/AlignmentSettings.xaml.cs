@@ -59,7 +59,6 @@ namespace Dash
             if (verticalAlignment == _editedLayoutDocument.GetVerticalAlignment()) return;
 
             var pos = _editedLayoutDocument.GetPositionField();
-            var saved = pos; 
             pos.Data = new Point(pos.Data.X, 0); 
 
             _editedLayoutDocument.SetVerticalAlignment(verticalAlignment);
@@ -68,7 +67,6 @@ namespace Dash
                 var hf = _editedLayoutDocument.GetHeightField();
                 hf.Data = double.NaN;
             }
-            pos.Data = saved.Data; 
         }
 
         private void XHorizontalAlignmentComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

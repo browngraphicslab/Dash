@@ -324,8 +324,36 @@ namespace Dash
         {
             var actualChange = new Point(deltaX, deltaY);
             var positionController = LayoutDocument.GetPositionField();
-            var currentPosition = positionController.Data;
-            positionController.Data = new Point(currentPosition.X + deltaX, currentPosition.Y + deltaY);
+
+            double X = positionController.Data.X;
+            double Y = positionController.Data.Y; 
+
+            // take into account the vertical and horizontal alignments 
+            var verticalAlignment = LayoutDocument.GetVerticalAlignment(); 
+            switch (verticalAlignment)
+            {
+                case VerticalAlignment.Bottom:
+                    Y = ContentElement.ActualHeight - LayoutDocument.GetHeightField().Data;
+                    break;
+                case VerticalAlignment.Center:
+                    Y = (ContentElement.ActualHeight - LayoutDocument.GetHeightField().Data)/2;
+                    break;
+            }
+            LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top); 
+
+            var horizontalAlignment = LayoutDocument.GetHorizontalAlignment();
+            switch (horizontalAlignment)
+            {
+                case HorizontalAlignment.Right:
+                    X = ContentElement.ActualWidth - LayoutDocument.GetWidthField().Data;
+                    break;
+                case HorizontalAlignment.Center:
+                    Y = (ContentElement.ActualWidth - LayoutDocument.GetWidthField().Data) / 2;
+                    break;
+            }
+            LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
+
+            positionController.Data = new Point(X + deltaX, Y + deltaY); 
             return actualChange;
         }
 
