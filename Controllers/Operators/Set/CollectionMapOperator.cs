@@ -14,13 +14,13 @@ namespace Dash
 
         public static readonly Key OutputCollectionKey = new Key("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
 
-        public CollectionMapOperator(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public CollectionMapOperator() : base(new OperatorFieldModel("CollectionMap"))
         {
         }
 
         public override FieldModelController Copy()
         {
-            return new CollectionMapOperator(OperatorFieldModel);
+            return new CollectionMapOperator();
         }
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>()

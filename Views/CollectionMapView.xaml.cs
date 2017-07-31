@@ -15,7 +15,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class CollectionMapView : UserControl
     {
@@ -24,6 +24,18 @@ namespace Dash.Views
             this.InitializeComponent();
 
             DataContextChanged += CollectionMapView_DataContextChanged;
+
+            XOperatorType.ItemsSource = new List<string>
+            {
+                "Test"
+            };
+
+            XOperatorType.SelectionChanged += XOperatorType_SelectionChanged;
+        }
+
+        private void XOperatorType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            _operatorDoc.SetField(CollectionMapOperator.InputOperatorKey, new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")), true);
         }
 
         private DocumentController _operatorDoc;

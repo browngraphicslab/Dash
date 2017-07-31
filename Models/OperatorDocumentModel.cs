@@ -48,6 +48,17 @@ namespace Dash
 
             return doc;
         }
+        public static DocumentController CreateMapDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = new CollectionMapOperator();
+            var doc = new DocumentController(fields, FilterOperator.FilterType);
+
+            var layoutDoc = new CollectionMapOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
 
         public static DocumentController CreateApiDocumentController()
         {

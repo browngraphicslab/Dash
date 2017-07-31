@@ -46,7 +46,7 @@ namespace Dash
         {
             var arithmetics = new ObservableCollection<object>() { "Divide" };
             var sets = new ObservableCollection<object>() { "Union", "Intersection", "Filter" };
-            var maps = new ObservableCollection<object>() { "ImageToUri" };
+            var maps = new ObservableCollection<object>() { "ImageToUri", "Map" };
             var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri", "Filter", "Api" };
 
             var categories = new List<SearchCategoryItem>();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
@@ -357,8 +358,7 @@ namespace Dash
         /// <param name="forceMask"></param>
         public void SetFields(IDictionary<Key, FieldModelController> fields, bool forceMask)
         {
-            Dictionary<FieldModelController, KeyValuePair<Key, FieldModelController>> oldFields =
-                new Dictionary<FieldModelController, KeyValuePair<Key, FieldModelController>>();
+            var oldFields = new List<Tuple<FieldModelController, FieldModelController, Key>>();
 
             Context c = new Context(this);
             bool shouldExecute = false;
@@ -368,13 +368,13 @@ namespace Dash
                 if (SetFieldHelper(field.Key, field.Value, forceMask, out oldField))
                 {
                     shouldExecute = shouldExecute || ShouldExecute(c, field.Key);
-                    oldFields[oldField] = field;
+                    oldFields.Add(Tuple.Create(field.Value, oldField, field.Key));
                 }
             }
 
             foreach (var f in oldFields)
             {
-                SetupNewFieldListeners(f.Value.Key, f.Value.Value, f.Key, c);
+                SetupNewFieldListeners(f.Item3, f.Item1, f.Item2, c);
             }
 
             if (shouldExecute)
@@ -656,6 +656,10 @@ namespace Dash
             if (DocumentType == FilterOperatorBox.DocumentType)
             {
                 return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == CollectionMapOperatorBox.DocumentType)
+            {
+                return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == DBSearchOperatorBox.DocumentType)
             {
