@@ -29,7 +29,7 @@ namespace Dash
             [RemainderKey] = TypeInfo.Number
         };
 
-        private int nextChar = 'C';
+        private int _nextChar = 'C';
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
@@ -38,11 +38,11 @@ namespace Dash
             var numberB = (NumberFieldModelController) inputs[BKey];
 
             //Varargs proof of concept
-            string s = new string((char)nextChar++, 1);
+            var s = new string((char)_nextChar++, 1);
             Inputs.Add(new Key(s, s), TypeInfo.Number);
             
-            double a = numberA.Data;
-            double b = numberB.Data;
+            var a = numberA.Data;
+            var b = numberB.Data;
             outputs[QuotientKey] = new NumberFieldModelController(a / b);
             outputs[RemainderKey] = new NumberFieldModelController(a % b);
         }
