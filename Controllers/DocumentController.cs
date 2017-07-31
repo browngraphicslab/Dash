@@ -583,6 +583,10 @@ namespace Dash
             {
                 return StackingPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
+            if (DocumentType == WebBox.DocumentType)
+            {
+                return WebBox.MakeView(this, context, isInterfaceBuilder);
+            }
             if (DocumentType == CollectionBox.DocumentType)
             {
                 return CollectionBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
