@@ -44,20 +44,14 @@
 
                 <local:KeyValuePane x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValuePane>
 
-                <Grid x:Name="xDocumentPane" Grid.Column="1" Margin="1,1" Background="White" SizeChanged="xDocumentPane_SizeChanged">
-                    <ScrollViewer x:Name="xScrollViewer" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ZoomMode="Enabled" MaxZoomFactor="4"
-                              MinZoomFactor="1">
-                        <Viewbox x:Name="xDocumentHolder" Stretch="Uniform"/>
-                    </ScrollViewer>
-                    <Canvas x:Name="xDetectorCanvas"></Canvas>
-                </Grid>
+                <local:DocumentCanvasView x:Name="xDocumentPane" Grid.Column="1"></local:DocumentCanvasView>
 
                 <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
                   Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" />
             </Grid>
 
             <GridView Grid.Row="2" HorizontalAlignment="Center" Margin="294,0,258,0" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting" Width="248">
-                <Button x:Name="FreeformButton" Width="60" Height="65" Margin="5"  VerticalContentAlignment="Center"
+                <Button x:Name="FreeformButton" Width="55" Height="65" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
                     <StackPanel Orientation="Vertical">
                         <Grid>
@@ -83,16 +77,16 @@
                 </Button>
                 <Button x:Name="GridButton" Width="45" Height="65" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
-                    <StackPanel Orientation="Vertical">
-                        <Grid>
-                            <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
-                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
+                            <StackPanel Orientation="Vertical">
+                                <Grid>
+                                    <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
+                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
                                 <Run Text="▦"/>
-                            </TextBlock>
-                        </Grid>
-                        <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
-                    </StackPanel>
-                </Button>
+                                    </TextBlock>
+                                </Grid>
+                                <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
+                            </StackPanel>
+                        </Button>
 
             </GridView>
             <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Height="65" Width="73" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,222,0" Grid.Row="2">

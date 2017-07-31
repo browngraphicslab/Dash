@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Storage;
@@ -9,9 +15,12 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media.Imaging;
-using Dash.Views;
 using DashShared;
+using Flurl;
+using Flurl.Http;
+using Flurl.Http.Content;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
 using Visibility = Windows.UI.Xaml.Visibility;
 using static Dash.NoteDocuments;
 
@@ -36,12 +45,6 @@ namespace Dash
         {
             InitializeComponent();
 
-            // adds items from the overlay canvas onto the freeform canvas
-            xOverlayCanvas.OnAddDocumentsTapped += AddDocuments;
-            xOverlayCanvas.OnAddCollectionTapped += AddCollection;
-            xOverlayCanvas.OnAddAPICreatorTapped += AddApiCreator;
-            xOverlayCanvas.OnAddImageTapped += AddImage;
-
             // create the collection document model using a request
             var fields = new Dictionary<Key, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
@@ -51,11 +54,7 @@ namespace Dash
             MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(MainDocument)
-            {
-                IsDetailedUserInterfaceVisible = false,
-                IsMoveable = false
-            };
+            MainDocView.DataContext = new DocumentViewModel(MainDocument);
 
             // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
@@ -74,29 +73,41 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
+            MainDocView.AllowDrop = true;
+            MainDocView.DragEnter += MainDocViewOnDragEnter;
+            MainDocView.Drop += MainDocView_Drop;
+            MainDocView.DoubleTapped += XCanvas_OnDoubleTapped;
         }
 
 
-        public void AddOperatorsFilter()
+        private void MainDocViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            e.AcceptedOperation = DataPackageOperation.Move;
+            e.DragUIOverride.IsGlyphVisible = false;
+            e.DragUIOverride.IsContentVisible = false;
+            e.DragUIOverride.Caption = e.DataView.Properties.Title;
+        }
+
+        public void AddOperatorsFilter(object o, DragEventArgs e)
         {
             if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
             {
                 xCanvas.Children.Add(OperatorSearchView.Instance);
-            } else
-            {
-                xCanvas.Children.Remove(OperatorSearchView.Instance);
+                Point absPos = e.GetPosition(Instance);
+                Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
+                Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
             }
         }
 
-        public void AddGenericFilter()
+        public void AddGenericFilter(object o, DragEventArgs e)
         {
             if (!xCanvas.Children.Contains(GenericSearchView.Instance))
             {
                 xCanvas.Children.Add(GenericSearchView.Instance);
-            }
-            else
-            {
-                xCanvas.Children.Add(GenericSearchView.Instance);
+                Point absPos = e.GetPosition(Instance);
+                Canvas.SetLeft(GenericSearchView.Instance, absPos.X);
+                Canvas.SetTop(GenericSearchView.Instance, absPos.Y);
             }
         }
 
@@ -107,114 +118,20 @@ namespace Dash
         /// <param name="where"></param>
         public void DisplayDocument(DocumentController docModel, Point? where = null)
         {
+            if (where != null)
+            {
+                docModel.GetPositionField().Data = (Point)where;
+            }
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
+            DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
         }
 
-        public void AddCollection(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            var twoImages = new TwoImages(false).Document;
-            var twoImages2 = new TwoImages(false).Document;
-            var numbers = new Numbers().Document;
-
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                {
-                    DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(new[] {numbers})
-                }
-            };
-
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-            DisplayDocument(col);
-
-            AddAnotherLol();
-        }
-
-        public void AddApiCreator(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            var a = new ApiDocumentModel().Document;
-            DisplayDocument(a);
-        }
-
-        private void AddAnotherLol()
-        {
-            var numbers = new Numbers().Document;
-            var twoImages2 = new TwoImages(false).Document;
-
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] =
-                new DocumentCollectionFieldModelController(new[]
-                    {numbers, twoImages2})
-            };
-
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
-            var layoutDoc =
-                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
-                    DocumentCollectionFieldModelController.CollectionKey)).Document;
-            var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true); 
-            DisplayDocument(col);
-        }
-
-
-        private void AddImage(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
-        {
-            throw new NotImplementedException();
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
-        }
-
-        public void AddDocuments(object sender, TappedRoutedEventArgs e)
-        {
-            //DisplayDocument(new PostitNote().Document);
-            //DisplayDocument(new TwoImages(false).Document);
-            //DocumentController numbersProto = new Numbers().Document;
-            //DocumentController del = numbersProto.MakeDelegate();
-            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            //del.SetField(Numbers.Number1FieldKey, new NumberFieldModelController(100), true);
-            //var layout = del.GetField(DashConstants.KeyStore.ActiveLayoutKey) as DocumentFieldModelController;
-            //var layoutDel = layout.Data.MakeDelegate();
-            //layoutDel.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(0, 0), true);
-            //del.SetField(DashConstants.KeyStore.ActiveLayoutKey, new DocumentFieldModelController(layoutDel), true);
-            //DisplayDocument(numbersProto);
-            //DisplayDocument(del);
-            //DisplayDocument(new TwoImages(false).Document);
-            //Debug.WriteLine($"Numbers proto ID: {numbersProto.GetId()}");
-            //Debug.WriteLine($"Numbers delegate ID: {del.GetId()}");
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(d);
-        }
-
-        public void AddNotes()
-        {
-            //DocumentController rtfNote = new NoteDocuments.RichTextNote(new DocumentType()).Document;
-            //DisplayDocument(rtfNote);
-
-            DocumentController postitNote = new PostitNote(PostitNote.DocumentType).Document;
-            DisplayDocument(postitNote);
-
-            //DocumentController imageNote = new NoteDocuments.ImageNote(new DocumentType()).Document;
-            //DisplayDocument(imageNote);
-        }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            var child = xViewBox.Child as FrameworkElement;
-            if (child != null)
-            {
-                child.Width = e.NewSize.Width;
-                child.Height = e.NewSize.Height;
-            }
+            MainDocView.Width = e.NewSize.Width;
+            MainDocView.Height = e.NewSize.Height;
         }
 
         //// FILE DRAG AND DROP
@@ -225,11 +142,18 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e">drag event arguments</param>
-        private async void XCanvas_Drop(object sender, DragEventArgs e)
+        private async void MainDocView_Drop(object sender, DragEventArgs e)
         {
+            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
+            {
+                (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<object, DragEventArgs>)?.Invoke(sender, e);
+                return;
+            }
+
             var dragged = new Image();
             var url = "";
 
+            
             // load items dragged from solution explorer
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -277,7 +201,7 @@ namespace Dash
 
         public void xCanvas_DragOver(object sender, DragEventArgs e)
         {
-            //e.AcceptedOperation = DataPackageOperation.Copy;
+            e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
@@ -293,9 +217,133 @@ namespace Dash
         {
             if (!_radialMenu.IsVisible)
                 _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
-            else _radialMenu.IsVisible = false;
+            //else _radialMenu.IsVisible = false;
             e.Handled = true;
         }
+
+        #region Requests
+
+        private enum HTTPRequestMethod
+        {
+            Get,
+            Post
+        }
+
+        private async void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            // authorization on the tiwtter api
+            var twitterBase = "https://api.twitter.com";
+            var twitterAuthEndpoint = twitterBase.AppendPathSegments("oauth2", "token");
+            var twitterConsumerKey = "GSrTmog2xY7PWzxSjfGQDuKAH";
+            var twitterConsumerSecret = "6QOcnCElbr4u80tiWspoGQTYryFyyRoXxMgiSZv4fq0Fox3dhV";
+            var token = await OAuth2Authentication(twitterAuthEndpoint, twitterConsumerKey, twitterConsumerSecret);
+
+            var userName = "realdonaldtrump";
+            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName });
+            var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
+
+            var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));
+            DisplayDocument(responseAsDocument);
+
+        }
+
+        private async Task<string> MakeRequest(string baseUrl, HTTPRequestMethod method, string token = null)
+        {
+            return await MakeRequest(new Url(baseUrl), method, token);
+        }
+
+        private async Task<string> MakeRequest(Url baseUrl, HTTPRequestMethod method, string token = null)
+        {
+            IFlurlClient client = new FlurlClient(baseUrl);
+            //Authorization header with the value of Bearer <base64 bearer token value from step 2>
+            if (token != null)
+            {
+                var encodedToken = Base64Encode(token);
+                client = baseUrl.WithHeader("Authorization", $"Bearer {token}");
+            }
+
+            HttpResponseMessage response = null;
+            if (method == HTTPRequestMethod.Get)
+            {
+                response = await client.GetAsync();
+            } else if (method == HTTPRequestMethod.Post)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+
+            return await GetStringFromResponseAsync(response);
+
+        }
+
+        private async Task<string> OAuth2Authentication(string authBaseUrl, string consumerKey, string consumerSecret)
+        {
+            return await OAuth2Authentication(new Url(authBaseUrl), consumerKey, consumerSecret);
+        }
+
+
+        private async Task<string> OAuth2Authentication(Url authBaseUrl, string consumerKey, string consumerSecret)
+        {
+            var concatKeySecret = $"{consumerKey}:{consumerSecret}";
+            var encodedKeySecret = Base64Encode(concatKeySecret);
+
+            var authResponse = await authBaseUrl.WithHeader("Authorization", $"Basic {encodedKeySecret}")
+                .PostUrlEncodedAsync(new
+                {
+                    grant_type = "client_credentials"
+                });        
+
+            // get the string from the response, including decompression and checking for success
+            var responseString = await GetStringFromResponseAsync(authResponse);
+
+            if (responseString != null)
+            {
+                return JObject.Parse(responseString).GetValue("access_token").Value<string>();
+            }
+            return null;
+        }
+
+        private async Task<string> GetStringFromResponseAsync(HttpResponseMessage authResponse)
+        {
+            if (authResponse != null && authResponse.IsSuccessStatusCode)
+            {
+                if (authResponse.Content.Headers.ContentEncoding.Contains("gzip"))
+                {
+                    var bytes = await authResponse.Content.ReadAsByteArrayAsync();
+                    return Unzip(bytes);
+                }
+                return await authResponse.Content.ReadAsStringAsync();
+            }
+            return null;
+        }
+
+        public string Base64Encode(string plainText)
+        {
+            var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
+            return Convert.ToBase64String(plainTextBytes);
+        }
+
+        public string Unzip(byte[] bytes)
+        {
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
+                {
+                    gs.CopyTo(mso);
+                }
+                return Encoding.UTF8.GetString(mso.ToArray());
+            }
+        }
+
+
+        #endregion
+
+
+
 
     }
 }

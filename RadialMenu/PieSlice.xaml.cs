@@ -1,4 +1,5 @@
 using System;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -793,6 +794,29 @@ namespace RadialMenuControl.UserControl
         {
             if (OriginalRadialMenuButton.Type != RadialMenuButton.ButtonType.Toggle) return;
             VisualStateManager.GoToState(this, (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value)) ? "InnerReleased" : "InnerNormal", true);
+        }
+
+        private void InnerPieSlicePath_OnDragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            OriginalRadialMenuButton.OnDragStarting(args);
+            args.DragUI.SetContentFromDataPackage();
+            switch (OriginalRadialMenuButton.Type)
+            {
+                case RadialMenuButton.ButtonType.Toggle:
+                    VisualStateManager.GoToState(this,
+                        (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value))
+                            ? "InnerReleased"
+                            : "InnerNormal", true);
+                    break;
+                case RadialMenuButton.ButtonType.Radio:
+                    VisualStateManager.GoToState(this, "InnerReleased", true);
+                    // get all other menus to release now that this menu has been selected
+                    ChangeSelectedEvent?.Invoke(sender, this);
+                    break;
+                default:
+                    VisualStateManager.GoToState(this, "InnerNormal", true);
+                    break;
+            }
         }
     }
 }

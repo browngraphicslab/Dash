@@ -14,7 +14,6 @@ using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
 using DashShared;
-using DocumentMenu;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -77,9 +76,9 @@ namespace Dash
         public DocumentView ParentDocument { get; set; }
 
 
-        public CollectionView(CollectionViewModel vm) : base()
+        public CollectionView(CollectionViewModel vm)
         {
-            this.InitializeComponent();
+            InitializeComponent();
             ViewModel = vm;
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
@@ -102,14 +101,6 @@ namespace Dash
             
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            //ParentDocument.HasCollection = true;
-            ////Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            //ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
-            //ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
-            //                                    ParentDocument.xBorder.Margin.Top + 5,
-            //                                    ParentDocument.xBorder.Margin.Right,
-            //                                    ParentDocument.xBorder.Margin.Bottom);
-
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
                 ParentDocument.HasCollection = true;
@@ -317,7 +308,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
@@ -327,7 +318,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            OperatorView.IOReference ioRef = new OperatorView.IOReference(new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument);
+            OperatorView.IOReference ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
@@ -375,6 +366,19 @@ namespace Dash
 
         private async void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
+            
+            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
+            {
+                var action =
+                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<CollectionView, DragEventArgs>;
+                if (action != null)
+                {
+                    action.Invoke(this, e);
+                    e.Handled = true;
+                }
+                    
+                return;
+            }
             e.Handled = true;
             RefreshItemsBinding();
             foreach (var s in e.DataView.AvailableFormats)
@@ -569,20 +573,28 @@ namespace Dash
 
         #endregion
 
-        public void GetJson()
+        private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
             //Util.ExportAsJson(ViewModel.DocumentContext.DocContextList); 
         }
-        public void ScreenCap()
+
+        private void ScreenCap()
         {
             Util.ExportAsImage(xOuterGrid);
         }
 
         #region Collection Activation
 
-        public void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
+        private void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (ParentDocument != null && ParentDocument.ViewModel.IsInInterfaceBuilder) return;
+            if (ParentDocument != null && ParentDocument.ViewModel.DocumentController.DocumentType == MainPage.MainDocumentType)
+            {
+                SetSelectedElement(null);
+                e.Handled = true;
+                return;
+            }
             if (ParentSelectionElement?.IsSelected != null && ParentSelectionElement.IsSelected)
             {
                 OnSelected();
@@ -610,7 +622,7 @@ namespace Dash
                     var image = new Image { Source = xTileSource.Source };
                     image.Height = height;
                     image.Width = width;
-                    image.Opacity = .67;
+                    image.Opacity = .3;
                     image.Stretch = Stretch.Fill;
                     Canvas.SetLeft(image, x);
                     Canvas.SetTop(image, y);

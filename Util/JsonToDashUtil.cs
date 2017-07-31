@@ -136,6 +136,7 @@ namespace Dash
             {
                 var key = schema.GetKey(jProperty.Value);
                 var fmc = ParseChild(jProperty.Value, schema);
+                if (fmc == null) continue;
                 fields[key] = fmc;
             }
 

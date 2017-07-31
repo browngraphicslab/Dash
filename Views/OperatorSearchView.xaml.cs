@@ -33,6 +33,7 @@ namespace Dash
             }
         }
 
+
         public SearchView SearchView { get; set; }
 
         public OperatorSearchView()
@@ -46,7 +47,7 @@ namespace Dash
             var arithmetics = new ObservableCollection<object>() { "Divide" };
             var sets = new ObservableCollection<object>() { "Union", "Intersection", "Filter" };
             var maps = new ObservableCollection<object>() { "ImageToUri" };
-            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri" };
+            var all = new ObservableCollection<object>(){ "Divide", "Union", "Intersection", "ImageToUri", "Filter", "Api" };
 
             var categories = new List<SearchCategoryItem>();
             categories.Add(new SearchCategoryItem("∀", "ALL",all, Actions.AddOperator));
@@ -56,6 +57,11 @@ namespace Dash
             categories.Add(new SearchCategoryItem(string.Empty,"CUSTOM",null,Actions.AddOperator));
 
             xMainGrid.Children.Add(SearchView = new SearchView(categories));
+        }
+
+        private void XMainGrid_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            MainPage.Instance.xCanvas.Children.Remove(Instance);
         }
     }
 }

@@ -237,6 +237,19 @@ namespace Dash
                 _lineDict.Add(ioReference.FieldReference, _connectionLine);
                 _connectionLine = null;
             }
+            CancelDrag(ioReference.PointerArgs.Pointer);
+        }
+
+        /// <summary>
+        /// Method to add the dropped field to the documentview 
+        /// </summary>
+        public void EndDragOnDocumentView(ref DocumentController cont, OperatorView.IOReference ioReference)
+        {
+            if (_currReference != null)
+            {
+                cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
+                EndDrag(ioReference); 
+            }
         }
 
         /// <summary>
@@ -558,6 +571,7 @@ namespace Dash
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            DBTest.ResetCycleDetection();
             if (_currReference != null)
             {
                 if (_currReference.IsOutput)
@@ -574,7 +588,7 @@ namespace Dash
                             DocumentCollectionFieldModelController.CollectionKey,  new ReferenceFieldModelController(
                                     opDoc.GetId(), _currReference.FieldReference.FieldKey) }  };
 
-                            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+                            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
                             var layoutDoc =
                                 new CollectionBox(new ReferenceFieldModelController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
                             layoutDoc.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(e.GetCurrentPoint(MainPage.Instance).Position), true);

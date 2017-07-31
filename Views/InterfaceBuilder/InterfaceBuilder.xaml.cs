@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
 using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -17,15 +18,13 @@ namespace Dash
 {
     public sealed partial class InterfaceBuilder : WindowTemplate
     {
-
-        /// <summary>
-        /// The document view of the document which is being edited
-        /// </summary>
-        private DocumentView _documentView;
         public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
         private SelectableContainer _selectedContainer;
 
-        public enum DisplayTypeEnum { List, Grid, Freeform } 
+        public enum DisplayTypeEnum { List, Grid, Freeform }
+
+        private DocumentController _editingDocument;
+        private DocumentView _editingDocView;
 
 
         public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
@@ -36,6 +35,7 @@ namespace Dash
 
             SetUpInterfaceBuilder(docController, new Context(docController));
 
+            //SetUpButtons();
 
             // TODO do we want to update breadcrumb bindings or just set them once
             Binding listBinding = new Binding
@@ -47,32 +47,73 @@ namespace Dash
 
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            var docViewModel = new DocumentViewModel(docController, true);
-            _documentView = new DocumentView(docViewModel);
-            _documentView.Manipulator.RemoveAllButHandle();
-            _documentView.RemoveScroll();
-            UpdateRootLayout();
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, OnActiveLayoutChanged);
-
-
-            _documentView.DragOver += DocumentViewOnDragOver;
-            _documentView.AllowDrop = true;
-            _documentView.Drop += DocumentViewOnDrop;
-
-            // set the middle pane to hold the document view
-            xDocumentHolder.Child = _documentView;
-
+            _editingDocument = docController;
+            xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
+            xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
+            var documentCanvasViewModel = new DocumentCanvasViewModel(true);
+            xDocumentPane.DataContext = documentCanvasViewModel;
+            documentCanvasViewModel.AddDocument(docController, true);
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
-        private void OnActiveLayoutChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        private void DocumentPaneOnDocumentViewLoaded(DocumentCanvasView sender, DocumentView documentView)
+        {
+            SetUpDocumentView(documentView);
+        }
+
+        private void SetUpDocumentView(DocumentView documentView)
+        {
+            var editingDocumentId = _editingDocument.GetId();
+            if (documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            {
+                return;
+            }
+            _editingDocView = documentView;
+
+            if (_editingDocView != null)
+            {
+                UpdateRootLayout();
+                _editingDocView.DragOver += DocumentViewOnDragOver;
+                _editingDocView.AllowDrop = true;
+                _editingDocView.Drop += DocumentViewOnDrop;
+                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
+                xDocumentPane.RecenterViewOnDocument(editingDocumentId);
+            }
+        }
+
+        private void SetUpButtons()
+        {
+            var listSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.List,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            ListButton.Content = new Border { Child = listSymbol };
+
+            var freeformSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.View,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            FreeformButton.Content = new Border { Child = freeformSymbol };
+
+            var gridSymbol = new SymbolIcon()
+            {
+                Symbol = Symbol.ViewAll,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            GridButton.Content = new Border { Child = gridSymbol };
+        }
+
+        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
         {
             UpdateRootLayout();
         }
 
         private void UpdateRootLayout()
         {
-            var rootSelectableContainer = _documentView.ViewModel.Content as SelectableContainer;
+            var rootSelectableContainer = _editingDocView?.ViewModel.Content as SelectableContainer;
             Debug.Assert(rootSelectableContainer != null);
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
         }
@@ -165,7 +206,7 @@ namespace Dash
                 layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
@@ -176,7 +217,7 @@ namespace Dash
 
         private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
         {
-            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _documentView)
+            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
                 .FirstOrDefault(AssertIsCompositeLayout);
             return elem as SelectableContainer;
         }
@@ -220,8 +261,9 @@ namespace Dash
             var item = e.Items.FirstOrDefault();
             if (item is Button)
             {
-                var defaultNewSize = new Size(400, 400);
+                //var defaultNewSize = new Size(400, 400);
                 var button = item as Button;
+
                 switch (button.Name)
                 {
                     case "ListButton":
@@ -240,22 +282,18 @@ namespace Dash
             }
         }
 
-        private void xDocumentPane_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xScrollViewer.MaxWidth = xDocumentHolder.MaxWidth = e.NewSize.Width;
-            xScrollViewer.MaxHeight = xDocumentHolder.MaxHeight = e.NewSize.Height;
-        }
-
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (_selectedContainer.ParentContainer != null)
-            {
-                var collection =
-                    _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
-                        DocumentCollectionFieldModelController;
-                collection?.RemoveDocument(_selectedContainer.LayoutDocument);
-                _selectedContainer.ParentContainer.SetSelectedContainer(null);
-            }
+            //if (_selectedContainer.ParentContainer != null)
+            //{
+            //    var collection =
+            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+            //            DocumentCollectionFieldModelController;
+            //    collection?.RemoveDocument(_selectedContainer.LayoutDocument);
+            //    _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            //}
+
+            throw new NotImplementedException();
         }
     }
 }

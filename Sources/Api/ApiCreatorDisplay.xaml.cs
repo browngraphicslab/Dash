@@ -98,10 +98,6 @@ namespace Dash {
             Source.setApiDisplay(SourceDisplay);
 
         }
-
-        private void xHeaderControl_Loaded(object sender, RoutedEventArgs e) {
-
-        }
         
     }
 }

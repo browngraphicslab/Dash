@@ -26,8 +26,9 @@
             <TextBlock TextAlignment="Center">Keys</TextBlock>
             <TextBlock Grid.Column="1" TextAlignment="Center">Values</TextBlock>
         </Grid>
-        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch"
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
+                  ItemClick="xKeyValueListView_ItemClick" IsItemClickEnabled="true"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
 
             <ListView.ItemContainerStyle>
@@ -59,7 +60,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="xNewKeyField" TextAlignment="Left" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown" BorderBrush="LightBlue" ></TextBox>
+            <TextBox x:Name="xNewKeyField" TextAlignment="Left" PlaceholderText="Key to add" KeyDown="KeyField_KeyDown"  BorderBrush="LightBlue" ></TextBox>
             <TextBox x:Name="xNewValueField" TextAlignment="Left" PlaceholderText="Value to add" KeyDown="ValueField_KeyDown" BorderBrush="LightBlue" Grid.Column="1"></TextBox>
             <!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>-->
         </Grid>

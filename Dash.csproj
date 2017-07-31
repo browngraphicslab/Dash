@@ -93,8 +93,21 @@
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClipSettings.xaml.cs">
+      <DependentUpon>ClipSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
+    <Compile Include="Controllers\RectFieldModelController.cs" />
+    <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Models\RectFieldModel.cs" />
+    <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
+    <Compile Include="Util\Request.cs" />
+    <Compile Include="Util\RequestUtil.cs" />
+    <Compile Include="Views\ApiOpView.xaml.cs">
+      <DependentUpon>ApiOpView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
@@ -111,6 +124,15 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Views\InterfaceBuilder\DocumentCanvasView.xaml.cs">
+      <DependentUpon>DocumentCanvasView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
+      <DependentUpon>GridViewSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
+      <DependentUpon>ListViewSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -207,7 +229,7 @@
     <Compile Include="Controllers\ListFieldModelController.cs" />
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\ApiSourceOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
@@ -303,7 +325,6 @@
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\GuideLineViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
-    <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
     <Compile Include="Views\InterfaceBuilder\CollectionSettings.xaml.cs">
       <DependentUpon>CollectionSettings.xaml</DependentUpon>
@@ -352,7 +373,9 @@
     <Compile Include="Views\OverlayCanvas.xaml.cs">
       <DependentUpon>OverlayCanvas.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\OverlayMenu.xaml.cs" />
+    <Compile Include="Views\OverlayMenu.xaml.cs">
+      <DependentUpon>OverlayMenu.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\RadialMenuView.xaml.cs">
       <DependentUpon>RadialMenuView.xaml</DependentUpon>
     </Compile>
@@ -429,9 +452,53 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\ApiSourceDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ApiOpView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\DocumentCanvasView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\SelectionElement.xaml">
       <SubType>Designer</SubType>
@@ -512,30 +579,6 @@
     <Page Include="Views\CollectionListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\ApiSourceDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>

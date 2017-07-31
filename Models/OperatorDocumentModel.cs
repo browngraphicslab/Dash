@@ -48,5 +48,19 @@ namespace Dash
 
             return doc;
         }
+
+        public static DocumentController CreateApiDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            var doc = new ApiDocumentModel().Document;
+            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true );
+            doc.DocumentType = ApiOperator.ApiType;
+
+
+            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
     }
 }
