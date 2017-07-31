@@ -116,14 +116,13 @@ namespace Dash
         {
             DocumentController opModel = null;
             var type = obj as string;
-            var freeForm =
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>()
-                    .CurrentView as CollectionFreeformView;
+
             var searchView = OperatorSearchView.Instance.SearchView;
+            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
             var border = searchView.GetFirstDescendantOfType<Border>();
-            var position = new Point(Canvas.GetLeft(border), Canvas.GetTop(border));
+            var position = new Point(Canvas.GetLeft(border) + searchView.ActualWidth, Canvas.GetTop(border));
             var translate = new Point();
-            if (freeForm != null)
+            if (freeForm == MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView)
             {
                 var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
                 Debug.Assert(r != null);
@@ -225,7 +224,7 @@ namespace Dash
                 imgOpView.DataContext = imgOpvm;
             }
             if (opModel != null)
-                MainPage.Instance.DisplayDocument(opModel);
+                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opModel);
         }
         
         public static void AddCollection(CollectionView collection, DragEventArgs e)
