@@ -95,10 +95,8 @@ namespace Dash
                 Y = delta.Translation.Y
             };
 
-            //get position of manipulation relative to canvas 
-            var ttv = UserControl.TransformToVisual(canvas);
-            var p = ttv.TransformPoint(e.Position);
-
+            //get position of manipulation relative to canvas & scale in canvas space 
+            var p = Util.PointTransformFromVisual(e.Position, UserControl, canvas); 
             var scale = new ScaleTransform
             {
                 CenterX = p.X,

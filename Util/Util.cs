@@ -43,11 +43,19 @@ namespace Dash
             return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
         }
 
-        public static Point PointTransformFromVisual(Point p, UIElement to)
+        /// <summary>
+        /// Transforms point p in from-space to a point in to-space 
+        /// </summary>
+        public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
-            GeneralTransform r = to.TransformToVisual(Window.Current.Content).Inverse;
-            Debug.Assert(r != null);
-            return r.TransformPoint(p);
+            if (to == null) to = Window.Current.Content;
+            var ttv = from.TransformToVisual(to);
+            Debug.Assert(ttv != null); 
+            return ttv.TransformPoint(p);
+
+            //GeneralTransform r = from.TransformToVisual(Window.Current.Content).Inverse;
+            //Debug.Assert(r != null);
+            //return r.TransformPoint(p);
         }
 
         /// <summary>

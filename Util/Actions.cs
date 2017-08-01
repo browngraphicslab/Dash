@@ -124,9 +124,10 @@ namespace Dash
             var translate = new Point();
             if (freeForm == MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView)
             {
-                var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-                Debug.Assert(r != null);
-                translate = r.TransformPoint(new Point(position.X, position.Y));
+                //var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                //Debug.Assert(r != null);
+                //translate = r.TransformPoint(new Point(position.X, position.Y));
+                translate = Util.PointTransformFromVisual(position, searchView, freeForm.xItemsControl.ItemsPanelRoot); 
             }
 
             if (type == null) return;

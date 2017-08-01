@@ -271,7 +271,7 @@ namespace Dash
                 Y = delta.Translation.Y
             };
 
-            var p = Util.PointTransformFromVisual(e.Position, canvas);
+            var p = Util.PointTransformFromVisual(e.Position, UserControl, canvas);
             var scale = new ScaleTransform
             {
                 CenterX = p.X,

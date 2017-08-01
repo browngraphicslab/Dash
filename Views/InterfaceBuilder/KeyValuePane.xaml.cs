@@ -258,8 +258,7 @@ namespace Dash
 
             //get position of mouse in screenspace 
             var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
-            var ttv = containerGrid.TransformToVisual(Window.Current.Content);
-            var p = ttv.TransformPoint(posInKVPane);
+            var p = Util.PointTransformFromVisual(posInKVPane, containerGrid); 
 
             _tb = new TextBox();
 

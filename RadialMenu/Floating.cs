@@ -1,5 +1,6 @@
 ﻿namespace RadialMenuControl.UserControl
 {
+    using Dash;
     using System;
     using Windows.Foundation;
     using Windows.UI.Xaml;
@@ -200,8 +201,9 @@
 
             if (IsBoundByScreen)
             {
-                var ttv = el.TransformToVisual(Window.Current.Content);
-                var topLeft = ttv.TransformPoint(new Point(0, 0));
+                //var ttv = el.TransformToVisual(Window.Current.Content);
+                //var topLeft = ttv.TransformPoint(new Point(0, 0));
+                var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el); 
                 Rect parentRect = new Rect(topLeft.X, topLeft.Y, Window.Current.Bounds.Width - topLeft.X, Window.Current.Bounds.Height - topLeft.Y);
                 position = AdjustedPosition(rect, parentRect);
             }
