@@ -275,7 +275,7 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Adds new documents to the MainView document. New documents are added as children of the Main document.
+        ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
         /// </summary>
         /// <param name="docModel"></param>
         /// <param name="where"></param>
@@ -284,7 +284,11 @@ namespace Dash
         {
             if (where != null)
             {
-                docModel.GetPositionField().Data = (Point)where;
+                var h = docModel.GetHeightField().Data; 
+                var w = docModel.GetWidthField().Data;
+
+                var pos = (Point)where;
+                docModel.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             var children = collection.ViewModel.CollectionFieldModelController;
             children?.AddDocument(docModel);
@@ -300,6 +304,7 @@ namespace Dash
         public static void AddDocuments(CollectionView col, DragEventArgs e)
         {
             var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(col, d, where);
         }

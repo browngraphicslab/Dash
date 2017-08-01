@@ -250,8 +250,6 @@
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ItemsCarrier.cs" />
     <Compile Include="ManipulationControls.cs" />
-    <Compile Include="Models\ApiSourceFieldModel.cs" />
-    <Compile Include="Models\ApiSourceFieldModelController.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />

@@ -93,7 +93,6 @@ namespace Dash
             tb.Box.AcceptsReturn = true;
             CourtesyDocument.SetupBindings(tb.Container, docController, context);
 
-
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference

@@ -130,7 +130,6 @@ namespace Dash
             children?.AddDocument(docModel);
         }
 
-
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             MainDocView.Width = e.NewSize.Width;

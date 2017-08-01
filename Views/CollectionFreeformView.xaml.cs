@@ -241,7 +241,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Method to add the dropped field to the documentview 
+        /// Method to add the dropped off field to the documentview; shows up in keyvalue pane but not in the immediate displauy  
         /// </summary>
         public void EndDragOnDocumentView(ref DocumentController cont, OperatorView.IOReference ioReference)
         {
@@ -407,64 +407,6 @@ namespace Dash
             Debug.Assert(inverse != null);
             Debug.Assert(renderInverse != null);
              
-            //var topLeft = inverse.TransformPoint(new Point(0, 0));
-            //var bottomRight = inverse.TransformPoint(new Point(_parentCollection.Grid.ActualWidth, _parentCollection.Grid.ActualHeight));
-            //var preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
-            //var preBottomRight = renderInverse.TransformPoint(new Point(_parentCollection.Grid.ActualWidth, _parentCollection.Grid.ActualHeight));
-            ////Check if the zooming puts the view out of bounds of the canvas
-            ////Nullify scale or translate components accordingly 
-            //var outOfBounds = false;
-            ////Create a canvas space translation to correct the translation if necessary
-            //var fixTranslate = new TranslateTransform();
-            //if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
-            //{
-            //    fixTranslate.X = 0;
-            //    scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
-            //    scale.ScaleY = scaleAmount;
-            //    scale.ScaleX = scaleAmount;
-            //    outOfBounds = true;
-            //}
-            //else if (topLeft.X < Bounds.Left)
-            //{
-            //    fixTranslate.X = preTopLeft.X;
-            //    scale.CenterX = Bounds.Left;
-            //    outOfBounds = true;
-            //}
-            //else if (bottomRight.X > Bounds.Right)
-            //{
-            //    fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
-            //    scale.CenterX = Bounds.Right;
-            //    outOfBounds = true;
-            //}
-            //if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
-            //{
-            //    fixTranslate.Y = 0;
-            //    scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
-            //    scale.ScaleX = scaleAmount;
-            //    scale.ScaleY = scaleAmount;
-            //    outOfBounds = true;
-            //}
-            //else if (topLeft.Y < Bounds.Top)
-            //{
-            //    fixTranslate.Y = preTopLeft.Y;
-            //    scale.CenterY = Bounds.Top;
-            //    outOfBounds = true;
-            //}
-            //else if (bottomRight.Y > Bounds.Bottom)
-            //{
-            //    fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
-            //    scale.CenterY = Bounds.Bottom;
-            //    outOfBounds = true;
-            //}
-
-            ////If the view was out of bounds recalculate the composite matrix
-            //if (outOfBounds)
-            //{
-            //    composite = new TransformGroup();
-            //    composite.Children.Add(fixTranslate);
-            //    composite.Children.Add(scale);
-            //    composite.Children.Add(canvas.RenderTransform);
-            //}
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
