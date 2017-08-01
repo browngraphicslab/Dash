@@ -63,7 +63,7 @@ namespace Dash
         {
             // listen to when the layout list changes
             var layoutList = dataDocument.GetLayoutList(context);
-            layoutList.OnDocumentsChanged += LayoutList_OnDocumentsChanged;
+            layoutList.FieldModelUpdated += LayoutList_OnDocumentsChanged;
             SetActiveLayoutComboBoxItems(layoutList.GetDocuments());
 
             // listen to when the active layout changes
@@ -103,9 +103,9 @@ namespace Dash
             xActiveLayoutComboBox.ItemsSource = documents;
         }
 
-        private void LayoutList_OnDocumentsChanged(IEnumerable<DocumentController> currentDocuments)
+        private void LayoutList_OnDocumentsChanged(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
         {
-            SetActiveLayoutComboBoxItems(currentDocuments);
+            SetActiveLayoutComboBoxItems((sender as DocumentCollectionFieldModelController).GetDocuments());
         }
 
         // to be rewritten this just cycles through our possible layouts for documents

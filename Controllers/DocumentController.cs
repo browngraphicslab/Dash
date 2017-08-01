@@ -25,16 +25,18 @@ namespace Dash
             public readonly FieldModelController OldValue;
             public readonly FieldModelController NewValue;
             public readonly DocumentFieldReference Reference;
+            public readonly FieldUpdatedEventArgs FieldArgs;
             public readonly Context Context;
             public bool FromDelegate;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, DocumentFieldReference reference, Context context, bool fromDelegate)
+                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, Context context, bool fromDelegate)
             {
                 Action = action;
                 OldValue = oldValue;
                 NewValue = newValue;
                 Reference = reference;
+                FieldArgs = fieldArgs;
                 Context = context;
                 FromDelegate = fromDelegate;
             }
@@ -281,9 +283,9 @@ namespace Dash
         {
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, context, false), true);
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, context, false), true);
             if (newField != null)
-                newField.FieldModelUpdated += delegate (FieldModelController sender, Context c)
+                newField.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
                     c = c ?? new Context();
                     c.AddDocumentContext(this);
@@ -291,7 +293,7 @@ namespace Dash
                     {
                         Execute(c, true);
                     }
-                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, c, false), true);//TODO Should be Action.Update
+                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, c, false), true);
                 };
         }
 
@@ -421,7 +423,7 @@ namespace Dash
             Context c = new Context(this);
             //c.AddDocumentContext(this);
             var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c, false), true);
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, args.FieldArgs, c, false), true);
         }
 
 
@@ -515,7 +517,7 @@ namespace Dash
                     if (update)
                     {
                         OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Add, reference, context, false), true);
+                            FieldUpdatedAction.Add, reference, null, context, false), true);
                     }
                 }
             }

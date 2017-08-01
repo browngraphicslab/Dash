@@ -91,7 +91,7 @@ namespace Dash
             }
             else
             {
-                collection.FieldModelUpdated += delegate (FieldModelController sender, Context context1)
+                collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
                 {
                     UpdateViewModels(sender.DereferenceToRoot<DocumentCollectionFieldModelController>(context1),
                         copiedContext);
@@ -205,6 +205,29 @@ namespace Dash
             {
                 if (ViewModelContains(documents.GetDocuments(), DataBindingSource[i])) continue;
                 DataBindingSource.RemoveAt(i);
+            }
+        }
+
+        public void AddViewModels(List<DocumentController> documents, Context context)
+        {
+            foreach (var doc in documents)
+            {
+                if (context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+                {
+                    continue;
+                }
+                var viewModel = new DocumentViewModel(doc, false, context);
+                viewModel.DoubleTapEnabled = false;
+                DataBindingSource.Add(viewModel);
+            }
+        }
+        public void RemoveViewModels(List<DocumentController> documents)
+        {
+            var ids = documents.Select(doc => doc.GetId());
+            var vms = DataBindingSource.Where(vm => ids.Contains(vm.DocumentController.GetId()));
+            foreach (var vm in vms)
+            {
+                DataBindingSource.Add(vm);
             }
         }
 
