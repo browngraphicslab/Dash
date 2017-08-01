@@ -49,17 +49,6 @@ namespace Dash
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
-            
-
-            foreach (var button in _buttons)
-            {
-                var i = _buttons.IndexOf(button);
-                button.Tapped += (s, e) =>
-                {
-                    e.Handled = true;
-                    buttonActions[i]?.Invoke();
-                };
-            }
         }
 
         /// <summary>
@@ -67,12 +56,14 @@ namespace Dash
         /// </summary>
         private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
         {
-            for (int i = 0; i < icons.Count; i++)
+            foreach (Symbol icon in icons)
             {
+                var i = icons.IndexOf(icon); // have to do this for eventhandling 
+
                 // create symbol for button
                 var symbol = new SymbolIcon()
                 {
-                    Symbol = icons[i],
+                    Symbol = icon,
                     Foreground = new SolidColorBrush(Colors.White)
                 };
                 // create rounded(circular) border to hold the symbol
@@ -87,7 +78,11 @@ namespace Dash
                 // if it's the first button, round the top 
                 if (i == 0) border.CornerRadius = new CornerRadius(20, 20, 0, 0);
                 // if last button, round the buttom  
-                else if (i == icons.Count - 1) border.CornerRadius = new CornerRadius(0, 0, 20, 20);
+                else if (i == icons.Count - 1)
+                {
+                    border.CornerRadius = new CornerRadius(0, 0, 20, 20);
+                    Background = new SolidColorBrush(Colors.Gray);
+                }
 
                 // create button to contain the border with the symbol
                 var button = new Button()
@@ -100,11 +95,17 @@ namespace Dash
 
                 // add all content to stack panel
                 xButtonStackPanel.Children.Add(button);
-                _buttons.Add(button); 
-                
+                _buttons.Add(button);
 
+                //events 
+                button.Tapped += (s, e) =>
+                {
+                    e.Handled = true;
+                    foreach (var b in _buttons) (b.Content as Border).Background = new SolidColorBrush(background);
+                    (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
+                    buttonActions[i]?.Invoke();
+                };
                 button.DoubleTapped += (s, e) => e.Handled = true;
-
             }
         }
 
@@ -247,7 +248,7 @@ namespace Dash
                     this.CreateAndRunRepositionAnimation(button, 200, 0);
                     this.CreateAndRunOpacityAnimation(button, 0, 1);
                 }
-                return; 
+                return;
             }
             this.CreateAndRunRepositionAnimation(_button, 200, 0);
             this.CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
