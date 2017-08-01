@@ -6,6 +6,7 @@
     xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
@@ -15,7 +16,8 @@
     ManipulationDelta="UserControl_ManipulationDelta"
     PointerWheelChanged="UserControl_PointerWheelChanged"
     >
-    <Grid x:Name="FreeformGrid" ManipulationMode="All">
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">

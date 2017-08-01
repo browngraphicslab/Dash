@@ -473,16 +473,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Retiles the BG
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xBackgroundClip.Rect = new Rect(0,0, e.NewSize.Width, e.NewSize.Height);
-        }
-
         protected override void OnActivated(bool isSelected)
         {
             if (isSelected)

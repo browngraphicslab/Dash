@@ -12,8 +12,14 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using DashShared;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using Microsoft.Graphics.Canvas.UI.Xaml;
 using Path = Windows.UI.Xaml.Shapes.Path;
 
 
@@ -38,14 +44,24 @@ namespace Dash
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
         private IOReference _currReference;
-        private Windows.UI.Xaml.Shapes.Path _connectionLine;
+        private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
 
 
-        private Dictionary<FieldReference, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<FieldReference, Windows.UI.Xaml.Shapes.Path>();
+        private Dictionary<FieldReference, Path> _lineDict = new Dictionary<FieldReference, Path>();
 
         private Canvas parentCanvas;
+
+
+        #region Background Translation Variables
+        private CanvasBitmap _bgImage;
+        private bool _resourcesLoaded;
+        private CanvasImageBrush _bgBrush;
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
+        private bool _initialTransformSetOnBackground;
+        private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        #endregion
 
         public CollectionFreeformView()
         {
@@ -255,6 +271,7 @@ namespace Dash
             composite.Children.Add(translate);
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            SetTransformOnBackground(composite);
         }
 
         /// <summary>
@@ -292,6 +309,7 @@ namespace Dash
             composite.Children.Add(canvas.RenderTransform);
 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            SetTransformOnBackground(composite);
         }
 
         /// <summary>
@@ -326,5 +344,77 @@ namespace Dash
             DBTest.ResetCycleDetection();
         }
 
+        #region BackgroundTiling
+
+
+        private void SetTransformOnBackground(TransformGroup composite)
+        {
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)composite.Value.M12,
+                    (float)composite.Value.M21,
+                    (float)aliasSafeScale,
+                    (float)composite.Value.OffsetX,
+                    (float)composite.Value.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
+        }
+
+        private void SetInitialTransformOnBackground()
+        {
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            var composite = new TransformGroup();
+            composite.Children.Add(canvas.RenderTransform);
+            SetTransformOnBackground(composite);
+            _initialTransformSetOnBackground = true;
+        }
+
+        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        {
+            args.TrackAsyncAction(Task.Run(async () =>
+            {
+                // Load the background image and create an image brush from it
+                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage);
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+            }).AsAsyncAction());
+        }
+
+        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if (!_resourcesLoaded) return;
+
+            if (!_initialTransformSetOnBackground) SetInitialTransformOnBackground();
+
+            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+            var session = args.DrawingSession;
+            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+        }
+
+        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+        {
+            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+            {
+                currentScale /= numberOfBackgroundRows;
+            }
+
+            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            {
+                currentScale *= numberOfBackgroundRows;
+            }
+
+            return currentScale;
+        }
+
+        #endregion
+
+       
     }
 }

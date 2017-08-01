@@ -37,12 +37,13 @@ namespace Dash
         private double _canvasScale { get; set; } = 1;
         private const float MaxScale = 10;
         private const float MinScale = 0.1f;
+        private const double _recenterMargin = 50;
+
         private DocumentCanvasViewModel _vm;
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
-        private const double _recenterMargin = 50;
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
 
         public DocumentCanvasView()
