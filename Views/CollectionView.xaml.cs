@@ -664,12 +664,12 @@ namespace Dash
 
         private void CollectionView_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            (CurrentView as CollectionFreeformView)?.UserControl_ManipulationDelta(sender, e);
+            (CurrentView as CollectionFreeformView)?.Manipulator.UserControl_ManipulationDelta(sender, e);
         }
 
         private void CollectionView_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            (CurrentView as CollectionFreeformView)?.UserControl_PointerWheelChanged(sender, e);
+            (CurrentView as CollectionFreeformView)?.Manipulator.UserControl_PointerWheelChanged(sender, e);
         }
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
