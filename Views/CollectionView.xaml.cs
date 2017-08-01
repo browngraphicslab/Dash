@@ -22,10 +22,7 @@ namespace Dash
 {
     public sealed partial class CollectionView : SelectionElement
     {
-
         public int MaxZ { get; set; }
-
-
         //TODO move to freeform view
         public bool CanLink
         {
@@ -58,12 +55,9 @@ namespace Dash
             }
 
         }
-
         public UserControl CurrentView { get; set; }
-
         // TODO generate overlay menu for collections on the fly
         private OverlayMenu _colMenu = null;
-
         public CollectionViewModel ViewModel
         {
             get
@@ -72,17 +66,13 @@ namespace Dash
             }
             set { DataContext = value; }
         }
-
         public CollectionView ParentCollection { get; set; }
-
         public DocumentView ParentDocument { get; set; }
-
         private MenuFlyout _flyout;
 
         public CollectionView(CollectionViewModel vm)
         {
             InitializeComponent();
-            InitializeFlyout();
             ViewModel = vm;
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
@@ -97,7 +87,17 @@ namespace Dash
             var menuItem = new MenuFlyoutItem {Text = "Add Operators"};
             menuItem.Click += MenuItem_Click;
             _flyout.Items?.Add(menuItem);
+        }
 
+        private void DisposeFlyout()
+        {
+            if (_flyout.Items != null)
+                foreach (var item in _flyout.Items)
+                {
+                    var menuFlyoutItem = item as MenuFlyoutItem;
+                    if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
+                }
+            _flyout = null;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -105,17 +105,12 @@ namespace Dash
             var xCanvas = MainPage.Instance.xCanvas;
             if(!xCanvas.Children.Contains(OperatorSearchView.Instance))
                 xCanvas.Children.Add(OperatorSearchView.Instance);
-
             // set the operator menu to the current location of the flyout
             var menu = sender as MenuFlyoutItem;
             var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
             var pointOnCanvas = transform.TransformPoint(new Point());
-
             // reset the render transform on the operator search view
-            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
-
-            
-
+            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();       
             var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
             if (floatBorder != null)
             {
@@ -125,6 +120,7 @@ namespace Dash
             Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X - 250);
             Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
+            DisposeFlyout();
         }
 
         // TODO make all event handlers in xaml or add them here but not both
@@ -507,6 +503,8 @@ namespace Dash
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
+            if(_flyout == null)
+                InitializeFlyout();
             e.Handled = true;
             var thisUi = this as UIElement;
             var position = e.GetPosition(thisUi);
