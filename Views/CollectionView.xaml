@@ -26,7 +26,6 @@
             <!-- Collectionview Content-->
             <Grid Grid.Column="1" Background="{StaticResource CollectionViewBackground}">
                 <Grid x:Name="DocumentViewContainerGrid"
-                      Background="White"
                       AllowDrop="True"
                       HorizontalAlignment="Stretch"
                       Margin="5,5,5,5"
@@ -36,7 +35,7 @@
                     <Grid.Clip>
                         <RectangleGeometry x:Name="ClipRect" />
                     </Grid.Clip>
-                    <ContentControl x:Name="xContentControl"/>
+                    <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"
                          x:FieldModifier="public"

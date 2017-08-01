@@ -59,7 +59,6 @@ namespace Dash
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
-        private bool _initialTransformSetOnBackground;
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         #endregion
 
@@ -365,16 +364,22 @@ namespace Dash
 
         private void SetInitialTransformOnBackground()
         {
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
             var composite = new TransformGroup();
-            composite.Children.Add(canvas.RenderTransform);
+            var scale = new ScaleTransform
+            {
+                CenterX = 0,
+                CenterY = 0,
+                ScaleX = CanvasScale,
+                ScaleY = CanvasScale
+            };
+
+            composite.Children.Add(scale);
             SetTransformOnBackground(composite);
-            _initialTransformSetOnBackground = true;
         }
 
         private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
         {
-            args.TrackAsyncAction(Task.Run(async () =>
+            var task = Task.Run(async () =>
             {
                 // Load the background image and create an image brush from it
                 _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
@@ -384,14 +389,19 @@ namespace Dash
                 _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
 
                 _resourcesLoaded = true;
-            }).AsAsyncAction());
+            });
+            args.TrackAsyncAction(task.AsAsyncAction());
+
+            task.ContinueWith(continuationTask =>
+            {
+                SetInitialTransformOnBackground();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+
         }
 
         private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
         {
             if (!_resourcesLoaded) return;
-
-            if (!_initialTransformSetOnBackground) SetInitialTransformOnBackground();
 
             // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
             var session = args.DrawingSession;
