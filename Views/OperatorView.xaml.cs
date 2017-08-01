@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using System.Collections.Generic;
 using Windows.ApplicationModel;
+using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
@@ -19,6 +20,8 @@ namespace Dash
 {
     public sealed partial class OperatorView : UserControl
     {
+        private MenuFlyout _flyout;
+
         public delegate void IODragEventHandler(IOReference ioReference);
 
         /// <summary>
@@ -172,8 +175,41 @@ namespace Dash
             xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
         }
 
-        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        #region expandoflyout
+        private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var thisUi = this as UIElement;
+            var position = e.GetPosition(thisUi);
+            (_flyout ?? (_flyout = InitializeFlyout())).ShowAt(thisUi, position);
+        }
+
+        private MenuFlyout InitializeFlyout()
+        {
+            _flyout = new MenuFlyout();
+            var expandItem = new MenuFlyoutItem { Text = "Expando" };
+            var contractItem = new MenuFlyoutItem { Text = "Contracto" };
+            expandItem.Click += ExpandView;
+            contractItem.Click += ContractView;
+            _flyout.Items?.Add(expandItem);
+            _flyout.Items?.Add(contractItem);
+
+            return _flyout;
+
+        }
+
+        private void ContractView(object sender, RoutedEventArgs e)
+        {
+            
+
+        }
+
+        private void ExpandView(object sender, RoutedEventArgs e)
         {
         }
+
+        #endregion
+
+
     }
 }
