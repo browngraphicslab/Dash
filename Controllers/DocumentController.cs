@@ -579,9 +579,9 @@ namespace Dash
             {
                 return DocumentBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == StackingPanel.DocumentType)
+            if (DocumentType == StackLayout.DocumentType)
             {
-                return StackingPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == WebBox.DocumentType)
             {
@@ -611,9 +611,9 @@ namespace Dash
             {
                 return RichTextBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == GridPanel.GridPanelDocumentType)
+            if (DocumentType == GridLayout.GridPanelDocumentType)
             {
-                return GridPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == FilterOperatorBox.DocumentType)
             {

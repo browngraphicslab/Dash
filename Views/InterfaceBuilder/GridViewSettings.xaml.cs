@@ -44,7 +44,7 @@ namespace Dash
         private void BindSpacing(DocumentController docController, Context context)
         {
             var spacingController =
-                    docController.GetDereferencedField(GridViewLayout.SpacingKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(GridViewLayout.GridViewKey, context) as NumberFieldModelController;
             Debug.Assert(spacingController != null);
 
             var spacingBinding = new Binding()

@@ -44,7 +44,7 @@ namespace Dash
             var tBox6 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
 
-            var gridPanel = new GridPanel().Document;
+            var gridPanel = new GridLayout().Document;
             gridPanel.SetGridColumnDefinitions(new List<ColumnDefinition>
         {
             new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)},

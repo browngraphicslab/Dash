@@ -312,7 +312,7 @@ namespace Dash
         public static void AddNotes(CollectionView col, DragEventArgs e)
         {
             var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
-            DocumentController postitNote = new NoteDocuments.PostitNote(NoteDocuments.PostitNote.DocumentType).Document;
+            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
             DisplayDocument(col, postitNote, where);
         }
 

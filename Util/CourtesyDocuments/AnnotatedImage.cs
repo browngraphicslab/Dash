@@ -32,7 +32,7 @@ namespace Dash
             var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), TextFieldKey), 0, 0, 200, 50);
             var prototypeImage1Layout = new ImageBox(new ReferenceFieldModelController(_prototypeDoc.GetId(), Image1FieldKey), 0, 50, 200, 200);
 
-            var prototypeLayout = new StackingPanel(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
+            var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
 
             prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
             prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);

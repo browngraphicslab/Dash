@@ -134,10 +134,14 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeUmpNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameKey), 70, 0, 200, 50);
-            var prototypeUmpNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameLabelKey), 0, 0, 200, 50, FontWeights.Bold);
-            var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 70, 200, 100);
-            var prototypeLayout = new StackingPanel(new[] { prototypeUmpNameLabelLayout.Document, prototypeUmpNameLayout.Document, prototypeUmpAssignmentsLayout.Document }, true);
+            var prototypeUmpNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeUmpNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameKey), 0, 0, double.NaN, double.NaN);
+            var prototypeUmpLayout = new StackLayout(new[] { prototypeUmpNameLabelLayout.Document, prototypeUmpNameLayout.Document }, true);
+            prototypeUmpLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
+
+            var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
+
+            var prototypeLayout = new StackLayout(new[] { prototypeUmpLayout.Document, prototypeUmpAssignmentsLayout.Document });
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 
@@ -147,9 +151,9 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeVolNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameKey), 80, 0, 200, 50);
-            var prototypeVolNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameLabelKey), 0, 0, 200, 50, FontWeights.Bold);
-            var prototypeLayout = new StackingPanel(new[] { prototypeVolNameLabelLayout.Document, prototypeVolNameLayout.Document }, true);
+            var prototypeVolNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeVolNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameKey), 0, 0, 100, double.NaN);
+            var prototypeLayout = new StackLayout(new[] { prototypeVolNameLabelLayout.Document, prototypeVolNameLayout.Document });
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
 
@@ -159,18 +163,16 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeGameDateLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameDateKey), 70, 0, 200, 50);
-            var prototypeGameTimeLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameTimeKey), 70, 0, 200, 50);
-            var prototypeGameTimeLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameTimeLabelKey), 0, 0, 200, 50, FontWeights.Bold);
-            var prototypeGameDateLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameDateLabelKey), 0, 0, 200, 50, FontWeights.Bold);
-
-            var prototypeLayoutG = new StackingPanel(new[] { prototypeGameTimeLabelLayout.Document, prototypeGameTimeLayout.Document }, true);
-            prototypeLayoutG.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            prototypeLayoutG.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
-            var prototypeLayoutP = new StackingPanel(new[] { prototypeGameDateLabelLayout.Document, prototypeGameDateLayout.Document }, true);
-            prototypeLayoutP.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            prototypeLayoutP.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
-            var prototypeLayout = new StackingPanel(new[] { prototypeLayoutP.Document, prototypeLayoutG.Document }, false);
+            var prototypeGameDateLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameDateLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeGameDateLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameDateKey), 0, 0, double.NaN, double.NaN);
+            var prototypeGameDATELayout = new StackLayout(new[] { prototypeGameDateLabelLayout.Document, prototypeGameDateLayout.Document }, true);
+            prototypeGameDATELayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
+            var prototypeGameTimeLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameTimeLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeGameTimeLayout = new TextingBox(new ReferenceFieldModelController(PrototypeGame.GetId(), GameTimeKey), 0, 0, double.NaN, double.NaN);
+            var prototypeGameTIMELayout = new StackLayout(new[] { prototypeGameTimeLabelLayout.Document, prototypeGameTimeLayout.Document }, true);
+            prototypeGameTIMELayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
+            
+            var prototypeLayout = new StackLayout(new[] { prototypeGameDATELayout.Document, prototypeGameTIMELayout.Document }, false);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 
@@ -180,17 +182,16 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeAssignmentGameLayout   = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentGameKey), 70,  0, 200, 50);
-            var prototypeAssignmentPersonLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentPersonKey), 70, 0, 200, 50);
-            var prototypeAssignmentGameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentGameLabelKey), 0, 0, 200, 50, FontWeights.Bold);
-            var prototypeAssignmentPersonLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentPersonLabelKey), 0, 0, 200, 50, FontWeights.Bold);
-            var prototypeLayoutG = new StackingPanel(new[] { prototypeAssignmentPersonLabelLayout.Document, prototypeAssignmentPersonLayout.Document }, true);
-            prototypeLayoutG.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            prototypeLayoutG.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
-            var prototypeLayoutP = new StackingPanel(new[] { prototypeAssignmentGameLabelLayout.Document, prototypeAssignmentGameLayout.Document }, true);
-            prototypeLayoutP.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
-            prototypeLayoutP.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
-            var prototypeLayout = new StackingPanel(new[] { prototypeLayoutP.Document, prototypeLayoutG.Document }, false);
+            var prototypeAssignmentGameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentGameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeAssignmentGameLayout   = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentGameKey), 0,  0, double.NaN, double.NaN);
+            var prototypeAssignmentGAMELayout = new StackLayout(new[] { prototypeAssignmentGameLabelLayout.Document, prototypeAssignmentGameLayout.Document }, true);
+            prototypeAssignmentGAMELayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
+            var prototypeAssignmentPersonLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentPersonLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
+            var prototypeAssignmentPersonLayout = new TextingBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), AssigmentPersonKey), 0, 0, double.NaN, double.NaN);
+            var prototypeAssignmentPERSONLayout = new StackLayout(new[] { prototypeAssignmentPersonLabelLayout.Document, prototypeAssignmentPersonLayout.Document }, true);
+            prototypeAssignmentPERSONLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
+            
+            var prototypeLayout = new StackLayout(new[] { prototypeAssignmentGAMELayout.Document, prototypeAssignmentPERSONLayout.Document }, false);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 
