@@ -123,7 +123,7 @@ namespace Dash
 
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
-            var kv = e.ClickedItem as KeyFieldContainer; 
+            var kv = e.ClickedItem as KeyFieldContainer;
             if (kv == _selectedKV)
             {
                 ResetKeyValueModifier();
@@ -149,15 +149,15 @@ namespace Dash
     /// <summary>
     /// A container which represents a single row in the list created by the <see cref="KeyValuePane"/>
     /// </summary>
-    public class KeyFieldContainer
-    {
-        public Key Key { get; }
-        public FieldModelController Controller { get; }
-
-        public KeyFieldContainer(Key key, FieldModelController controller)
-        {
-            Key = key;
-            Controller = controller;
-        }
-    }
+//    public class KeyFieldContainer
+//    {
+//        public Key Key { get; }
+//        public FieldModelController Controller { get; }
+//
+//        public KeyFieldContainer(Key key, FieldModelController controller)
+//        {
+//            Key = key;
+//            Controller = controller;
+//        }
+//    }
 }
