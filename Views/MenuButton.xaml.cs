@@ -81,7 +81,7 @@ namespace Dash
                 else if (i == icons.Count - 1)
                 {
                     border.CornerRadius = new CornerRadius(0, 0, 20, 20);
-                    Background = new SolidColorBrush(Colors.Gray);
+                    border.Background = new SolidColorBrush(Colors.Gray);
                 }
 
                 // create button to contain the border with the symbol

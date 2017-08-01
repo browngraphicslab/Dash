@@ -668,7 +668,7 @@ namespace Dash
         public override void OnLowestActivated(bool isLowestSelected)
         {
             if(_colMenu == null && isLowestSelected) OpenMenu();
-            else if (_colMenu != null && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
+            else if (_colMenu != null && !isLowestSelected && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
 
         private void CollectionView_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)

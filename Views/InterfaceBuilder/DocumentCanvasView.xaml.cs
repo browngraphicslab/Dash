@@ -95,7 +95,8 @@ namespace Dash
                 Y = delta.Translation.Y
             };
 
-            var p = Util.PointTransformFromVisual(e.Position, canvas);
+            var p = Util.PointTransformFromVisual(e.Position, xBackgroundCanvas);
+            
             var scale = new ScaleTransform
             {
                 CenterX = p.X,
@@ -108,13 +109,13 @@ namespace Dash
             _canvasScale *= delta.Scale;
             ClampScale(scale);
 
-
             //Create initial composite transform
             var composite = new TransformGroup();
             composite.Children.Add(scale);
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
 
+            /* // commented out; there are no bounds anymore 
             //Get top left and bottom right screen space points in canvas space
             var inverse = composite.Inverse;
             Debug.Assert(inverse != null);
@@ -187,7 +188,7 @@ namespace Dash
                 composite.Children.Add(canvas.RenderTransform);
                 composite.Children.Add(translate);
             }
-
+            */ 
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             SetTransformOnBackground(composite);
 
