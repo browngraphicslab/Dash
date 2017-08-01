@@ -23,10 +23,6 @@ namespace Dash
         //Output Keys
         public static readonly Key OutputCollection = new Key("DF1C5189-65D6-47F5-A0CC-7D3658DFB29B", "Output Collection");
 
-        public FilterOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
-        {
-        }
-
         public FilterOperatorFieldModelController() : base(new OperatorFieldModel("Filter"))
         {
         }
@@ -66,7 +62,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new FilterOperatorFieldModelController(OperatorFieldModel);
+            return new FilterOperatorFieldModelController();
         }
 
     }

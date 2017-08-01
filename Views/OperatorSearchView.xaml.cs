@@ -56,6 +56,7 @@ namespace Dash
             var imagetoUri = new Func<DocumentController>(
                 () => OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController()));
             var api = new Func<DocumentController>(OperatorDocumentModel.CreateApiDocumentController);
+            var map = new Func<DocumentController>(OperatorDocumentModel.CreateMapDocumentController);
 
 
             var arithmetics = new ObservableCollection<KeyValuePair<string, object>>
@@ -69,7 +70,8 @@ namespace Dash
             };
             var maps = new ObservableCollection<KeyValuePair<string, object>>
             {
-                new KeyValuePair<string, object>("imageToUri", imagetoUri)
+                new KeyValuePair<string, object>("imageToUri", imagetoUri),
+                new KeyValuePair<string, object>("map", map)
             };
             var all = new ObservableCollection<KeyValuePair<string, object>>
             {

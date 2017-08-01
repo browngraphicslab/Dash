@@ -40,10 +40,21 @@ namespace Dash
         public static DocumentController CreateFilterDocumentController()
         {
             Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
-            fields[OperatorKey] = new FilterOperatorFieldModelController(new OperatorFieldModel("Filter"));
+            fields[OperatorKey] = new FilterOperatorFieldModelController();
             var doc = new DocumentController(fields, FilterOperatorFieldModelController.FilterType);
 
             var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
+        public static DocumentController CreateMapDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = new CollectionMapOperator();
+            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+
+            var layoutDoc = new CollectionMapOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;

@@ -193,7 +193,7 @@ namespace Dash.Controllers.Operators
 
         public override FieldModelController Copy()
         {
-            return new DivideOperatorFieldModelController(OperatorFieldModel);
+            return new DBSearchOperatorFieldModelController(OperatorFieldModel as DBSearchOperatorFieldModel);
         }
     }
 }

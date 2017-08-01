@@ -40,11 +40,6 @@ namespace Dash
             //}
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
-            var searchView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
             var where = Util.GetCollectionDropPoint(
                 MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
                 e.GetPosition(MainPage.Instance));
@@ -120,17 +115,16 @@ namespace Dash
             {
                 return;
             }
-
+            
             var searchView = OperatorSearchView.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
 
-
             var opCreator = obj as KeyValuePair<string, object>? ?? new KeyValuePair<string, object>();
             var opController = (opCreator.Value as Func<DocumentController>)?.Invoke();
 
-
+            // using this as a setter for the transform massive hack - LM
             var opvm = new DocumentViewModel(opController)
             {
                 GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
@@ -148,12 +142,16 @@ namespace Dash
             var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
 
             //Make first collection
-            var numbers = new Numbers().Document;
+            List<DocumentController> numbers = new List<DocumentController>();
+            for (int i = 0; i < 6; ++i)
+            {
+                numbers.Add(new Numbers().Document);
+            }
             var fields = new Dictionary<Key, FieldModelController>
             {
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(new[] {numbers})
+                    new DocumentCollectionFieldModelController(numbers)
                 }
             };
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
