@@ -387,8 +387,8 @@ namespace Dash
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, context, false), true);
-            if (newField != null)
-                newField.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+            FieldModelController.FieldModelUpdatedHandler handler =
+                delegate(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
                     c = c ?? new Context();
                     c.AddDocumentContext(this);
@@ -396,8 +396,17 @@ namespace Dash
                     {
                         Execute(c, true);
                     }
-                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, c, false), true);
+                    OnDocumentFieldUpdated(this,
+                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, c, false), true);
                 };
+            if (oldField != null)
+            {
+                oldField.FieldModelUpdated -= handler;
+            }
+            if (newField != null)
+            {
+                newField.FieldModelUpdated += handler;
+            }
         }
 
         /// <summary>
