@@ -110,7 +110,8 @@ namespace Dash
             }
             else
             {
-                ParentSelectionElement?.SetSelectedElement(null);
+                // Commented out below to avoid toggling selected element on/off while trying to edit textfields 
+                //ParentSelectionElement?.SetSelectedElement(null);
             }
         }
     }

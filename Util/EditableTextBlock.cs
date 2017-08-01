@@ -19,14 +19,16 @@ namespace Dash
 
         public EditableTextBlock()
         {
-            Block.TextWrapping = TextWrapping.Wrap; 
+            Block.TextWrapping = TextWrapping.Wrap;
 
             Box = new TextBox
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextWrapping = TextWrapping.Wrap,
-                Visibility = Visibility.Collapsed
+                Visibility = Visibility.Collapsed,
+                BorderThickness = new Thickness(0),
+                Background = new Windows.UI.Xaml.Media.SolidColorBrush(Windows.UI.Colors.Transparent)
             };
             
             Box.PointerWheelChanged += (s, e) => e.Handled = true; 
