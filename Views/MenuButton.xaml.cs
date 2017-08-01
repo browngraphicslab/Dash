@@ -181,9 +181,19 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
             var rotationTransform = new RotateTransform();
-            _button.RenderTransform = rotationTransform;
-            _button.RenderTransformOrigin = new Point(0.5, 0.5);
-
+            if (_button != null)
+            {
+                _button.RenderTransform = rotationTransform;
+                _button.RenderTransformOrigin = new Point(0.5, 0.5);
+            }
+            else
+            {
+                foreach (var b in _buttons)
+                {
+                    b.RenderTransform = rotationTransform;
+                    b.RenderTransformOrigin = new Point(0.5, 0.5);
+                }
+            }
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
@@ -197,17 +207,27 @@ namespace Dash
             storyboard.Begin();
         }
 
+        private void OpactiyAnimationHelper(int from, int to)
+        {
+            if (_button != null)
+            {
+                this.CreateAndRunOpacityAnimation(_button, from, to);
+                this.CreateAndRunOpacityAnimation(_descriptionText, from, to);
+            }
+            else
+                foreach (var b in _buttons)
+                    CreateAndRunOpacityAnimation(b, from, to);
+        }
+
         public void AddAndRunCollapseAnimation(double verticalOffset)
         {
             this.CreateAndRunVerticalTranslationAnimation(verticalOffset);
-            this.CreateAndRunOpacityAnimation(_button, 1, 0);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 1, 0);
+            OpactiyAnimationHelper(1, 0); 
         }
 
         public void AddAndRunExpandAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 0, 1);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            OpactiyAnimationHelper(0,1);
             this.CreateAndRunReverseVerticalTranslationAnimation();
         }
 
@@ -216,8 +236,7 @@ namespace Dash
         /// </summary>
         public void AddAndRunRotateOutAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 1, 0);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 1, 0);
+            OpactiyAnimationHelper(1, 0);
             this.CreateAndRunRotationAnimation();
         }
 
@@ -226,15 +245,13 @@ namespace Dash
         /// </summary>
         public void AddAndRunRotateInAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 0, 1);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            OpactiyAnimationHelper(0, 1);
             this.CreateAndRunRotationAnimation();
         }
 
         public void AddAndRunDeleteAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 1, 0);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 1, 0);
+            OpactiyAnimationHelper(1,0);
         }
         /// <summary>
         /// Create and run animation when button is created
@@ -269,8 +286,14 @@ namespace Dash
 
             var translateTransform = new TranslateTransform();
             translateTransform.Y = 0;
-            _button.RenderTransform = translateTransform;
-            _descriptionText.RenderTransform = translateTransform;
+            if (_button != null)
+            {
+                _button.RenderTransform = translateTransform;
+                _descriptionText.RenderTransform = translateTransform;
+            }
+            else
+                foreach (var b in _buttons)
+                    b.RenderTransform = translateTransform;
 
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
@@ -293,8 +316,14 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
             var translateTransform = new TranslateTransform();
-            _button.RenderTransform = translateTransform;
-            _descriptionText.RenderTransform = translateTransform;
+            if (_button != null)
+            {
+                _button.RenderTransform = translateTransform;
+                _descriptionText.RenderTransform = translateTransform;
+            }
+            else
+                foreach (var b in _buttons)
+                    b.RenderTransform = translateTransform;
 
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();

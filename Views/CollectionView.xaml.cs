@@ -568,7 +568,7 @@ namespace Dash
                 //toggle grid/list/freeform view buttons 
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, Colors.SteelBlue, new List<Action> { setGrid, setList, setFreeform}),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
-                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
+                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson)),
             };
 
             if (ParentDocument != MainPage.Instance.MainDocView)
