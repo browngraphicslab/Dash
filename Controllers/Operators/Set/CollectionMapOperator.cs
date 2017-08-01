@@ -100,6 +100,7 @@ namespace Dash
                 operatorOutputs.Clear();
                 operatorController.Execute(operatorInputs, operatorOutputs);
                 DocumentController doc = new DocumentController(operatorOutputs, DocumentType.DefaultType);
+                doc.SetActiveLayout(new DefaultLayout().Document, true, false);
                 documents.Add(doc);
             }
 
