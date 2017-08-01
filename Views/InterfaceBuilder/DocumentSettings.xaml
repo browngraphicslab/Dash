@@ -13,7 +13,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -67,6 +67,9 @@
                     <local:SettingsPaneBlock.Title>LAYOUT</local:SettingsPaneBlock.Title>
                 </local:SettingsPaneBlock>
             </Grid>
+
+            
+            
         </Grid>
     </Grid>
 </UserControl>

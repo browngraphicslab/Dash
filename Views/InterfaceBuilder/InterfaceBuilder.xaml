@@ -46,8 +46,16 @@
 
                 <local:DocumentCanvasView x:Name="xDocumentPane" Grid.Column="1"></local:DocumentCanvasView>
 
-                <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" Grid.Column="2"
-                  Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0" />
+                <Grid  Grid.Column="2">
+                    <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" 
+                  Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0">
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5">
+                        <TextBlock Padding="0,0,5,0">Layout: </TextBlock>
+                        <TextBox x:Name="xLayoutTextBox" Background="Transparent" BorderThickness="0" Text="YOU GOTTA BIND THIS ONE" ></TextBox>
+                    </StackPanel>
+                </Grid>
+
             </Grid>
 
             <GridView Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting">
@@ -81,7 +89,7 @@
                     </Button>
                     <TextBlock FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Top" Padding="0">FREE</TextBlock>
                 </StackPanel>
-                     
+
 
             </GridView>
             <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Height="65" Width="73" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,222,0" Grid.Row="2">
