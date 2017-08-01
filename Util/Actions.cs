@@ -40,11 +40,6 @@ namespace Dash
             //}
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
-            var searchView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
             var where = Util.GetCollectionDropPoint(
                 MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
                 e.GetPosition(MainPage.Instance));
@@ -147,12 +142,16 @@ namespace Dash
             var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
 
             //Make first collection
-            var numbers = new Numbers().Document;
+            List<DocumentController> numbers = new List<DocumentController>();
+            for (int i = 0; i < 6; ++i)
+            {
+                numbers.Add(new Numbers().Document);
+            }
             var fields = new Dictionary<Key, FieldModelController>
             {
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(new[] {numbers})
+                    new DocumentCollectionFieldModelController(numbers)
                 }
             };
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));

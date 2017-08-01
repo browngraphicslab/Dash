@@ -7,10 +7,6 @@ namespace Dash
 {
     public class DivideOperatorFieldModelController : OperatorFieldModelController
     {
-        public DivideOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
-        {
-            OperatorFieldModel = operatorFieldModel;
-        }
 
         public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
         {
@@ -56,7 +52,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new DivideOperatorFieldModelController(OperatorFieldModel);
+            return new DivideOperatorFieldModelController();
         }
     }
 }

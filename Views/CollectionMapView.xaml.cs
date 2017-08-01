@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -12,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash.StaticClasses;
 using DashShared;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -20,6 +23,8 @@ namespace Dash
 {
     public sealed partial class CollectionMapView : UserControl
     {
+        private ObservableCollection<Key> _operatorKeys = new ObservableCollection<Key>();
+
         public CollectionMapView()
         {
             this.InitializeComponent();
@@ -33,11 +38,29 @@ namespace Dash
             };
 
             XOperatorType.SelectionChanged += XOperatorType_SelectionChanged;
+
+            XKeyList.ItemsSource = _operatorKeys;
         }
 
         private void XOperatorType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            _operatorDoc.SetField(CollectionMapOperator.InputOperatorKey, new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")), true);
+            OperatorFieldModelController opFmc;
+            if (XOperatorType.SelectedIndex == 0)
+            {
+                opFmc = new DivideOperatorFieldModelController();
+            }
+            else
+            {
+                opFmc = new FilterOperatorFieldModelController();
+            }
+            _operatorDoc.SetField(CollectionMapOperator.InputOperatorKey,
+                opFmc, true);
+
+            _operatorKeys.Clear();
+            foreach (var opFmcInput in opFmc.Inputs)
+            {
+                _operatorKeys.Add(opFmcInput.Key);
+            }
         }
 
         private DocumentController _operatorDoc;
@@ -56,6 +79,23 @@ namespace Dash
         private void InputOperatorChanged(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             _operator.UpdateInputs(args.NewValue as OperatorFieldModelController);
+        }
+
+        private void AutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            var key = sender.DataContext as Key;
+            var coll = _operatorDoc.GetField(key).DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.GetDocuments();
+            if (coll == null)
+            {
+                return;
+            }
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                if (sender.Text.Length > 0)
+                    sender.ItemsSource = FilterUtils.GetKeySuggestions(coll, sender.Text.ToLower());
+                else
+                    sender.ItemsSource = new[] { "No suggestions..." };
+            }
         }
     }
 }

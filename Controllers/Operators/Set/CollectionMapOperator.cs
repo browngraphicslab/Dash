@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.Media.Audio;
 using Windows.Storage.Streams;
 using DashShared;
 
@@ -43,13 +44,21 @@ namespace Dash
 
         public void UpdateInputs(OperatorFieldModelController controller)
         {
-            Inputs.Clear();
-            Inputs[InputOperatorKey] = TypeInfo.Operator;
+            var toRemove = Inputs.Where(pair => !pair.Key.Equals(InputOperatorKey)).Select(pair => pair.Key).ToList();
+            foreach (var key in toRemove)
+            {
+                Inputs.Remove(key);
+            }
+
+            //Inputs.Clear();
+            //Inputs[InputOperatorKey] = TypeInfo.Operator;
             foreach (var controllerInput in controller.Inputs)
             {
                 Inputs[controllerInput.Key] = TypeInfo.Collection;
             }
         }
+
+        public Dictionary<Key, Key> InputKeyMap { get; set; } = new Dictionary<Key, Key>();
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
@@ -86,7 +95,7 @@ namespace Dash
                 operatorInputs.Clear();
                 for(int j = 0; j < collections.Count; ++i)
                 {
-                    operatorInputs[operatorController.Inputs[j].Key] = collections[j][i].GetField(keys[j]);
+                    operatorInputs[keys[j]] = collections[j][i].GetField(InputKeyMap[keys[j]]);
                 }
                 operatorOutputs.Clear();
                 operatorController.Execute(operatorInputs, operatorOutputs);

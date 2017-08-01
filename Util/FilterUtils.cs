@@ -85,7 +85,7 @@ namespace Dash.StaticClasses
             return containsKeyDocuments;
         }
 
-        private static IEnumerable<Key> GetKeys(DocumentController doc)
+        public static IEnumerable<Key> GetKeys(DocumentController doc)
         {
 
             foreach (var item in doc.EnumFields())

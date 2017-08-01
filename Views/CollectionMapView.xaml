@@ -9,6 +9,29 @@
     d:DesignWidth="400">
 
     <Grid>
-        <ComboBox x:Name="XOperatorType"  HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <ComboBox x:Name="XOperatorType"  HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Row="0"/>
+        <ListView x:Name="XKeyList" Grid.Row="1" HorizontalContentAlignment="Stretch">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"></Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Path=Name}" Grid.Column="0" VerticalAlignment="Center" Padding="0,0,10,0"></TextBlock>
+                        <AutoSuggestBox TextChanged="AutoSuggestBox_OnTextChanged" Grid.Column="1" HorizontalAlignment="Stretch"></AutoSuggestBox>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
     </Grid>
 </UserControl>
