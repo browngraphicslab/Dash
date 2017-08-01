@@ -84,7 +84,8 @@ namespace Dash
         public void AddDocument(DocumentController docController)
         {
             _documents.Add(docController);
-            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            DocumentCollectionFieldModel.Data.Add(docController.GetId());
+            //DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController>{docController}));
         }
@@ -92,14 +93,15 @@ namespace Dash
 
         public void RemoveDocument(DocumentController doc) {
             _documents.Remove(doc);
-            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            DocumentCollectionFieldModel.Data.Remove(doc.GetId());
+            //DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove, new List<DocumentController>{doc}));
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
         {
             _documents = new List<DocumentController>(docControllers);
-            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId()).ToList();
 
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace, new List<DocumentController>(docControllers)));
         }
