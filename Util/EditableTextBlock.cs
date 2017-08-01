@@ -28,7 +28,7 @@ namespace Dash
                 TextWrapping = TextWrapping.Wrap,
                 Visibility = Visibility.Collapsed
             };
-
+            
             Box.PointerWheelChanged += (s, e) => e.Handled = true; 
 
             Box.ManipulationDelta += (s, e) => e.Handled = true; 

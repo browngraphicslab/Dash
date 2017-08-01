@@ -368,7 +368,7 @@ namespace Dash
 
 
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
             {

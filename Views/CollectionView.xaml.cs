@@ -87,6 +87,7 @@ namespace Dash
             xContentControl.Content = CurrentView;
             SetEventHandlers();
             CanLink = true;
+            //ParentDocument.Tapped -= ParentDocument.OnTapped;
         }
 
         private void InitializeFlyout()
@@ -119,6 +120,8 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+            //ParentDocument.Tapped -= ParentDocument.OnTapped; 
+
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
@@ -129,7 +132,7 @@ namespace Dash
                     ParentDocument.xBorder.Margin.Top + 5,
                     ParentDocument.xBorder.Margin.Right,
                     ParentDocument.xBorder.Margin.Bottom);
-                OpenMenu();
+                //OpenMenu();
                 ParentSelectionElement?.SetSelectedElement(this);
                 xOuterGrid.BorderThickness = new Thickness(0);
             }
