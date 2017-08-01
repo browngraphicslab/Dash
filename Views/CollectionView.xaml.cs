@@ -565,9 +565,10 @@ namespace Dash
                 {
                     RotateOnTap = true
                 },
-                new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
-                new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
-                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, Colors.SteelBlue, new List<Action> { setGrid, setList, setFreeform}),
+                //new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
+                //new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
+                //new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
                 new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
             };

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -33,9 +34,79 @@ namespace Dash
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
-            this.CreateAndRunInstantiationAnimation();
+            this.CreateAndRunInstantiationAnimation(false);
         }
-       
+
+
+        private List<Button> _buttons = new List<Button>();
+        /// <summary>
+        /// Creates a toggle-able merged set of buttons ... 
+        /// </summary>
+        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions)
+        {
+            this.InitializeComponent();
+            Debug.Assert(icons.Count == buttonActions.Count);
+
+            this.InstantiateButtons(icons, background, buttonActions);
+            this.CreateAndRunInstantiationAnimation(true);
+            
+
+            foreach (var button in _buttons)
+            {
+                var i = _buttons.IndexOf(button);
+                button.Tapped += (s, e) =>
+                {
+                    e.Handled = true;
+                    buttonActions[i]?.Invoke();
+                };
+            }
+        }
+
+        /// <summary>
+        /// Create a set of related toggle-able buttons with edges rounded at the top and buttom 
+        /// </summary>
+        private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
+        {
+            for (int i = 0; i < icons.Count; i++)
+            {
+                // create symbol for button
+                var symbol = new SymbolIcon()
+                {
+                    Symbol = icons[i],
+                    Foreground = new SolidColorBrush(Colors.White)
+                };
+                // create rounded(circular) border to hold the symbol
+                Border border = new Border()
+                {
+                    Height = 40,
+                    Width = 40,
+                    Background = new SolidColorBrush(background),
+                    BorderBrush = new SolidColorBrush(background),
+                    Child = symbol
+                };
+                // if it's the first button, round the top 
+                if (i == 0) border.CornerRadius = new CornerRadius(20, 20, 0, 0);
+                // if last button, round the buttom  
+                else if (i == icons.Count - 1) border.CornerRadius = new CornerRadius(0, 0, 20, 20);
+
+                // create button to contain the border with the symbol
+                var button = new Button()
+                {
+                    Background = new SolidColorBrush(Colors.Transparent),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Padding = new Thickness(-2.5),
+                    Content = border
+                };
+
+                // add all content to stack panel
+                xButtonStackPanel.Children.Add(button);
+                _buttons.Add(button); 
+                
+
+                button.DoubleTapped += (s, e) => e.Handled = true;
+
+            }
+        }
 
         /// <summary>
         /// Create a circular button with an icon and a string description
@@ -64,7 +135,7 @@ namespace Dash
             // create button to contain the border with the symbol
             _button = new Button()
             {
-                Background = new SolidColorBrush( Colors.Transparent),
+                Background = new SolidColorBrush(Colors.Transparent),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Padding = new Thickness(-2.5),
                 Content = border
@@ -110,7 +181,7 @@ namespace Dash
 
             var rotationTransform = new RotateTransform();
             _button.RenderTransform = rotationTransform;
-            _button.RenderTransformOrigin = new Point(0.5,0.5);
+            _button.RenderTransformOrigin = new Point(0.5, 0.5);
 
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
@@ -161,16 +232,25 @@ namespace Dash
 
         public void AddAndRunDeleteAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button,1,0);
-            this.CreateAndRunOpacityAnimation(_descriptionText,1,0);
+            this.CreateAndRunOpacityAnimation(_button, 1, 0);
+            this.CreateAndRunOpacityAnimation(_descriptionText, 1, 0);
         }
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
-        private void CreateAndRunInstantiationAnimation()
+        private void CreateAndRunInstantiationAnimation(bool isComposite)
         {
-            this.CreateAndRunRepositionAnimation(_button, 200,0);
-            this.CreateAndRunRepositionAnimation(_descriptionText,0, 50);
+            if (isComposite)
+            {
+                foreach (var button in _buttons)
+                {
+                    this.CreateAndRunRepositionAnimation(button, 200, 0);
+                    this.CreateAndRunOpacityAnimation(button, 0, 1);
+                }
+                return; 
+            }
+            this.CreateAndRunRepositionAnimation(_button, 200, 0);
+            this.CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
 
             this.CreateAndRunOpacityAnimation(_button, 0, 1);
             this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);

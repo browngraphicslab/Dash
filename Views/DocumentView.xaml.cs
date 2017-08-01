@@ -315,9 +315,10 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
+            if (ViewModel != null) {
+                ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+            }
             if (ViewModel != null)
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
