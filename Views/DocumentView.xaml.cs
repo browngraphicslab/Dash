@@ -24,7 +24,7 @@ namespace Dash
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
-        public bool HasCollection { get; set; }
+        public bool IsMainCollection { get; set; }
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -455,7 +455,7 @@ namespace Dash
 
         public override void OnLowestActivated(bool isLowestSelected)
         {
-            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
                 ViewModel?.OpenMenu();
             else
                 ViewModel?.CloseMenu();

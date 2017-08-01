@@ -112,6 +112,7 @@
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BezierConverter.cs" />
     <Compile Include="Views\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
