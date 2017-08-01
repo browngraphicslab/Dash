@@ -87,7 +87,6 @@ namespace Dash
             xContentControl.Content = CurrentView;
             SetEventHandlers();
             CanLink = true;
-            //ParentDocument.Tapped -= ParentDocument.OnTapped;
         }
 
         private void InitializeFlyout()
@@ -120,7 +119,6 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-            //ParentDocument.Tapped -= ParentDocument.OnTapped; 
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ParentDocument == MainPage.Instance.MainDocView)
