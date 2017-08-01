@@ -69,6 +69,24 @@ namespace Dash
             Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
         }
+
+
+        /// <summary>
+        /// When a field is dragged onto documentview, adds that field to the document 
+        /// </summary>
+        private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
+        {
+            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            if (view == null) return; // we can't always assume we're on a collection		
+
+            view.CanLink = false;
+
+            args.Handled = true;
+            (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
+                new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                    OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+        }
+
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
@@ -172,6 +190,7 @@ namespace Dash
             var dx = Math.Max(p.X, 0);
             var dy = Math.Max(p.Y, 0);
             //p = new Point(dx, dy);
+
             ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
                                                                 new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
                                                                 ViewModel.GroupTransform.ScaleAmount);
@@ -437,6 +456,7 @@ namespace Dash
                             key = keyFields.Key;
                             break;
                         }
+
                     DBTest.ResetCycleDetection();
                     docController.ParseDocField(key, valu);
                 }
@@ -452,6 +472,7 @@ namespace Dash
         {
 
         }
+
 
         public override void OnLowestActivated(bool isLowestSelected)
         {

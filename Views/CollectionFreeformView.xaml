@@ -10,11 +10,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="Transparent"
-    ManipulationMode="All"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    ManipulationDelta="UserControl_ManipulationDelta"
-    PointerWheelChanged="UserControl_PointerWheelChanged"
-    >
+    ManipulationMode="All">
     <Grid x:Name="FreeformGrid" ManipulationMode="All">
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 

@@ -153,10 +153,10 @@ namespace Dash
             Debug.Assert(image != null);
             image.Clip = new RectangleGeometry
             {
-                Rect = new Rect(data.X * image.ActualWidth / 100, 
-                                data.Y * image.ActualHeight / 100, 
-                                data.Width * image.ActualWidth / 100, 
-                                data.Height * image.ActualHeight / 100)
+                Rect = new Rect(data.X * image.Width / 100, 
+                                data.Y * image.Height / 100, 
+                                data.Width * image.Width / 100, 
+                                data.Height * image.Height / 100)
             };
         }
 

@@ -105,6 +105,7 @@
     <Compile Include="Models\RectFieldModel.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
@@ -187,7 +188,7 @@
     <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
     <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
-    <Compile Include="Util\CourtesyDocuments\DBTest.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleDBTest.cs" />
     <Compile Include="Util\CourtesyDocuments\DocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
     <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
@@ -195,14 +196,14 @@
     <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
     <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\GridPanel.cs" />
-    <Compile Include="Util\CourtesyDocuments\NestedDocExample.cs" />
-    <Compile Include="Util\CourtesyDocuments\Numbers.cs" />
+    <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleNestedDocExample.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleNumbers.cs" />
     <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\StackingPanel.cs" />
+    <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
     <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
-    <Compile Include="Util\CourtesyDocuments\TwoImages.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleTwoImages.cs" />
     <Compile Include="Util\EditableTextBlock.cs" />
     <Compile Include="Util\DropControls.cs" />
     <Compile Include="Views\SelectableContainer.xaml.cs">
@@ -255,8 +256,6 @@
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ItemsCarrier.cs" />
     <Compile Include="ManipulationControls.cs" />
-    <Compile Include="Models\ApiSourceFieldModel.cs" />
-    <Compile Include="Models\ApiSourceFieldModelController.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />

@@ -20,22 +20,12 @@ namespace Dash
 {
     public sealed partial class OperatorSearchView : UserControl
     {
-        private static OperatorSearchView instance;
-        public static OperatorSearchView Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new OperatorSearchView();
-                }
-                return instance;
-            }
-        }
+        private static OperatorSearchView _instance;
+        public static OperatorSearchView Instance => _instance ?? (_instance = new OperatorSearchView());
 
 
-        public SearchView SearchView { get; set; }
-        public static CollectionView AddsToThisCollection = MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>();
+        public SearchView SearchView { get; private set; }
+        public static CollectionView AddsToThisCollection = MainPage.Instance.GetMainCollectionView();
 
         private OperatorSearchView()
         {
@@ -83,12 +73,14 @@ namespace Dash
                 new KeyValuePair<string, object>("api", api),
             };
 
-            var categories = new List<SearchCategoryItem>();
-            categories.Add(new SearchCategoryItem("∀", "ALL",all, Actions.AddOperator));
-            categories.Add(new SearchCategoryItem("÷", "ARITHMETIC",arithmetics, Actions.AddOperator));
-            categories.Add(new SearchCategoryItem("→","MAP", maps, Actions.AddOperator));
-            categories.Add(new SearchCategoryItem("∈","SET", sets, Actions.AddOperator));
-            categories.Add(new SearchCategoryItem(string.Empty,"CUSTOM",null,Actions.AddOperator));
+            var categories = new List<SearchCategoryItem>
+            {
+                new SearchCategoryItem("∀", "ALL", all, Actions.AddOperator),
+                new SearchCategoryItem("÷", "ARITHMETIC", arithmetics, Actions.AddOperator),
+                new SearchCategoryItem("→", "MAP", maps, Actions.AddOperator),
+                new SearchCategoryItem("∈", "SET", sets, Actions.AddOperator),
+                new SearchCategoryItem(string.Empty, "CUSTOM", null, Actions.AddOperator)
+            };
 
             xMainGrid.Children.Add(SearchView = new SearchView(categories));
         }

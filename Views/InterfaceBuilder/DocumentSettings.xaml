@@ -32,13 +32,16 @@
                 <local:SettingsPaneBlock>
                     <local:SettingsPaneBlock.MainContent>
                         <Grid Margin="0,5,0,5">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="4.5*" />
-                                <ColumnDefinition Width="1*" />
-                            </Grid.ColumnDefinitions>
-                            
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                                <RowDefinition Height="Auto"></RowDefinition>
+                            </Grid.RowDefinitions>
                             <!--COMBO BOX-->
-                            <Grid Grid.Column="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4.5*" />
+                                    <ColumnDefinition Width="1*" />
+                                </Grid.ColumnDefinitions>
                                 <ComboBox x:Name="xActiveLayoutComboBox" HorizontalAlignment="Stretch"
                                           BorderBrush="Transparent" FontSize="12"
                                           SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
@@ -48,15 +51,17 @@
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
-                            </Grid>
-                            
-                            <!--ADD LAYOUT BUTTON-->
-                            <Grid Grid.Column="1">
-                                <Button x:Name="xAddLayoutButton" Background="SteelBlue">
+                                
+                                <!--NEW LAYOUT OPTIONS DROPDOWN--> 
+                                <ComboBox x:Name="xAddLayoutComboBox" HorizontalAlignment="Stretch" Grid.Column="1" Visibility="Collapsed" MinWidth="36"
+                                          BorderBrush="Transparent" FontSize="12" >
+                                </ComboBox>
+
+                                <!--ADD LAYOUT BUTTON-->
+                                <Button x:Name="xAddLayoutButton" Background="SteelBlue" Grid.Column="1" >
                                     <SymbolIcon Symbol="Add"></SymbolIcon>
                                 </Button>
                             </Grid>
-                            
                         </Grid>
                     </local:SettingsPaneBlock.MainContent>
                     <local:SettingsPaneBlock.Title>LAYOUT</local:SettingsPaneBlock.Title>

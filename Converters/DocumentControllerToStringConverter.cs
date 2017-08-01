@@ -98,8 +98,8 @@ namespace Dash.Converters
             {
                 foreach (var dmc in ContentController.GetControllers<DocumentController>())
                     if (!dmc.DocumentType.Type.Contains("Box") &&
-                        dmc.DocumentType != StackingPanel.DocumentType &&
-                        dmc.DocumentType != GridPanel.GridPanelDocumentType &&
+                        dmc.DocumentType != StackLayout.DocumentType &&
+                        dmc.DocumentType != GridLayout.GridPanelDocumentType &&
                         dmc.DocumentType != GridViewLayout.DocumentType)
                     {
                         bool found = true;
@@ -130,10 +130,7 @@ namespace Dash.Converters
                     }
             }
             foreach (var dmc in ContentController.GetControllers<DocumentController>())
-                if (!dmc.DocumentType.Type.Contains("Box") &&
-                    dmc.DocumentType != StackingPanel.DocumentType &&
-                    dmc.DocumentType != GridPanel.GridPanelDocumentType &&
-                    dmc.DocumentType != GridViewLayout.DocumentType)
+                if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                 {
                     var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
                     if (primaryKeys != null)

@@ -492,7 +492,7 @@ namespace Dash
             var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
             var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments };
             var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
-            //📄
+            
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {
                 operatorButton,
@@ -503,30 +503,27 @@ namespace Dash
             });
 
             //TODO maybe this shouldn't go here 
-            Action<object> sendEmail = sendEmailHelper;
-            var emailButton = new RadialActionModel("Email", "📧")
-            {
-                GenericAction = sendEmail
-            };
+            //Action<object> sendEmail = sendEmailHelper;
+            //var emailButton = new RadialActionModel("Email", "📧")
+            //{
+            //    GenericAction = sendEmail
+            //};
 
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
                 inkOptions,
                 addOptionsMenu,
-                emailButton
+                //emailButton
             });
 
             
         }
 
-        private void sendEmailHelper(object obj)
-        {
-            //Util.SendEmail(); 
-            //Util.SendEmail2("example_email", "example_email", "testMessage", "testSubject", null);
-            _parentCanvas.Children.Add(new EmailView()); 
-
-        }
+        //private void sendEmailHelper(object obj)
+        //{
+        //    _parentCanvas.Children.Add(new EmailView()); 
+        //}
 
         private void InitializeColors()
         {

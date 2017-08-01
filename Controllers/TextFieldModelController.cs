@@ -53,7 +53,6 @@ namespace Dash
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
-
         public override FieldModelController GetDefaultController()
         {
             return new TextFieldModelController("Default Value");
