@@ -65,41 +65,19 @@ namespace Dash
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
 
-        //private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        //{
-        //    var cvm = DataContext as CollectionViewModel;
-        //    //(sender as DocumentView).Manipulator.TurnOff();
-
-        //}
-        //private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        //{
-        //    //var cvm = DataContext as CollectionViewModel;
-        //    //var dv = (sender as DocumentView);
-        //    //var dvm = dv.DataContext as DocumentViewModel;
-        //    //var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-        //    //dvm.Position = where;
-        //    //e.Handled = true;
-        //}
-
         public void StartDrag(IOReference ioReference)
         {
-            Debug.Write("1");
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
-            Debug.Write("2");
-
             if (ioReference.PointerArgs == null) return;
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
             parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
-
-
-            Debug.Write("3");
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
@@ -611,24 +589,5 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
-        /// </summary>
-        //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
-
-        private class VisibilityConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                bool isEditorMode = (bool)value;
-                return isEditorMode ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                throw new NotImplementedException();
-            }
-
-        }
     }
 }

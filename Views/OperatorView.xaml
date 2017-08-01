@@ -16,9 +16,9 @@
         <!-- Content containing grid-->
         <Grid x:Name="XGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition x:Name="xInputColumn" Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
-                <ColumnDefinition x:Name="xOutputColumn" Width="Auto"></ColumnDefinition>
+                <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
             <!-- Input Operator Handles & Labels-->
