@@ -165,16 +165,6 @@ namespace Dash
             releasePointerOnEllipse(sender, e, true);
         }
 
-        /// <summary>
-        /// Updates the background circle and rectangle height to accomodate new sizes.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
-        }
-
         #region expandoflyout
         private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
