@@ -295,7 +295,7 @@ namespace Dash
                 if (view == null) return; // we can't always assume we're on a collection
                     view.CanLink = true;
                 if (view.CurrentView is CollectionFreeformView)
-                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
+                    (view.CurrentView as CollectionFreeformView).StartDrag(new IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
@@ -312,7 +312,7 @@ namespace Dash
                 {
                     view.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
-                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, args, renderElement,
+                        (view.CurrentView as CollectionFreeformView).StartDrag(new IOReference(fieldKey, fmController, reference, true, args, renderElement,
                             renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -324,7 +324,7 @@ namespace Dash
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
-                    new OperatorView.IOReference(fieldKey, fmController, reference, false, args, renderElement,
+                    new IOReference(fieldKey, fmController, reference, false, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };

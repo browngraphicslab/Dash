@@ -97,6 +97,7 @@
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\CompoundOperator.cs" />
+    <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\IOReference.cs" />
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>

@@ -57,6 +57,7 @@ namespace Dash
                 () => OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController()));
             var api = new Func<DocumentController>(OperatorDocumentModel.CreateApiDocumentController);
             var map = new Func<DocumentController>(OperatorDocumentModel.CreateMapDocumentController);
+            var compoundOperator = new Func<DocumentController>(OperatorDocumentModel.CreateCompoundController);
 
 
             var arithmetics = new ObservableCollection<KeyValuePair<string, object>>
@@ -81,6 +82,7 @@ namespace Dash
                 new KeyValuePair<string, object>("imageToUri", imagetoUri),
                 new KeyValuePair<string, object>("filter", filter),
                 new KeyValuePair<string, object>("api", api),
+                new KeyValuePair<string, object>("compound", compoundOperator)
             };
 
             var categories = new List<SearchCategoryItem>();

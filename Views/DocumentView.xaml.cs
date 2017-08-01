@@ -36,8 +36,8 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
-        public event OperatorView.IODragEventHandler IODragStarted;
-        public event OperatorView.IODragEventHandler IODragEnded;
+        public event IOReference.IODragEventHandler IODragStarted;
+        public event IOReference.IODragEventHandler IODragEnded;
 
         public void setBG(SolidColorBrush s) { XGrid.Background = s; }
 

@@ -22,47 +22,6 @@ namespace Dash
     {
         private MenuFlyout _flyout;
 
-        public delegate void IODragEventHandler(IOReference ioReference);
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged off of and a connection should be started
-        /// </summary>
-        public event IODragEventHandler IoDragStarted;
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged on to and a connection should be ended
-        /// </summary>
-        public event IODragEventHandler IoDragEnded;
-
-        /// <summary>
-        /// Reference to either a field input or output with other information about the pointer
-        /// </summary>
-        public class IOReference
-        {
-            public FieldReference FieldReference { get; set; }
-            public bool IsOutput { get; set; }
-            //public bool IsReference { get; set; }
-
-            public PointerRoutedEventArgs PointerArgs { get; set; }
-
-            public FrameworkElement FrameworkElement { get; set; }
-            public DocumentView ContainerView { get; set; }
-
-            public FieldModelController FMController { get;  set;}
-
-            public Key FieldKey { get; set; }
-            public IOReference(Key fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
-            {
-                FieldKey = fieldKey; 
-                FMController = controller; 
-                FieldReference = fieldReference;
-                IsOutput = isOutput;
-                PointerArgs = args;
-                FrameworkElement = e;
-                ContainerView = container;
-            }
-        }
-
         public OperatorView()
         {
             this.InitializeComponent();
@@ -130,12 +89,12 @@ namespace Dash
 
         private void OnIoDragStarted(IOReference ioreference)
         {
-            IoDragStarted?.Invoke(ioreference);
+            ioreference.FireDragStarted();
         }
 
         private void OnIoDragEnded(IOReference ioreference)
         {
-            IoDragEnded?.Invoke(ioreference);
+            ioreference.FireDragEnded();
         }
 
         /// <summary>

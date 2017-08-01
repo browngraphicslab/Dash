@@ -40,7 +40,7 @@ namespace Dash
         /// <summary>
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
-        private OperatorView.IOReference _currReference;
+        private IOReference _currReference;
         private Windows.UI.Xaml.Shapes.Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
@@ -81,7 +81,7 @@ namespace Dash
         //    //e.Handled = true;
         //}
 
-        public void StartDrag(OperatorView.IOReference ioReference)
+        public void StartDrag(IOReference ioReference)
         {
             Debug.Write("1");
             if (!CanLink)
@@ -169,10 +169,10 @@ namespace Dash
             _currReference = null;
         }
 
-        public void EndDrag(OperatorView.IOReference ioReference)
+        public void EndDrag(IOReference ioReference)
         {
-            OperatorView.IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
-            OperatorView.IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
+            IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
+            IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
             //if (!(DataContext as CollectionViewModel).IsEditorMode)
             //{
             //    return;
@@ -243,7 +243,7 @@ namespace Dash
         /// <summary>
         /// Method to add the dropped field to the documentview 
         /// </summary>
-        public void EndDragOnDocumentView(ref DocumentController cont, OperatorView.IOReference ioReference)
+        public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
         {
             if (_currReference != null)
             {
