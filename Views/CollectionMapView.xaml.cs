@@ -96,6 +96,13 @@ namespace Dash
                 else
                     sender.ItemsSource = new[] { "No suggestions..." };
             }
+
+            var keys = FilterUtils.GetKeys(coll).ToList();
+            var inkey = keys.FirstOrDefault(k => k.Name.ToLower().Equals(sender.Text.ToLower()));
+            if (inkey != null)
+            {
+                _operator.InputKeyMap[key] = inkey;
+            }
         }
     }
 }

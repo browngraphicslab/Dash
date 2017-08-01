@@ -79,12 +79,24 @@ namespace Dash
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             UpdateViewModels(CollectionFieldModelController, context);
             var copiedContext = new Context(context);
-          
-            collection.FieldModelUpdated += delegate (FieldModelController sender, Context context1)
+
+            if (collection is ReferenceFieldModelController)
             {
-                UpdateViewModels(sender.DereferenceToRoot<DocumentCollectionFieldModelController>(context1),
-                    copiedContext);
-            };
+                var reference = collection as ReferenceFieldModelController;
+                reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
+                    delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        UpdateViewModels(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context), copiedContext);
+                    });
+            }
+            else
+            {
+                collection.FieldModelUpdated += delegate (FieldModelController sender, Context context1)
+                {
+                    UpdateViewModels(sender.DereferenceToRoot<DocumentCollectionFieldModelController>(context1),
+                        copiedContext);
+                };
+            }
             CellSize = 250;
         }
 
