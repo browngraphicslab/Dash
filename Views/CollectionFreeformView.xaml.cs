@@ -173,6 +173,7 @@ namespace Dash
         {
             OperatorView.IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             OperatorView.IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
+            
             //if (!(DataContext as CollectionViewModel).IsEditorMode)
             //{
             //    return;
@@ -551,26 +552,6 @@ namespace Dash
                 //view.DataContext = viewModel;
                 //FreeformView.MainFreeformView.Canvas.Children.Add(view);
             }
-        }
-
-        /// <summary>
-        /// Dictionary that maps DocumentViews on maincanvas to its DocumentID 
-        /// </summary>
-        //private Dictionary<string, DocumentView> _documentViews = new Dictionary<string, DocumentView>();
-
-        private class VisibilityConverter : IValueConverter
-        {
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                bool isEditorMode = (bool)value;
-                return isEditorMode ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
-            }
-
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                throw new NotImplementedException();
-            }
-
         }
     }
 }
