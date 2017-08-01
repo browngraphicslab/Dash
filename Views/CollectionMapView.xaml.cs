@@ -102,6 +102,7 @@ namespace Dash
             if (inkey != null)
             {
                 _operator.InputKeyMap[key] = inkey;
+                _operatorDoc.Execute(null, true);
             }
         }
     }
