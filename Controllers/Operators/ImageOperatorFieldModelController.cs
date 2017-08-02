@@ -10,6 +10,10 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
+        public ImageOperatorFieldModelController( ) : base(new OperatorFieldModel("ImageToUri"))
+        {
+        }
+
         public static readonly Key URIKey = new Key("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
 
         public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");

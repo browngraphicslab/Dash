@@ -193,8 +193,7 @@ namespace Dash
 
             ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
                                                                 new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
-                                                                ViewModel.GroupTransform.ScaleAmount); 
-
+                                                                ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
 
@@ -315,11 +314,11 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
-
             if (ViewModel != null)
+            {
+                ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+            }
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;

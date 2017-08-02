@@ -14,6 +14,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Flurl.Util;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -24,7 +25,7 @@ namespace Dash
         /// <summary>
         /// All objects under this category
         /// </summary>
-        public ObservableCollection<object> ListContent { get; }
+        public ObservableCollection<KeyValuePair<string, object>> ListContent { get; }
 
         /// <summary>
         /// Returns the list view used to display objects
@@ -58,17 +59,19 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, ObservableCollection<object> content, Action<object> action)
+        public SearchCategoryItem(string icon, string title, ObservableCollection<KeyValuePair<string, object>> content, Action<object> action)
         {
             this.InitializeComponent();
             Icon = icon;
             Title = title;
             ListContent = content;
+            xList.DisplayMemberPath = nameof(KeyValuePair<string, object>.Key);
             ListDisplayMemberPath = xList.DisplayMemberPath;
 
             xList.Tapped += delegate
             {
                 action?.Invoke(xList.SelectedItem);
+                MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
             };
         }
     }
