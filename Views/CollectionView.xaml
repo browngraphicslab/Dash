@@ -11,7 +11,6 @@
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All"
-    ManipulationDelta="CollectionView_OnManipulationDelta"
     PointerWheelChanged="CollectionView_OnPointerWheelChanged"
     RightTapped="CollectionView_OnRightTapped"
     Loaded="CollectionView_Loaded"

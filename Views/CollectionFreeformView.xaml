@@ -13,7 +13,6 @@
     Background="Transparent"
     ManipulationMode="All"
     ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    ManipulationDelta="UserControl_ManipulationDelta"
     PointerWheelChanged="UserControl_PointerWheelChanged"
     >
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged">

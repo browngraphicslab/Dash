@@ -396,10 +396,6 @@ namespace Dash
             else if (_colMenu != null && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
 
-        private void CollectionView_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            (CurrentView as CollectionFreeformView)?.UserControl_ManipulationDelta(sender, e);
-        }
         #endregion
 
         private void CollectionView_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)

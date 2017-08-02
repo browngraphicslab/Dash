@@ -29,30 +29,32 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView : UserControl
     {
-        public bool CanLink = true;
-        public PointerRoutedEventArgs PointerArgs;
+        #region ScalingVariables
+
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
 
-        /// <summary>
-        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
-        /// </summary>
+        #endregion
+
+
+        #region LinkingVariables
+
+        public bool CanLink = true;
+        public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
-        /// <summary>
-        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
-        /// </summary>
         private IOReference _currReference;
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-
-
         private Dictionary<FieldReference, Path> _lineDict = new Dictionary<FieldReference, Path>();
-
         private Canvas parentCanvas;
 
+        #endregion
+
+
+        private ManipulationControls _manipulationControls;
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -66,7 +68,16 @@ namespace Dash
         {
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
+            this.Unloaded += Freeform_Unloaded;
+            _manipulationControls = new ManipulationControls(this);
+            _manipulationControls.OnManipulatorTranslated += ManipulationControls_OnManipulatorTranslated;
         }
+
+        private void Freeform_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _manipulationControls.Dispose();
+        }
+
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
@@ -233,33 +244,31 @@ namespace Dash
         /// <summary>
         /// Pans and zooms upon touch manipulation 
         /// </summary>
-        public void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
             if (!IsHitTestVisible) return;
             var canvas = xItemsControl.ItemsPanelRoot as Canvas;
             Debug.Assert(canvas != null);
-            e.Handled = true;
-            var delta = e.Delta;
+            var delta = transformationDelta.Translate;
 
             //Create initial translate and scale transforms
             //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
-                X = delta.Translation.X,
-                Y = delta.Translation.Y
+                X = delta.X,
+                Y = delta.Y
             };
 
-            var p = Util.PointTransformFromVisual(e.Position, canvas);
             var scale = new ScaleTransform
             {
-                CenterX = p.X,
-                CenterY = p.Y,
-                ScaleX = delta.Scale,
-                ScaleY = delta.Scale
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
+                ScaleX = transformationDelta.ScaleAmount.X,
+                ScaleY = transformationDelta.ScaleAmount.Y
             };
 
             //Clamp the zoom
-            CanvasScale *= delta.Scale;
+            CanvasScale *= transformationDelta.ScaleAmount.X;
             ClampScale(scale);
 
 

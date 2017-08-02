@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -11,7 +12,7 @@ namespace Dash {
     /// control's selected UIElement the ability to be moved and zoomed based on
     /// interactions with its given handleControl grid.
     /// </summary>
-    public class ManipulationControls {
+    public class ManipulationControls : IDisposable {
 
         // == MEMBERS ==
         private float _documentScale = 1.0f;
@@ -134,5 +135,10 @@ namespace Dash {
             }
         }
 
+        public void Dispose()
+        {
+            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+            _element.ManipulationDelta -= EmptyManipulationDelta;
+        }
     }
 }
