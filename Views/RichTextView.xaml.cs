@@ -64,21 +64,21 @@ namespace Dash
 
         private void XRichEitBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            var richText = string.Empty;
-            xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
-            _richTextFieldModelController.RichTextData = richText;
-            xFormatRow.Height = new GridLength(0);
+            //var richText = string.Empty;
+            //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
+            //_richTextFieldModelController.RichTextData = richText;
+            //xFormatRow.Height = new GridLength(0);
 
-            xRichEitBox.ManipulationMode = ManipulationModes.All;
+            //xRichEitBox.ManipulationMode = ManipulationModes.All;
 
-            _selectionEnd = xRichEitBox.Document.Selection.EndPosition;
-            _selectionStart = xRichEitBox.Document.Selection.StartPosition;
+            //_selectionEnd = xRichEitBox.Document.Selection.EndPosition;
+            //_selectionStart = xRichEitBox.Document.Selection.StartPosition;
 
-            ITextSelection selectedText = xRichEitBox.Document.Selection;
-            if (selectedText != null)
-            {
-                selectedText.CharacterFormat.BackgroundColor = Colors.LightGray;
-            }
+            //ITextSelection selectedText = xRichEitBox.Document.Selection;
+            //if (selectedText != null)
+            //{
+            //    selectedText.CharacterFormat.BackgroundColor = Colors.LightGray;
+            //}
         }
 
         private async Task<string> LoadText()
@@ -121,6 +121,85 @@ namespace Dash
             //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
             //_richTextFieldModelController.RichTextData = richText;
 
+            var startPt = new Point();
+            string allText;
+            var s1 = this.xRichEitBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEitBox.Document.Selection.EndPosition;
+            this.xRichEitBox.SelectionChanged -= xRichEitBox_SelectionChanged_1;
+
+            xRichEitBox.Document.GetText(TextGetOptions.None, out allText);
+            this.xRichEitBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
+
+            // try to get last typed character based on the current selection position 
+            this.xRichEitBox.Document.Selection.SetRange(Math.Max(0, s1 - 1), s1);
+            string character;
+            this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out character);
+
+            // if the last character is white space, then we check to see if it terminates a hyperlink
+            if (character == " " || character == "\r")
+            {
+                // search through all the text for the nearest '@' indicating the start of a possible hyperlink
+                this.xRichEitBox.Document.Selection.SetRange(0, allText.Length);
+                var atPos = -1;
+                while (this.xRichEitBox.Document.Selection.FindText("@", 0, FindOptions.None) > 0)
+                {
+                    if (this.xRichEitBox.Document.Selection.StartPosition < s1)
+                    {
+                        atPos = this.xRichEitBox.Document.Selection.StartPosition;
+                        this.xRichEitBox.Document.Selection.SetRange(atPos + 1, allText.Length);
+                    }
+                    else break;
+                }
+
+                // we found the nearest '@'
+                if (atPos != -1)
+                {
+                    // get the text betweent the '@' and the current input position 
+                    this.xRichEitBox.Document.Selection.SetRange(atPos + 1, s2 - 1);
+                    string refText;
+                    this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out refText);
+
+                    // see if we can find a document whose primary keys match the text
+                    var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
+                    if (theDoc != null && this.xRichEitBox.Document.Selection.StartPosition != this.xRichEitBox.Document.Selection.EndPosition && this.xRichEitBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
+                    {
+                        // set the hyperlink for the matched text
+                        this.xRichEitBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
+                        // advance the end selection past the RTF embedded HYPERLINK keyword
+                        s2 += this.xRichEitBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                        s1 = s2;
+                        this.xRichEitBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                        this.xRichEitBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                    }
+                }
+            }
+
+            this.xRichEitBox.Document.Selection.SetRange(s1, s2);
+            this.xRichEitBox.SelectionChanged += xRichEitBox_SelectionChanged_1;
+        }
+
+        int LastS1 = 0, LastS2 = 0;
+        private void xRichEitBox_SelectionChanged_1(object sender, RoutedEventArgs e)
+        {
+            var s1 = this.xRichEitBox.Document.Selection.StartPosition;
+            var s2 = this.xRichEitBox.Document.Selection.EndPosition;
+            if (LastS1 != s1 || LastS2 != s2)
+            {
+                // if the selection has actually changed, then see if there's a Document hyperlink
+                if (this.xRichEitBox.Document.Selection.Link.Length > 1)
+                {
+                    var theDoc = ContentController.GetController<DocumentController>(this.xRichEitBox.Document.Selection.Link.Split('\"')[1]);
+                    if (theDoc != DBTest.DBNull && theDoc != null)
+                    {
+                        var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                        pt.X -= 150;
+                        pt.Y -= 50;
+                        MainPage.Instance.DisplayDocument(theDoc, pt);
+                    }
+                }
+            }
+            LastS1 = s1;
+            LastS2 = s2;
         }
     }
 }
