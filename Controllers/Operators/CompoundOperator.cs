@@ -4,11 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
 using DashShared;
 
 namespace Dash
 {
-    class CompoundOperator : OperatorFieldModelController
+    public class CompoundOperator : OperatorFieldModelController
     {
         public CompoundOperator(CompoundOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {

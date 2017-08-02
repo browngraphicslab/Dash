@@ -119,6 +119,9 @@
     <Compile Include="Views\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
+      <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
@@ -494,6 +497,10 @@
     <Page Include="Views\CollectionMapView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CompoundOperatorEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>

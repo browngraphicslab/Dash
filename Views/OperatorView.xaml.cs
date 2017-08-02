@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Controllers.Operators;
+using Dash.Views;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -162,21 +163,19 @@ namespace Dash
 
         private void ContractView(object sender, RoutedEventArgs e)
         {
-            
+            XPresenter.Content = null;
 
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)
         {
-            var documentCanvasViewModel = new FreeFormCollectionViewModel(false);
-            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()), false);
-            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController()), false);
-            var documentCanvasView = new CollectionFreeformView();
-            XPresenter.Content = documentCanvasView;
-            documentCanvasView.DataContext = documentCanvasViewModel;
+            var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperator>(null);
+            Debug.Assert(operatorFieldModelController != null);
+            XPresenter.Content = new CompoundOperatorEditor(operatorFieldModelController);
         }
 
         #endregion
+
 
 
     }
