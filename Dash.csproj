@@ -95,7 +95,7 @@
   <ItemGroup>
     <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
-    <Compile Include="KeyValuePane.xaml.cs">
+    <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
@@ -339,9 +339,6 @@
     <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
-      <DependentUpon>KeyValuePane.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\InterfaceBuilder\SettingsPaneFromDocumentControllerFactory.cs" />
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
@@ -438,7 +435,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="KeyValuePane.xaml">
+    <Page Include="Views\InterfaceBuilder\KeyValuePane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -603,10 +600,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\InterfaceBuilder.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\KeyValuePane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

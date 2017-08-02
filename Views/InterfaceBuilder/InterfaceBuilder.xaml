@@ -42,7 +42,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <local:KeyValue x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValue>
+                <local:KeyValuePane x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValuePane>
 
                 <Grid x:Name="xDocumentPane" Grid.Column="1" Margin="1,1" Background="White" SizeChanged="xDocumentPane_SizeChanged">
                     <ScrollViewer x:Name="xScrollViewer" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden" ZoomMode="Enabled" MaxZoomFactor="4"
