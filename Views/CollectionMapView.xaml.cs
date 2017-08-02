@@ -33,8 +33,8 @@ namespace Dash
 
             XOperatorType.ItemsSource = new List<string>
             {
-                "Test",
-                "Test2"
+                "Divide",
+                "Filter"
             };
 
             XOperatorType.SelectionChanged += XOperatorType_SelectionChanged;
@@ -95,6 +95,14 @@ namespace Dash
                     sender.ItemsSource = FilterUtils.GetKeySuggestions(coll, sender.Text.ToLower());
                 else
                     sender.ItemsSource = new[] { "No suggestions..." };
+            }
+
+            var keys = FilterUtils.GetKeys(coll).ToList();
+            var inkey = keys.FirstOrDefault(k => k.Name.ToLower().Equals(sender.Text.ToLower()));
+            if (inkey != null)
+            {
+                _operator.InputKeyMap[key] = inkey;
+                _operatorDoc.Execute(null, true);
             }
         }
     }

@@ -73,8 +73,25 @@ namespace Dash
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
             this.Unloaded += Freeform_Unloaded;
+            DataContextChanged += OnDataContextChanged;
             _manipulationControls = new ManipulationControls(this);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as IFreeFormCollectionViewModel;
+
+            if (vm != null)
+            {
+                var itemsBinding = new Binding()
+                {
+                    Source = vm,
+                    Path = new PropertyPath(nameof(vm.DataBindingSource)),
+                    Mode = BindingMode.OneWay
+                };
+                xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
+            }
         }
 
 

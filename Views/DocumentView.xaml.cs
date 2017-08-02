@@ -191,9 +191,9 @@ namespace Dash
             var dy = Math.Max(p.Y, 0);
             //p = new Point(dx, dy);
 
-            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
-                                                                new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
-                                                                ViewModel.GroupTransform.ScaleAmount); 
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X, position.Y),
+                                                                new Point(),
+                                                                ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
 

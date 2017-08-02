@@ -168,10 +168,10 @@ namespace Dash
 
         private void ExpandView(object sender, RoutedEventArgs e)
         {
-            var documentCanvasViewModel = new DocumentCanvasViewModel(false);
-            documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()), false);
-            documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController()), false);
-            var documentCanvasView = new DocumentCanvasView();
+            var documentCanvasViewModel = new FreeFormCollectionViewModel(false);
+            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()), false);
+            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController()), false);
+            var documentCanvasView = new CollectionFreeformView();
             XPresenter.Content = documentCanvasView;
             documentCanvasView.DataContext = documentCanvasViewModel;
         }

@@ -45,19 +45,19 @@ namespace Dash
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
         {
-            //[BaseUrlKey] = TypeInfo.Text,
-            //[HttpMethodKey] = TypeInfo.Number,
-            //[HeadersKey] = TypeInfo.Collection,
-            //[ParametersKey] = TypeInfo.Collection,
-            //[AuthHttpMethodKey] = TypeInfo.Number,
-            //[AuthBaseUrlKey] = TypeInfo.Text,
-            //[AuthKey] = TypeInfo.Text,
-            //[AuthSecretKey] = TypeInfo.Collection,
-            //[AuthParametersKey] = TypeInfo.Collection,
-            //[KeyTextKey] = TypeInfo.Text,
-            //[ValueTextKey] = TypeInfo.Text,
-            //[RequiredKey] = TypeInfo.Text,
-            //[DocumentCollectionFieldModelController.CollectionKey] = TypeInfo.Collection
+            [BaseUrlKey] = TypeInfo.Text,
+            [HttpMethodKey] = TypeInfo.Number,
+            [HeadersKey] = TypeInfo.Collection,
+            [ParametersKey] = TypeInfo.Collection,
+            [AuthHttpMethodKey] = TypeInfo.Number,
+            [AuthBaseUrlKey] = TypeInfo.Text,
+            [AuthKey] = TypeInfo.Text,
+            [AuthSecretKey] = TypeInfo.Collection,
+            [AuthParametersKey] = TypeInfo.Collection,
+            [KeyTextKey] = TypeInfo.Text,
+            [ValueTextKey] = TypeInfo.Text,
+            [RequiredKey] = TypeInfo.Text,
+            [DocumentCollectionFieldModelController.CollectionKey] = TypeInfo.Collection
         };
 
         public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
@@ -73,15 +73,12 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            
+
             outputs[OutputCollection] = new DocumentCollectionFieldModelController();
-            
-            if (inputs.ContainsKey(DocumentCollectionFieldModelController.CollectionKey) && inputs[DocumentCollectionFieldModelController.CollectionKey] != null)
-            {
-                outputs[OutputCollection] =
-                inputs[DocumentCollectionFieldModelController.CollectionKey] as
-                    DocumentCollectionFieldModelController;
-            }
+
+            outputs[OutputCollection] =
+            inputs[DocumentCollectionFieldModelController.CollectionKey] as
+                DocumentCollectionFieldModelController;
         }
 
         private HttpMethod GetRequestType(NumberFieldModelController controller)

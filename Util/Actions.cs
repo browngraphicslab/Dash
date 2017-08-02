@@ -110,6 +110,7 @@ namespace Dash
         public static void AddOperator(object obj)
         {
             var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
+
             if (freeForm == null)
             {
                 return;

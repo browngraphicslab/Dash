@@ -31,7 +31,7 @@ namespace Dash
             {
                 if (SetProperty(ref _data, value))
                 {
-                    OnFieldModelUpdated();
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server
                 }

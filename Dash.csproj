@@ -106,10 +106,12 @@
     <Compile Include="Models\RectFieldModel.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\WebBox.cs" />
-    <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
+    <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
+    <Compile Include="ViewModels\IFreeFormCollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
@@ -133,9 +135,6 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
-    <Compile Include="Views\InterfaceBuilder\DocumentCanvasView.xaml.cs">
-      <DependentUpon>DocumentCanvasView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
       <DependentUpon>GridViewSettings.xaml</DependentUpon>
     </Compile>
@@ -499,10 +498,6 @@
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\DocumentCanvasView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
       <SubType>Designer</SubType>

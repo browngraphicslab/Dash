@@ -25,16 +25,18 @@ namespace Dash
             public readonly FieldModelController OldValue;
             public readonly FieldModelController NewValue;
             public readonly DocumentFieldReference Reference;
+            public readonly FieldUpdatedEventArgs FieldArgs;
             public readonly Context Context;
             public bool FromDelegate;
 
             public DocumentFieldUpdatedEventArgs(FieldModelController oldValue, FieldModelController newValue,
-                FieldUpdatedAction action, DocumentFieldReference reference, Context context, bool fromDelegate)
+                FieldUpdatedAction action, DocumentFieldReference reference, FieldUpdatedEventArgs fieldArgs, Context context, bool fromDelegate)
             {
                 Action = action;
                 OldValue = oldValue;
                 NewValue = newValue;
                 Reference = reference;
+                FieldArgs = fieldArgs;
                 Context = context;
                 FromDelegate = fromDelegate;
             }
@@ -46,23 +48,32 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public static int addCount = 0, removeCount = 0, totalCount = 0;
+
         public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
-            if (key != null)
+            ++totalCount;
+            if (++addCount % 100 == 0)
             {
-                if (_fieldUpdatedDictionary.ContainsKey(key))
-                {
-                    _fieldUpdatedDictionary[key] += handler;
-                }
-                else
-                {
-                    _fieldUpdatedDictionary[key] = handler;
-                }
+                Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            }
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                _fieldUpdatedDictionary[key] += handler;
+            }
+            else
+            {
+                _fieldUpdatedDictionary[key] = handler;
             }
         }
 
         public void RemoveFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
+            --totalCount;
+            if (++removeCount % 100 == 0)
+            {
+                Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            }
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -236,8 +247,8 @@ namespace Dash
                     if (strings.Count() == 2)
                     {
                         var opModel = lookupOperator(strings[0]);
-                        var args    = strings[1].TrimEnd(')').Split(',');
-                        var refs    = new List<ReferenceFieldModelController>();
+                        var args = strings[1].TrimEnd(')').Split(',');
+                        var refs = new List<ReferenceFieldModelController>();
                         foreach (var a in args)
                         {
                             if (a.Trim(' ').StartsWith("@"))
@@ -257,7 +268,7 @@ namespace Dash
                                             }
                                         refs.Add(new ReferenceFieldModelController(theDoc.GetId(), foundKey));
                                     }
-                                    else 
+                                    else
                                         refs.Add(new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey));
                                 }
                             }
@@ -283,10 +294,11 @@ namespace Dash
                                     break;
                                 }
 
-                        } else if (theDoc != null)
+                        }
+                        else if (theDoc != null)
                             SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
-                    } 
+                    }
                 }
             }
             else
@@ -384,9 +396,9 @@ namespace Dash
         {
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, context, false), true);
-            if (newField != null)
-                newField.FieldModelUpdated += delegate (FieldModelController sender, Context c)
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, context, false), true);
+            FieldModelController.FieldModelUpdatedHandler handler =
+                delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
                     c = c ?? new Context();
                     c.AddDocumentContext(this);
@@ -394,8 +406,17 @@ namespace Dash
                     {
                         Execute(c, true);
                     }
-                    OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, sender, FieldUpdatedAction.Replace, reference, c, false), true);//TODO Should be Action.Update
+                    OnDocumentFieldUpdated(this,
+                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, c, false), true);
                 };
+            if (oldField != null)
+            {
+                oldField.FieldModelUpdated -= handler;
+            }
+            if (newField != null)
+            {
+                newField.FieldModelUpdated += handler;
+            }
         }
 
         /// <summary>
@@ -496,7 +517,7 @@ namespace Dash
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
             delegateController.DocumentFieldUpdated +=
-                delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+                delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
                     args.FromDelegate = true;
                     OnDocumentFieldUpdated(sender, args, false);
@@ -524,7 +545,7 @@ namespace Dash
             Context c = new Context(this);
             //c.AddDocumentContext(this);
             var reference = new DocumentFieldReference(GetId(), args.Reference.FieldKey);
-            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, c, false), true);
+            OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(args.OldValue, args.NewValue, FieldUpdatedAction.Add, reference, args.FieldArgs, c, false), true);
         }
 
 
@@ -618,7 +639,7 @@ namespace Dash
                     if (update)
                     {
                         OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Add, reference, context, false), true);
+                            FieldUpdatedAction.Add, reference, null, context, false), true);
                     }
                 }
             }
@@ -792,7 +813,7 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-                
+
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
             //Debug.Assert(false, "Everything should have an active layout maybe");
@@ -802,7 +823,6 @@ namespace Dash
             }
             return makeAllViewUI(context);
         }
-
 
         protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {

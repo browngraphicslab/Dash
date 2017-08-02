@@ -92,6 +92,17 @@ namespace Dash.StaticClasses
                 yield return item.Key;
         }
 
+        public static IEnumerable<Key> GetKeys(List<DocumentController> docs)
+        {
+            foreach (var doc in docs)
+            {
+                foreach (var key in GetKeys(doc))
+                {
+                    yield return key;
+                }
+            }
+        }
+
         /// <summary>
         /// multiple values
         /// Takes in a list of DocumentModels, a key, and an array of values, and returns a list of DocumentsModels whose dictionary

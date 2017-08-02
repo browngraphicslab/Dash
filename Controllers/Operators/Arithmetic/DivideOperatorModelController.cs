@@ -10,7 +10,10 @@ namespace Dash
 
         public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
         {
-            
+        }
+
+        public DivideOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
         }
 
         //Input keys
@@ -32,20 +35,14 @@ namespace Dash
             [RemainderKey] = TypeInfo.Number
         };
 
-        private int _nextChar = 'C';
-
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             var numberA = (NumberFieldModelController) inputs[AKey];
-
             var numberB = (NumberFieldModelController) inputs[BKey];
 
-            //Varargs proof of concept
-            var s = new string((char)_nextChar++, 1);
-            Inputs.Add(new Key(s, s), TypeInfo.Number);
-            
             var a = numberA.Data;
             var b = numberB.Data;
+
             outputs[QuotientKey] = new NumberFieldModelController(a / b);
             outputs[RemainderKey] = new NumberFieldModelController(a % b);
         }

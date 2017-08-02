@@ -104,7 +104,7 @@ namespace Dash
         }
 
 
-        private void RichTextFieldModelControllerOnFieldModelUpdated(FieldModelController sender, Context c)
+        private void RichTextFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
         {
             var text = string.Empty;
             xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out text);
