@@ -51,8 +51,8 @@
                   Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0">
                     </Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5">
-                        <TextBlock Padding="0,0,5,0" VerticalAlignment="Center" Height="30">Layout: </TextBlock>
-                        <TextBox x:Name="xLayoutTextBox" Background="Transparent" BorderThickness="0" VerticalAlignment="Center" Height="30"></TextBox>
+                        <TextBlock Padding="0,0,5,0" VerticalAlignment="Bottom">Layout: </TextBlock>
+                        <TextBox x:Name="xLayoutTextBox" Background="Transparent" BorderThickness="0" VerticalAlignment="Center"></TextBox>
                     </StackPanel>
                 </Grid>
 
