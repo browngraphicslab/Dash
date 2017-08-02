@@ -55,7 +55,7 @@ namespace Dash
             ++totalCount;
             if (++addCount % 100 == 0)
             {
-                Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+                //Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
             }
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
@@ -72,7 +72,7 @@ namespace Dash
             --totalCount;
             if (++removeCount % 100 == 0)
             {
-                Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+                //Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
             }
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {

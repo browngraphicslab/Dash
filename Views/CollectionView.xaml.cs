@@ -83,7 +83,7 @@ namespace Dash
             InitializeComponent();
             InitializeFlyout();
             ViewModel = vm;
-            CurrentView = new CollectionFreeformView();
+            CurrentView = new CollectionGridView(this);
             xContentControl.Content = CurrentView;
             SetEventHandlers();
             CanLink = true;
@@ -226,7 +226,7 @@ namespace Dash
                 {
                     var irfm = new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
                     var orfm = new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
-                    Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
+                    //Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
                 }
             }
             //else if (e.CollectionChange == CollectionChange.ItemRemoved)
