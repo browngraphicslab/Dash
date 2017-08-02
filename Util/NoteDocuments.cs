@@ -59,6 +59,8 @@ namespace Dash
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(RTFieldKey, new RichTextFieldModelController("Prototype Content"));
+                fields.Add(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                    new TextFieldModelController[] { new TextFieldModelController(TitleKey.Id) }));
                 return new DocumentController(fields, Type, _prototypeID);
             }
 

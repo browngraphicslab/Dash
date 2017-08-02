@@ -204,6 +204,7 @@ namespace Dash
             }
             var children = collection.ViewModel.CollectionFieldModelController;
             children?.AddDocument(docModel);
+            DBTest.DBDoc.AddChild(docModel);
         }
 
         public static void AddApiCreator(CollectionView collection, DragEventArgs e)

@@ -289,6 +289,11 @@ namespace Dash
                             else
                                 SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
                         }
+                        else // start of path isn't a value ... treat it as a field and search for documents that reference this document that have it as a field
+                        {
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+                            SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                        }
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     }
                 }

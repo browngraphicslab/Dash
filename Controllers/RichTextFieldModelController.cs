@@ -46,7 +46,7 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var richTextView = new RichTextView(this)
+            var richTextView = new RichTextView(this, null, null)
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch

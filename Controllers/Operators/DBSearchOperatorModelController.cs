@@ -3,6 +3,7 @@ using System.Diagnostics;
 using DashShared;
 using System.Linq;
 using Dash.Converters;
+using System;
 
 namespace Dash.Controllers.Operators
 {
@@ -131,7 +132,22 @@ namespace Dash.Controllers.Operators
 
         private static ReferenceFieldModelController CheckForFieldReferencingTarget(DocumentController targetDocument, DocumentController dmc)
         {
-            foreach (var field in dmc.EnumFields())
+            foreach (var field in dmc.EnumFields()) {
+                if (field.Value is RichTextFieldModelController)
+                {
+                    var richText = field.Value as RichTextFieldModelController;
+                    var links = richText.RichTextData.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var link in links)
+                    {
+                        var split = link.Split('\"');
+                        if (split.Count() > 1)
+                        {
+                            var doc = ContentController.GetController<DocumentController>(split[1]);
+                            if (doc.GetId() == targetDocument.GetId())
+                                return new ReferenceFieldModelController(dmc.GetId(), field.Key);
+                        }
+                    }
+                }
                 if (field.Value is DocumentFieldModelController && field.Key != DashConstants.KeyStore.ThisKey)
                 {
                     var dfmc = field.Value as DocumentFieldModelController;
@@ -140,6 +156,7 @@ namespace Dash.Controllers.Operators
                         return new ReferenceFieldModelController(dmc.GetId(), field.Key);
                     }
                 }
+            }
             return null;
         }
 
