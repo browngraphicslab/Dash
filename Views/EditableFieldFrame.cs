@@ -194,7 +194,7 @@ namespace Dash
             if (_allowTranslation)
             {
                 _manipulator = new ManipulationControls(centerResizeHandle);
-                _manipulator.OnManipulatorTranslated += _manipulator_OnManipulatorTranslated;
+                _manipulator.OnManipulatorTranslatedOrScaled += _manipulator_OnManipulatorTranslated;
             }
 
         }

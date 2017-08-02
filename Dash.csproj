@@ -97,22 +97,37 @@
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\CompoundOperator.cs" />
+    <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Converters\StringToFontweightConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
     <Compile Include="Models\RectFieldModel.cs" />
+    <Compile Include="Push\IPushController.cs" />
+    <Compile Include="Rest\Endpoints\AccountEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\AuthenticationEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\DocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\FieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\KeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ShapeEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\TypeEndpoint.cs" />
+    <Compile Include="Rest\Exceptions\ApiException.cs" />
+    <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\WebBox.cs" />
-    <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
+    <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
+    <Compile Include="ViewModels\IFreeFormCollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BezierConverter.cs" />
     <Compile Include="Views\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
@@ -125,6 +140,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Push\Connection.cs" />
+    <Compile Include="Push\PushClient.cs" />
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
@@ -132,15 +149,13 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
-    <Compile Include="Views\InterfaceBuilder\DocumentCanvasView.xaml.cs">
-      <DependentUpon>DocumentCanvasView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
       <DependentUpon>GridViewSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\IOReference.cs" />
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -217,6 +232,7 @@
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
+    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
@@ -242,7 +258,6 @@
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Models\ListFieldModel.cs" />
-    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
@@ -256,7 +271,7 @@
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ItemsCarrier.cs" />
-    <Compile Include="ManipulationControls.cs" />
+    <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
@@ -281,14 +296,6 @@
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerClient\Endpoints\AccountEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\AuthenticationEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\DocumentEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\KeyEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\ShapeEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
-    <Compile Include="ServerClient\Exceptions\ApiException.cs" />
-    <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -430,6 +437,7 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.png" />
+    <Content Include="Assets\GRIDTRANSPARENT.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
@@ -497,10 +505,6 @@
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\InterfaceBuilder\DocumentCanvasView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
       <SubType>Designer</SubType>

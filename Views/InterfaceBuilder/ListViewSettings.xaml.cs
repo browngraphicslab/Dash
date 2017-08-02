@@ -35,13 +35,13 @@ namespace Dash
             xSizeRow.Children.Add(new SizeSettings(docController, context));
             xPositionRow.Children.Add(new PositionSettings(docController, context));
             xAlignmentRow.Children.Add(new AlignmentSettings(docController, context));
-            BindSpacing(docController, context);
+            BindSpacing(docController, context, xSpacingSliderTextBox, xSpacingSlider);
         }
 
         /// <summary>
         /// Bind the value of spacingSlider to the spacing between the items in listview  
         /// </summary>
-        private void BindSpacing(DocumentController docController, Context context)
+        public static void BindSpacing(DocumentController docController, Context context, TextBox tb, Slider slider)
         {
             var spacingController =
                     docController.GetDereferencedField(ListViewLayout.SpacingKey, context) as NumberFieldModelController;
@@ -54,16 +54,16 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xSpacingSliderTextBox.SetBinding(TextBox.TextProperty, spacingBinding);
+            tb.SetBinding(TextBox.TextProperty, spacingBinding);
 
             var spacingTextBinding = new Binding()
             {
-                Source = xSpacingSliderTextBox,
-                Path = new PropertyPath(nameof(xSpacingSliderTextBox.Text)),
+                Source = tb,
+                Path = new PropertyPath(nameof(tb.Text)),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
-            xSpacingSlider.SetBinding(Slider.ValueProperty, spacingTextBinding);
+            slider.SetBinding(Slider.ValueProperty, spacingTextBinding);
         }
     }
 }

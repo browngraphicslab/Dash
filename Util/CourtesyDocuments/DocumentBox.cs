@@ -63,9 +63,6 @@ namespace Dash
                 return new SelectableContainer(border, docController);
             }
             return border;
-            //*/ 
-
-            return new TextBox();
         }
 
         protected override DocumentController GetLayoutPrototype()

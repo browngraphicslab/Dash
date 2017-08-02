@@ -44,7 +44,6 @@ namespace Dash
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
         private const double _recenterMargin = 50;
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
-        private ManipulationControls _manipulator;
 
         public DocumentCanvasView()
         {
@@ -59,12 +58,6 @@ namespace Dash
                     Margin = new Thickness(10, 0, 0, 10)
                 };
             xOuterGrid.Children.Add(recenterButton);
-            Loaded += (s, e) =>
-            {
-                _manipulator = new ManipulationControls(xItemsControl.ItemsPanelRoot as Canvas, true);
-                _manipulator.OnCanvasManipulated += SetTransformOnBackground;
-            };
-            
         }
 
         private void DocumentCanvasView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -81,6 +74,171 @@ namespace Dash
                 };
                 xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
             }
+        }
+
+        /// <summary>
+        /// Pans and zooms upon touch manipulation 
+        /// </summary>
+        public void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            if (!IsHitTestVisible) return;
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+            e.Handled = true;
+            var delta = e.Delta;
+
+            //Create initial translate and scale transforms
+            //Translate is in screen space, scale is in canvas space
+            var translate = new TranslateTransform
+            {
+                X = delta.Translation.X,
+                Y = delta.Translation.Y
+            };
+
+            //get position of manipulation relative to canvas & scale in canvas space 
+            var p = Util.PointTransformFromVisual(e.Position, UserControl, canvas); 
+            var scale = new ScaleTransform
+            {
+                CenterX = p.X,
+                CenterY = p.Y,
+                ScaleX = delta.Scale,
+                ScaleY = delta.Scale
+            };
+
+            //Clamp the zoom
+            _canvasScale *= delta.Scale;
+            ClampScale(scale);
+
+            //Create initial composite transform
+            var composite = new TransformGroup();
+            composite.Children.Add(scale);
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+
+            /* // commented out; there are no bounds anymore 
+            //Get top left and bottom right screen space points in canvas space
+            var inverse = composite.Inverse;
+            Debug.Assert(inverse != null);
+            Debug.Assert(canvas.RenderTransform != null);
+            var renderInverse = canvas.RenderTransform.Inverse;
+            Debug.Assert(renderInverse != null);
+            var topLeft = inverse.TransformPoint(new Point(0, 0));
+            var bottomRight = inverse.TransformPoint(new Point(xOuterGrid.ActualWidth, xOuterGrid.ActualHeight));
+            var preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
+            var preBottomRight = renderInverse.TransformPoint(new Point(xOuterGrid.ActualWidth, xOuterGrid.ActualHeight));
+
+            //Check if the panning or zooming puts the view out of bounds of the canvas
+            //Nullify scale or translate components accordingly
+            var outOfBounds = false;
+            //Create a canvas space translation to correct the translation if necessary
+            var fixTranslate = new TranslateTransform();
+            if (topLeft.X < _bounds.Left && bottomRight.X > _bounds.Right)
+            {
+                translate.X = 0;
+                fixTranslate.X = 0;
+                var scaleAmount = (bottomRight.X - topLeft.X) / _bounds.Width;
+                scale.ScaleY = scaleAmount;
+                scale.ScaleX = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.X < _bounds.Left)
+            {
+                translate.X = 0;
+                fixTranslate.X = preTopLeft.X;
+                scale.CenterX = _bounds.Left;
+                outOfBounds = true;
+            }
+            else if (bottomRight.X > _bounds.Right)
+            {
+                translate.X = 0;
+                fixTranslate.X = -(_bounds.Right - preBottomRight.X - 1);
+                scale.CenterX = _bounds.Right;
+                outOfBounds = true;
+            }
+            if (topLeft.Y < _bounds.Top && bottomRight.Y > _bounds.Bottom)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = 0;
+                var scaleAmount = (bottomRight.Y - topLeft.Y) / _bounds.Height;
+                scale.ScaleX = scaleAmount;
+                scale.ScaleY = scaleAmount;
+                outOfBounds = true;
+            }
+            else if (topLeft.Y < _bounds.Top)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = preTopLeft.Y;
+                scale.CenterY = _bounds.Top;
+                outOfBounds = true;
+            }
+            else if (bottomRight.Y > _bounds.Bottom)
+            {
+                translate.Y = 0;
+                fixTranslate.Y = -(_bounds.Bottom - preBottomRight.Y - 1);
+                scale.CenterY = _bounds.Bottom;
+                outOfBounds = true;
+            }
+
+            //If the view was out of bounds recalculate the composite matrix
+            if (outOfBounds)
+            {
+                composite = new TransformGroup();
+                composite.Children.Add(fixTranslate);
+                composite.Children.Add(scale);
+                composite.Children.Add(canvas.RenderTransform);
+                composite.Children.Add(translate);
+            }
+            */ 
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            SetTransformOnBackground(composite);
+
+        }
+
+        /// <summary>
+        /// Zooms upon mousewheel interaction 
+        /// </summary>
+        public void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+        {
+            if (!IsHitTestVisible) return;
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+            e.Handled = true;
+            //Get mousepoint in canvas space 
+            var point = e.GetCurrentPoint(canvas);
+            var scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
+                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
+            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
+            _canvasScale *= (float)scaleAmount;
+            Debug.Assert(canvas.RenderTransform != null);
+            var p = point.Position;
+            //Create initial ScaleTransform 
+            var scale = new ScaleTransform
+            {
+                CenterX = p.X,
+                CenterY = p.Y,
+                ScaleX = scaleAmount,
+                ScaleY = scaleAmount
+            };
+
+            //Clamp scale
+            ClampScale(scale);
+
+            //Create initial composite transform
+            var composite = new TransformGroup();
+            composite.Children.Add(scale);
+            composite.Children.Add(canvas.RenderTransform);
+
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+
+            SetTransformOnBackground(composite);
+        }
+
+        /// <summary>
+        /// Make translation inertia slow down faster
+        /// </summary>
+        private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
+        {
+            e.TranslationBehavior.DesiredDeceleration = 0.01;
         }
 
         private void ClampScale(ScaleTransform scale)

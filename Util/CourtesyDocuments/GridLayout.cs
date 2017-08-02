@@ -87,7 +87,7 @@ namespace Dash
             }
         }
 
-        protected new static void SetupBindings(Grid grid, DocumentController docController, Context context)
+        protected static void SetupBindings(Grid grid, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(grid, docController, context);
 

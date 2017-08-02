@@ -14,7 +14,7 @@ namespace Dash
 {
     public sealed partial class TextSettings : UserControl
     {
-        private ObservableCollection<double> _fontWeights = new ObservableCollection<double>();
+        private ObservableCollection<string> _fontWeights = new ObservableCollection<string>();
 
         public TextSettings()
         {
@@ -51,18 +51,17 @@ namespace Dash
         private void BindFontWeight(DocumentController docController, Context context)
         {
             var fontWeightController =
-                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as NumberFieldModelController;
+                    docController.GetDereferencedField(TextingBox.FontWeightKey, context) as TextFieldModelController;
             Debug.Assert(fontWeightController != null);
 
-            _fontWeights = new ObservableCollection<double>()
+            _fontWeights = new ObservableCollection<string>()
             {
-                FontWeights.Black.Weight,
-                FontWeights.Bold.Weight,
-                FontWeights.Normal.Weight,
-                FontWeights.Light.Weight
+                "Black", //FontWeights.Black.Weight,
+                "Bold", //FontWeights.Bold.Weight,
+                "Normal", // FontWeights.Normal.Weight,
+                "Light" //FontWeights.Light.Weight
             };
             xFontWeightBox.ItemsSource = _fontWeights;
-
             var FontWeightBinding = new Binding()
             {
                 Source = fontWeightController,

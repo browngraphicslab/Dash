@@ -31,7 +31,7 @@ namespace Dash
             {
                 return CreateRichTextSettingsLayout(layoutDocument);
             }
-            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout /*|| type == GridViewLayout.DocumentType || type == ListViewLayout.DocumentType*/)
+            if (type == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
                 return CreateDocumentSettingsLayout(layoutDocument, dataDocument);
             }

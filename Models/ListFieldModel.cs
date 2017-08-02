@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash
 {
@@ -17,5 +18,10 @@ namespace Dash
         public List<string> Data;
 
         public TypeInfo SubTypeInfo;
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            return new FieldModelDTO(TypeInfo.Reference, Data);
+        }
     }
 }

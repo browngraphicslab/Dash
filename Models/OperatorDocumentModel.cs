@@ -73,5 +73,19 @@ namespace Dash
 
             return doc;
         }
+
+        public static DocumentController CreateCompoundController()
+        {
+            var fields = new Dictionary<Key, FieldModelController>
+            {
+                [OperatorKey] = new CompoundOperator()
+            };
+            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+
+            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
     }
 }
