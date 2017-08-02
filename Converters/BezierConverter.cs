@@ -27,6 +27,10 @@ namespace Dash
         public FrameworkElement Element1 { get; set; }
         public FrameworkElement Element2 { get; set; }
         public FrameworkElement ToElement { get; set; }
+
+        public FrameworkElement Temp1 { get; set; }
+        public FrameworkElement Temp2 { get; set; }
+
         public Point Pos2 { get; set; }
         private PathFigureCollection _col = new PathFigureCollection();
         private PathFigure _figure;

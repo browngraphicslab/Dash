@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
+using DashShared;
 
 namespace Dash
 {
@@ -25,6 +26,11 @@ namespace Dash
         public override string ToString()
         {
             return $"RectFieldModel: {Data}";
+        }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            throw new NotImplementedException();
         }
     }
 }

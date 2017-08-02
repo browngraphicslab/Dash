@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using DashShared;
 
 namespace Dash
 {
@@ -83,7 +84,7 @@ namespace Dash
             return GetTableCellViewForCollectionAndLists("📜", delegate (TextBlock block)
             {
                 block.Text = string.Format("{0} object(s)", TypedData.Count());           //TODO make a factory and specify what objects it contains ,,,, 
-            }); 
+            });
         }
 
         public override FieldModelController Copy()

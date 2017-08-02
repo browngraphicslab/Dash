@@ -1,20 +1,24 @@
-﻿namespace Dash
+﻿using System;
+using DashShared;
+
+namespace Dash
 {
-    public class OperatorFieldModel : FieldModel
-    {
+    public class OperatorFieldModel : FieldModel {
         /// <summary>
         /// Type of operator it is; to be used by the server to determine what controller to use for operations 
         /// This should probably eventually be an enum
         /// </summary>
         public string Type { get; set; }
 
-        public OperatorFieldModel(string type)
-        {
+        public OperatorFieldModel(string type) {
             Type = type; 
         }
 
-        public override string ToString()
-        {
+        protected override FieldModelDTO GetFieldDTOHelper() {
+            return new FieldModelDTO(TypeInfo.Reference, Type);
+		}
+		
+        public override string ToString() {
             return Type;
         }
 

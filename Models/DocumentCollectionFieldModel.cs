@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using DashShared;
@@ -34,5 +35,10 @@ namespace Dash
             Debug.Assert(documents != null);
             Data = documents.ToList();
         }
+
+        protected override FieldModelDTO GetFieldDTOHelper() 
+        {
+            return new FieldModelDTO(TypeInfo.Collection, Data);
+        }  
     }
 }

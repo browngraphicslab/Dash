@@ -62,7 +62,7 @@ namespace Dash
             JsonDocument = Parse(jsonString, file.Path);
         }
 
-        public static async Task ParseSingleItem()
+        public static void ParseSingleItem()
         {
             var jsonString = @"[1,2,3]";
             JsonDocument = Parse(jsonString, "an/example/base/path");

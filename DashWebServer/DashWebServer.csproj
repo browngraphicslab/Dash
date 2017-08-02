@@ -12,6 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DashShared\**" />
+    <Content Remove="DashShared\**" />
+    <EmbeddedResource Remove="DashShared\**" />
+    <None Remove="DashShared\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="Views;Areas\**\Views">
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
@@ -21,6 +28,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.0.2" />
@@ -33,6 +41,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Filter" Version="1.0.2" />
     <PackageReference Include="Serilog" Version="2.5.0" />
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="1.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DashShared\DashShared.csproj" />
   </ItemGroup>
 
 </Project>

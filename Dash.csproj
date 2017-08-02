@@ -102,8 +102,20 @@
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Converters\StringToFontweightConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
     <Compile Include="Models\RectFieldModel.cs" />
+    <Compile Include="Push\IPushController.cs" />
+    <Compile Include="Rest\Endpoints\AccountEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\AuthenticationEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\DocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\FieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\KeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ShapeEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\TypeEndpoint.cs" />
+    <Compile Include="Rest\Exceptions\ApiException.cs" />
+    <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
@@ -128,6 +140,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Push\Connection.cs" />
+    <Compile Include="Push\PushClient.cs" />
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
@@ -218,6 +232,7 @@
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
+    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
@@ -243,7 +258,6 @@
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Models\ListFieldModel.cs" />
-    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
@@ -282,14 +296,6 @@
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerClient\Endpoints\AccountEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\AuthenticationEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\DocumentEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\KeyEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\ShapeEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
-    <Compile Include="ServerClient\Exceptions\ApiException.cs" />
-    <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -431,6 +437,7 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.png" />
+    <Content Include="Assets\GRIDTRANSPARENT.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />

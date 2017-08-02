@@ -156,7 +156,7 @@ namespace Dash
             var dragged = new Image();
             var url = "";
 
-            
+
             // load items dragged from solution explorer
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -209,8 +209,8 @@ namespace Dash
 
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
-            var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
-
+            //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
+            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas); 
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
@@ -268,7 +268,8 @@ namespace Dash
             if (method == HTTPRequestMethod.Get)
             {
                 response = await client.GetAsync();
-            } else if (method == HTTPRequestMethod.Post)
+            }
+            else if (method == HTTPRequestMethod.Post)
             {
                 throw new NotImplementedException();
             }
@@ -296,7 +297,7 @@ namespace Dash
                 .PostUrlEncodedAsync(new
                 {
                     grant_type = "client_credentials"
-                });        
+                });
 
             // get the string from the response, including decompression and checking for success
             var responseString = await GetStringFromResponseAsync(authResponse);

@@ -68,26 +68,27 @@ namespace DashWebServer.Controllers
             return Ok(shapeModel);
         }
 
-        // GET api/values/5
+        // GET api/shape/5
         [HttpGet("{id}")]
         public async Task<ShapeModel> Get(string id)
         {
             return await _documentRepository.GetItemByIdAsync<ShapeModel>(id);
         }
 
-        // POST api/values
+        // POST api/shape
         [HttpPost]
         public void Post([FromBody]string value)
         {
+
         }
 
-        // PUT api/values/5
+        // PUT api/shape/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody]string value)
         {
         }
 
-        // DELETE api/values/5
+        // DELETE api/shape/5
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
