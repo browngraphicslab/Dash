@@ -248,16 +248,16 @@ namespace Dash
             if (!IsRoot())
             {
                 _centerManipulator = new ManipulationControls(XGrid);
-                _centerManipulator.OnManipulatorTranslated += CenterManipulatorOnOnManipulatorTranslated;
+                _centerManipulator.OnManipulatorTranslatedOrScaled += CenterManipulatorOnOnManipulatorTranslated;
             }
             var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
-            bottomLeftManipulator.OnManipulatorTranslated += BottomLeftManipulator_OnManipulatorTranslated;
+            bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
             var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
-            bottomRightManipulator.OnManipulatorTranslated += BottomRightManipulator_OnManipulatorTranslated;
+            bottomRightManipulator.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslated;
             var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
-            topLeftManipulator.OnManipulatorTranslated += TopLeftManipulator_OnManipulatorTranslated;
+            topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
             var topRightManipulator = new ManipulationControls(xTopRightDragger);
-            topRightManipulator.OnManipulatorTranslated += TopRightManipulator_OnManipulatorTranslated;
+            topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
 
             // manipulation stated
             foreach (var ellipse in _draggerList)

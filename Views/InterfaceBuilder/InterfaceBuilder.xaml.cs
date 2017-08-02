@@ -48,13 +48,13 @@ namespace Dash
             _editingDocument = docController;
             xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
             xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
-            var documentCanvasViewModel = new DocumentCanvasViewModel(true);
-            xDocumentPane.DataContext = documentCanvasViewModel;
-            documentCanvasViewModel.AddDocument(docController, true);
+            var freeFormView = new FreeFormCollectionViewModel(true);
+            xDocumentPane.DataContext = freeFormView;
+            freeFormView.AddViewModels(new List<DocumentController>{ docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
-        private void DocumentPaneOnDocumentViewLoaded(DocumentCanvasView sender, DocumentView documentView)
+        private void DocumentPaneOnDocumentViewLoaded(CollectionFreeformView collectionFreeformView, DocumentView documentView)
         {
             SetUpDocumentView(documentView);
         }
@@ -76,7 +76,6 @@ namespace Dash
                 _editingDocView.Drop += DocumentViewOnDrop;
                 _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
                 _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
-                xDocumentPane.RecenterViewOnDocument(editingDocumentId);
             }
         }
 
