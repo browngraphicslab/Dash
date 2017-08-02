@@ -46,8 +46,7 @@ namespace Dash
         private MultiBinding<PathFigureCollection> _lineBinding;
         private CollectionView _parentCollection;
 
-
-        private Dictionary<FieldReference, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<FieldReference, Windows.UI.Xaml.Shapes.Path>();
+        private Dictionary<BezierConverter, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<BezierConverter, Windows.UI.Xaml.Shapes.Path>();
         //private CollectionView ParentCollection;
         private Canvas parentCanvas;
         public CollectionFreeformView()
@@ -64,7 +63,7 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
-
+        
         //private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         //{
         //    var cvm = DataContext as CollectionViewModel;
@@ -80,6 +79,38 @@ namespace Dash
         //    //dvm.Position = where;
         //    //e.Handled = true;
         //}
+
+        public void UpdateBinding(bool becomeSmall, DocumentView docView)
+        {
+            foreach (var line in _lineDict)
+            {
+                var converter = line.Key;
+                //how to tell which side to change?????? -> get the firstacnestorof documentview type for the frameworkelement LOLOL  
+                //also how do you change back?????????? -> use Temp 
+                var view = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                Debug.Assert(view != null); 
+                if (view == docView)
+                {
+                    if (becomeSmall)
+                    {
+                        converter.Temp1 = converter.Element1;
+                        converter.Element1 = docView.xIcon;
+                    }
+                    else
+                        converter.Element1 = converter.Temp1; 
+                }
+                else
+                {
+                    if (becomeSmall)
+                    {
+                        converter.Temp2 = converter.Element2;
+                        converter.Element2 = docView.xIcon;
+                    }
+                    else
+                        converter.Element2 = converter.Temp2;
+                }
+            }
+        }
 
         public void StartDrag(OperatorView.IOReference ioReference)
         {
@@ -152,8 +183,8 @@ namespace Dash
 
             if (!ioReference.IsOutput)
             {
-                CheckLinePresence(ioReference.FieldReference);
-                _lineDict.Add(ioReference.FieldReference, _connectionLine);
+                CheckLinePresence(_converter);
+                _lineDict.Add(_converter, _connectionLine);
             }
         }
 
@@ -234,8 +265,8 @@ namespace Dash
 
             if (!ioReference.IsOutput && _connectionLine != null)
             {
-                CheckLinePresence(ioReference.FieldReference);
-                _lineDict.Add(ioReference.FieldReference, _connectionLine);
+                CheckLinePresence(_converter);
+                _lineDict.Add(_converter, _connectionLine);
                 _connectionLine = null;
             }
             CancelDrag(ioReference.PointerArgs.Pointer);
@@ -440,12 +471,12 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(FieldReference model)
+        private void CheckLinePresence(BezierConverter converter)
         {
-            if (!_lineDict.ContainsKey(model)) return;
-            var line = _lineDict[model];
+            if (!_lineDict.ContainsKey(converter)) return;
+            var line = _lineDict[converter];
             parentCanvas.Children.Remove(line);
-            _lineDict.Remove(model);
+            _lineDict.Remove(converter);
         }
 
 
@@ -467,6 +498,8 @@ namespace Dash
             public FrameworkElement Element1 { get; set; }
             public FrameworkElement Element2 { get; set; }
             public FrameworkElement ToElement { get; set; }
+            public FrameworkElement Temp1 { get; set; }
+            public FrameworkElement Temp2 { get; set; }
             public Point Pos2 { get; set; }
             private PathFigureCollection _col = new PathFigureCollection();
             private PathFigure _figure;

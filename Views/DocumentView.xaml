@@ -32,7 +32,7 @@
         </Grid.ColumnDefinitions>
         
         <!-- Container for Icon view -->
-        <Grid x:Name="xIcon" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
