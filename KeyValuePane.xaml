@@ -8,32 +8,6 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400">
-    <!--<UserControl.Resources>
-        <Storyboard x:Key="xDeleteEaseInAnimation">
-            <DoubleAnimation Storyboard.TargetName="xTitleTransform" Storyboard.TargetProperty="X" Duration="0:0:1" SpeedRatio="2" To="0">
-                <DoubleAnimation.EasingFunction>
-                    <ExponentialEase EasingMode="EaseOut"></ExponentialEase>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="xKeyValueListTransform" Storyboard.TargetProperty="X" Duration="0:0:1" SpeedRatio="2" To="0">
-                <DoubleAnimation.EasingFunction>
-                    <ExponentialEase EasingMode="EaseOut"></ExponentialEase>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-        </Storyboard>
-        <Storyboard x:Key="xDeleteEaseOutAnimation">
-            <DoubleAnimation Storyboard.TargetName="xTitleTransform" Storyboard.TargetProperty="X" Duration="0:0:1" SpeedRatio="2" To="-35">
-                <DoubleAnimation.EasingFunction>
-                    <ExponentialEase EasingMode="EaseOut"></ExponentialEase>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="xKeyValueListTransform" Storyboard.TargetProperty="X" Duration="0:0:1" SpeedRatio="2" To="-35">
-                <DoubleAnimation.EasingFunction>
-                    <ExponentialEase EasingMode="EaseOut"></ExponentialEase>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-        </Storyboard>
-    </UserControl.Resources>-->
     <Grid Background="White" >
         <Grid.Resources>
             <Style TargetType="TextBox">
@@ -58,9 +32,9 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="1" TextAlignment="Left" Foreground="White" FontWeight="SemiBold" FontSize="16">KEY</TextBlock>
-            <TextBlock Grid.Column="2" TextAlignment="Left" Foreground="White" FontWeight="SemiBold" FontSize="16">TYPE</TextBlock>
-            <TextBlock Grid.Column="3" TextAlignment="Left" Foreground="White" FontWeight="SemiBold" FontSize="16">VALUE</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center" Foreground="White" FontWeight="SemiBold" FontSize="16">KEY</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center" Foreground="White" FontWeight="SemiBold" FontSize="16">TYPE</TextBlock>
+            <TextBlock Grid.Column="3" TextAlignment="Center" Foreground="White" FontWeight="SemiBold" FontSize="16">VALUE</TextBlock>
         </Grid>
         <Grid x:Name="xColumnBackground" Grid.Row="1">
             <Grid.ColumnDefinitions>
@@ -110,24 +84,6 @@
                         </ScrollViewer>
                         <Grid Grid.Column="2">
                             <TextBlock Text="{x:Bind Path=Controller.TypeInfo}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" FontSize="14"></TextBlock>
-                            <!--<Button Tag="{x:Bind Path=HashCode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Padding="-2.5" Visibility="Collapsed"  Loaded="XTypeFlyout_OnLoaded">
-                                <Button.Content>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="10"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{x:Bind Path=Controller.TypeInfo}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Foreground="Black" FontSize="10"></TextBlock>
-                                        <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Right"  Margin="5,0,0,0" Padding="-2">
-                                            <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Right" TextAlignment="Left" Foreground="Black" FontSize="7" FontWeight="ExtraBold">︿</TextBlock>
-                                            <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Left" TextAlignment="Left" Foreground="Black" FontSize="7" FontWeight="ExtraBold">﹀</TextBlock>
-                                        </StackPanel>
-                                    </Grid>
-                                </Button.Content>
-                                <Button.Flyout>
-                                    <MenuFlyout ></MenuFlyout>
-                                </Button.Flyout>
-                            </Button>-->
                             <ComboBox HorizontalAlignment="Stretch" PlaceholderText="{x:Bind Path=Controller.TypeInfo}" Tag="{x:Bind Path=HashCode}" BorderBrush="White" Padding="0" FontSize="14" Loaded="XTypeCombo_OnLoaded" ItemsSource="{x:Bind Types}" Visibility="Collapsed" SelectionChanged="Selector_OnSelectionChanged"></ComboBox>
                         </Grid>
                         <Border Grid.Column="3" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>

@@ -64,6 +64,7 @@ namespace Dash
             }
             else
             {
+                // return an add button to select image if the ImageSource is null
                 var add = new Button();
                 var symbol = new SymbolIcon(Symbol.Add);
                 add.Background = new SolidColorBrush(Colors.LightSteelBlue);
@@ -73,7 +74,7 @@ namespace Dash
                 add.Content = symbol;
                 add.Tapped += delegate
                 {
-                    // TODO: open file selector and import local images?
+                    // TODO: open file selector and load local image?
                 };
                 return add;
             }

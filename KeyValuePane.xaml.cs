@@ -28,7 +28,44 @@ namespace Dash
         public static readonly string DragPropertyKey = "key";
 
         private DocumentController _documentControllerDataContext;
+
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
+
+        /// <summary>
+        /// The KeyFieldContainer that is currently selected on the listview
+        /// </summary>
+        private KeyFieldContainer _selectedKV;
+
+        /// <summary>
+        /// Currently visible name editing TextBox
+        /// </summary>
+        private TextBox _visibleEditBox;
+
+        /// <summary>
+        /// Currently visible type ComboBox
+        /// </summary>
+        private ComboBox _visibleTypeComboBox;
+
+        /// <summary>
+        /// The most recently added field
+        /// </summary>
+        private KeyFieldContainer _newField;
+
+        /// <summary>
+        /// List of all Grids around items in the listview
+        /// </summary>
+        List<Grid> _gridContainers = new List<Grid>();
+
+        /// <summary>
+        /// List of all name editing TextBoxes in the listview
+        /// </summary>
+        private List<TextBox> _textBoxes = new List<TextBox>();
+
+        /// <summary>
+        /// List of all type selection ComboBoxes
+        /// </summary>
+        private List<ComboBox> _typeComboBoxes = new List<ComboBox>();
+
         public KeyValue()
         {
             InitializeComponent();
@@ -54,6 +91,9 @@ namespace Dash
             ListItemSource.Clear();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
                 ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
+            _visibleEditBox = null;
+            _selectedKV = null;
+            _newField = null;
         }
 
 
@@ -70,6 +110,11 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Shows delete buttons (which only remove items from the list view at the moment and the "deleted" items show up again whenever the datacontext updates)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             foreach (var grid in _gridContainers)
@@ -81,6 +126,11 @@ namespace Dash
             xEditButton.Visibility = Visibility.Collapsed;
         }
 
+        /// <summary>
+        /// Hide delete buttons
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XConfirmButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             foreach (var grid in _gridContainers)
@@ -92,15 +142,16 @@ namespace Dash
             xConfirmButton.Visibility = Visibility.Collapsed;
         }
 
-        private KeyFieldContainer _selectedKV;
-
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             var kv = e.ClickedItem as KeyFieldContainer;
+
+            // control visibility of name editing TextBox and save name editing changes accordingly
             if (_visibleEditBox != null)
             {
                 // tapping on any item collapses the previously visible name edit text box
                 _visibleEditBox.Visibility = Visibility.Collapsed;
+                // tapping on any item updates the name of a field if it was in the process of being edited
                 if (_selectedKV?.Key.Name != _visibleEditBox.Text)
                 {
                     _selectedKV.Key.Name = _visibleEditBox.Text;
@@ -109,11 +160,14 @@ namespace Dash
                 _visibleEditBox = null;
             }
             _selectedKV = kv;
+
+            // Make the type ComboBox of the selected item visible and collapse all other type ComboBoxes
             if (_selectedKV != null)
-            foreach (var box in _typeCombo)
+            foreach (var box in _typeComboBoxes)
             {
                 if (box.Tag.Equals(_selectedKV.HashCode))
                 {
+                    _visibleTypeComboBox = box;
                     box.Visibility = Visibility.Visible;
                 }
                 else
@@ -123,35 +177,44 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Removes item from listview (does not remove field from document)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             var button = sender as Button;
-            // the field to be deleted
             KeyFieldContainer targetKV = null;
             if (button != null)
             foreach (var item in ListItemSource)
             {
                 if (button.Tag.Equals(item.HashCode))
                 {
+                    // the item whose hashcode matches the tag of the delete button is the target item to be removed from the list view
                     targetKV = item;
                 }
             }
             ListItemSource.Remove(targetKV);
+            // TODO: Actually remove field from doc?
         }
 
-        private KeyFieldContainer _newField;
+        /// <summary>
+        /// Adds field to document
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XAddButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
             var key = new Key((new Random()).Next(0, 100000000).ToString(), "");
-            key.Name = "Untitled";
+            key.Name = "";
             var cont = new TextFieldModelController(string.Empty);
             _newField = new KeyFieldContainer(key, cont);
             ListItemSource.Add(_newField);
             _documentControllerDataContext.SetField(key, cont, true);
         }
 
-        List<Grid> _gridContainers = new List<Grid>();
         /// <summary>
         /// Keeps track of all Grids in the ListView to control the visibility of the delete Buttons
         /// </summary>
@@ -162,7 +225,6 @@ namespace Dash
             _gridContainers.Add(sender as Grid);
         }
 
-        private List<TextBox> _textBoxes = new List<TextBox>();
         /// <summary>
         /// Keeps track of all name editing TextBoxes in the ListView
         /// </summary>
@@ -172,13 +234,37 @@ namespace Dash
         {
             var textBox = sender as TextBox;
             _textBoxes.Add(textBox);
-//            if (textBox.Tag.Equals(_newField?.HashCode))
-//            {
-//                textBox.Visibility = Visibility.Visible;
-//                textBox.Focus(FocusState.Programmatic);
-//            }
+
+            // opens up name editing textbox and forces focus on it programmatically to prompt user to name the new field
+            if (textBox.Tag.Equals(_newField?.HashCode))
+            {
+                textBox.Visibility = Visibility.Visible;
+                textBox.Focus(FocusState.Programmatic);
+                foreach (var item in ListItemSource)
+                {
+                    if (item.HashCode.Equals(textBox.Tag))
+                    {
+                        _selectedKV = item;
+                    }
+                }
+                if (_visibleEditBox != null)
+                {
+                    _visibleEditBox.Visibility = Visibility.Collapsed;
+                }
+                if (_visibleTypeComboBox != null)
+                {
+                    _visibleTypeComboBox.Visibility = Visibility.Collapsed;
+                }
+                _visibleEditBox = textBox;
+                _visibleTypeComboBox = null;
+            }
         }
 
+        /// <summary>
+        /// Updates name of field on enter/tab
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xNameEditBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Tab)
@@ -191,10 +277,14 @@ namespace Dash
                     SetListItemSourceToCurrentDataContext();
                 }
             }
-
         }
 
-        private TextBox _visibleEditBox;
+        /// <summary>
+        /// Make visible the name editing TextBox of the item whose name TextBlock is being tapped on and collapse 
+        /// the previously visible TextBox (without updating the name even if changes were made)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void xNameTextBlock_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             foreach (var textBox in _textBoxes)
@@ -213,40 +303,24 @@ namespace Dash
             }
         }
 
-        private List<ComboBox> _typeCombo = new List<ComboBox>();
+        /// <summary>
+        /// Keeps track of all type selection ComboBoxes to control their visibility (visible only when item is selected)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XTypeCombo_OnLoaded(object sender, RoutedEventArgs e)
         {
-            _typeCombo.Add(sender as ComboBox);
+            _typeComboBoxes.Add(sender as ComboBox);
         }
 
+        /// <summary>
+        /// Changes the type of a field (not exactly working, throws errors when trying to change type of preexisting fields)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var selectedItem = (sender as ComboBox).SelectedValue;
-            //            var type = (TypeInfo) selectedItem;
-            //                switch (type)
-            //                {
-            //                    case TypeInfo.Text:
-            //                        _selectedKV.Controller = new TextFieldModelController(string.Empty);
-            //                        break;
-            //                    case TypeInfo.Number:
-            //                        _selectedKV.Controller = new NumberFieldModelController(double.NaN);
-            //                        break;
-            //                    case TypeInfo.Image:
-            //                        _selectedKV.Controller = new ImageFieldModelController(null);
-            //                        break;
-            //                    case TypeInfo.Collection:
-            //                        break;
-            //                    case TypeInfo.Document:
-            //                        break;
-            //                    case TypeInfo.Reference:
-            //                        break;
-            //                    case TypeInfo.Operator:
-            //                        break;
-            //                    case TypeInfo.Point:
-            //                        break;
-            //                    case TypeInfo.List:
-            //                        break;
-            //                }
             if (selectedItem != null)
             {
                 if (selectedItem.Equals(TypeInfo.Image))
