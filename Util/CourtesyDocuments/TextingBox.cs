@@ -66,11 +66,14 @@ namespace Dash
         {
             CourtesyDocument.SetupBindings(element, docController, context);
 
-            AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
-            AddBinding(element, docController, FontSizeKey, context, BindFontSize);
+            BindFontWeight(element, docController, context);
+            BindFontSize(element, docController, context);
+            BindTextAllignment(element, docController, context);
+            //AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
+            //AddBinding(element, docController, FontSizeKey, context, BindFontSize);
             //AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
             SetupTextBinding(element, docController, context);
-            AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
+            //AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
         }
 
         public override FrameworkElement makeView(DocumentController docController,
@@ -117,16 +120,16 @@ namespace Dash
         }
         #region Bindings
 
-        protected static void BindProperty(FrameworkElement element, Binding binding,
-            DependencyProperty textBoxProperty, DependencyProperty textBlockProperty)
+        protected static void BindProperty<T>(FrameworkElement element, FieldBinding<T> binding,
+            DependencyProperty textBoxProperty, DependencyProperty textBlockProperty) where T : FieldModelController
         {
             if (element is TextBlock)
             {
-                element.SetBinding(textBlockProperty, binding);
+                AddBinding(element, textBlockProperty, binding);
             }
             else if (element is TextBox)
             {
-                element.SetBinding(textBoxProperty, binding);
+                AddBinding(element, textBoxProperty, binding);
                 (element as TextBox).KeyDown += TextingBox_KeyDown;
             }
         }
@@ -171,70 +174,41 @@ namespace Dash
             {
                 return;
             }
-            Binding sourceBinding = null;
+            IValueConverter converter = null;
+            SetHandler<FieldModelController> setHandler = TextSetHandler;
+            GetHandler<FieldModelController> getHandler = TextGetHandler;
             if (data is TextFieldModelController)
             {
-                var textData = data as TextFieldModelController;
-                sourceBinding = new Binding
-                {
-                    Source = textData,
-                    Path = new PropertyPath(nameof(textData.Data)),
-                    Mode = BindingMode.TwoWay,
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
+
             }
             else if (data is NumberFieldModelController)
             {
-                var numberData = data as NumberFieldModelController;
-                sourceBinding = new Binding
-                {
-                    Source = numberData,
-                    Path = new PropertyPath(nameof(numberData.Data)),
-                    Mode = BindingMode.TwoWay,
-                    Converter = new StringToDoubleConverter(0),
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
+                converter = new StringToDoubleConverter(0);
             }
             else if (data is DocumentFieldModelController)
             {
+                converter = new DocumentControllerToStringConverter();
                 var docData = data as DocumentFieldModelController;
 
-                sourceBinding = new Binding
-                {
-                    Source = docData,
-                    Path = new PropertyPath(nameof(docData.Data)),
-                    Mode = BindingMode.TwoWay,
-                    Converter = new DocumentControllerToStringConverter(),
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
-                if (docData.Data != null)
-                {
-                    docData.Data.DocumentFieldUpdated += ((sender, ctxt) =>
-                    {
-                        sourceBinding = new Binding
-                        {
-                            Source = docData,
-                            Path = new PropertyPath(nameof(docData.Data)),
-                            Mode = BindingMode.TwoWay,
-                            Converter = new DocumentControllerToStringConverter(),
-                            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                        };
-                        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
-                    });
-                }
+                //if (docData.Data != null)
+                //{
+                //    docData.Data.DocumentFieldUpdated += ((sender, ctxt) =>
+                //    {
+                //        sourceBinding = new Binding
+                //        {
+                //            Source = docData,
+                //            Path = new PropertyPath(nameof(docData.Data)),
+                //            Mode = BindingMode.TwoWay,
+                //            Converter = new DocumentControllerToStringConverter(),
+                //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                //        };
+                //        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+                //    });
+                //}
             }
             else if (data is DocumentCollectionFieldModelController)
             {
-
-                var docData = data as DocumentCollectionFieldModelController;
-                sourceBinding = new Binding
-                {
-                    Source = docData,
-                    Path = new PropertyPath(nameof(docData.Data)),
-                    Mode = BindingMode.TwoWay,
-                    Converter = new DocumentCollectionToStringConverter(),
-                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                };
+                converter = new DocumentCollectionToStringConverter();
                 //foreach (var ldoc in docData.Data)
                 //    ldoc.DocumentFieldUpdated += ((sender, ctxt) =>
                 //    {
@@ -249,8 +223,74 @@ namespace Dash
                 //        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
                 //    });
             }
-            if (sourceBinding != null)
-                BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
+            var binding = new FieldBinding<FieldModelController>()
+            {
+                Document = docController,
+                Key = key,
+                GetHandler = getHandler,
+                SetHandler = setHandler,
+                Mode = BindingMode.TwoWay,
+                Converter = converter
+            };
+            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+        }
+
+        private static object TextGetHandler(FieldModelController fieldModelController)
+        {
+            if (fieldModelController is TextFieldModelController)
+            {
+                return ((TextFieldModelController)fieldModelController).Data;
+            }
+            if (fieldModelController is NumberFieldModelController)
+            {
+                return ((NumberFieldModelController)fieldModelController).Data;
+            }
+            if (fieldModelController is DocumentFieldModelController)
+            {
+                return ((DocumentFieldModelController)fieldModelController).Data;
+            }
+            if (fieldModelController is DocumentCollectionFieldModelController)
+            {
+                return ((DocumentCollectionFieldModelController)fieldModelController).GetDocuments();
+            }
+            return null;
+        }
+
+        private static void TextSetHandler(FieldModelController fieldModelController, object value)
+        {
+            if (fieldModelController is TextFieldModelController)
+            {
+                var data = value as string;
+                if (data != null)
+                {
+                    ((TextFieldModelController)fieldModelController).Data = data;
+                }
+            }
+            else if (fieldModelController is NumberFieldModelController)
+            {
+                var data = value as double?;
+                if (data != null)
+                {
+                    ((NumberFieldModelController)fieldModelController).Data = data.Value;
+                }
+            }
+            else if (fieldModelController is DocumentFieldModelController)
+            {
+                var doc = value as DocumentController;
+                if (doc != null)
+                {
+                    ((DocumentFieldModelController)fieldModelController).Data = doc;
+                }
+            }
+            else if (fieldModelController is DocumentCollectionFieldModelController)
+            {
+                var list = value as List<DocumentController>;
+                if (list != null)
+                {
+                    ((DocumentCollectionFieldModelController)fieldModelController).SetDocuments(
+                        list);
+                }
+            }
         }
 
         private static void DocData_FieldModelUpdated(FieldModelController sender, Context context)
@@ -265,45 +305,69 @@ namespace Dash
             {
                 return;
             }
-            var alignmentBinding = new Binding
+            //var alignmentBinding = new Binding
+            //{
+            //    Source = textAlignmentData,
+            //    Path = new PropertyPath(nameof(textAlignmentData.Data)),
+            //    Mode = BindingMode.TwoWay,
+            //    Converter = new IntToTextAlignmentConverter()
+            //};
+            var alignmentBinding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = textAlignmentData,
-                Path = new PropertyPath(nameof(textAlignmentData.Data)),
+                Key = TextAlignmentKey,
+                Document = docController,
+                Converter = new IntToTextAlignmentConverter(),
                 Mode = BindingMode.TwoWay,
-                Converter = new IntToTextAlignmentConverter()
+                GetHandler = (NumberFieldModelController field) => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    var s = value as double?;
+                    if (s != null)
+                    {
+                        field.Data = s.Value;
+                    }
+                }
             };
             BindProperty(element, alignmentBinding, TextBox.TextAlignmentProperty, TextBlock.TextAlignmentProperty);
         }
 
         protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            var fontWeightData = docController.GetDereferencedField(FontWeightKey, context) as NumberFieldModelController;
-            if (fontWeightData == null)
+            var fontWeightBinding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            var fontWeightBinding = new Binding
-            {
-                Source = fontWeightData,
-                Path = new PropertyPath(nameof(fontWeightData.Data)),
+                Key = FontWeightKey,
+                Document = docController,
+                Converter = new DoubleToFontWeightConverter(),
                 Mode = BindingMode.TwoWay,
-                Converter = new DoubleToFontWeightConverter()
+                GetHandler = (NumberFieldModelController field) => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    var s = value as double?;
+                    if (s != null)
+                    {
+                        field.Data = s.Value;
+                    }
+                }
             };
             BindProperty(element, fontWeightBinding, TextBox.FontWeightProperty, TextBlock.FontWeightProperty);
         }
 
         protected static void BindFontSize(FrameworkElement element, DocumentController docController, Context context)
         {
-            var fontSizeData = docController.GetDereferencedField(FontSizeKey, context) as NumberFieldModelController;
-            if (fontSizeData == null)
+            var fontSizeBinding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            var fontSizeBinding = new Binding
-            {
-                Source = fontSizeData,
-                Path = new PropertyPath(nameof(fontSizeData.Data)),
+                Key = FontWeightKey,
+                Document = docController,
                 Mode = BindingMode.TwoWay,
+                GetHandler = (NumberFieldModelController field) => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    var s = value as double?;
+                    if (s != null)
+                    {
+                        field.Data = s.Value;
+                    }
+                }
             };
             BindProperty(element, fontSizeBinding, TextBox.FontSizeProperty, TextBlock.FontSizeProperty);
         }

@@ -105,6 +105,7 @@
     <Compile Include="Models\RectFieldModel.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\FieldBinding.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />

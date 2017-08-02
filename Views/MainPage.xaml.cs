@@ -64,12 +64,12 @@ namespace Dash
             Debug.Assert(Instance == null, "If the main view isn't null then it's been instantiated multiple times and setting the instance is a problem");
             Instance = this;
 
-            //var jsonDoc = JsonToDashUtil.RunTests();
+            var jsonDoc = JsonToDashUtil.RunTests();
 
-            //var sw = new Stopwatch();
-            //sw.Start();
-            //DisplayDocument(jsonDoc);
-            //sw.Stop();
+            var sw = new Stopwatch();
+            sw.Start();
+            DisplayDocument(jsonDoc);
+            sw.Stop();
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);

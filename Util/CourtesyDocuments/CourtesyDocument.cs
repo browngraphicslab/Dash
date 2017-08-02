@@ -70,6 +70,90 @@ namespace Dash
 
         private static int loaded = 0, unloaded = 0;
 
+        protected static void AddBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        {
+            switch (binding.Mode)
+            {
+                case BindingMode.OneTime:
+                    AddOneTimeBinding(element, property, binding);
+                    break;
+                case BindingMode.OneWay:
+                    AddOneWayBinding(element, property, binding);
+                    break;
+                case BindingMode.TwoWay:
+                    AddTwoWayBinding(element, property, binding);
+                    break;
+            }
+        }
+
+        private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
+        {
+            var field = binding.Document.GetField(binding.Key)?.DereferenceToRoot(null);
+            if (field == null) return null;
+            var value = binding.GetHandler(field as T);
+            return binding.Converter == null ? value : binding.Converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
+        }
+
+        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        {
+            element.SetValue(property, EvaluateBinding(binding));
+        }
+
+        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
+        {
+            DocumentController.OnDocumentFieldUpdatedHandler handler =
+                delegate
+                {
+                    element.SetValue(property, EvaluateBinding(binding));
+                };
+            element.Loaded += delegate (object sender, RoutedEventArgs args)
+            {
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            };
+            element.Unloaded += delegate (object sender, RoutedEventArgs args)
+            {
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+            };
+        }
+
+        private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
+            where T : FrameworkElement where U : FieldModelController
+        {
+            DocumentController.OnDocumentFieldUpdatedHandler handler =
+                delegate
+                {
+                    element.SetValue(property, EvaluateBinding(binding));
+                };
+            DependencyPropertyChangedCallback callback =
+                delegate(DependencyObject sender, DependencyProperty dp)
+                {
+                    var value = sender.GetValue(dp);
+                    if (binding.Converter != null)
+                    {
+                        value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
+                    }
+                    binding.SetHandler(binding.Document.GetField(binding.Key) as U, value);
+                };
+
+            long token = -1;
+            element.Loaded += delegate (object sender, RoutedEventArgs args)
+            {
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                var value = EvaluateBinding(binding);
+                if (value != null)
+                {
+                    element.SetValue(property, value);
+                }
+                token = element.RegisterPropertyChangedCallback(property, callback);
+            };
+            element.Unloaded += delegate (object sender, RoutedEventArgs args)
+            {
+                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
+                element.UnregisterPropertyChangedCallback(property, token);
+            };
+
+        }
+
         protected static void AddBinding<T>(T element, DocumentController docController, Key k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
@@ -78,7 +162,7 @@ namespace Dash
                 if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
                 bindingDelegate(element, sender, args.Context); //TODO Should be context or args.Context?
             };
-            
+
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
@@ -106,26 +190,42 @@ namespace Dash
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
-            var widthFmc = docController.GetWidthField(context);
-            Binding widthBinding = new Binding
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = widthFmc,
-                Path = new PropertyPath(nameof(widthFmc.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = DashConstants.KeyStore.WidthFieldKey,
+                GetHandler = field => field.Data,
+                SetHandler = delegate(NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double) value;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+
+            AddBinding(element, FrameworkElement.WidthProperty, binding);
         }
 
         protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            var heightFmc = docController.GetHeightField(context);
-            Binding heightBinding = new Binding
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = heightFmc,
-                Path = new PropertyPath(nameof(heightFmc.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = DashConstants.KeyStore.HeightFieldKey,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+
+            AddBinding(element, FrameworkElement.HeightProperty, binding);
         }
 
         protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
@@ -144,112 +244,144 @@ namespace Dash
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var horizontalAlignmentFmc = docController.GetField(HorizontalAlignmentKey) as TextFieldModelController;
-            if (horizontalAlignmentFmc == null)
+            var binding = new FieldBinding<TextFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = horizontalAlignmentFmc,
-                Path = new PropertyPath(nameof(horizontalAlignmentFmc.Data)),
-                Converter = new StringToEnumConverter<HorizontalAlignment>()
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = HorizontalAlignmentKey,
+                Converter = new StringToEnumConverter<HorizontalAlignment>(),
+                GetHandler = field => field.Data,
+                SetHandler = delegate (TextFieldModelController field, object value)
+                {
+                    var s = value as string;
+                    if (s != null)
+                    {
+                        field.Data = s;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
+
+            AddBinding(element, FrameworkElement.HorizontalAlignmentProperty, binding);
         }
 
         protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var verticalAlignmentFmc = docController.GetField(VerticalAlignmentKey) as TextFieldModelController;
-            if (verticalAlignmentFmc == null)
+            var binding = new FieldBinding<TextFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = verticalAlignmentFmc,
-                Path = new PropertyPath(nameof(verticalAlignmentFmc.Data)),
-                Converter = new StringToEnumConverter<VerticalAlignment>()
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = VerticalAlignmentKey,
+                Converter = new StringToEnumConverter<VerticalAlignment>(),
+                GetHandler = field => field.Data,
+                SetHandler = delegate (TextFieldModelController field, object value)
+                {
+                    var s = value as string;
+                    if (s != null)
+                    {
+                        field.Data = s;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.VerticalAlignmentProperty, binding);
+
+            AddBinding(element, FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
         protected static void BindGridRow(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridRowFmc = docController.GetField(GridRowKey) as NumberFieldModelController;
-            if (gridRowFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridRowFmc,
-                Path = new PropertyPath(nameof(gridRowFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridRowKey,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.RowProperty, binding);
+
+            AddBinding(element, Grid.RowProperty, binding);
         }
 
         protected static void BindGridColumn(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridColumnFmc = docController.GetField(GridColumnKey) as NumberFieldModelController;
-            if (gridColumnFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridColumnFmc,
-                Path = new PropertyPath(nameof(gridColumnFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridColumnKey,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.ColumnProperty, binding);
+
+            AddBinding(element, Grid.ColumnProperty, binding);
         }
 
         protected static void BindGridRowSpan(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridRowSpanFmc = docController.GetField(GridRowSpanKey) as NumberFieldModelController;
-            if (gridRowSpanFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridRowSpanFmc,
-                Path = new PropertyPath(nameof(gridRowSpanFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridRowSpanKey,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.RowSpanProperty, binding);
+
+            AddBinding(element, Grid.RowSpanProperty, binding);
         }
 
         protected static void BindGridColumnSpan(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridColumnSpanFmc = docController.GetField(GridColumnKey) as NumberFieldModelController;
-            if (gridColumnSpanFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridColumnSpanFmc,
-                Path = new PropertyPath(nameof(gridColumnSpanFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridColumnSpanKey,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.ColumnSpanProperty, binding);
+
+            AddBinding(element, Grid.ColumnSpanProperty, binding);
         }
 
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             //Set width and height
-            AddBinding(element, docController, DashConstants.KeyStore.WidthFieldKey, context, BindWidth);
-            AddBinding(element, docController, DashConstants.KeyStore.HeightFieldKey, context, BindHeight);
+            BindWidth(element, docController, context);
+            BindHeight(element, docController, context);
 
             //Set alignments
-            AddBinding(element, docController, HorizontalAlignmentKey, context, BindHorizontalAlignment);
-            AddBinding(element, docController, VerticalAlignmentKey, context, BindVerticalAlignment);
+            BindHorizontalAlignment(element, docController, context);
+            BindVerticalAlignment(element, docController, context);
 
             //Set column, row, and span
-            AddBinding(element, docController, GridRowKey, context, BindGridRow);
-            AddBinding(element, docController, GridColumnKey, context, BindGridColumn);
-            AddBinding(element, docController, GridRowSpanKey, context, BindGridRowSpan);
-            AddBinding(element, docController, GridColumnKey, context, BindGridColumnSpan);
+            BindGridRow(element, docController, context);
+            BindGridColumn(element, docController, context);
+            BindGridRowSpan(element, docController, context);
+            BindGridColumnSpan(element, docController, context);
         }
 
         [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
@@ -293,7 +425,7 @@ namespace Dash
         {
             renderElement.ManipulationMode = ManipulationModes.All;
             //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
-            renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
+            renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
@@ -306,11 +438,11 @@ namespace Dash
             renderElement.IsHoldingEnabled = true; // turn on holding
 
             // must hold on element first to fetch link node
-            renderElement.Holding += delegate(object sender, HoldingRoutedEventArgs args)
+            renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = true;
+                view.CanLink = true;
                 if (view.CurrentView is CollectionFreeformView)
                     (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
@@ -319,7 +451,7 @@ namespace Dash
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.PointerArgs = args;
+                view.PointerArgs = args;
                 args.Handled = true;
                 if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
                 {
@@ -337,7 +469,7 @@ namespace Dash
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = false;
+                view.CanLink = false;
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
@@ -436,13 +568,13 @@ namespace Dash
 
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
-            var horizontalAlignmentController = 
+            var horizontalAlignmentController =
                 document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
             if (horizontalAlignmentController == null)
             {
                 return HorizontalAlignment.Stretch;
             }
-            return (HorizontalAlignment) Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
+            return (HorizontalAlignment)Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
         }
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)
