@@ -8,8 +8,11 @@ namespace Dash
     {
         public AddOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
-            OperatorFieldModel = operatorFieldModel;
         }
+        public AddOperatorModelController() : base(new OperatorFieldModel("Add"))
+        {
+        }
+
         //Input keys
         public static readonly Key AKey = new Key("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
         public static readonly Key BKey = new Key("F9B2192D-3DFD-41B8-9A37-56D818153B59", "B");
@@ -27,19 +30,14 @@ namespace Dash
             [SumKey] = TypeInfo.Number,
         };
 
-        private int nextChar = 'C';
-
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             double sum = 0;
             foreach (var value in inputs.Values)
             {
-                sum += ((NumberFieldModelController) value).Data;
+                if (value is NumberFieldModelController)
+                    sum += ((NumberFieldModelController) value).Data;
             }
-
-            //Varargs proof of concept
-            string s = new string((char)nextChar++, 1);
-            Inputs.Add(new Key(s, s), TypeInfo.Number);
 
             outputs[SumKey] = new NumberFieldModelController(sum);
         }

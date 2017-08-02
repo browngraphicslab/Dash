@@ -40,10 +40,21 @@ namespace Dash
         public static DocumentController CreateFilterDocumentController()
         {
             Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
-            fields[OperatorKey] = new FilterOperator(new OperatorFieldModel("Filter"));
-            var doc = new DocumentController(fields, FilterOperator.FilterType);
+            fields[OperatorKey] = new FilterOperatorFieldModelController();
+            var doc = new DocumentController(fields, FilterOperatorFieldModelController.FilterType);
 
             var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
+        public static DocumentController CreateMapDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = new CollectionMapOperator();
+            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+
+            var layoutDoc = new CollectionMapOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
@@ -58,6 +69,20 @@ namespace Dash
 
 
             var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
+
+        public static DocumentController CreateCompoundController()
+        {
+            var fields = new Dictionary<Key, FieldModelController>
+            {
+                [OperatorKey] = new CompoundOperator()
+            };
+            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+
+            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;

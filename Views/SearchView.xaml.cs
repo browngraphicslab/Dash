@@ -129,14 +129,14 @@ namespace Dash
         /// <returns></returns>
         private ObservableCollection<object> GetMatches(string searchInput)
         {
-            ObservableCollection<object> items = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
+            ObservableCollection<KeyValuePair<string, object>> items = _items[xRootPivot.SelectedItem as PivotItem].ListContent;
             ObservableCollection<object> suggestions = new ObservableCollection<object>();
             if (items != null)
             {
                 foreach (var item in items)
                 {
                     // don't know what to filter yet (how to filter document, collection, fields... etc.)
-                    var type = item.ToString().ToLower();
+                    var type = item.Key.ToLower();
                     var input = searchInput.ToLower();
                     if (type.Contains(input))
                     {

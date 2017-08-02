@@ -9,7 +9,7 @@ using DashShared;
 
 namespace Dash
 {
-    class FilterOperator : OperatorFieldModelController
+    class FilterOperatorFieldModelController : OperatorFieldModelController
     {
         public static readonly DocumentType FilterType = new DocumentType("B82CEB25-47C1-4575-83A7-B527F8C0E7FD", "Filter");
         public static readonly DocumentType FilterParams = new DocumentType("62BADA87-D54D-42B8-9F4C-8A33B776C6C7", "Filter Params");
@@ -23,7 +23,7 @@ namespace Dash
         //Output Keys
         public static readonly Key OutputCollection = new Key("DF1C5189-65D6-47F5-A0CC-7D3658DFB29B", "Output Collection");
 
-        public FilterOperator(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public FilterOperatorFieldModelController() : base(new OperatorFieldModel("Filter"))
         {
         }
 
@@ -62,7 +62,7 @@ namespace Dash
 
         public override FieldModelController Copy()
         {
-            return new FilterOperator(OperatorFieldModel);
+            return new FilterOperatorFieldModelController();
         }
 
     }

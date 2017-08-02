@@ -14,7 +14,7 @@ namespace Dash
         /// <summary>
         /// The list of <see cref="EntityBase.Id"/> which the <see cref="DocumentCollectionFieldModel"/> is encapsulating
         /// </summary>
-        public IEnumerable<string> Data;
+        public List<string> Data;
 
         /// <summary>
         /// Creates a new DocumentCollectionFieldModel using the passed in list of <see cref="DocumentModel"/>
@@ -23,7 +23,7 @@ namespace Dash
         public DocumentCollectionFieldModel(IEnumerable<DocumentModel> documents)
         {
             Debug.Assert(documents != null);
-            Data = documents.Select(document => document.Id);
+            Data = documents.Select(document => document.Id).ToList();
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Dash
         public DocumentCollectionFieldModel(IEnumerable<string> documents)
         {
             Debug.Assert(documents != null);
-            Data = documents;
+            Data = documents.ToList();
         }
 
         protected override FieldModelDTO GetFieldDTOHelper() 

@@ -25,7 +25,7 @@ namespace Dash
             {
                 if (SetProperty(ref TextFieldModel.Data, value))
                 {
-                    OnFieldModelUpdated();
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server
                 }

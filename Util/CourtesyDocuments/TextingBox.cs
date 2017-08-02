@@ -33,7 +33,7 @@ namespace Dash
         public static double DefaultFontSize = 15;
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
 
-        public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight=null)
+        public TextingBox(FieldModelController refToText, double x = 0, double y = 0, double w = 200, double h = 20, FontWeight weight = null)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
@@ -101,7 +101,7 @@ namespace Dash
                 if (fmController is TextFieldModelController)
                     fmController = fmController as TextFieldModelController;
                 else if (fmController is NumberFieldModelController)
-                    fmController = fmController as NumberFieldModelController; 
+                    fmController = fmController as NumberFieldModelController;
                 var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
                 BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
@@ -143,15 +143,23 @@ namespace Dash
             {
                 var reference = data as ReferenceFieldModelController;
                 var dataDoc = reference.GetDocumentController(context);
-                dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                    delegate(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                //dataDoc.AddFieldUpdatedListener(reference.FieldKey,
+                DocumentController.OnDocumentFieldUpdatedHandler handler = delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                {
+                    if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
                     {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
-                        {
-                            return;
-                        }
-                        BindTextSource(element, sender, args.Context, reference.FieldKey);
-                    });
+                        return;
+                    }
+                    BindTextSource(element, sender, args.Context, reference.FieldKey);
+                };
+                element.Loaded += delegate
+                {
+                    dataDoc.AddFieldUpdatedListener(reference.FieldKey, handler);
+                };
+                element.Unloaded += delegate
+                {
+                    dataDoc.RemoveFieldUpdatedListener(reference.FieldKey, handler);
+                };
             }
             BindTextSource(element, controller, context, DashConstants.KeyStore.DataKey);
         }
@@ -186,7 +194,8 @@ namespace Dash
                     Converter = new StringToDoubleConverter(0),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
-            } else if (data is DocumentFieldModelController)
+            }
+            else if (data is DocumentFieldModelController)
             {
                 var docData = data as DocumentFieldModelController;
 

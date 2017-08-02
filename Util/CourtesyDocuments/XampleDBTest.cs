@@ -19,8 +19,8 @@ namespace Dash
 
         public static Key GameDateKey        = new Key("48A9F432-8757-4B8D-A2F4-51E1BAE44E5B", "GameDate");
         public static Key GameTimeKey        = new Key("0EF91257-92E2-44F6-8D12-A2D9AAFFD941", "GameTime");
-        public static Key GameDateLabelKey = new Key("94741950-B95D-46D3-BBA4-337273B084D3", "GameDateLabel");
-        public static Key GameTimeLabelKey = new Key("4D716001-102D-40C8-831B-127A06CCC91A", "GameTimeLabel");
+        public static Key GameDateLabelKey   = new Key("94741950-B95D-46D3-BBA4-337273B084D3", "GameDateLabel");
+        public static Key GameTimeLabelKey   = new Key("4D716001-102D-40C8-831B-127A06CCC91A", "GameTimeLabel");
 
         public static Key AssigmentGameKey   = new Key("2787E322-1E7B-4606-B892-CB3F2195E7E3", "AssignedGame");
         public static Key AssigmentPersonKey = new Key("FF312C91-46D9-4DE1-A38D-1FC6323AF9E2", "AssignedPerson");
@@ -28,10 +28,12 @@ namespace Dash
         public static Key AssigmentPersonLabelKey = new Key("07BC6D04-C922-4898-9406-2E2C56C052A4", "AssignedPersonLabel");
 
         public static Key UmpAssignmentsKey  = new Key("9BB856BE-D3C5-425E-A6EF-0F09B28414D3", "UmpAssignments");
-        public static Key UmpNameKey = new Key("462664D8-11B9-4561-B65B-AB3A2DAADB3B", "UmpName");
-        public static Key UmpNameLabelKey    = new Key("69079F30-ACFE-442C-8ABE-9115B7B7C974", "UmpName");
+        public static Key UmpNameKey         = new Key("462664D8-11B9-4561-B65B-AB3A2DAADB3B", "UmpName");
+        public static Key UmpNameLabelKey    = new Key("69079F30-ACFE-442C-8ABE-9115B7B7C974", "UmpNameLabel");
         public static Key VolNameKey         = new Key("3908F612-15FC-492C-A6E1-239EFCDC5ED5", "VolName");
-        public static Key VolNameLabelKey    = new Key("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolName");
+        public static Key VolNameLabelKey    = new Key("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolNameLabel");
+        public static Key AgeLabelKey        = new Key("", "AgeLabel");
+        public static Key AgeKey             = new Key("", "Age");
 
         public static Key WebUrlKey = new Key("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");
 
@@ -78,6 +80,7 @@ namespace Dash
                                                                               DBDoc, "AssignedPerson", "AssignedGame");
             dc.SetField(UmpAssignmentsKey, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
             dc.SetField(UmpNameLabelKey, new TextFieldModelController("Umpire : "), true);
+            dc.SetField(AgeLabelKey, new TextFieldModelController("Age : "), true);
             dc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
                 new TextFieldModelController[] { new TextFieldModelController(UmpNameKey.Id) }), true);
             return dc;
@@ -89,6 +92,7 @@ namespace Dash
             var dc = new DocumentController(fields, VolunteerType);
             dc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(dc), true);
             dc.SetField(VolNameLabelKey, new TextFieldModelController("Volunteer : "), true);
+            dc.SetField(AgeLabelKey, new TextFieldModelController("Age : "), true);
             dc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
                 new TextFieldModelController[] { new TextFieldModelController(VolNameKey.Id) }), true);
             return dc;
@@ -134,9 +138,10 @@ namespace Dash
         {
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
-            var prototypeUmpNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
-            var prototypeUmpNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameKey), 0, 0, double.NaN, double.NaN);
-            var prototypeUmpLayout = new StackLayout(new[] { prototypeUmpNameLabelLayout.Document, prototypeUmpNameLayout.Document }, true);
+            var prototypeUmpNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameLabelKey), 0, 0, 75, double.NaN, FontWeights.Bold);
+            var prototypeUmpNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpNameKey), 0, 0, 75, double.NaN);
+            var prototypeUmpAgeLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), AgeKey), 0, 0, double.NaN, double.NaN);
+            var prototypeUmpLayout = new StackLayout(new[] { prototypeUmpNameLabelLayout.Document, prototypeUmpNameLayout.Document, prototypeUmpAgeLayout.Document }, true);
             prototypeUmpLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(50), true);
 
             var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
@@ -153,7 +158,8 @@ namespace Dash
             // these prototypes will be overridden by delegates when an instance is created
             var prototypeVolNameLabelLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameLabelKey), 0, 0, 100, double.NaN, FontWeights.Bold);
             var prototypeVolNameLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), VolNameKey), 0, 0, 100, double.NaN);
-            var prototypeLayout = new StackLayout(new[] { prototypeVolNameLabelLayout.Document, prototypeVolNameLayout.Document });
+            var prototypeVolAgeLayout = new TextingBox(new ReferenceFieldModelController(PrototypeVol.GetId(), AgeKey), 0, 0, double.NaN, double.NaN);
+            var prototypeLayout = new StackLayout(new[] { prototypeVolNameLabelLayout.Document, prototypeVolNameLayout.Document, prototypeVolAgeLayout.Document }, true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
 
@@ -240,6 +246,7 @@ namespace Dash
             {
                 Ump1Doc.SetField(UmpNameKey, new TextFieldModelController("George"), true);
                 Ump1Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ump1Doc), true);
+                Ump1Doc.SetField(AgeKey, new NumberFieldModelController(17), true);
                 var ump1Layout = PrototypeUmpLayout.MakeDelegate();
                 ump1Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 SetLayoutForDocument(Ump1Doc, ump1Layout, forceMask: true, addToLayoutList: true);
@@ -249,6 +256,7 @@ namespace Dash
             {
                 Ump2Doc.SetField(UmpNameKey, new TextFieldModelController("Matt"), true);
                 Ump2Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ump2Doc), true);
+                Ump2Doc.SetField(AgeKey, new NumberFieldModelController(16), true);
                 var ump2Layout = PrototypeUmpLayout.MakeDelegate();
                 ump2Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 SetLayoutForDocument(Ump2Doc, ump2Layout, forceMask: true, addToLayoutList: true);
@@ -258,6 +266,7 @@ namespace Dash
             {
                 Vol1Doc.SetField(VolNameKey, new TextFieldModelController("Bob"), true);
                 Vol1Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Vol1Doc), true);
+                Vol1Doc.SetField(AgeKey, new NumberFieldModelController(32), true);
                 var vol1Layout = PrototypeVolLayout.MakeDelegate();
                 vol1Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 SetLayoutForDocument(Vol1Doc, vol1Layout, forceMask: true, addToLayoutList: true);

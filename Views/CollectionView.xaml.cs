@@ -22,97 +22,66 @@ namespace Dash
 {
     public sealed partial class CollectionView : SelectionElement
     {
-
         public int MaxZ { get; set; }
-
-
-        // whether the user can draw links currently or not
-        public bool CanLink
-        {
-            get
-            {
-                if (CurrentView is CollectionFreeformView)
-                    return (CurrentView as CollectionFreeformView).CanLink;
-                return false;
-            }
-            set
-            {
-                if (CurrentView is CollectionFreeformView)
-                    (CurrentView as CollectionFreeformView).CanLink = value;
-            }
-        }
-
-        public PointerRoutedEventArgs PointerArgs
-        {
-            get
-            {
-                if (CurrentView is CollectionFreeformView)
-                    return (CurrentView as CollectionFreeformView).PointerArgs;
-                return null;
-            }
-            set
-            {
-                if (CurrentView is CollectionFreeformView)
-                    (CurrentView as CollectionFreeformView).PointerArgs = value;
-            }
-
-        }
-
-        //i think this belong elsewhere
-        public static Graph<string> Graph = new Graph<string>();
-
         public UserControl CurrentView { get; set; }
-        private OverlayMenu _colMenu = null;
-
+        private OverlayMenu _colMenu;
         public CollectionViewModel ViewModel
         {
-            get
-            {
-                return DataContext as CollectionViewModel;
-            }
+            get { return DataContext as CollectionViewModel;}
             set { DataContext = value; }
         }
-
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
-
         private MenuFlyout _flyout;
 
         public CollectionView(CollectionViewModel vm)
         {
             InitializeComponent();
-            InitializeFlyout();
             ViewModel = vm;
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
-            SetEventHandlers();
-            CanLink = true;
         }
 
         private void InitializeFlyout()
         {
             _flyout = new MenuFlyout();
-            var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
+            var menuItem = new MenuFlyoutItem {Text = "Add Operators"};
             menuItem.Click += MenuItem_Click;
             _flyout.Items?.Add(menuItem);
+        }
+
+        private void DisposeFlyout()
+        {
+            if (_flyout.Items != null)
+                foreach (var item in _flyout.Items)
+                {
+                    var menuFlyoutItem = item as MenuFlyoutItem;
+                    if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
+                }
+            _flyout = null;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             var xCanvas = MainPage.Instance.xCanvas;
-            if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
+            if(!xCanvas.Children.Contains(OperatorSearchView.Instance))
                 xCanvas.Children.Add(OperatorSearchView.Instance);
+            // set the operator menu to the current location of the flyout
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+            // reset the render transform on the operator search view
+            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();       
+            var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+            if (floatBorder != null)
+            {
+                Canvas.SetLeft(floatBorder, 0);
+                Canvas.SetTop(floatBorder, 0);
+            }
+            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X - 250);
+            Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
-        }
-
-        private void SetEventHandlers()
-        {
-            Loaded += CollectionView_Loaded;
-            ViewModel.DataBindingSource.CollectionChanged += DataBindingSource_CollectionChanged;
-            DocumentViewContainerGrid.DragOver += CollectionGrid_DragOver;
-            DocumentViewContainerGrid.Drop += CollectionGrid_Drop;
-            ConnectionEllipse.ManipulationStarted += ConnectionEllipse_OnManipulationStarted;
-            Tapped += CollectionView_Tapped;
+            DisposeFlyout();
         }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
@@ -121,174 +90,14 @@ namespace Dash
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
-                ParentDocument.HasCollection = true;
-                //Temporary graphical hax.to be removed when collectionview menu moved to its document.
-                ParentDocument.XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left + 5,
-                    ParentDocument.xBorder.Margin.Top + 5,
-                    ParentDocument.xBorder.Margin.Right,
-                    ParentDocument.xBorder.Margin.Bottom);
-                OpenMenu();
+                ParentDocument.IsMainCollection = true;
                 ParentSelectionElement?.SetSelectedElement(this);
                 xOuterGrid.BorderThickness = new Thickness(0);
             }
         }
 
-        /// <summary>
-        /// Update document view model representatino of items on internal collection change.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void DataBindingSource_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (var eNewItem in e.NewItems)
-                {
-                    var docVM = eNewItem as DocumentViewModel;
-                    Debug.Assert(docVM != null);
-                    var ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
-                            OperatorFieldModelController;
-                    if (ofm == null) continue;
-                    foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
-                    {
-                        foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
-                        {
-                            var irfm =
-                                new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
-                            var orfm =
-                                new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
-                            //Graph.AddEdge(irfm.DereferenceToRoot().GetId(),
-                            //    orfm.DereferenceToRoot().GetId());
-                        }
-                    }
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Remove)
-            {
-                foreach (var eOldItem in e.OldItems)
-                {
-                    var docVM = eOldItem as DocumentViewModel;
-                    Debug.Assert(docVM != null);
-                    OperatorFieldModelController ofm =
-                        docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as
-                            OperatorFieldModelController;
-                    if (ofm != null)
-                    {
-                        foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
-                        {
-                            foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
-                            {
-                                var irfm =
-                                    new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
-                                var orfm =
-                                    new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
-                                //Graph.RemoveEdge(irfm.DereferenceToRoot(null).GetId(),
-                                //orfm.DereferenceToRoot(null).GetId());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        private void ItemsControl_ItemsChanged(IObservableVector<object> sender, IVectorChangedEventArgs e)
-        {
-            //RefreshItemsBinding();
-            if (e.CollectionChange != CollectionChange.ItemInserted) return;
-            var docVM = sender[(int)e.Index] as DocumentViewModel;
-            Debug.Assert(docVM != null);
-            OperatorFieldModelController ofm = docVM.DocumentController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController;
-            if (ofm == null) return;
-            foreach (KeyValuePair<Key, TypeInfo> inputKey in ofm.Inputs)
-            {
-                foreach (KeyValuePair<Key, TypeInfo> outputKey in ofm.Outputs)
-                {
-                    var irfm = new DocumentFieldReference(docVM.DocumentController.GetId(), inputKey.Key);
-                    var orfm = new DocumentFieldReference(docVM.DocumentController.GetId(), outputKey.Key);
-                    Graph.AddEdge(irfm.DereferenceToRoot(null).GetId(), orfm.DereferenceToRoot(null).GetId());
-                }
-            }
-            //else if (e.CollectionChange == CollectionChange.ItemRemoved)
-            //{
-            //    var docVM = sender[(int)e.Index] as DocumentViewModel;
-            //    Debug.Assert(docVM != null);
-            //    OperatorFieldModelController ofm = docVM.DocumentController.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-            //    if (ofm != null)
-            //    {
-            //        foreach (var inputKey in ofm.InputKeys)
-            //        {
-            //            foreach (var outputKey in ofm.OutputKeys)
-            //            {
-            //                ReferenceFieldModel irfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), inputKey);
-            //                ReferenceFieldModel orfm = new ReferenceFieldModel(docVM.DocumentController.GetId(), outputKey);
-            //                _graph.RemoveEdge(irfm, orfm);
-            //            }
-            //        }
-            //    }
-            //}
-        }
-
-        //private void Grid_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        //{
-        //    if (e.Container is ScrollBar || e.Container is ScrollViewer)
-        //    {
-        //        e.Complete();
-        //        e.Handled = true;
-        //    }
-        //}
-
-        private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            Thickness border = DocumentViewContainerGrid.BorderThickness;
-            ClipRect.Rect = new Rect(border.Left, border.Top, e.NewSize.Width - border.Left * 2, e.NewSize.Height - border.Top * 2);
-        }
-
-        /// <summary>
-        /// Make sure the canvas is still in bounds after resize
-        /// </summary>
-        private void UserControl_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            TranslateTransform translate = new TranslateTransform();
-
-            //Calculate bottomRight corner of screen in canvas space before and after resize 
-            Debug.Assert(DocumentViewContainerGrid.RenderTransform != null);
-            Debug.Assert(DocumentViewContainerGrid.RenderTransform.Inverse != null);
-            var oldBottomRight =
-                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.PreviousSize.Width, e.PreviousSize.Height));
-            var bottomRight =
-                DocumentViewContainerGrid.RenderTransform.Inverse.TransformPoint(new Point(e.NewSize.Width, e.NewSize.Height));
-
-            //Check if new bottom right is out of bounds
-            var outOfBounds = false;
-            if (bottomRight.X > Grid.ActualWidth - 1)
-            {
-                translate.X = -(oldBottomRight.X - bottomRight.X);
-                outOfBounds = true;
-            }
-            if (bottomRight.Y > Grid.ActualHeight - 1)
-            {
-                translate.Y = -(oldBottomRight.Y - bottomRight.Y);
-                outOfBounds = true;
-            }
-            //If it is out of bounds, translate so that is is in bounds
-            if (outOfBounds)
-            {
-                var composite = new TransformGroup();
-                composite.Children.Add(translate);
-                composite.Children.Add(DocumentViewContainerGrid.RenderTransform);
-                DocumentViewContainerGrid.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            }
-
-            Clip = new RectangleGeometry { Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height) };
-        }
-
         #region Operator connection stuff
-        /// <summary>
-        /// Helper class to detect cycles 
-        /// </summary>
-        private Graph<string> _graph = new Graph<string>();
+
         /// <summary>
         /// Line to create and display connection lines between OperationView fields and Document fields 
         /// </summary>
@@ -299,16 +108,7 @@ namespace Dash
         /// <summary>
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
-        private OperatorView.IOReference _currReference;
-
-        private Dictionary<ReferenceFieldModelController, Path> _lineDict = new Dictionary<ReferenceFieldModelController, Path>();
-
-        /// <summary>
-        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
-        /// </summary>
-        private HashSet<uint> _currentPointers = new HashSet<uint>();
-
-        #endregion
+        private IOReference _currReference;
 
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -317,21 +117,21 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            var docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
-            var el = sender as Ellipse;
-            var outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            var ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
-            var view = ParentCollection;
+            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
+            CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            var docId = (ParentDocument.DataContext as DocumentViewModel).DocumentController.GetId();
-            var el = sender as Ellipse;
-            var outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            var ioRef = new OperatorView.IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
-            var view = ParentCollection;
+            string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
+            Ellipse el = sender as Ellipse;
+            Key outputKey = DocumentCollectionFieldModelController.CollectionKey;
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
+            CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
 
@@ -372,13 +172,13 @@ namespace Dash
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
-            if (ItemsCarrier.GetInstance().Source != ViewModel)
+            if(ItemsCarrier.GetInstance().Source != ViewModel)
                 e.AcceptedOperation = DataPackageOperation.Move;
         }
 
-        private async void CollectionGrid_Drop(object sender, DragEventArgs e)
+        private void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
-
+            
             if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
             {
                 var action =
@@ -391,95 +191,60 @@ namespace Dash
             }
             e.Handled = true;
             RefreshItemsBinding();
-            foreach (var s in e.DataView.AvailableFormats)
-                Debug.Write("" + s);
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                var items = await e.DataView.GetStorageItemsAsync();
-                if (items.Count > 0)
-                {
-                    foreach (var i in items)
-                        if (i is Windows.Storage.StorageFile)
-                        {
-                            var storageFile = i as Windows.Storage.StorageFile;
-                            if (storageFile.ContentType.Contains("image"))
-                            {
-                                var bitmapImage = new Windows.UI.Xaml.Media.Imaging.BitmapImage();
-                                bitmapImage.SetSource(await storageFile.OpenAsync(Windows.Storage.FileAccessMode.Read));
-                                var doc = new AnnotatedImage(new Uri(i.Path), i.Name);
-                                (DataContext as CollectionViewModel).CollectionFieldModelController.AddDocument(doc.Document);
-                            }
-                        }
-                }
-            }
-            else if (ItemsCarrier.GetInstance().Source != null)
+            if (ItemsCarrier.GetInstance().Source != null)
             {
                 //var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
                 ItemsCarrier.GetInstance().Destination = ViewModel;
                 ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
-                ItemsCarrier.GetInstance().Translate = CurrentView is CollectionFreeformView
-                    ? e.GetPosition(((CollectionFreeformView)CurrentView).xItemsControl.ItemsPanelRoot)
-                    : new Point();
+                ItemsCarrier.GetInstance().Translate = CurrentView is CollectionFreeformView 
+                                                        ? e.GetPosition(((CollectionFreeformView) CurrentView).xItemsControl.ItemsPanelRoot) 
+                                                        : new Point();
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
             }
         }
 
         private void RefreshItemsBinding()
         {
-            var gridView = CurrentView as CollectionGridView;
-            var listView = CurrentView as CollectionListView;
-            if (gridView != null)
+            var isGridView = CurrentView as CollectionGridView;
+            var isListView = CurrentView as CollectionListView;
+            if (isGridView != null)
             {
-                gridView.xGridView.ItemsSource = null;
-                gridView.xGridView.ItemsSource = ViewModel.DataBindingSource;
+                isGridView.xGridView.ItemsSource = null;
+                isGridView.xGridView.ItemsSource = ViewModel.DataBindingSource;
             }
-            else if (listView != null)
+            else if (isListView != null)
             {
-                listView.HListView.ItemsSource = null;
-                listView.HListView.ItemsSource = ViewModel.DataBindingSource;
+                isListView.HListView.ItemsSource = null;
+                isListView.HListView.ItemsSource = ViewModel.DataBindingSource;
             }
         }
 
-
+        #endregion
 
         #region Menu
-        /// <summary>
-        /// Changes the view to the Freeform by making that Freeform visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
             ManipulationMode = ManipulationModes.All;
             CurrentView = new CollectionFreeformView();
-            (CurrentView as CollectionFreeformView).xItemsControl.Items.VectorChanged += ItemsControl_ItemsChanged;
             xContentControl.Content = CurrentView;
         }
-        /// <summary>
-        /// Changes the view to the ListView by making that Grid visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
             ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionListView(this);
-            (CurrentView as CollectionListView).HListView.SelectionChanged += ViewModel.SelectionChanged;
+            ((CollectionListView) CurrentView).HListView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
-        /// <summary>
-        /// Changes the view to the GridView by making that Grid visible in the CollectionView.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+
         private void SetGridView()
         {
             if (CurrentView is CollectionGridView) return;
             ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionGridView(this);
-            (CurrentView as CollectionGridView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
+            ((CollectionGridView) CurrentView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
 
@@ -493,28 +258,26 @@ namespace Dash
         private void CloseMenu()
         {
             var panel = _colMenu.Parent as Panel;
-            if (panel != null) panel.Children.Remove(_colMenu);
+            panel?.Children.Remove(_colMenu);
+            _colMenu.Dispose();
             _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
-            //Temporary graphical hax. to be removed when collectionview menu moved to its document.
-            //ParentDocument.xBorder.Margin = new Thickness(ParentDocument.xBorder.Margin.Left - 50,
-            //                                                ParentDocument.xBorder.Margin.Top,
-            //                                                ParentDocument.xBorder.Margin.Right,
-            //                                                ParentDocument.xBorder.Margin.Bottom);
         }
 
         private void SelectAllItems()
         {
-            if (CurrentView is CollectionGridView)
+            var view = CurrentView as CollectionGridView;
+            if (view != null)
             {
-                var gridView = (CurrentView as CollectionGridView).xGridView;
+                var gridView = view.xGridView;
                 if (gridView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
                     gridView.SelectAll();
                 else gridView.SelectedItems.Clear();
             }
-            if (CurrentView is CollectionListView)
+            var currentView = CurrentView as CollectionListView;
+            if (currentView != null)
             {
-                var listView = (CurrentView as CollectionListView).HListView;
+                var listView = currentView.HListView;
                 if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
                     listView.SelectAll();
                 else
@@ -549,7 +312,7 @@ namespace Dash
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
 
-            var collectionButtons = new List<MenuButton>()
+            var collectionButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
                 {
@@ -565,7 +328,7 @@ namespace Dash
             if (ParentDocument != MainPage.Instance.MainDocView)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
 
-            var documentButtons = new List<MenuButton>()
+            var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
                 {
@@ -580,9 +343,6 @@ namespace Dash
             xMenuColumn.Width = new GridLength(50);
         }
 
-
-        #endregion
-
         private void GetJson()
         {
             throw new NotImplementedException("The document view model does not have a context any more");
@@ -593,6 +353,8 @@ namespace Dash
         {
             Util.ExportAsImage(xOuterGrid);
         }
+
+        #endregion
 
         #region Collection Activation
 
@@ -612,36 +374,6 @@ namespace Dash
             }
         }
 
-        #endregion
-
-        /// <summary>
-        /// Retiles the BG
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            xBackgroundTileContainer.Children.Clear();
-            new ManipulationControls(xBackgroundTileContainer);
-            var width = 150;
-            var height = 150;
-            for (double x = 0; x < Grid.ActualWidth; x += width)
-            {
-                for (double y = 0; y < Grid.ActualHeight; y += height)
-                {
-                    var image = new Image { Source = xTileSource.Source };
-                    image.Height = height;
-                    image.Width = width;
-                    image.Opacity = .3;
-                    image.Stretch = Stretch.Fill;
-                    Canvas.SetLeft(image, x);
-                    Canvas.SetTop(image, y);
-                    xBackgroundTileContainer.Children.Add(image);
-                }
-            }
-            xBackgroundClip.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-        }
-
         protected override void OnActivated(bool isSelected)
         {
             if (isSelected)
@@ -658,23 +390,17 @@ namespace Dash
 
         public override void OnLowestActivated(bool isLowestSelected)
         {
-            if (_colMenu == null && isLowestSelected) OpenMenu();
+            if(_colMenu == null && isLowestSelected) OpenMenu();
             else if (_colMenu != null && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
 
-        private void CollectionView_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            (CurrentView as CollectionFreeformView)?.Manipulator.UserControl_ManipulationDelta(sender, e);
-        }
 
-        private void CollectionView_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            (CurrentView as CollectionFreeformView)?.Manipulator.UserControl_PointerWheelChanged(sender, e);
-        }
+        #endregion
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (this == MainPage.Instance.GetMainCollectionView()) return;
+            if(_flyout == null)
+                InitializeFlyout();
             e.Handled = true;
             var thisUi = this as UIElement;
             var position = e.GetPosition(thisUi);
