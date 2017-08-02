@@ -37,7 +37,7 @@
                     <dash:DocumentView DataContext="{Binding}"
                                        IODragStarted="StartDrag" 
                                        IODragEnded="EndDrag" 
-                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"/>
+                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" Loaded="DocumentViewOnLoaded"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

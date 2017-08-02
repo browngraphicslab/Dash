@@ -37,8 +37,8 @@ namespace Dash
 
         public bool KeepItemsOnMove { get; set; } = true;
 
-
         private bool _canDragItems;
+
         public bool CanDragItems
         {
             get { return _canDragItems; }
@@ -53,23 +53,16 @@ namespace Dash
             set { SetProperty(ref _itemSelectionMode, value); }
         }
         private ListViewSelectionMode _itemSelectionMode;
-        #endregion
-
-        /// <summary>
-        /// The collection creates delegates for each document it displays so that it can associate display-specific
-        /// information on the documents.  This allows different collection views to save different views of the same
-        /// document collection.
-        /// </summary>
-        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-
-        //Not backing variable; used to keep track of which items selected in view
-        private ObservableCollection<DocumentViewModel> _selectedItems;
 
         /// <summary>
         /// The size of each cell in the GridView.
         /// </summary>
         public double CellSize { get; set; }
+        #endregion
+
+        //Not backing variable; used to keep track of which items selected in view
+        private ObservableCollection<DocumentViewModel> _selectedItems;
+
 
         public CollectionViewModel(FieldModelController collection, Context context = null)
         {
@@ -110,8 +103,6 @@ namespace Dash
                 CollectionFieldModelController.RemoveDocument(vm.DocumentController);
             }
         }
-
-
 
 
         /// <summary>

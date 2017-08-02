@@ -50,7 +50,7 @@ namespace Dash
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
         private Dictionary<FieldReference, Path> _lineDict = new Dictionary<FieldReference, Path>();
-        private Canvas parentCanvas;
+        private Canvas itemsPanelCanvas;
 
         #endregion
 
@@ -65,13 +65,16 @@ namespace Dash
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         #endregion
 
+        public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
+        public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
+
         public CollectionFreeformView()
         {
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
             this.Unloaded += Freeform_Unloaded;
             _manipulationControls = new ManipulationControls(this);
-            _manipulationControls.OnManipulatorTranslated += ManipulationControls_OnManipulatorTranslated;
+            _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
 
@@ -101,7 +104,7 @@ namespace Dash
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
-            parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
+            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
@@ -115,11 +118,11 @@ namespace Dash
                 //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
-            _converter = new BezierConverter(ioReference.FrameworkElement, null, parentCanvas);
+            _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
 
             try
             {
-                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(parentCanvas).Position;
+                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
 
             }
             catch (COMException ex)
@@ -140,7 +143,7 @@ namespace Dash
             BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
             _connectionLine.Data = pathGeo;
 
-            parentCanvas.Children.Add(_connectionLine);
+            itemsPanelCanvas.Children.Add(_connectionLine);
 
             if (!ioReference.IsOutput)
             {
@@ -157,7 +160,7 @@ namespace Dash
 
         private void UndoLine()
         {
-            parentCanvas.Children.Remove(_connectionLine);
+            itemsPanelCanvas.Children.Remove(_connectionLine);
             _connectionLine = null;
             _currReference = null;
         }
@@ -223,7 +226,7 @@ namespace Dash
         {
             if (!_lineDict.ContainsKey(model)) return;
             var line = _lineDict[model];
-            parentCanvas.Children.Remove(line);
+            itemsPanelCanvas.Children.Remove(line);
             _lineDict.Remove(model);
         }
 
@@ -231,7 +234,7 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
-                Point pos = e.GetCurrentPoint(parentCanvas).Position;
+                Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
                 _lineBinding.ForceUpdate();
             }
@@ -280,11 +283,6 @@ namespace Dash
         }
 
         #endregion
-
-        private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
-        {
-            DBTest.ResetCycleDetection();
-        }
 
         #region BackgroundTiling
 
@@ -378,5 +376,16 @@ namespace Dash
         }
 
         #endregion
+
+        private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
+        {
+            OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
+        }
+
+        private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            DBTest.ResetCycleDetection();
+        }
+
     }
 }
