@@ -1,7 +1,9 @@
 ﻿using System;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
@@ -42,22 +44,40 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            var image = new Image
+            if (ImageSource != null)
             {
-                Source = new BitmapImage(ImageSource),
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch
-            };
+                var image = new Image
+                {
+                    Source = new BitmapImage(ImageSource),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    VerticalAlignment = VerticalAlignment.Stretch
+                };
 
-            var imageSourceBinding = new Binding
+                var imageSourceBinding = new Binding
+                {
+                    Source = this,
+                    Path = new PropertyPath(nameof(Data)),
+                    Mode = BindingMode.OneWay
+                };
+                image.SetBinding(Image.SourceProperty, imageSourceBinding);
+                return image;
+            }
+            else
             {
-                Source = this,
-                Path = new PropertyPath(nameof(Data)),
-                Mode = BindingMode.OneWay
-            };
-            image.SetBinding(Image.SourceProperty, imageSourceBinding);
+                var add = new Button();
+                var symbol = new SymbolIcon(Symbol.Add);
+                add.Background = new SolidColorBrush(Colors.LightSteelBlue);
+                add.Foreground = new SolidColorBrush(Colors.White);
+                add.HorizontalAlignment = HorizontalAlignment.Stretch;
+                add.VerticalAlignment = VerticalAlignment.Stretch;
+                add.Content = symbol;
+                add.Tapped += delegate
+                {
+                    // TODO: open file selector and import local images?
+                };
+                return add;
+            }
 
-            return image;
         }
 
         public override FieldModelController GetDefaultController()

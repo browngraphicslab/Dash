@@ -34,33 +34,6 @@ namespace Dash
             InitializeComponent();
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
             DataContextChanged += KeyValuePane_DataContextChanged;
-            xClip.Rect = new Rect(0,0,2000, 2000);
-        }
-
-        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-//            var deleteEaseInAnim = (Storyboard)this.Resources["xDeleteEaseInAnimation"];
-//            deleteEaseInAnim.Begin();
-            foreach (var grid in _gridContainers)
-            {
-                grid.ColumnDefinitions[0].Width = new GridLength(35);
-            }
-            xConfirmButton.Visibility = Visibility.Visible;
-            xEditButton.Visibility = Visibility.Collapsed;
-//            xAddButton.IsEnabled = false;
-        }
-
-        private void XConfirmButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            //var deleteEaseOutAnim = (Storyboard) this.Resources["xDeleteEaseOutAnimation"];
-            //deleteEaseOutAnim.Begin();
-            foreach (var grid in _gridContainers)
-            {
-                grid.ColumnDefinitions[0].Width = new GridLength(0);
-            }
-            xEditButton.Visibility = Visibility.Visible;
-            xConfirmButton.Visibility = Visibility.Collapsed;
-//            xAddButton.IsEnabled = true;
         }
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
@@ -97,63 +70,26 @@ namespace Dash
             }
         }
 
-        private void ValueField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        private void XEditButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-//            if (e.Key == Windows.System.VirtualKey.Enter)
-//            {
-//                if (!xNewKeyField.IsEnabled && _selectedKV != null)
-//                {
-//                    TextFieldModelController textCont = _selectedKV.Controller as TextFieldModelController;
-//                    if ((_selectedKV.Controller as TextFieldModelController).Data != xNewValueField.Text || _selectedKV.Key.Name != xNewKeyField.Text)
-//                    {
-//                        _selectedKV.Key.Name = xNewKeyField.Text;
-//                        (_selectedKV.Controller as TextFieldModelController).Data = xNewValueField.Text;
-//                        SetListItemSourceToCurrentDataContext();
-//                    }
-//                    ResetKeyValueModifier();
-//
-//                    return;
-//                }
-//                if (xNewKeyField.Text == "" || xNewValueField.Text == "")
-//                    return;
-//
-//                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
-//                var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
-//                var cont = new TextFieldModelController((sender as TextBox).Text);
-//                ListItemSource.Add(new KeyFieldContainer(key, cont));
-//
-//                _documentControllerDataContext.SetField(key, cont, true);
-//                xNewKeyField.Text = "";
-//                xNewValueField.Text = "";
-//            }
-//            else if (e.Key == Windows.System.VirtualKey.Tab)
-//            {
-//                ResetKeyValueModifier();
-//            }
+            foreach (var grid in _gridContainers)
+            {
+                grid.ColumnDefinitions[0].Width = new GridLength(35);
+            }
+            xColumnBackground.ColumnDefinitions[0].Width = new GridLength(35);
+            xConfirmButton.Visibility = Visibility.Visible;
+            xEditButton.Visibility = Visibility.Collapsed;
         }
 
-        private void KeyField_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
+        private void XConfirmButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-//            if (_selectedKV == null) return;
-//            if (!xNewValueField.IsEnabled && (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Tab))
-//            {
-//                var textCont = _selectedKV.Controller as TextFieldModelController;
-//                if (textCont != null)
-//                {
-//                    xNewValueField.IsEnabled = true;
-//                    xNewValueField.Text = textCont.Data;
-//                    xNewKeyField.IsEnabled = false;
-//                }
-//                else
-//                {
-//                    if (_selectedKV.Key.Name != xNewKeyField.Text)
-//                    {
-//                        _selectedKV.Key.Name = xNewKeyField.Text;
-//                        SetListItemSourceToCurrentDataContext();
-//                    }
-//                    ResetKeyValueModifier();
-//                }
-//            }
+            foreach (var grid in _gridContainers)
+            {
+                grid.ColumnDefinitions[0].Width = new GridLength(0);
+            }
+            xColumnBackground.ColumnDefinitions[0].Width = new GridLength(0);
+            xEditButton.Visibility = Visibility.Visible;
+            xConfirmButton.Visibility = Visibility.Collapsed;
         }
 
         private KeyFieldContainer _selectedKV;
@@ -161,48 +97,174 @@ namespace Dash
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             var kv = e.ClickedItem as KeyFieldContainer;
+            if (_visibleEditBox != null)
+            {
+                // tapping on any item collapses the previously visible name edit text box
+                _visibleEditBox.Visibility = Visibility.Collapsed;
+                if (_selectedKV?.Key.Name != _visibleEditBox.Text)
+                {
+                    _selectedKV.Key.Name = _visibleEditBox.Text;
+                    SetListItemSourceToCurrentDataContext();
+                }
+                _visibleEditBox = null;
+            }
             _selectedKV = kv;
+            if (_selectedKV != null)
+            foreach (var box in _typeCombo)
+            {
+                if (box.Tag.Equals(_selectedKV.HashCode))
+                {
+                    box.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    box.Visibility = Visibility.Collapsed;
+                }
+            }
         }
 
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            // can't delete new fields at the moment because they all have the same guid (for testing)
-            if (_deleteButtons.ContainsKey(sender as Button))
+            var button = sender as Button;
+            // the field to be deleted
+            KeyFieldContainer targetKV = null;
+            if (button != null)
+            foreach (var item in ListItemSource)
             {
-                var item = _deleteButtons[sender as Button];
-                ListItemSource.Remove(item);
-                _deleteButtons.Remove(sender as Button);
+                if (button.Tag.Equals(item.HashCode))
+                {
+                    targetKV = item;
+                }
             }
+            ListItemSource.Remove(targetKV);
         }
 
+        private KeyFieldContainer _newField;
         private void XAddButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
             var key = new Key((new Random()).Next(0, 100000000).ToString(), "");
-            var cont = new TextFieldModelController("test");
-            ListItemSource.Add(new KeyFieldContainer(key, cont));
-            var count = ListItemSource.Count();
+            key.Name = "Untitled";
+            var cont = new TextFieldModelController(string.Empty);
+            _newField = new KeyFieldContainer(key, cont);
+            ListItemSource.Add(_newField);
             _documentControllerDataContext.SetField(key, cont, true);
         }
 
         List<Grid> _gridContainers = new List<Grid>();
+        /// <summary>
+        /// Keeps track of all Grids in the ListView to control the visibility of the delete Buttons
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void XItemGridContainer_OnLoaded(object sender, RoutedEventArgs e)
         {
             _gridContainers.Add(sender as Grid);
         }
 
-        private Dictionary<Button, KeyFieldContainer> _deleteButtons = new Dictionary<Button, KeyFieldContainer>();
-        private void XDeleteButton_OnLoaded(object sender, RoutedEventArgs e)
+        private List<TextBox> _textBoxes = new List<TextBox>();
+        /// <summary>
+        /// Keeps track of all name editing TextBoxes in the ListView
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void XEditBox_OnLoaded(object sender, RoutedEventArgs e)
         {
-            foreach (var item in ListItemSource)
+            var textBox = sender as TextBox;
+            _textBoxes.Add(textBox);
+//            if (textBox.Tag.Equals(_newField?.HashCode))
+//            {
+//                textBox.Visibility = Visibility.Visible;
+//                textBox.Focus(FocusState.Programmatic);
+//            }
+        }
+
+        private void xNameEditBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter || e.Key == Windows.System.VirtualKey.Tab)
             {
-                var hash = item.HashCode;
-                if ((sender as Button).Tag.Equals(hash))
+                if (_selectedKV.Key.Name != (sender as TextBox).Text)
                 {
-                    _deleteButtons.Add(sender as Button, item);
+                    _selectedKV.Key.Name = (sender as TextBox).Text;
+                    _visibleEditBox.Visibility = Visibility.Collapsed;
+                    _visibleEditBox = null;
+                    SetListItemSourceToCurrentDataContext();
+                }
+            }
+
+        }
+
+        private TextBox _visibleEditBox;
+        private void xNameTextBlock_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            foreach (var textBox in _textBoxes)
+            {
+                if (textBox.Tag.Equals(_selectedKV?.HashCode))
+                {
+                    // collapse the textbox that was previously visible
+                    if (_visibleEditBox != null)
+                    {
+                        _visibleEditBox.Visibility = Visibility.Collapsed;
+                    }
+                    // keeps track of the textbox that is currently visible
+                    _visibleEditBox = textBox;
+                    textBox.Visibility = Visibility.Visible;
                 }
             }
         }
 
+        private List<ComboBox> _typeCombo = new List<ComboBox>();
+        private void XTypeCombo_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            _typeCombo.Add(sender as ComboBox);
+        }
+
+        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var selectedItem = (sender as ComboBox).SelectedValue;
+            //            var type = (TypeInfo) selectedItem;
+            //                switch (type)
+            //                {
+            //                    case TypeInfo.Text:
+            //                        _selectedKV.Controller = new TextFieldModelController(string.Empty);
+            //                        break;
+            //                    case TypeInfo.Number:
+            //                        _selectedKV.Controller = new NumberFieldModelController(double.NaN);
+            //                        break;
+            //                    case TypeInfo.Image:
+            //                        _selectedKV.Controller = new ImageFieldModelController(null);
+            //                        break;
+            //                    case TypeInfo.Collection:
+            //                        break;
+            //                    case TypeInfo.Document:
+            //                        break;
+            //                    case TypeInfo.Reference:
+            //                        break;
+            //                    case TypeInfo.Operator:
+            //                        break;
+            //                    case TypeInfo.Point:
+            //                        break;
+            //                    case TypeInfo.List:
+            //                        break;
+            //                }
+            if (selectedItem != null)
+            {
+                if (selectedItem.Equals(TypeInfo.Image))
+                {
+                    _selectedKV.Controller = new ImageFieldModelController(null);
+                }
+                else if (selectedItem.Equals(TypeInfo.Text))
+                {
+                    _selectedKV.Controller = new TextFieldModelController(string.Empty);
+                }
+                else if (selectedItem.Equals(TypeInfo.Number))
+                {
+                    _selectedKV.Controller = new NumberFieldModelController(double.NaN);
+                }
+                _documentControllerDataContext.SetField(_selectedKV.Key, _selectedKV.Controller, true);
+                SetListItemSourceToCurrentDataContext();
+            }
+        }
     }
 
     /// <summary>
@@ -211,13 +273,19 @@ namespace Dash
     public class KeyFieldContainer
     {
         public Key Key { get; }
+        /// <summary>
+        /// Something for controls in the list to bind to to make them identifiable from the datatemplate
+        /// </summary>
         public int HashCode { get { return Key.GetHashCode(); } }
-        public FieldModelController Controller { get; }
+        public FieldModelController Controller { get; set; }
+        public Array Types { get; }
+        
 
         public KeyFieldContainer(Key key, FieldModelController controller)
         {
             Key = key;
             Controller = controller;
+            Types = Enum.GetValues(typeof(TypeInfo));
         }
     }
 }

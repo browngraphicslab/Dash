@@ -35,35 +35,47 @@
         </Storyboard>
     </UserControl.Resources>-->
     <Grid Background="White" >
-        <Grid.Clip>
-            <RectangleGeometry x:Name="xClip"></RectangleGeometry>
-        </Grid.Clip>
+        <Grid.Resources>
+            <Style TargetType="TextBox">
+                <Setter Property="FontSize" Value="14"></Setter>
+            </Style>
+            <Style TargetType="TextBlock">
+                <Setter Property="FontSize" Value="14"></Setter>
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="FontSize" Value="14"></Setter>
+            </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="7*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xKeyValueTitle">
-            <Grid.RenderTransform>
-                <TranslateTransform x:Name="xTitleTransform" X="-35"></TranslateTransform>
-            </Grid.RenderTransform>
+        <Grid x:Name="xKeyValueTitle" Background="LightSteelBlue">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="35"/>
-                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="0"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Column="1" TextAlignment="Center">KEY</TextBlock>
-            <TextBlock Grid.Column="2" TextAlignment="Center">TYPE</TextBlock>
-            <TextBlock Grid.Column="3" TextAlignment="Center">VALUE</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Left" Foreground="White" FontWeight="SemiBold" FontSize="16">KEY</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Left" Foreground="White" FontWeight="SemiBold" FontSize="16">TYPE</TextBlock>
+            <TextBlock Grid.Column="3" TextAlignment="Left" Foreground="White" FontWeight="SemiBold" FontSize="16">VALUE</TextBlock>
+        </Grid>
+        <Grid x:Name="xColumnBackground" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Rectangle Grid.Column="1" Fill="LightSteelBlue" Opacity="0.3"></Rectangle>
+            <Rectangle Grid.Column="3" Fill="LightSteelBlue" Opacity="0.3"></Rectangle>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch"
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
                   ItemClick="xKeyValueListView_ItemClick" IsItemClickEnabled="true"
                   SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2" >
-            <!--<ListView.RenderTransform>
-                <TranslateTransform x:Name="xKeyValueListTransform" X="-35"></TranslateTransform>
-            </ListView.RenderTransform>-->
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <!--Make the list view items stretch to the full width of the list view-->
@@ -78,11 +90,11 @@
                     <Grid x:Name="xItemGridContainer" Loaded="XItemGridContainer_OnLoaded">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="0"/>
-                            <ColumnDefinition Width="2*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Button x:Name="xDeleteButton" Tag="{x:Bind Path=HashCode}" Padding="0" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top"  Tapped="XDeleteButton_OnTapped" Loading="XDeleteButton_OnLoading" Loaded="XDeleteButton_OnLoaded">
+                        <Button x:Name="xDeleteButton" Tag="{x:Bind Path=HashCode}" Padding="0" Background="Transparent" HorizontalAlignment="Left" VerticalAlignment="Top"  Tapped="XDeleteButton_OnTapped">
                             <Border CornerRadius="15" Height="20" Width="20">
                                 <Border.Background>
                                     <SolidColorBrush Color="Red" Opacity="0.6"></SolidColorBrush>
@@ -91,15 +103,32 @@
                             </Border>
                         </Button>
                         <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
+                            <Grid>
+                                <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Tapped="xNameTextBlock_OnTapped" FontSize="14"/>
+                                <TextBox x:Name="xNameEditBox" Tag="{x:Bind Path=HashCode}"  Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Visibility="Collapsed" Loaded="XEditBox_OnLoaded" KeyDown="xNameEditBox_KeyDown" FontSize="14" Padding="0" BorderBrush="Transparent" BorderThickness="0" Background="White"/>
+                            </Grid>
                         </ScrollViewer>
                         <Grid Grid.Column="2">
-                            <TextBlock></TextBlock>
-                            <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">
+                            <TextBlock Text="{x:Bind Path=Controller.TypeInfo}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" FontSize="14"></TextBlock>
+                            <!--<Button Tag="{x:Bind Path=HashCode}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" HorizontalContentAlignment="Left" VerticalContentAlignment="Top" Padding="-2.5" Visibility="Collapsed"  Loaded="XTypeFlyout_OnLoaded">
+                                <Button.Content>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="10"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Path=Controller.TypeInfo}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Foreground="Black" FontSize="10"></TextBlock>
+                                        <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Stretch" HorizontalAlignment="Right"  Margin="5,0,0,0" Padding="-2">
+                                            <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Right" TextAlignment="Left" Foreground="Black" FontSize="7" FontWeight="ExtraBold">︿</TextBlock>
+                                            <TextBlock VerticalAlignment="Stretch" HorizontalAlignment="Left" TextAlignment="Left" Foreground="Black" FontSize="7" FontWeight="ExtraBold">﹀</TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+                                </Button.Content>
                                 <Button.Flyout>
                                     <MenuFlyout ></MenuFlyout>
                                 </Button.Flyout>
-                            </Button>
+                            </Button>-->
+                            <ComboBox HorizontalAlignment="Stretch" PlaceholderText="{x:Bind Path=Controller.TypeInfo}" Tag="{x:Bind Path=HashCode}" BorderBrush="White" Padding="0" FontSize="14" Loaded="XTypeCombo_OnLoaded" ItemsSource="{x:Bind Types}" Visibility="Collapsed" SelectionChanged="Selector_OnSelectionChanged"></ComboBox>
                         </Grid>
                         <Border Grid.Column="3" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
                     </Grid>
@@ -107,16 +136,15 @@
             </ListView.ItemTemplate>
         </ListView>
         <Grid Grid.Row="2" Background="LightSteelBlue" HorizontalAlignment="Stretch">
-            <Button x:Name="xEditButton" HorizontalAlignment="Left" Background="Transparent" Tapped="XEditButton_OnTapped">
-                <SymbolIcon Symbol="Edit"></SymbolIcon>
-            </Button>
-            <Button x:Name="xConfirmButton" HorizontalAlignment="Left" Background="Transparent" Visibility="Collapsed"  Tapped="XConfirmButton_OnTapped">
+            <Button x:Name="xEditButton" HorizontalAlignment="Left" Background="Transparent" Tapped="XEditButton_OnTapped" Foreground="White" FontSize="16" FontWeight="SemiBold">Edit</Button>
+            <Button x:Name="xConfirmButton" HorizontalAlignment="Left" Background="Transparent" Visibility="Collapsed"  Tapped="XConfirmButton_OnTapped" Foreground="White">
                 <SymbolIcon Symbol="Accept"></SymbolIcon>
             </Button>
-            <Button x:Name="xAddButton" HorizontalAlignment="Right" Background="Transparent" Tapped="XAddButton_OnTapped">
+            <Button x:Name="xAddButton" HorizontalAlignment="Right" Background="Transparent" Tapped="XAddButton_OnTapped" Foreground="White">
                 <SymbolIcon Symbol="Add"/>
             </Button>
             <!--<ItemsControl x:Name="xValueDisplay" Grid.Column="1" ></ItemsControl>-->
         </Grid>
     </Grid>
 </UserControl>
+ 
