@@ -11,46 +11,38 @@
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
     ManipulationMode="All"
-    ManipulationDelta="CollectionView_OnManipulationDelta"
-    PointerWheelChanged="CollectionView_OnPointerWheelChanged"
-    RightTapped="CollectionView_OnRightTapped">
+    RightTapped="CollectionView_OnRightTapped"
+    Loaded="CollectionView_Loaded"
+    Tapped="CollectionView_Tapped">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
 
             <!-- Collectionview Content-->
-            <Grid x:Name="Grid" x:FieldModifier="public" BorderThickness="0" Grid.Column="1"
-                  Background="{StaticResource CollectionViewBackground}" Padding="0" SizeChanged="Grid_SizeChanged">
-                <Canvas x:Name="xBackgroundTileContainer" />
-                <Image x:Name="xTileSource" Source="ms-appx:///Assets/gridbg.png" Visibility="Collapsed" Stretch="None"/>
+            <Grid Grid.Column="1" Background="{StaticResource CollectionViewBackground}">
                 <Grid x:Name="DocumentViewContainerGrid"
-                      Background="Transparent"
                       AllowDrop="True"
                       HorizontalAlignment="Stretch"
                       Margin="5,5,5,5"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
-                      Padding="0"
-                      SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
-                    <Grid.Clip>
-                        <RectangleGeometry x:Name="ClipRect" />
-                    </Grid.Clip>
-                    <ContentControl x:Name="xContentControl"/>
+                      DragOver="CollectionGrid_DragOver"
+                      Drop="CollectionGrid_Drop">
+                    <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"
                          x:FieldModifier="public"
                          Style="{StaticResource xLinkHandle}"
                          HorizontalAlignment="Right"
                          PointerPressed="ConnectionEllipse_OnPointerPressed"
-                         PointerReleased="ConnectionEllipse_OnPointerReleased" />
-                <Grid.Clip>
-                    <RectangleGeometry x:Name="xBackgroundClip"></RectangleGeometry>
-                </Grid.Clip>
+                         PointerReleased="ConnectionEllipse_OnPointerReleased"
+                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"/>
             </Grid>
         </Grid>
     </Grid>

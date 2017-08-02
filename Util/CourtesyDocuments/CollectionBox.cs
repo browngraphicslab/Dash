@@ -64,7 +64,7 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(data, context);
+            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context);
 
             var view = new CollectionView(collectionViewModel);
 

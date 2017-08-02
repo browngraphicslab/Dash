@@ -17,5 +17,10 @@
         {
             return Type;
         }
+
+        /// <summary>
+        /// True if the operators is a compound operator
+        /// </summary>
+        public bool IsCompound { get; set; }
     }
 }

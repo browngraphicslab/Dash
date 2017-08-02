@@ -7,6 +7,7 @@ using Windows.UI.Xaml.Shapes;
 using DashShared;
 using System.Collections.Generic;
 using Windows.ApplicationModel;
+using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
@@ -19,46 +20,7 @@ namespace Dash
 {
     public sealed partial class OperatorView : UserControl
     {
-        public delegate void IODragEventHandler(IOReference ioReference);
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged off of and a connection should be started
-        /// </summary>
-        public event IODragEventHandler IoDragStarted;
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged on to and a connection should be ended
-        /// </summary>
-        public event IODragEventHandler IoDragEnded;
-
-        /// <summary>
-        /// Reference to either a field input or output with other information about the pointer
-        /// </summary>
-        public class IOReference
-        {
-            public FieldReference FieldReference { get; set; }
-            public bool IsOutput { get; set; }
-            //public bool IsReference { get; set; }
-
-            public PointerRoutedEventArgs PointerArgs { get; set; }
-
-            public FrameworkElement FrameworkElement { get; set; }
-            public DocumentView ContainerView { get; set; }
-
-            public FieldModelController FMController { get;  set;}
-
-            public Key FieldKey { get; set; }
-            public IOReference(Key fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
-            {
-                FieldKey = fieldKey; 
-                FMController = controller; 
-                FieldReference = fieldReference;
-                IsOutput = isOutput;
-                PointerArgs = args;
-                FrameworkElement = e;
-                ContainerView = container;
-            }
-        }
+        private MenuFlyout _flyout;
 
         public OperatorView()
         {
@@ -127,12 +89,12 @@ namespace Dash
 
         private void OnIoDragStarted(IOReference ioreference)
         {
-            IoDragStarted?.Invoke(ioreference);
+            ioreference.FireDragStarted();
         }
 
         private void OnIoDragEnded(IOReference ioreference)
         {
-            IoDragEnded?.Invoke(ioreference);
+            ioreference.FireDragEnded();
         }
 
         /// <summary>
@@ -162,18 +124,60 @@ namespace Dash
             releasePointerOnEllipse(sender, e, true);
         }
 
-        /// <summary>
-        /// Updates the background circle and rectangle height to accomodate new sizes.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        #region expandoflyout
+        private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
+            e.Handled = true;
+            var thisUi = this as UIElement;
+            var position = e.GetPosition(thisUi);
+            var menuFlyout = _flyout ?? (_flyout = InitializeFlyout());
+
+            if (menuFlyout.Items.Count != 0)
+            {
+                menuFlyout.ShowAt(thisUi, position);
+            }
         }
 
-        private void UIElement_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        private MenuFlyout InitializeFlyout()
         {
+            _flyout = new MenuFlyout();
+            var controller = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
+            Debug.Assert(controller != null);
+
+            if (controller.IsCompound())
+            {
+                var expandItem = new MenuFlyoutItem { Text = "Expando" };
+                var contractItem = new MenuFlyoutItem { Text = "Contracto" };
+                expandItem.Click += ExpandView;
+                contractItem.Click += ContractView;
+                _flyout.Items?.Add(expandItem);
+                _flyout.Items?.Add(contractItem);
+            }
+
+
+
+            return _flyout;
+
         }
+
+        private void ContractView(object sender, RoutedEventArgs e)
+        {
+            
+
+        }
+
+        private void ExpandView(object sender, RoutedEventArgs e)
+        {
+            var documentCanvasViewModel = new FreeFormCollectionViewModel(false);
+            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()), false);
+            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController()), false);
+            var documentCanvasView = new CollectionFreeformView();
+            XPresenter.Content = documentCanvasView;
+            documentCanvasView.DataContext = documentCanvasViewModel;
+        }
+
+        #endregion
+
+
     }
 }
