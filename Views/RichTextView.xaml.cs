@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DashShared;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -158,18 +159,34 @@ namespace Dash
                     this.xRichEitBox.Document.Selection.SetRange(atPos + 1, s2 - 1);
                     string refText;
                     this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out refText);
-
-                    // see if we can find a document whose primary keys match the text
-                    var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
-                    if (theDoc != null && this.xRichEitBox.Document.Selection.StartPosition != this.xRichEitBox.Document.Selection.EndPosition && this.xRichEitBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
+                    if (refText.StartsWith("HYPERLINK"))
+                    {
+                        refText = refText.Split('\"')[2].Trim(' ', '\r');
+                    }
+                    if (refText.StartsWith("http"))
                     {
                         // set the hyperlink for the matched text
-                        this.xRichEitBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
+                        this.xRichEitBox.Document.Selection.Link = "\"" + refText + "\"";
                         // advance the end selection past the RTF embedded HYPERLINK keyword
                         s2 += this.xRichEitBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
                         s1 = s2;
                         this.xRichEitBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
                         this.xRichEitBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                    } else
+                    {
+                        // see if we can find a document whose primary keys match the text
+                        var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
+                        if (theDoc != null && this.xRichEitBox.Document.Selection.StartPosition != this.xRichEitBox.Document.Selection.EndPosition && this.xRichEitBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
+                        {
+                            // set the hyperlink for the matched text
+                            this.xRichEitBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
+                            // advance the end selection past the RTF embedded HYPERLINK keyword
+                            s2 += this.xRichEitBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                            s1 = s2;
+                            this.xRichEitBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                            this.xRichEitBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+                        }
+
                     }
                 }
             }
@@ -188,13 +205,32 @@ namespace Dash
                 // if the selection has actually changed, then see if there's a Document hyperlink
                 if (this.xRichEitBox.Document.Selection.Link.Length > 1)
                 {
-                    var theDoc = ContentController.GetController<DocumentController>(this.xRichEitBox.Document.Selection.Link.Split('\"')[1]);
-                    if (theDoc != DBTest.DBNull && theDoc != null)
+                    var target = this.xRichEitBox.Document.Selection.Link.Split('\"')[1];
+                    if (target.StartsWith("http"))
                     {
-                        var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
-                        pt.X -= 150;
-                        pt.Y -= 50;
-                        MainPage.Instance.DisplayDocument(theDoc, pt);
+                        var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
+                        {
+                            WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
+                            WebDoc.SetField(DBTest.WebUrlKey, new TextFieldModelController(target), true);
+                            var webLayout = DBTest.PrototypeWebLayout.MakeDelegate();
+                            webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                            WebDoc.SetActiveLayout(webLayout, forceMask: true, addToLayoutList: true);
+                            var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            pt.X -= 150;
+                            pt.Y -= 50;
+                            MainPage.Instance.DisplayDocument(WebDoc, pt);
+                        }
+                    }
+                    else
+                    {
+                        var theDoc = ContentController.GetController<DocumentController>(target);
+                        if (theDoc != DBTest.DBNull && theDoc != null)
+                        {
+                            var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
+                            pt.X -= 150;
+                            pt.Y -= 50;
+                            MainPage.Instance.DisplayDocument(theDoc, pt);
+                        }
                     }
                 }
             }
