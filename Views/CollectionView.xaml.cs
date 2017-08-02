@@ -38,7 +38,7 @@ namespace Dash
         {
             InitializeComponent();
             ViewModel = vm;
-            CurrentView = new CollectionGridView(this);
+            CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
         }
 
