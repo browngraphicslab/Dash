@@ -237,18 +237,20 @@ namespace Dash
                         var opModel = lookupOperator(strings[0]);
                         var args    = strings[1].TrimEnd(')').Split(',');
                         var refs    = new List<ReferenceFieldModelController>();
+                        bool useProto = false;
                         foreach (var a in args)
                         {
                             if (a.Trim(' ').StartsWith("@"))
                             {
                                 var path = a.Substring(1, a.Length - 1).Split('.');
-                                var theDoc = FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+                                useProto |= path[0] == "This";
+                                var theDoc = path[0] == "This" ? proto : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
                                 if (theDoc != null)
                                 {
                                     if (path.Count() > 1)
                                     {
                                         Key foundKey = null;
-                                        foreach (var e in theDoc.EnumFields())
+                                        foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
                                             if (e.Key.Name == path[1])
                                             {
                                                 foundKey = e.Key;
@@ -266,34 +268,40 @@ namespace Dash
                         foreach (var i in opFieldController.Inputs.ToArray())
                             if (count < refs.Count())
                                 opModel.SetField(i.Key, refs[count++], true);
-                        SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                        (useProto ? proto:this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     }
                     else
                     {
                         var path = strings[0].Trim(' ').Split('.');
-                        var theDoc = FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
-                        if (path.Count() > 1)
+                        var theDoc = path[0] == "This" ? proto : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+                        if (theDoc != null)
                         {
-                            foreach (var e in theDoc.EnumFields())
-                                if (e.Key.Name == path[1])
-                                {
-                                    SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), true);
-                                    break;
-                                }
-
-                        } else if (theDoc != null)
-                            SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
+                            if (path.Count() > 1)
+                            {
+                                foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
+                                    if (e.Key.Name == path[1])
+                                    {
+                                        ((path[0] == "This") ? proto:this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
+                                        break;
+                                    }
+                            }
+                            else
+                                SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
+                        }
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     } 
                 }
             }
             else
             {
-                var tagField = GetDereferencedField(key, null);
-                if (tagField is TextFieldModelController)
-                    (tagField as TextFieldModelController).Data = textInput;
-                else SetField(key, new TextFieldModelController(textInput), true);
+                double num;
+                if (!double.TryParse(textInput, out num))
+                    num = double.NaN;
+                if (!double.IsNaN(num))
+                    SetField(key, new NumberFieldModelController(num), true);
+                else
+                    SetField(key, new TextFieldModelController(textInput), true);
             }
         }
 

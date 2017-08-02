@@ -54,7 +54,8 @@ namespace Dash
         {
             ListItemSource.Clear();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
-                ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
         }
 
         private void FocusOn(TextBox tb)
