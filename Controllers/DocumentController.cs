@@ -640,7 +640,7 @@ namespace Dash
             }
             catch (KeyNotFoundException e)
             {
-                Debug.WriteLine("Operator Execution failed: Input not set");
+                Debug.WriteLine("Operator Execution failed: Input not set" + e);
             }
         }
 

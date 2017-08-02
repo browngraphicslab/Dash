@@ -1,4 +1,5 @@
 ﻿using System;
+using DashShared;
 using Windows.UI.Xaml.Media.Imaging;
 
 namespace Dash
@@ -27,6 +28,11 @@ namespace Dash
         public ImageFieldModel(Uri data)
         {
             Data = data;
+        }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            return new FieldModelDTO(TypeInfo.Image, Data);
         }
     }
 }

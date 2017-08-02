@@ -26,5 +26,10 @@ namespace Dash
         {
             return Reference.GetHashCode();
         }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

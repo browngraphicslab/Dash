@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash
 {
@@ -21,6 +22,11 @@ namespace Dash
         public RichTextFieldModel(string data)
         {
             Data = data;
+        }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            throw new NotImplementedException();
         }
     }
 }

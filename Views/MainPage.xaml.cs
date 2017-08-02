@@ -155,7 +155,7 @@ namespace Dash
             var dragged = new Image();
             var url = "";
 
-            
+
             // load items dragged from solution explorer
             if (e.DataView.Contains(StandardDataFormats.StorageItems))
             {
@@ -267,7 +267,8 @@ namespace Dash
             if (method == HTTPRequestMethod.Get)
             {
                 response = await client.GetAsync();
-            } else if (method == HTTPRequestMethod.Post)
+            }
+            else if (method == HTTPRequestMethod.Post)
             {
                 throw new NotImplementedException();
             }
@@ -295,7 +296,7 @@ namespace Dash
                 .PostUrlEncodedAsync(new
                 {
                     grant_type = "client_credentials"
-                });        
+                });
 
             // get the string from the response, including decompression and checking for success
             var responseString = await GetStringFromResponseAsync(authResponse);
