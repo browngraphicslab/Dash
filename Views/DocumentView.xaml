@@ -24,7 +24,7 @@
     </UserControl.Resources>
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public"
+          x:FieldModifier="public" PointerReleased="OuterGrid_PointerReleased"
               SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>

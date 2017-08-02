@@ -37,7 +37,7 @@ namespace Dash
         public static MainPage Instance;
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
-
+        private static CollectionView _mainCollectionView;
 
         public DocumentController MainDocument { get; private set; }
 
@@ -80,10 +80,15 @@ namespace Dash
             MainDocView.DoubleTapped += XCanvas_OnDoubleTapped;
         }
 
+        public CollectionView GetMainCollectionView()
+        {
+            return _mainCollectionView ?? (_mainCollectionView = MainDocView.GetFirstDescendantOfType<CollectionView>());
+        }
 
         private void MainDocViewOnDragEnter(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
+            if (e.DragUIOverride == null) return;
             e.DragUIOverride.IsGlyphVisible = false;
             e.DragUIOverride.IsContentVisible = false;
             e.DragUIOverride.Caption = e.DataView.Properties.Title;
@@ -91,13 +96,11 @@ namespace Dash
 
         public void AddOperatorsFilter(object o, DragEventArgs e)
         {
-            if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
-            {
-                xCanvas.Children.Add(OperatorSearchView.Instance);
-                Point absPos = e.GetPosition(Instance);
-                Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
-                Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
-            }
+            if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
+            xCanvas.Children.Add(OperatorSearchView.Instance);
+            Point absPos = e.GetPosition(Instance);
+            Canvas.SetLeft(OperatorSearchView.Instance, absPos.X);
+            Canvas.SetTop(OperatorSearchView.Instance, absPos.Y);
         }
 
         public void AddGenericFilter(object o, DragEventArgs e)
@@ -126,7 +129,6 @@ namespace Dash
             DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
         }
-
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -220,7 +222,6 @@ namespace Dash
             //else _radialMenu.IsVisible = false;
             e.Handled = true;
         }
-
         #region Requests
 
         private enum HTTPRequestMethod
@@ -341,9 +342,5 @@ namespace Dash
 
 
         #endregion
-
-
-
-
     }
 }

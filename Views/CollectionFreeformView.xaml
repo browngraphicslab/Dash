@@ -11,10 +11,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="Transparent"
-    ManipulationMode="All"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    PointerWheelChanged="UserControl_PointerWheelChanged"
-    >
+    ManipulationMode="All">
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect"/>

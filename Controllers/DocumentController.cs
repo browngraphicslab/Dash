@@ -48,13 +48,16 @@ namespace Dash
 
         public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
-            if (_fieldUpdatedDictionary.ContainsKey(key))
+            if (key != null)
             {
-                _fieldUpdatedDictionary[key] += handler;
-            }
-            else
-            {
-                _fieldUpdatedDictionary[key] = handler;
+                if (_fieldUpdatedDictionary.ContainsKey(key))
+                {
+                    _fieldUpdatedDictionary[key] += handler;
+                }
+                else
+                {
+                    _fieldUpdatedDictionary[key] = handler;
+                }
             }
         }
 
@@ -147,6 +150,58 @@ namespace Dash
         }
 
         /// <summary>
+        /// looks up a document that whose primary keys match input keys
+        /// </summary>
+        /// <param name="fieldContents"></param>
+        /// <returns></returns>
+        public static DocumentController FindDocMatchingPrimaryKeys(IEnumerable<string> primaryKeyValues)
+        {
+            foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
+                {
+                    var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
+                    if (primaryKeys != null)
+                    {
+                        bool found = true;
+                        foreach (var value in primaryKeyValues)
+                        {
+                            bool foundValue = false;
+                            foreach (var kf in primaryKeys.Data)
+                            {
+                                var key = new Key((kf as TextFieldModelController).Data);
+                                var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
+                                if (derefValue != null)
+                                {
+                                    if (value == derefValue)
+                                    {
+                                        foundValue = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if (!foundValue)
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            return dmc;
+                        }
+                    }
+                }
+            return null;
+        }
+        DocumentController lookupOperator(string opname)
+        {
+            if (opname == "Add")
+                return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController(new OperatorFieldModel("Add")));
+            if (opname == "Divide")
+                return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController());
+            return null;
+        }
+        /// <summary>
         /// parses text input into a field controller
         /// </summary>
         /// <param name="docController"></param>
@@ -154,6 +209,7 @@ namespace Dash
         /// <param name="textInput"></param>
         public void ParseDocField(Key key, string textInput)
         {
+            textInput = textInput.Trim(' ');
             if (textInput.StartsWith("@"))
             {
                 var proto = GetPrototype() == null ? this : GetPrototype();
@@ -174,18 +230,63 @@ namespace Dash
                                 break;
                             }
                 }
-                else // search for documents that optionally reference this DocumentController and that optionally have a field matching FieldName.
-                {    // #newField = @ [@] [FieldName]
-                    var scopeDoc = new ReferenceFieldModelController(proto.GetId(), DashConstants.KeyStore.ThisKey);
-                    if (fieldStr.StartsWith("@"))
+                else // search for documents that have a field matching FieldName.
+                {    // #newField = @ func( @ doc.field, @ doc.field )
+                    var strings = fieldStr.Split('(');
+                    if (strings.Count() == 2)
                     {
-                        fieldStr = fieldStr.Substring(1, fieldStr.Length - 1);
+                        var opModel = lookupOperator(strings[0]);
+                        var args    = strings[1].TrimEnd(')').Split(',');
+                        var refs    = new List<ReferenceFieldModelController>();
+                        foreach (var a in args)
+                        {
+                            if (a.Trim(' ').StartsWith("@"))
+                            {
+                                var path = a.Substring(1, a.Length - 1).Split('.');
+                                var theDoc = FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+                                if (theDoc != null)
+                                {
+                                    if (path.Count() > 1)
+                                    {
+                                        Key foundKey = null;
+                                        foreach (var e in theDoc.EnumFields())
+                                            if (e.Key.Name == path[1])
+                                            {
+                                                foundKey = e.Key;
+                                                break;
+                                            }
+                                        refs.Add(new ReferenceFieldModelController(theDoc.GetId(), foundKey));
+                                    }
+                                    else 
+                                        refs.Add(new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey));
+                                }
+                            }
+                        }
+                        int count = 0;
+                        var opFieldController = (opModel.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController);
+                        foreach (var i in opFieldController.Inputs.ToArray())
+                            if (count < refs.Count())
+                                opModel.SetField(i.Key, refs[count++], true);
+                        SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                        Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     }
                     else
-                        scopeDoc = null;
-                    var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(scopeDoc, DBTest.DBDoc, fieldStr, fieldStr);
-                    DBTest.ResetCycleDetection();
-                    proto.SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                    {
+                        var path = strings[0].Trim(' ').Split('.');
+                        var theDoc = FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+                        if (path.Count() > 1)
+                        {
+                            foreach (var e in theDoc.EnumFields())
+                                if (e.Key.Name == path[1])
+                                {
+                                    SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), true);
+                                    break;
+                                }
+
+                        } else if (theDoc != null)
+                            SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
+                        Debug.WriteLine("Value = " + GetDereferencedField(key, null));
+                    } 
                 }
             }
             else
@@ -206,6 +307,8 @@ namespace Dash
         /// <returns></returns>
         public DocumentController GetPrototypeWithFieldKey(Key key)
         {
+            if (key == null)
+                return null;
             // if we mask the key by storing it as a field return ourself
             if (_fields.ContainsKey(key))
                 return this;
@@ -621,9 +724,13 @@ namespace Dash
             {
                 return DocumentBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == StackingPanel.DocumentType)
+            if (DocumentType == StackLayout.DocumentType)
             {
-                return StackingPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
+            }
+            if (DocumentType == WebBox.DocumentType)
+            {
+                return WebBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == CollectionBox.DocumentType)
             {
@@ -649,9 +756,9 @@ namespace Dash
             {
                 return RichTextBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == GridPanel.GridPanelDocumentType)
+            if (DocumentType == GridLayout.GridPanelDocumentType)
             {
-                return GridPanel.MakeView(this, context, dataDocument, isInterfaceBuilder);
+                return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
             if (DocumentType == FilterOperatorBox.DocumentType)
             {

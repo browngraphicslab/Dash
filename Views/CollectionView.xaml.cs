@@ -138,7 +138,7 @@ namespace Dash
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
-            ItemsCarrier carrier = ItemsCarrier.GetInstance();
+            var carrier = ItemsCarrier.GetInstance();
             carrier.Source = ViewModel;
             foreach (var item in e.Items)
                 carrier.Payload.Add(item as DocumentViewModel);
@@ -163,10 +163,10 @@ namespace Dash
         {
             var docControllers = docViewModels.Select(item => item.DocumentController);
             var controller = ViewModel.CollectionFieldModelController;
-            if (controller != null)
-                foreach (var item in docControllers)
-                    if (add) controller.AddDocument(item);
-                    else controller.RemoveDocument(item);
+            if (controller == null) return;
+            foreach (var item in docControllers)
+                if (add) controller.AddDocument(item);
+                else controller.RemoveDocument(item);
         }
 
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
@@ -183,12 +183,10 @@ namespace Dash
             {
                 var action =
                     e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<CollectionView, DragEventArgs>;
-                if (action != null)
-                {
-                    action.Invoke(this, e);
-                    e.Handled = true;
-                }
-                    
+                if (action == null) return;
+                action.Invoke(this, e);
+                e.Handled = true;
+
                 return;
             }
             e.Handled = true;
@@ -222,8 +220,8 @@ namespace Dash
         }
 
         #endregion
-        #region Menu
 
+        #region Menu
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
@@ -396,12 +394,8 @@ namespace Dash
             else if (_colMenu != null && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
 
-        #endregion
 
-        private void CollectionView_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            (CurrentView as CollectionFreeformView)?.UserControl_PointerWheelChanged(sender, e);
-        }
+        #endregion
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {

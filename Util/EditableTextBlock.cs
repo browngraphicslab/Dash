@@ -12,8 +12,8 @@ namespace Dash
 {
     public class EditableTextBlock
     {
-        public TextBox Box { get; }
-        public TextBlock Block { get; } = new TextBlock();
+        public TextBox Box { get; set; }
+        public TextBlock Block { get; set; } = new TextBlock();
 
         public Canvas Container { get; } = new Canvas(); 
 
@@ -39,12 +39,13 @@ namespace Dash
                 Block.Visibility = Visibility.Visible;
             };
 
-            Block.Tapped += (s, e) =>
+            Block.DoubleTapped += (s, e) =>
             {
                 e.Handled = true;
                 Block.Visibility = Visibility.Collapsed;
                 Box.Visibility = Visibility.Visible;
-                Box.Focus(FocusState.Pointer);
+                Box.Focus(FocusState.Programmatic);
+                Box.SelectAll(); 
             };
 
             Container.Children.Add(Block);

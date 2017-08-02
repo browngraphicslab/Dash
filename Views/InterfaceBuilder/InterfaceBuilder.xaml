@@ -68,8 +68,8 @@
                     <StackPanel Orientation="Vertical">
                         <Grid>
                             <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
-                            <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
-                                <Run Text="🖹"/>
+                            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
+                                <Run Text="▤"/>
                             </TextBlock>
                         </Grid>
                         <TextBlock FontSize="12" HorizontalAlignment="Center">LIST</TextBlock>
@@ -77,16 +77,16 @@
                 </Button>
                 <Button x:Name="GridButton" Width="45" Height="65" Margin="5"  VerticalContentAlignment="Center"
                         FontSize="25" IsHitTestVisible="False" Background="Transparent" Padding="0">
-                            <StackPanel Orientation="Vertical">
-                                <Grid>
-                                    <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
-                                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
-                                <Run Text="▦"/>
-                                    </TextBlock>
-                                </Grid>
-                                <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
-                            </StackPanel>
-                        </Button>
+                    <StackPanel Orientation="Vertical">
+                        <Grid>
+                            <Ellipse Width="35" Height="35" Fill="{StaticResource WindowsBlue}"/>
+                            <TextBlock VerticalAlignment="Top" HorizontalAlignment="Center" Foreground="#FFFDFDFD">
+                                <Run Text="⊞"/>
+                            </TextBlock>
+                        </Grid>
+                        <TextBlock FontSize="12" HorizontalAlignment="Center">GRID</TextBlock>
+                    </StackPanel>
+                </Button>
 
             </GridView>
             <Button x:Name="xDeleteButton" Background="Transparent" Tapped="XDeleteButton_OnTapped" Height="65" Width="73" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,222,0" Grid.Row="2">

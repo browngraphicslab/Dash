@@ -65,9 +65,13 @@ namespace Dash
             public override DocumentController CreatePrototypeLayout()
             {
                 var prototype = GetLayoutPrototype(); 
-                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
-                var richTextLayout = new RichTextBox(new ReferenceFieldModelController(prototype.GetId(), RTFieldKey), 0, 50, 200, 200);
-                var prototpeLayout = new StackingPanel(new DocumentController[] { titleLayout.Document, richTextLayout.Document }, true);
+                var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, double.NaN, 25);
+                var richTextLayout = new RichTextBox(new ReferenceFieldModelController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
+                var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, richTextLayout.Document });
+                prototpeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+                prototpeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+                prototpeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
+                prototpeLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
 
                 return prototpeLayout.Document;
             }
@@ -108,7 +112,7 @@ namespace Dash
 
                 var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, 200, 50);
                 var imageLayout = new ImageBox(new ReferenceFieldModelController(prototype.GetId(), IamgeFieldKey), 0, 50, 200, 200);
-                var prototpeLayout = new StackingPanel(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
+                var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, imageLayout.Document }, true);
 
                 return prototpeLayout.Document;
             }
@@ -146,6 +150,8 @@ namespace Dash
             {
                 var prototypeTextLayout =
                     new TextingBox(new ReferenceFieldModelController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
+                prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+                prototypeTextLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 
                 return prototypeTextLayout.Document;
             }
@@ -160,10 +166,6 @@ namespace Dash
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                var widthController = docLayout.GetWidthField();
-                widthController.Data = double.NaN;
-                var heightController = docLayout.GetHeightField();
-                heightController.Data = double.NaN;
                 docLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 
                 Document.AddLayoutToLayoutList(docLayout);

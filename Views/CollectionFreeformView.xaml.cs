@@ -29,6 +29,7 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView : UserControl
     {
+
         #region ScalingVariables
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
@@ -72,6 +73,7 @@ namespace Dash
             _manipulationControls = new ManipulationControls(this);
             _manipulationControls.OnManipulatorTranslated += ManipulationControls_OnManipulatorTranslated;
         }
+
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -201,7 +203,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Method to add the dropped field to the documentview 
+        /// Method to add the dropped off field to the documentview; shows up in keyvalue pane but not in the immediate displauy  
         /// </summary>
         public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
         {
@@ -267,11 +269,6 @@ namespace Dash
                 ScaleY = transformationDelta.ScaleAmount.Y
             };
 
-            //Clamp the zoom
-            CanvasScale *= transformationDelta.ScaleAmount.X;
-            ClampScale(scale);
-
-
             //Create initial composite transform
             var composite = new TransformGroup();
             composite.Children.Add(scale);
@@ -281,69 +278,6 @@ namespace Dash
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
             SetTransformOnBackground(composite);
         }
-
-        /// <summary>
-        /// Zooms upon mousewheel interaction 
-        /// </summary>
-        public void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            Debug.Assert(canvas != null);
-            e.Handled = true;
-            //Get mousepoint in canvas space 
-            var point = e.GetCurrentPoint(canvas);
-            var scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
-                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
-            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
-            CanvasScale *= (float)scaleAmount;
-            Debug.Assert(canvas.RenderTransform != null);
-            var p = point.Position;
-            //Create initial ScaleTransform 
-            var scale = new ScaleTransform
-            {
-                CenterX = p.X,
-                CenterY = p.Y,
-                ScaleX = scaleAmount,
-                ScaleY = scaleAmount
-            };
-
-            //Clamp scale
-            ClampScale(scale);
-
-            //Create initial composite transform
-            var composite = new TransformGroup();
-            composite.Children.Add(scale);
-            composite.Children.Add(canvas.RenderTransform);
-
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-            SetTransformOnBackground(composite);
-        }
-
-        /// <summary>
-        /// Make translation inertia slow down faster
-        /// </summary>
-        private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
-        {
-            e.TranslationBehavior.DesiredDeceleration = 0.01;
-        }
-
-        private void ClampScale(ScaleTransform scale)
-        {
-            if (CanvasScale > MaxScale)
-            {
-                CanvasScale = MaxScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
-            }
-            if (CanvasScale < MinScale)
-            {
-                CanvasScale = MinScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
-            }
-        }
-
 
         #endregion
 

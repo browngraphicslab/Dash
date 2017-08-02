@@ -102,7 +102,7 @@ namespace Dash
             }
             else
             {
-                ParentSelectionElement?.SetSelectedElement(null);
+                // ParentSelectionElement?.SetSelectedElement(null);
             }
         }
     }

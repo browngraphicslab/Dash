@@ -9,10 +9,7 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:DocumentCanvasViewModel}"
-    PointerWheelChanged="UserControl_PointerWheelChanged"
-    ManipulationMode="All"
-    ManipulationDelta="UserControl_ManipulationDelta"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting">
+    ManipulationMode="All">
 
     <Grid x:Name="xOuterGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ManipulationMode="All" Background="LightBlue" SizeChanged="XOuterGrid_OnSizeChanged">
         <Grid.Clip>
