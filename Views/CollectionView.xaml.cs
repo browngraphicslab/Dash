@@ -323,7 +323,7 @@ namespace Dash
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
 
-            var collectionButtons = new List<MenuButton>()
+            var collectionButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
                 {
@@ -339,7 +339,7 @@ namespace Dash
             if (ParentDocument != MainPage.Instance.MainDocView)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
 
-            var documentButtons = new List<MenuButton>()
+            var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
                 {
