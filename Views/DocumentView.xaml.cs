@@ -331,15 +331,29 @@ namespace Dash
                 xDragImage.Opacity = 0;
                 Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
+                UpdateBinding(true); 
             }
-            else
+            else if (xIcon.Visibility == Visibility.Visible)
             {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xDragImage.Opacity = 1;
                 Tapped += OnTapped;
+                UpdateBinding(false);
             }
+        }
+
+        /// <summary>
+        /// Updates the bindings on the lines when documentview is minimized/vice versa 
+        /// </summary>
+        /// <param name="becomeSmall"></param>
+        private void UpdateBinding(bool becomeSmall)
+        {
+            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            if (view == null) return; // we can't always assume we're on a collection		
+
+            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this); 
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -367,7 +381,7 @@ namespace Dash
 
 
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        public void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (ViewModel.IsInInterfaceBuilder)
             {

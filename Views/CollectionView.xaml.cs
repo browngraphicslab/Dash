@@ -87,9 +87,11 @@ namespace Dash
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
+
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
+
                 ParentDocument.IsMainCollection = true;
                 ParentSelectionElement?.SetSelectedElement(this);
                 xOuterGrid.BorderThickness = new Thickness(0);
@@ -318,11 +320,10 @@ namespace Dash
                 {
                     RotateOnTap = true
                 },
-                new MenuButton(Symbol.ViewAll, "Grid", Colors.SteelBlue, setGrid),
-                new MenuButton(Symbol.List, "List", Colors.SteelBlue, setList),
-                new MenuButton(Symbol.View, "Freeform", Colors.SteelBlue, setFreeform),
+                //toggle grid/list/freeform view buttons 
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, Colors.SteelBlue, new List<Action> { setGrid, setList, setFreeform}),
                 new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
-                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson))
+                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson)),
             };
 
             if (ParentDocument != MainPage.Instance.MainDocView)
@@ -391,7 +392,7 @@ namespace Dash
         public override void OnLowestActivated(bool isLowestSelected)
         {
             if(_colMenu == null && isLowestSelected) OpenMenu();
-            else if (_colMenu != null && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
+            else if (_colMenu != null && !isLowestSelected && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
 
 

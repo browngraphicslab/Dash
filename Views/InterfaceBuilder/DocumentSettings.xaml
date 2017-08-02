@@ -13,7 +13,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
@@ -47,14 +47,14 @@
                                           SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DocumentType.Type}"></TextBlock>
+                                            <TextBlock Text="{Binding LayoutName}"></TextBlock>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                                 
                                 <!--NEW LAYOUT OPTIONS DROPDOWN--> 
                                 <ComboBox x:Name="xAddLayoutComboBox" HorizontalAlignment="Stretch" Grid.Column="1" Visibility="Collapsed" MinWidth="36"
-                                          BorderBrush="Transparent" FontSize="12" >
+                                          BorderBrush="Transparent" FontSize="12" IsDropDownOpen="True">
                                 </ComboBox>
 
                                 <!--ADD LAYOUT BUTTON-->
@@ -67,6 +67,9 @@
                     <local:SettingsPaneBlock.Title>LAYOUT</local:SettingsPaneBlock.Title>
                 </local:SettingsPaneBlock>
             </Grid>
+
+            
+            
         </Grid>
     </Grid>
 </UserControl>

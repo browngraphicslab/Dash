@@ -49,11 +49,10 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private Dictionary<FieldReference, Path> _lineDict = new Dictionary<FieldReference, Path>();
+        private Dictionary<BezierConverter, Path> _lineDict = new Dictionary<BezierConverter, Path>();
         private Canvas itemsPanelCanvas;
 
         #endregion
-
 
         private ManipulationControls _manipulationControls;
 
@@ -107,7 +106,52 @@ namespace Dash
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
 
+
+
         #region DraggingLinesAround
+
+        /// <summary>
+        /// Update the bindings on lines when documentview is minimized to icon view 
+        /// </summary>
+        /// <param name="becomeSmall">whether the document has minimized or regained normal view</param>
+        /// <param name="docView">the documentview that calls the method</param>
+        public void UpdateBinding(bool becomeSmall, DocumentView docView)
+        {
+            foreach (var line in _lineDict)
+            {
+                var converter = line.Key;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                Debug.Assert(view1 != null);
+                Debug.Assert(view2 != null);
+                if (view1 == docView)
+                {
+                    if (becomeSmall)
+                    {
+                        if (!(converter.Element1 is Grid)) converter.Temp1 = converter.Element1;
+                        converter.Element1 = docView.xIcon;
+                    }
+                    else
+                    {
+                        converter.Element1 = converter.Temp1;
+                        //converter.Temp1 = converter.Element1;
+                    }
+                }
+                else if (view2 == docView)
+                {
+                    if (becomeSmall)
+                    {
+                        if (!(converter.Element2 is Grid)) converter.Temp2 = converter.Element2;
+                        converter.Element2 = docView.xIcon;
+                    }
+                    else
+                    {
+                        converter.Element2 = converter.Temp2;
+                        //converter.Temp2 = converter.Element2;
+                    }
+                }
+            }
+        }
 
         public void StartDrag(IOReference ioReference)
         {
@@ -164,8 +208,8 @@ namespace Dash
 
             if (!ioReference.IsOutput)
             {
-                CheckLinePresence(ioReference.FieldReference);
-                _lineDict.Add(ioReference.FieldReference, _connectionLine);
+                CheckLinePresence(_converter);
+                _lineDict.Add(_converter, _connectionLine);
             }
         }
 
@@ -195,7 +239,7 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            if (_currReference.FieldReference == null) return; 
+            if (_currReference.FieldReference == null) return;
 
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
@@ -215,8 +259,8 @@ namespace Dash
 
             if (!ioReference.IsOutput && _connectionLine != null)
             {
-                CheckLinePresence(ioReference.FieldReference);
-                _lineDict.Add(ioReference.FieldReference, _connectionLine);
+                CheckLinePresence(_converter);
+                _lineDict.Add(_converter, _connectionLine);
                 _connectionLine = null;
             }
             CancelDrag(ioReference.PointerArgs.Pointer);
@@ -230,7 +274,7 @@ namespace Dash
             if (_currReference != null)
             {
                 cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
-                EndDrag(ioReference); 
+                EndDrag(ioReference);
             }
         }
 
@@ -239,12 +283,12 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(FieldReference model)
+        private void CheckLinePresence(BezierConverter converter)
         {
-            if (!_lineDict.ContainsKey(model)) return;
-            var line = _lineDict[model];
+            if (!_lineDict.ContainsKey(converter)) return;
+            var line = _lineDict[converter];
             itemsPanelCanvas.Children.Remove(line);
-            _lineDict.Remove(model);
+            _lineDict.Remove(converter);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -259,7 +303,6 @@ namespace Dash
 
 
         #endregion
-
 
         #region Manipulation
 
@@ -354,7 +397,6 @@ namespace Dash
             {
                 SetInitialTransformOnBackground();
             }, TaskScheduler.FromCurrentSynchronizationContext());
-
         }
 
         private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
@@ -377,13 +419,10 @@ namespace Dash
             {
                 currentScale *= numberOfBackgroundRows;
             }
-
             return currentScale;
         }
 
         #endregion
-
-
 
         #region Clipping
 
@@ -403,6 +442,5 @@ namespace Dash
         {
             DBTest.ResetCycleDetection();
         }
-
     }
 }

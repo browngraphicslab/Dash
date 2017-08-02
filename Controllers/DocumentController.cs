@@ -90,6 +90,8 @@ namespace Dash
             {
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
+
+            LayoutName = model.DocumentType.Type; 
             // Add Events
         }
 
@@ -100,7 +102,7 @@ namespace Dash
         /// </summary>
         public DocumentModel DocumentModel { get; }
 
-
+        public string LayoutName { get; set; }
         /// <summary>
         ///     A wrapper for <see cref="Dash.DocumentModel.DocumentType" />. Change this to propogate changes
         ///     to the server and across the client

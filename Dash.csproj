@@ -102,6 +102,7 @@
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Converters\StringToFontweightConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
     <Compile Include="Models\RectFieldModel.cs" />
     <Compile Include="Push\IPushController.cs" />
