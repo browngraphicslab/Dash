@@ -346,6 +346,10 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Updates the bindings on the lines when documentview is minimized/vice versa 
+        /// </summary>
+        /// <param name="becomeSmall"></param>
         private void UpdateBinding(bool becomeSmall)
         {
             var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();

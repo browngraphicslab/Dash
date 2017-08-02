@@ -63,7 +63,7 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
-        
+
         //private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         //{
         //    var cvm = DataContext as CollectionViewModel;
@@ -80,16 +80,21 @@ namespace Dash
         //    //e.Handled = true;
         //}
 
+        /// <summary>
+        /// Update the bindings on lines when documentview is minimized to icon view 
+        /// </summary>
+        /// <param name="becomeSmall">whether the document has minimized or regained normal view</param>
+        /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
             foreach (var line in _lineDict)
             {
                 var converter = line.Key;
-                //how to tell which side to change?????? -> get the firstacnestorof documentview type for the frameworkelement LOLOL  
-                //also how do you change back?????????? -> use Temp 
-                var view = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                Debug.Assert(view != null); 
-                if (view == docView)
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                Debug.Assert(view1 != null);
+                Debug.Assert(view2 != null);
+                if (view1 == docView)
                 {
                     if (becomeSmall)
                     {
@@ -97,9 +102,9 @@ namespace Dash
                         converter.Element1 = docView.xIcon;
                     }
                     else
-                        converter.Element1 = converter.Temp1; 
+                        converter.Element1 = converter.Temp1;
                 }
-                else
+                else if (view2 == docView)
                 {
                     if (becomeSmall)
                     {
@@ -204,7 +209,7 @@ namespace Dash
         {
             OperatorView.IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             OperatorView.IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
-            
+
             //if (!(DataContext as CollectionViewModel).IsEditorMode)
             //{
             //    return;
@@ -217,7 +222,7 @@ namespace Dash
                 UndoLine();
                 return;
             }
-            if (_currReference.FieldReference == null) return; 
+            if (_currReference.FieldReference == null) return;
 
             string outId;
             string inId;
@@ -236,11 +241,11 @@ namespace Dash
             {
                 if (_currReference.IsOutput)
                 {
-              //      CollectionView.Graph.RemoveEdge(outId, inId);
+                    //      CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 else
                 {
-                //    CollectionView.Graph.RemoveEdge(outId, inId);
+                    //    CollectionView.Graph.RemoveEdge(outId, inId);
                 }
                 CancelDrag(ioReference.PointerArgs.Pointer);
                 Debug.WriteLine("Cycle detected");
@@ -280,7 +285,7 @@ namespace Dash
             if (_currReference != null)
             {
                 cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
-                EndDrag(ioReference); 
+                EndDrag(ioReference);
             }
         }
 
@@ -438,7 +443,7 @@ namespace Dash
             var renderInverse = canvas.RenderTransform.Inverse;
             Debug.Assert(inverse != null);
             Debug.Assert(renderInverse != null);
-             
+
             canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
         }
 
@@ -491,7 +496,7 @@ namespace Dash
                 _bezier = new BezierSegment();
                 _figure.Segments.Add(_bezier);
                 _col.Add(_figure);
-                
+
                 Pos2 = Element1.TransformToVisual(ToElement)
                     .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
             }
