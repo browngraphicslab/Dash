@@ -13,7 +13,9 @@
     ManipulationMode="All"
     ManipulationDelta="CollectionView_OnManipulationDelta"
     PointerWheelChanged="CollectionView_OnPointerWheelChanged"
-    RightTapped="CollectionView_OnRightTapped">
+    RightTapped="CollectionView_OnRightTapped"
+    Loaded="CollectionView_Loaded"
+    Tapped="CollectionView_Tapped">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -31,7 +33,9 @@
                       Margin="5,5,5,5"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
-                      SizeChanged="DocumentViewContainerGrid_OnSizeChanged">
+                      SizeChanged="DocumentViewContainerGrid_OnSizeChanged"
+                      DragOver="CollectionGrid_DragOver"
+                      Drop="CollectionGrid_Drop">
                     <Grid.Clip>
                         <RectangleGeometry x:Name="ClipRect" />
                     </Grid.Clip>
@@ -42,7 +46,8 @@
                          Style="{StaticResource xLinkHandle}"
                          HorizontalAlignment="Right"
                          PointerPressed="ConnectionEllipse_OnPointerPressed"
-                         PointerReleased="ConnectionEllipse_OnPointerReleased" />
+                         PointerReleased="ConnectionEllipse_OnPointerReleased"
+                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"/>
             </Grid>
         </Grid>
     </Grid>

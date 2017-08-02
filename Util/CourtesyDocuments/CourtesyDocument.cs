@@ -279,8 +279,9 @@ namespace Dash
             renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-                if (view.CanLink)
+                if (freeform != null && freeform.CanLink)
                 {
                     args.Complete(); // This was stopping manipulations from happening on the first try? 
                     //view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
@@ -292,17 +293,18 @@ namespace Dash
             renderElement.Holding += delegate(object sender, HoldingRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = true;
-                if (view.CurrentView is CollectionFreeformView)
-                    (view.CurrentView as CollectionFreeformView).StartDrag(new IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
-                        renderElement.GetFirstAncestorOfType<DocumentView>()));
+                if (freeform != null) freeform.CanLink = true;
+                (view.CurrentView as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, freeform.PointerArgs, renderElement,
+                    renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.PointerArgs = args;
+                if (freeform != null) freeform.PointerArgs = args;
                 args.Handled = true;
                 if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
                 {
@@ -310,7 +312,7 @@ namespace Dash
                 }
                 else if (args.GetCurrentPoint(view).Properties.IsRightButtonPressed)
                 {
-                    view.CanLink = true;
+                    if (freeform != null) freeform.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
                         (view.CurrentView as CollectionFreeformView).StartDrag(new IOReference(fieldKey, fmController, reference, true, args, renderElement,
                             renderElement.GetFirstAncestorOfType<DocumentView>()));
@@ -319,8 +321,9 @@ namespace Dash
             renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-                    view.CanLink = false;
+                if (freeform != null) freeform.CanLink = false;
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(

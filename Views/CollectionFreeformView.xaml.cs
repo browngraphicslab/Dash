@@ -29,7 +29,7 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView : UserControl
     {
-        public bool CanLink;
+        public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
