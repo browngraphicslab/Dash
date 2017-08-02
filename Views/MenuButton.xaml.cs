@@ -168,6 +168,7 @@ namespace Dash
 
         public void Dispose()
         {
+            if (_button == null) return; 
             _button.Tapped -= Button_Tapped;
             _button.DoubleTapped -= Button_DoubleTapped;
         }
