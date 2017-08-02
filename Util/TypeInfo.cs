@@ -32,7 +32,7 @@ namespace Dash
                 case TypeInfo.Document:
                     return new DocumentFieldModelController(null);
                 case TypeInfo.Reference:
-                    return new DocumentReferenceController("", null);
+                    return new ReferenceFieldModelController("", null);
                 case TypeInfo.Operator: //TODO What should this do?
                     return null;
                 case TypeInfo.Point:
@@ -88,7 +88,7 @@ namespace Dash
                     return new DocumentFieldModelController(data as DocumentController);
                 case TypeInfo.Reference:
                     var kvp = (KeyValuePair<Key, string>) data;
-                    return new DocumentReferenceController(kvp.Value, kvp.Key);
+                    return new ReferenceFieldModelController(kvp.Value, kvp.Key);
                 case TypeInfo.Operator: //TODO What should this do?
                     return null;
                 case TypeInfo.Point:
