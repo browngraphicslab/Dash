@@ -73,15 +73,12 @@ namespace Dash
 
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            
+
             outputs[OutputCollection] = new DocumentCollectionFieldModelController();
-            
-            if (inputs[DocumentCollectionFieldModelController.CollectionKey] != null)
-            {
-                outputs[OutputCollection] =
-                inputs[DocumentCollectionFieldModelController.CollectionKey] as
-                    DocumentCollectionFieldModelController;
-            }
+
+            outputs[OutputCollection] =
+            inputs[DocumentCollectionFieldModelController.CollectionKey] as
+                DocumentCollectionFieldModelController;
         }
 
         private HttpMethod GetRequestType(NumberFieldModelController controller)

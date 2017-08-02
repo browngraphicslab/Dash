@@ -63,7 +63,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                OnFieldModelUpdated();
+                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;

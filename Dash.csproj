@@ -96,18 +96,25 @@
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
+    <Compile Include="Controllers\Operators\CompoundOperator.cs" />
+    <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
+    <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
     <Compile Include="Models\RectFieldModel.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CollectionMapView.xaml.cs">
+      <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
@@ -482,6 +489,10 @@
     <Page Include="Views\ApiOpView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\CollectionMapView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>

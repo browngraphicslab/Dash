@@ -78,14 +78,13 @@ namespace Dash.Controllers.Operators
         
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-
-            var retPathString = (inputs[ReturnDocKey] as TextFieldModelController).Data;
+            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data;
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
             var returnPath   = new List<string>(retPathString.Trim(' ', '\r').Split('.'));
-            var searchForDoc = (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
+            var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
             if (searchForDoc == DBTest.DBNull)
                 searchForDoc = null;
-            var dbDocs       = (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
+            var dbDocs       = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
             if (dbDocs == null)
                 return;
             if (returnPath == null)
@@ -193,7 +192,7 @@ namespace Dash.Controllers.Operators
 
         public override FieldModelController Copy()
         {
-            return new DivideOperatorFieldModelController(OperatorFieldModel);
+            return new DBSearchOperatorFieldModelController(OperatorFieldModel as DBSearchOperatorFieldModel);
         }
     }
 }
