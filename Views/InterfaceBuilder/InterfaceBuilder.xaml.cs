@@ -161,9 +161,6 @@ namespace Dash
                     col?.AddDocument(newLayoutDocument);
                 }
             }
-            Debug.WriteLine($"IB Added {DocumentController.addCount}, Removed {DocumentController.removeCount}, {DocumentController.totalCount}, {DocumentController.addCount - DocumentController.removeCount}");
-            DocumentController.addCount = 0;
-            DocumentController.removeCount = 0;
         }
 
         private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
