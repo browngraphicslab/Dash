@@ -43,14 +43,15 @@ namespace Dash
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
-        public DocumentController CurrentLayout { get; set; } 
-
-        private void BindLayoutText()               
+        /// <summary>
+        /// Bind the textbox that shows the layout's name to the current layout being used 
+        /// </summary>
+        private void BindLayoutText(DocumentController currentLayout)               
         {
             var textBinding = new Binding
             {
-                Source = CurrentLayout,
-                Path = new PropertyPath(nameof(CurrentLayout.LayoutName)),
+                Source = /*CurrentLayout*/ currentLayout,
+                Path = new PropertyPath(nameof(currentLayout.LayoutName)),
                 Mode = BindingMode.TwoWay 
             };
             xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
@@ -232,10 +233,11 @@ namespace Dash
             _selectedContainer = sender;
             if (newSettingsPane != null)
             {
+                // if newSettingsPane is a general document setting, bind the layoutname textbox 
                 if (newSettingsPane is FreeformSettings)
                 {
-                    CurrentLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
-                    BindLayoutText(); 
+                    var currLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
+                    BindLayoutText(currLayout); 
                 }
                 xSettingsPane.Children.Add(newSettingsPane);
             }

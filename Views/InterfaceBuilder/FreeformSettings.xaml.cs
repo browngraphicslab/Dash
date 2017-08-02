@@ -45,8 +45,15 @@ namespace Dash
                 TypeBlock.Text =  "Document (" + layoutDocument.DocumentType.Type + ")";
             }
 
-            // TODO typeswitch on DocumentType to add like spacing and all that shit for grid / list 
-            // TODO and change the factory thing ............... well, 
+            if (layoutDocument.DocumentType.Type == "Spacing Layout")
+            {
+                xSpacingGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                GridViewSettings.BindSpacing(layoutDocument, context, xSpacingSliderTextBox, xSpacingSlider); 
+            } else if (layoutDocument.DocumentType.Type == "ListView Layout")
+            {
+                xSpacingGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                ListViewSettings.BindSpacing(layoutDocument, context, xSpacingSliderTextBox, xSpacingSlider); 
+            }
 
             xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
