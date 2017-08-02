@@ -33,8 +33,8 @@ namespace Dash
         public PointerRoutedEventArgs PointerArgs;
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
-        public const float MaxScale = 10;
-        public const float MinScale = 0.001f;
+        public const float MaxScale = 4;
+        public const float MinScale = 0.25f;
 
         /// <summary>
         /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
@@ -425,6 +425,15 @@ namespace Dash
 
         #endregion
 
-       
+
+
+        #region Clipping
+
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+        }
+
+        #endregion
     }
 }

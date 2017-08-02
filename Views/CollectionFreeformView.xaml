@@ -16,7 +16,10 @@
     ManipulationDelta="UserControl_ManipulationDelta"
     PointerWheelChanged="UserControl_PointerWheelChanged"
     >
-    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged">
+        <Grid.Clip>
+            <RectangleGeometry x:Name="xClippingRect"/>
+        </Grid.Clip>
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 

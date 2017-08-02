@@ -22,6 +22,7 @@
                 <ColumnDefinition x:Name="xMenuColumn" Width="0"/>
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
+            
             <!-- Options Menu-->
             <Canvas x:Name="xMenuCanvas"/>
 
@@ -33,12 +34,8 @@
                       Margin="5,5,5,5"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
-                      SizeChanged="DocumentViewContainerGrid_OnSizeChanged"
                       DragOver="CollectionGrid_DragOver"
                       Drop="CollectionGrid_Drop">
-                    <Grid.Clip>
-                        <RectangleGeometry x:Name="ClipRect" />
-                    </Grid.Clip>
                     <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"

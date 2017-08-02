@@ -96,15 +96,6 @@ namespace Dash
             }
         }
 
-        private void DocumentViewContainerGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            var borderThickness = DocumentViewContainerGrid.BorderThickness;
-            ClipRect.Rect = new Rect(borderThickness.Left, 
-                borderThickness.Top, 
-                e.NewSize.Width - borderThickness.Left * 2, 
-                e.NewSize.Height - borderThickness.Top * 2);
-        }
-
         #region Operator connection stuff
 
         /// <summary>
