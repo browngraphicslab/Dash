@@ -1,5 +1,4 @@
-﻿using System;
-using Windows.UI.Xaml;
+﻿ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using DashShared;
@@ -8,7 +7,10 @@ namespace Dash
 {
     public class TextFieldModelController : FieldModelController
     {
-        public TextFieldModelController(string data) : base(new TextFieldModel(data)) { }
+        public TextFieldModelController(string data) : base(new TextFieldModel(data))
+        {
+            Data = data; 
+        }
 
         /// <summary>
         ///     The <see cref="TextFieldModel" /> associated with this <see cref="TextFieldModelController" />,
@@ -23,10 +25,10 @@ namespace Dash
             {
                 if (SetProperty(ref TextFieldModel.Data, value))
                 {
+                    OnFieldModelUpdated();
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
             }
         }
 
@@ -52,7 +54,6 @@ namespace Dash
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
-
         public override FieldModelController GetDefaultController()
         {
             return new TextFieldModelController("Default Value");
@@ -61,6 +62,11 @@ namespace Dash
         public override string ToString()
         {
             return Data;
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new TextFieldModelController(Data);
         }
     }
 }

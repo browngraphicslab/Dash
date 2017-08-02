@@ -32,7 +32,7 @@ namespace Dash
                     // update local
                     // update server    
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
 
@@ -47,7 +47,7 @@ namespace Dash
             {
                 Source = new BitmapImage(ImageSource),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
             };
 
             var imageSourceBinding = new Binding
@@ -77,7 +77,7 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
                 {
-                    FireFieldModelUpdated();
+                    OnFieldModelUpdated();
                     // update local
                     // update server
                 }
@@ -88,6 +88,11 @@ namespace Dash
         public override string ToString()
         {
             return ImageSource.ToString();
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new ImageFieldModelController(Data.UriSource);
         }
     }
 }

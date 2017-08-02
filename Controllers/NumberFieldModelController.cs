@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using Windows.Security.Authentication.Web.Provider;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -18,6 +19,7 @@ namespace Dash
         /// <param name="numberFieldModel">The model which this controller will be operating over</param>
         private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
         {
+            Data = numberFieldModel.Data;
         }
 
         /// <summary>
@@ -62,7 +64,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;
@@ -70,6 +72,11 @@ namespace Dash
         public override string ToString()
         {
             return Data.ToString();
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new NumberFieldModelController(Data);
         }
     }
 }

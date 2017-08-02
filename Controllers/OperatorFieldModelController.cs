@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Data;
 using DashShared;
 
 namespace Dash
@@ -23,7 +22,7 @@ namespace Dash
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(DocumentController doc, Context context);
+        public abstract void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
@@ -54,6 +53,11 @@ namespace Dash
         public override FieldModelController GetDefaultController()
         {
             throw new NotImplementedException();
+        }
+
+        public virtual void SetDocumentController(DocumentController dc)
+        {
+
         }
     }
 }

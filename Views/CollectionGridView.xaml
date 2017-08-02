@@ -17,15 +17,19 @@
                   VerticalAlignment="Stretch"
                   ScrollViewer.VerticalScrollMode="Enabled"
                   ScrollViewer.VerticalScrollBarVisibility="Hidden"
-                  CanDragItems="True"
-                  CanReorderItems="True"
+                  CanDragItems="{Binding CanDragItems}"
                   AllowDrop="True"
-                  ManipulationMode="None">
+                  ManipulationMode="None"
+                  Tapped="xGridView_Tapped">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                            Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                        <dash:DocumentView Width="250" Height="250" DataContext="{Binding}" IsHitTestVisible="False" />
+                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"
+                        Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
+                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
+                            <dash:DocumentView DataContext="{Binding}" RenderTransform="{Binding GridViewIconGroupTransform}" IsHitTestVisible="False"/>
+                        </Canvas>
                     </Border>
                 </DataTemplate>
             </GridView.ItemTemplate>

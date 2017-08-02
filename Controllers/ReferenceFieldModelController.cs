@@ -1,32 +1,69 @@
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Dash
 {
-    public abstract class ReferenceFieldModelController : FieldModelController
+    public class ReferenceFieldModelController : FieldModelController
     {
-        protected ReferenceFieldModelController(ReferenceFieldModel model) : base(model)
+        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference))
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
             //var fmc = ContentController.GetController<DocumentController>(ReferenceFieldModel.DocId).GetDereferencedField(ReferenceFieldModel.FieldKey, DocContextList);
-
-            //if (fmc != null)
-                //fmc.FieldModelUpdated += Fmc_FieldModelUpdatedEvent;
+            var docController = reference.GetDocumentController(null);
+            docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public Key FieldKey
-        {
-            get { return ReferenceFieldModel.FieldKey; }
-            set
-            {
-                if (SetProperty(ref ReferenceFieldModel.FieldKey, value))
-                {
+        public ReferenceFieldModelController(string documentId, Key fieldKey) : this(
+            new DocumentFieldReference(documentId, fieldKey))
+        { }
 
-                }
-            }
+        public ReferenceFieldModelController(FieldReference documentReference, Key fieldKey) : this(
+            new DocumentPointerFieldReference(documentReference, fieldKey))
+        {
+        }
+
+        private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            OnFieldModelUpdated(args.Context);
+        }
+
+        public override void Dispose()
+        {
+            var docController = FieldReference.GetDocumentController(null);
+            docController.RemoveFieldUpdatedListener(FieldKey, DocFieldUpdated);
+        }
+
+        public FieldReference FieldReference
+        {
+            get { return ReferenceFieldModel.Reference; }
+            set { ReferenceFieldModel.Reference = value; }
+        }
+
+        public Key FieldKey => FieldReference.FieldKey;
+
+        public DocumentController GetDocumentController(Context context)
+        {
+            return FieldReference.GetDocumentController(context);
+        }
+
+        public override FieldModelController Dereference(Context context)
+        {
+            return FieldReference.Dereference(context);
+        }
+
+        public override FieldModelController DereferenceToRoot(Context context)
+        {
+            return FieldReference.DereferenceToRoot(context);
+        }
+
+        public string GetDocumentId(Context context)
+        {
+            return FieldReference.GetDocumentId(context);
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Reference;
@@ -37,36 +74,6 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
-        public abstract DocumentController GetDocumentController(Context context = null);
-
-        public override FieldModelController Dereference(Context context = null)
-        {
-            if (context != null)
-            {
-                FieldModelController controller;
-                if (context.TryDereferenceToRoot(this, out controller))
-                {
-                    return controller;
-                }
-            }
-            return GetDocumentController(context).GetField(FieldKey);
-        }
-
-        public override FieldModelController DereferenceToRoot(Context context = null)
-        {
-            FieldModelController reference = this;
-            while (reference is ReferenceFieldModelController)
-            {
-                reference = reference.Dereference(context);
-            }
-            return reference;
-        }
-
-        public override T DereferenceToRoot<T>(Context context = null)
-        {
-            return DereferenceToRoot(context) as T;
-        }
-
         public override FrameworkElement GetTableCellView()
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
@@ -74,12 +81,17 @@ namespace Dash
 
         public override FieldModelController GetDefaultController()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
-            textBlock.Text = $"Reference to a field: {ReferenceFieldModel.FieldKey.Name}";
+            textBlock.Text = $"Reference to a field: {FieldKey.Name}";
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new ReferenceFieldModelController(FieldReference);
         }
     }
 }

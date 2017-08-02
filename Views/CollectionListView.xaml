@@ -20,10 +20,10 @@
                           ScrollViewer.VerticalScrollMode="Disabled"
                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
                           ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          CanDragItems="True"
-                          CanReorderItems="True"
+                          CanDragItems="{Binding CanDragItems}"
                           AllowDrop="True"
-                  ManipulationMode="None">
+                          Tapped="HListView_Tapped"  
+                          ManipulationMode="None" Style="{StaticResource ListViewStyle_SelectionEdit}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
@@ -31,13 +31,11 @@
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                        <dash:DocumentView 
-                                    Width="250" 
-                                    Height="250" 
-                                    DataContext="{Binding}"
-                                    IsHitTestVisible="False">
-                        </dash:DocumentView>
+                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}">
+                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
+                            <dash:DocumentView DataContext="{Binding}" RenderTransform="{Binding GridViewIconGroupTransform}" IsHitTestVisible="False"/>
+                        </Canvas>
                     </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>

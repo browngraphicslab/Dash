@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using DashShared;
 
-namespace Dash.Models.OperatorModels.Set
+namespace Dash
 {
     class IntersectionOperatorModelController : OperatorFieldModelController
 
@@ -30,23 +29,24 @@ namespace Dash.Models.OperatorModels.Set
         {
         }
 
-        public override void Execute(DocumentController doc, Context context)
+        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            DocumentCollectionFieldModelController setA = doc.GetDereferencedField(AKey, context) as DocumentCollectionFieldModelController;
-            DocumentCollectionFieldModelController setB = doc.GetDereferencedField(BKey, context) as DocumentCollectionFieldModelController;
-            if (setA.InputReference == null || setB.InputReference == null)//One or more of the inputs isn't set yet
-            {
-                return;
-            }
+            DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
+            DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController) inputs[BKey];
 
             // Intersect by comparing all fields 
             HashSet<DocumentController> result = Util.GetIntersection(setA, setB); 
             //(doc.GetDereferencedField(IntersectionKey, docContextList) as DocumentCollectionFieldModelController).SetDocuments(result.ToList());
-            doc.SetField(IntersectionKey, new DocumentCollectionFieldModelController(result), true);
-            Debug.WriteLine("intersection count :" + result.Count);
+            outputs[IntersectionKey] = new DocumentCollectionFieldModelController(result);
+            //Debug.WriteLine("intersection count :" + result.Count);
 
             // Intersect by Document ID 
             //(doc.GetField(IntersectionKey) as DocumentCollectionFieldModelController).SetDocuments(setA.GetDocuments().Intersect(setB.GetDocuments()).ToList());
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new IntersectionOperatorModelController(OperatorFieldModel);
         }
     }
 }

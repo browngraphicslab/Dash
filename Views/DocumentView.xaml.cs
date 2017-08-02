@@ -7,21 +7,20 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
-using DashShared;
-using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using DocumentMenu;
 using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.UI.Xaml.Media.Animation;
+using Windows.UI.Xaml.Controls.Primitives;
+using DashShared;
+using Dash.Controllers.Operators;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 namespace Dash
 {
 
-    public sealed partial class DocumentView : UserControl
+    public sealed partial class DocumentView : SelectionElement
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
@@ -34,8 +33,7 @@ namespace Dash
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
 
-
-        public bool ProportionalScaling;
+        public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
         public event OperatorView.IODragEventHandler IODragStarted;
@@ -50,9 +48,9 @@ namespace Dash
         {
             this.InitializeComponent();
             DataContextChanged += DocumentView_DataContextChanged;
-            
+
             // add manipulation code
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY ;
+            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             manipulator = new ManipulationControls(this);
             manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
 
@@ -68,28 +66,45 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-
-            Loaded += (s, e) => ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            DoubleTapped += OnTapped;         
+            Tapped += OnTapped;
+            DoubleTapped += ExpandContract_DoubleTapped;
         }
 
+
         /// <summary>
-        /// Creates the context menu for the document.
+        /// When a field is dragged onto documentview, adds that field to the document 
         /// </summary>
+        private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
+        {
+            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            if (view == null) return; // we can't always assume we're on a collection		
+
+            view.CanLink = false;
+
+            args.Handled = true;
+            (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
+                new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                    OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+        }
+
+        private void This_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+        }
+
         private void SetUpMenu()
         {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
-            var layout = new Action(OpenLayout);
-            var copy = new Action(CopyDocument);
-            var delete = new Action(DeleteDocument);
-            var makeDelegate = new Action(MakeDelegate);
             var documentButtons = new List<MenuButton>()
             {
-                new MenuButton(Symbol.Pictures, "Layout", bgcolor, layout),
-                new MenuButton(Symbol.Copy, "GetCopy", bgcolor, copy),
-                new MenuButton(Symbol.SetTile, "Delegate", bgcolor, makeDelegate),
-                new MenuButton(Symbol.Delete, "Delete", bgcolor, delete)
+                new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
+                new MenuButton(Symbol.Copy, "Copy",bgcolor,CopyDocument),
+                new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
+                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
+                new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
+                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine),
+                new MenuButton(Symbol.Page, "Json",bgcolor, GetJson)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding()
@@ -100,23 +115,33 @@ namespace Dash
             };
             _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
+            ViewModel.OpenMenu();
         }
 
 
         /// <summary>
         /// Update viewmodel when manipulator moves document
         /// </summary>
-        /// <param name="translationDelta"></param>
-        private void ManipulatorOnOnManipulatorTranslated(Point translationDelta)
+        /// <param name="delta"></param>
+        private void ManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
         {
-            var documentViewModel = this.DataContext as DocumentViewModel;
-            documentViewModel.Position = new Point(documentViewModel.Position.X + translationDelta.X, documentViewModel.Position.Y + translationDelta.Y);
+            var currentTranslate = ViewModel.GroupTransform.Translate;
+            var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
+
+            var deltaTranslate = delta.Translate;
+            var deltaScaleAmount = delta.ScaleAmount;
+
+            var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
+            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh.a
+            var scaleCenter = new Point(/*ActualWidth / 2, ActualHeight / 2*/);
+            var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
+
+            ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
         {
             DataContext = documentViewModel;
-            
         }
 
         /// <summary>
@@ -126,17 +151,12 @@ namespace Dash
         /// </summary>
         /// <param name="dx"></param>
         /// <param name="dy"></param>
-        public void Resize(double dx = 0, double dy = 0)
+        public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
-            dvm.Width = ActualWidth + dx;
-            dvm.Height = ActualHeight + dy;
-
-
-            // todo: remove this and replace with binding // debug why x:Bind fails
-            Width = ActualWidth + dx;
-            Height = ActualHeight + dy;
-            
+            dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
+            dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
+            return new Size(dvm.Width, dvm.Height);
         }
 
         /// <summary>
@@ -165,7 +185,16 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            Resize(p.X, p.Y);
+            var s = Resize(p.X, p.Y);
+            var position = ViewModel.GroupTransform.Translate;
+            var dx = Math.Max(p.X, 0);
+            var dy = Math.Max(p.Y, 0);
+            //p = new Point(dx, dy);
+
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
+                                                                new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
+                                                                ViewModel.GroupTransform.ScaleAmount); 
+
             e.Handled = true;
         }
 
@@ -193,15 +222,54 @@ namespace Dash
             // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
         }
 
-        private void updateIcon() {
+        private void updateIcon()
+        {
             // when you want a new icon, you have to add a check for it here!
-            if (ViewModel.IconType == IconTypeEnum.Document) {
+            if (ViewModel.IconType == IconTypeEnum.Document)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/doc-icon.png"));
-            } else if (ViewModel.IconType == IconTypeEnum.Collection) {
+            }
+            else if (ViewModel.IconType == IconTypeEnum.Collection)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/col-icon.png"));
-            } else if (ViewModel.IconType == IconTypeEnum.Api) {
+            }
+            else if (ViewModel.IconType == IconTypeEnum.Api)
+            {
                 xIconImage.Source = new BitmapImage(new Uri("ms-appx:///Assets/api-icon.png"));
             }
+        }
+
+
+        void initDocumentOnDataContext()
+        {
+
+            // document type specific styles >> use VERY sparringly
+            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
+            if (docType.Type != null)
+            {
+                // hide white background & drop shadow on operator views
+                if (docType.Type.Equals("operator"))
+                {
+                    XGrid.Background = new SolidColorBrush(Colors.Transparent);
+                    xBorder.Opacity = 0;
+                }
+            }
+            else
+            {
+
+                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
+            }
+
+            // if there is a readable document type, use that as label
+            var sourceBinding = new Binding
+            {
+                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
+                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
+
         }
 
         /// <summary>
@@ -213,112 +281,78 @@ namespace Dash
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             // if _vm has already been set return
-            if (ViewModel != null) {
+            if (ViewModel != null || DataContext == null)
                 return;
-            }
+
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
 
-            // this gets called once when the datacontext is initially set!
             initDocumentOnDataContext();
-        }
-
-        /// <summary>
-        /// Called when the DataContext of a document is initially set.
-        /// </summary>
-        void initDocumentOnDataContext() {
-
-            // document type specific styles >> use VERY sparringly
-            var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
-            if (docType.Type != null) {
-                // hide white background & drop shadow on operator views
-                if (docType.Type.Equals("operator")) {
-                    XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                    xBorder.Opacity = 0;
-                }
-            } else {
-
-                ViewModel.DocumentController.DocumentModel.DocumentType.Type = docType.Id.Substring(0, 5);
-            }
-
-            // if there is a readable document type, use that as label
-            var sourceBinding = new Binding {
-                Source = ViewModel.DocumentController.DocumentModel.DocumentType,
-                Path = new PropertyPath(nameof(ViewModel.DocumentController.DocumentModel.DocumentType.Type)),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            xIconLabel.SetBinding(TextBox.TextProperty, sourceBinding);
-
-
-            Debug.WriteLine("view: " + ViewModel.DocumentController.DocumentModel.DocumentType.Type);
-
-            Debug.WriteLine("text: " + xIconLabel.Text);
-
-
             SetUpMenu();
             ViewModel.CloseMenu();
 
-            #region LUKE HACKED THIS TOGETHER MAKE HIM FIX IT
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                SetInterfaceBuilderSpecificSettings();
+            }
 
-            //ViewModel.PropertyChanged += (o, eventArgs) =>
+        }
+
+        private void SetInterfaceBuilderSpecificSettings()
+        {
+            //if (ViewModel != null && ViewModel.MenuOpen)
             //{
-            //    if (eventArgs.PropertyName == "IsMoveable")
-            //    {
-            //        if (ViewModel.IsMoveable)
-            //        {
-            //            manipulator.AddAllAndHandle();
-            //        }
-            //        else
-            //        {
-            //            manipulator.RemoveAllButHandle();
-            //        }
-            //    }
-            //};
-
-            //if (ViewModel.IsMoveable) manipulator.AddAllAndHandle();
-            //else manipulator.RemoveAllButHandle();
-
-            #endregion
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
+            //}
+            //else
+            //{
+            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            //}
+            RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+            ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
 
+            if (ViewModel != null)
+                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
-            if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight) {
+            if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight)
+            {
                 updateIcon();
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xDragImage.Opacity = 0;
-                DoubleTapped -= OnTapped;
+                Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
-            } else {
+            }
+            else
+            {
                 XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xDragImage.Opacity = 1;
-                DoubleTapped += OnTapped;
+                Tapped += OnTapped;
             }
         }
-        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e) {
+
+        private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
             // if in icon view expand to default size
-            if (xIcon.Visibility == Windows.UI.Xaml.Visibility.Visible) {
-                Height = 300;
-                Width = 300;
+            if (xIcon.Visibility == Visibility.Visible)
+            {
+                Resize(300, 300);
 
-                var dvm = DataContext as DocumentViewModel;
-                dvm.Width = 300;
-                dvm.Height = 300;
-
-                // if in default view, show context menu
-            } else {
+            }/*
+            else
+            {
                 Height = MinWidth;
                 Width = MinHeight;
 
@@ -326,25 +360,22 @@ namespace Dash
                 dvm.Width = MinWidth;
                 dvm.Height = MinHeight;
             }
-
+            */
             e.Handled = true; // prevent propagating
         }
 
-  #region Menu
+        #region Menu
 
-        public void OnTapped(object sender, DoubleTappedRoutedEventArgs e)
+
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            // expand into full view on doubletap
-            if (xIcon.Visibility == Visibility.Visible) {
-                ExpandContract_DoubleTapped(sender, e);
-                e.Handled = true;
+            if (ViewModel.IsInInterfaceBuilder)
+            {
                 return;
             }
-            if (_docMenu.Visibility == Visibility.Collapsed && !HasCollection) { 
-                ViewModel.OpenMenu();
-            } else {
-                ViewModel.CloseMenu();
-            }
+
+            OnSelected();
             e.Handled = true;
         }
 
@@ -355,7 +386,7 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetCopy());
+            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.Copy());
         }
 
         private void MakeDelegate()
@@ -363,6 +394,20 @@ namespace Dash
             ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
         }
 
+        public void ScreenCap()
+        {
+            Util.ExportAsImage(OuterGrid);
+        }
+
+        public void CommandLine()
+        {
+            FlyoutBase.ShowAttachedFlyout((FrameworkElement)this.XGrid);
+        }
+
+        public void GetJson()
+        {
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
+        }
 
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
@@ -371,21 +416,72 @@ namespace Dash
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
-        private void XGrid_Tapped(object sender, TappedRoutedEventArgs e) {
-
-        }
-
         private void FadeOut_Completed(object sender, object e)
         {
             ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
         }
 
-        private void OpenLayout()
+        private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel), new Point(0,0), this);
+            e.Handled = true;
+            var point = e.GetCurrentPoint(ParentCollection);
+            var scaleSign = point.Properties.MouseWheelDelta / 120.0f;
+            var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
+            var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
+            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
+                                                              ViewModel.GroupTransform.ScaleCenter,
+                                                              newScale);
         }
 
+        private void OpenLayout()
+        {
+            MainPage.Instance.DisplayElement(new InterfaceBuilder(ViewModel.DocumentController), new Point(0, 0), this);
+        }
+
+        private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var tb = sender as TextBox;
+            if (!(tb.Text.EndsWith("\r")))
+                return;
+            var docController = (DataContext as DocumentViewModel).DocumentController;
+            foreach (var tag in (sender as TextBox).Text.Split('#'))
+                if (tag.Contains("="))
+                {
+                    var eqPos = tag.IndexOfAny(new char[] { '=' });
+                    var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
+                    var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
+                    var key = new Key(word, word);
+                    foreach (var keyFields in docController.EnumFields())
+                        if (keyFields.Key.Name == word)
+                        {
+                            key = keyFields.Key;
+                            break;
+                        }
+
+                    DBTest.ResetCycleDetection();
+                    docController.ParseDocField(key, valu);
+                }
+        }
+
+        public void RemoveScroll()
+        {
+            PointerWheelChanged -= This_PointerWheelChanged;
+        }
         #endregion
+
+        protected override void OnActivated(bool isSelected)
+        {
+
+        }
+
+
+        public override void OnLowestActivated(bool isLowestSelected)
+        {
+            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+                ViewModel?.OpenMenu();
+            else
+                ViewModel?.CloseMenu();
+        }
 
     }
 }

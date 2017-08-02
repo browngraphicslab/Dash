@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -20,11 +19,17 @@ namespace Dash
         public static Key CollectionKey = new Key("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
 
 
+        public List<DocumentController> Data { get { return _documents; } }
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         private List<DocumentController> _documents;
+
+        public DocumentCollectionFieldModelController() : this(new List<DocumentController>())
+        {
+        }
 
         public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) :base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
         {
@@ -49,7 +54,7 @@ namespace Dash
             _documents.Add(docController);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            FireFieldModelUpdated();
+            OnFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
         }
 
@@ -57,7 +62,7 @@ namespace Dash
         public void RemoveDocument(DocumentController doc) {
             _documents.Remove(doc);
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
-            FireFieldModelUpdated();
+            OnFieldModelUpdated();
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
@@ -65,9 +70,8 @@ namespace Dash
             _documents = docControllers;
             DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            FireFieldModelUpdated();
+            OnFieldModelUpdated();
             OnDocumentsChanged?.Invoke(GetDocuments());
-
         }
 
         /// <summary>
@@ -87,7 +91,8 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView()
         {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+            //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+            return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce); 
         }
 
         public override FieldModelController GetDefaultController()
@@ -97,7 +102,13 @@ namespace Dash
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
-            textBlock.Text = "A Collection of Documents";
+            textBlock.Text = string.Format("{0} Document(s)", _documents.Count());
+        }
+
+
+        public override FieldModelController Copy()
+        {
+            return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));
         }
     }
 }

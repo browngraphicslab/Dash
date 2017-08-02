@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -9,20 +10,36 @@ namespace Dash
 {
     public class Context
     {
-        private readonly List<DocumentController> _documentContextList;
+        private readonly HashSet<DocumentController> _documentContextList;
 
-        private readonly Dictionary<ReferenceFieldModelController, FieldModelController> _data;
+        private readonly Dictionary<FieldReference, FieldModelController> _data;
+
+        public HashSet<DocumentController> DocContextList { get { return _documentContextList; } }
 
         public Context()
         {
-            _documentContextList = new List<DocumentController>();
-            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>();
+            _documentContextList = new HashSet<DocumentController>();
+            _data = new Dictionary<FieldReference, FieldModelController>();
+        }
+
+        public Context(DocumentController initialContext)
+        {
+            _documentContextList = new HashSet<DocumentController>{initialContext};
+            _data = new Dictionary<FieldReference, FieldModelController>();
         }
 
         public Context(Context copyFrom)
         {
-            _documentContextList = new List<DocumentController>(copyFrom._documentContextList);
-            _data = new Dictionary<ReferenceFieldModelController, FieldModelController>(copyFrom._data);
+            if (copyFrom == null)
+            {
+                _documentContextList = new HashSet<DocumentController>();
+                _data = new Dictionary<FieldReference, FieldModelController>();
+            }
+            else
+            {
+                _documentContextList = new HashSet<DocumentController>(copyFrom._documentContextList);
+                _data = new Dictionary<FieldReference, FieldModelController>(copyFrom._data);
+            }
         }
 
         public void AddDocumentContext(DocumentController document)
@@ -32,10 +49,15 @@ namespace Dash
 
         public void AddData(ReferenceFieldModelController reference, FieldModelController data)
         {
+            _data[reference.FieldReference] = data;
+        }
+
+        public void AddData(FieldReference reference, FieldModelController data)
+        {
             _data[reference] = data;
         }
 
-        public bool TryDereferenceToRoot(ReferenceFieldModelController reference, out FieldModelController data)
+        public bool TryDereferenceToRoot(FieldReference reference, out FieldModelController data)
         {
             if (_data.ContainsKey(reference))
             {
@@ -54,9 +76,16 @@ namespace Dash
             return referenceDocId;
         }
 
-        public void PrintContextList()
+        public static Context SafeInit(Context context)
         {
-            Debug.WriteLine(string.Join(", ",_documentContextList.Select(dc => dc.GetId())));
+            return context ?? new Context();
+        }
+
+        public static Context SafeInitAndAddDocument(Context context, DocumentController doc)
+        {
+            var newcontext = new Context(context);
+            newcontext.AddDocumentContext(doc);
+            return newcontext;
         }
     }
 }

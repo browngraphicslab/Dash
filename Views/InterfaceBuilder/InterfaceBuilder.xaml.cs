@@ -1,14 +1,16 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using DashShared;
-using static Dash.CourtesyDocuments;
+using Windows.UI.Xaml.Media;
+using Windows.UI;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,165 +18,78 @@ namespace Dash
 {
     public sealed partial class InterfaceBuilder : WindowTemplate
     {
+        public static string LayoutDragKey = "B3B49D46-6D56-4CC9-889D-4923805F2DA9";
+        private SelectableContainer _selectedContainer;
 
-        private List<GuideLineViewModel> _guides = new List<GuideLineViewModel>();
-        
-        /// <summary>
-        /// The document view of the document which is being edited
-        /// </summary>
-        private DocumentView _documentView;
-        
+        public enum DisplayTypeEnum { List, Grid, Freeform }
 
-        /// <summary>
-        /// Courtesy document that manages getting the necessary layout fields to edit the document's layout
-        /// </summary>
-        private LayoutCourtesyDocument LayoutCourtesyDocument;
+        private DocumentController _editingDocument;
+        private DocumentView _editingDocView;
 
-        private EditableFieldFrame _selectedEditableFieldFrame { get; set; }
 
-        private DocumentController _documentController;
-
-        public InterfaceBuilder(DocumentViewModel viewModel, int width = 800, int height = 500)
+        public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
         {
             this.InitializeComponent();
             Width = width;
             Height = height;
-            
-            LayoutCourtesyDocument = new LayoutCourtesyDocument(viewModel.DocumentController, viewModel.DocumentContext);
-           
-            _documentView = LayoutCourtesyDocument.MakeView(LayoutCourtesyDocument.Document, viewModel.DocumentContext) as DocumentView;
 
+            SetUpInterfaceBuilder(docController, new Context(docController));
 
-            _documentController = viewModel.DocumentController;
-
-            xDocumentHolder.Child = _documentView;
-
-            xKeyValuePane.SetDataContextToDocumentController(_documentController);
-
-            _documentView.DragOver += DocumentViewOnDragOver;
-            _documentView.Drop += DocumentViewOnDrop;
-            _documentView.AllowDrop = true;
-
-
-            ApplyEditable();
-            var layoutDocFieldController = _documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, viewModel.DocumentContext);
-            _documentController.SetField(DashConstants.KeyStore.LayoutKey, layoutDocFieldController, false);
+            // TODO do we want to update breadcrumb bindings or just set them once
+            Binding listBinding = new Binding
+            {
+                Source = docController.GetAllPrototypes()
+            };
+            BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
-        private void ApplyEditable()
+        private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
-            var editableElements = new List<FrameworkElement>();
-            var context = (_documentView.DataContext as DocumentViewModel)?.DocumentContext;
-            // iterate over all the documents which define views
-            foreach (var layoutDocument in LayoutCourtesyDocument.GetLayoutDocuments(context))
-            {
-                var docContext = context != null ? new Context(context) : new Context();
-                docContext.AddDocumentContext(LayoutCourtesyDocument.Document);
-                // use the layout document to generate a UI
-                var fieldView = layoutDocument.makeViewUI(docContext);
-
-                var translationController = layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContext) as PointFieldModelController;
-                if (translationController != null)
-                {
-                    if (layoutDocument.GetId() != LayoutCourtesyDocument.Document.GetId()) // only bind translation when the layoutDocument isn't the entire layout
-                    {
-                        CourtesyDocument.BindTranslation(fieldView, translationController);
-                    }
-                }
-
-                // generate an editable border
-                var editableBorder = new EditableFieldFrame(layoutDocument.GetId(), layoutDocument.GetId() != LayoutCourtesyDocument.Document.GetId())
-                {
-                    EditableContent = fieldView,
-                    HorizontalAlignment = HorizontalAlignment.Left, // align it to the left and top to avoid rescaling issues
-                    VerticalAlignment = VerticalAlignment.Top
-                };
-
-                // bind the editable border width to the layout width
-                var widthController =
-                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.WidthFieldKey, docContext) as NumberFieldModelController;
-                Debug.Assert(widthController != null);
-                var widthBinding = new Binding
-                {
-                    Source = widthController,
-                    Path = new PropertyPath(nameof(widthController.Data)),
-                    Mode = BindingMode.TwoWay
-                };
-                editableBorder.SetBinding(WidthProperty, widthBinding);
-
-                // bind the editable border height to the layout height
-                var heightController =
-                    layoutDocument.GetDereferencedField(DashConstants.KeyStore.HeightFieldKey, docContext) as NumberFieldModelController;
-                Debug.Assert(heightController != null);
-                var heightBinding = new Binding
-                {
-                    Source = heightController,
-                    Path = new PropertyPath(nameof(heightController.Data)),
-                    Mode = BindingMode.TwoWay
-                };
-                editableBorder.SetBinding(HeightProperty, heightBinding);
-
-                if (layoutDocument.GetId() != LayoutCourtesyDocument.Document.GetId())
-                {
-                    // when the editable border is loaded bind it's translation to the layout's translation
-                    // TODO this probably causes a memory leak, but we have to capture the layoutDocument variable.
-                    editableBorder.Loaded += delegate
-                    {
-                        translationController =
-                                layoutDocument.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey, docContext) as PointFieldModelController;
-                        Debug.Assert(translationController != null);
-                        var translateBinding = new Binding
-                        {
-                            Source = translationController,
-                            Path = new PropertyPath(nameof(translationController.Data)),
-                            Mode = BindingMode.TwoWay,
-                            Converter = new PointToTranslateTransformConverter()
-                        };
-                        editableBorder.Container.SetBinding(UIElement.RenderTransformProperty, translateBinding);
-                    };
-                } 
-                editableBorder.Tapped += EditableBorder_Tapped;
-                editableElements.Add(editableBorder);
-            }
-
-            var canvas = new Canvas();
-            foreach (var frameworkElement in editableElements)
-            {
-                canvas.Children.Add(frameworkElement);
-            }
-
-            _documentView.ViewModel.Content = canvas;
+            _editingDocument = docController;
+            xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
+            xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
+            var documentCanvasViewModel = new DocumentCanvasViewModel(true);
+            xDocumentPane.DataContext = documentCanvasViewModel;
+            documentCanvasViewModel.AddDocument(docController, true);
+            xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
-        private void EditableBorder_Tapped(object sender, TappedRoutedEventArgs e)
+        private void DocumentPaneOnDocumentViewLoaded(DocumentCanvasView sender, DocumentView documentView)
         {
-            xSettingsPane.Children.Clear();
+            SetUpDocumentView(documentView);
+        }
 
-            var editableFieldFrame = sender as EditableFieldFrame;
-            Debug.Assert(editableFieldFrame != null);
-
-            UpdateEditableFieldFrameSelection(editableFieldFrame);
-
-            var layoutDocumentId = editableFieldFrame.DocumentId;
-
-            var editedLayoutDocument = LayoutCourtesyDocument.GetLayoutDocuments((_documentView.DataContext as DocumentViewModel).DocumentContext).FirstOrDefault(doc => doc.GetId() == layoutDocumentId);
-            Debug.Assert(editedLayoutDocument != null);
-
-            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(editedLayoutDocument);
-            if (newSettingsPane != null)
+        private void SetUpDocumentView(DocumentView documentView)
+        {
+            var editingDocumentId = _editingDocument.GetId();
+            if (documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
             {
-                xSettingsPane.Children.Add(newSettingsPane);
+                return;
+            }
+            _editingDocView = documentView;
+
+            if (_editingDocView != null)
+            {
+                UpdateRootLayout();
+                _editingDocView.DragOver += DocumentViewOnDragOver;
+                _editingDocView.AllowDrop = true;
+                _editingDocView.Drop += DocumentViewOnDrop;
+                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
+                xDocumentPane.RecenterViewOnDocument(editingDocumentId);
             }
         }
 
-        private void UpdateEditableFieldFrameSelection(EditableFieldFrame newlySelectedEditableFieldFrame)
+        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
         {
-            if (_selectedEditableFieldFrame != null)
-            {
-                _selectedEditableFieldFrame.IsSelected = false;
-            }
-            newlySelectedEditableFieldFrame.IsSelected = true;
-            _selectedEditableFieldFrame = newlySelectedEditableFieldFrame;
+            UpdateRootLayout();
+        }
+
+        private void UpdateRootLayout()
+        {
+            var rootSelectableContainer = _editingDocView?.ViewModel.Content as SelectableContainer;
+            Debug.Assert(rootSelectableContainer != null);
+            rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
         }
 
         private void DocumentViewOnDragOver(object sender, DragEventArgs e)
@@ -183,99 +98,180 @@ namespace Dash
         }
 
         private void DocumentViewOnDrop(object sender, DragEventArgs e)
+        {   
+            var layoutContainer = GetFirstCompositeLayoutContainer(e.GetPosition(MainPage.Instance));
+            if (layoutContainer == null) return; // we can only drop on composites
+
+            var isDraggedFromKeyValuePane = e.Data.Properties[KeyValuePane.DragPropertyKey] != null;
+            var isDraggedFromLayoutBar = e.Data.Properties[LayoutDragKey]?.GetType() == typeof(DisplayTypeEnum);
+
+            if (isDraggedFromKeyValuePane)
+            {
+                // get data variables from the DragArgs
+                var kvp = (KeyValuePair<Key, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
+                var dataDocController = kvp.Value;
+                var dataKey = kvp.Key;
+                var context = new Context(dataDocController);
+                var dataField = dataDocController.GetDereferencedField(dataKey, context);
+
+                // get a layout document for the data
+                var layoutDocument = GetLayoutDocumentForData(dataField, dataDocController, dataKey, context);
+                if (layoutDocument == null)
+                    return;
+
+                // apply position if we are dropping on a freeform
+                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+                {
+                    var posInLayoutContainer = e.GetPosition(layoutContainer);
+                    var widthOffset = (layoutDocument.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
+                    var heightOffset = (layoutDocument.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
+                    var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
+                    //var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
+                    layoutDocument.SetField(DashConstants.KeyStore.PositionFieldKey, positionController, forceMask: true);
+                }
+
+                // add the document to the composite
+                //if (layoutContainer.DataDocument != null) context.AddDocumentContext(layoutContainer.DataDocument);
+                var data = layoutContainer.LayoutDocument.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
+                data?.AddDocument(layoutDocument);
+            }
+            else if (isDraggedFromLayoutBar)
+            {
+                var displayType = (DisplayTypeEnum)e.Data.Properties[LayoutDragKey];
+                DocumentController newLayoutDocument = null;
+                var size = new Size(200, 200);
+                var position = e.GetPosition(layoutContainer);
+                switch (displayType)
+                {
+                    case DisplayTypeEnum.Freeform:
+                        newLayoutDocument = new FreeFormDocument(new List<DocumentController>(), position, size).Document;
+                        break;
+                    case DisplayTypeEnum.Grid:
+                        newLayoutDocument = new GridViewLayout(new List<DocumentController>(), position, size).Document;
+                        break;
+                    case DisplayTypeEnum.List:
+                        newLayoutDocument = new ListViewLayout(new List<DocumentController>(), position, size).Document;
+                        break;
+                    default:
+                        break;
+                }
+                if (newLayoutDocument != null)
+                {
+                    var col = layoutContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+                        DocumentCollectionFieldModelController;
+                    col?.AddDocument(newLayoutDocument);
+                }
+            }
+        }
+
+        private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
+            DocumentController docController, Key key, Context context)
         {
-            var docContext = (_documentView.DataContext as DocumentViewModel).DocumentContext;
-            var key = e.Data.Properties[KeyValuePane.DragPropertyKey] as Key;
-            var fieldModelController = _documentController.GetDereferencedField(key, docContext);
-            CourtesyDocuments.CourtesyDocument box = null;
+            DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
             {
-                var textFieldModelController = _documentController.GetDereferencedField(key, docContext) as TextFieldModelController;
-                if (_documentController.GetPrototype() != null && _documentController.GetPrototype().GetDereferencedField(key, docContext) == null && _documentController.GetDereferencedField(key,docContext) == null)
-                {
-                    _documentController.GetPrototype().SetField(key, _documentController.GetDereferencedField(key, docContext), false);
-                }
-                var layoutDoc = (_documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContext) as DocumentFieldModelController)?.Data;
-                if (layoutDoc == null || !_documentController.IsDelegateOf(layoutDoc.GetId()))
-                    layoutDoc = _documentController;
-                // bcz: hack -- the idea is that if we're dropping a field on a prototype layout, then the layout should reference the prototype of
-                //       of the source document as well.  Otherwise, the other documents that use this prototype layout will get the data from this source document
-                var layoutDocPrototype = layoutDoc.GetPrototype() == null ? layoutDoc : layoutDoc.GetPrototype(); 
-                if (textFieldModelController.TextFieldModel.Data.EndsWith(".jpg"))
-                      box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(layoutDocPrototype.GetId(), key));
-                else  box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(layoutDocPrototype.GetId(), key)); 
-            }
-            else if (fieldModelController is ImageFieldModelController)
-            {
-                box = new CourtesyDocuments.ImageBox(new DocumentReferenceController(_documentController.GetId(), key));
-            }
-            else if (fieldModelController is DocumentCollectionFieldModelController)
-            {
-                box = new CourtesyDocuments.CollectionBox(new DocumentReferenceController(_documentController.GetId(), key));
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is NumberFieldModelController)
             {
-                box = new CourtesyDocuments.TextingBox(new DocumentReferenceController(_documentController.GetId(), key));
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            }
+            else if (fieldModelController is ImageFieldModelController)
+            {
+                layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            } else if (fieldModelController is DocumentCollectionFieldModelController)
+            {
+                layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             } else if (fieldModelController is DocumentFieldModelController)
             {
-                box = new CourtesyDocuments.LayoutCourtesyDocument(ContentController.GetController<DocumentFieldModelController>(fieldModelController.GetId()).Data, docContext);
+                layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
-
-            var layoutDocFieldController = _documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContext);
-            if (box != null)
+            else if (fieldModelController is RichTextFieldModelController)
             {
-                //Sets the point position of the image/text box
-                var pfmc = new PointFieldModelController(e.GetPosition(_documentView).X, e.GetPosition(_documentView).Y);
-                box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, pfmc, false);
-                var layoutDataField = LayoutCourtesyDocument.LayoutDocumentController?.GetDereferencedField(DashConstants.KeyStore.DataKey, docContext);
+                layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            }
+            return layoutDocument;
+        }
 
-                if (layoutDataField is DocumentCollectionFieldModelController)
+        private SelectableContainer GetFirstCompositeLayoutContainer(Point dropPoint)
+        {
+            var elem = VisualTreeHelper.FindElementsInHostCoordinates(dropPoint, _editingDocView)
+                .FirstOrDefault(AssertIsCompositeLayout);
+            return elem as SelectableContainer;
+        }
+
+        private bool AssertIsCompositeLayout(object obj)
+        {
+            if (!(obj is SelectableContainer))
+            {
+                return false;
+            }
+            var cont = (SelectableContainer) obj;
+            return this.IsCompositeLayout(cont.LayoutDocument);
+        }
+        
+        private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)
+        {
+            xSettingsPane.Children.Clear();
+            var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
+            _selectedContainer = sender;
+            if (newSettingsPane != null)
+            {
+                xSettingsPane.Children.Add(newSettingsPane);
+            }
+        }
+
+        public bool IsCompositeLayout( DocumentController layoutDocument)
+        {
+            return layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout ||
+                   layoutDocument.DocumentType == GridViewLayout.DocumentType ||
+                   layoutDocument.DocumentType == ListViewLayout.DocumentType;
+        }
+        
+        private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
+        {
+            DocumentController cont = e.ClickedItem as DocumentController;
+
+            SetUpInterfaceBuilder(cont, new Context(cont));
+        }
+        private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
+        {
+            var item = e.Items.FirstOrDefault();
+            if (item is Button)
+            {
+                //var defaultNewSize = new Size(400, 400);
+                var button = item as Button;
+
+                switch (button.Name)
                 {
-                    (layoutDataField as DocumentCollectionFieldModelController).AddDocument(box.Document);
+                    case "ListButton":
+                        e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.List;
+                        break;
+                    case "GridButton":
+                        e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.Grid;
+                        break;
+                    case "FreeformButton":
+                        e.Data.Properties[LayoutDragKey] = DisplayTypeEnum.Freeform;
+                        break;
+                    default:
+                        break;
                 }
-                else
-                {
-                    var newLayoutCollection = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[] { (_documentController.GetDereferencedField(DashConstants.KeyStore.LayoutKey, docContext) as DocumentFieldModelController).Data, box.Document }));
-                    var oldPt = ((layoutDocFieldController as DocumentFieldModelController).Data.GetDereferencedField(DashConstants.KeyStore.PositionFieldKey,docContext) as PointFieldModelController).Data;
-                    (layoutDocFieldController as DocumentFieldModelController).Data.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), false);
-                    layoutDocFieldController = new DocumentFieldModelController(newLayoutCollection.Document);
-                    (layoutDocFieldController as DocumentFieldModelController).Data.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(oldPt), false);
-                }
+                e.Data.RequestedOperation = DataPackageOperation.Move;
             }
-
-            ApplyEditable();
-             _documentController.SetField(DashConstants.KeyStore.LayoutKey, layoutDocFieldController, false);
         }
-    }
 
-    public static class SettingsPaneFromDocumentControllerFactory
-    {
-        public static UIElement CreateSettingsPane(DocumentController editedLayoutDocument)
+        private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            if (editedLayoutDocument.DocumentType == ImageBox.DocumentType)
-            {
-                return CreateImageSettingsLayout(editedLayoutDocument);
-            }
-            if (editedLayoutDocument.DocumentType == TextingBox.DocumentType)
-            {
-                return CreateTextSettingsLayout(editedLayoutDocument);
-            }
+            //if (_selectedContainer.ParentContainer != null)
+            //{
+            //    var collection =
+            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+            //            DocumentCollectionFieldModelController;
+            //    collection?.RemoveDocument(_selectedContainer.LayoutDocument);
+            //    _selectedContainer.ParentContainer.SetSelectedContainer(null);
+            //}
 
-            Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {editedLayoutDocument.DocumentType}");
-            return null;
+            throw new NotImplementedException();
         }
-
-        private static UIElement CreateImageSettingsLayout(DocumentController editedLayoutDocument)
-        {
-            var context = new Context(); // bcz: ??? Is this right?
-            return new ImageSettings(editedLayoutDocument, context);
-        }
-
-        private static UIElement CreateTextSettingsLayout(DocumentController editedLayoutDocument)
-        {
-            var context = new Context(); // bcz: ??? Is this right?
-            return new TextSettings(editedLayoutDocument, context);
-        }
-
     }
 }

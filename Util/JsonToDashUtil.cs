@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Foundation;
 using Windows.Storage;
 using DashShared;
 using Newtonsoft.Json.Linq;
@@ -18,8 +19,11 @@ namespace Dash
         public static DocumentController RunTests()
         {
 
-            var task = ParseCustomer();
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var task = ParseA();
             task.Wait();
+            stopwatch.Stop();
             return JsonDocument;
         }
 
@@ -27,10 +31,29 @@ namespace Dash
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/RecipeReturn.txt"));
             var jsonString = await FileIO.ReadTextAsync(file);
-            var jtoken = JToken.Parse(jsonString);
-            JsonDocument = ParseJson(jtoken, null, true) as DocumentController;
+            JsonDocument = Parse(jsonString, "Assets/RecipeReturn.txt");
         }
 
+        public static async Task ParseArrayOfObjects()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/ArrayOfNestedDocumentJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            JsonDocument = Parse(jsonString, "Assets/RecipeReturn.txt");
+        }
+
+        public static async Task ParseYoutube()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/youtubeJson.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            JsonDocument = Parse(jsonString, "ms-appx:///Assets/youtubeJson.txt");
+        }
+
+        public static async Task ParseA()
+        {
+            var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/a.txt"));
+            var jsonString = await FileIO.ReadTextAsync(file);
+            JsonDocument = Parse(jsonString, file.Path);
+        }
 
         public static async Task ParseCustomer()
         {
@@ -39,24 +62,188 @@ namespace Dash
             JsonDocument = Parse(jsonString, file.Path);
         }
 
-        private static DocumentController Parse(string json, string path)
+        public static void ParseSingleItem()
+        {
+            var jsonString = @"[1,2,3]";
+            JsonDocument = Parse(jsonString, "an/example/base/path");
+        }
+
+        public static DocumentController Parse(string json, string path)
         {
             var jtoken = JToken.Parse(json);
-            var newSchema = new NewDocumentSchema(path);
+            var newSchema = new DocumentSchema(path);
             return ParseRoot(jtoken, newSchema);
         }
 
-        private static DocumentController ParseRoot(JToken jtoken, NewDocumentSchema newSchema)
+        private static DocumentController ParseRoot(JToken jtoken, DocumentSchema schema)
         {
             if (jtoken.Type == JTokenType.Object)
             {
-                var obj = ParseObject(jtoken, newSchema);
+                var obj = ParseObject(jtoken, schema);
                 return obj;
             }
             else
             {
-                throw new NotImplementedException();
+                var key = schema.GetKey(jtoken);
+                var field = jtoken.Type == JTokenType.Array ? ParseArray(jtoken, schema) : ParseValue(jtoken);
+                SetDefaultFieldsOnPrototype(schema.Prototype, new Dictionary<Key, FieldModelController>{[key]=field});
+
+                // wrap the field in an instance of the prototype
+                var protoInstance = schema.Prototype.MakeDelegate();
+                protoInstance.SetField(key, field, true);
+
+                SetDefaultsOnActiveLayout(schema, protoInstance);
+                return protoInstance;
             }
+        }
+
+        private static void SetDefaultsOnActiveLayout(DocumentSchema schema, DocumentController protoInstance)
+        {
+            var activeLayout = schema.Prototype.GetActiveLayout().Data.MakeDelegate();
+            protoInstance.SetActiveLayout(activeLayout, true, false);
+            var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(new Point(), new Size(200, 200));
+            activeLayout.SetFields(defaultLayoutFields, true);
+        }
+
+        private static FieldModelController ParseChild(JToken jtoken, DocumentSchema parentSchema)
+        {
+            if (jtoken.Type == JTokenType.Object)
+            {
+                // create a schema for the document we just found
+                var childSchema = parentSchema.AddChildSchemaOrReturnCurrentChild(jtoken);
+                var protoInstance = ParseObject(jtoken, childSchema);
+
+                // wrap the document we found in a field model since it is not a root
+                var docFieldModelController = new DocumentFieldModelController(protoInstance);
+                return docFieldModelController;
+            } else if (jtoken.Type == JTokenType.Array)
+            {
+                return ParseArray(jtoken, parentSchema);
+            }
+            else
+            {
+                return ParseValue(jtoken);
+            }
+        }
+
+        private static DocumentController ParseObject(JToken jtoken, DocumentSchema schema)
+        {
+            var jObject = jtoken as JObject;
+
+            // parse each of the fields on the object into a field model controller
+            var fields = new Dictionary<Key, FieldModelController>();
+            foreach (var jProperty in jObject)
+            {
+                var key = schema.GetKey(jProperty.Value);
+                var fmc = ParseChild(jProperty.Value, schema);
+                if (fmc == null) continue;
+                fields[key] = fmc;
+            }
+
+            // update the prototype to contain default versions of all the parsed fields
+            SetDefaultFieldsOnPrototype(schema.Prototype, fields);
+
+            var protoInstance = schema.Prototype.MakeDelegate();
+            SetDefaultsOnActiveLayout(schema, protoInstance);
+            protoInstance.SetFields(fields, true);
+            return protoInstance;
+        }
+
+        private static FieldModelController ParseArray(JToken jtoken, DocumentSchema schema)
+        {
+            var jArray = jtoken as JArray;
+
+            if (jArray.Count == 0) return null; // if the array is empty we cannot know anything about it
+
+            var fieldTypes = new HashSet<Type>(); // keep track of the number of field types we see
+            var fieldList = new List<FieldModelController>(); // hold any fields we parse
+            var docList = new List<DocumentController>(); // hold any documents we parse
+            foreach (var item in jArray)
+            {
+                if (item.Type == JTokenType.Object) // if we have a document
+                {
+                    // create a schema for the document we just found if it is necessary
+                    var childSchema = schema.AddChildSchemaOrReturnCurrentChild(item);
+                    var parsedItem = ParseObject(item, childSchema);
+                    docList.Add(parsedItem);
+                } else if (item.Type == JTokenType.Array) // we fail on nested arrays
+                {
+                    return null;
+                }
+                else
+                {
+                    var fieldModelController = ParseValue(item);
+                    fieldTypes.Add(fieldModelController.GetType());
+                    fieldList.Add(fieldModelController);
+                }
+            }
+
+            if (fieldList.Count == 0 && docList.Count != 0) // if we have documents but not fields
+            {
+                return new DocumentCollectionFieldModelController(docList); // return a document collection
+
+            }
+            if (fieldList.Count != 0 && docList.Count == 0 && fieldTypes.Count == 1) // if we have homogeneous fields but not documents
+            {
+                var fieldType = fieldTypes.FirstOrDefault();
+                var genericListType = typeof(ListFieldModelController<>);
+                var specificListType = genericListType.MakeGenericType(fieldType);
+                var listController = Activator.CreateInstance(specificListType) as BaseListFieldModelController;
+                listController.AddRange(fieldList);
+                return listController; // return a new list
+            }
+            if (fieldList.Count != 0 && docList.Count == 0)
+            {
+                var listController = new ListFieldModelController<FieldModelController>();
+                listController.AddRange(fieldList);
+                return listController;
+            }
+
+            throw new NotImplementedException(" we don't support arrays of documents and values");
+        }
+
+        private static FieldModelController ParseValue(JToken jtoken)
+        {
+            try
+            {
+                var myValue = jtoken as JValue;
+                var type = myValue.Type;
+                switch (type)
+                {
+                    case JTokenType.Null: // occurs on null fields
+                        return new TextFieldModelController("");
+                    case JTokenType.Integer:
+                    case JTokenType.Float:
+                        return new NumberFieldModelController(jtoken.ToObject<double>());
+                    case JTokenType.String:
+                    case JTokenType.Boolean:
+                    case JTokenType.Date:
+                    case JTokenType.Uri:
+                    case JTokenType.Guid:
+                    case JTokenType.TimeSpan:
+                        return ParseText(jtoken.ToObject<string>());
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+
+        private static FieldModelController ParseText(string text)
+        {
+            string[] _imageExtensions = { "jpg", "bmp", "gif", "png" }; //  etc
+            foreach (var ext in _imageExtensions)
+            {
+                if (text.EndsWith(ext))
+                {
+                    return new ImageFieldModelController(new Uri(text));
+                }
+            }
+            return new TextFieldModelController(text);
         }
 
         private static void SetDefaultFieldsOnPrototype(DocumentController prototype, Dictionary<Key, FieldModelController> fields)
@@ -71,257 +258,63 @@ namespace Dash
             }
         }
 
-        private static FieldModelController ParseChild(JToken jtoken, NewDocumentSchema parentSchema)
-        {
-            if (jtoken.Type == JTokenType.Object)
-            {
-                // create a schema for the document we just found
-                var childSchema = parentSchema.AddChildSchemaOrReturnCurrentChild(jtoken);
-                var protoInstance = ParseObject(jtoken, childSchema);
-
-                // wrap the document we found in a field model since it is not a root
-                var docFieldModelController = new DocumentFieldModelController(protoInstance);
-                return docFieldModelController;
-            } else if (jtoken.Type == JTokenType.Array)
-            {
-                throw new NotImplementedException();
-            }
-            else
-            {
-                try
-                {
-                    var myValue = jtoken as JValue;
-                    var type = myValue.Type;
-                    switch (type)
-                    {
-                        case JTokenType.Null: // occurs on null fields
-                            return new TextFieldModelController("");
-                        case JTokenType.Integer:
-                        case JTokenType.Float:
-                            return new NumberFieldModelController(jtoken.ToObject<double>());
-                        case JTokenType.String:
-                        case JTokenType.Boolean:
-                        case JTokenType.Date:
-                        case JTokenType.Uri:
-                        case JTokenType.Guid:
-                        case JTokenType.TimeSpan:
-                            return new TextFieldModelController(jtoken.ToObject<string>());
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-            }
-        }
-
-
-        private static DocumentController ParseObject(JToken jtoken, NewDocumentSchema schema)
-        {
-            var jObject = jtoken as JObject;
-
-            // parse each of the fields on the object into a field model controller
-            var fields = new Dictionary<Key, FieldModelController>();
-            foreach (var jProperty in jObject)
-            {
-                var key = schema.GetKey(jProperty.Value);
-                var fmc = ParseChild(jProperty.Value, schema);
-                fields[key] = fmc;
-            }
-
-            // update the prototype to contain default versions of all the parsed fields
-            SetDefaultFieldsOnPrototype(schema.Prototype, fields);
-
-            var protoInstance = schema.Prototype.MakeDelegate();
-            protoInstance.SetFields(fields, true);
-            return protoInstance;
-        }
-
-        public static IController ParseJson(JToken jToken, DocumentSchema parentSchema, bool isRoot, bool isChildOfArray = false)
-        {
-            DocumentSchema schema;
-
-            // deal with object
-            if (jToken.Type == JTokenType.Object)
-            {
-                var myObj = jToken as JObject;
-                schema = isRoot ? new DocumentSchema(jToken.Path) : parentSchema.GetSchemaIfExistsElseCreateOne(jToken);
-                var fields = new Dictionary<Key, FieldModelController>();
-                foreach (var subObj in myObj) // Parse the rest of the JSON recursively as fields of this document
-                {
-                    var key = schema.GetKeyIfExistsElseCreateOne(subObj.Key);
-                    var fmc = ParseJson(subObj.Value, schema, false) as FieldModelController;
-                    fields[key] = fmc;
-                }
-                var documentType = new DocumentType(DashShared.Util.GenerateNewId(), "Root Document");
-                var documentController = new DocumentController(fields, documentType);
-                if (isRoot || isChildOfArray) // if we're the root object or the child of an array we should create a new document containing the rest of json as Fields
-                {
-                    return documentController;
-                }
-                // since we are not the root we should create a new document field model with the rest of json as fields
-                return new DocumentFieldModelController(documentController);
-            }
-
-            // deal with array
-            if (jToken.Type == JTokenType.Array)
-            {
-                var myArray = jToken as JArray;
-                parentSchema = isRoot ? new DocumentSchema(jToken.Path) : parentSchema;
-                var docControllers = myArray.Select(item => ParseJson(item, parentSchema, false, true)).OfType<DocumentController>().ToList();
-                var docCollFmc = new DocumentCollectionFieldModelController(docControllers);
-                if (isRoot) // if the root is an array, we have to wrap it in a Document which can display the documentCollectionFieldModel as a field
-                {
-                    var documentType = new DocumentType(DashShared.Util.GenerateNewId(), "Root Document");
-                    var fields = new Dictionary<Key, FieldModelController>
-                    {
-                        [DashConstants.KeyStore.DataKey] = docCollFmc
-                    };
-                    return new DocumentController(fields, documentType);
-                }
-                // if the array is not the root we can just return the new DocumentCollectionFieldModel
-                return docCollFmc;
-            }
-
-            // deal with value
-            try
-            {
-                var myValue = jToken as JValue;
-                var type = myValue.Type;
-                switch (type)
-                {
-                    case JTokenType.Object: // A Json Object is defined by {}
-                    case JTokenType.Array: // A Json Array is defined by []
-                    case JTokenType.Property: // A Json Property is a (Key, JToken) pair and can only be found in Json Objects
-                        throw new NotImplementedException("We should have dealt with this earlier");
-                    case JTokenType.Constructor:
-                    case JTokenType.Comment:
-
-                    case JTokenType.Raw:
-                    case JTokenType.Undefined:
-                    case JTokenType.Bytes:
-                    case JTokenType.None:
-                        throw new NotImplementedException();
-                    case JTokenType.Null: // occurs on null fields
-                        return new TextFieldModelController("");
-                    case JTokenType.Integer:
-                    case JTokenType.Float:
-                        return new NumberFieldModelController(jToken.ToObject<double>());
-                    case JTokenType.String:
-                    case JTokenType.Boolean:
-                    case JTokenType.Date:
-                    case JTokenType.Uri:
-                    case JTokenType.Guid:  
-                    case JTokenType.TimeSpan:
-                        return new TextFieldModelController(jToken.ToObject<string>());
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            catch (InvalidCastException e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
+       
     }
 
-    internal class NewDocumentSchema 
+    internal class DocumentSchema 
     {
         public readonly string BasePath;
 
-        private List<NewDocumentSchema> _schemas;
+        private List<DocumentSchema> _schemas;
 
-        public NewDocumentSchema(string basePath)
+        public DocumentSchema(string basePath)
         {
             BasePath = basePath;
             Prototype = new DocumentController(new Dictionary<Key, FieldModelController>(), 
-                new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath)));
-            _schemas = new List<NewDocumentSchema>();
+                new DocumentType(DashShared.Util.GetDeterministicGuid(BasePath), BasePath));
+            SetDefaultLayoutOnPrototype(Prototype);
+            _schemas = new List<DocumentSchema>();
         }
 
         public DocumentController Prototype { get; set; }
 
         public Key GetKey(JToken jToken)
         {
-            return new Key(DashShared.Util.GetDeterministicGuid(BasePath + jToken.Path))
+            var uniqueName = ConvertPathToUniqueName(BasePath + jToken.Path + jToken.Type);
+            return new Key(DashShared.Util.GetDeterministicGuid(uniqueName))
             {
-                Name = BasePath + jToken.Path
+                Name = GetCleanNameFromJtokenPath(jToken.Path)
             };
         }
 
-        public NewDocumentSchema AddChildSchemaOrReturnCurrentChild(JToken jtoken)
+        private string GetCleanNameFromJtokenPath(string jTokenPath)
         {
-            var newPath = BasePath + jtoken.Path;
+            var splitOnPeriods = jTokenPath.Split('.');
+            return splitOnPeriods.Last();
+        }
+
+        public DocumentSchema AddChildSchemaOrReturnCurrentChild(JToken jtoken)
+        {
+            var newPath = ConvertPathToUniqueName(BasePath + jtoken.Path);
             var currentSchema = _schemas.FirstOrDefault(s => s.BasePath == newPath);
             if (currentSchema == null)
             {
-                currentSchema = new NewDocumentSchema(newPath);
+                currentSchema = new DocumentSchema(newPath);
                 _schemas.Add(currentSchema);
             }
             return currentSchema;
         }
-    }
 
-    public class DocumentSchema
-    {
-        public List<DocumentSchema> NestedDocumentSchemas { get; set; }
-
-        public List<Key> DocumentKeys { get; set; }
-
-        public DocumentType DocumentType { get; set; }
-
-        public DocumentSchema(string path)
+        public void SetDefaultLayoutOnPrototype(DocumentController prototype)
         {
-            NestedDocumentSchemas = new List<DocumentSchema>();
-            DocumentKeys = new List<Key>();
-            DocumentType = new DocumentType(DashShared.Util.GenerateNewId(), ConvertPathToUniqueName(path));
+            prototype.SetActiveLayout(new DefaultLayout().Document, true, true);
         }
 
         private string ConvertPathToUniqueName(string path)
         {
             return Regex.Replace(path, @"\[\d+?\]", "");
         }
-
-        public Key GetKeyIfExistsElseCreateOne(string keyName)
-        {
-            // try to get the current key from the list of document keys
-            var currentKey = DocumentKeys.FirstOrDefault(key => key.Name == keyName);
-
-            // if the current key is null then create one and add it to the list
-            if (currentKey == null)
-            {
-                currentKey = new Key(DashShared.Util.GenerateNewId(), keyName);
-                DocumentKeys.Add(currentKey);
-            }
-
-            // return the current key
-            return currentKey;
-        }
-
-        public DocumentSchema GetSchemaIfExistsElseCreateOne(JToken jToken)
-        {
-            var uniquePath = ConvertPathToUniqueName(jToken.Path);
-            var currentSchema = NestedDocumentSchemas.FirstOrDefault(schema => schema.DocumentType.Type == uniquePath);
-            if (currentSchema == null)
-            {
-                Debug.Assert(ShouldWeGenerateSchema(jToken));
-                currentSchema = new DocumentSchema(uniquePath);
-                NestedDocumentSchemas.Add(currentSchema);
-            }
-            return currentSchema;
-        }
-
-        private static bool ShouldWeGenerateSchema(JToken jToken)
-        {
-            // either the path ends with [0] indicating that we are at the first document in an array
-            // or the JToken is an object and we only have one instance of it so the path does not end
-            // with brackets with a number inside i.e. [123]
-            return jToken.Path.EndsWith("[0]") ||
-                   (jToken.Type == JTokenType.Object && !Regex.IsMatch(jToken.Path, @"\[\d+\]$"));
-        }
     }
+
+    
 }

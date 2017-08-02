@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -56,7 +55,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated();
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;
@@ -64,6 +63,11 @@ namespace Dash
         public override string ToString()
         {
             return $"({Data})";
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new PointFieldModelController(Data);
         }
     }
 }

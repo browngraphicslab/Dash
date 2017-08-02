@@ -1,0 +1,264 @@
+﻿<UserControl
+    x:Class="Dash.RichTextSettings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" Background="LightBlue" BorderBrush="Transparent">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition />
+            <RowDefinition Height="80"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+            <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
+                <Run Text="SETTINGS"/>
+            </TextBlock>
+        </Grid>
+        <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>
+                    <Run Text="Type"/>
+                </TextBlock>
+                <TextBlock Margin="50,0,0,0">
+                    <Run Text="Rich Text"/>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Width="250">
+            <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!--FONTS-->
+                    <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xFontComboBox" Background="White" BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>FONT</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+
+                    <!--FONT SIZE-->
+                    <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition Width="0.8*"/>
+                                        <ColumnDefinition Width="0.3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Slider x:Name="xFontSizeSlider" IsThumbToolTipEnabled="True" Minimum="4" StepFrequency="4" Foreground="SteelBlue" />
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBox Height="15" Width="Auto" BorderBrush="White" FontSize="12" Text="{Binding ElementName=xFontSizeSlider, Path=Value, Mode=TwoWay}"/>
+                                    </Grid>
+                                    <Grid Grid.Column="2">
+                                        <TextBlock FontSize="12" VerticalAlignment="Center" Margin="5,-5,0,0">
+                                    <Run Text="px"/>
+                                        </TextBlock>
+                                    </Grid>
+                                </Grid>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>FONT SIZE</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+                    
+                    <!--FONT WEIGHT-->
+                    <Grid Grid.Row="2" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition Width="0.8*"/>
+                                        <ColumnDefinition Width="0.3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Slider x:Name="xFontWeightSlider" IsThumbToolTipEnabled="True" Minimum="1" StepFrequency="50" Foreground="SteelBlue" />
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBox x:Name="xFontWeightTextBox" Height="15" Width="Auto" BorderBrush="White" FontSize="12" Text="{Binding ElementName=xFontWeightSlider,Path=Value,Mode=TwoWay}"/>
+                                    </Grid>
+                                    <Grid Grid.Column="2">
+                                        <TextBlock FontSize="12" VerticalAlignment="Center" Margin="5,-5,0,0">
+                                    <Run Text="px"/>
+                                        </TextBlock>
+                                    </Grid>
+                                </Grid>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>FONT WEIGHT</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+                    
+                    <!--ALIGNMENT-->
+                    <Grid Grid.Row="3"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Button x:Name="xAlignLeftButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="AlignLeft" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <Button x:Name="xAlignCenterButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="AlignCenter" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="2">
+                                        <Button x:Name="xAlignRightButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="AlignRight" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>TEXT ALIGNMENT</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+                    
+                    <!--STYLE-->
+                    <Grid Grid.Row="4" Width="230" HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid>
+                                    <Grid.Resources>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Background" Value="Transparent"></Setter>
+                                        </Style>
+                                    </Grid.Resources>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Button x:Name="xBoldButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="Bold" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="1">
+                                        <Button x:Name="xItalicButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="Italic" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="2">
+                                        <Button x:Name="xUnderlineButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="Underline" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="3">
+                                        <Button x:Name="xSuperScriptButton" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="FontIncrease"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="4">
+                                        <Button x:Name="xSubScriptButton"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="FontDecrease"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                    <Grid Grid.Column="4">
+                                        <Button x:Name="xAllCapsButton"  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+                                            <SymbolIcon Symbol="FontSize"></SymbolIcon>
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>FONT STYLE</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+
+                    <!--COLOR-->
+                    <Grid Grid.Row="5" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xFontColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                    <Rectangle.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Rectangle.Fill>
+                                                </Rectangle>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>TEXT COLOR</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+
+                    <!--HIGHLIGHT-->
+                    <Grid Grid.Row="6" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xHighlightColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Rectangle Grid.Column="0" Height="30" Width="30" Margin="2" VerticalAlignment="Center" Stroke="{ThemeResource SystemControlForegroundBaseHighBrush }" StrokeThickness="1">
+                                                    <Rectangle.Fill>
+                                                        <SolidColorBrush Color="{Binding Color}" />
+                                                    </Rectangle.Fill>
+                                                </Rectangle>
+                                                <TextBlock Text="{Binding Name}" Grid.Column="1" VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>HIGHLIGHT</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+
+                    <!--SIZE-->
+                    <Grid x:Name="xSizeRow" Grid.Row="7"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                    <!--POSITION-->
+                    <Grid x:Name="xPositionRow" Grid.Row="8"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>
+
+
+

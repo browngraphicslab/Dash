@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -60,12 +59,22 @@ namespace Dash
                 Debug.Assert(false,
                     "The requested controller is not of the desired controller type and does not inhereit from the desired controller type");
             }
-            else
-            {
-                // TODO try and get the controller from the server
-            }
-            Debug.Assert(false, "No controller exists with the passed in id");
+            //Debug.Assert(false, "No controller exists with the passed in id");
             return null;
+        }
+
+        /// <summary>
+        /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
+        /// </summary>
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType : class, IController
+        {
+            List< string > ids = new List<string>();
+            foreach (var c in _controllers)
+                if (c.Value is TControllerType && !ids.Contains(c.Value.GetId()))
+                {
+                    ids.Add(c.Value.GetId());
+                    yield return c.Value as TControllerType;
+                }
         }
 
         /// <summary>
@@ -78,10 +87,6 @@ namespace Dash
             if (_controllers.ContainsKey(controllerId))
             {
                 return _controllers[controllerId];
-            }
-            else
-            {
-                // TODO try and get the controller from the server
             }
             Debug.Assert(false, "No controller exists with the passed in id");
             return null;
@@ -167,10 +172,6 @@ namespace Dash
                 Debug.Assert(false,
                     "The requested model is not of the desired model type and does not inhereit from the desired model type");
             }
-            else
-            {
-                // TODO try and get the controller from the server
-            }
             Debug.Assert(false, "No model exists with the passed in id");
             return null;
         }
@@ -185,10 +186,6 @@ namespace Dash
             if (_models.ContainsKey(modelId))
             {
                 return _models[modelId];
-            }
-            else
-            {
-                // TODO try and get the model from the server
             }
             Debug.Assert(false, "No model exists with the passed in id");
             return null;

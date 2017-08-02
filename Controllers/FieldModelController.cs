@@ -1,59 +1,29 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
-using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
-using System.Collections.Generic;
+using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
-    public abstract class FieldModelController : ViewModelBase, IController
+    public abstract class FieldModelController : ViewModelBase, IController, IDisposable
     {
         /// <summary>
         ///     The fieldModel associated with this <see cref="FieldModelController"/>, You should only set values on the controller, never directly
         ///     on the fieldModel!
         /// </summary>
         public FieldModel FieldModel { get; set; }
-        public delegate void FieldModelUpdatedHandler(FieldModelController sender);
+        public delegate void FieldModelUpdatedHandler(FieldModelController sender, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
-
-        public Context Context = null;
-
-        /// <summary>
-        ///     A wrapper for <see cref="Dash.FieldModel.InputReference" />. Change this to propogate changes
-        ///     to the server and across the client
-        /// </summary>
-        public ReferenceFieldModelController InputReference
+        protected void OnFieldModelUpdated(Context context = null)
         {
-            get { return FieldModel.InputReference; }
-            set
-            {
-                if (SetProperty(ref FieldModel.InputReference, value))
-                {
-                    // update local
-                    var cont = value.GetDocumentController(value.Context);
-                    cont.DocumentFieldUpdated += delegate(DocumentController.DocumentFieldUpdatedEventArgs args)
-                    {
-                        if (args.Reference.FieldKey.Equals(value.FieldKey))
-                        {
-                            UpdateValue(args.NewValue);
-                        }
-                    };
-                    UpdateValue(value.DereferenceToRoot(value.Context));
-
-                    // update server
-                }
-            }
-        }
-
-
-        public void FireFieldModelUpdated()
-        {
-            FieldModelUpdated?.Invoke(this);
+            FieldModelUpdated?.Invoke(this, context);
         }
 
         /// <summary>
@@ -88,30 +58,6 @@ namespace Dash
             // Add Events
         }
 
-        private void OutputReferences_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            //// we could fine tune this
-            //switch (e.Action)
-            //{
-            //    case NotifyCollectionChangedAction.Add:
-            //        break;
-            //    case NotifyCollectionChangedAction.Move:
-            //        break;
-            //    case NotifyCollectionChangedAction.Remove:
-            //        break;
-            //    case NotifyCollectionChangedAction.Replace:
-            //        break;
-            //    case NotifyCollectionChangedAction.Reset:
-            //        break;
-            //    default:
-            //        throw new ArgumentOutOfRangeException();
-            //}
-            var freshList = sender as ObservableCollection<ReferenceFieldModelController>;
-            Debug.Assert(freshList != null);
-
-            // Update Local
-            // Update Server
-        }
 
         /// <summary>
         /// Returns the <see cref="EntityBase.Id"/> for the entity which the controller encapsulates
@@ -121,19 +67,19 @@ namespace Dash
             return FieldModel.Id;
         }
 
-        public virtual FieldModelController Dereference(Context context = null)
+        public virtual FieldModelController Dereference(Context context)
         {
             return this;
         }
 
-        public virtual FieldModelController DereferenceToRoot(Context context = null)
+        public virtual FieldModelController DereferenceToRoot(Context context)
         {
             return this;
         }
 
-        public virtual T DereferenceToRoot<T>(Context context = null) where T : FieldModelController
+        public virtual T DereferenceToRoot<T>(Context context) where T : FieldModelController
         {
-            return this as T;
+            return DereferenceToRoot(context) as T;
         }
 
         /// <summary>
@@ -153,10 +99,10 @@ namespace Dash
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
                 TextAlignment = TextAlignment.Center,
-                TextWrapping = TextWrapping.NoWrap,
+                TextWrapping = TextWrapping.NoWrap
             };
-
             bindTextOrSetOnce(textBlock);
+            
 
             var scrollViewer = new ScrollViewer
             {
@@ -168,6 +114,43 @@ namespace Dash
             };
 
             return scrollViewer;
+        }
+
+        /// <summary>
+        /// Helper method that generates a table cell view for Collections and Lists -- an icon and a wrapped textblock displaying the number of items stored in collection/list 
+        /// </summary>
+        protected Grid GetTableCellViewForCollectionAndLists(string icon, Action<TextBlock> bindTextOrSetOnce)
+        {
+            Grid grid = new Grid
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
+            };
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+            var symbol = new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
+                TextAlignment = TextAlignment.Center, 
+                FontSize = 40, 
+                Text = icon 
+            };
+            grid.Children.Add(symbol); 
+
+            var textBlock = new TextBlock
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Top,
+                TextAlignment = TextAlignment.Center,
+                TextWrapping = TextWrapping.Wrap
+            };
+            bindTextOrSetOnce(textBlock);
+            grid.Children.Add(textBlock); 
+            Grid.SetRow(textBlock, 1);
+
+            return grid; 
         }
 
         public override bool Equals(object obj)
@@ -185,6 +168,17 @@ namespace Dash
             return FieldModel.GetHashCode();
         }
 
+        public abstract FieldModelController Copy();
+
+        public T Copy<T>() where T : FieldModelController
+        {
+            return Copy() as T;
+        }
+
         public abstract FieldModelController GetDefaultController();
+
+        public virtual void Dispose()
+        {
+        }
     }
 }

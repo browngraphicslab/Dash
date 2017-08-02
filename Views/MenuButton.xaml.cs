@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace DocumentMenu
+namespace Dash
 {
     public sealed partial class MenuButton : UserControl
     {
@@ -28,12 +28,6 @@ namespace DocumentMenu
 
         public bool RotateOnTap = false;
 
-        //public bool IsVisible
-        //{
-        //    get { if(_button.Visibility == Visibility.Visible) { return true; } else { return false; }}
-        //    set { if (value) { _button.Visibility = Visibility.Visible; _descriptionText.Visibility = Visibility.Visible; } else { _button.Visibility = Visibility.Collapsed; _descriptionText.Visibility = Visibility.Collapsed; } }
-        //}
-
         public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
         {
             this.InitializeComponent();
@@ -41,6 +35,7 @@ namespace DocumentMenu
             this.InstantiateButton(icon, name, background);
             this.CreateAndRunInstantiationAnimation();
         }
+       
 
         /// <summary>
         /// Create a circular button with an icon and a string description
@@ -87,6 +82,12 @@ namespace DocumentMenu
             xButtonStackPanel.Children.Add(_descriptionText);
 
             _button.Tapped += Button_Tapped;
+            _button.DoubleTapped += Button_DoubleTapped;
+        }
+
+        private void Button_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
 
         /// <summary>

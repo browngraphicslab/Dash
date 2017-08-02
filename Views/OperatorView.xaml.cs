@@ -6,9 +6,12 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using System.Collections.Generic;
+using Windows.ApplicationModel;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
+using Dash.Controllers.Operators;
+using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,17 +36,23 @@ namespace Dash
         /// </summary>
         public class IOReference
         {
-            public ReferenceFieldModelController ReferenceFieldModelController { get; set; }
+            public FieldReference FieldReference { get; set; }
             public bool IsOutput { get; set; }
+            //public bool IsReference { get; set; }
 
             public PointerRoutedEventArgs PointerArgs { get; set; }
 
             public FrameworkElement FrameworkElement { get; set; }
             public DocumentView ContainerView { get; set; }
 
-            public IOReference(ReferenceFieldModelController referenceFieldModelController, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+            public FieldModelController FMController { get;  set;}
+
+            public Key FieldKey { get; set; }
+            public IOReference(Key fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
             {
-                ReferenceFieldModelController = referenceFieldModelController;
+                FieldKey = fieldKey; 
+                FMController = controller; 
+                FieldReference = fieldReference;
                 IsOutput = isOutput;
                 PointerArgs = args;
                 FrameworkElement = e;
@@ -56,10 +65,17 @@ namespace Dash
             this.InitializeComponent();
         }
 
+        public object OperatorContent
+        {
+            get { return XPresenter.Content; }
+            set { XPresenter.Content = value; }
+        }
+
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var opCont = (DataContext as ReferenceFieldModelController).DereferenceToRoot<OperatorFieldModelController>();
+            var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
 
+           
             Binding inputsBinding = new Binding
             {
                 Source = opCont.Inputs,
@@ -79,27 +95,26 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e) {
-
-            string docId = (DataContext as DocumentReferenceController).DocId;
+        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
+        {
+            string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                (view.CurrentView as CollectionFreeformView).CanLink = true;
-                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
-
+            (view.CurrentView as CollectionFreeformView).CanLink = true;
+            (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
         }
-        
+
 
         private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e);
+            holdPointerOnEllipse(sender, e, false);
         }
-        
+
         private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e);
+            holdPointerOnEllipse(sender, e, true);
         }
 
         /// <summary>
@@ -125,11 +140,13 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e) {
-            string docId = (DataContext as DocumentReferenceController).DocId;
+        
+        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
+        {
+            string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
             Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new DocumentReferenceController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
 
@@ -137,12 +154,12 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e);
+            releasePointerOnEllipse(sender, e, false);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e);
+            releasePointerOnEllipse(sender, e, true);
         }
 
         /// <summary>
@@ -150,7 +167,8 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
             xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
         }
     }

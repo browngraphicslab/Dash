@@ -9,10 +9,8 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
-        <Viewbox x:Name="xViewBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
-            <views:DocumentView AllowDrop="True" Drop="XCanvas_Drop" DragOver="xCanvas_DragOver" x:Name="MainDocView" DoubleTapped="XCanvas_OnDoubleTapped" x:FieldModifier="public"/>
-        </Viewbox>
-        <Canvas x:Name="xCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" ></Canvas>
-        <local:OverlayCanvas x:Name="xOverlayCanvas" x:FieldModifier="public"></local:OverlayCanvas>
+        <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
+        <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
+        <Button Tapped="UIElement_OnTapped">TEST TEST TEST</Button>
     </Grid>
 </Page>

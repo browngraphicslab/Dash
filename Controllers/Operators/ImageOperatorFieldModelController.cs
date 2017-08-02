@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DashShared;
 
 namespace Dash
@@ -25,14 +24,19 @@ namespace Dash
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void Execute(DocumentController doc, Context context)
+        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
             //TextFieldModel uri = doc.Field(URIKey) as TextFieldModel;
             //Debug.Assert(uri != null, "Input is not a string");
 
             //(doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
+        }
+        
+        public override FieldModelController Copy()
+        {
+            return new ImageOperatorFieldModelController(OperatorFieldModel);
         }
     }
     /* 

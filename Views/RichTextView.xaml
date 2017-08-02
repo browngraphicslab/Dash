@@ -1,0 +1,56 @@
+﻿<UserControl
+    x:Class="Dash.RichTextView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <Grid.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Background" Value="LightSteelBlue"></Setter>
+                <Setter Property="Foreground" Value="DarkSlateBlue"></Setter>
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="xFormatRow" Height="0"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!--<Grid x:Name="xFormatControls" Grid.Row="0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="2*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <Grid Grid.Column="0">
+                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="BoldButton_Tapped">
+                        <SymbolIcon Symbol="Bold"></SymbolIcon>
+                    </Button>
+                </Grid>
+                <Grid Grid.Column="1">
+                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="ItalicButton_Tapped">
+                        <SymbolIcon Symbol="Italic"></SymbolIcon>
+                    </Button>
+                </Grid>
+                <Grid Grid.Column="2">
+                    <Button HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Tapped="UnderlineButton_Tapped">
+                        <SymbolIcon Symbol="Underline"></SymbolIcon>
+                    </Button>
+                </Grid>
+                <Grid Grid.Column="3">
+                    <ComboBox x:Name="xFontSizeComboBox" Background="LightSteelBlue" BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SelectionChanged="Selector_OnSelectionChanged" ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
+                </Grid>
+            </Grid>
+        </Grid>-->
+        <Grid Grid.Row="1">
+            <RichEditBox x:FieldModifier="public" x:Name="xRichEitBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="LightSteelBlue" IsColorFontEnabled="True" SelectionHighlightColor="LightSteelBlue"></RichEditBox>
+        </Grid>
+    </Grid>
+
+</UserControl>

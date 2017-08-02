@@ -1,0 +1,63 @@
+﻿<UserControl
+    x:Class="Dash.FreeformSettings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" BorderBrush="Transparent">
+        <Grid.Background>
+            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75" />
+            <RowDefinition Height="55" />
+            <RowDefinition />
+            <RowDefinition Height="100" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+            <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
+                <Run Text="SETTINGS" />
+            </TextBlock>
+        </Grid>
+        <Grid Grid.Row="1" Width="250" Height="50" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>
+                    <Run Text="Type" />
+                </TextBlock>
+                <TextBlock x:Name="TypeBlock" Margin="30,0,0,0" TextWrapping="Wrap" MaxWidth="190">
+                    <Run Text="Document" />
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Width="250">
+            <ScrollViewer VerticalScrollMode="Auto" VerticalScrollBarVisibility="Visible" IsVerticalRailEnabled="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition x:Name="xCollapsableDocRow" Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!--DOC SETTINGS-->
+                    <Grid x:Name="xDocRow" Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
+                    
+                    <!--SIZE-->
+                    <Grid x:Name="xSizeRow" Grid.Row="1" Width="230" HorizontalAlignment="Left"
+                          VerticalAlignment="Center" />
+
+                    <!--POSITION-->
+                    <Grid x:Name="xPositionRow" Grid.Row="2" Width="230" HorizontalAlignment="Left"
+                          VerticalAlignment="Center" />
+
+                    <!--ALIGNMENT-->
+                    <Grid x:Name="xAlignmentRow" Grid.Row="3" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

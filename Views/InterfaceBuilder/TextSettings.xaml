@@ -1,0 +1,129 @@
+﻿<UserControl
+    x:Class="Dash.TextSettings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="800"
+    d:DesignWidth="300">
+
+    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" BorderBrush="Transparent">
+        <Grid.Background>
+            <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
+        </Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="75"/>
+            <RowDefinition Height="30"/>
+            <RowDefinition />
+            <RowDefinition Height="100"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+            <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
+                <Run Text="SETTINGS"/>
+            </TextBlock>
+        </Grid>
+        <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock>
+                    <Run Text="Type"/>
+                </TextBlock>
+                <TextBlock Margin="50,0,0,0">
+                    <Run Text="Text"/>
+                </TextBlock>
+            </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Width="250">
+            <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!--FONT SIZE-->
+                    <Grid Grid.Row="0"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.5*"/>
+                                        <ColumnDefinition Width="0.8*"/>
+                                        <ColumnDefinition Width="0.3*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Slider x:Name="xFontSizeSlider" IsThumbToolTipEnabled="True" Minimum="4" StepFrequency="4" Foreground="SteelBlue"/>
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="5,0,0,0">
+                                        <TextBox x:Name="xFontSizeTextBox" Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12"/>
+                                    </Grid>
+                                    <Grid Grid.Column="2">
+                                        <TextBlock FontSize="12" VerticalAlignment="Center" Margin="5,-5,0,0">
+                                    <Run Text="px"/>
+                                        </TextBlock>
+                                    </Grid>
+                                </Grid>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>FONT SIZE</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+                    
+                    <!--ALIGNMENT-->
+                    <Grid Grid.Row="1"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <ListView x:Name="xAlignmentListView" Height="35" HorizontalAlignment="Center"
+                                          HorizontalContentAlignment="Center" SelectionMode="Single"
+                                          ScrollViewer.HorizontalScrollMode="Disabled"
+                                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                          ScrollViewer.VerticalScrollMode="Disabled" Margin="0,10,0,10">
+                                    <ListView.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" />
+                                        </ItemsPanelTemplate>
+                                    </ListView.ItemsPanel>
+                                    <Border>
+                                        <SymbolIcon Symbol="AlignLeft" />
+                                    </Border>
+                                    <Border>
+                                        <SymbolIcon Symbol="AlignCenter" />
+                                    </Border>
+                                    <Border>
+                                        <SymbolIcon Symbol="AlignRight" />
+                                    </Border>
+                                </ListView>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>TEXT ALIGNMENT</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+                    
+                    <!--FONT WEIGHT-->
+                    <Grid x:Name="xComboBoxRow" Grid.Row="2"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <ComboBox x:Name="xFontWeightBox" HorizontalAlignment="Stretch" Margin="0,5,0,5" BorderBrush="Transparent" FontSize="12"/>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>FONT WEIGHT</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
+                    
+                    <!--SIZE-->
+                    <Grid x:Name="xSizeRow" Grid.Row="3"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    
+                    <!--POSITION-->
+                    <Grid x:Name="xPositionRow" Grid.Row="4"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+
+                    <!--ALIGNMENT-->
+                    <Grid x:Name="xAlignmentRow" Grid.Row="5" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
+
+                </Grid>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

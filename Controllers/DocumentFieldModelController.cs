@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
@@ -8,7 +7,7 @@ namespace Dash
 {
     public class DocumentFieldModelController : FieldModelController
     {
-        public DocumentFieldModelController(DocumentController document) : base(new DocumentModelFieldModel(document.DocumentModel))
+        public DocumentFieldModelController(DocumentController document) : base(new DocumentModelFieldModel(document?.DocumentModel))
         {
             Data = document;
         }
@@ -32,6 +31,7 @@ namespace Dash
             {
                 if (SetProperty(ref _data, value))
                 {
+                    OnFieldModelUpdated();
                     // update local
                     // update server
                 }
@@ -53,6 +53,11 @@ namespace Dash
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
             textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new DocumentFieldModelController(Data);
         }
     }
 }

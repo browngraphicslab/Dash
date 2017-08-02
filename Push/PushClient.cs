@@ -20,7 +20,7 @@ namespace Dash.Push
         private PushClient()
         {
             _connection = new Connection();
-            _connection.StartConnectionAsync("ws://localhost:8160");
+            _connection.StartConnectionAsync("ws://localhost:8160").ConfigureAwait(true);
             _connection.On("receiveMessage", (arguments) =>
             {
                 var message = arguments[0] as PushMessage;

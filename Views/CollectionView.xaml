@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<dash:SelectionElement
     x:Class="Dash.CollectionView"
     x:Name="Control"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,9 +10,10 @@
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
-    ManipulationDelta="UserControl_ManipulationDelta"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    PointerWheelChanged="UserControl_PointerWheelChanged">
+    ManipulationMode="All"
+    ManipulationDelta="CollectionView_OnManipulationDelta"
+    PointerWheelChanged="CollectionView_OnPointerWheelChanged"
+    RightTapped="CollectionView_OnRightTapped">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -39,7 +40,7 @@
                     <Grid.Clip>
                         <RectangleGeometry x:Name="ClipRect" />
                     </Grid.Clip>
-                    <ContentControl x:Name="xContentControl" />
+                    <ContentControl x:Name="xContentControl"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"
                          x:FieldModifier="public"
@@ -47,8 +48,11 @@
                          HorizontalAlignment="Right"
                          PointerPressed="ConnectionEllipse_OnPointerPressed"
                          PointerReleased="ConnectionEllipse_OnPointerReleased" />
+                <Grid.Clip>
+                    <RectangleGeometry x:Name="xBackgroundClip"></RectangleGeometry>
+                </Grid.Clip>
             </Grid>
         </Grid>
     </Grid>
 
-</UserControl>
+</dash:SelectionElement>

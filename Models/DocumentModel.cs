@@ -28,7 +28,7 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<Key, FieldModel> fields, DocumentType type)
+        public DocumentModel(IDictionary<Key, FieldModel> fields, DocumentType type, string id = null) : base(id)
         {
             if (type == null)
             {
@@ -44,7 +44,7 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<Key, string> fields, DocumentType type)
+        public DocumentModel(IDictionary<Key, string> fields, DocumentType type, string id = null) : base(id)
         {
             if (type == null)
             {

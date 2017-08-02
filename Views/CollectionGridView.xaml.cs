@@ -32,14 +32,18 @@ namespace Dash
                 Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
                 Mode = BindingMode.OneWay,
             };
-            xGridView.SetBinding(GridView.SelectionModeProperty, selectionBinding);
-
+            xGridView.SetBinding(ListViewBase.SelectionModeProperty, selectionBinding);
         }
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             CollectionViewModel vm = DataContext as CollectionViewModel;
             xGridView.SelectionChanged += vm.SelectionChanged;
+        }
+
+        private void xGridView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
         }
     }
 }

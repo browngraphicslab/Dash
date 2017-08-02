@@ -12,31 +12,45 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using Dash.Models;
-using Dash.Views;
 using DashShared;
 using Microsoft.Extensions.DependencyInjection;
 using RadialMenuControl.UserControl;
+using Dash.Controllers.Operators;
+using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 namespace Dash
 {
     public static class Actions
     {
+        
        
-        private static SearchView _searchView = new SearchView();
-
-        public static void AddSearch(Canvas c, Point p)
+        public static void AddSearch(object o, DragEventArgs e)
         {
-            if (!c.Children.Contains(_searchView))
+            //if (!c.Children.Contains(_searchView))
+            //{
+            //    c.Children.Add(_searchView);
+            //    _searchView.SetPosition(p);
+            //    _searchView.IsDraggable = true;
+            //}
+            //else
+            //{
+            //    c.Children.Remove(_searchView);
+            //}
+            var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
+
+            var searchView = new DocumentView
             {
-                c.Children.Add(_searchView);
-                _searchView.SetPosition(p);
-                _searchView.IsDraggable = true;
-            }
-            else
-            {
-                c.Children.Remove(_searchView);
-            }
+                Width = 200,
+                Height = 200
+            };
+            var where = Util.GetCollectionDropPoint(
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                e.GetPosition(MainPage.Instance));
+            var pos = new Point(where.X - 30, where.Y -30);
+            MainPage.Instance.DisplayDocument(opModel, where);
+            MainPage.Instance.AddGenericFilter(o, e);
         }
 
 
@@ -92,31 +106,214 @@ namespace Dash
         }
 
 
-        public static void OnOperatorAdd(object obj)
+        public static void OnOperatorAdd(object o, DragEventArgs e)
         {
-            MainPage.Instance.AddOperator();
+            //MainPage.Instance.AddOperator();
+            MainPage.Instance.AddOperatorsFilter(o, e);
         }
 
+        public static void AddOperator(object obj)
+        {
+            DocumentController opModel = null;
+            var type = obj as string;
+
+            var searchView = OperatorSearchView.Instance.SearchView;
+            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
+            var border = searchView.GetFirstDescendantOfType<Border>();
+            var position = new Point(Canvas.GetLeft(border) + searchView.ActualWidth, Canvas.GetTop(border));
+            var translate = new Point();
+            if (freeForm == MainPage.Instance.GetMainCollectionView().CurrentView)
+            {
+                Debug.Assert(freeForm != null);
+                var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+                Debug.Assert(r != null);
+                translate = r.TransformPoint(new Point(position.X, position.Y));
+            }
+
+            if (type == null) return;
+            if (type == "Divide")
+            {
+                opModel =
+                OperatorDocumentModel.CreateOperatorDocumentModel(
+                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
+                view.DataContext = opvm;
+            }
+            else if (type == "Union")
+            {
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new UnionOperatorFieldModelController(new OperatorFieldModel(type)));
+                var unionView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var unionOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                unionView.DataContext = unionOpvm;
+            }
+            else if (type == "Intersection")
+            {
+                // add union operator for testing 
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new IntersectionOperatorModelController(new OperatorFieldModel(type)));
+                var intersectView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var intersectOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                intersectView.DataContext = intersectOpvm;
+            } else if (type == "Filter")
+            {
+                opModel = OperatorDocumentModel.CreateFilterDocumentController();
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                view.DataContext = opvm;
+            } else if (type == "Api")
+            {
+                opModel = OperatorDocumentModel.CreateApiDocumentController();
+                var view = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var opvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                view.DataContext = opvm;
+            }
+            else if (type == "ImageToUri")
+            {
+                // add image url -> image operator for testing
+                opModel =
+                    OperatorDocumentModel.CreateOperatorDocumentModel(
+                        new ImageOperatorFieldModelController(new OperatorFieldModel(type)));
+                var imgOpView = new DocumentView
+                {
+                    Width = 200,
+                    Height = 200
+                };
+                var imgOpvm = new DocumentViewModel(opModel)
+                {
+                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+                };
+                imgOpView.DataContext = imgOpvm;
+            }
+            if (opModel != null)
+                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opModel);
+        }
         
-        public static void AddCollection(object obj)
+        public static void AddCollection(CollectionView collection, DragEventArgs e)
         {
-            MainPage.Instance.AddCollection(null, null);
+            //Get transformed position of drop event
+            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+
+            //Make first collection
+            var numbers = new Numbers().Document;
+            var fields = new Dictionary<Key, FieldModelController>
+            {
+                {
+                    DocumentCollectionFieldModelController.CollectionKey,
+                    new DocumentCollectionFieldModelController(new[] {numbers})
+                }
+            };
+            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var layoutDoc =
+                new CollectionBox(new ReferenceFieldModelController(col.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController = new DocumentFieldModelController(layoutDoc);
+            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+            col.SetField(DashConstants.KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc}), true);
+
+            //Make second collection
+            var numbers2 = new Numbers().Document;
+            var twoImages2 = new TwoImages(false).Document;
+            var fields2 = new Dictionary<Key, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new[]
+                    {numbers2, twoImages2})
+            };
+            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var layoutDoc2 =
+                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
+            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc2}), true);
+
+            //Display collections
+            DisplayDocument(collection, col2, where);
+            DisplayDocument(collection, col, where);
         }
 
-        public static void AddApiCreator(object obj)
+        /// <summary>
+        ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
+        /// </summary>
+        /// <param name="docModel"></param>
+        /// <param name="where"></param>
+        /// <param name="collection"></param>
+        public static void DisplayDocument(CollectionView collection, DocumentController docModel, Point? where = null)
         {
-            MainPage.Instance.AddApiCreator(obj, new TappedRoutedEventArgs());
+            if (where != null)
+            {
+                var h = docModel.GetHeightField().Data; 
+                var w = docModel.GetWidthField().Data;
+
+                var pos = (Point)where;
+                docModel.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
+            }
+            var children = collection.ViewModel.CollectionFieldModelController;
+            children?.AddDocument(docModel);
         }
 
-        public static void AddImage(object obj)
+        public static void AddApiCreator(CollectionView collection, DragEventArgs e)
         {
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.FilePickerDisplay());
-            // xFreeformView.Canvas.Children.Add(new Sources.FilePicker.PDFFilePicker());
+            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var a = new ApiDocumentModel().Document;
+            DisplayDocument(collection, a, where);
         }
 
-        public static void AddDocuments(object obj)
+        public static void AddDocuments(CollectionView col, DragEventArgs e)
         {
-            MainPage.Instance.AddDocuments(null, null);
+            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(col, d, where);
+        }
+
+        public static void AddNotes(CollectionView col, DragEventArgs e)
+        {
+            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+            DisplayDocument(col, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)

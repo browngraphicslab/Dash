@@ -89,22 +89,82 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="Assets\richtexttest.rtf" />
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClipSettings.xaml.cs">
+      <DependentUpon>ClipSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controllers\Operators\Set\FilterOperator.cs" />
+    <Compile Include="Controllers\RectFieldModelController.cs" />
+    <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Models\RectFieldModel.cs" />
+    <Compile Include="Push\IPushController.cs" />
+    <Compile Include="Rest\Endpoints\AccountEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\AuthenticationEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\DocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\FieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\KeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ShapeEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\TypeEndpoint.cs" />
+    <Compile Include="Rest\Exceptions\ApiException.cs" />
+    <Compile Include="Rest\RESTClient.cs" />
+    <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\WebBox.cs" />
+    <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
+    <Compile Include="Util\Request.cs" />
+    <Compile Include="Util\RequestUtil.cs" />
+    <Compile Include="Views\ApiOpView.xaml.cs">
+      <DependentUpon>ApiOpView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\FilterView.xaml.cs">
+      <DependentUpon>FilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
+      <DependentUpon>AlignmentSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\DocumentPointerReferenceController.cs" />
-    <Compile Include="Controllers\DocumentReferenceController.cs" />
-    <Compile Include="Controllers\IPushController.cs" />
-    <Compile Include="Models\DocumentPointerReferenceFieldModel.cs" />
-    <Compile Include="Models\DocumentReferenceFieldModel.cs" />
+    <Compile Include="Push\Connection.cs" />
+    <Compile Include="Push\PushClient.cs" />
+    <Compile Include="Controllers\BaseListFieldModelController.cs" />
+    <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
+    <Compile Include="Controllers\Operators\MapOperatorController.cs" />
+    <Compile Include="Converters\DoubleToBoolConverter.cs" />
+    <Compile Include="Converters\InverseVisibilityConverter.cs" />
+    <Compile Include="Converters\StringToEnumConverter.cs" />
+    <Compile Include="Converters\StringToDoubleConverter.cs" />
+    <Compile Include="Views\InterfaceBuilder\DocumentCanvasView.xaml.cs">
+      <DependentUpon>DocumentCanvasView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
+      <DependentUpon>GridViewSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
+      <DependentUpon>ListViewSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\SelectionElement.xaml.cs">
+      <DependentUpon>SelectionElement.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\FreeformSettings.xaml.cs">
+      <DependentUpon>FreeformSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\GenericSearchView.xaml.cs">
+      <DependentUpon>GenericSearchView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Models\RadialActionModel.cs" />
     <Compile Include="Models\RadialItemModel.cs" />
     <Compile Include="Models\RadialSubmenuModel.cs" />
-    <Compile Include="Push\Connection.cs" />
-    <Compile Include="Push\PushClient.cs" />
+    <Compile Include="Views\SearchView.xaml.cs">
+      <DependentUpon>SearchView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\OperatorSearchView.xaml.cs">
+      <DependentUpon>OperatorSearchView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="RadialMenu\CenterButton.xaml.cs" />
     <Compile Include="RadialMenu\ColorExtensions.cs" />
     <Compile Include="RadialMenu\Colors.cs" />
@@ -122,10 +182,49 @@
     <Compile Include="RadialMenu\RadialMenuButton.xaml.cs" />
     <Compile Include="RadialMenu\Shims.cs" />
     <Compile Include="RadialMenu\StoryboardExtension.cs" />
-    <Compile Include="ServerClient\Endpoints\FieldEndpoint.cs" />
+    <Compile Include="Converters\TransformGroupDataToGroupTransformConverter.cs" />
+    <Compile Include="Util\DocumentFieldReference.cs" />
+    <Compile Include="Util\DocumentPointerFieldReference.cs" />
+    <Compile Include="Util\FieldReference.cs" />
+    <Compile Include="Util\CourtesyDocuments\DefaultLayout.cs" />
+    <Compile Include="Views\RichTextSettings.xaml.cs">
+      <DependentUpon>RichTextSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Models\RichTextFieldModel.cs" />
+    <Compile Include="Controllers\RichTextFieldModelController.cs" />
+    <Compile Include="Util\CourtesyDocuments\AnnotatedImage.cs" />
+    <Compile Include="Util\CourtesyDocuments\ApiDocumentModel.cs" />
+    <Compile Include="Util\CourtesyDocuments\CourtesyDocument.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleDBTest.cs" />
+    <Compile Include="Util\CourtesyDocuments\DocumentBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\FreeformDocument.cs" />
+    <Compile Include="Util\CourtesyDocuments\ListViewLayout.cs" />
+    <Compile Include="Util\CourtesyDocuments\CollectionBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\DataBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\GridViewLayout.cs" />
+    <Compile Include="Util\CourtesyDocuments\ImageBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\GridLayout.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleNestedDocExample.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleNumbers.cs" />
+    <Compile Include="Util\CourtesyDocuments\OperatorBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\RichTextBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\StackLayout.cs" />
+    <Compile Include="Util\CourtesyDocuments\TextingBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleTwoImages.cs" />
+    <Compile Include="Util\EditableTextBlock.cs" />
+    <Compile Include="Util\DropControls.cs" />
+    <Compile Include="Views\SelectableContainer.xaml.cs">
+      <DependentUpon>SelectableContainer.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\NoteDocuments.cs" />
+    <Compile Include="Views\RichTextView.xaml.cs">
+      <DependentUpon>RichTextView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\Actions.cs" />
+    <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
     <Compile Include="Util\TypeInfo.cs" />
+    <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
     </Compile>
@@ -145,7 +244,7 @@
     <Compile Include="Controllers\ListFieldModelController.cs" />
     <Compile Include="Controllers\NumberFieldModelController.cs" />
     <Compile Include="Controllers\OperatorFieldModelController.cs" />
-    <Compile Include="Controllers\Operators\ApiSourceOperatorController.cs" />
+    <Compile Include="Controllers\Operators\ApiOperator.cs" />
     <Compile Include="Controllers\PointFieldModelController.cs" />
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
@@ -155,7 +254,6 @@
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
     <Compile Include="Converters\IntToTextAlignmentConverter.cs" />
     <Compile Include="Converters\StringCoordinateToPointConverter.cs" />
-    <Compile Include="Converters\DocumentToUIElementConverter.cs" />
     <Compile Include="Converters\FontWeightToFontWeightConverter.cs" />
     <Compile Include="Converters\FrameworkElementToPosition.cs" />
     <Compile Include="Converters\PointToTranslateTransformConverter.cs" />
@@ -165,8 +263,6 @@
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ItemsCarrier.cs" />
     <Compile Include="ManipulationControls.cs" />
-    <Compile Include="Models\ApiSourceFieldModel.cs" />
-    <Compile Include="Models\ApiSourceFieldModelController.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
@@ -178,7 +274,7 @@
     <Compile Include="Models\ImageFieldModel.cs" />
     <Compile Include="Models\NumberFieldModel.cs" />
     <Compile Include="Models\OperatorDocumentModel.cs" />
-    <Compile Include="Models\OperatorModels\Arithmetic\AddOperatorModel.cs" />
+    <Compile Include="Controllers\Operators\Arithmetic\AddOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Arithmetic\DivideOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\ImageOperatorFieldModelController.cs" />
     <Compile Include="Models\OperatorModels\Arithmetic\MultiplyOperatorModel.cs" />
@@ -191,14 +287,6 @@
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerClient\Endpoints\AccountEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\AuthenticationEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\DocumentEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\KeyEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\ShapeEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
-    <Compile Include="ServerClient\Exceptions\ApiException.cs" />
-    <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -229,7 +317,6 @@
       <DependentUpon>PDFViewer.xaml</DependentUpon>
     </Compile>
     <Compile Include="Sources\Source.cs" />
-    <Compile Include="Util\CourtesyDocuments.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
     <Compile Include="Util\InkSource.cs" />
@@ -242,19 +329,27 @@
     <Compile Include="ViewModels\DocumentViewModel.cs" />
     <Compile Include="ViewModels\GuideLineViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
-    <Compile Include="ViewModels\OperatorDocumentViewModel.cs" />
     <Compile Include="ViewModels\ViewModelBase.cs" />
+    <Compile Include="Views\InterfaceBuilder\CollectionSettings.xaml.cs">
+      <DependentUpon>CollectionSettings.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\CollectionView.xaml.cs">
       <DependentUpon>CollectionView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\DocumentSettings.xaml.cs">
+      <DependentUpon>DocumentSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\EditableFieldFrame.cs" />
+    <Compile Include="Views\EmailView.xaml.cs">
+      <DependentUpon>EmailView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\GuideLineView.xaml.cs">
       <DependentUpon>GuideLineView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ImageSettings.xaml.cs">
+    <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
       <DependentUpon>ImageSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
@@ -263,6 +358,7 @@
     <Compile Include="Views\InterfaceBuilder\KeyValuePane.xaml.cs">
       <DependentUpon>KeyValuePane.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\InterfaceBuilder\SettingsPaneFromDocumentControllerFactory.cs" />
     <Compile Include="Views\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
@@ -287,17 +383,27 @@
     <Compile Include="Views\RadialMenuView.xaml.cs">
       <DependentUpon>RadialMenuView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\TextSettings.xaml.cs">
+    <Compile Include="Views\InterfaceBuilder\PositionSettings.xaml.cs">
+      <DependentUpon>PositionSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\SettingsPaneBlock.xaml.cs">
+      <DependentUpon>SettingsPaneBlock.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\SizeSettings.xaml.cs">
+      <DependentUpon>SizeSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\TextSettings.xaml.cs">
       <DependentUpon>TextSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\SearchView.xaml.cs">
-      <DependentUpon>SearchView.xaml</DependentUpon>
+    <Compile Include="Views\SearchCategoryItem.xaml.cs">
+      <DependentUpon>SearchCategoryItem.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\WindowTemplate.cs" />
     <Compile Include="Views\WindowView.xaml.cs">
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
+    <Compile Include="Converters\WidthBindingToDoubleConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -335,6 +441,7 @@
     <Content Include="Assets\resize.png" />
     <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
+    <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\youtubeJson.txt" />
     <Content Include="Properties\Default.rd.xml" />
     <Content Include="Assets\LockScreenLogo.scale-200.png" />
@@ -350,6 +457,78 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\ApiSourceDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\ApiOpView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\FilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\DocumentCanvasView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SelectionElement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\AlignmentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\FreeformSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\GenericSearchView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\SearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\OperatorSearchView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="RadialMenu\CenterButton.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -382,6 +561,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\SelectableContainer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RichTextSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\RichTextView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\CollectionFreeformView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -393,30 +584,6 @@
     <Page Include="Views\CollectionListView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Sources\Api\ApiCreatorDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\ApiSourceDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorAuthenticationDisplay.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorProperty.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiCreatorPropertyGenerator.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Sources\FilePicker\FilePickerDisplay.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -434,19 +601,31 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\InterfaceBuilder\CollectionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\CollectionView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\DocumentSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\DocumentView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\EmailView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\GuideLineView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\ImageSettings.xaml">
+    <Page Include="Views\InterfaceBuilder\ImageSettings.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -490,10 +669,22 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\TextSettings.xaml">
+    <Page Include="Views\InterfaceBuilder\PositionSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\SettingsPaneBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\SizeSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\TextSettings.xaml">
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\SearchView.xaml">
+    <Page Include="Views\SearchCategoryItem.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

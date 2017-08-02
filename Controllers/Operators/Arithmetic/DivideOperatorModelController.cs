@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using DashShared;
 
-
 namespace Dash
 {
     public class DivideOperatorFieldModelController : OperatorFieldModelController
@@ -30,25 +29,27 @@ namespace Dash
             [RemainderKey] = TypeInfo.Number
         };
 
-        private int nextChar = 'C';
+        private int _nextChar = 'C';
 
-        public override void Execute(DocumentController doc, Context context)
+        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-            var numberA = doc.GetDereferencedField(AKey, context) as NumberFieldModelController;
+            var numberA = (NumberFieldModelController) inputs[AKey];
 
-            var numberB = doc.GetDereferencedField(BKey, context) as NumberFieldModelController;
+            var numberB = (NumberFieldModelController) inputs[BKey];
 
-            if (numberA.InputReference == null || numberB.InputReference == null)//One or more of the inputs isn't set yet
-            {
-                return;
-            }
-            string s = new string((char)nextChar++, 1);
+            //Varargs proof of concept
+            var s = new string((char)_nextChar++, 1);
             Inputs.Add(new Key(s, s), TypeInfo.Number);
+            
+            var a = numberA.Data;
+            var b = numberB.Data;
+            outputs[QuotientKey] = new NumberFieldModelController(a / b);
+            outputs[RemainderKey] = new NumberFieldModelController(a % b);
+        }
 
-            double a = numberA.Data;
-            double b = numberB.Data;
-            doc.SetField(QuotientKey, new NumberFieldModelController(a / b), true);
-            doc.SetField(RemainderKey, new NumberFieldModelController(a % b), true);
+        public override FieldModelController Copy()
+        {
+            return new DivideOperatorFieldModelController(OperatorFieldModel);
         }
     }
 }

@@ -18,21 +18,47 @@ namespace Dash
             Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
             fields[OperatorKey] = opController;
             //TODO These loops make overloading not possible
-            foreach (var typeInfo in inputs)
-            {
-                fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
-            }
-            foreach (var typeInfo in outputs)
-            {
-                fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
-            }
+            //foreach (var typeInfo in inputs)
+            //{
+            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
+            //}
+            //foreach (var typeInfo in outputs)
+            //{
+            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
+            //}
             
             var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());
 
-            var layoutDoc = new CourtesyDocuments.OperatorBox(new DocumentReferenceController(doc.GetId(), OperatorKey)).Document;
+            var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            doc.SetField(DashConstants.KeyStore.LayoutKey, layoutController, false);
+            doc.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
+
+            return doc;
+        }
+
+        public static DocumentController CreateFilterDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            fields[OperatorKey] = new FilterOperator(new OperatorFieldModel("Filter"));
+            var doc = new DocumentController(fields, FilterOperator.FilterType);
+
+            var layoutDoc = new FilterOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
+
+        public static DocumentController CreateApiDocumentController()
+        {
+            Dictionary<Key, FieldModelController> fields = new Dictionary<Key, FieldModelController>();
+            var doc = new ApiDocumentModel().Document;
+            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true );
+            doc.DocumentType = ApiOperator.ApiType;
+
+
+            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
 
             return doc;
         }
