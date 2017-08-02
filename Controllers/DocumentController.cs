@@ -717,6 +717,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
+                    //sp.Children.Add(new CollectionBox(f.Value).Document.MakeViewUI(context, isInterfaceBuilder));
                     foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
                         sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
