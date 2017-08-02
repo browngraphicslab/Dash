@@ -217,8 +217,25 @@ namespace Dash
         {
             var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
 
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(col, d, where);
+            //Make second collection
+            var numbers2 = new Numbers().Document;
+            var fields2 = new Dictionary<Key, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new[]
+                    {numbers2})
+            };
+            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var layoutDoc2 =
+                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
+            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
+
+            //Display collections
+            DisplayDocument(col, col2, where);
         }
 
         public static void AddNotes(CollectionView col, DragEventArgs e)

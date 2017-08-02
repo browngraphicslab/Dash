@@ -4,25 +4,24 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Windows.UI.Xaml.Controls;
 using DashShared;
 
 namespace Dash
 {
-    public class CompoundOperator : OperatorFieldModelController
+    public class CompoundOperatorFieldController : OperatorFieldModelController
     {
-        public CompoundOperator(CompoundOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        public CompoundOperatorFieldController(CompoundOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
 
-        public CompoundOperator() : base(new CompoundOperatorFieldModel("Compound"))
+        public CompoundOperatorFieldController() : base(new CompoundOperatorFieldModel("Compound"))
         {
         }
 
         public override FieldModelController Copy()
         {
             Debug.Assert(OperatorFieldModel is CompoundOperatorFieldModel);
-            return new CompoundOperator(OperatorFieldModel as CompoundOperatorFieldModel);
+            return new CompoundOperatorFieldController(OperatorFieldModel as CompoundOperatorFieldModel);
         }
 
         public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>();
@@ -38,7 +37,7 @@ namespace Dash
             foreach (var reference in InputFieldReferences)
             {
                 var doc = reference.Value.GetDocumentController(c);
-                doc.SetField(reference.Value.FieldKey, inputs[reference.Key], true);
+                doc.SetField(reference.Value.FieldKey, inputs[reference.Key].Copy(), true);
             }
             foreach (var output in OutputFieldReferences)
             {

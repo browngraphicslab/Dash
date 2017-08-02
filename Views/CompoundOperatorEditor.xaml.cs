@@ -19,7 +19,8 @@ namespace Dash
 {
     public sealed partial class CompoundOperatorEditor : UserControl
     {
-        private CompoundOperator _operatorFieldModelController;
+        private readonly DocumentController _documentController;
+        private readonly CompoundOperatorFieldController _operatorFieldModelController;
 
         public CompoundOperatorEditor()
         {
@@ -27,8 +28,9 @@ namespace Dash
             Unloaded += CompoundOperatorEditor_Unloaded;
         }
 
-        public CompoundOperatorEditor(CompoundOperator operatorFieldModelController) : this()
+        public CompoundOperatorEditor(DocumentController documentController, CompoundOperatorFieldController operatorFieldModelController)
         {
+            _documentController = documentController;
             _operatorFieldModelController = operatorFieldModelController;
         }
 

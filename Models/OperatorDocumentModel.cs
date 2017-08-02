@@ -78,7 +78,7 @@ namespace Dash
         {
             var fields = new Dictionary<Key, FieldModelController>
             {
-                [OperatorKey] = new CompoundOperator()
+                [OperatorKey] = new CompoundOperatorFieldController()
             };
             var doc = new DocumentController(fields, CollectionMapOperator.MapType);
 
