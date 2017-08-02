@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -8,9 +11,38 @@ namespace Dash
 {
     public class DocumentCollectionFieldModelController : FieldModelController
     {
-        public delegate void DocumentsChangedHandler(IEnumerable<DocumentController> currentDocuments);
+        public class CollectionFieldUpdatedEventArgs : FieldUpdatedEventArgs
+        {
+            public enum CollectionChangedAction
+            {
+                Add,
+                Remove,
+                Replace,
+                Clear
+            }
 
-        public event DocumentsChangedHandler OnDocumentsChanged;
+            public readonly CollectionChangedAction CollectionAction;
+            public readonly List<DocumentController> ChangedDocuments;
+
+            private CollectionFieldUpdatedEventArgs() : base(TypeInfo.Collection, DocumentController.FieldUpdatedAction.Update)
+            {
+            }
+
+            public CollectionFieldUpdatedEventArgs(CollectionChangedAction action) : this()
+            {
+                if (action != CollectionChangedAction.Clear)
+                {
+                    throw new ArgumentException();
+                }
+                CollectionAction = action;
+                ChangedDocuments = null;
+            }
+            public CollectionFieldUpdatedEventArgs(CollectionChangedAction action, List<DocumentController> changedDocuments) : this()
+            {
+                CollectionAction = action;
+                ChangedDocuments = changedDocuments;
+            }
+        }
 
         /// <summary>
         /// Key for collection data
@@ -31,7 +63,7 @@ namespace Dash
         {
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) :base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
         {
             _documents = documents.ToList();
         }
@@ -52,26 +84,26 @@ namespace Dash
         public void AddDocument(DocumentController docController)
         {
             _documents.Add(docController);
-            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            DocumentCollectionFieldModel.Data.Add(docController.GetId());
+            //DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
 
-            OnFieldModelUpdated();
-            OnDocumentsChanged?.Invoke(GetDocuments());
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController>{docController}));
         }
 
 
         public void RemoveDocument(DocumentController doc) {
             _documents.Remove(doc);
-            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
-            OnFieldModelUpdated();
+            DocumentCollectionFieldModel.Data.Remove(doc.GetId());
+            //DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove, new List<DocumentController>{doc}));
         }
 
         public void SetDocuments(List<DocumentController> docControllers)
         {
-            _documents = docControllers;
-            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId());
+            _documents = new List<DocumentController>(docControllers);
+            DocumentCollectionFieldModel.Data = _documents.Select(d => d.GetId()).ToList();
 
-            OnFieldModelUpdated();
-            OnDocumentsChanged?.Invoke(GetDocuments());
+            OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace, new List<DocumentController>(docControllers)));
         }
 
         /// <summary>

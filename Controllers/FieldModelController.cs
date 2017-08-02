@@ -18,12 +18,12 @@ namespace Dash
         ///     on the fieldModel!
         /// </summary>
         public FieldModel FieldModel { get; set; }
-        public delegate void FieldModelUpdatedHandler(FieldModelController sender, Context context);
+        public delegate void FieldModelUpdatedHandler(FieldModelController sender, FieldUpdatedEventArgs args, Context context);
         public event FieldModelUpdatedHandler FieldModelUpdated;
 
-        protected void OnFieldModelUpdated(Context context = null)
+        protected void OnFieldModelUpdated(FieldUpdatedEventArgs args, Context context = null)
         {
-            FieldModelUpdated?.Invoke(this, context);
+            FieldModelUpdated?.Invoke(this, args ?? new FieldUpdatedEventArgs(TypeInfo.None, DocumentController.FieldUpdatedAction.Update), context);
         }
 
         /// <summary>

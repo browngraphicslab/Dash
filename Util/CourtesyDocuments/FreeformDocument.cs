@@ -57,13 +57,20 @@ namespace Dash
             LayoutDocuments(docController, context, grid, isInterfaceBuilderLayout);
 
             grid.Clip = new RectangleGeometry();
-            grid.SizeChanged += delegate(object sender, SizeChangedEventArgs args) { grid.Clip.Rect = new Rect(0,0,args.NewSize.Width,args.NewSize.Height); };
+            grid.SizeChanged += delegate (object sender, SizeChangedEventArgs args) { grid.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height); };
 
             var c = new Context(context);
             docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                var collFieldArgs =
+                    args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+                if (collFieldArgs.CollectionAction == DocumentCollectionFieldModelController
+                        .CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add)
+                {
+                    AddDocuments(collFieldArgs.ChangedDocuments, c, grid, isInterfaceBuilderLayout);
+                }
+                else
                 {
                     LayoutDocuments(sender, c, grid, isInterfaceBuilderLayout);
                 }
@@ -102,7 +109,12 @@ namespace Dash
                 };
                 grid.Children.Add(icon);
             }
-            foreach (var layoutDocument in layoutDocuments)
+            AddDocuments(layoutDocuments, context, grid, isInterfaceBuilder);
+        }
+
+        private static void AddDocuments(List<DocumentController> docs, Context context, Grid grid, bool isInterfaceBuilder)
+        {
+            foreach (var layoutDocument in docs)
             {
                 var layoutView = layoutDocument.MakeViewUI(context, isInterfaceBuilder);
                 layoutView.HorizontalAlignment = HorizontalAlignment.Left;
@@ -111,7 +123,7 @@ namespace Dash
                 var positionField = layoutDocument.GetPositionField(context);
                 BindTranslation(layoutView, positionField);
 
-                if(isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
+                if (isInterfaceBuilder) SetupBindings(layoutView, layoutDocument, context);
 
                 grid.Children.Add(layoutView);
             }

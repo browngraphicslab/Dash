@@ -9,9 +9,9 @@ namespace Dash.Converters
             switch ((int) data)
             {
                 case 0:
-                    return TextAlignment.Left;
+                    return TextAlignment.Center; // Center is 0!!
                 case 1:
-                    return TextAlignment.Center;
+                    return TextAlignment.Left;
                 case 2:
                     return TextAlignment.Right;
                 default:
@@ -23,9 +23,9 @@ namespace Dash.Converters
         {
             switch (alignment)
             {
-                case TextAlignment.Left:
+                case TextAlignment.Center:// Center is 0!!
                     return 0;
-                case TextAlignment.Center:
+                case TextAlignment.Left:
                     return 1;
                 case TextAlignment.Right:
                     return 2;

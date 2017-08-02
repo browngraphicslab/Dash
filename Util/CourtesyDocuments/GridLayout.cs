@@ -12,16 +12,16 @@ using DashShared;
 
 namespace Dash
 {
-    class GridPanel : CourtesyDocument
+    class GridLayout : CourtesyDocument
     {
-        public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Panel");
+        public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Layout");
 
         public static readonly Key GridRowsTypeKey = new Key("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitionTypes");
         public static readonly Key GridRowsValueKey = new Key("3761458D-757E-4350-8BF5-FC42D3DCF70F", "RowDefinitionValues");
         public static readonly Key GridColumnsTypeKey = new Key("7B698361-0F0E-4322-983C-055989376C72", "ColumnDefinitionTypes");
         public static readonly Key GridColumnsValueKey = new Key("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9", "ColumnDefinitionValues");
 
-        public GridPanel()
+        public GridLayout()
         {
             var fields = DefaultLayoutFields(new Point(0, 0), new Size(double.NaN, double.NaN),
                 new DocumentCollectionFieldModelController());
@@ -125,7 +125,7 @@ namespace Dash
     {
         public static void SetGridRowDefinitions(this DocumentController document, List<RowDefinition> rows)
         {
-            Debug.Assert(document.DocumentType.Equals(GridPanel.GridPanelDocumentType));
+            Debug.Assert(document.DocumentType.Equals(GridLayout.GridPanelDocumentType));
             ListFieldModelController<NumberFieldModelController> types = new ListFieldModelController<NumberFieldModelController>();
             ListFieldModelController<NumberFieldModelController> values = new ListFieldModelController<NumberFieldModelController>();
             foreach (var row in rows)
@@ -135,13 +135,13 @@ namespace Dash
                 types.Add(new NumberFieldModelController(type));
                 values.Add(new NumberFieldModelController(value));
             }
-            document.SetField(GridPanel.GridRowsTypeKey, types, true);
-            document.SetField(GridPanel.GridRowsValueKey, values, true);
+            document.SetField(GridLayout.GridRowsTypeKey, types, true);
+            document.SetField(GridLayout.GridRowsValueKey, values, true);
         }
 
         public static void SetGridColumnDefinitions(this DocumentController document, List<ColumnDefinition> columns)
         {
-            Debug.Assert(document.DocumentType.Equals(GridPanel.GridPanelDocumentType));
+            Debug.Assert(document.DocumentType.Equals(GridLayout.GridPanelDocumentType));
             ListFieldModelController<NumberFieldModelController> types = new ListFieldModelController<NumberFieldModelController>();
             ListFieldModelController<NumberFieldModelController> values = new ListFieldModelController<NumberFieldModelController>();
             foreach (var column in columns)
@@ -151,8 +151,8 @@ namespace Dash
                 types.Add(new NumberFieldModelController(type));
                 values.Add(new NumberFieldModelController(value));
             }
-            document.SetField(GridPanel.GridColumnsTypeKey, types, true);
-            document.SetField(GridPanel.GridColumnsValueKey, values, true);
+            document.SetField(GridLayout.GridColumnsTypeKey, types, true);
+            document.SetField(GridLayout.GridColumnsValueKey, values, true);
         }
 
         public static void AddChild(this DocumentController document, DocumentController child, Context context = null)

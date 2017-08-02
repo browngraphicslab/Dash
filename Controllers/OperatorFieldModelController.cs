@@ -59,5 +59,10 @@ namespace Dash
         {
 
         }
+
+        public bool IsCompound()
+        {
+            return OperatorFieldModel.IsCompound;
+        }
     }
 }

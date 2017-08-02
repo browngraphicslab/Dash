@@ -97,10 +97,7 @@ namespace Dash.Converters
             if (keys != null)
             {
                 foreach (var dmc in ContentController.GetControllers<DocumentController>())
-                    if (!dmc.DocumentType.Type.Contains("Box") &&
-                        dmc.DocumentType != StackingPanel.DocumentType &&
-                        dmc.DocumentType != GridPanel.GridPanelDocumentType &&
-                        dmc.DocumentType != GridViewLayout.DocumentType)
+                    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                     {
                         bool found = true;
                         foreach (var k in keys.Data)
@@ -129,44 +126,11 @@ namespace Dash.Converters
                         }
                     }
             }
-            foreach (var dmc in ContentController.GetControllers<DocumentController>())
-                if (!dmc.DocumentType.Type.Contains("Box") &&
-                    dmc.DocumentType != StackingPanel.DocumentType &&
-                    dmc.DocumentType != GridPanel.GridPanelDocumentType &&
-                    dmc.DocumentType != GridViewLayout.DocumentType)
-                {
-                    var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
-                    if (primaryKeys != null)
-                    {
-                        bool found = true;
-                        foreach (var value in values)
-                        {
-                            bool foundValue = false;
-                            foreach (var kf in primaryKeys.Data)
-                            {
-                                var key = new Key((kf as TextFieldModelController).Data);
-                                var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
-                                if (derefValue != null)
-                                {
-                                    if (value == derefValue)
-                                    {
-                                        foundValue = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (!foundValue)
-                            {
-                                found = false;
-                                break;
-                            }
-                        }
-                        if (found)
-                        {
-                            _doc = dmc;
-                            return dmc;
-                        }
-                    }
+            var doc = DocumentController.FindDocMatchingPrimaryKeys(values);
+            if (doc != null)
+            {
+                _doc = doc;
+                return _doc;
             }
             return DBTest.DBNull;
         }

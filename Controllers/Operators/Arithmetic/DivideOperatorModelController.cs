@@ -1,15 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.Foundation.Metadata;
 using DashShared;
 
 namespace Dash
 {
     public class DivideOperatorFieldModelController : OperatorFieldModelController
     {
+
+        public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
+        {
+        }
+
         public DivideOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
-            OperatorFieldModel = operatorFieldModel;
         }
+
         //Input keys
         public static readonly Key AKey = new Key("AAC1631C-9DC3-48FC-984A-EE0D80C9A397", "A");
         public static readonly Key BKey = new Key("A757D709-8D83-44C9-B047-D5DB6420F51F", "B");
@@ -29,27 +35,21 @@ namespace Dash
             [RemainderKey] = TypeInfo.Number
         };
 
-        private int _nextChar = 'C';
-
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
             var numberA = (NumberFieldModelController) inputs[AKey];
-
             var numberB = (NumberFieldModelController) inputs[BKey];
 
-            //Varargs proof of concept
-            var s = new string((char)_nextChar++, 1);
-            Inputs.Add(new Key(s, s), TypeInfo.Number);
-            
             var a = numberA.Data;
             var b = numberB.Data;
+
             outputs[QuotientKey] = new NumberFieldModelController(a / b);
             outputs[RemainderKey] = new NumberFieldModelController(a % b);
         }
 
         public override FieldModelController Copy()
         {
-            return new DivideOperatorFieldModelController(OperatorFieldModel);
+            return new DivideOperatorFieldModelController();
         }
     }
 }

@@ -28,13 +28,11 @@ namespace Dash
             };
             Document = new DocumentController(fields, NestedDocExampleType);
 
-            var tBox = new TextingBox(new ReferenceFieldModelController(Document.GetId(), TextFieldKey))
-                .Document;
+            var tBox = new TextingBox(new ReferenceFieldModelController(Document.GetId(), TextFieldKey), 0, 0, double.NaN, 100).Document;
             var imBox1 = twoModel.Data;
-            var tBox2 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), TextField2Key))
-                .Document;
+            var tBox2 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), TextField2Key), 0, 0, double.NaN, 100).Document;
 
-            var stackPan = new StackingPanel(new DocumentController[] { tBox, imBox1, tBox2 }, false).Document;
+            var stackPan = new StackLayout(new DocumentController[] { tBox, imBox1, tBox2 }).Document;
 
             SetLayoutForDocument(Document, stackPan, forceMask: true, addToLayoutList: true);
         }

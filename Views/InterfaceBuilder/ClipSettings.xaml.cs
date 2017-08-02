@@ -46,7 +46,7 @@ namespace Dash
         private void InitializeClip(RectFieldModelController clipController)
         {
             UpdateTextBoxes(clipController);
-            clipController.FieldModelUpdated += (ss, args, cc) =>
+            clipController.FieldModelUpdated += (ss, cc) =>
             {
                 UpdateTextBoxes(clipController);
             };

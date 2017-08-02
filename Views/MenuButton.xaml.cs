@@ -13,7 +13,7 @@ using Windows.UI.Xaml.Media.Animation;
 
 namespace Dash
 {
-    public sealed partial class MenuButton : UserControl
+    public sealed partial class MenuButton : UserControl, IDisposable
     {
         private TextBlock _descriptionText;
         private Button _button;
@@ -164,6 +164,12 @@ namespace Dash
         {
             e.Handled = true;
             _buttonAction?.Invoke();
+        }
+
+        public void Dispose()
+        {
+            _button.Tapped -= Button_Tapped;
+            _button.DoubleTapped -= Button_DoubleTapped;
         }
 
         /// <summary>

@@ -116,8 +116,8 @@ namespace Dash.Controllers.Operators
             var docsInSearchScope = new List<DocumentController>();
             foreach (var dmc in dbDocs)
                 if (!dmc.DocumentType.Type.Contains("Box") && 
-                    dmc.DocumentType != StackingPanel.DocumentType && 
-                    dmc.DocumentType != GridPanel.GridPanelDocumentType && 
+                    dmc.DocumentType != StackLayout.DocumentType && 
+                    dmc.DocumentType != GridLayout.GridPanelDocumentType && 
                     dmc.DocumentType != GridViewLayout.DocumentType)
                 {
                     if (targetDocument == null)
@@ -193,7 +193,7 @@ namespace Dash.Controllers.Operators
 
         public override FieldModelController Copy()
         {
-            return new DivideOperatorFieldModelController(OperatorFieldModel);
+            return new DBSearchOperatorFieldModelController(OperatorFieldModel as DBSearchOperatorFieldModel);
         }
     }
 }

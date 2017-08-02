@@ -18,6 +18,8 @@ namespace Dash
         public static Key Number4FieldKey = new Key("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
         public static Key Number5FieldKey = new Key("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
 
+        private static Random r = new Random();
+
         public Numbers()
         {
             // create a document with two images
@@ -25,7 +27,6 @@ namespace Dash
             fields.Add(Number1FieldKey, new NumberFieldModelController(789));
             fields.Add(Number2FieldKey, new NumberFieldModelController(23));
             fields.Add(Number3FieldKey, new NumberFieldModelController(8));
-            Random r = new Random();
             fields.Add(Number4FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
             fields.Add(Number5FieldKey, new NumberFieldModelController((r.NextDouble() - 0.5) * 600));
 
@@ -44,7 +45,7 @@ namespace Dash
             var tBox6 = new TextingBox(new ReferenceFieldModelController(Document.GetId(), Number3FieldKey), 0,
                 0, 60, 35).Document;
 
-            var gridPanel = new GridPanel().Document;
+            var gridPanel = new GridLayout().Document;
             gridPanel.SetGridColumnDefinitions(new List<ColumnDefinition>
         {
             new ColumnDefinition{Width = new GridLength(1, GridUnitType.Star)},

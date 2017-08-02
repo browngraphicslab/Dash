@@ -40,11 +40,6 @@ namespace Dash
             //}
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
-            var searchView = new DocumentView
-            {
-                Width = 200,
-                Height = 200
-            };
             var where = Util.GetCollectionDropPoint(
                 MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
                 e.GetPosition(MainPage.Instance));
@@ -114,118 +109,31 @@ namespace Dash
 
         public static void AddOperator(object obj)
         {
-            DocumentController opModel = null;
-            var type = obj as string;
-
-            var searchView = OperatorSearchView.Instance.SearchView;
             var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
-            var border = searchView.GetFirstDescendantOfType<Border>();
-            var position = new Point(Canvas.GetLeft(border) + searchView.ActualWidth, Canvas.GetTop(border));
-            var translate = new Point();
-            if (freeForm == MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>().CurrentView)
-            {
-                //var r = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
-                //Debug.Assert(r != null);
-                //translate = r.TransformPoint(new Point(position.X, position.Y));
-                translate = Util.PointTransformFromVisual(position, searchView, freeForm.xItemsControl.ItemsPanelRoot); 
-            }
 
-            if (type == null) return;
-            if (type == "Divide")
+            if (freeForm == null)
             {
-                opModel =
-                OperatorDocumentModel.CreateOperatorDocumentModel(
-                    new DivideOperatorFieldModelController(new OperatorFieldModel(type)));
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                //OperatorDocumentViewModel opvm = new OperatorDocumentViewModel(opModel);
-                view.DataContext = opvm;
+                return;
             }
-            else if (type == "Union")
+            
+            var searchView = OperatorSearchView.Instance.SearchView;
+            var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
+            Debug.Assert(transform != null);
+            var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
+
+            var opCreator = obj as KeyValuePair<string, object>? ?? new KeyValuePair<string, object>();
+            var opController = (opCreator.Value as Func<DocumentController>)?.Invoke();
+
+            // using this as a setter for the transform massive hack - LM
+            var opvm = new DocumentViewModel(opController)
             {
-                opModel =
-                    OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new UnionOperatorFieldModelController(new OperatorFieldModel(type)));
-                var unionView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var unionOpvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                unionView.DataContext = unionOpvm;
+                GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
+            };
+
+            if (opController != null)
+            {
+                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opController);
             }
-            else if (type == "Intersection")
-            {
-                // add union operator for testing 
-                opModel =
-                    OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new IntersectionOperatorModelController(new OperatorFieldModel(type)));
-                var intersectView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var intersectOpvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                intersectView.DataContext = intersectOpvm;
-            } else if (type == "Filter")
-            {
-                opModel = OperatorDocumentModel.CreateFilterDocumentController();
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                view.DataContext = opvm;
-            } else if (type == "Api")
-            {
-                opModel = OperatorDocumentModel.CreateApiDocumentController();
-                var view = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var opvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                view.DataContext = opvm;
-            }
-            else if (type == "ImageToUri")
-            {
-                // add image url -> image operator for testing
-                opModel =
-                    OperatorDocumentModel.CreateOperatorDocumentModel(
-                        new ImageOperatorFieldModelController(new OperatorFieldModel(type)));
-                var imgOpView = new DocumentView
-                {
-                    Width = 200,
-                    Height = 200
-                };
-                var imgOpvm = new DocumentViewModel(opModel)
-                {
-                    GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
-                };
-                imgOpView.DataContext = imgOpvm;
-            }
-            if (opModel != null)
-                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opModel);
         }
         
         public static void AddCollection(CollectionView collection, DragEventArgs e)
@@ -234,12 +142,16 @@ namespace Dash
             var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
 
             //Make first collection
-            var numbers = new Numbers().Document;
+            List<DocumentController> numbers = new List<DocumentController>();
+            for (int i = 0; i < 6; ++i)
+            {
+                numbers.Add(new Numbers().Document);
+            }
             var fields = new Dictionary<Key, FieldModelController>
             {
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
-                    new DocumentCollectionFieldModelController(new[] {numbers})
+                    new DocumentCollectionFieldModelController(numbers)
                 }
             };
             var col = new DocumentController(fields, new DocumentType("collection", "collection"));
@@ -312,7 +224,7 @@ namespace Dash
         public static void AddNotes(CollectionView col, DragEventArgs e)
         {
             var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
-            DocumentController postitNote = new NoteDocuments.PostitNote(NoteDocuments.PostitNote.DocumentType).Document;
+            DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
             DisplayDocument(col, postitNote, where);
         }
 

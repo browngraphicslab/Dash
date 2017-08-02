@@ -14,13 +14,13 @@ using System.Linq;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase
+    public class CollectionViewModel : ViewModelBase, IFreeFormCollectionViewModel
     {
-
-
 
         #region Properties
         public DocumentCollectionFieldModelController CollectionFieldModelController { get; }
+
+        public bool IsInterfaceBuilder { get; set; }
 
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
@@ -37,8 +37,8 @@ namespace Dash
 
         public bool KeepItemsOnMove { get; set; } = true;
 
-
         private bool _canDragItems;
+
         public bool CanDragItems
         {
             get { return _canDragItems; }
@@ -53,40 +53,55 @@ namespace Dash
             set { SetProperty(ref _itemSelectionMode, value); }
         }
         private ListViewSelectionMode _itemSelectionMode;
-        #endregion
-
-        /// <summary>
-        /// The collection creates delegates for each document it displays so that it can associate display-specific
-        /// information on the documents.  This allows different collection views to save different views of the same
-        /// document collection.
-        /// </summary>
-        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-
-        //Not backing variable; used to keep track of which items selected in view
-        private ObservableCollection<DocumentViewModel> _selectedItems;
 
         /// <summary>
         /// The size of each cell in the GridView.
         /// </summary>
         public double CellSize { get; set; }
+        #endregion
 
-        public CollectionViewModel(FieldModelController collection, Context context = null)
+        //Not backing variable; used to keep track of which items selected in view
+        private ObservableCollection<DocumentViewModel> _selectedItems;
+
+
+        public CollectionViewModel(FieldModelController collection, bool IsInInterfaceBuilder, Context context = null)
         {
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DataBindingSource = new ObservableCollection<DocumentViewModel>();
             CollectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            UpdateViewModels(CollectionFieldModelController, context);
+            AddViewModels(CollectionFieldModelController.GetDocuments(), context);
             var copiedContext = new Context(context);
-          
-            collection.FieldModelUpdated += delegate (FieldModelController sender, Context context1)
+
+            if (collection is ReferenceFieldModelController)
             {
-                UpdateViewModels(sender.DereferenceToRoot<DocumentCollectionFieldModelController>(context1),
-                    copiedContext);
-            };
+                var reference = collection as ReferenceFieldModelController;
+                reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                        {
+                            var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+                            UpdateViewModels(cargs, copiedContext);
+                        }
+                        else
+                        {
+                            DataBindingSource.Clear();
+                            AddViewModels(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
+                        }
+                    });
+            }
+            else
+            {
+                collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
+                {
+                    UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs, 
+                        copiedContext);
+                };
+            }
             CellSize = 250;
         }
+
 
         #region Event Handlers
 
@@ -110,8 +125,6 @@ namespace Dash
                 CollectionFieldModelController.RemoveDocument(vm.DocumentController);
             }
         }
-
-
 
 
         /// <summary>
@@ -144,55 +157,47 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, DocumentController docController)
+        private void UpdateViewModels(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs args, Context c)
         {
-            foreach (var viewModel in col)
-                if (viewModel.DocumentController.GetId() == docController.GetId())
-                    return true;
-            return false;
-        }
-
-        private bool ViewModelContains(List<DocumentController> documentControllerList, DocumentViewModel vm)
-        {
-            foreach (var docController in documentControllerList)
-                if (vm.DocumentController.GetId() == docController.GetId())
-                    return true;
-            return false;
-        }
-
-        public void UpdateViewModels(DocumentCollectionFieldModelController documents, Context context)
-        {
-            //// bcz: shouldn't need this conditional once the collection updates properly
-            //if (documents == null)
-            //    documents = DocController.GetDereferencedField(Key, context) as DocumentCollectionFieldModelController;
-
-            var offset = 0;
-            var carriedControllers = ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).ToList();
-            foreach (var docController in documents.GetDocuments())
+            switch (args.CollectionAction)
             {
-                if (!context.DocContextList.Contains(docController) && !docController.DocumentType.Type.Contains("Box"))
-                {
-                    if (ViewModelContains(DataBindingSource, docController))
-                        continue;
-                    var viewModel = new DocumentViewModel(docController, false, context);
-
-                    if (carriedControllers.Contains(docController))
-                    {
-                        var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
-                        var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
-                        viewModel.GroupTransform = new TransformGroupData(new Point(x, y),
-                            viewModel.GroupTransform.ScaleCenter, viewModel.GroupTransform.ScaleAmount);
-                        offset += 15;
-                    }
-                    //viewModel.ManipulationMode = ManipulationModes.All;
-                    viewModel.DoubleTapEnabled = false;
-                    DataBindingSource.Add(viewModel);
-                }
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
+                    AddViewModels(args.ChangedDocuments, c);
+                    break;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
+                    DataBindingSource.Clear();
+                    break;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
+                    RemoveViewModels(args.ChangedDocuments);
+                    break;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
+                    DataBindingSource.Clear();
+                    AddViewModels(args.ChangedDocuments, c);
+                    break;
             }
-            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
+        }
+
+        public void AddViewModels(List<DocumentController> documents, Context context)
+        {
+            foreach (var doc in documents)
             {
-                if (ViewModelContains(documents.GetDocuments(), DataBindingSource[i])) continue;
-                DataBindingSource.RemoveAt(i);
+                if (context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+                {
+                    continue;
+                }
+                var viewModel = new DocumentViewModel(doc, false, context);
+                viewModel.DoubleTapEnabled = false;
+                DataBindingSource.Add(viewModel);
+            }
+        }
+
+        public void RemoveViewModels(List<DocumentController> documents)
+        {
+            var ids = documents.Select(doc => doc.GetId());
+            var vms = DataBindingSource.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+            foreach (var vm in vms)
+            {
+                DataBindingSource.Remove(vm);
             }
         }
 

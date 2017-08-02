@@ -44,7 +44,7 @@
 
                 <local:KeyValuePane x:Name="xKeyValuePane" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValuePane>
 
-                <local:DocumentCanvasView x:Name="xDocumentPane" Grid.Column="1"></local:DocumentCanvasView>
+                <local:CollectionFreeformView x:Name="xDocumentPane" Grid.Column="1"></local:CollectionFreeformView>
 
                 <Grid  Grid.Column="2">
                     <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" 

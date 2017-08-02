@@ -7,16 +7,17 @@
     xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="Transparent"
-    ManipulationMode="All"
-    ManipulationInertiaStarting="UserControl_ManipulationInertiaStarting"
-    ManipulationDelta="UserControl_ManipulationDelta"
-    PointerWheelChanged="UserControl_PointerWheelChanged"
-    >
-    <Grid x:Name="FreeformGrid" ManipulationMode="All">
+    ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}">
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged">
+        <Grid.Clip>
+            <RectangleGeometry x:Name="xClippingRect"/>
+        </Grid.Clip>
+        <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
                               ItemsSource="{Binding DataBindingSource}">
@@ -37,7 +38,7 @@
                     <dash:DocumentView DataContext="{Binding}"
                                        IODragStarted="StartDrag" 
                                        IODragEnded="EndDrag" 
-                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"/>
+                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" Loaded="DocumentViewOnLoaded"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

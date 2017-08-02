@@ -15,8 +15,8 @@ namespace Dash
     public class GridViewLayout : CourtesyDocument
     {
         private static string PrototypeId = "C2EB5E08-1C04-44BF-970A-DB213949EE48";
-        public static DocumentType DocumentType = new DocumentType("B7A022D4-B667-469C-B47E-3A84C0AA78A0", "Spacing Layout");
-        public static Key SpacingKey = new Key("C4336303-8FD8-4ED6-8F03-540E95EE3CC8", "Spacing Key");
+        public static DocumentType DocumentType = new DocumentType("B7A022D4-B667-469C-B47E-3A84C0AA78A0", "Grid View Layout");
+        public static Key GridViewKey = new Key("C4336303-8FD8-4ED6-8F03-540E95EE3CC8", "Grid View Key");
         public static double DefaultSpacing = 10;
 
         public GridViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
@@ -54,7 +54,7 @@ namespace Dash
         private static void SetSpacingField(DocumentController docController, double spacing, bool forceMask)
         {
             var currentSpacingField = new NumberFieldModelController(spacing);
-            docController.SetField(SpacingKey, currentSpacingField, forceMask);
+            docController.SetField(GridViewKey, currentSpacingField, forceMask);
         }
 
         public override FrameworkElement makeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
@@ -67,7 +67,7 @@ namespace Dash
         /// </summary>
         private static void BindSpacing(GridView gridView, DocumentController docController, Context context)
         {
-            var spacingController = docController.GetDereferencedField(SpacingKey, context) as NumberFieldModelController;
+            var spacingController = docController.GetDereferencedField(GridViewKey, context) as NumberFieldModelController;
             if (spacingController == null)
                 return;
 
@@ -109,7 +109,7 @@ namespace Dash
         protected new static void SetupBindings(GridView gridView, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(gridView, docController, context);
-            AddBinding(gridView, docController, SpacingKey, context, BindSpacing);
+            AddBinding(gridView, docController, GridViewKey, context, BindSpacing);
         }
 
         public static FrameworkElement MakeView(DocumentController docController, Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)

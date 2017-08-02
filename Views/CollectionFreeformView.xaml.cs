@@ -7,17 +7,20 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Shapes;
-using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.UI;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using DashShared;
-using Windows.UI.Input;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using Path = Windows.UI.Xaml.Shapes.Path;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -26,59 +29,86 @@ namespace Dash
 {
     public sealed partial class CollectionFreeformView : UserControl
     {
-        public bool CanLink;
-        public PointerRoutedEventArgs PointerArgs;
+
+        #region ScalingVariables
+
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
-        public const float MaxScale = 10;
-        public const float MinScale = 0.001f;
+        public const float MaxScale = 4;
+        public const float MinScale = 0.25f;
 
-        /// <summary>
-        /// HashSet of current pointers in use so that the OperatorView does not respond to multiple inputs 
-        /// </summary>
+        #endregion
+
+
+        #region LinkingVariables
+
+        public bool CanLink = true;
+        public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
-        /// <summary>
-        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
-        /// </summary>
-        private OperatorView.IOReference _currReference;
-        private Windows.UI.Xaml.Shapes.Path _connectionLine;
+        private IOReference _currReference;
+        private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private CollectionView _parentCollection;
+        private Dictionary<BezierConverter, Path> _lineDict = new Dictionary<BezierConverter, Path>();
+        private Canvas itemsPanelCanvas;
 
-        private Dictionary<BezierConverter, Windows.UI.Xaml.Shapes.Path> _lineDict = new Dictionary<BezierConverter, Windows.UI.Xaml.Shapes.Path>();
-        //private CollectionView ParentCollection;
-        private Canvas parentCanvas;
+        #endregion
+
+        private ManipulationControls _manipulationControls;
+
+        #region Background Translation Variables
+        private CanvasBitmap _bgImage;
+        private bool _resourcesLoaded;
+        private CanvasImageBrush _bgBrush;
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
+        private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
+        #endregion
+
+        public delegate void OnDocumentViewLoadedHandler(CollectionFreeformView sender, DocumentView documentView);
+        public event OnDocumentViewLoadedHandler OnDocumentViewLoaded;
+
         public CollectionFreeformView()
         {
             this.InitializeComponent();
             this.Loaded += Freeform_Loaded;
-            //ParentCollection = view;
-
+            this.Unloaded += Freeform_Unloaded;
+            DataContextChanged += OnDataContextChanged;
+            _manipulationControls = new ManipulationControls(this);
+            _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as IFreeFormCollectionViewModel;
+
+            if (vm != null)
+            {
+                var itemsBinding = new Binding()
+                {
+                    Source = vm,
+                    Path = new PropertyPath(nameof(vm.DataBindingSource)),
+                    Mode = BindingMode.OneWay
+                };
+                xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
+            }
+        }
+
+
+        private void Freeform_Unloaded(object sender, RoutedEventArgs e)
+        {
+            _manipulationControls.Dispose();
+        }
+
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
-            _parentCollection = this.GetFirstAncestorOfType<CollectionView>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
 
-        //private void DocumentView_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
-        //{
-        //    var cvm = DataContext as CollectionViewModel;
-        //    //(sender as DocumentView).Manipulator.TurnOff();
 
-        //}
-        //private void DocumentView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        //{
-        //    //var cvm = DataContext as CollectionViewModel;
-        //    //var dv = (sender as DocumentView);
-        //    //var dvm = dv.DataContext as DocumentViewModel;
-        //    //var where = dv.RenderTransform.TransformPoint(new Point(e.Delta.Translation.X, e.Delta.Translation.Y));
-        //    //dvm.Position = where;
-        //    //e.Handled = true;
-        //}
+
+        #region DraggingLinesAround
 
         /// <summary>
         /// Update the bindings on lines when documentview is minimized to icon view 
@@ -104,7 +134,7 @@ namespace Dash
                     else
                     {
                         converter.Element1 = converter.Temp1;
-                        converter.Temp1 = converter.Element1; 
+                        converter.Temp1 = converter.Element1;
                     }
                 }
                 else if (view2 == docView)
@@ -123,29 +153,23 @@ namespace Dash
             }
         }
 
-        public void StartDrag(OperatorView.IOReference ioReference)
+        public void StartDrag(IOReference ioReference)
         {
-            Debug.Write("1");
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
                 return;
             }
 
-            Debug.Write("2");
-
             if (ioReference.PointerArgs == null) return;
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
-            parentCanvas = xItemsControl.ItemsPanelRoot as Canvas;
-
-
-            Debug.Write("3");
+            itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
-            _connectionLine = new Windows.UI.Xaml.Shapes.Path
+            _connectionLine = new Path
             {
                 StrokeThickness = 5,
                 Stroke = new SolidColorBrush(Colors.Orange),
@@ -155,11 +179,11 @@ namespace Dash
                 //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
-            _converter = new BezierConverter(ioReference.FrameworkElement, null, parentCanvas);
+            _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
 
             try
             {
-                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(parentCanvas).Position;
+                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
 
             }
             catch (COMException ex)
@@ -180,17 +204,7 @@ namespace Dash
             BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
             _connectionLine.Data = pathGeo;
 
-            // TODO comment back in if/when editor mode is implemented  
-            /* 
-            Binding visibilityBinding = new Binding
-            {
-                Source = DataContext as CollectionViewModel,
-                Path = new PropertyPath("IsEditorMode"),
-                Converter = new VisibilityConverter()
-            };
-            _connectionLine.SetBinding(VisibilityProperty, visibilityBinding);
-            */
-            parentCanvas.Children.Add(_connectionLine);
+            itemsPanelCanvas.Children.Add(_connectionLine);
 
             if (!ioReference.IsOutput)
             {
@@ -204,22 +218,19 @@ namespace Dash
             _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
+
         private void UndoLine()
         {
-            parentCanvas.Children.Remove(_connectionLine);
+            itemsPanelCanvas.Children.Remove(_connectionLine);
             _connectionLine = null;
             _currReference = null;
         }
 
-        public void EndDrag(OperatorView.IOReference ioReference)
+        public void EndDrag(IOReference ioReference)
         {
-            OperatorView.IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
-            OperatorView.IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
+            IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
+            IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
-            //if (!(DataContext as CollectionViewModel).IsEditorMode)
-            //{
-            //    return;
-            //}
             _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null) return;
 
@@ -230,38 +241,10 @@ namespace Dash
             }
             if (_currReference.FieldReference == null) return;
 
-            string outId;
-            string inId;
-            if (_currReference.IsOutput)
-            {
-                //outId = _currReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
-                //inId = ioReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
-            }
-            else
-            {
-                //outId = ioReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
-                //inId = _currReference.ReferenceFieldModelController.DereferenceToRoot(null).GetId();
-            }
-            //CollectionView.Graph.AddEdge(outId, inId);
-            if (CollectionView.Graph.IsCyclic())
-            {
-                if (_currReference.IsOutput)
-                {
-                    //      CollectionView.Graph.RemoveEdge(outId, inId);
-                }
-                else
-                {
-                    //    CollectionView.Graph.RemoveEdge(outId, inId);
-                }
-                CancelDrag(ioReference.PointerArgs.Pointer);
-                Debug.WriteLine("Cycle detected");
-                return;
-            }
-
             _converter.Element2 = ioReference.FrameworkElement;
-            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.RenderTransformProperty);
-            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.WidthProperty);
-            _lineBinding.AddBinding(ioReference.ContainerView, FrameworkElement.HeightProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
 
             DocumentController inputController =
                 inputReference.FieldReference.GetDocumentController(null);
@@ -286,194 +269,12 @@ namespace Dash
         /// <summary>
         /// Method to add the dropped off field to the documentview; shows up in keyvalue pane but not in the immediate displauy  
         /// </summary>
-        public void EndDragOnDocumentView(ref DocumentController cont, OperatorView.IOReference ioReference)
+        public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
         {
             if (_currReference != null)
             {
                 cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
                 EndDrag(ioReference);
-            }
-        }
-
-        /// <summary>
-        /// Pans and zooms upon touch manipulation 
-        /// </summary>
-        public void UserControl_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            Debug.Assert(canvas != null);
-            e.Handled = true;
-            var delta = e.Delta;
-
-            //Create initial translate and scale transforms
-            //Translate is in screen space, scale is in canvas space
-            var translate = new TranslateTransform
-            {
-                X = delta.Translation.X,
-                Y = delta.Translation.Y
-            };
-
-            var p = Util.PointTransformFromVisual(e.Position, UserControl, canvas);
-            var scale = new ScaleTransform
-            {
-                CenterX = p.X,
-                CenterY = p.Y,
-                ScaleX = delta.Scale,
-                ScaleY = delta.Scale
-            };
-
-            //Clamp the zoom
-            CanvasScale *= delta.Scale;
-            ClampScale(scale);
-
-
-            //Create initial composite transform
-            var composite = new TransformGroup();
-            composite.Children.Add(scale);
-            composite.Children.Add(canvas.RenderTransform);
-            composite.Children.Add(translate);
-
-            //Get top left and bottom right screen space points in canvas space
-            var inverse = composite.Inverse;
-            Debug.Assert(inverse != null);
-            Debug.Assert(canvas.RenderTransform != null);
-            var renderInverse = canvas.RenderTransform.Inverse;
-            Debug.Assert(renderInverse != null);
-            var topLeft = inverse.TransformPoint(new Point(0, 0));
-            var bottomRight = inverse.TransformPoint(new Point(_parentCollection.Grid.ActualWidth, _parentCollection.Grid.ActualHeight));
-            var preTopLeft = renderInverse.TransformPoint(new Point(0, 0));
-            var preBottomRight = renderInverse.TransformPoint(new Point(_parentCollection.Grid.ActualWidth, _parentCollection.Grid.ActualHeight));
-
-            //Check if the panning or zooming puts the view out of bounds of the canvas
-            //Nullify scale or translate components accordingly
-            var outOfBounds = false;
-            //Create a canvas space translation to correct the translation if necessary
-            var fixTranslate = new TranslateTransform();
-            if (topLeft.X < Bounds.Left && bottomRight.X > Bounds.Right)
-            {
-                translate.X = 0;
-                fixTranslate.X = 0;
-                var scaleAmount = (bottomRight.X - topLeft.X) / Bounds.Width;
-                scale.ScaleY = scaleAmount;
-                scale.ScaleX = scaleAmount;
-                outOfBounds = true;
-            }
-            else if (topLeft.X < Bounds.Left)
-            {
-                translate.X = 0;
-                fixTranslate.X = preTopLeft.X;
-                scale.CenterX = Bounds.Left;
-                outOfBounds = true;
-            }
-            else if (bottomRight.X > Bounds.Right)
-            {
-                translate.X = 0;
-                fixTranslate.X = -(Bounds.Right - preBottomRight.X - 1);
-                scale.CenterX = Bounds.Right;
-                outOfBounds = true;
-            }
-            if (topLeft.Y < Bounds.Top && bottomRight.Y > Bounds.Bottom)
-            {
-                translate.Y = 0;
-                fixTranslate.Y = 0;
-                var scaleAmount = (bottomRight.Y - topLeft.Y) / Bounds.Height;
-                scale.ScaleX = scaleAmount;
-                scale.ScaleY = scaleAmount;
-                outOfBounds = true;
-            }
-            else if (topLeft.Y < Bounds.Top)
-            {
-                translate.Y = 0;
-                fixTranslate.Y = preTopLeft.Y;
-                scale.CenterY = Bounds.Top;
-                outOfBounds = true;
-            }
-            else if (bottomRight.Y > Bounds.Bottom)
-            {
-                translate.Y = 0;
-                fixTranslate.Y = -(Bounds.Bottom - preBottomRight.Y - 1);
-                scale.CenterY = Bounds.Bottom;
-                outOfBounds = true;
-            }
-
-            //If the view was out of bounds recalculate the composite matrix
-            if (outOfBounds)
-            {
-                composite = new TransformGroup();
-                composite.Children.Add(fixTranslate);
-                composite.Children.Add(scale);
-                composite.Children.Add(canvas.RenderTransform);
-                composite.Children.Add(translate);
-            }
-
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-        }
-
-        /// <summary>
-        /// Zooms upon mousewheel interaction 
-        /// </summary>
-        public void UserControl_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            if (!IsHitTestVisible) return;
-            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            Debug.Assert(canvas != null);
-            e.Handled = true;
-            //Get mousepoint in canvas space 
-            var point = e.GetCurrentPoint(canvas);
-            var scaleAmount = Math.Pow(1 + 0.15 * Math.Sign(point.Properties.MouseWheelDelta),
-                Math.Abs(point.Properties.MouseWheelDelta) / 120.0f);
-            scaleAmount = Math.Max(Math.Min(scaleAmount, 1.7f), 0.4f);
-            CanvasScale *= (float)scaleAmount;
-            Debug.Assert(canvas.RenderTransform != null);
-            var p = point.Position;
-            //Create initial ScaleTransform 
-            var scale = new ScaleTransform
-            {
-                CenterX = p.X,
-                CenterY = p.Y,
-                ScaleX = scaleAmount,
-                ScaleY = scaleAmount
-            };
-
-            //Clamp scale
-            ClampScale(scale);
-
-            //Create initial composite transform
-            var composite = new TransformGroup();
-            composite.Children.Add(scale);
-            composite.Children.Add(canvas.RenderTransform);
-
-            var inverse = composite.Inverse;
-            Debug.Assert(inverse != null);
-            var renderInverse = canvas.RenderTransform.Inverse;
-            Debug.Assert(inverse != null);
-            Debug.Assert(renderInverse != null);
-
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
-        }
-
-        /// <summary>
-        /// Make translation inertia slow down faster
-        /// </summary>
-        private void UserControl_ManipulationInertiaStarting(object sender, ManipulationInertiaStartingRoutedEventArgs e)
-        {
-            e.TranslationBehavior.DesiredDeceleration = 0.01;
-        }
-
-        private void ClampScale(ScaleTransform scale)
-        {
-            if (CanvasScale > MaxScale)
-            {
-                CanvasScale = MaxScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
-            }
-            if (CanvasScale < MinScale)
-            {
-                CanvasScale = MinScale;
-                scale.ScaleX = 1;
-                scale.ScaleY = 1;
             }
         }
 
@@ -486,116 +287,160 @@ namespace Dash
         {
             if (!_lineDict.ContainsKey(converter)) return;
             var line = _lineDict[converter];
-            parentCanvas.Children.Remove(line);
+            itemsPanelCanvas.Children.Remove(line);
             _lineDict.Remove(converter);
-        }
-
-
-        private class BezierConverter : IValueConverter
-        {
-            public BezierConverter(FrameworkElement element1, FrameworkElement element2, FrameworkElement toElement)
-            {
-                Element1 = element1;
-                Element2 = element2;
-                ToElement = toElement;
-                _figure = new PathFigure();
-                _bezier = new BezierSegment();
-                _figure.Segments.Add(_bezier);
-                _col.Add(_figure);
-
-                Pos2 = Element1.TransformToVisual(ToElement)
-                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
-            }
-            public FrameworkElement Element1 { get; set; }
-            public FrameworkElement Element2 { get; set; }
-            public FrameworkElement ToElement { get; set; }
-            public FrameworkElement Temp1 { get; set; }
-            public FrameworkElement Temp2 { get; set; }
-            public Point Pos2 { get; set; }
-            private PathFigureCollection _col = new PathFigureCollection();
-            private PathFigure _figure;
-            private BezierSegment _bezier;
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                var pos1 = Element1.TransformToVisual(ToElement)
-                    .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
-
-                var pos2 = Element2?.TransformToVisual(ToElement)
-                            .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
-
-                double offset = Math.Abs((pos1.X - pos2.X) / 3);
-                if (pos1.X < pos2.X)
-                {
-                    _figure.StartPoint = new Point(pos1.X + Element1.ActualWidth / 2, pos1.Y);
-                    _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
-                    _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
-                    _bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
-                }
-                else
-                {
-                    _figure.StartPoint = new Point(pos1.X - Element1.ActualWidth / 2, pos1.Y);
-                    _bezier.Point1 = new Point(pos1.X - offset, pos1.Y);
-                    _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
-                    _bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
-                }
-                return _col;
-            }
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (_connectionLine != null)
             {
-                Point pos = e.GetCurrentPoint(parentCanvas).Position;
+                Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
                 _lineBinding.ForceUpdate();
             }
         }
 
+
+        #endregion
+
+        #region Manipulation
+
+        /// <summary>
+        /// Pans and zooms upon touch manipulation 
+        /// </summary>
+        private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
+        {
+            if (!IsHitTestVisible) return;
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            Debug.Assert(canvas != null);
+            var delta = transformationDelta.Translate;
+
+            //Create initial translate and scale transforms
+            //Translate is in screen space, scale is in canvas space
+            var translate = new TranslateTransform
+            {
+                X = delta.X,
+                Y = delta.Y
+            };
+
+            var scale = new ScaleTransform
+            {
+                CenterX = transformationDelta.ScaleCenter.X,
+                CenterY = transformationDelta.ScaleCenter.Y,
+                ScaleX = transformationDelta.ScaleAmount.X,
+                ScaleY = transformationDelta.ScaleAmount.Y
+            };
+
+            //Create initial composite transform
+            var composite = new TransformGroup();
+            composite.Children.Add(scale);
+            composite.Children.Add(canvas.RenderTransform);
+            composite.Children.Add(translate);
+
+            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            SetTransformOnBackground(composite);
+        }
+
+        #endregion
+
+        #region BackgroundTiling
+
+
+        private void SetTransformOnBackground(TransformGroup composite)
+        {
+            var aliasSafeScale = ClampBackgroundScaleForAliasing(composite.Value.M11, _numberOfBackgroundRows);
+
+            if (_resourcesLoaded)
+            {
+                _bgBrush.Transform = new Matrix3x2((float)aliasSafeScale,
+                    (float)composite.Value.M12,
+                    (float)composite.Value.M21,
+                    (float)aliasSafeScale,
+                    (float)composite.Value.OffsetX,
+                    (float)composite.Value.OffsetY);
+                xBackgroundCanvas.Invalidate();
+            }
+        }
+
+        private void SetInitialTransformOnBackground()
+        {
+            var composite = new TransformGroup();
+            var scale = new ScaleTransform
+            {
+                CenterX = 0,
+                CenterY = 0,
+                ScaleX = CanvasScale,
+                ScaleY = CanvasScale
+            };
+
+            composite.Children.Add(scale);
+            SetTransformOnBackground(composite);
+        }
+
+        private void CanvasControl_OnCreateResources(CanvasControl sender, CanvasCreateResourcesEventArgs args)
+        {
+            var task = Task.Run(async () =>
+            {
+                // Load the background image and create an image brush from it
+                _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage);
+
+                // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
+                _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
+
+                _resourcesLoaded = true;
+            });
+            args.TrackAsyncAction(task.AsAsyncAction());
+
+            task.ContinueWith(continuationTask =>
+            {
+                SetInitialTransformOnBackground();
+            }, TaskScheduler.FromCurrentSynchronizationContext());
+        }
+
+        private void CanvasControl_OnDraw(CanvasControl sender, CanvasDrawEventArgs args)
+        {
+            if (!_resourcesLoaded) return;
+
+            // Just fill a rectangle with our tiling image brush, covering the entire bounds of the canvas control
+            var session = args.DrawingSession;
+            session.FillRectangle(new Rect(new Point(), sender.Size), _bgBrush);
+        }
+
+        private double ClampBackgroundScaleForAliasing(double currentScale, double numberOfBackgroundRows)
+        {
+            while (currentScale / numberOfBackgroundRows > numberOfBackgroundRows)
+            {
+                currentScale /= numberOfBackgroundRows;
+            }
+
+            while (currentScale * numberOfBackgroundRows < numberOfBackgroundRows)
+            {
+                currentScale *= numberOfBackgroundRows;
+            }
+            return currentScale;
+        }
+
+        #endregion
+
+        #region Clipping
+
+        private void XOuterGrid_OnSizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            xClippingRect.Rect = new Rect(0, 0, xOuterGrid.ActualWidth, xOuterGrid.ActualHeight);
+        }
+
+        #endregion
+
+        private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
+        {
+            OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
+        }
+
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             DBTest.ResetCycleDetection();
-            if (_currReference != null)
-            {
-                if (_currReference.IsOutput)
-                {
-                    var opDoc = (_currReference.ContainerView.DataContext as DocumentViewModel)?.DocumentController;
-                    var searchOp = opDoc.GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
-                    if (searchOp != null)
-                    {
-                        var outType = searchOp.Outputs[_currReference.FieldReference.FieldKey];
-                        if (outType == TypeInfo.Collection)
-                        {
-
-                            var fields = new Dictionary<Key, FieldModelController> { {
-                            DocumentCollectionFieldModelController.CollectionKey,  new ReferenceFieldModelController(
-                                    opDoc.GetId(), _currReference.FieldReference.FieldKey) }  };
-
-                            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
-                            var layoutDoc =
-                                new CollectionBox(new ReferenceFieldModelController(col.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-                            layoutDoc.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(e.GetCurrentPoint(MainPage.Instance).Position), true);
-                            var layoutController = new DocumentFieldModelController(layoutDoc);
-                            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-                            col.SetField(DashConstants.KeyStore.LayoutListKey, new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc }), true);
-                            MainPage.Instance.DisplayDocument(col);
-                            //col.SetField(DocumentCollectionFieldModelController.CollectionKey,
-                            //    new ReferenceFieldModelController(
-                            //        opDoc.GetId(), _currReference.FieldReference.FieldKey), true);
-                        }
-                    }
-                }
-                CancelDrag(_currReference.PointerArgs.Pointer);
-
-                //DocumentView view = new DocumentView();
-                //DocumentViewModel viewModel = new DocumentViewModel();
-                //view.DataContext = viewModel;
-                //FreeformView.MainFreeformView.Canvas.Children.Add(view);
-            }
         }
     }
 }

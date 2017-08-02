@@ -24,7 +24,7 @@ namespace Dash
     {
         public string DebugName = "";
         public CollectionView ParentCollection;
-        public bool HasCollection { get; set; }
+        public bool IsMainCollection { get; set; }
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -36,8 +36,8 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
-        public event OperatorView.IODragEventHandler IODragStarted;
-        public event OperatorView.IODragEventHandler IODragEnded;
+        public event IOReference.IODragEventHandler IODragStarted;
+        public event IOReference.IODragEventHandler IODragEnded;
 
         public void setBG(SolidColorBrush s) { XGrid.Background = s; }
 
@@ -52,7 +52,7 @@ namespace Dash
             // add manipulation code
             this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
             manipulator = new ManipulationControls(this);
-            manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
+            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
             MinWidth = 120;
@@ -76,14 +76,14 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
-            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
             if (view == null) return; // we can't always assume we're on a collection		
 
             view.CanLink = false;
 
             args.Handled = true;
-            (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
-                new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+            view?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
+                new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
                     OuterGrid.GetFirstAncestorOfType<DocumentView>()));
         }
 
@@ -191,10 +191,9 @@ namespace Dash
             var dy = Math.Max(p.Y, 0);
             //p = new Point(dx, dy);
 
-            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
-                                                                new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
-                                                                ViewModel.GroupTransform.ScaleAmount); 
-
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X, position.Y),
+                                                                new Point(),
+                                                                ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
 
@@ -315,12 +314,11 @@ namespace Dash
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (ViewModel != null) {
+            if (ViewModel != null)
+            {
                 ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
                 ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             }
-            if (ViewModel != null)
-                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
@@ -492,7 +490,7 @@ namespace Dash
 
         public override void OnLowestActivated(bool isLowestSelected)
         {
-            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
                 ViewModel?.OpenMenu();
             else
                 ViewModel?.CloseMenu();

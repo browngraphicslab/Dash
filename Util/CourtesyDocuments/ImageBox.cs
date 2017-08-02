@@ -138,11 +138,11 @@ namespace Dash
             //Debug.WriteLine(clipController.Data.Width + ", " + clipController.Data.Height);
             var data = clipController.Data;
             UpdateClip(image, data);
-            widthController.FieldModelUpdated += (ss, cc) =>
+            widthController.FieldModelUpdated += (ss, args, cc) =>
             {
                 UpdateClip(image, data);
             };
-            heightController.FieldModelUpdated += (ss, cc) =>
+            heightController.FieldModelUpdated += (ss, args, cc) =>
             {
                 UpdateClip(image, data);
             };
