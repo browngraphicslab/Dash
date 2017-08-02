@@ -4,6 +4,7 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Dash;
 using DashShared;
@@ -90,6 +91,15 @@ namespace Dash
                 SetupBindings(container, docController, context);
                 return container;
             }
+            var clip = new RectangleGeometry()
+            {
+                Rect = new Rect(0, 0, grid.Width, grid.Height)
+            };
+            grid.Clip = clip;
+            grid.SizeChanged += delegate (object sender, SizeChangedEventArgs e)
+            {
+                clip.Rect = new Rect(0,0,e.NewSize.Width,e.NewSize.Height);
+            };
             return grid;
         }
 
