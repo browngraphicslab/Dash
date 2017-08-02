@@ -235,6 +235,7 @@ namespace Dash
         private void DocumentController_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {
             Debug.Assert(args.Reference.FieldKey.Equals(DashConstants.KeyStore.ActiveLayoutKey));
+            Debug.WriteLine(args.Action);
             OnActiveLayoutChanged(new Dash.Context(DocumentController));
         }
         private void OnActiveLayoutChanged(Context context)

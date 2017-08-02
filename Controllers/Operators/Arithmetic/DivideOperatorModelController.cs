@@ -10,7 +10,10 @@ namespace Dash
 
         public DivideOperatorFieldModelController() : base(new OperatorFieldModel("Divide"))
         {
-            
+        }
+
+        public DivideOperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        {
         }
 
         //Input keys

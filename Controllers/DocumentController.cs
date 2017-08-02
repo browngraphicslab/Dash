@@ -48,23 +48,32 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
+        public static int addCount = 0, removeCount = 0, totalCount = 0;
+
         public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
-            if (key != null)
+            ++totalCount;
+            if (++addCount % 100 == 0)
             {
-                if (_fieldUpdatedDictionary.ContainsKey(key))
-                {
-                    _fieldUpdatedDictionary[key] += handler;
-                }
-                else
-                {
-                    _fieldUpdatedDictionary[key] = handler;
-                }
+                Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            }
+            if (_fieldUpdatedDictionary.ContainsKey(key))
+            {
+                _fieldUpdatedDictionary[key] += handler;
+            }
+            else
+            {
+                _fieldUpdatedDictionary[key] = handler;
             }
         }
 
         public void RemoveFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
+            --totalCount;
+            if (++removeCount % 100 == 0)
+            {
+                Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            }
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -200,7 +209,7 @@ namespace Dash
             if (opname == "Add")
                 return OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController(new OperatorFieldModel("Add")));
             if (opname == "Divide")
-                return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController(new OperatorFieldModel("Divide")));
+                return OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController());
             return null;
         }
         /// <summary>
@@ -238,8 +247,8 @@ namespace Dash
                     if (strings.Count() == 2)
                     {
                         var opModel = lookupOperator(strings[0]);
-                        var args    = strings[1].TrimEnd(')').Split(',');
-                        var refs    = new List<ReferenceFieldModelController>();
+                        var args = strings[1].TrimEnd(')').Split(',');
+                        var refs = new List<ReferenceFieldModelController>();
                         foreach (var a in args)
                         {
                             if (a.Trim(' ').StartsWith("@"))
@@ -259,7 +268,7 @@ namespace Dash
                                             }
                                         refs.Add(new ReferenceFieldModelController(theDoc.GetId(), foundKey));
                                     }
-                                    else 
+                                    else
                                         refs.Add(new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey));
                                 }
                             }
@@ -285,10 +294,11 @@ namespace Dash
                                     break;
                                 }
 
-                        } else if (theDoc != null)
+                        }
+                        else if (theDoc != null)
                             SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
-                    } 
+                    }
                 }
             }
             else
@@ -388,7 +398,7 @@ namespace Dash
             var reference = new DocumentFieldReference(GetId(), key);
             OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(oldField, newField, action, reference, null, context, false), true);
             FieldModelController.FieldModelUpdatedHandler handler =
-                delegate(FieldModelController sender, FieldUpdatedEventArgs args, Context c)
+                delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
                     c = c ?? new Context();
                     c.AddDocumentContext(this);
@@ -507,7 +517,7 @@ namespace Dash
             // create a controller for the child
             var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
             delegateController.DocumentFieldUpdated +=
-                delegate(DocumentController sender, DocumentFieldUpdatedEventArgs args)
+                delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
                     args.FromDelegate = true;
                     OnDocumentFieldUpdated(sender, args, false);
@@ -803,7 +813,7 @@ namespace Dash
                     return makeAllViewUI(context);
                 }
                 Debug.Assert(doc != null);
-                
+
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
             //Debug.Assert(false, "Everything should have an active layout maybe");
@@ -813,7 +823,6 @@ namespace Dash
             }
             return makeAllViewUI(context);
         }
-
 
         protected virtual void OnDocumentFieldUpdated(DocumentController sender, DocumentFieldUpdatedEventArgs args, bool updateDelegates)
         {

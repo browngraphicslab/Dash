@@ -68,6 +68,8 @@ namespace Dash
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
 
+        private static int loaded = 0, unloaded = 0;
+
         protected static void AddBinding<T>(T element, DocumentController docController, Key k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
@@ -76,13 +78,28 @@ namespace Dash
                 if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
                 bindingDelegate(element, sender, args.Context); //TODO Should be context or args.Context?
             };
+            
+            AddHandlers(element, docController, k, context, bindingDelegate, handler);
+        }
+
+        protected static void AddHandlers<T>(T element, DocumentController docController, Key k, Context context,
+            BindingDelegate<T> bindingDelegate, DocumentController.OnDocumentFieldUpdatedHandler handler) where T : FrameworkElement
+        {
             element.Loaded += delegate
             {
+                if (loaded++ % 20 == 0)
+                {
+                    //Debug.WriteLine($"Loaded: {loaded}, Unloaded: {unloaded}, {loaded - unloaded}");
+                }
                 bindingDelegate(element, docController, context);
                 docController.AddFieldUpdatedListener(k, handler);
             };
             element.Unloaded += delegate
             {
+                if (unloaded++ % 20 == 0)
+                {
+                    //Debug.WriteLine($"Loaded: {loaded}, Unloaded: {unloaded}, {loaded - unloaded}");
+                }
                 docController.RemoveFieldUpdatedListener(k, handler);
             };
         }

@@ -33,8 +33,8 @@ namespace Dash
 
             XOperatorType.ItemsSource = new List<string>
             {
-                "Test",
-                "Test2"
+                "Divide",
+                "Filter"
             };
 
             XOperatorType.SelectionChanged += XOperatorType_SelectionChanged;
