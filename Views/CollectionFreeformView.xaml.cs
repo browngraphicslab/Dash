@@ -128,26 +128,26 @@ namespace Dash
                 {
                     if (becomeSmall)
                     {
-                        converter.Temp1 = converter.Element1;
+                        if (!(converter.Element1 is Grid)) converter.Temp1 = converter.Element1;
                         converter.Element1 = docView.xIcon;
                     }
                     else
                     {
                         converter.Element1 = converter.Temp1;
-                        converter.Temp1 = converter.Element1;
+                        //converter.Temp1 = converter.Element1;
                     }
                 }
                 else if (view2 == docView)
                 {
                     if (becomeSmall)
                     {
-                        converter.Temp2 = converter.Element2;
+                        if (!(converter.Element2 is Grid)) converter.Temp2 = converter.Element2;
                         converter.Element2 = docView.xIcon;
                     }
                     else
                     {
                         converter.Element2 = converter.Temp2;
-                        converter.Temp2 = converter.Element2;
+                        //converter.Temp2 = converter.Element2;
                     }
                 }
             }
