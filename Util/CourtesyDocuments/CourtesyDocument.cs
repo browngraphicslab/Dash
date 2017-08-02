@@ -88,8 +88,9 @@ namespace Dash
 
         private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
         {
-            var field = binding.Document.GetField(binding.Key)?.DereferenceToRoot(null);
-            if (field == null) return null;
+            var field = binding.Document.GetField(binding.Key)?.DereferenceToRoot(binding.Context);
+            if (field == null)
+                return null;
             var value = binding.GetHandler(field as T);
             return binding.Converter == null ? value : binding.Converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
         }
@@ -195,6 +196,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = DashConstants.KeyStore.WidthFieldKey,
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate(NumberFieldModelController field, object value)
                 {
@@ -215,6 +217,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = DashConstants.KeyStore.HeightFieldKey,
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {
@@ -250,6 +253,7 @@ namespace Dash
                 Document = docController,
                 Key = HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (TextFieldModelController field, object value)
                 {
@@ -273,6 +277,7 @@ namespace Dash
                 Document = docController,
                 Key = VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (TextFieldModelController field, object value)
                 {
@@ -294,6 +299,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowKey,
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {
@@ -314,6 +320,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnKey,
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {
@@ -334,6 +341,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowSpanKey,
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {
@@ -354,6 +362,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnSpanKey,
+                Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {

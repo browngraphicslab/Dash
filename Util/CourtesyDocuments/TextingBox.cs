@@ -230,6 +230,7 @@ namespace Dash
                 GetHandler = getHandler,
                 SetHandler = setHandler,
                 Mode = BindingMode.TwoWay,
+                Context = context,
                 Converter = converter
             };
             BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
@@ -318,6 +319,7 @@ namespace Dash
                 Document = docController,
                 Converter = new IntToTextAlignmentConverter(),
                 Mode = BindingMode.TwoWay,
+                Context = context,
                 GetHandler = (NumberFieldModelController field) => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {
@@ -339,6 +341,7 @@ namespace Dash
                 Document = docController,
                 Converter = new DoubleToFontWeightConverter(),
                 Mode = BindingMode.TwoWay,
+                Context = context,
                 GetHandler = (NumberFieldModelController field) => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {
@@ -356,9 +359,10 @@ namespace Dash
         {
             var fontSizeBinding = new FieldBinding<NumberFieldModelController>()
             {
-                Key = FontWeightKey,
+                Key = FontSizeKey,
                 Document = docController,
                 Mode = BindingMode.TwoWay,
+                Context = context,
                 GetHandler = (NumberFieldModelController field) => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
                 {

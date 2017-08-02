@@ -138,18 +138,22 @@ namespace Dash
             //Debug.WriteLine(clipController.Data.Width + ", " + clipController.Data.Height);
             var data = clipController.Data;
             UpdateClip(image, data);
+            clipController.FieldModelUpdated += (ss, args, cc) =>
+            {
+               UpdateClip(image, clipController.Data);
+            };
             widthController.FieldModelUpdated += (ss, args, cc) =>
             {
-                UpdateClip(image, data);
+                UpdateClip(image, clipController.Data);
             };
             heightController.FieldModelUpdated += (ss, args, cc) =>
             {
-                UpdateClip(image, data);
+                UpdateClip(image, clipController.Data);
             };
         }
 
         private static void UpdateClip(Image image, Rect data)
-        {
+     {
             Debug.Assert(image != null);
             image.Clip = new RectangleGeometry
             {

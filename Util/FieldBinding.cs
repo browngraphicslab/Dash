@@ -20,6 +20,8 @@ namespace Dash
         public SetHandler<T> SetHandler;
         public GetHandler<T> GetHandler;
 
+        public Context Context;
+
         public IValueConverter Converter;
         public object ConverterParameter;
     }
