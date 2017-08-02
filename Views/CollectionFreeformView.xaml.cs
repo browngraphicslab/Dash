@@ -102,7 +102,10 @@ namespace Dash
                         converter.Element1 = docView.xIcon;
                     }
                     else
+                    {
                         converter.Element1 = converter.Temp1;
+                        converter.Temp1 = converter.Element1; 
+                    }
                 }
                 else if (view2 == docView)
                 {
@@ -112,7 +115,10 @@ namespace Dash
                         converter.Element2 = docView.xIcon;
                     }
                     else
+                    {
                         converter.Element2 = converter.Temp2;
+                        converter.Temp2 = converter.Element2;
+                    }
                 }
             }
         }
