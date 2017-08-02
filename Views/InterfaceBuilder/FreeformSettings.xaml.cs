@@ -23,6 +23,8 @@ namespace Dash
         private readonly DocumentController _dataDocument;
         private readonly Context _context;
 
+        public DocumentController SelectedDocument { get; set; }
+
         public FreeformSettings()
         {
             this.InitializeComponent();
@@ -30,6 +32,8 @@ namespace Dash
 
         public FreeformSettings(DocumentController layoutDocument, DocumentController dataDocument, Context context): this()
         {
+            SelectedDocument = layoutDocument;
+
             if (dataDocument == null)
             {
                 xCollapsableDocRow.Height = new GridLength(0);
@@ -40,6 +44,10 @@ namespace Dash
                 xDocRow.Children.Add(new DocumentSettings(layoutDocument, dataDocument, context));
                 TypeBlock.Text =  "Document (" + layoutDocument.DocumentType.Type + ")";
             }
+
+            // TODO typeswitch on DocumentType to add like spacing and all that shit for grid / list 
+            // TODO and change the factory thing ............... well, 
+
             xSizeRow.Children.Add(new SizeSettings(layoutDocument, context));
             xPositionRow.Children.Add(new PositionSettings(layoutDocument, context));
             xAlignmentRow.Children.Add(new AlignmentSettings(layoutDocument,context));

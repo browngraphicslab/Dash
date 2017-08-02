@@ -43,6 +43,19 @@ namespace Dash
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
+        public DocumentController CurrentLayout { get; set; } 
+
+        private void BindLayoutText()               
+        {
+            var textBinding = new Binding
+            {
+                Source = CurrentLayout,
+                Path = new PropertyPath(nameof(CurrentLayout.LayoutName)),
+                Mode = BindingMode.TwoWay 
+            };
+            xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
+        }
+
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
             _editingDocument = docController;
@@ -219,6 +232,11 @@ namespace Dash
             _selectedContainer = sender;
             if (newSettingsPane != null)
             {
+                if (newSettingsPane is FreeformSettings)
+                {
+                    CurrentLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
+                    BindLayoutText(); 
+                }
                 xSettingsPane.Children.Add(newSettingsPane);
             }
         }

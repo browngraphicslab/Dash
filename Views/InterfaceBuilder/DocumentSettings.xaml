@@ -47,7 +47,8 @@
                                           SelectionChanged="XActiveLayoutComboBox_OnSelectionChanged">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding DocumentType.Type}"></TextBlock>
+                                            <!--<TextBlock Text="{Binding DocumentType.Type}"></TextBlock>-->
+                                            <TextBlock Text="{Binding LayoutName}"></TextBlock>
                                         </DataTemplate>
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>

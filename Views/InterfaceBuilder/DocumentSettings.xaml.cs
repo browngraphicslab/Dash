@@ -20,6 +20,8 @@ namespace Dash
 {
     public sealed partial class DocumentSettings : UserControl
     {
+        public DocumentController SelectedLayout { get; set; }
+
         private readonly DocumentController _dataDocument;
         private readonly Context _context;
 
@@ -76,14 +78,14 @@ namespace Dash
 
         private void XActiveLayoutComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedLayoutDocument = xActiveLayoutComboBox.SelectedItem as DocumentController;
+            SelectedLayout = xActiveLayoutComboBox.SelectedItem as DocumentController;
             var currLayoutDocument = _dataDocument.GetActiveLayout(_context).Data;
-            if (currLayoutDocument.Equals(selectedLayoutDocument)  || selectedLayoutDocument == null)
+            if (currLayoutDocument.Equals(SelectedLayout)  || SelectedLayout == null)
             {
                 return;
             }
 
-            _dataDocument.SetActiveLayout(selectedLayoutDocument, true, false);
+            _dataDocument.SetActiveLayout(SelectedLayout, true, false);
         }
 
 
