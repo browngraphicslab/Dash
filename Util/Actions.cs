@@ -202,6 +202,7 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collection.ViewModel.AddDocument(docController, null); 
+            DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddApiCreator(CollectionView collection, DragEventArgs e)

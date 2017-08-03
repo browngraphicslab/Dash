@@ -3,6 +3,7 @@ using System.Diagnostics;
 using DashShared;
 using System.Linq;
 using Dash.Converters;
+using System;
 
 namespace Dash.Controllers.Operators
 {
@@ -78,14 +79,13 @@ namespace Dash.Controllers.Operators
         
         public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
         {
-
-            var retPathString = (inputs[ReturnDocKey] as TextFieldModelController).Data;
+            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data;
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
             var returnPath   = new List<string>(retPathString.Trim(' ', '\r').Split('.'));
-            var searchForDoc = (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
+            var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
             if (searchForDoc == DBTest.DBNull)
                 searchForDoc = null;
-            var dbDocs       = (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
+            var dbDocs       = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
             if (dbDocs == null)
                 return;
             if (returnPath == null)
@@ -132,14 +132,11 @@ namespace Dash.Controllers.Operators
 
         private static ReferenceFieldModelController CheckForFieldReferencingTarget(DocumentController targetDocument, DocumentController dmc)
         {
-            foreach (var field in dmc.EnumFields())
-                if (field.Value is DocumentFieldModelController && field.Key != DashConstants.KeyStore.ThisKey)
-                {
-                    var dfmc = field.Value as DocumentFieldModelController;
-                    if (dfmc.Data == targetDocument)
-                    {
-                        return new ReferenceFieldModelController(dmc.GetId(), field.Key);
-                    }
+            foreach (var field in dmc.EnumFields()) 
+                if (field.Key != DashConstants.KeyStore.ThisKey) {
+                    foreach (var docRef in field.Value.GetReferences())
+                        if (docRef.GetId() == targetDocument.GetId())
+                            return new ReferenceFieldModelController(dmc.GetId(), field.Key);
                 }
             return null;
         }

@@ -221,6 +221,23 @@ namespace Dash
             dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
         public List<DocumentController> Documents = new List<DocumentController>();
+
+        public static DocumentController CreateWebPage(string target)
+        {
+            var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
+            WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
+            WebDoc.SetField(DBTest.WebUrlKey, new TextFieldModelController(target), true);
+            WebDoc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                new TextFieldModelController[] { new TextFieldModelController(DBTest.WebUrlKey.Id) }), true);
+
+            var webLayout = new WebBox(new ReferenceFieldModelController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
+            webLayout.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+            webLayout.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
+            webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            WebDoc.SetActiveLayout(webLayout, forceMask: true, addToLayoutList: true);
+            return WebDoc;
+        }
+
         public DBTest()
         {
             
@@ -231,7 +248,6 @@ namespace Dash
             var game2Doc = PrototypeGame.MakeDelegate();
             var game3Doc = PrototypeGame.MakeDelegate();
             var Ass1Doc = PrototypeAssign.MakeDelegate();
-            var WebDoc = PrototypeWeb.MakeDelegate();
 
 
             {
@@ -243,36 +259,6 @@ namespace Dash
                 SetLayoutForDocument(Ass1Doc, ass1Layout, forceMask: true, addToLayoutList: true);
                 Documents.Add(Ass1Doc);
             }
-            {
-                Ump1Doc.SetField(UmpNameKey, new TextFieldModelController("George"), true);
-                Ump1Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ump1Doc), true);
-                Ump1Doc.SetField(AgeKey, new NumberFieldModelController(17), true);
-                var ump1Layout = PrototypeUmpLayout.MakeDelegate();
-                ump1Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                SetLayoutForDocument(Ump1Doc, ump1Layout, forceMask: true, addToLayoutList: true);
-                Documents.Add(Ump1Doc);
-            }
-
-            {
-                Ump2Doc.SetField(UmpNameKey, new TextFieldModelController("Matt"), true);
-                Ump2Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ump2Doc), true);
-                Ump2Doc.SetField(AgeKey, new NumberFieldModelController(16), true);
-                var ump2Layout = PrototypeUmpLayout.MakeDelegate();
-                ump2Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                SetLayoutForDocument(Ump2Doc, ump2Layout, forceMask: true, addToLayoutList: true);
-                Documents.Add(Ump2Doc);
-            }
-
-            {
-                Vol1Doc.SetField(VolNameKey, new TextFieldModelController("Bob"), true);
-                Vol1Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Vol1Doc), true);
-                Vol1Doc.SetField(AgeKey, new NumberFieldModelController(32), true);
-                var vol1Layout = PrototypeVolLayout.MakeDelegate();
-                vol1Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                SetLayoutForDocument(Vol1Doc, vol1Layout, forceMask: true, addToLayoutList: true);
-                Documents.Add(Vol1Doc);
-            }
-
             {
                 var Ass2Doc = PrototypeAssign.MakeDelegate();
                 Ass2Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ass2Doc), true);
@@ -306,6 +292,36 @@ namespace Dash
                 Documents.Add(Ass5Doc);
             }
             {
+                Ump1Doc.SetField(UmpNameKey, new TextFieldModelController("George"), true);
+                Ump1Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ump1Doc), true);
+                Ump1Doc.SetField(AgeKey, new NumberFieldModelController(17), true);
+                var ump1Layout = PrototypeUmpLayout.MakeDelegate();
+                ump1Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                SetLayoutForDocument(Ump1Doc, ump1Layout, forceMask: true, addToLayoutList: true);
+                Documents.Add(Ump1Doc);
+            }
+
+            {
+                Ump2Doc.SetField(UmpNameKey, new TextFieldModelController("Matt"), true);
+                Ump2Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Ump2Doc), true);
+                Ump2Doc.SetField(AgeKey, new NumberFieldModelController(16), true);
+                var ump2Layout = PrototypeUmpLayout.MakeDelegate();
+                ump2Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                SetLayoutForDocument(Ump2Doc, ump2Layout, forceMask: true, addToLayoutList: true);
+                Documents.Add(Ump2Doc);
+            }
+
+            {
+                Vol1Doc.SetField(VolNameKey, new TextFieldModelController("Bob"), true);
+                Vol1Doc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Vol1Doc), true);
+                Vol1Doc.SetField(AgeKey, new NumberFieldModelController(32), true);
+                var vol1Layout = PrototypeVolLayout.MakeDelegate();
+                vol1Layout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                SetLayoutForDocument(Vol1Doc, vol1Layout, forceMask: true, addToLayoutList: true);
+                Documents.Add(Vol1Doc);
+            }
+
+            {
                 gameDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(gameDoc), true);
                 gameDoc.SetField(GameTimeKey, new TextFieldModelController("4:30"), true);
                 gameDoc.SetField(GameDateKey, new TextFieldModelController("July 11"), true);
@@ -333,12 +349,7 @@ namespace Dash
                 Documents.Add(game3Doc);
             }
             {
-                WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
-                WebDoc.SetField(WebUrlKey, new TextFieldModelController("http://www.msn.com"), true);
-                var webLayout = PrototypeWebLayout.MakeDelegate();
-                webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                SetLayoutForDocument(WebDoc, webLayout, forceMask: true, addToLayoutList: true);
-                Documents.Add(WebDoc);
+                Documents.Add(CreateWebPage("http://www.msn.com"));
             }
 
             DBDoc.SetField(DashConstants.KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
@@ -368,7 +379,8 @@ namespace Dash
         static List<SeenIt> BeenThere = new List<SeenIt>();
         static public void ResetCycleDetection()
         {
-            BeenThere.Clear();
+            if (DBTest.PrototypeUmp != null)
+                BeenThere.Clear();
         }
         private void D_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
         {

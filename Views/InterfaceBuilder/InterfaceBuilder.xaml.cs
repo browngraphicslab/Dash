@@ -43,6 +43,20 @@ namespace Dash
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
         }
 
+        /// <summary>
+        /// Bind the textbox that shows the layout's name to the current layout being used 
+        /// </summary>
+        private void BindLayoutText(DocumentController currentLayout)               
+        {
+            var textBinding = new Binding
+            {
+                Source = /*CurrentLayout*/ currentLayout,
+                Path = new PropertyPath(nameof(currentLayout.LayoutName)),
+                Mode = BindingMode.TwoWay 
+            };
+            xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
+        }
+
         private void SetUpInterfaceBuilder(DocumentController docController, Context context)
         {
             _editingDocument = docController;
@@ -140,6 +154,8 @@ namespace Dash
                 DocumentController newLayoutDocument = null;
                 var size = new Size(200, 200);
                 var position = e.GetPosition(layoutContainer);
+                //center
+                position = new Point(position.X - size.Width / 2, position.Y - size.Height / 2); 
                 switch (displayType)
                 {
                     case DisplayTypeEnum.Freeform:
@@ -161,9 +177,6 @@ namespace Dash
                     col?.AddDocument(newLayoutDocument);
                 }
             }
-            Debug.WriteLine($"IB Added {DocumentController.addCount}, Removed {DocumentController.removeCount}, {DocumentController.totalCount}, {DocumentController.addCount - DocumentController.removeCount}");
-            DocumentController.addCount = 0;
-            DocumentController.removeCount = 0;
         }
 
         private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
@@ -187,6 +200,7 @@ namespace Dash
             } else if (fieldModelController is DocumentFieldModelController)
             {
                 layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                //layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {
@@ -219,6 +233,12 @@ namespace Dash
             _selectedContainer = sender;
             if (newSettingsPane != null)
             {
+                // if newSettingsPane is a general document setting, bind the layoutname textbox 
+                if (newSettingsPane is FreeformSettings)
+                {
+                    var currLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
+                    BindLayoutText(currLayout); 
+                }
                 xSettingsPane.Children.Add(newSettingsPane);
             }
         }
@@ -239,10 +259,10 @@ namespace Dash
         private void ListViewBase_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             var item = e.Items.FirstOrDefault();
-            if (item is Button)
+            if (item is StackPanel)
             {
                 //var defaultNewSize = new Size(400, 400);
-                var button = item as Button;
+                var button = item as StackPanel;
 
                 switch (button.Name)
                 {
@@ -275,5 +295,6 @@ namespace Dash
 
             throw new NotImplementedException();
         }
+        
     }
 }

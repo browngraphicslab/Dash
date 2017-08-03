@@ -28,7 +28,7 @@ namespace Dash
             new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
         public static string DefaultText = "Default Text";
-        public static double DefaultFontWeight = 100;
+        public static string DefaultFontWeight = "Normal"; // 100;
         public static double DefaultTextAlignment = (int)TextAlignment.Left;
         public static double DefaultFontSize = 15;
         private static string PrototypeId = "F917C90C-14E8-45E0-A524-94C8958DDC4F";
@@ -38,7 +38,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToText);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            SetFontWeightField(Document, weight == null ? DefaultFontWeight : (double)weight.Weight, true, null);
+            SetFontWeightField(Document, weight == null ? DefaultFontWeight : weight.ToString(), true, null);
             SetFontSizeField(Document, DefaultFontSize, true, null);
             SetTextAlignmentField(Document, DefaultTextAlignment, true, null);
         }
@@ -277,7 +277,7 @@ namespace Dash
 
         protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            var fontWeightData = docController.GetDereferencedField(FontWeightKey, context) as NumberFieldModelController;
+            var fontWeightData = docController.GetDereferencedField(FontWeightKey, context) as TextFieldModelController;
             if (fontWeightData == null)
             {
                 return;
@@ -287,7 +287,7 @@ namespace Dash
                 Source = fontWeightData,
                 Path = new PropertyPath(nameof(fontWeightData.Data)),
                 Mode = BindingMode.TwoWay,
-                Converter = new DoubleToFontWeightConverter()
+                Converter = new StringToFontweightConverter()
             };
             BindProperty(element, fontWeightBinding, TextBox.FontWeightProperty, TextBlock.FontWeightProperty);
         }
@@ -337,9 +337,9 @@ namespace Dash
             docController.SetField(FontSizeKey, currentFontSizeField, forceMask); // set the field here so that forceMask is respected
         }
 
-        private void SetFontWeightField(DocumentController docController, double fontWeight, bool forceMask, Context context)
+        private void SetFontWeightField(DocumentController docController, string fontWeight, bool forceMask, Context context)
         {
-            var currentFontWeightField = new NumberFieldModelController(fontWeight);
+            var currentFontWeightField = new TextFieldModelController(fontWeight);
             docController.SetField(FontWeightKey, currentFontWeightField, forceMask); // set the field here so that forceMask is respected
         }
 

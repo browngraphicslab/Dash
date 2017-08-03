@@ -83,6 +83,8 @@ namespace Dash
         /// <param name="docController"></param>
         public void AddDocument(DocumentController docController)
         {
+            if (_documents.Contains(docController))
+                return;
             _documents.Add(docController);
             DocumentCollectionFieldModel.Data.Add(docController.GetId());
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, new List<DocumentController>{docController}));

@@ -136,15 +136,24 @@ namespace Dash
             Debug.Assert(widthController != null);
             Debug.Assert(heightController != null);
             //Debug.WriteLine(clipController.Data.Width + ", " + clipController.Data.Height);
-            var data = clipController.Data;
-            UpdateClip(image, data);
+            UpdateClip(image, clipController.Data);
+            AddClipBindingEvents(clipController, widthController, heightController, image);
+        }
+
+        private static void AddClipBindingEvents(RectFieldModelController clipController, 
+            NumberFieldModelController widthController, NumberFieldModelController heightController, Image image)
+        {
+            clipController.FieldModelUpdated += (ss, args, cc) =>
+            {
+                UpdateClip(image, clipController.Data);
+            };
             widthController.FieldModelUpdated += (ss, args, cc) =>
             {
-                UpdateClip(image, data);
+                UpdateClip(image, clipController.Data);
             };
             heightController.FieldModelUpdated += (ss, args, cc) =>
             {
-                UpdateClip(image, data);
+                UpdateClip(image, clipController.Data);
             };
         }
 

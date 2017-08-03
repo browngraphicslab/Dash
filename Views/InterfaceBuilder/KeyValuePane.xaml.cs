@@ -54,7 +54,8 @@ namespace Dash
         {
             ListItemSource.Clear();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
-                ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
         }
 
         private void FocusOn(TextBox tb)
@@ -118,7 +119,6 @@ namespace Dash
             _documentControllerDataContext.SetField(key, fmController, true);
         }
 
-//<<<<<<< HEAD
         /// <summary>
         /// Toggles the bottom pane UI for adding new key-value pairs 
         /// </summary>
@@ -160,17 +160,6 @@ namespace Dash
                 Key = key;
                 Controller = controller;
                 Type = (controller.TypeInfo).ToString();
-//=======
-//                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
-//                var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
-
-//                DBTest.ResetCycleDetection();
-//                _documentControllerDataContext.ParseDocField(key, (sender as TextBox).Text);
-//                ListItemSource.Add(new KeyFieldContainer(key, _documentControllerDataContext.GetDereferencedField(key, null)));
-
-//                xNewKeyField.Text = "";
-//                xNewValueField.Text = "";
-//>>>>>>> 638992e6add090ae1944a065c1eb5b2e2890d667
             }
         }
 
@@ -258,8 +247,7 @@ namespace Dash
 
             //get position of mouse in screenspace 
             var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
-            var ttv = containerGrid.TransformToVisual(Window.Current.Content);
-            var p = ttv.TransformPoint(posInKVPane);
+            var p = Util.PointTransformFromVisual(posInKVPane, containerGrid); 
 
             _tb = new TextBox();
 

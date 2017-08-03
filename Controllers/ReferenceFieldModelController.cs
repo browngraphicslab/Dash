@@ -51,6 +51,11 @@ namespace Dash
             return FieldReference.GetDocumentController(context);
         }
 
+        public override IEnumerable<DocumentController> GetReferences()
+        {
+            yield return GetDocumentController(null);
+        }
+
         public override FieldModelController Dereference(Context context)
         {
             return FieldReference.Dereference(context);

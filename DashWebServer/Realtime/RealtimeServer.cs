@@ -79,7 +79,7 @@ namespace DashWebServer
 
         private void SendUpdate(IPEndPoint address, Snapshot diff)
         {
-            var bytes = new Message(diff)
+            var bytes = new RealtimeMessage(diff)
             {
                 Type = "update"
             }.ToBytes();
@@ -101,7 +101,7 @@ namespace DashWebServer
                 while (true)
                 {
                     var result = await _udpServer.ReceiveAsync();
-                    var message = new Message(result);
+                    var message = new RealtimeMessage(result);
                     //Debug.WriteLine(message);
 
                     HandleMessage(message);
@@ -115,7 +115,7 @@ namespace DashWebServer
 
         private void HandleMessage(object o)
         {
-            var message = o as Message;
+            var message = o as RealtimeMessage;
             switch (message.Type)
             {
                 case "connect":
@@ -147,7 +147,7 @@ namespace DashWebServer
             }
         }
 
-        private void HandleAck(Message message)
+        private void HandleAck(RealtimeMessage message)
         {
             var snapshots = clients[message.Sender];
             var id = Convert.ToInt32(message.Body["id"]);

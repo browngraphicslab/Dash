@@ -5,6 +5,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    xmlns:local="using:Dash"
     d:DesignHeight="300"
     d:DesignWidth="400">
 
@@ -41,6 +42,7 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <!--DOC SETTINGS-->
@@ -56,6 +58,27 @@
 
                     <!--ALIGNMENT-->
                     <Grid x:Name="xAlignmentRow" Grid.Row="3" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
+
+                    <!--SPACING-->
+                    <Grid Grid.Row="4" x:Name="xSpacingGrid" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
+                        <local:SettingsPaneBlock>
+                            <local:SettingsPaneBlock.MainContent>
+                                <Grid Margin="0,5,0,5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="1.2*"/>
+                                        <ColumnDefinition Width="0.8*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid Grid.Column="0">
+                                        <Slider x:Name="xSpacingSlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="50" StepFrequency="1" Foreground="SteelBlue"/>
+                                    </Grid>
+                                    <Grid Grid.Column="1" Margin="15,0,0,0">
+                                        <TextBox x:Name="xSpacingSliderTextBox" Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12"/>
+                                    </Grid>
+                                </Grid>
+                            </local:SettingsPaneBlock.MainContent>
+                            <local:SettingsPaneBlock.Title>SPACING</local:SettingsPaneBlock.Title>
+                        </local:SettingsPaneBlock>
+                    </Grid>
                 </Grid>
             </ScrollViewer>
         </Grid>

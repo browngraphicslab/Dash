@@ -48,15 +48,8 @@ namespace Dash
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
-        public static int addCount = 0, removeCount = 0, totalCount = 0;
-
         public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
-            ++totalCount;
-            if (++addCount % 100 == 0)
-            {
-                Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
-            }
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 _fieldUpdatedDictionary[key] += handler;
@@ -69,11 +62,6 @@ namespace Dash
 
         public void RemoveFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
         {
-            --totalCount;
-            if (++removeCount % 100 == 0)
-            {
-                Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
-            }
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -102,6 +90,8 @@ namespace Dash
             {
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
+
+            LayoutName = model.DocumentType.Type; 
             // Add Events
         }
 
@@ -112,7 +102,7 @@ namespace Dash
         /// </summary>
         public DocumentModel DocumentModel { get; }
 
-
+        public string LayoutName { get; set; }
         /// <summary>
         ///     A wrapper for <see cref="Dash.DocumentModel.DocumentType" />. Change this to propogate changes
         ///     to the server and across the client
@@ -247,20 +237,22 @@ namespace Dash
                     if (strings.Count() == 2)
                     {
                         var opModel = lookupOperator(strings[0]);
-                        var args = strings[1].TrimEnd(')').Split(',');
-                        var refs = new List<ReferenceFieldModelController>();
+                        var args    = strings[1].TrimEnd(')').Split(',');
+                        var refs    = new List<ReferenceFieldModelController>();
+                        bool useProto = false;
                         foreach (var a in args)
                         {
                             if (a.Trim(' ').StartsWith("@"))
                             {
                                 var path = a.Substring(1, a.Length - 1).Split('.');
-                                var theDoc = FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+                                useProto |= path[0] == "This";
+                                var theDoc = path[0] == "This" ? proto : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
                                 if (theDoc != null)
                                 {
                                     if (path.Count() > 1)
                                     {
                                         Key foundKey = null;
-                                        foreach (var e in theDoc.EnumFields())
+                                        foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
                                             if (e.Key.Name == path[1])
                                             {
                                                 foundKey = e.Key;
@@ -278,35 +270,45 @@ namespace Dash
                         foreach (var i in opFieldController.Inputs.ToArray())
                             if (count < refs.Count())
                                 opModel.SetField(i.Key, refs[count++], true);
-                        SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                        (useProto ? proto:this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     }
                     else
                     {
                         var path = strings[0].Trim(' ').Split('.');
-                        var theDoc = FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
-                        if (path.Count() > 1)
+                        var theDoc = path[0] == "This" ? proto : FindDocMatchingPrimaryKeys(new List<string>(new string[] { path[0] }));
+                        if (theDoc != null)
                         {
-                            foreach (var e in theDoc.EnumFields())
-                                if (e.Key.Name == path[1])
-                                {
-                                    SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), true);
-                                    break;
-                                }
-
+                            if (path.Count() > 1)
+                            {
+                                foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
+                                    if (e.Key.Name == path[1])
+                                    {
+                                        ((path[0] == "This") ? proto:this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
+                                        break;
+                                    }
+                            }
+                            else
+                                SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
                         }
-                        else if (theDoc != null)
-                            SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
+                        else // start of path isn't a value ... treat it as a field and search for documents that reference this document that have it as a field
+                        {
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+                            SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                        }
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     }
                 }
             }
             else
             {
-                var tagField = GetDereferencedField(key, null);
-                if (tagField is TextFieldModelController)
-                    (tagField as TextFieldModelController).Data = textInput;
-                else SetField(key, new TextFieldModelController(textInput), true);
+                double num;
+                if (!double.TryParse(textInput, out num))
+                    num = double.NaN;
+                if (!double.IsNaN(num))
+                    SetField(key, new NumberFieldModelController(num), true);
+                else
+                    SetField(key, new TextFieldModelController(textInput), true);
             }
         }
 
@@ -645,7 +647,7 @@ namespace Dash
             }
             catch (KeyNotFoundException e)
             {
-                Debug.WriteLine("Operator Execution failed: Input not set");
+                Debug.WriteLine("Operator Execution failed: Input not set" + e);
             }
         }
 
@@ -715,6 +717,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
+                    //sp.Children.Add(new CollectionBox(f.Value).Document.MakeViewUI(context, isInterfaceBuilder));
                     foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
                         sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));

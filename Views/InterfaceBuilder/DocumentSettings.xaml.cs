@@ -76,14 +76,14 @@ namespace Dash
 
         private void XActiveLayoutComboBox_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var selectedLayoutDocument = xActiveLayoutComboBox.SelectedItem as DocumentController;
+            var selectedLayout = xActiveLayoutComboBox.SelectedItem as DocumentController;
             var currLayoutDocument = _dataDocument.GetActiveLayout(_context).Data;
-            if (currLayoutDocument.Equals(selectedLayoutDocument)  || selectedLayoutDocument == null)
+            if (currLayoutDocument.Equals(selectedLayout)  || selectedLayout == null)
             {
                 return;
             }
 
-            _dataDocument.SetActiveLayout(selectedLayoutDocument, true, false);
+            _dataDocument.SetActiveLayout(selectedLayout, true, false);
         }
 
 

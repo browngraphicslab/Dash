@@ -43,6 +43,10 @@ namespace Dash
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }
+        public override IEnumerable<DocumentController> GetReferences()
+        {
+            yield return Data;
+        }
 
         public override FieldModelController GetDefaultController()
         {
