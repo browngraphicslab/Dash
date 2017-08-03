@@ -39,7 +39,7 @@
                             </Grid.ColumnDefinitions>
                             
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" Grid.Column="1" VerticalAlignment="Center"/>
-                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipse_OnPointerExited" 
+                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </Grid>
                     </DataTemplate>
@@ -47,7 +47,7 @@
             </ListView>
             
             <!--Inner Content-->            
-            <ContentPresenter x:Name="XPresenter"  Grid.Column="1"/>
+            <ContentPresenter x:Name="XPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Column="1"/>
             
             <!-- Output link handles and labels -->
             <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,0,0" >
@@ -63,7 +63,7 @@
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,0,10,0" VerticalAlignment="Center">
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left"/>
-                            <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipse_OnPointerExited" 
+                            <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </StackPanel>
                     </DataTemplate>

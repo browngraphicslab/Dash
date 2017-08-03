@@ -1,53 +1,58 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    public class FreeFormCollectionViewModel : ViewModelBase, IFreeFormCollectionViewModel
+    public class FreeFormCollectionViewModel : ViewModelBase, ICollectionViewModel
     {
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        public bool IsInterfaceBuilder { get; set; }
-        public ObservableCollection<DocumentViewModel> DataBindingSource
-        {
-            get { return _dataBindingSource; }
-            set { SetProperty(ref _dataBindingSource, value); }
-        }
+        private ObservableCollection<DocumentViewModel> _documentViewModels;
 
         public FreeFormCollectionViewModel(bool isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
-            DataBindingSource = new ObservableCollection<DocumentViewModel>();
+            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            CellSize = 250;
+            CanDragItems = true;
         }
 
+        public bool IsInterfaceBuilder { get; set; }
 
-        public void AddViewModels(List<DocumentController> documents, Context context)
+        public ObservableCollection<DocumentViewModel> DocumentViewModels
+        {
+            get => _documentViewModels;
+            set => SetProperty(ref _documentViewModels, value);
+        }
+
+        public double CellSize { get; set; }
+        public bool CanDragItems { get; set; }
+        public ListViewSelectionMode ItemSelectionMode { get; set; }
+
+
+        public void AddDocuments(List<DocumentController> documents, Context context)
         {
             foreach (var docController in documents)
-            {
-                var docVm = new DocumentViewModel(docController, IsInterfaceBuilder);
-                DataBindingSource.Add(docVm);
-            }
+                AddDocument(docController, context);
         }
 
-        public void RemoveViewModels(List<DocumentController> documents)
+        public void AddDocument(DocumentController document, Context context)
         {
-            var docsToRemove = new HashSet<string>(documents.Select(doc => doc.GetId()).ToList());
+            var docVm = new DocumentViewModel(document, IsInterfaceBuilder);
+            DocumentViewModels.Add(docVm);
+        }
 
-            foreach (var id in docsToRemove)
-            {
-                var vmToRemove = DataBindingSource.FirstOrDefault(vm => vm.DocumentController.GetId() == id);
-                if (vmToRemove != null)
-                {
-                    DataBindingSource.Remove(vmToRemove);
-                }
+        public void RemoveDocuments(List<DocumentController> documents)
+        {
+            foreach (var doc in documents)
+                RemoveDocument(doc);
+        }
 
-            }
-
+        public void RemoveDocument(DocumentController document)
+        {
+            var vmToRemove = DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == document.GetId());
+            if (vmToRemove != null)
+                DocumentViewModels.Remove(vmToRemove);
         }
     }
 }

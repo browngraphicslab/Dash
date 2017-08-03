@@ -20,16 +20,19 @@ namespace Dash
 {
     public sealed partial class CollectionListView : UserControl
     {
-        public CollectionListView(CollectionView view)
+        public ICollectionViewModel ViewModel { get; private set; }
+
+        public CollectionListView(ICollectionViewModel viewModel)
         {
+            ViewModel = viewModel;
             this.InitializeComponent();
-            HListView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
-            HListView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
+            HListView.DragItemsStarting += viewModel.xGridView_OnDragItemsStarting;
+            HListView.DragItemsCompleted += viewModel.xGridView_OnDragItemsCompleted;
             DataContextChanged += OnDataContextChanged;
             Binding selectionBinding = new Binding
             {
-                Source = view.ViewModel,
-                Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
+                Source = viewModel,
+                Path = new PropertyPath(nameof(viewModel.ItemSelectionMode)),
                 Mode = BindingMode.OneWay,
             };
             HListView.SetBinding(ListView.SelectionModeProperty, selectionBinding);
@@ -45,5 +48,19 @@ namespace Dash
         {
             e.Handled = true;
         }
+
+        #region DragAndDrop
+
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragOver(sender, e);
+        }
+
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        #endregion
     }
 }

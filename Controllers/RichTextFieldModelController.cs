@@ -47,7 +47,7 @@ namespace Dash
 
         public override IEnumerable<DocumentController> GetReferences()
         {
-            var links = RichTextData.RtfFormatString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+            var links = RichTextData.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var link in links)
             {
                 var split = link.Split('\"');

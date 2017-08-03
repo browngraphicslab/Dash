@@ -12,6 +12,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
 using Dash.Controllers.Operators;
+using Dash.Views;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -38,11 +39,11 @@ namespace Dash
             var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
 
            
-            Binding inputsBinding = new Binding
+            var inputsBinding = new Binding
             {
                 Source = opCont.Inputs,
             };
-            Binding outputsBinding = new Binding
+            var outputsBinding = new Binding
             {
                 Source = opCont.Outputs,
             };
@@ -57,26 +58,26 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
+        void StartNewLink(object sender, PointerRoutedEventArgs e, bool isOutput)
         {
-            string docId = (DataContext as DocumentFieldReference).DocumentId;
-            FrameworkElement el = sender as FrameworkElement;
-            KeyController outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            (view.CurrentView as CollectionFreeformView).CanLink = true;
-            (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
+            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var el = sender as FrameworkElement;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            var view = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            view.CanLink = true;
+            view.StartDrag(ioRef);
         }
 
 
-        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void InputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e, false);
+            StartNewLink(sender, e, false);
         }
 
-        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        private void OutputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e, true);
+            StartNewLink(sender, e, true);
         }
 
         /// <summary>
@@ -87,41 +88,30 @@ namespace Dash
             e.Complete();
         }
 
-        private void OnIoDragStarted(IOReference ioreference)
-        {
-            ioreference.FireDragStarted();
-        }
-
-        private void OnIoDragEnded(IOReference ioreference)
-        {
-            ioreference.FireDragEnded();
-        }
-
         /// <summary>
         /// Envokes code to handle pointer released events on the link handle.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         
-        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e, bool isOutput)
+        void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput)
         {
-            string docId = (DataContext as DocumentFieldReference).DocumentId;
-            FrameworkElement el = sender as FrameworkElement;
-            KeyController outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
-
+            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var el = sender as FrameworkElement;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            var view = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            view.EndDrag(ioRef);
         }
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e, false);
+            EndDraggedLink(sender, e, false);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e, true);
+            EndDraggedLink(sender, e, true);
         }
 
         #region expandoflyout
@@ -162,21 +152,22 @@ namespace Dash
 
         private void ContractView(object sender, RoutedEventArgs e)
         {
-            
+            XPresenter.Content = null;
 
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)
         {
-            var documentCanvasViewModel = new FreeFormCollectionViewModel(false);
-            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()), false);
-            //documentCanvasViewModel.AddDocument(OperatorDocumentModel.CreateOperatorDocumentModel(new AddOperatorModelController()), false);
-            var documentCanvasView = new CollectionFreeformView();
-            XPresenter.Content = documentCanvasView;
-            documentCanvasView.DataContext = documentCanvasViewModel;
+            // TODO do we want to resolve this field reference
+            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var documentController = ContentController.GetController<DocumentController>(docId);
+            var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
+            Debug.Assert(operatorFieldModelController != null);
+            XPresenter.Content = new CompoundOperatorEditor(documentController, operatorFieldModelController);
         }
 
         #endregion
+
 
 
     }

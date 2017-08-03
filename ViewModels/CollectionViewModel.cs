@@ -14,28 +14,26 @@ using System.Linq;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase, IFreeFormCollectionViewModel
+    public class CollectionViewModel : ViewModelBase, ICollectionViewModel
     {
 
         #region Properties
-        public DocumentCollectionFieldModelController CollectionFieldModelController { get; }
+        private DocumentCollectionFieldModelController _collectionFieldModelController { get; }
 
         public bool IsInterfaceBuilder { get; set; }
 
         /// <summary>
         /// The DocumentViewModels that the CollectionView actually binds to.
         /// </summary>
-        public ObservableCollection<DocumentViewModel> DataBindingSource
+        public ObservableCollection<DocumentViewModel> DocumentViewModels
         {
-            get { return _dataBindingSource; }
+            get { return _documentViewModels; }
             set
             {
-                SetProperty(ref _dataBindingSource, value);
+                SetProperty(ref _documentViewModels, value);
             }
         }
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        public bool KeepItemsOnMove { get; set; } = true;
+        private ObservableCollection<DocumentViewModel> _documentViewModels;
 
         private bool _canDragItems;
 
@@ -67,10 +65,10 @@ namespace Dash
         public CollectionViewModel(FieldModelController collection, bool IsInInterfaceBuilder, Context context = null)
         {
             _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            CollectionFieldModelController =
+            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            AddViewModels(CollectionFieldModelController.GetDocuments(), context);
+            AddDocumentsCollectionIsCaller(_collectionFieldModelController.GetDocuments(), context);
             var copiedContext = new Context(context);
 
             if (collection is ReferenceFieldModelController)
@@ -86,8 +84,8 @@ namespace Dash
                         }
                         else
                         {
-                            DataBindingSource.Clear();
-                            AddViewModels(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
+                            DocumentViewModels.Clear();
+                            AddDocuments(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
                         }
                     });
             }
@@ -121,8 +119,8 @@ namespace Dash
             _selectedItems.Clear();
             foreach (var vm in itemsToDelete)
             {
-                //DataBindingSource.Remove(vm);
-                CollectionFieldModelController.RemoveDocument(vm.DocumentController);
+                //DocumentViewModels.Remove(vm);
+                _collectionFieldModelController.RemoveDocument(vm.DocumentController);
             }
         }
 
@@ -162,43 +160,72 @@ namespace Dash
             switch (args.CollectionAction)
             {
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
-                    AddViewModels(args.ChangedDocuments, c);
+                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
-                    DataBindingSource.Clear();
+                    DocumentViewModels.Clear();
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
-                    RemoveViewModels(args.ChangedDocuments);
+                    RemoveDocumentsCollectionIsCaller(args.ChangedDocuments);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
-                    DataBindingSource.Clear();
-                    AddViewModels(args.ChangedDocuments, c);
+                    DocumentViewModels.Clear();
+                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
                     break;
             }
         }
 
-        public void AddViewModels(List<DocumentController> documents, Context context)
+        private void RemoveDocumentsCollectionIsCaller(List<DocumentController> documents)
+        {
+            var ids = documents.Select(doc => doc.GetId());
+            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+            foreach (var vm in vms)
+            {
+                DocumentViewModels.Remove(vm);
+            }
+        }
+
+        private void AddDocumentsCollectionIsCaller(List<DocumentController> documents, Context context)
         {
             foreach (var doc in documents)
             {
-                if (context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
-                {
-                    continue;
-                }
-                var viewModel = new DocumentViewModel(doc, false, context);
+                var viewModel = new DocumentViewModel(doc, IsInterfaceBuilder, context);
                 viewModel.DoubleTapEnabled = false;
-                DataBindingSource.Add(viewModel);
+                DocumentViewModels.Add(viewModel);
             }
         }
 
-        public void RemoveViewModels(List<DocumentController> documents)
+        public void AddDocuments(List<DocumentController> documents, Context context)
         {
-            var ids = documents.Select(doc => doc.GetId());
-            var vms = DataBindingSource.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
-            foreach (var vm in vms)
+            foreach (var doc in documents)
             {
-                DataBindingSource.Remove(vm);
+                AddDocument(doc, context);
             }
+        }
+
+        public void AddDocument(DocumentController doc, Context context)
+        {
+            if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+            {
+                return;
+            }
+
+            // just update the collection, the colllection will update our view automatically
+            _collectionFieldModelController.AddDocument(doc);
+        }
+
+        public void RemoveDocuments(List<DocumentController> documents)
+        {
+            foreach (var doc in documents)
+            {
+                RemoveDocument(doc);
+            }
+        }
+
+        public void RemoveDocument(DocumentController document)
+        {
+            // just update the collection, the colllection will update our view automatically
+            _collectionFieldModelController.RemoveDocument(document);
         }
 
         #endregion
