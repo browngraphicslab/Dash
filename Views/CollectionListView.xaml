@@ -20,7 +20,10 @@
                   ScrollViewer.VerticalScrollBarVisibility="Disabled"
                   ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   CanDragItems="{Binding CanDragItems}"
-                  ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"                  AllowDrop="True"
+                  ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
+                  AllowDrop="True"
+                  DragOver="CollectionViewOnDragOver"
+                  Drop="CollectionViewOnDrop"
                   Tapped="HListView_Tapped"
                   Style="{StaticResource ListViewStyle_SelectionEdit}">
             <ListView.ItemsPanel>

@@ -19,6 +19,8 @@
                   CanDragItems="{Binding CanDragItems}"
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
                   AllowDrop="True"
+                  DragOver="CollectionViewOnDragOver"
+                  Drop="CollectionViewOnDrop"
                   Tapped="xGridView_Tapped" Style="{StaticResource xCollectionGridViewStyle}">
             <GridView.ItemTemplate>
                 <DataTemplate>

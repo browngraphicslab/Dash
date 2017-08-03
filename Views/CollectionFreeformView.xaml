@@ -16,8 +16,8 @@
           SizeChanged="XOuterGrid_OnSizeChanged" 
           RightTapped="CollectionView_OnRightTapped"
           AllowDrop="True"
-          DragOver="XItemsControl_OnDragOver"
-          Drop="XItemsControl_OnDrop">
+          DragOver="CollectionViewOnDragOver"
+          Drop="CollectionViewOnDrop">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>

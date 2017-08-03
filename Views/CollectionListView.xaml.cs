@@ -20,8 +20,11 @@ namespace Dash
 {
     public sealed partial class CollectionListView : UserControl
     {
+        public ICollectionViewModel ViewModel { get; private set; }
+
         public CollectionListView(ICollectionViewModel viewModel)
         {
+            ViewModel = viewModel;
             this.InitializeComponent();
             HListView.DragItemsStarting += viewModel.xGridView_OnDragItemsStarting;
             HListView.DragItemsCompleted += viewModel.xGridView_OnDragItemsCompleted;
@@ -45,5 +48,19 @@ namespace Dash
         {
             e.Handled = true;
         }
+
+        #region DragAndDrop
+
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragOver(sender, e);
+        }
+
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        #endregion
     }
 }

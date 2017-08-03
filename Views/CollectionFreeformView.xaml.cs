@@ -471,12 +471,12 @@ namespace Dash
 
         #region DragAndDrop
 
-        private void XItemsControl_OnDragOver(object sender, DragEventArgs e)
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDragOver(sender, e);
         }
 
-        private void XItemsControl_OnDrop(object sender, DragEventArgs e)
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDrop(sender, e);
         }
