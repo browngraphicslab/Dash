@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase, IFreeFormCollectionViewModel
+    public class CollectionViewModel : ViewModelBase, ICollectionViewModel
     {
 
         #region Properties
@@ -34,8 +34,6 @@ namespace Dash
             }
         }
         private ObservableCollection<DocumentViewModel> _documentViewModels;
-
-        public bool KeepItemsOnMove { get; set; } = true;
 
         private bool _canDragItems;
 

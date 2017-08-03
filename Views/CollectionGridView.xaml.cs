@@ -20,16 +20,16 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl
     {
-        public CollectionGridView(CollectionView view)
+        public CollectionGridView(ICollectionViewModel viewModel)
         {
             this.InitializeComponent();
-            xGridView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
+            xGridView.DragItemsStarting += viewModel.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted += viewModel.xGridView_OnDragItemsCompleted;
             DataContextChanged += OnDataContextChanged;
             Binding selectionBinding = new Binding
             {
-                Source = view.ViewModel,
-                Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
+                Source = viewModel,
+                Path = new PropertyPath(nameof(viewModel.ItemSelectionMode)),
                 Mode = BindingMode.OneWay,
             };
             xGridView.SetBinding(ListViewBase.SelectionModeProperty, selectionBinding);

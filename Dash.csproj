@@ -113,7 +113,7 @@
     <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
-    <Compile Include="ViewModels\IFreeFormCollectionViewModel.cs" />
+    <Compile Include="ViewModels\ICollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>

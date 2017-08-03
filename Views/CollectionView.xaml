@@ -31,8 +31,7 @@
                       Margin="5,5,5,5"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
-                      DragOver="CollectionGrid_DragOver"
-                      Drop="CollectionGrid_Drop">
+                      >
                     <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"

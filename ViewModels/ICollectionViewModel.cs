@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Windows.UI.Xaml.Controls;
 
 namespace Dash
 {
-    public interface IFreeFormCollectionViewModel
+    public interface ICollectionViewModel
     {
         bool IsInterfaceBuilder { get; set; }
 
@@ -11,6 +12,7 @@ namespace Dash
 
         double CellSize { get; set; }
         bool CanDragItems { get; set; }
+        ListViewSelectionMode ItemSelectionMode { get; set; }
 
         void AddDocuments(List<DocumentController> documents, Context context);
         void AddDocument(DocumentController document, Context context);

@@ -34,7 +34,7 @@ namespace Dash
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
-        public IFreeFormCollectionViewModel ViewModel { get; private set; }
+        public ICollectionViewModel ViewModel { get; private set; }
 
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -84,7 +84,7 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as IFreeFormCollectionViewModel;
+            var vm = DataContext as ICollectionViewModel;
 
             if (vm != null)
             {
@@ -413,6 +413,8 @@ namespace Dash
             DBTest.ResetCycleDetection();
         }
 
+        #region Flyout
+
         private void InitializeFlyout()
         {
             _flyout = new MenuFlyout();
@@ -464,6 +466,23 @@ namespace Dash
             var position = e.GetPosition(thisUi);
             _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
         }
+
+        #endregion
+
+        #region DragAndDrop
+
+        private void XItemsControl_OnDragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragOver(sender, e);
+        }
+
+        private void XItemsControl_OnDrop(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        #endregion
+
 
     }
 }
