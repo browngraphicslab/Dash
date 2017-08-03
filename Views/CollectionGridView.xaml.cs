@@ -45,5 +45,33 @@ namespace Dash
         {
             e.Handled = true;
         }
+
+        private void XGridView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            args.Handled = true;
+            if (args.Phase != 0) throw new Exception("Please start in stage 0");
+            var rootGrid = (Grid) args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (DocumentView) rootGrid?.FindName("Backdrop");
+            var border = (Border) rootGrid?.FindName("xBorder");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            backdrop.Visibility = Visibility.Visible;
+            Debug.Assert(border != null, "border != null");
+            border.Visibility = Visibility.Collapsed;
+            args.RegisterUpdateCallback(RenderDocumentPhaseOne);
+        }
+
+        private void RenderDocumentPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.Phase != 1) throw new Exception("Please start in phase 1");
+            var rootGrid = (Grid) args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (DocumentView) rootGrid.FindName("Backdrop");
+            var border = (Border) rootGrid.FindName("xBorder");
+            var canvas = (Canvas) border.FindName("xDocumentCanvas");
+            var document = (DocumentView) canvas.FindName("xDocumentDisplay");
+            backdrop.Visibility = Visibility.Collapsed;
+            border.Visibility = Visibility.Visible;
+            document.IsHitTestVisible = false;
+            document.DataContext = ((CollectionViewModel) DataContext).DataBindingSource[args.ItemIndex];
+        }
     }
 }

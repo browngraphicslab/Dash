@@ -135,18 +135,29 @@ namespace Dash
             if (clipController == null)  return;
             Debug.Assert(widthController != null);
             Debug.Assert(heightController != null);
-            var data = clipController.Data;
-            UpdateClip(image, data);
-            //widthController.FieldModelUpdated += (ss, args, cc) =>
-            //{
-            //    UpdateClip(image, data);
-            //};
-            //heightController.FieldModelUpdated += (ss, args, cc) =>
-            //{
-            //    UpdateClip(image, data);
-            //};
 
-            image.SizeChanged += (s, e) => UpdateClip(image, data); 
+            UpdateClip(image, clipController.Data);
+            AddClipBindingEvents(clipController, widthController, heightController, image);
+
+            // fixes vertical and horizontal stretch problems 
+            image.SizeChanged += (s, e) => UpdateClip(image, clipController.Data);
+        }
+
+        private static void AddClipBindingEvents(RectFieldModelController clipController, 
+            NumberFieldModelController widthController, NumberFieldModelController heightController, Image image)
+        {
+            clipController.FieldModelUpdated += (ss, args, cc) =>
+            {
+                UpdateClip(image, clipController.Data);
+            };
+            widthController.FieldModelUpdated += (ss, args, cc) =>
+            {
+                UpdateClip(image, clipController.Data);
+            };
+            heightController.FieldModelUpdated += (ss, args, cc) =>
+            {
+                UpdateClip(image, clipController.Data);
+            };
         }
 
         public static void UpdateClip(Image image, Rect data)

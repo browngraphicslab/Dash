@@ -29,7 +29,7 @@ namespace Dash
             {
                 var richTextFieldModelController = fieldModelController as RichTextFieldModelController;
                 Debug.Assert(richTextFieldModelController != null);
-                var richText = new RichTextView(richTextFieldModelController);
+                var richText = new RichTextView(richTextFieldModelController, refToRichText, context);
                 rtv = richText;
                 rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;

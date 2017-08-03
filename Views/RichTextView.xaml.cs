@@ -29,14 +29,18 @@ namespace Dash
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
         private int _selectionStart;
         private int _selectionEnd;
+        ReferenceFieldModelController _reftorichtext;
+        Context _refcontext;
 
         private ITextSelection _selectedText
         {
             set { _richTextFieldModelController.SelectedText = value; }
         }
 
-        public RichTextView(RichTextFieldModelController richTextFieldModelController)
+        public RichTextView(RichTextFieldModelController richTextFieldModelController, ReferenceFieldModelController reftorichtext, Context refcontext)
         {
+            _reftorichtext = reftorichtext;
+            _refcontext = refcontext;
             this.InitializeComponent();
             _richTextFieldModelController = richTextFieldModelController;
             Loaded += OnLoaded;
@@ -137,36 +141,17 @@ namespace Dash
             this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out character);
 
             // if the last character is white space, then we check to see if it terminates a hyperlink
-            if (character == " " || character == "\r")
+            if (character == " " || character == "\r" || character == "^")
             {
                 // search through all the text for the nearest '@' indicating the start of a possible hyperlink
-                this.xRichEitBox.Document.Selection.SetRange(0, allText.Length);
-                var atPos = -1;
-                while (this.xRichEitBox.Document.Selection.FindText("@", 0, FindOptions.None) > 0)
-                {
-                    if (this.xRichEitBox.Document.Selection.StartPosition < s1)
-                    {
-                        atPos = this.xRichEitBox.Document.Selection.StartPosition;
-                        this.xRichEitBox.Document.Selection.SetRange(atPos + 1, allText.Length);
-                    }
-                    else break;
-                }
+                int atPos = FindPreviousHyperlinkStartMarker(allText, s1);
 
                 // we found the nearest '@'
                 if (atPos != -1)
                 {
                     // get the text betweent the '@' and the current input position 
-                    this.xRichEitBox.Document.Selection.SetRange(atPos + 1, s2 - 1);
-                    string refText;
-                    this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out refText);
-                    if (refText.StartsWith("HYPERLINK"))
-                    {
-                        var link = refText.Substring("HYPERLINK".Length + 1, refText.Length - ("HYPERLINK".Length + 1)).Trim(' ', '\r');
-                        if (!link.Contains(" ") && !link.Contains("\r"))
-                        {
-                            refText = refText.Split('\"')[2].Trim(' ', '\r');
-                        }
-                    }
+                    string refText = GetHyperlinkText(s2, atPos);
+
                     if (refText.StartsWith("http"))
                     {
                         if (this.xRichEitBox.Document.Selection.Link != "\"" + refText + "\"")
@@ -184,6 +169,11 @@ namespace Dash
                     {
                         // see if we can find a document whose primary keys match the text
                         var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
+                        if (theDoc == null && character == "^" && !refText.StartsWith("HYPERLINK"))
+                        {
+                            theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+                            theDoc.SetField(NoteDocuments.RichTextNote.TitleKey, new TextFieldModelController(refText), true);
+                        }
                         if (theDoc != null && this.xRichEitBox.Document.Selection.StartPosition != this.xRichEitBox.Document.Selection.EndPosition && this.xRichEitBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
                         {
                             // set the hyperlink for the matched text
@@ -199,9 +189,46 @@ namespace Dash
                 }
             }
 
+            xRichEitBox.Document.GetText(TextGetOptions.None, out allText);
+            if (_reftorichtext != null)
+                this._reftorichtext.GetDocumentController(_refcontext).SetField(_reftorichtext.FieldKey, new RichTextFieldModelController(allText), true);
             this.xRichEitBox.Document.Selection.SetRange(s1, s2);
             this.xRichEitBox.SelectionChanged -= xRichEitBox_SelectionChanged_1;
             this.xRichEitBox.SelectionChanged += xRichEitBox_SelectionChanged_1;
+        }
+
+        string GetHyperlinkText(int s2, int atPos)
+        {
+            this.xRichEitBox.Document.Selection.SetRange(atPos + 1, s2 - 1);
+            string refText;
+            this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out refText);
+            if (refText.StartsWith("HYPERLINK"))
+            {
+                var link = refText.Substring("HYPERLINK".Length + 1, refText.Length - ("HYPERLINK".Length + 1)).Trim(' ', '\r');
+                if (!link.Contains(" ") && !link.Contains("\r"))
+                {
+                    refText = refText.Split('\"')[2].Trim(' ', '\r');
+                }
+            }
+
+            return refText;
+        }
+
+        int FindPreviousHyperlinkStartMarker(string allText, int s1)
+        {
+            this.xRichEitBox.Document.Selection.SetRange(0, allText.Length);
+            var atPos = -1;
+            while (this.xRichEitBox.Document.Selection.FindText("@", 0, FindOptions.None) > 0)
+            {
+                if (this.xRichEitBox.Document.Selection.StartPosition < s1)
+                {
+                    atPos = this.xRichEitBox.Document.Selection.StartPosition;
+                    this.xRichEitBox.Document.Selection.SetRange(atPos + 1, allText.Length);
+                }
+                else break;
+            }
+
+            return atPos;
         }
 
         int LastS1 = 0, LastS2 = 0;
@@ -233,7 +260,6 @@ namespace Dash
                             pt.X -= 150;
                             pt.Y -= 50;
                             MainPage.Instance.DisplayDocument(theDoc, pt);
-
                         }
                         else
                         {

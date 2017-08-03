@@ -20,17 +20,24 @@
                   CanDragItems="{Binding CanDragItems}"
                   AllowDrop="True"
                   ManipulationMode="None"
-                  Tapped="xGridView_Tapped">
+                  Tapped="xGridView_Tapped"
+                  ContainerContentChanging="XGridView_OnContainerContentChanging">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"
-                        Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                            <dash:DocumentView DataContext="{Binding}" RenderTransform="{Binding GridViewIconGroupTransform}" IsHitTestVisible="False"/>
-                        </Canvas>
-                    </Border>
+                    <Grid>
+                        <dash:DocumentView x:Name="Backdrop" 
+                                           Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                           Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}"
+                                           Visibility="Collapsed"/>
+                        <Border x:Name="xBorder" BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"
+                                    Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                    Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
+                            <Canvas x:Name="xDocumentCanvas"  Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                    Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
+                                <dash:DocumentView x:Name="xDocumentDisplay" RenderTransform="{Binding GridViewIconGroupTransform}"/>
+                            </Canvas>
+                        </Border>
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

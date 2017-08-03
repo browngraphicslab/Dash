@@ -291,6 +291,11 @@ namespace Dash
                             else
                                 SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
                         }
+                        else // start of path isn't a value ... treat it as a field and search for documents that reference this document that have it as a field
+                        {
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+                            SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
+                        }
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));
                     }
                 }
@@ -712,6 +717,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
+                    //sp.Children.Add(new CollectionBox(f.Value).Document.MakeViewUI(context, isInterfaceBuilder));
                     foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
                     {
                         sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));

@@ -27,12 +27,12 @@
           x:FieldModifier="public" PointerReleased="OuterGrid_PointerReleased"
               SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
             <ColumnDefinition Width="*" />
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
         </Grid.ColumnDefinitions>
         
         <!-- Container for Icon view -->
-        <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"></RowDefinition>
                 <RowDefinition Height="Auto"></RowDefinition>
@@ -49,8 +49,8 @@
             </StackPanel>
         </Grid>
         
-        <Canvas x:Name="xMenuCanvas" Grid.Column="0"/>
-        <Grid Grid.Column="1">
+        <Canvas x:Name="xMenuCanvas" Grid.Column="1"/>
+        <Grid Grid.Column="0">
             <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#33031A2C" Margin="5,5,-10,-10" />
             <!-- Container for document fields view -->
             <Grid x:Name="XGrid" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
