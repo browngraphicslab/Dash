@@ -26,7 +26,7 @@ namespace Dash
     {
         public Image Image { get { return xImage; } }
 
-        public Rect ClipRect { get; } = new Rect(0, 0, 100, 100);
+        public Rect ClipRect { get; } = new Rect(30, 30, 100, 100);
 
         private bool _isImageDraggerVisible;
         public bool IsImageDraggerVisible
@@ -57,7 +57,25 @@ namespace Dash
                 xCLIPBottomRightDragger.Visibility = visibility;
                 xCLIPTopLeftDragger.Visibility = visibility;
                 xCLIPTopRightDragger.Visibility = visibility;
+            }
+        }
+
+        private bool _isEditorModeOn;
+        public bool IsEditorModeOn
+        {
+            get { return _isEditorModeOn; }
+            set
+            {
+                _isEditorModeOn = value;
+                Visibility visibility = value ? Visibility.Visible : Visibility.Collapsed;
+
                 xClipRectangle.Visibility = visibility;
+                xEditStackPanel.Visibility = visibility;
+                //xShadeRectangle.Visibility = visibility;
+
+                if (value) xImageGrid.ManipulationDelta += xImageGrid_ManipulationDelta; 
+                else xImageGrid.ManipulationDelta -= xImageGrid_ManipulationDelta;
+
             }
         }
 
@@ -66,7 +84,9 @@ namespace Dash
             InitializeComponent();
 
             IsClipRectVisible = false;
-            IsImageDraggerVisible = false; 
+            IsImageDraggerVisible = false;
+            IsEditorModeOn = false; 
+
             SetUpBindings();
         }
 
@@ -88,21 +108,73 @@ namespace Dash
             };
             xClipRectangle.SetBinding(HeightProperty, heightBinding);
         }
+
+        private void SetUpEvents()
+        {
+            //image resize 
+            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
+            bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
+            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
+            bottomRightManipulator.OnManipulatorTranslatedOrScaled += (e) => ChangeSize(e.Translate.X, e.Translate.Y);
+            var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
+            topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
+            var topRightManipulator = new ManipulationControls(xTopRightDragger);
+            topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
+
+            // rectangle resize 
+
+        }
+
+        private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
+        {
+            var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
+            ChangePosition(0, -sizeChange.Y);
+        }
+
+        private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
+        {
+            var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
+            ChangePosition(-sizeChange.X, -sizeChange.Y);
+        }
+
+        private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
+        {
+            var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
+            ChangePosition(-sizeChange.X, 0);
+        }
         
+        /// <summary>
+        /// Update position controller BUT HOWWWWWW????????????????????????  
+        /// </summary>
+        private Point ChangePosition(double deltaX, double deltaY)                                                         // TODO holy shit 
+        {
+            return new Point(); 
+        }
+
+        /// <summary>
+        /// Update width and height controller 
+        /// </summary>
+        private Point ChangeSize(double v, double y)                                                                   // TODO holy shit 
+        {
+            return new Point();
+        }
 
         /// <summary>
         /// Brings up the editorview upon doubleclick 
         /// </summary>
         private void xImage_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            xEditStackPanel.Visibility = Visibility.Visible;
+            IsEditorModeOn = true; 
         }
 
         private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            xEditStackPanel.Visibility = Visibility.Collapsed;
+            IsEditorModeOn = false; 
             IsImageDraggerVisible = false;
             IsClipRectVisible = false;
+
+            // take care of the actual clipping lmaooooo 
+            // but how??? gotta bind it to the ... the ... the clipcontroller thingy ... 
         }
 
         /// <summary>
@@ -130,5 +202,26 @@ namespace Dash
             IsClipRectVisible = true;
             IsImageDraggerVisible = false;
         }
+
+        private void xImageGrid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            e.Handled = true; 
+        }
+
+        //    private class RectToGeometryConverter : IValueConverter
+        //    {
+        //        public object Convert(object value, Type targetType, object parameter, string language)
+        //        {
+        //            var gg = new GeometryGroup();
+        //            gg.Children.Add(new RectangleGeometry { Rect = new Rect(-2000, -2000, 4000, 4000) });
+        //            gg.Children.Add(new RectangleGeometry { Rect = (Rect)value });
+        //            return gg;
+        //        }
+
+        //        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        //        {
+        //            throw new NotImplementedException();
+        //        }
+        //    }
     }
 }
