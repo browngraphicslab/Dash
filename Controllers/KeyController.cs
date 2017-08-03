@@ -58,12 +58,8 @@ namespace Dash
 
         public override bool Equals(object obj)
         {
-            var k = obj as KeyModel;
-            if (k == null)
-            {
-                return false;
-            }
-            return k.Id.Equals(GetId());
+            var k = obj as KeyController;
+            return k != null && k.Id.Equals(GetId());
         }
 
         public override int GetHashCode()
