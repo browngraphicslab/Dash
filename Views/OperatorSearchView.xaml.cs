@@ -24,7 +24,7 @@ namespace Dash
 
 
         public SearchView SearchView { get; private set; }
-        public static CollectionView AddsToThisCollection = MainPage.Instance.GetMainCollectionView();
+        public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
         private OperatorSearchView()
         {

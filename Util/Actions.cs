@@ -109,7 +109,7 @@ namespace Dash
 
         public static void AddOperator(Func<DocumentController> documentCreationFunc)
         {
-            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
+            var freeForm = OperatorSearchView.AddsToThisCollection;
 
             if (freeForm == null)
             {

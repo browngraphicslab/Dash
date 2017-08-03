@@ -12,7 +12,7 @@
     d:DesignWidth="400"
     Background="Transparent"
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}">
-    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged">
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged" RightTapped="CollectionView_OnRightTapped">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect"/>
         </Grid.Clip>
