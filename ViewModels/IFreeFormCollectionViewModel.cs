@@ -9,6 +9,9 @@ namespace Dash
 
         ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
+        double CellSize { get; set; }
+        bool CanDragItems { get; set; }
+
         void AddDocuments(List<DocumentController> documents, Context context);
         void AddDocument(DocumentController document, Context context);
         void RemoveDocuments(List<DocumentController> documents);

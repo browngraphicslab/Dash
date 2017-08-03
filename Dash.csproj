@@ -97,6 +97,7 @@
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
+    <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />

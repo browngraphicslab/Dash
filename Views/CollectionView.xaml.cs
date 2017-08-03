@@ -246,6 +246,14 @@ namespace Dash
         private void MakeSelectionModeSingle()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
+            ViewModel.CanDragItems = true;
+            _colMenu.BackToCollectionMenu();
+        }
+
+        private void MakeSelectionModeNone()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+            ViewModel.CanDragItems = false;
             _colMenu.BackToCollectionMenu();
         }
 
@@ -264,6 +272,7 @@ namespace Dash
             var multipleSelection = new Action(MakeSelectionModeMultiple);
             var deleteSelection = new Action(DeleteSelection);
             var singleSelection = new Action(MakeSelectionModeSingle);
+            var noSelection = new Action(MakeSelectionModeNone);
             var selectAll = new Action(SelectAllItems);
             var setGrid = new Action(SetGridView);
             var setList = new Action(SetListView);
@@ -288,7 +297,7 @@ namespace Dash
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
+                new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, noSelection)
                 {
                     RotateOnTap = true
                 },

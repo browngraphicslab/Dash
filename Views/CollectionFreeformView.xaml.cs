@@ -58,6 +58,8 @@ namespace Dash
 
 
         private ManipulationControls _manipulationControls;
+        private MenuFlyout _flyout;
+        private float _backgroundOpacity = .7f;
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -347,7 +349,7 @@ namespace Dash
                 _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
                 _bgBrush = new CanvasImageBrush(sender, _bgImage)
                 {
-                    Opacity = .2f
+                    Opacity = _backgroundOpacity
                 };
 
                 // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
@@ -410,8 +412,6 @@ namespace Dash
         {
             DBTest.ResetCycleDetection();
         }
-
-        private MenuFlyout _flyout;
 
         private void InitializeFlyout()
         {

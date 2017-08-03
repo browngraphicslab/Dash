@@ -18,10 +18,15 @@ namespace Dash
             set { SetProperty(ref _documentViewModels, value); }
         }
 
+        public double CellSize { get; set; }
+        public bool CanDragItems { get; set; }
+
         public FreeFormCollectionViewModel(bool isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
             DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            CellSize = 250;
+            CanDragItems = true;
         }
 
 

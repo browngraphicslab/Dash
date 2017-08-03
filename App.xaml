@@ -147,6 +147,23 @@
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
 
+        <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">
+            <Setter Property="Background" Value="#FFE5E5E5"/>
+            <Setter Property="Opacity" Value=".7"/>
+        </Style>
+
+        <Style TargetType="ListView" x:Key="xListViewStyle">
+            <Setter Property="Background" Value="#FFE5E5E5"/>
+            <Setter Property="Opacity" Value=".7"/>
+        </Style>
+
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
+        <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
+        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
+        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
+        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
+
 
         <!-- SAMPLE NODE HERE-->
 
@@ -157,16 +174,14 @@
             <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
             <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
         </Style>
+        
+        <!--TODO what is this doing here-->
         <ItemsPanelTemplate x:Key="ListViewLayoutTemplate">
             <DataTemplate>
                 <StackPanel Orientation="Vertical"></StackPanel>
             </DataTemplate>
         </ItemsPanelTemplate>
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
-        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
-        <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
-        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
-        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
+        
         <Style x:Key="xPlainTextBox" TargetType="TextBox">
             <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}"/>
             <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}"/>
@@ -237,7 +252,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="ListViewStyle_SelectionEdit" TargetType="ListView">
+        <Style x:Key="ListViewStyle_SelectionEdit" TargetType="ListView" BasedOn="{StaticResource xListViewStyle}">
             <Setter Property="IsTabStop" Value="False"/>
             <Setter Property="TabNavigation" Value="Once"/>
             <Setter Property="IsSwipeEnabled" Value="True"/>
