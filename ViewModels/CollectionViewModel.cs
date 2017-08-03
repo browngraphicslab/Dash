@@ -70,7 +70,7 @@ namespace Dash
             DocumentViewModels = new ObservableCollection<DocumentViewModel>();
             _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            AddDocuments(_collectionFieldModelController.GetDocuments(), context);
+            AddDocumentsCollectionIsCaller(_collectionFieldModelController.GetDocuments(), context);
             var copiedContext = new Context(context);
 
             if (collection is ReferenceFieldModelController)
