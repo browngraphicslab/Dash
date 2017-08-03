@@ -12,15 +12,15 @@
         <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
     <Grid Grid.Row="0">
+        <!--image-->
+        <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                   DoubleTapped="xImage_DoubleTapped" Source="null" ></Image>
+        
         <!--draggers for image-->
         <Ellipse x:Name="xBottomLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
-
-        <!--image-->
-        <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                   DoubleTapped="xImage_DoubleTapped" Source="null"></Image>
 
         <!--draggers for clip rect-->
         <Ellipse x:Name="xCLIPBottomLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
@@ -30,6 +30,8 @@
 
         <!--clipping rectangle-->
         <Rectangle x:Name="xClipRectangle" StrokeDashArray="4 4" StrokeThickness="1" Stroke="LightBlue"></Rectangle>
+
+        
     </Grid>
 
     <!--edit pane-->
@@ -54,6 +56,6 @@
         </Button>
         <!--⌗-->
 
-        <Button Background="DarkGray" Foreground="WhiteSmoke" Tapped="DoneButton_Tapped">Done</Button>
+        <Button Background="DarkGray" Foreground="WhiteSmoke" Tapped="DoneButton_Tapped" VerticalContentAlignment="Center">Done</Button>
     </StackPanel>
 </Grid>
