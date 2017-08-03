@@ -103,7 +103,6 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            ManipulationMode = ManipulationModes.All;
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
         }
@@ -111,7 +110,6 @@ namespace Dash
         private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
-            ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionListView(ViewModel);
             // TODO see if these methods can be abstracted
             ((CollectionListView) CurrentView).HListView.SelectionChanged += ViewModel.SelectionChanged;
@@ -121,7 +119,6 @@ namespace Dash
         private void SetGridView()
         {
             if (CurrentView is CollectionGridView) return;
-            ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionGridView(ViewModel);
             // TODO see if these methods can be abstracted
             ((CollectionGridView) CurrentView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
@@ -201,30 +198,33 @@ namespace Dash
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
 
+            var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
+
+
             var collectionButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.TouchPointer, "Select", Colors.SteelBlue, multipleSelection)
+                new MenuButton(Symbol.TouchPointer, "Select", menuColor, multipleSelection)
                 {
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, Colors.SteelBlue, new List<Action> { setGrid, setList, setFreeform}),
-                new MenuButton(Symbol.Camera, "ScrCap", Colors.SteelBlue, new Action(ScreenCap)),
-                new MenuButton(Symbol.Page, "Json", Colors.SteelBlue, new Action(GetJson)),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { setGrid, setList, setFreeform}),
+                new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
+                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
             };
 
             if (ParentDocument != MainPage.Instance.MainDocView)
-                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteCollection));
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, deleteCollection));
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, noSelection)
+                new MenuButton(Symbol.Back, "Back", menuColor, noSelection)
                 {
                     RotateOnTap = true
                 },
-                new MenuButton(Symbol.Edit, "Interface", Colors.SteelBlue, null),
-                new MenuButton(Symbol.SelectAll, "All", Colors.SteelBlue, selectAll),
-                new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection),
+                new MenuButton(Symbol.Edit, "Interface", menuColor, null),
+                new MenuButton(Symbol.SelectAll, "All", menuColor, selectAll),
+                new MenuButton(Symbol.Delete, "Delete", menuColor, deleteSelection),
             };
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
             xMenuCanvas.Children.Add(_colMenu);

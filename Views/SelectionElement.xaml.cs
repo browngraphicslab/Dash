@@ -25,14 +25,6 @@ namespace Dash
 
         public void SetSelectedElement(SelectionElement elem)
         {
-            // if the documentview has a collectionview, bypass the documentview and set that collectionview as the selected element //TODO is this wanted functionality 
-            //var coll = elem?.GetFirstDescendantOfType<CollectionView>(); 
-            //if (coll != null)
-            //{
-            //    SetSelectedElement(coll);
-            //    return; 
-            //}
-            // if not, continue 
             if (SelectedElement != null && SelectedElement != elem)
             {
                 SelectedElement.IsSelected = false;
@@ -48,10 +40,6 @@ namespace Dash
                 elem.SetSelectedElement(null);
                 if (IsLowestSelected) IsLowestSelected = false;
             }
-            //else if (!IsLowestSelected)
-            //{
-            //    IsLowestSelected = true;
-            //}
         }
 
         public bool IsSelected
