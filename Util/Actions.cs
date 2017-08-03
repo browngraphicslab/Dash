@@ -119,7 +119,7 @@ namespace Dash
             var searchView = OperatorSearchView.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
+            var translate = transform.TransformPoint(new Point());
 
             var opController = documentCreationFunc?.Invoke();
 
@@ -131,7 +131,7 @@ namespace Dash
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opController);
+                OperatorSearchView.AddsToThisCollection.AddDocument(opController);
             }
         }
         

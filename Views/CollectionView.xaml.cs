@@ -78,7 +78,7 @@ namespace Dash
                 Canvas.SetLeft(floatBorder, 0);
                 Canvas.SetTop(floatBorder, 0);
             }
-            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X - 250);
+            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
             Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
             DisposeFlyout();
