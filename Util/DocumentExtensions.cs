@@ -99,7 +99,7 @@ namespace Dash
 
             return heightField;
         }
-
+        
         public static NumberFieldModelController GetWidthField(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);

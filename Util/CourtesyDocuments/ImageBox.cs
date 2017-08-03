@@ -135,28 +135,33 @@ namespace Dash
             if (clipController == null)  return;
             Debug.Assert(widthController != null);
             Debug.Assert(heightController != null);
-            //Debug.WriteLine(clipController.Data.Width + ", " + clipController.Data.Height);
             var data = clipController.Data;
             UpdateClip(image, data);
-            widthController.FieldModelUpdated += (ss, args, cc) =>
-            {
-                UpdateClip(image, data);
-            };
-            heightController.FieldModelUpdated += (ss, args, cc) =>
-            {
-                UpdateClip(image, data);
-            };
+            //widthController.FieldModelUpdated += (ss, args, cc) =>
+            //{
+            //    UpdateClip(image, data);
+            //};
+            //heightController.FieldModelUpdated += (ss, args, cc) =>
+            //{
+            //    UpdateClip(image, data);
+            //};
+
+            image.SizeChanged += (s, e) => UpdateClip(image, data); 
         }
 
-        private static void UpdateClip(Image image, Rect data)
+        public static void UpdateClip(Image image, Rect data)
         {
             Debug.Assert(image != null);
+            double width = image.ActualWidth;
+            double height = image.ActualHeight;
+            if (width <= 0) width = image.Width;
+            if (height <= 0) height = image.Height; 
             image.Clip = new RectangleGeometry
             {
-                Rect = new Rect(data.X * image.Width / 100, 
-                                data.Y * image.Height / 100, 
-                                data.Width * image.Width / 100, 
-                                data.Height * image.Height / 100)
+                Rect = new Rect(data.X * width / 100,
+                                data.Y * height / 100,
+                                data.Width * width / 100,
+                                data.Height * height / 100)
             };
         }
 
