@@ -27,8 +27,8 @@ namespace Dash
     {
         private RichTextFieldModelController _richTextFieldModelController;
         ObservableCollection<FontFamily> fonts = new ObservableCollection<FontFamily>();
-        private int _selectionStart;
-        private int _selectionEnd;
+        //private int _selectionStart;
+        //private int _selectionEnd;
         ReferenceFieldModelController _reftorichtext;
         Context _refcontext;
 
@@ -49,16 +49,33 @@ namespace Dash
             xRichEitBox.GotFocus += XRichEitBoxOnGotFocus;
             xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
             _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
+            if (_reftorichtext != null)
+                _reftorichtext.GetDocumentController(refcontext).DocumentFieldUpdated += RichTextView_DocumentFieldUpdated;
+        }
+
+        private void RichTextView_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            if (_reftorichtext != null)
+                if (args.Action == DocumentController.FieldUpdatedAction.Replace && args.OldValue == _richTextFieldModelController)
+                {
+                    _richTextFieldModelController = args.NewValue as RichTextFieldModelController;
+                    string curText;
+                    xRichEitBox.Document.GetText(TextGetOptions.None, out curText);
+                    var argText = args.NewValue.DereferenceToRoot<RichTextFieldModelController>(args.Context).RichTextData.ReadableString.TrimEnd('\r');
+                    if (curText.TrimEnd('\r') != argText)
+                    {
+                        var newtext = (args.NewValue as RichTextFieldModelController).RichTextData;
+                        xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, newtext.RtfFormatString);
+                        //string finalText;
+                        //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out finalText);
+                        //if (finalText != newtext.RtfFormatString)
+                        //    System.Diagnostics.Debug.WriteLine("Mismatch");
+                    }
+                }
         }
 
         private void XRichEitBoxOnGotFocus(object sender, RoutedEventArgs routedEventArgs)
         {
-            ITextSelection selectedText = xRichEitBox.Document.Selection;
-            if (selectedText != null)
-            {
-                xRichEitBox.Document.Selection.SetRange(_selectionStart, _selectionEnd);
-                selectedText.CharacterFormat.BackgroundColor = Colors.White;
-            }
         }
 
         private void XRichEitBox_SelectionChanged(object sender, RoutedEventArgs e)
@@ -69,21 +86,6 @@ namespace Dash
 
         private void XRichEitBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            //var richText = string.Empty;
-            //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
-            //_richTextFieldModelController.RichTextData = richText;
-            //xFormatRow.Height = new GridLength(0);
-
-            //xRichEitBox.ManipulationMode = ManipulationModes.All;
-
-            //_selectionEnd = xRichEitBox.Document.Selection.EndPosition;
-            //_selectionStart = xRichEitBox.Document.Selection.StartPosition;
-
-            //ITextSelection selectedText = xRichEitBox.Document.Selection;
-            //if (selectedText != null)
-            //{
-            //    selectedText.CharacterFormat.BackgroundColor = Colors.LightGray;
-            //}
         }
 
         private async Task<string> LoadText()
@@ -97,7 +99,7 @@ namespace Dash
         {
             if (_richTextFieldModelController.RichTextData != null)
             {
-                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData);
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData.RtfFormatString);
             }
             else
             {
@@ -114,107 +116,107 @@ namespace Dash
             xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out text);
             if (_richTextFieldModelController.RichTextData != null && !text.Equals(_richTextFieldModelController.RichTextData))
             {
-                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData);
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData.RtfFormatString);
             }
         }
-
         // freezes the app
         private void XRichEitBoxOnTextChanged(object sender, RoutedEventArgs routedEventArgs)
         {
-
-            //var richText = string.Empty;
-            //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out richText);
-            //_richTextFieldModelController.RichTextData = richText;
+            string allText;
+            xRichEitBox.Document.GetText(TextGetOptions.UseObjectText, out allText);
+            if (_reftorichtext != null)
+            { // we seem to get an additional \r added for no reason when you SetText on an RTF document.  this avoids an infinite loop
+                var curRTFField = _reftorichtext.GetDocumentController(_refcontext).GetDereferencedField(_reftorichtext.FieldKey, _refcontext) as RichTextFieldModelController;
+                if (allText.TrimEnd('\r') == curRTFField.RichTextData.ReadableString.TrimEnd('\r'))
+                    return;
+            }
 
             var startPt = new Point();
-            string allText;
             var s1 = this.xRichEitBox.Document.Selection.StartPosition;
             var s2 = this.xRichEitBox.Document.Selection.EndPosition;
-            this.xRichEitBox.SelectionChanged -= xRichEitBox_SelectionChanged_1;
-
-            xRichEitBox.Document.GetText(TextGetOptions.None, out allText);
             this.xRichEitBox.Document.Selection.GetPoint(HorizontalCharacterAlignment.Center, VerticalCharacterAlignment.Baseline, PointOptions.Start, out startPt);
 
             // try to get last typed character based on the current selection position 
             this.xRichEitBox.Document.Selection.SetRange(Math.Max(0, s1 - 1), s1);
-            string character;
-            this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out character);
+            string lastTypedCharacter;
+            this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out lastTypedCharacter);
 
-            // if the last character is white space, then we check to see if it terminates a hyperlink
-            if (character == " " || character == "\r" || character == "^")
+            // if the last lastTypedCharacter is white space, then we check to see if it terminates a hyperlink
+            if (lastTypedCharacter == " " || lastTypedCharacter == "\r" || lastTypedCharacter == "^")
             {
                 // search through all the text for the nearest '@' indicating the start of a possible hyperlink
-                int atPos = FindPreviousHyperlinkStartMarker(allText, s1);
+                int atPos = findPreviousHyperlinkStartMarker(allText, s1);
 
                 // we found the nearest '@'
                 if (atPos != -1)
                 {
-                    // get the text betweent the '@' and the current input position 
-                    string refText = GetHyperlinkText(s2, atPos);
+                    // get the text between the '@' and the current input position 
+                    var refText = getHyperlinkText(atPos, s2);
 
-                    if (refText.StartsWith("http"))
-                    {
-                        if (this.xRichEitBox.Document.Selection.Link != "\"" + refText + "\"")
-                        {
-                            // set the hyperlink for the matched text
-                            this.xRichEitBox.Document.Selection.Link = "\"" + refText + "\"";
-                            // advance the end selection past the RTF embedded HYPERLINK keyword
-                            s2 += this.xRichEitBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                            s1 = s2;
-                            this.xRichEitBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-                            this.xRichEitBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
-                        }
-                    }
-                    else
+                    if (!refText.StartsWith("HYPERLINK")) // @HYPERLINK means we've already created the hyperlink
                     {
                         // see if we can find a document whose primary keys match the text
-                        var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
-                        if (theDoc == null && character == "^" && !refText.StartsWith("HYPERLINK"))
-                        {
-                            theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-                            theDoc.SetField(NoteDocuments.RichTextNote.TitleKey, new TextFieldModelController(refText), true);
-                        }
-                        if (theDoc != null && this.xRichEitBox.Document.Selection.StartPosition != this.xRichEitBox.Document.Selection.EndPosition && this.xRichEitBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
-                        {
-                            // set the hyperlink for the matched text
-                            this.xRichEitBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
-                            // advance the end selection past the RTF embedded HYPERLINK keyword
-                            s2 += this.xRichEitBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
-                            s1 = s2;
-                            this.xRichEitBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
-                            this.xRichEitBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
-                        }
+                        var theDoc = findHyperlinkTarget(lastTypedCharacter == "^", refText);
 
+                        createRTFHyperlink(theDoc, startPt, ref s1, ref s2, lastTypedCharacter == "^");
                     }
                 }
             }
-
-            xRichEitBox.Document.GetText(TextGetOptions.None, out allText);
+            
             if (_reftorichtext != null)
-                this._reftorichtext.GetDocumentController(_refcontext).SetField(_reftorichtext.FieldKey, new RichTextFieldModelController(allText), true);
+            {
+                string allRtfText;
+                xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out allRtfText);
+                this._reftorichtext.GetDocumentController(_refcontext).SetField(_reftorichtext.FieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD(allText, allRtfText)), true);
+            }
             this.xRichEitBox.Document.Selection.SetRange(s1, s2);
-            this.xRichEitBox.SelectionChanged -= xRichEitBox_SelectionChanged_1;
-            this.xRichEitBox.SelectionChanged += xRichEitBox_SelectionChanged_1;
         }
 
-        string GetHyperlinkText(int s2, int atPos)
+        static DocumentController findHyperlinkTarget(bool createIfNeeded, string refText)
+        {
+            var theDoc = DocumentController.FindDocMatchingPrimaryKeys(new List<string>(new string[] { refText }));
+            if (theDoc == null && createIfNeeded)
+            {
+                if (refText.StartsWith("http"))
+                {
+                    theDoc = DBTest.CreateWebPage(refText);
+                }
+                else
+                {
+                    theDoc = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
+                    theDoc.SetField(NoteDocuments.RichTextNote.TitleKey, new TextFieldModelController(refText), true);
+                }
+            }
+
+            return theDoc;
+        }
+
+        void createRTFHyperlink(DocumentController theDoc, Point startPt, ref int s1, ref int s2, bool createIfNeeded)
+        {
+            if (theDoc != null && this.xRichEitBox.Document.Selection.StartPosition != this.xRichEitBox.Document.Selection.EndPosition && 
+                this.xRichEitBox.Document.Selection.Link != "\"" + theDoc.GetId() + "\"")
+            {
+                // set the hyperlink for the matched text
+                this.xRichEitBox.Document.Selection.Link = "\"" + theDoc.GetId() + "\"";
+                // advance the end selection past the RTF embedded HYPERLINK keyword
+                s2 += this.xRichEitBox.Document.Selection.Link.Length + "HYPERLINK".Length + 1;
+                s1 = s2;
+                this.xRichEitBox.Document.Selection.CharacterFormat.BackgroundColor = Colors.LightCyan;
+                this.xRichEitBox.Document.Selection.SetPoint(startPt, PointOptions.Start, true);
+            }
+        }
+        
+
+        string getHyperlinkText(int atPos, int s2)
         {
             this.xRichEitBox.Document.Selection.SetRange(atPos + 1, s2 - 1);
             string refText;
             this.xRichEitBox.Document.Selection.GetText(TextGetOptions.None, out refText);
-            if (refText.StartsWith("HYPERLINK"))
-            {
-                var link = refText.Substring("HYPERLINK".Length + 1, refText.Length - ("HYPERLINK".Length + 1)).Trim(' ', '\r');
-                if (!link.Contains(" ") && !link.Contains("\r"))
-                {
-                    refText = refText.Split('\"')[2].Trim(' ', '\r');
-                }
-            }
 
             return refText;
         }
 
-        int FindPreviousHyperlinkStartMarker(string allText, int s1)
+        int findPreviousHyperlinkStartMarker(string allText, int s1)
         {
             this.xRichEitBox.Document.Selection.SetRange(0, allText.Length);
             var atPos = -1;
@@ -232,13 +234,14 @@ namespace Dash
         }
 
         int LastS1 = 0, LastS2 = 0;
-        private void xRichEitBox_SelectionChanged_1(object sender, RoutedEventArgs e)
+        void xRichEitBox_SelectionChanged_1(object sender, RoutedEventArgs e)
         {
             var s1 = this.xRichEitBox.Document.Selection.StartPosition;
             var s2 = this.xRichEitBox.Document.Selection.EndPosition;
-            if (LastS1 != s1 || LastS2 != s2)
+            if (LastS1 != s1 || LastS2 != s2)  // test if the selection has actually changed... seem to get in here when nothing has happened perhaps because of losing focus?
             {
-                // if the selection has actually changed, then see if there's a Document hyperlink
+                // If there's a Document hyperlink in the selection, then follow it.  This is a hack because
+                // I don't seem to be able to get direct access to the hyperlink events in the rich edit box.
                 if (this.xRichEitBox.Document.Selection.Link.Length > 1)
                 {
                     var target = this.xRichEitBox.Document.Selection.Link.Split('\"')[1];
@@ -263,17 +266,7 @@ namespace Dash
                         }
                         else
                         {
-                            var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
-                            WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
-                            WebDoc.SetField(DBTest.WebUrlKey, new TextFieldModelController(target), true);
-                            WebDoc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
-                                new TextFieldModelController[] { new TextFieldModelController(DBTest.WebUrlKey.Id) }), true);
-
-                            var webLayout = new WebBox(new ReferenceFieldModelController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
-                            webLayout.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-                            webLayout.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
-                            webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                            WebDoc.SetActiveLayout(webLayout, forceMask: true, addToLayoutList: true);
+                            var WebDoc = DBTest.CreateWebPage(target);
                             var pt = this.TransformToVisual(MainPage.Instance).TransformPoint(new Point());
                             pt.X -= 150;
                             pt.Y -= 50;
