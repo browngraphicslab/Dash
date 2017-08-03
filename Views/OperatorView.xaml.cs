@@ -64,9 +64,9 @@ namespace Dash
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            var view = this.GetFirstAncestorOfType<CollectionView>();
-            (view.CurrentView as CollectionFreeformView).CanLink = true;
-            (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
+            var view = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            view.CanLink = true;
+            view.StartDrag(ioRef);
         }
 
 
@@ -100,9 +100,8 @@ namespace Dash
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
             var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            var view = this.GetFirstAncestorOfType<CollectionView>();
-            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
-
+            var view = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            view.EndDrag(ioRef);
         }
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)

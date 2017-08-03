@@ -45,21 +45,21 @@ namespace Dash
             var filter = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "filter");
             var compound = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "compound");
 
-            var arithmetics = new ObservableCollection<OperationCreationHelper.OperatorBuilder>
+            var arithmetics = new ObservableCollection<OperatorBuilder>
             {
                 divide
             };
-            var sets = new ObservableCollection<OperationCreationHelper.OperatorBuilder> {
+            var sets = new ObservableCollection<OperatorBuilder> {
                 union,
                 intersection,
                 filter
             };
-            var maps = new ObservableCollection<OperationCreationHelper.OperatorBuilder>
+            var maps = new ObservableCollection<OperatorBuilder>
             {
                 uriToImage,
                 map
             };
-            var all = new ObservableCollection<OperationCreationHelper.OperatorBuilder>
+            var all = new ObservableCollection<OperatorBuilder>
             {
                 divide,
                 union,

@@ -10,37 +10,39 @@
     d:DesignWidth="400">
 
     <Grid>
-        <local:CollectionFreeformView x:Name="xFreeFormEditor"/>
-        <ListView x:Name="xOperationListView" HorizontalAlignment="Stretch" VerticalAlignment="Bottom" 
-                  ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.IsHorizontalRailEnabled="True"
+        <local:CollectionFreeformView x:Name="xFreeFormEditor" AllowDrop="True" DragOver="XFreeFormEditor_OnDragOver" Drop="XFreeFormEditor_OnDrop"/>
+        <ListView x:Name="xOperationListView" HorizontalAlignment="Center" VerticalAlignment="Bottom" 
+                  FlowDirection="LeftToRight" 
+                  ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsHorizontalRailEnabled="True"
+                  ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.IsVerticalRailEnabled="False"
                   CanDragItems="True" DragItemsStarting="XOperationListView_OnDragItemsStarting"
                   IsItemClickEnabled="true" ItemClick="XOperationListView_OnItemClick"
-                  SelectionMode="Single">
+                  SelectionMode="Single" ItemsSource="{x:Bind _operatorList}" ManipulationMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <!--Make the list view items stretch to the full width of the list view-->
                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                     <Setter Property="Padding" Value="0"/>
                     <Setter Property="Margin" Value="0"/>
+                    <Setter Property="MinWidth" Value="0"/>
+                    <Setter Property="MinHeight" Value="0"/>
                 </Style>
             </ListView.ItemContainerStyle>
 
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
-                    <Grid Tapped="Grid_Tapped">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="90"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
-                        </ScrollViewer>
-                        <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Type}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
-                        </ScrollViewer>
-                        <Border Grid.Column="2" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
-                    </Grid>
+                <DataTemplate x:DataType="local:OperatorBuilder">
+                    <Border Height="50">
+                        <TextBlock Text="{x:Bind Icon}" Padding="0" Width="50"
+                                   TextAlignment="Center" VerticalAlignment="Center" 
+                                   SelectionHighlightColor="Transparent"/>
+                    </Border>
+                    
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

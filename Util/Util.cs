@@ -57,9 +57,9 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionDropPoint(CollectionView collection, Point absolutePosition)
+        public static Point GetCollectionDropPoint(CollectionFreeformView freeForm, Point absolutePosition)
         {
-            var freeForm = collection.CurrentView as CollectionFreeformView;
+            Debug.Assert(freeForm != null);
             if (freeForm != null)
             {
                 var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);

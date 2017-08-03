@@ -41,7 +41,7 @@ namespace Dash
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var where = Util.GetCollectionDropPoint(
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
             MainPage.Instance.DisplayDocument(opModel, where);
@@ -138,7 +138,7 @@ namespace Dash
         public static void AddCollection(CollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -207,14 +207,14 @@ namespace Dash
 
         public static void AddApiCreator(CollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             var a = new ApiDocumentModel().Document;
             DisplayDocument(collection, a, where);
         }
 
-        public static void AddDocuments(CollectionView col, DragEventArgs e)
+        public static void AddDocuments(CollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make second collection
             var numbers2 = new Numbers().Document;
@@ -234,14 +234,14 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
 
             //Display collections
-            DisplayDocument(col, col2, where);
+            DisplayDocument(collection, col2, where);
         }
 
-        public static void AddNotes(CollectionView col, DragEventArgs e)
+        public static void AddNotes(CollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            DisplayDocument(col, postitNote, where);
+            DisplayDocument(collection, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)
