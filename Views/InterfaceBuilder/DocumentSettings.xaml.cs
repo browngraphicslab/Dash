@@ -68,7 +68,7 @@ namespace Dash
 
             // listen to when the active layout changes
             var activeLayout = dataDocument.GetActiveLayout(context).Data;
-            dataDocument.AddFieldUpdatedListener(DashConstants.KeyStore.ActiveLayoutKey, DataDocument_DocumentFieldUpdated);
+            dataDocument.AddFieldUpdatedListener(KeyStore.ActiveLayoutKey, DataDocument_DocumentFieldUpdated);
             SetComboBoxSelectedItem(activeLayout);
 
             xActiveLayoutComboBox.SelectionChanged += XActiveLayoutComboBox_OnSelectionChanged;
@@ -158,8 +158,8 @@ namespace Dash
                 var delegateNewLayout = newLayout.MakeDelegate();
                 var defaultLayoutFields = CourtesyDocument.DefaultLayoutFields(dataDocPos, new Size(dataDocWidth, dataDocHeight));
 
-                defaultLayoutFields.Remove(DashConstants.KeyStore.WidthFieldKey);
-                defaultLayoutFields.Remove(DashConstants.KeyStore.HeightFieldKey);
+                defaultLayoutFields.Remove(KeyStore.WidthFieldKey);
+                defaultLayoutFields.Remove(KeyStore.HeightFieldKey);
 
                 delegateNewLayout.SetFields(defaultLayoutFields, true);
                 dataDocDelegate.SetActiveLayout(delegateNewLayout, true, false);

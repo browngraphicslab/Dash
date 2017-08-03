@@ -61,7 +61,7 @@ namespace Dash
         {
             string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
-            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            KeyController outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).CanLink = true;
@@ -107,7 +107,7 @@ namespace Dash
         {
             string docId = (DataContext as DocumentFieldReference).DocumentId;
             FrameworkElement el = sender as FrameworkElement;
-            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
+            KeyController outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>()/*, true*/);
             CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
             (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);

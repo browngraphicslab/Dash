@@ -20,20 +20,20 @@ namespace Dash
         /// </summary>
         /// <param name="newKey"></param>
         /// <returns></returns>
-        public async Task<Result<Key>> AddKey(Key newKey)
+        public async Task<Result<KeyController>> AddKey(KeyController newKey)
         {
             try
             {
                 HttpResponseMessage result = _connection.Post("api/Key", newKey);
-                Key resultk = await result.Content.ReadAsAsync<Key>();
+                KeyController resultk = await result.Content.ReadAsAsync<KeyController>();
 
                 // convert from server dto back to Key model controller
-                return new Result<Key>(true, resultk);
+                return new Result<KeyController>(true, resultk);
             }
             catch (ApiException e)
             {
                 // return the error message
-                return new Result<Key>(false, string.Join("\n", e.Errors));
+                return new Result<KeyController>(false, string.Join("\n", e.Errors));
             }
         }
 
@@ -42,39 +42,39 @@ namespace Dash
         /// </summary>
         /// <param name="KeyToUpdate"></param>
         /// <returns></returns>
-        public async Task<Result<Key>> UpdateKey(Key KeyToUpdate)
+        public async Task<Result<KeyController>> UpdateKey(KeyController KeyToUpdate)
         {
             try
             {
                 HttpResponseMessage result = _connection.Put("api/Key", KeyToUpdate);
-                Key resultk = await result.Content.ReadAsAsync<Key>();
+                KeyController resultk = await result.Content.ReadAsAsync<KeyController>();
 
-                return new Result<Key>(true, resultk);
+                return new Result<KeyController>(true, resultk);
             }
             catch (ApiException e)
             {
                 // return the error message
-                return new Result<Key>(false, string.Join("\n", e.Errors));
+                return new Result<KeyController>(false, string.Join("\n", e.Errors));
             }
         }
 
-        public async Task<Result<Key>> GetKey(string id)
+        public async Task<Result<KeyController>> GetKey(string id)
         {
             try
             {
-                Key Key = await _connection.GetItem<Key>($"api/Key/{id}");
-                return new Result<Key>(true, Key);
+                KeyController Key = await _connection.GetItem<KeyController>($"api/Key/{id}");
+                return new Result<KeyController>(true, Key);
             }
             catch (ApiException e)
             {
                 // return the error message
-                return new Result<Key>(false, string.Join("\n", e.Errors));
+                return new Result<KeyController>(false, string.Join("\n", e.Errors));
             }
         }
 
-        public Result DeleteKey(Key KeyToDelete)
+        public Result DeleteKey(KeyController KeyToDelete)
         {
-            string id = KeyToDelete.Id;
+            string id = KeyToDelete.GetId();
             try
             {
                 _connection.Delete($"api/Key/{id}");

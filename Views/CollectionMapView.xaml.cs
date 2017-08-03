@@ -23,7 +23,7 @@ namespace Dash
 {
     public sealed partial class CollectionMapView : UserControl
     {
-        private ObservableCollection<Key> _operatorKeys = new ObservableCollection<Key>();
+        private ObservableCollection<KeyController> _operatorKeys = new ObservableCollection<KeyController>();
 
         public CollectionMapView()
         {
@@ -83,7 +83,7 @@ namespace Dash
 
         private void AutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            var key = sender.DataContext as Key;
+            var key = sender.DataContext as KeyController;
             var coll = _operatorDoc.GetField(key).DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.GetDocuments();
             if (coll == null)
             {

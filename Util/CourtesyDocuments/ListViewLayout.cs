@@ -19,7 +19,7 @@ namespace Dash
     {
         private static string PrototypeId = "C512FC2E-CDD1-4E94-A98F-35A65E821C08";
         public static DocumentType DocumentType = new DocumentType("3E5C2739-A511-40FF-9B2E-A875901B296D", "ListView Layout");
-        public static Key SpacingKey = new Key("E89037A5-B7CC-4DD7-A89B-E15EDC69AF7C", "Spacing Key");
+        public static KeyController SpacingKey = new KeyController("E89037A5-B7CC-4DD7-A89B-E15EDC69AF7C", "Spacing Key");
         public static double DefaultSpacing = 30;
 
         public ListViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
@@ -134,7 +134,7 @@ namespace Dash
             docController.DocumentFieldUpdated += delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                if (args.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
                     LayoutDocuments(sender, c, listView, isInterfaceBuilderLayout);
                 }
@@ -167,7 +167,7 @@ namespace Dash
             Grid.SetColumn(dragEllipse, 1);
             grid.Children.Add(dragEllipse);
 
-            var referenceToText = new ReferenceFieldModelController(dataDocument.GetId(), DashConstants.KeyStore.DataKey);
+            var referenceToText = new ReferenceFieldModelController(dataDocument.GetId(), KeyStore.DataKey);
             BindOperationInteractions(dragEllipse, referenceToText.FieldReference.Resolve(context));            // TODO must test if this actually works I feel like it doesn't lol
             */ 
             return grid;
@@ -199,7 +199,7 @@ namespace Dash
         private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.DataKey)?
+            return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
         }
     }

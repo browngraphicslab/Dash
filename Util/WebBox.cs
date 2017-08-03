@@ -27,7 +27,7 @@ namespace Dash
         }
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
-            var data = controller.GetField(DashConstants.KeyStore.DataKey);
+            var data = controller.GetField(KeyStore.DataKey);
             if (data is ReferenceFieldModelController)
             {
                 var reference = data as ReferenceFieldModelController;
@@ -42,9 +42,9 @@ namespace Dash
                         BindTextSource(element, sender, args.Context, reference.FieldKey);
                     });
             }
-            BindTextSource(element, controller, context, DashConstants.KeyStore.DataKey);
+            BindTextSource(element, controller, context, KeyStore.DataKey);
         }
-        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, Key key)
+        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, KeyController key)
         {
             var data = docController.GetDereferencedField(key, context);
             if (data == null)
@@ -74,7 +74,7 @@ namespace Dash
 
             ///* 
             ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<Key, FieldModelController>(), TextingBox.DocumentType)), out refToData);
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
 
             var textfieldModelController = fieldModelController as TextFieldModelController;
             Debug.Assert(textfieldModelController != null);
