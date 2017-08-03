@@ -46,53 +46,23 @@ namespace Dash
 
         private void InitializeClip(RectFieldModelController clipController)
         {
-            var xPosBinding = new Binding
-            {
-                Source = clipController.Data,
-                Path = new PropertyPath("X"),
-                Converter = new DoubleToStringConverter()
-            }; 
-            xClipXTextBox.SetBinding(TextBox.TextProperty, xPosBinding);
-
-            var yPosBinding = new Binding
-            {
-                Source = clipController.Data,
-                Path = new PropertyPath("Y"),
-                Converter = new DoubleToStringConverter()
-            };
-            xClipYTextBox.SetBinding(TextBox.TextProperty, yPosBinding);
-
-            var widthBinding = new Binding
-            {
-                Source = clipController.Data,
-                Path = new PropertyPath("Width"),
-                Converter = new DoubleToStringConverter()
-            };
-            xClipWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
-
-            var heightBinding = new Binding
-            {
-                Source = clipController.Data,
-                Path = new PropertyPath("Height"),
-                Converter = new DoubleToStringConverter()
-            };
-            xClipHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
-
-            //UpdateTextBoxes(clipController);
-            //clipController.FieldModelUpdated += (ss, args, cc) =>
-            //{
-            //    UpdateTextBoxes(clipController);
-            //};
+            ClipBindingHelper(xClipXTextBox, "X", clipController.Data);
+            ClipBindingHelper(xClipYTextBox, "Y", clipController.Data);
+            ClipBindingHelper(xClipWidthTextBox, "Width", clipController.Data);
+            ClipBindingHelper(xClipHeightTextBox, "Height", clipController.Data);
         }
 
-        //private void UpdateTextBoxes(RectFieldModelController clipController)
-        //{
-        //    xClipXTextBox.Text = "" + clipController.Data.X;
-        //    xClipYTextBox.Text = "" + clipController.Data.Y;
-        //    xClipWidthTextBox.Text = "" + clipController.Data.Width;
-        //    xClipHeightTextBox.Text = "" + clipController.Data.Height;
-        //}
-
+        private void ClipBindingHelper(TextBox tb, string path, Rect clipRect)
+        {
+            var binding = new Binding
+            {
+                Source = clipRect,
+                Path = new PropertyPath(path),
+                Converter = new DoubleToStringConverter()
+            };
+            tb.SetBinding(TextBox.TextProperty, binding);
+        }
+        
         private RectFieldModelController ClipController()
         {
             return _documentController.GetDereferencedField(ImageBox.ClipKey, _context) as RectFieldModelController;
