@@ -107,7 +107,7 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(o, e);
         }
 
-        public static void AddOperator(object obj)
+        public static void AddOperator(Func<DocumentController> documentCreationFunc)
         {
             var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
 
@@ -121,11 +121,10 @@ namespace Dash
             Debug.Assert(transform != null);
             var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
 
-            var opCreator = obj as KeyValuePair<string, object>? ?? new KeyValuePair<string, object>();
-            var opController = (opCreator.Value as Func<DocumentController>)?.Invoke();
+            var opController = documentCreationFunc?.Invoke();
 
             // using this as a setter for the transform massive hack - LM
-            var opvm = new DocumentViewModel(opController)
+            var _ = new DocumentViewModel(opController)
             {
                 GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
             };
