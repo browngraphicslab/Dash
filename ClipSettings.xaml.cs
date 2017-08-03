@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Converters;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -45,20 +46,52 @@ namespace Dash
 
         private void InitializeClip(RectFieldModelController clipController)
         {
-            UpdateTextBoxes(clipController);
-            clipController.FieldModelUpdated += (ss, args, cc) =>
+            var xPosBinding = new Binding
             {
-                UpdateTextBoxes(clipController);
+                Source = clipController.Data,
+                Path = new PropertyPath("X"),
+                Converter = new DoubleToStringConverter()
+            }; 
+            xClipXTextBox.SetBinding(TextBox.TextProperty, xPosBinding);
+
+            var yPosBinding = new Binding
+            {
+                Source = clipController.Data,
+                Path = new PropertyPath("Y"),
+                Converter = new DoubleToStringConverter()
             };
+            xClipYTextBox.SetBinding(TextBox.TextProperty, yPosBinding);
+
+            var widthBinding = new Binding
+            {
+                Source = clipController.Data,
+                Path = new PropertyPath("Width"),
+                Converter = new DoubleToStringConverter()
+            };
+            xClipWidthTextBox.SetBinding(TextBox.TextProperty, widthBinding);
+
+            var heightBinding = new Binding
+            {
+                Source = clipController.Data,
+                Path = new PropertyPath("Height"),
+                Converter = new DoubleToStringConverter()
+            };
+            xClipHeightTextBox.SetBinding(TextBox.TextProperty, heightBinding);
+
+            //UpdateTextBoxes(clipController);
+            //clipController.FieldModelUpdated += (ss, args, cc) =>
+            //{
+            //    UpdateTextBoxes(clipController);
+            //};
         }
 
-        private void UpdateTextBoxes(RectFieldModelController clipController)
-        {
-            xClipXTextBox.Text = "" + clipController.Data.X;
-            xClipYTextBox.Text = "" + clipController.Data.Y;
-            xClipWidthTextBox.Text = "" + clipController.Data.Width;
-            xClipHeightTextBox.Text = "" + clipController.Data.Height;
-        }
+        //private void UpdateTextBoxes(RectFieldModelController clipController)
+        //{
+        //    xClipXTextBox.Text = "" + clipController.Data.X;
+        //    xClipYTextBox.Text = "" + clipController.Data.Y;
+        //    xClipWidthTextBox.Text = "" + clipController.Data.Width;
+        //    xClipHeightTextBox.Text = "" + clipController.Data.Height;
+        //}
 
         private RectFieldModelController ClipController()
         {
