@@ -87,7 +87,7 @@ namespace Dash
                 var itemsBinding = new Binding()
                 {
                     Source = vm,
-                    Path = new PropertyPath(nameof(vm.DataBindingSource)),
+                    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
                     Mode = BindingMode.OneWay
                 };
                 xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);

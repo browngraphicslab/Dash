@@ -9,45 +9,55 @@ namespace Dash
 {
     public class FreeFormCollectionViewModel : ViewModelBase, IFreeFormCollectionViewModel
     {
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
+        private ObservableCollection<DocumentViewModel> _documentViewModels;
 
         public bool IsInterfaceBuilder { get; set; }
-        public ObservableCollection<DocumentViewModel> DataBindingSource
+        public ObservableCollection<DocumentViewModel> DocumentViewModels
         {
-            get { return _dataBindingSource; }
-            set { SetProperty(ref _dataBindingSource, value); }
+            get { return _documentViewModels; }
+            set { SetProperty(ref _documentViewModels, value); }
         }
 
         public FreeFormCollectionViewModel(bool isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
-            DataBindingSource = new ObservableCollection<DocumentViewModel>();
+            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
         }
 
 
-        public void AddViewModels(List<DocumentController> documents, Context context)
+        public void AddDocuments(List<DocumentController> documents, Context context)
         {
             foreach (var docController in documents)
             {
                 var docVm = new DocumentViewModel(docController, IsInterfaceBuilder);
-                DataBindingSource.Add(docVm);
+                DocumentViewModels.Add(docVm);
             }
         }
 
-        public void RemoveViewModels(List<DocumentController> documents)
+        public void AddDocument(DocumentController document, Context context)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveDocuments(List<DocumentController> documents)
         {
             var docsToRemove = new HashSet<string>(documents.Select(doc => doc.GetId()).ToList());
 
             foreach (var id in docsToRemove)
             {
-                var vmToRemove = DataBindingSource.FirstOrDefault(vm => vm.DocumentController.GetId() == id);
+                var vmToRemove = DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == id);
                 if (vmToRemove != null)
                 {
-                    DataBindingSource.Remove(vmToRemove);
+                    DocumentViewModels.Remove(vmToRemove);
                 }
 
             }
 
+        }
+
+        public void RemoveDocument(DocumentController document)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -19,7 +19,7 @@
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
         <ItemsControl x:Name="xItemsControl" 
                               x:FieldModifier="public" 
-                              ItemsSource="{Binding DataBindingSource}">
+                              ItemsSource="{Binding DocumentViewModels}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas x:Name="CollectionCanvas" 

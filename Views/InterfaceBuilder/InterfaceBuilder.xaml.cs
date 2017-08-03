@@ -50,7 +50,7 @@ namespace Dash
             xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
             var freeFormView = new FreeFormCollectionViewModel(true);
             xDocumentPane.DataContext = freeFormView;
-            freeFormView.AddViewModels(new List<DocumentController>{ docController }, null);
+            freeFormView.AddDocuments(new List<DocumentController>{ docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 

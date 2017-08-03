@@ -7,9 +7,11 @@ namespace Dash
     {
         bool IsInterfaceBuilder { get; set; }
 
-        ObservableCollection<DocumentViewModel> DataBindingSource { get; set; }
+        ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
-        void AddViewModels(List<DocumentController> documents, Context context);
-        void RemoveViewModels(List<DocumentController> documents);
+        void AddDocuments(List<DocumentController> documents, Context context);
+        void AddDocument(DocumentController document, Context context);
+        void RemoveDocuments(List<DocumentController> documents);
+        void RemoveDocument(DocumentController document);
     }
 }

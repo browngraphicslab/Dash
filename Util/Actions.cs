@@ -131,7 +131,7 @@ namespace Dash
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.AddDocument(opController);
+                OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
             }
         }
         
@@ -188,21 +188,20 @@ namespace Dash
         /// <summary>
         ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
         /// </summary>
-        /// <param name="docModel"></param>
+        /// <param name="docController"></param>
         /// <param name="where"></param>
         /// <param name="collection"></param>
-        public static void DisplayDocument(CollectionView collection, DocumentController docModel, Point? where = null)
+        public static void DisplayDocument(CollectionView collection, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
-                var h = docModel.GetHeightField().Data; 
-                var w = docModel.GetWidthField().Data;
+                var h = docController.GetHeightField().Data; 
+                var w = docController.GetWidthField().Data;
 
                 var pos = (Point)where;
-                docModel.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
+                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
-            var children = collection.ViewModel.CollectionFieldModelController;
-            children?.AddDocument(docModel);
+            collection.ViewModel.AddDocument(docController, null); 
         }
 
         public static void AddApiCreator(CollectionView collection, DragEventArgs e)

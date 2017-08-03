@@ -385,12 +385,12 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.Copy());
+            ParentCollection.ViewModel.AddDocument(ViewModel.Copy(), null);
         }
 
         private void MakeDelegate()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
+            ParentCollection.ViewModel.AddDocument(ViewModel.GetDelegate(), null);
         }
 
         public void ScreenCap()
@@ -417,7 +417,7 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
+            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)

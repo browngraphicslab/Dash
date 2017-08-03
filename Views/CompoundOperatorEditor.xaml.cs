@@ -83,7 +83,7 @@ namespace Dash
 
                 opDoc.GetPositionField(null).Data = new Point(pos.X, pos.Y);
 
-                _freeFormCollectionViewModel.AddViewModels(new List<DocumentController>{opDoc}, null);
+                _freeFormCollectionViewModel.AddDocuments(new List<DocumentController>{opDoc}, null);
 
 
             }

@@ -162,11 +162,9 @@ namespace Dash
         private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
         {
             var docControllers = docViewModels.Select(item => item.DocumentController);
-            var controller = ViewModel.CollectionFieldModelController;
-            if (controller == null) return;
             foreach (var item in docControllers)
-                if (add) controller.AddDocument(item);
-                else controller.RemoveDocument(item);
+                if (add) ViewModel.AddDocument(item, null);
+                else ViewModel.RemoveDocument(item);
         }
 
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
@@ -210,12 +208,12 @@ namespace Dash
             if (isGridView != null)
             {
                 isGridView.xGridView.ItemsSource = null;
-                isGridView.xGridView.ItemsSource = ViewModel.DataBindingSource;
+                isGridView.xGridView.ItemsSource = ViewModel.DocumentViewModels;
             }
             else if (isListView != null)
             {
                 isListView.HListView.ItemsSource = null;
-                isListView.HListView.ItemsSource = ViewModel.DataBindingSource;
+                isListView.HListView.ItemsSource = ViewModel.DocumentViewModels;
             }
         }
 
@@ -270,7 +268,7 @@ namespace Dash
             if (view != null)
             {
                 var gridView = view.xGridView;
-                if (gridView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
+                if (gridView.SelectedItems.Count != ViewModel.DocumentViewModels.Count)
                     gridView.SelectAll();
                 else gridView.SelectedItems.Clear();
             }
@@ -278,7 +276,7 @@ namespace Dash
             if (currentView != null)
             {
                 var listView = currentView.HListView;
-                if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
+                if (listView.SelectedItems.Count != ViewModel.DocumentViewModels.Count)
                     listView.SelectAll();
                 else
                     listView.SelectedItems.Clear();
