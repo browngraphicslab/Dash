@@ -41,6 +41,7 @@ namespace Dash
                 if (prototype == null)
                 {
                     prototype = CreatePrototype(); // TODO should this be CreatePrototypeLayout ..?
+                    prototype.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(prototype), true);
                 }
                 return prototype;
             }
@@ -58,7 +59,7 @@ namespace Dash
 
                 var fields = new Dictionary<Key, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
-                fields.Add(RTFieldKey, new RichTextFieldModelController("Prototype Content"));
+                fields.Add(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Prototype Content")));
                 fields.Add(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
                     new TextFieldModelController[] { new TextFieldModelController(TitleKey.Id) }));
                 return new DocumentController(fields, Type, _prototypeID);
@@ -85,7 +86,8 @@ namespace Dash
 
                 Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
-                Document.SetField(RTFieldKey, new RichTextFieldModelController("Something to fill this space?"), true);
+                Document.SetField(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Something to fill this space?")), true);
+                Document.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
@@ -165,6 +167,7 @@ namespace Dash
 
                 Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(NotesFieldKey, new TextFieldModelController("Write something amazing!"), true);
+                Document.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
                 docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);

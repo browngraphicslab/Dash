@@ -15,13 +15,13 @@ namespace Dash
     public class RichTextFieldModelController: FieldModelController
     {
         public RichTextFieldModelController(): base(new RichTextFieldModel()) { }
-        public RichTextFieldModelController(string data):base(new RichTextFieldModel(data)) { }
+        public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data)) { }
         /// <summary>
         /// The <see cref="RichTextFieldModel"/> associated with this <see cref="RichTextFieldModelController"/>
         /// </summary>
         public RichTextFieldModel RichTextFieldModel => FieldModel as RichTextFieldModel;
 
-        public string RichTextData
+        public RichTextFieldModel.RTD RichTextData
         {
             get { return RichTextFieldModel.Data; }
             set
@@ -45,6 +45,21 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
 
+        public override IEnumerable<DocumentController> GetReferences()
+        {
+            var links = RichTextData.RtfFormatString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var link in links)
+            {
+                var split = link.Split('\"');
+                if (split.Count() > 1)
+                {
+                    var doc = ContentController.GetController<DocumentController>(split[1]);
+                    if (doc != null)
+                        yield return doc;
+                }
+            }
+        }
+
         public override FrameworkElement GetTableCellView()
         {
             var richTextView = new RichTextView(this, null, null)
@@ -58,12 +73,12 @@ namespace Dash
 
         public override FieldModelController GetDefaultController()
         {
-            return new RichTextFieldModelController("Default Value");
+            return new RichTextFieldModelController(new RichTextFieldModel.RTD("Default Value"));
         }
 
         public override string ToString()
         {
-            return RichTextData;
+            return RichTextData.ReadableString;
         }
 
         public override FieldModelController Copy()

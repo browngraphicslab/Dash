@@ -221,6 +221,23 @@ namespace Dash
             dataDocument.SetActiveLayout(layoutDoc, forceMask: forceMask, addToLayoutList: addToLayoutList);
         }
         public List<DocumentController> Documents = new List<DocumentController>();
+
+        public static DocumentController CreateWebPage(string target)
+        {
+            var WebDoc = DBTest.PrototypeWeb.MakeDelegate();
+            WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
+            WebDoc.SetField(DBTest.WebUrlKey, new TextFieldModelController(target), true);
+            WebDoc.SetField(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                new TextFieldModelController[] { new TextFieldModelController(DBTest.WebUrlKey.Id) }), true);
+
+            var webLayout = new WebBox(new ReferenceFieldModelController(WebDoc.GetId(), DBTest.WebUrlKey), 0, 0, 200, 50).Document;
+            webLayout.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+            webLayout.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(800), true);
+            webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            WebDoc.SetActiveLayout(webLayout, forceMask: true, addToLayoutList: true);
+            return WebDoc;
+        }
+
         public DBTest()
         {
             
@@ -231,7 +248,6 @@ namespace Dash
             var game2Doc = PrototypeGame.MakeDelegate();
             var game3Doc = PrototypeGame.MakeDelegate();
             var Ass1Doc = PrototypeAssign.MakeDelegate();
-            var WebDoc = PrototypeWeb.MakeDelegate();
 
 
             {
@@ -333,12 +349,7 @@ namespace Dash
                 Documents.Add(game3Doc);
             }
             {
-                WebDoc.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(WebDoc), true);
-                WebDoc.SetField(WebUrlKey, new TextFieldModelController("http://www.msn.com"), true);
-                var webLayout = PrototypeWebLayout.MakeDelegate();
-                webLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-                SetLayoutForDocument(WebDoc, webLayout, forceMask: true, addToLayoutList: true);
-                Documents.Add(WebDoc);
+                Documents.Add(CreateWebPage("http://www.msn.com"));
             }
 
             DBDoc.SetField(DashConstants.KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);

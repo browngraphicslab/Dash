@@ -203,6 +203,7 @@ namespace Dash
             } else if (fieldModelController is DocumentFieldModelController)
             {
                 layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+                //layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
             else if (fieldModelController is RichTextFieldModelController)
             {

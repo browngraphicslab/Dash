@@ -8,6 +8,7 @@ using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -67,6 +68,10 @@ namespace Dash
             return FieldModel.Id;
         }
 
+        public virtual IEnumerable<DocumentController> GetReferences()
+        {
+            return new List<DocumentController>();
+        }
         public virtual FieldModelController Dereference(Context context)
         {
             return this;
