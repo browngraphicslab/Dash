@@ -119,6 +119,9 @@
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\EditableImage.xaml.cs">
+      <DependentUpon>EditableImage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
@@ -494,6 +497,10 @@
     <Page Include="Sources\Api\XAML Elements\ApiProperty.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Util\EditableImage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\ApiOpView.xaml">
       <SubType>Designer</SubType>

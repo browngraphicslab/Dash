@@ -62,13 +62,8 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
-            var image = new Image
-            {
-                Stretch = Stretch.Fill,// set image to fill container but ignore aspect ratio :/
-                CacheMode = new BitmapCache(),
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
-            };
+            var editableImage = new EditableImage();
+            var image = editableImage.Image;
 
             SetupBindings(image, docController, context);
 
@@ -80,11 +75,11 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(image, docController);
+                var selectableContainer = new SelectableContainer(editableImage.xImageGrid, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
-            return image;
+            return editableImage.xImageGrid;
         }
 
         protected static void SetupImageBinding(Image image, DocumentController controller,
