@@ -52,7 +52,6 @@ namespace Dash
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
@@ -68,7 +67,6 @@ namespace Dash
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
-            Tapped -= OnTapped;
             DoubleTapped -= ExpandContract_DoubleTapped;
             Loaded -= This_Loaded;
             Unloaded -= This_Unloaded;
@@ -309,7 +307,6 @@ namespace Dash
                 xIcon.Visibility = Visibility.Visible;
                 xBorder.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 0;
-                Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true); 
             }
@@ -319,7 +316,6 @@ namespace Dash
                 xIcon.Visibility = Visibility.Collapsed;
                 xBorder.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 1;
-                Tapped += OnTapped;
                 UpdateBinding(false);
             }
         }
@@ -343,34 +339,11 @@ namespace Dash
             {
                 Resize(300, 300);
 
-            }/*
-            else
-            {
-                Height = MinWidth;
-                Width = MinHeight;
-
-                var dvm = DataContext as DocumentViewModel;
-                dvm.Width = MinWidth;
-                dvm.Height = MinHeight;
             }
-            */
             e.Handled = true; // prevent propagating
         }
 
         #region Menu
-
-
-
-        public void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (ViewModel.IsInInterfaceBuilder)
-            {
-                return;
-            }
-
-            OnSelected();
-            e.Handled = true;
-        }
 
         public void DeleteDocument()
         {
@@ -400,13 +373,6 @@ namespace Dash
         public void GetJson()
         {
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
-        }
-
-        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (ParentCollection == null) return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
         }
 
         private void FadeOut_Completed(object sender, object e)
@@ -464,13 +430,30 @@ namespace Dash
 
         #region Activation
 
+        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            if (ParentCollection == null) return;
+            ParentCollection.MaxZ += 1;
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+
+            if (ViewModel.IsInInterfaceBuilder)
+            {
+                return;
+            }
+
+            OnSelected();
+            e.Handled = true;
+        }
+
         protected override void OnActivated(bool isSelected)
         {
-
+            ViewModel.SetSelected(this, isSelected);
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
                 ViewModel?.OpenMenu();
             else

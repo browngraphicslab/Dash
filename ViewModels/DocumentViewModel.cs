@@ -13,7 +13,7 @@ namespace Dash
 {
     public enum IconTypeEnum { Document, Collection, Api } // on super-collapse, what icon is displayed?
 
-    public class DocumentViewModel : ViewModelBase
+    public class DocumentViewModel : BaseSelectionElementViewModel
     {
 
         public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);

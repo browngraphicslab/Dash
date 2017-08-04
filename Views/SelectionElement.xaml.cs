@@ -86,7 +86,7 @@ namespace Dash
                 CurrentSelectedElement?.Deactivate();
 
                 // then set up our ancestors
-                ParentSelectionElement.SetAsAncestorOfSelected(this);
+                ParentSelectionElement?.SetAsAncestorOfSelected(this);
 
                 // finally set up our child
                 ParentSelectionElement?.SetCurrentlySelectedElement(this);
