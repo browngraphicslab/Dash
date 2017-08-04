@@ -20,15 +20,15 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : SelectionElement, ICollectionView
     {
-        public ICollectionViewModel ViewModel { get; private set; }
+        public BaseCollectionViewModel ViewModel { get; private set; }
 
-        public CollectionGridView(ICollectionViewModel viewModel)
+        public CollectionGridView(BaseCollectionViewModel viewModel)
         {
             ViewModel = viewModel;
             this.InitializeComponent();
             xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
             xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-            xGridView.SelectionChanged += XGridView_SelectionChanged;
+            xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
             this.Unloaded += CollectionGridView_Unloaded;
         }
 
@@ -36,29 +36,15 @@ namespace Dash
         {
             xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
             xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-            xGridView.SelectionChanged -= XGridView_SelectionChanged;
+            xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
             this.Unloaded -= CollectionGridView_Unloaded;
         }
 
         #region ItemSelection
 
-        private void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ViewModel.SelectionGroup.Clear();
-            ViewModel.SelectionGroup.AddRange(xGridView.SelectedItems.Cast<DocumentViewModel>());
-        }
-
         public void ToggleSelectAllItems()
         {
-            var isAllItemsSelected = xGridView.SelectedItems.Count == ViewModel.DocumentViewModels.Count;
-            if (!isAllItemsSelected)
-            {
-                xGridView.SelectAll();
-            }
-            else
-            {
-                xGridView.SelectedItems.Clear();
-            }
+            ViewModel.ToggleSelectAllItems(xGridView);
         }
 
         #endregion

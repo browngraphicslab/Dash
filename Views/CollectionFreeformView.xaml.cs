@@ -34,7 +34,7 @@ namespace Dash
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
-        public ICollectionViewModel ViewModel { get; private set; }
+        public BaseCollectionViewModel ViewModel { get; private set; }
 
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -85,7 +85,7 @@ namespace Dash
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as ICollectionViewModel;
+            var vm = DataContext as BaseCollectionViewModel;
 
             if (vm != null)
             {

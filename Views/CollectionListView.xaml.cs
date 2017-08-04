@@ -20,15 +20,15 @@ namespace Dash
 {
     public sealed partial class CollectionListView : SelectionElement, ICollectionView
     {
-        public ICollectionViewModel ViewModel { get; private set; }
+        public BaseCollectionViewModel ViewModel { get; private set; }
 
-        public CollectionListView(ICollectionViewModel viewModel)
+        public CollectionListView(BaseCollectionViewModel viewModel)
         {
             ViewModel = viewModel;
             this.InitializeComponent();
             xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
             xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-            xListView.SelectionChanged += XListView_SelectionChanged;
+            xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
             this.Unloaded += CollectionListView_Unloaded;
         }
 
@@ -36,30 +36,17 @@ namespace Dash
         {
             xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
             xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-            xListView.SelectionChanged -= XListView_SelectionChanged;
+            xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
             this.Unloaded -= CollectionListView_Unloaded;
         }
 
         #region ItemSelection
 
-        private void XListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {          
-            ViewModel.SelectionGroup.Clear();
-            ViewModel.SelectionGroup.AddRange(xListView.SelectedItems.Cast<DocumentViewModel>());
-        }
-
         public void ToggleSelectAllItems()
         {
-            var isAllItemsSelected = xListView.SelectedItems.Count == ViewModel.DocumentViewModels.Count;
-            if (!isAllItemsSelected)
-            {
-                xListView.SelectAll();
-            }
-            else
-            {
-                xListView.SelectedItems.Clear();
-            }
+            ViewModel.ToggleSelectAllItems(xListView);
         }
+
 
         #endregion
 
