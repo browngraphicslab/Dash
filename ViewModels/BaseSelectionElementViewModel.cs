@@ -36,15 +36,15 @@ namespace Dash
             }
         }
 
+        //  This has to be public but should only be called by views who have this instance as their DataContext
         public void SetSelected(FrameworkElement setter, bool isSelected)
         {
-            Debug.Assert(ReferenceEquals(setter.DataContext, this), "selection should only be set by the views which have this as a datacontext");
             IsSelected = isSelected;
         }
 
+        //  This has to be public but should only be called by views who have this instance as their DataContext
         public void SetLowestSelected(FrameworkElement setter, bool isLowestSelected)
         {
-            Debug.Assert(ReferenceEquals(setter.DataContext, this), "selection should only be set by the views which have this as a datacontext");
             IsLowestSelected = isLowestSelected;
         }
     }

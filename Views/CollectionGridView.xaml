@@ -8,20 +8,19 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
-    <Grid x:Name="Grid">
+    <Grid x:Name="Grid"
+          PointerPressed="OnPointerPressed"
+          AllowDrop="True"
+          DragOver="CollectionViewOnDragOver"
+          Drop="CollectionViewOnDrop"
+          Background="Transparent"
+          >
         <GridView x:Name="xGridView"
-                  x:FieldModifier="public"
                   ItemsSource="{Binding DocumentViewModels}"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  ScrollViewer.VerticalScrollMode="Enabled"
-                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
                   CanDragItems="{Binding CanDragItems}"
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
-                  AllowDrop="True"
-                  DragOver="CollectionViewOnDragOver"
-                  Drop="CollectionViewOnDrop"
-                  Tapped="OnTapped" Style="{StaticResource xCollectionGridViewStyle}">
+                  IsHitTestVisible="{Binding IsSelected}"
+                  Style="{StaticResource xCollectionGridViewStyle}">
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"

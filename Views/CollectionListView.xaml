@@ -8,24 +8,19 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
-    <Grid x:Name="Grid">
+    <Grid x:Name="Grid"
+          AllowDrop="True"
+          DragOver="CollectionViewOnDragOver"
+          Drop="CollectionViewOnDrop"
+          PointerPressed="OnPointerPressed"
+          Background="Transparent"
+          >
         <ListView x:Name="HListView"
-                  x:FieldModifier="public"
                   ItemsSource="{Binding DocumentViewModels}"
-                  FlowDirection="LeftToRight"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  ScrollViewer.HorizontalScrollMode="Enabled"
-                  ScrollViewer.VerticalScrollMode="Disabled"
-                  ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
                   CanDragItems="{Binding CanDragItems}"
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
-                  AllowDrop="True"
-                  DragOver="CollectionViewOnDragOver"
-                  Drop="CollectionViewOnDrop"
-                  Tapped="OnTapped"
-                  Style="{StaticResource ListViewStyle_SelectionEdit}">
+                  IsHitTestVisible="{Binding IsSelected}"
+                  Style="{StaticResource xCollectionListViewStyle}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />

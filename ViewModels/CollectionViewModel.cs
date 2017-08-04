@@ -55,6 +55,7 @@ namespace Dash
                         copiedContext);
                 };
             }
+            CellSize = 250; // TODO figure out where this should be set
         }
 
 

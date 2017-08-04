@@ -70,13 +70,13 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
 
             OnSelected();
-            e.Handled = true;
         }
 
         #endregion
