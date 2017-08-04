@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
     <Grid x:Name="Grid"
-          PointerPressed="OnPointerPressed"
+          Tapped="OnTapped"
           AllowDrop="True"
           DragOver="CollectionViewOnDragOver"
           Drop="CollectionViewOnDrop"

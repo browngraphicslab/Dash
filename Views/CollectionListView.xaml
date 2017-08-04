@@ -12,7 +12,7 @@
           AllowDrop="True"
           DragOver="CollectionViewOnDragOver"
           Drop="CollectionViewOnDrop"
-          PointerPressed="OnPointerPressed"
+          Tapped="OnTapped"
           Background="Transparent"
           >
         <ListView x:Name="HListView"

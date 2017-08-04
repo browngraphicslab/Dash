@@ -435,14 +435,16 @@ namespace Dash
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+        }
 
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
             if (ViewModel.IsInInterfaceBuilder)
-            {
                 return;
-            }
 
             OnSelected();
-            e.Handled = true;
+
         }
 
         protected override void OnActivated(bool isSelected)

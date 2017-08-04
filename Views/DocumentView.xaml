@@ -11,6 +11,7 @@
     Width="{Binding WidthBinding, Converter={StaticResource WidthBindingToDoubleConverter}}"
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
+    Tapped="OnTapped"
     PointerWheelChanged="This_PointerWheelChanged"
     ManipulationMode="{Binding ManipulationMode}"
     >

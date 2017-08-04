@@ -537,7 +537,7 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
         }
 
-        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)

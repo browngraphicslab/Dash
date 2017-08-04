@@ -19,7 +19,7 @@
           AllowDrop="True"
           DragOver="CollectionViewOnDragOver"
           Drop="CollectionViewOnDrop"
-          PointerPressed="OnPointerPressed">
+          Tapped="OnTapped">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
