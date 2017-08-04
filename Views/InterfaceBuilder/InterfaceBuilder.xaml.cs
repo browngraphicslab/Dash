@@ -41,6 +41,9 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
+
+            xLayoutNamePanel.PointerEntered += (s,e) => xLayoutTextBox.IsTabStop = true;
+            xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
 
         /// <summary>

@@ -96,8 +96,8 @@
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\DoubleToStringConverter.cs" />
     <Compile Include="Controllers\KeyController.cs" />
-    <Compile Include="Controllers\Operators\CompoundOperator.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />

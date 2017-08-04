@@ -135,9 +135,12 @@ namespace Dash
             if (clipController == null)  return;
             Debug.Assert(widthController != null);
             Debug.Assert(heightController != null);
-            //Debug.WriteLine(clipController.Data.Width + ", " + clipController.Data.Height);
+
             UpdateClip(image, clipController.Data);
             AddClipBindingEvents(clipController, widthController, heightController, image);
+
+            // fixes vertical and horizontal stretch problems 
+            image.SizeChanged += (s, e) => UpdateClip(image, clipController.Data);
         }
 
         private static void AddClipBindingEvents(RectFieldModelController clipController, 
@@ -157,15 +160,19 @@ namespace Dash
             };
         }
 
-        private static void UpdateClip(Image image, Rect data)
+        public static void UpdateClip(Image image, Rect data)
         {
             Debug.Assert(image != null);
+            double width = image.ActualWidth;
+            double height = image.ActualHeight;
+            if (width <= 0) width = image.Width;
+            if (height <= 0) height = image.Height; 
             image.Clip = new RectangleGeometry
             {
-                Rect = new Rect(data.X * image.Width / 100, 
-                                data.Y * image.Height / 100, 
-                                data.Width * image.Width / 100, 
-                                data.Height * image.Height / 100)
+                Rect = new Rect(data.X * width / 100,
+                                data.Y * height / 100,
+                                data.Width * width / 100,
+                                data.Height * height / 100)
             };
         }
 
