@@ -57,13 +57,14 @@ namespace Dash
             return MakeView(docController, context);
         }
 
+        private static EditableImage _editableImage; 
 
         public static FrameworkElement MakeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
-            var editableImage = new EditableImage();
-            var image = editableImage.Image;
+            _editableImage = new EditableImage();
+            var image = _editableImage.Image;
 
             SetupBindings(image, docController, context);
 
@@ -75,11 +76,11 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(editableImage.xImageGrid, docController);
+                var selectableContainer = new SelectableContainer(_editableImage.xImageGrid, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
-            return editableImage.xImageGrid;
+            return _editableImage.xImageGrid;
         }
 
         protected static void SetupImageBinding(Image image, DocumentController controller,

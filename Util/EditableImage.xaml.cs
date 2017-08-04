@@ -22,11 +22,11 @@ namespace Dash
     /// <summary>
     /// An image wrapper class that enables image editing (resize, crop) upon double click 
     /// </summary>
-    public sealed partial class EditableImage
+    public partial class EditableImage
     {
         public Image Image { get { return xImage; } }
 
-        public Rect ClipRect { get; set; } = new Rect(0, 0, 100, 100);
+        public Rect ClipRect { get; set; } = new Rect(0, 0, 0, 0); 
 
         private bool _isImageDraggerVisible;
         public bool IsImageDraggerVisible
@@ -77,6 +77,8 @@ namespace Dash
                 {
                     xImageGrid.ManipulationDelta += xImageGrid_ManipulationDelta;
                     _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
+                    var rect = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight); 
+                    Image.Clip = new RectangleGeometry { Rect = rect };
                 }
                 else
                 {
@@ -105,19 +107,38 @@ namespace Dash
         private void SetUpBindings()
         {
             // bind the rectangle dimensions to ClipRect 
+            /* 
             var widthBinding = new Binding
             {
                 Source = ClipRect,
-                Path = new PropertyPath("Width")
+                Path = new PropertyPath("Width"),
+                Mode = BindingMode.TwoWay
             };
             xClipRectangle.SetBinding(WidthProperty, widthBinding);
 
             var heightBinding = new Binding
             {
                 Source = ClipRect,
-                Path = new PropertyPath("Height")
+                Path = new PropertyPath("Height"),
+                Mode = BindingMode.TwoWay 
             };
             xClipRectangle.SetBinding(HeightProperty, heightBinding);
+            */
+
+            UpdateClipRect(0, 0, 200, 200); 
+
+            // set up draggers 
+            Canvas.SetLeft(xCLIPBottomLeftDragger, ClipRect.X - 10);
+            Canvas.SetTop(xCLIPBottomLeftDragger, ClipRect.Y + ClipRect.Height - 10);
+
+            Canvas.SetLeft(xCLIPBottomRightDragger, ClipRect.X + ClipRect.Width - 10);
+            Canvas.SetTop(xCLIPBottomRightDragger, ClipRect.Y + ClipRect.Height - 10);
+
+            Canvas.SetLeft(xCLIPTopLeftDragger, ClipRect.X - 10);
+            Canvas.SetTop(xCLIPTopLeftDragger, ClipRect.Y - 10);
+
+            Canvas.SetLeft(xCLIPTopRightDragger, ClipRect.X + ClipRect.Width - 10);
+            Canvas.SetTop(xCLIPTopRightDragger, ClipRect.Y - 10);
         }
 
         private void SetUpEvents()
@@ -147,6 +168,8 @@ namespace Dash
         {
             ScaleHelper(e.ScaleCenter, e.ScaleAmount, Image); 
             TranslateHelper(e.Translate.X, e.Translate.Y, Image);
+
+                                                                                                                                // TODO must update position and width height controllers!!!??????????? 
         }
 
         private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)
@@ -178,28 +201,33 @@ namespace Dash
 
         private void BottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
         {
+            if (!UpdateClipRect(0, 0, e.Translate.X, e.Translate.Y)) return; 
+
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomRightDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPBottomLeftDragger);
             TranslateHelper(e.Translate.X, 0, xCLIPTopRightDragger);
-
 
             //ChangeSize(e.Translate.X, e.Translate.Y); 
         }
 
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
+            if (!UpdateClipRect(0, e.Translate.Y, e.Translate.X, -e.Translate.Y)) return; 
+
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopRightDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPTopLeftDragger);
             TranslateHelper(e.Translate.X, 0, xCLIPBottomRightDragger);
 
-            ChangeImagePosition(0, -e.Translate.Y);
+            //ChangeImagePosition(0, -e.Translate.Y);
             //var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
         }
 
         private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
+            if (!UpdateClipRect(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y)) return; 
+
             //move draggers  
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopLeftDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPTopRightDragger);
@@ -212,6 +240,8 @@ namespace Dash
 
         private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
+            if (!UpdateClipRect(e.Translate.X, 0, -e.Translate.X, e.Translate.Y)) return; 
+
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomLeftDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPBottomRightDragger);
@@ -222,14 +252,6 @@ namespace Dash
             //ChangeImagePosition(-sizeChange.X, 0);
         }
 
-        /// <summary>
-        /// Update position controller; changes the position of the image   
-        /// </summary>
-        private void ChangeImagePosition(double deltaX, double deltaY)                                                         // TODO holy shit 
-        {
-
-            //return new Point(); 
-        }
 
         /// <summary>
         /// Update width and height controller; changes the dimensions of the image 
@@ -239,9 +261,22 @@ namespace Dash
             return new Point();
         }
 
-        private void UpdateClipRect(double deltaX, double deltaY, double deltaW, double deltaH)
+        /// <summary>
+        /// Updates ClipRect and the visual rectangle (xClipRectangle) using the change from manipulation. 
+        /// </summary>
+        /// <returns> Return true if the manipulation is feasible, false if not </returns>
+        public bool UpdateClipRect(double deltaX, double deltaY, double deltaW, double deltaH)
         {
-            ClipRect = new Rect { X = ClipRect.X + deltaX, Y = ClipRect.Y + deltaY, Width = ClipRect.Width + deltaW, Height = ClipRect.Height + deltaH };
+            var width = ClipRect.Width + deltaW;
+            var height = ClipRect.Height + deltaH;
+            if (width < 0 || height < 0) return false; 
+
+            ClipRect = new Rect { X = ClipRect.X + deltaX, Y = ClipRect.Y + deltaY, Width = width, Height = height };
+            xClipRectangle.Width = ClipRect.Width;
+            xClipRectangle.Height = ClipRect.Height;
+            Canvas.SetLeft(xClipRectangle, ClipRect.X);
+            Canvas.SetTop(xClipRectangle, ClipRect.Y);
+            return true; 
         }
 
         /// <summary>
@@ -252,14 +287,19 @@ namespace Dash
             IsEditorModeOn = true;
         }
 
-        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)
+        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)  // TODO gotta bind it to the ... the ... the clipcontroller thingy ... 
         {
             IsEditorModeOn = false;
             IsImageDraggerVisible = false;
             IsClipRectVisible = false;
+            
+            // accounts for image's position changing  
+            var imageLeftTop = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid); 
+            Rect clip = new Rect { X = ClipRect.X - imageLeftTop.X, Y = ClipRect.Y - imageLeftTop.Y, Width = ClipRect.Width, Height = ClipRect.Height }; 
+            
+            Image.Clip = new RectangleGeometry { Rect = clip }; 
 
-            // take care of the actual clipping lmaooooo 
-            // but how??? gotta bind it to the ... the ... the clipcontroller thingy ... 
+           
         }
 
         /// <summary>

@@ -6,37 +6,39 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" >
-    
-    
+
+
 
     <Grid.RowDefinitions>
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
-    <Grid Grid.Row="0">
+    <Grid x:Name="xGrid" Grid.Row="0">
         <!--image-->
         <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                    DoubleTapped="xImage_DoubleTapped" Source="null" ></Image>
 
         <!--<Rectangle x:Name="xShadeRectangle" Fill="#99000000" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False">
         </Rectangle>-->
-        
+
         <!--draggers for image-->
         <!--<Ellipse x:Name="xBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>-->
 
-        <!--draggers for clip rect-->
-        <Ellipse x:Name="xCLIPBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xCLIPBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xCLIPTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xCLIPTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+        <Canvas>
+            <!--draggers for clip rect-->
+            <Ellipse x:Name="xCLIPBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xCLIPBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xCLIPTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xCLIPTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
 
-        <!--clipping rectangle-->
-        <Rectangle x:Name="xClipRectangle" StrokeDashArray="4 4" StrokeThickness="1" Stroke="LightBlue" HorizontalAlignment="Left" VerticalAlignment="Top"></Rectangle>
+            <!--clipping rectangle-->
+            <Rectangle x:Name="xClipRectangle" StrokeDashArray="4 4" StrokeThickness="1" Stroke="LightBlue" HorizontalAlignment="Left" VerticalAlignment="Top"></Rectangle>
+        </Canvas>
 
-        
+
     </Grid>
 
     <!--edit pane-->
