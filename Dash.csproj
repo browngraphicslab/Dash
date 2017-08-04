@@ -124,7 +124,6 @@
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />
-    <Compile Include="ViewModels\CollectionViewModelExtensions.cs" />
     <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
