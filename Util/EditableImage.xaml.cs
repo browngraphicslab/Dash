@@ -41,6 +41,9 @@ namespace Dash
                 xBottomRightDragger.Visibility = visibility;
                 xTopLeftDragger.Visibility = visibility;
                 xTopRightDragger.Visibility = visibility;
+
+                if (value) xImageButton.Background = new SolidColorBrush(Colors.SteelBlue);
+                else xImageButton.Background = new SolidColorBrush(Colors.Gray);
             }
         }
 
@@ -57,6 +60,9 @@ namespace Dash
                 xCLIPBottomRightDragger.Visibility = visibility;
                 xCLIPTopLeftDragger.Visibility = visibility;
                 xCLIPTopRightDragger.Visibility = visibility;
+
+                if (value) xClipButton.Background = new SolidColorBrush(Colors.SteelBlue);
+                else xClipButton.Background = new SolidColorBrush(Colors.Gray);
             }
         }
 
@@ -148,11 +154,10 @@ namespace Dash
             var m4 = new ManipulationControls(xCLIPTopRightDragger);
             m4.OnManipulatorTranslatedOrScaled += CLIPTopRightManipulator_OnManipulatorTranslated;
         }
-        
+
         private void BottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
         {
-            //if (!UpdateClipRect(0, 0, e.Translate.X, e.Translate.Y)) return;
-            UpdateImage(0, 0, e.Translate.X, e.Translate.Y); 
+            if (!UpdateImage(0, 0, e.Translate.X, e.Translate.Y)) return;
 
             TranslateHelper(e.Translate.X, e.Translate.Y, xBottomRightDragger);
             TranslateHelper(0, e.Translate.Y, xBottomLeftDragger);
@@ -161,8 +166,7 @@ namespace Dash
 
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            //if (!UpdateClipRect(0, e.Translate.Y, e.Translate.X, -e.Translate.Y)) return;
-            UpdateImage(0, e.Translate.Y, e.Translate.X, -e.Translate.Y);
+            if (!UpdateImage(0, e.Translate.Y, e.Translate.X, -e.Translate.Y)) return;
 
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xTopRightDragger);
@@ -172,8 +176,7 @@ namespace Dash
 
         private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            //if (!UpdateClipRect(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y)) return;
-            UpdateImage(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y);
+            if (!UpdateImage(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y)) return;
 
             //move draggers  
             TranslateHelper(e.Translate.X, e.Translate.Y, xTopLeftDragger);
@@ -183,8 +186,7 @@ namespace Dash
 
         private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            //if (!UpdateClipRect(e.Translate.X, 0, -e.Translate.X, e.Translate.Y)) return;
-            UpdateImage(e.Translate.X, 0, -e.Translate.X, e.Translate.Y);
+            if (!UpdateImage(e.Translate.X, 0, -e.Translate.X, e.Translate.Y)) return;
 
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xBottomLeftDragger);
@@ -192,8 +194,10 @@ namespace Dash
             TranslateHelper(e.Translate.X, 0, xTopLeftDragger);
         }
 
-
-        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)// TODO must update position and width height controllers!!!??????????? 
+        /// <summary>
+        /// Moves the image and updates the position of image draggers 
+        /// </summary>
+        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e) // TODO must update position and width height controllers!!!??????????? 
         {
             var bottomLeft1 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
             var bottomRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
@@ -214,12 +218,19 @@ namespace Dash
             TranslateHelper(topRight2.X - topRight1.X, topRight2.Y - topRight1.Y, xTopRightDragger);
         }
 
-        private void UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)
+        /// <summary>
+        /// Translates the image by deltaX and deltaY; resizes the image by deltaW and deltaH 
+        /// </summary>
+        private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH) // TODO must update position and width height controllers!!!??????????? 
         {
-            Image.Width += deltaW;
-            Image.Height += deltaH; 
+            var width = Image.Width + deltaW;
+            var height = Image.Height + deltaH;
+            if (width < 0 || height < 0) return false; 
+
+            Image.Width = width;
+            Image.Height = height; 
             TranslateHelper(deltaX, deltaY, Image);
-            // TODO must update position and width height controllers!!!??????????? 
+            return true; 
         }
 
         private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)

@@ -12,7 +12,7 @@
         <RowDefinition Height="*"></RowDefinition>
         <RowDefinition Height="Auto"></RowDefinition>
     </Grid.RowDefinitions>
-    <Grid x:Name="xGrid" Grid.Row="0">
+    <Grid x:Name="xGrid" Grid.Row="0" MinWidth="200" MinHeight="200">
         <!--image-->
         <Image x:Name="xImage" Stretch="Fill" CacheMode="BitmapCache" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
                    DoubleTapped="xImage_DoubleTapped" Source="null" ></Image>
