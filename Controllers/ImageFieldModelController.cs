@@ -41,7 +41,7 @@ namespace Dash
             Data = (fieldModel as ImageFieldModelController).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             var image = new Image
             {

@@ -33,7 +33,7 @@ namespace Dash
             if (_controllers.ContainsKey(newControllerId))
             {
                 var savedController = _controllers[newControllerId];
-                Debug.Assert(ReferenceEquals(savedController, newController),
+                Debug.Assert(!ReferenceEquals(savedController, newController) && savedController.GetId() == newController.GetId(),
                     "If we overwrite a reference to a saved controller bindings to the saved controller will no longer exist");
             }
             else
@@ -146,7 +146,7 @@ namespace Dash
             if (_models.ContainsKey(newModelId))
             {
                 var savedModel = _models[newModelId];
-                Debug.Assert(ReferenceEquals(savedModel, newModel),
+                Debug.Assert(!ReferenceEquals(savedModel, newModel) && savedModel.Id == newModel.Id,
                     "We probably don't want to overwrite references to a saved model");
             }
             else

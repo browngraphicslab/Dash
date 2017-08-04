@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml.Controls;
@@ -10,7 +11,6 @@ namespace Dash
 
         public FreeFormCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {
-            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
             CellSize = 250;
             CanDragItems = true;
         }

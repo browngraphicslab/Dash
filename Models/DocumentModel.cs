@@ -13,10 +13,10 @@ namespace Dash
         static public Dictionary<string, DocumentModel> Map = new Dictionary<string, DocumentModel>();
 
         /// <summary>
-        /// A dictionary of <see cref="Key"/> to <see cref="FieldModel.Id"/>. These fields represent all the 
+        /// A dictionary of <see cref="KeyController"/> to <see cref="FieldModel.Id"/>. These fields represent all the 
         /// data that is stored in the document model
         /// </summary>
-        public Dictionary<Key, string> Fields;
+        public Dictionary<KeyController, string> Fields;
 
         /// <summary>
         /// The type of this document.
@@ -28,7 +28,7 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<Key, FieldModel> fields, DocumentType type, string id = null) : base(id)
+        public DocumentModel(IDictionary<KeyController, FieldModel> fields, DocumentType type, string id = null) : base(id)
         {
             if (type == null)
             {
@@ -44,7 +44,7 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<Key, string> fields, DocumentType type, string id = null) : base(id)
+        public DocumentModel(IDictionary<KeyController, string> fields, DocumentType type, string id = null) : base(id)
         {
             if (type == null)
             {

@@ -32,7 +32,7 @@ namespace Dash
 
             ///* 
             ReferenceFieldModelController refToData;
-            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<Key, FieldModelController>(), TextingBox.DocumentType)), out refToData);
+            var fieldModelController = GetDereferencedDataFieldModelController(docController, context, new DocumentFieldModelController(new DocumentController(new Dictionary<KeyController, FieldModelController>(), TextingBox.DocumentType)), out refToData);
 
             if (fieldModelController is ImageFieldModelController)
                 return ImageBox.MakeView(docController, context, isInterfaceBuilderLayout);
@@ -42,7 +42,9 @@ namespace Dash
             Debug.Assert(documentfieldModelController != null);
 
             var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-            var docView = documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+            var docView = new KeyValuePane();
+            docView.SetDataContextToDocumentController(documentfieldModelController.Data);
+                //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
             var border = new Border();
             border.Child = docView;
             border.BorderThickness = new Thickness(3);

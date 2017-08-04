@@ -57,7 +57,7 @@
                                  TextChanged="XClipWidthTextBox_OnTextChanged"/>
                     </Grid>
                     <Grid Grid.Column="1" Grid.Row="1" Margin="5,5,0,0">
-                        <TextBox x:Name="xClipHeightTextBox" 
+                        <TextBox x:Name="xClipHeightTextBox"
                                  Header="Clip Height Ratio" 
                                  Height="Auto" 
                                  BorderBrush="White" 

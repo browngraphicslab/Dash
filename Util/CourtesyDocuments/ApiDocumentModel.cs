@@ -16,27 +16,27 @@ namespace Dash
     {
         public static DocumentType DocumentType = ApiOperator.ApiType;
 
-        public static Key BaseUrlKey = new Key("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
-        public static Key HttpMethodKey = new Key("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
-        public static Key HeadersKey = new Key("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
-        public static Key ParametersKey = new Key("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
+        public static KeyController BaseUrlKey = new KeyController("C20E4B2B-A633-4C2C-ACBF-757FF6AC8E5A", "Base URL");
+        public static KeyController HttpMethodKey = new KeyController("1CE4047D-1813-410B-804E-BA929D8CB4A4", "Http Method");
+        public static KeyController HeadersKey = new KeyController("6E9D9F12-E978-4E61-85C7-707A0C13EFA7", "Headers");
+        public static KeyController ParametersKey = new KeyController("654A4BDF-1AE0-432A-9C90-CCE9B4809870", "Parameter");
 
-        public static Key AuthHttpMethodKey = new Key("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
-        public static Key AuthBaseUrlKey = new Key("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
-        public static Key AuthKey = new Key("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
-        public static Key AuthSecretKey = new Key("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
-        public static Key AuthHeadersKey = new Key("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
-        public static Key AuthParametersKey = new Key("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
+        public static KeyController AuthHttpMethodKey = new KeyController("D37CCAC0-ABBC-4861-BEB4-8C079049DCF8", "Auth Method");
+        public static KeyController AuthBaseUrlKey = new KeyController("7F8709B6-2C9B-43D0-A86C-37F3A1517884", "Auth URL");
+        public static KeyController AuthKey = new KeyController("1E5B5398-9349-4585-A420-EDBFD92502DE", "Auth Key");
+        public static KeyController AuthSecretKey = new KeyController("A690EFD0-FF35-45FF-9795-372D0D12711E", "Auth Secret");
+        public static KeyController AuthHeadersKey = new KeyController("E1773B06-F54C-4052-B888-AE85278A7F88", "Auth Header");
+        public static KeyController AuthParametersKey = new KeyController("CD546F0B-A0BA-4C3B-B683-5B2A0C31F44E", "Auth Parameter");
 
-        public static Key KeyTextKey = new Key("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
-        public static Key ValueTextKey = new Key("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
-        public static Key RequiredKey = new Key("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
-        public static Key DisplayKey = new Key("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
+        public static KeyController KeyTextKey = new KeyController("388F7E20-4424-4AC0-8BB7-E8CCF2279E60", "Key");
+        public static KeyController ValueTextKey = new KeyController("F89CAD72-271F-48E6-B233-B6BA766E613F", "Value");
+        public static KeyController RequiredKey = new KeyController("D4FCBA25-B540-4E17-A17A-FCDE775B97F9", "Required");
+        public static KeyController DisplayKey = new KeyController("2B80D6A8-4224-4EC7-9BDF-DFD2CC20E463", "Display");
 
 
         public ApiDocumentModel()
         {
-            var fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldModelController>
             {
                 [BaseUrlKey] = new TextFieldModelController(""),
                 [HttpMethodKey] = new NumberFieldModelController(0),
@@ -49,18 +49,18 @@ namespace Dash
                 [AuthParametersKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>()),
                 [AuthHeadersKey] = new DocumentCollectionFieldModelController(new List<DocumentController>()),
-                [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(550),
-                [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(400),
-                [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(new Windows.Foundation.Point(0,0)),
-                [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
+                [KeyStore.WidthFieldKey] = new NumberFieldModelController(550),
+                [KeyStore.HeightFieldKey] = new NumberFieldModelController(400),
+                [KeyStore.PositionFieldKey] = new PointFieldModelController(new Windows.Foundation.Point(0,0)),
+                [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
+                [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
 
                 // TODO: differentiating similar fields in different documents for operator view (Not sure what this means Anna)
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
             Document = new DocumentController(fields, DocumentType);
-            Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
+            Document.SetField(KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
             //Document.SetActiveLayout(new DefaultLayout(0, 0, 400, 400).Document, true, true);
         }
 
@@ -71,7 +71,7 @@ namespace Dash
         /// <returns>The newly generated document representing the newly added parameter.</returns>
         public static DocumentController addParameter(DocumentController docController, TextBox key,
             TextBox value, CheckBox display,
-            CheckBox required, Key parameterCollectionKey, ApiSourceDisplay sourceDisplay)
+            CheckBox required, KeyController parameterCollectionKey, ApiSourceDisplay sourceDisplay)
         {
             Debug.Assert(docController.DocumentType == DocumentType);
             Debug.Assert(parameterCollectionKey == AuthParametersKey ||
@@ -86,7 +86,7 @@ namespace Dash
             double requiredDouble = ((bool)required.IsChecked) ? 0 : 1;
 
             // generate new doc with information to add
-            var fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldModelController>
             {
                 [ValueTextKey] = new TextFieldModelController(key.Text),
                 [DisplayKey] = new NumberFieldModelController(displayDouble),
@@ -163,7 +163,7 @@ namespace Dash
         /// </summary>
         public static void removeParameter(DocumentController docController,
             DocumentController docModelToRemove,
-            Key parameterCollectionKey, ApiSourceDisplay sourceDisplay)
+            KeyController parameterCollectionKey, ApiSourceDisplay sourceDisplay)
         {
             Debug.Assert(docController.DocumentType == DocumentType);
             Debug.Assert(parameterCollectionKey == AuthParametersKey ||

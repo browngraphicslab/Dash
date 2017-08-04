@@ -90,8 +90,9 @@ namespace Dash
             view.CanLink = false;
 
             args.Handled = true;
+
             view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-                new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
+                new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
                     OuterGrid.GetFirstAncestorOfType<DocumentView>()));
         }
 
@@ -409,7 +410,7 @@ namespace Dash
                     var eqPos = tag.IndexOfAny(new[] { '=' });
                     var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
                     var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key = new Key(word, word);
+                    var key = new KeyController(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {

@@ -257,7 +257,7 @@ namespace Dash
 
             DocumentController inputController =
                 inputReference.FieldReference.GetDocumentController(null);
-            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null);
+            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
             if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
                 (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)

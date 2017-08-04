@@ -75,7 +75,7 @@ namespace Dash
             AddRange(fmcs.Cast<T>().ToList());
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             //return GetTableCellViewOfScrollableText(delegate (TextBlock block)
             //{

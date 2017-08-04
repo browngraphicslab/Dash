@@ -91,7 +91,7 @@ namespace Dash
         /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
         /// <returns></returns>
-        public abstract FrameworkElement GetTableCellView();
+        public abstract FrameworkElement GetTableCellView(Context context);
 
         /// <summary>
         /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll

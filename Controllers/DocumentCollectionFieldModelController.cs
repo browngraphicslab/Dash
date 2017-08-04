@@ -48,7 +48,7 @@ namespace Dash
         /// Key for collection data
         /// TODO This might be better in a different class
         /// </summary>
-        public static Key CollectionKey = new Key("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
+        public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
 
 
         public List<DocumentController> Data { get { return _documents; } }
@@ -121,7 +121,7 @@ namespace Dash
             SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
             return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce); 
