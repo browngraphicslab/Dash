@@ -27,14 +27,14 @@ using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : UserControl
+    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
     {
 
         #region ScalingVariables
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
-        public ICollectionViewModel ViewModel { get; private set; }
+        public BaseCollectionViewModel ViewModel { get; private set; }
 
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -81,9 +81,11 @@ namespace Dash
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        #region DataContext and Events
+
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as ICollectionViewModel;
+            var vm = DataContext as BaseCollectionViewModel;
 
             if (vm != null)
             {
@@ -111,8 +113,9 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
+        
 
-
+        #endregion
 
         #region DraggingLinesAround
 
@@ -521,5 +524,35 @@ namespace Dash
         }
 
         #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+
+        }
+
+        #endregion
+
+
+        public void ToggleSelectAllItems()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

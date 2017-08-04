@@ -11,8 +11,8 @@
     Width="{Binding WidthBinding, Converter={StaticResource WidthBindingToDoubleConverter}}"
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
+    Tapped="OnTapped"
     PointerWheelChanged="This_PointerWheelChanged"
-    Loaded="This_Loaded"
     ManipulationMode="{Binding ManipulationMode}"
     >
     
@@ -62,9 +62,9 @@
                         <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
-                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" />
+                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" IsHitTestVisible="{Binding IsSelected}"/>
             </Grid>
-            <!-- Misc. Document Components-->
+            <!-- Dragger Button-->
             <Button x:Name="DraggerButton"
                     x:FieldModifier="public"
                     Margin="0,0,-20,-20"
