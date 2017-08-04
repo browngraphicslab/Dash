@@ -26,7 +26,7 @@ namespace Dash
     {
         public Image Image { get { return xImage; } }
 
-        public Rect ClipRect { get; set; } = new Rect(0, 0, 0, 0); 
+        public Rect ClipRect { get; set; } = new Rect(0, 0, 0, 0);
 
         private bool _isImageDraggerVisible;
         public bool IsImageDraggerVisible
@@ -37,10 +37,10 @@ namespace Dash
                 _isImageDraggerVisible = value;
                 Visibility visibility = value ? Visibility.Visible : Visibility.Collapsed;
 
-                //xBottomLeftDragger.Visibility = visibility;
-                //xBottomRightDragger.Visibility = visibility;
-                //xTopLeftDragger.Visibility = visibility;
-                //xTopRightDragger.Visibility = visibility;
+                xBottomLeftDragger.Visibility = visibility;
+                xBottomRightDragger.Visibility = visibility;
+                xTopLeftDragger.Visibility = visibility;
+                xTopRightDragger.Visibility = visibility;
             }
         }
 
@@ -77,7 +77,7 @@ namespace Dash
                 {
                     xImageGrid.ManipulationDelta += xImageGrid_ManipulationDelta;
                     _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
-                    var rect = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight); 
+                    var rect = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
                     Image.Clip = new RectangleGeometry { Rect = rect };
                 }
                 else
@@ -88,7 +88,7 @@ namespace Dash
             }
         }
 
-        private ManipulationControls _imageManipulator; 
+        private ManipulationControls _imageManipulator;
 
         public EditableImage()
         {
@@ -99,77 +99,127 @@ namespace Dash
             IsImageDraggerVisible = false;
             IsEditorModeOn = false;
 
-            SetUpBindings();
+            UpdateClipRect(0, 0, 200, 200);                                                                     // TODO get a better way to set up image width and height 
+
+            // set up cliprect draggers 
+            SetUpDraggersHelper(xCLIPBottomLeftDragger, xCLIPBottomRightDragger, xCLIPTopLeftDragger, xCLIPTopRightDragger);
+
+            // set up image draggers 
+            SetUpDraggersHelper(xBottomLeftDragger, xBottomRightDragger, xTopLeftDragger, xTopRightDragger);
+
             SetUpEvents();
         }
 
-
-        private void SetUpBindings()
+        private void SetUpDraggersHelper(Ellipse bottomLeft, Ellipse bottomRight, Ellipse topLeft, Ellipse topRight)
         {
-            // bind the rectangle dimensions to ClipRect 
-            /* 
-            var widthBinding = new Binding
-            {
-                Source = ClipRect,
-                Path = new PropertyPath("Width"),
-                Mode = BindingMode.TwoWay
-            };
-            xClipRectangle.SetBinding(WidthProperty, widthBinding);
+            // set up cliprect draggers 
+            Canvas.SetLeft(bottomLeft, ClipRect.X - 10);
+            Canvas.SetTop(bottomLeft, ClipRect.Y + ClipRect.Height - 10);
 
-            var heightBinding = new Binding
-            {
-                Source = ClipRect,
-                Path = new PropertyPath("Height"),
-                Mode = BindingMode.TwoWay 
-            };
-            xClipRectangle.SetBinding(HeightProperty, heightBinding);
-            */
+            Canvas.SetLeft(bottomRight, ClipRect.X + ClipRect.Width - 10);
+            Canvas.SetTop(bottomRight, ClipRect.Y + ClipRect.Height - 10);
 
-            UpdateClipRect(0, 0, 200, 200); 
+            Canvas.SetLeft(topLeft, ClipRect.X - 10);
+            Canvas.SetTop(topLeft, ClipRect.Y - 10);
 
-            // set up draggers 
-            Canvas.SetLeft(xCLIPBottomLeftDragger, ClipRect.X - 10);
-            Canvas.SetTop(xCLIPBottomLeftDragger, ClipRect.Y + ClipRect.Height - 10);
-
-            Canvas.SetLeft(xCLIPBottomRightDragger, ClipRect.X + ClipRect.Width - 10);
-            Canvas.SetTop(xCLIPBottomRightDragger, ClipRect.Y + ClipRect.Height - 10);
-
-            Canvas.SetLeft(xCLIPTopLeftDragger, ClipRect.X - 10);
-            Canvas.SetTop(xCLIPTopLeftDragger, ClipRect.Y - 10);
-
-            Canvas.SetLeft(xCLIPTopRightDragger, ClipRect.X + ClipRect.Width - 10);
-            Canvas.SetTop(xCLIPTopRightDragger, ClipRect.Y - 10);
+            Canvas.SetLeft(topRight, ClipRect.X + ClipRect.Width - 10);
+            Canvas.SetTop(topRight, ClipRect.Y - 10);
         }
 
         private void SetUpEvents()
         {
             //image draggers
-            //var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
-            //bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
-            //var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
-            //bottomRightManipulator.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslatedOrScaled;
-            //var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
-            //topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
-            //var topRightManipulator = new ManipulationControls(xTopRightDragger);
-            //topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
+            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
+            bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
+            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
+            bottomRightManipulator.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslatedOrScaled;
+            var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
+            topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
+            var topRightManipulator = new ManipulationControls(xTopRightDragger);
+            topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
 
             // clip rect draggers 
             var m1 = new ManipulationControls(xCLIPBottomLeftDragger);
-            m1.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
+            m1.OnManipulatorTranslatedOrScaled += CLIPBottomLeftManipulator_OnManipulatorTranslated;
             var m2 = new ManipulationControls(xCLIPBottomRightDragger);
-            m2.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslatedOrScaled;
+            m2.OnManipulatorTranslatedOrScaled += CLIPBottomRightManipulator_OnManipulatorTranslatedOrScaled;
             var m3 = new ManipulationControls(xCLIPTopLeftDragger);
-            m3.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
+            m3.OnManipulatorTranslatedOrScaled += CLIPTopLeftManipulator_OnManipulatorTranslated;
             var m4 = new ManipulationControls(xCLIPTopRightDragger);
-            m4.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
+            m4.OnManipulatorTranslatedOrScaled += CLIPTopRightManipulator_OnManipulatorTranslated;
+        }
+        
+        private void BottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
+        {
+            //if (!UpdateClipRect(0, 0, e.Translate.X, e.Translate.Y)) return;
+            UpdateImage(0, 0, e.Translate.X, e.Translate.Y); 
+
+            TranslateHelper(e.Translate.X, e.Translate.Y, xBottomRightDragger);
+            TranslateHelper(0, e.Translate.Y, xBottomLeftDragger);
+            TranslateHelper(e.Translate.X, 0, xTopRightDragger);
         }
 
-        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
+        private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            ScaleHelper(e.ScaleCenter, e.ScaleAmount, Image); 
+            //if (!UpdateClipRect(0, e.Translate.Y, e.Translate.X, -e.Translate.Y)) return;
+            UpdateImage(0, e.Translate.Y, e.Translate.X, -e.Translate.Y);
+
+            //move draggers 
+            TranslateHelper(e.Translate.X, e.Translate.Y, xTopRightDragger);
+            TranslateHelper(0, e.Translate.Y, xTopLeftDragger);
+            TranslateHelper(e.Translate.X, 0, xBottomRightDragger);
+        }
+
+        private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
+        {
+            //if (!UpdateClipRect(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y)) return;
+            UpdateImage(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y);
+
+            //move draggers  
+            TranslateHelper(e.Translate.X, e.Translate.Y, xTopLeftDragger);
+            TranslateHelper(0, e.Translate.Y, xTopRightDragger);
+            TranslateHelper(e.Translate.X, 0, xBottomLeftDragger);
+        }
+
+        private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
+        {
+            //if (!UpdateClipRect(e.Translate.X, 0, -e.Translate.X, e.Translate.Y)) return;
+            UpdateImage(e.Translate.X, 0, -e.Translate.X, e.Translate.Y);
+
+            //move draggers 
+            TranslateHelper(e.Translate.X, e.Translate.Y, xBottomLeftDragger);
+            TranslateHelper(0, e.Translate.Y, xBottomRightDragger);
+            TranslateHelper(e.Translate.X, 0, xTopLeftDragger);
+        }
+
+
+        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)// TODO must update position and width height controllers!!!??????????? 
+        {
+            var bottomLeft1 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
+            var bottomRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
+            var topLeft1 = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
+            var topRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, 0), Image, xGrid);
+
+            ScaleHelper(e.ScaleCenter, e.ScaleAmount, Image);
             TranslateHelper(e.Translate.X, e.Translate.Y, Image);
 
-                                                                                                                                // TODO must update position and width height controllers!!!??????????? 
+            var bottomLeft2 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
+            var bottomRight2 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
+            var topLeft2 = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
+            var topRight2 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, 0), Image, xGrid);
+
+            TranslateHelper(bottomLeft2.X - bottomLeft1.X, bottomLeft2.Y - bottomLeft1.Y, xBottomLeftDragger);
+            TranslateHelper(bottomRight2.X - bottomRight1.X, bottomRight2.Y - bottomRight1.Y, xBottomRightDragger);
+            TranslateHelper(topLeft2.X - topLeft1.X, topLeft2.Y - topLeft1.Y, xTopLeftDragger);
+            TranslateHelper(topRight2.X - topRight1.X, topRight2.Y - topRight1.Y, xTopRightDragger);
+        }
+
+        private void UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)
+        {
+            Image.Width += deltaW;
+            Image.Height += deltaH; 
+            TranslateHelper(deltaX, deltaY, Image);
+            // TODO must update position and width height controllers!!!??????????? 
         }
 
         private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)
@@ -199,67 +249,46 @@ namespace Dash
             element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
-        private void BottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
+        private void CLIPBottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
         {
-            if (!UpdateClipRect(0, 0, e.Translate.X, e.Translate.Y)) return; 
+            if (!UpdateClipRect(0, 0, e.Translate.X, e.Translate.Y)) return;
 
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomRightDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPBottomLeftDragger);
             TranslateHelper(e.Translate.X, 0, xCLIPTopRightDragger);
-
-            //ChangeSize(e.Translate.X, e.Translate.Y); 
         }
 
-        private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
+        private void CLIPTopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            if (!UpdateClipRect(0, e.Translate.Y, e.Translate.X, -e.Translate.Y)) return; 
+            if (!UpdateClipRect(0, e.Translate.Y, e.Translate.X, -e.Translate.Y)) return;
 
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopRightDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPTopLeftDragger);
             TranslateHelper(e.Translate.X, 0, xCLIPBottomRightDragger);
-
-            //ChangeImagePosition(0, -e.Translate.Y);
-            //var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
         }
 
-        private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
+        private void CLIPTopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            if (!UpdateClipRect(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y)) return; 
+            if (!UpdateClipRect(e.Translate.X, e.Translate.Y, -e.Translate.X, -e.Translate.Y)) return;
 
             //move draggers  
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopLeftDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPTopRightDragger);
             TranslateHelper(e.Translate.X, 0, xCLIPBottomLeftDragger);
-
-            //var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
-
-            //ChangeImagePosition(-sizeChange.X, -sizeChange.Y);
         }
 
-        private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
+        private void CLIPBottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            if (!UpdateClipRect(e.Translate.X, 0, -e.Translate.X, e.Translate.Y)) return; 
+            if (!UpdateClipRect(e.Translate.X, 0, -e.Translate.X, e.Translate.Y)) return;
 
             //move draggers 
             TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomLeftDragger);
             TranslateHelper(0, e.Translate.Y, xCLIPBottomRightDragger);
             TranslateHelper(e.Translate.X, 0, xCLIPTopLeftDragger);
-
-            //var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
-
-            //ChangeImagePosition(-sizeChange.X, 0);
         }
 
-
-        /// <summary>
-        /// Update width and height controller; changes the dimensions of the image 
-        /// </summary>
-        private Point ChangeSize(double v, double y)                                                                   // TODO holy shit 
-        {
-            return new Point();
-        }
 
         /// <summary>
         /// Updates ClipRect and the visual rectangle (xClipRectangle) using the change from manipulation. 
@@ -269,14 +298,14 @@ namespace Dash
         {
             var width = ClipRect.Width + deltaW;
             var height = ClipRect.Height + deltaH;
-            if (width < 0 || height < 0) return false; 
+            if (width < 0 || height < 0) return false;
 
             ClipRect = new Rect { X = ClipRect.X + deltaX, Y = ClipRect.Y + deltaY, Width = width, Height = height };
             xClipRectangle.Width = ClipRect.Width;
             xClipRectangle.Height = ClipRect.Height;
             Canvas.SetLeft(xClipRectangle, ClipRect.X);
             Canvas.SetTop(xClipRectangle, ClipRect.Y);
-            return true; 
+            return true;
         }
 
         /// <summary>
@@ -287,19 +316,19 @@ namespace Dash
             IsEditorModeOn = true;
         }
 
-        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)  // TODO gotta bind it to the ... the ... the clipcontroller thingy ... 
+        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                          // TODO gotta bind it to the ... the ... the clipcontroller thingy ... 
         {
             IsEditorModeOn = false;
             IsImageDraggerVisible = false;
             IsClipRectVisible = false;
-            
-            // accounts for image's position changing  
-            var imageLeftTop = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid); 
-            Rect clip = new Rect { X = ClipRect.X - imageLeftTop.X, Y = ClipRect.Y - imageLeftTop.Y, Width = ClipRect.Width, Height = ClipRect.Height }; 
-            
-            Image.Clip = new RectangleGeometry { Rect = clip }; 
 
-           
+            // accounts for image's position changing  
+            var imageLeftTop = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
+            Rect clip = new Rect { X = ClipRect.X - imageLeftTop.X, Y = ClipRect.Y - imageLeftTop.Y, Width = ClipRect.Width, Height = ClipRect.Height };
+
+            Image.Clip = new RectangleGeometry { Rect = clip };
+
+
         }
 
         /// <summary>

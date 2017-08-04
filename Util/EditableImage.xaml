@@ -1,8 +1,7 @@
-﻿<Grid x:Name="xImageGrid" x:FieldModifier="public"
+﻿<Grid x:Name="xImageGrid" x:FieldModifier="public" MinWidth="200" MinHeight="200"
     x:Class="Dash.EditableImage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" >
@@ -21,13 +20,13 @@
         <!--<Rectangle x:Name="xShadeRectangle" Fill="#99000000" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False">
         </Rectangle>-->
 
-        <!--draggers for image-->
-        <!--<Ellipse x:Name="xBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>-->
-
         <Canvas>
+            <!--draggers for image-->
+            <Ellipse x:Name="xBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+            <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+
             <!--draggers for clip rect-->
             <Ellipse x:Name="xCLIPBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
             <Ellipse x:Name="xCLIPBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
