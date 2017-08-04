@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionGridView : SelectionElement
+    public sealed partial class CollectionGridView : SelectionElement, ICollectionView
     {
         public ICollectionViewModel ViewModel { get; private set; }
 
@@ -26,23 +26,42 @@ namespace Dash
         {
             ViewModel = viewModel;
             this.InitializeComponent();
-            xGridView.DragItemsStarting += viewModel.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted += viewModel.xGridView_OnDragItemsCompleted;
-            DataContextChanged += OnDataContextChanged;
-            Binding selectionBinding = new Binding
-            {
-                Source = viewModel,
-                Path = new PropertyPath(nameof(viewModel.ItemSelectionMode)),
-                Mode = BindingMode.OneWay,
-            };
-            xGridView.SetBinding(ListViewBase.SelectionModeProperty, selectionBinding);
+            xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+            xGridView.SelectionChanged += XGridView_SelectionChanged;
+            this.Unloaded += CollectionGridView_Unloaded;
         }
 
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
         {
-            CollectionViewModel vm = DataContext as CollectionViewModel;
-            xGridView.SelectionChanged += vm.SelectionChanged;
+            xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+            xGridView.SelectionChanged -= XGridView_SelectionChanged;
+            this.Unloaded -= CollectionGridView_Unloaded;
         }
+
+        #region ItemSelection
+
+        private void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ViewModel.SelectionGroup.Clear();
+            ViewModel.SelectionGroup.AddRange(xGridView.SelectedItems.Cast<DocumentViewModel>());
+        }
+
+        public void ToggleSelectAllItems()
+        {
+            var isAllItemsSelected = xGridView.SelectedItems.Count == ViewModel.DocumentViewModels.Count;
+            if (!isAllItemsSelected)
+            {
+                xGridView.SelectAll();
+            }
+            else
+            {
+                xGridView.SelectedItems.Clear();
+            }
+        }
+
+        #endregion
 
         #region DragAndDrop
 

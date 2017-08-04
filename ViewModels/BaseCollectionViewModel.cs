@@ -14,10 +14,13 @@ namespace Dash
         private double _cellSize;
         private bool _canDragItems;
         private ListViewSelectionMode _itemSelectionMode;
+        private List<DocumentViewModel> _selectionGroup;
 
         protected BaseCollectionViewModel(bool isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
+            _documentViewModels = new ObservableCollection<DocumentViewModel>();
+            _selectionGroup = new List<DocumentViewModel>();
         }
 
         public bool IsInterfaceBuilder
@@ -31,6 +34,13 @@ namespace Dash
             get { return _documentViewModels; }
             protected set { SetProperty(ref _documentViewModels, value); }
         }
+
+        // used to keep track of groups of the currently selected items in a collection
+        public List<DocumentViewModel> SelectionGroup
+        {
+            get { return _selectionGroup; }
+        }
+
 
         #region Grid or List Specific Variables I want to Remove
 

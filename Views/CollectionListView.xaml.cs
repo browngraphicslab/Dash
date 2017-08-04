@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionListView : SelectionElement
+    public sealed partial class CollectionListView : SelectionElement, ICollectionView
     {
         public ICollectionViewModel ViewModel { get; private set; }
 
@@ -26,23 +26,43 @@ namespace Dash
         {
             ViewModel = viewModel;
             this.InitializeComponent();
-            HListView.DragItemsStarting += viewModel.xGridView_OnDragItemsStarting;
-            HListView.DragItemsCompleted += viewModel.xGridView_OnDragItemsCompleted;
-            DataContextChanged += OnDataContextChanged;
-            Binding selectionBinding = new Binding
-            {
-                Source = viewModel,
-                Path = new PropertyPath(nameof(viewModel.ItemSelectionMode)),
-                Mode = BindingMode.OneWay,
-            };
-            HListView.SetBinding(ListView.SelectionModeProperty, selectionBinding);
+            xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+            xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+            xListView.SelectionChanged += XListView_SelectionChanged;
+            this.Unloaded += CollectionListView_Unloaded;
         }
 
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void CollectionListView_Unloaded(object sender, RoutedEventArgs e)
         {
-            var vm = DataContext as CollectionViewModel;
-            HListView.SelectionChanged += vm.SelectionChanged;
+            xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+            xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+            xListView.SelectionChanged -= XListView_SelectionChanged;
+            this.Unloaded -= CollectionListView_Unloaded;
         }
+
+        #region ItemSelection
+
+        private void XListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {          
+            ViewModel.SelectionGroup.Clear();
+            ViewModel.SelectionGroup.AddRange(xListView.SelectedItems.Cast<DocumentViewModel>());
+        }
+
+        public void ToggleSelectAllItems()
+        {
+            var isAllItemsSelected = xListView.SelectedItems.Count == ViewModel.DocumentViewModels.Count;
+            if (!isAllItemsSelected)
+            {
+                xListView.SelectAll();
+            }
+            else
+            {
+                xListView.SelectedItems.Clear();
+            }
+        }
+
+        #endregion
+
 
         #region DragAndDrop
 

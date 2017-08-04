@@ -20,6 +20,7 @@
                   CanDragItems="{Binding CanDragItems}"
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
                   IsHitTestVisible="{Binding IsSelected}"
+                  SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionGridViewStyle}">
             <GridView.ItemTemplate>
                 <DataTemplate>

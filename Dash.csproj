@@ -142,6 +142,7 @@
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ICollectionView.cs" />
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
       <DependentUpon>AlignmentSettings.xaml</DependentUpon>
     </Compile>

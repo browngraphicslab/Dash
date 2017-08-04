@@ -15,11 +15,12 @@
           Tapped="OnTapped"
           Background="Transparent"
           >
-        <ListView x:Name="HListView"
+        <ListView x:Name="xListView"
                   ItemsSource="{Binding DocumentViewModels}"
                   CanDragItems="{Binding CanDragItems}"
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
                   IsHitTestVisible="{Binding IsSelected}"
+                  SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionListViewStyle}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>

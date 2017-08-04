@@ -125,8 +125,6 @@ namespace Dash
         {
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView(ViewModel);
-            // TODO fix selection
-            //((CollectionListView) CurrentView).HListView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
 
@@ -134,8 +132,6 @@ namespace Dash
         {
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView(ViewModel);
-            // TODO fix selection
-            //((CollectionGridView) CurrentView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
 
@@ -160,24 +156,9 @@ namespace Dash
 
         private void SelectAllItems()
         {
-            // TODO fix selection
-            //var view = CurrentView as CollectionGridView;
-            //if (view != null)
-            //{
-            //    var gridView = view.xGridView;
-            //    if (gridView.SelectedItems.Count != ViewModel.DocumentViewModels.Count)
-            //        gridView.SelectAll();
-            //    else gridView.SelectedItems.Clear();
-            //}
-            //var currentView = CurrentView as CollectionListView;
-            //if (currentView != null)
-            //{
-            //    var listView = currentView.HListView;
-            //    if (listView.SelectedItems.Count != ViewModel.DocumentViewModels.Count)
-            //        listView.SelectAll();
-            //    else
-            //        listView.SelectedItems.Clear();
-            //}
+            var view = CurrentView as ICollectionView;
+            Debug.Assert(view != null, "make the view implement ICollectionView");
+            view.ToggleSelectAllItems();
         }
 
         private void MakeSelectionModeSingle()

@@ -27,7 +27,7 @@ using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : SelectionElement
+    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
     {
 
         #region ScalingVariables
@@ -550,6 +550,9 @@ namespace Dash
         #endregion
 
 
-
+        public void ToggleSelectAllItems()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
