@@ -27,7 +27,7 @@ using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : UserControl
+    public sealed partial class CollectionFreeformView : SelectionElement
     {
 
         #region ScalingVariables
@@ -81,6 +81,8 @@ namespace Dash
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        #region DataContext and Events
+
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var vm = DataContext as ICollectionViewModel;
@@ -111,8 +113,9 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
+        
 
-
+        #endregion
 
         #region DraggingLinesAround
 
@@ -521,5 +524,30 @@ namespace Dash
         }
 
         #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+            e.Handled = true;
+        }
+
+        #endregion
+
+
     }
 }

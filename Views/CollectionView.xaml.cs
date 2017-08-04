@@ -20,11 +20,11 @@ using DashShared;
 
 namespace Dash
 {
-    public sealed partial class CollectionView : SelectionElement
+    public sealed partial class CollectionView : UserControl
     {
         public int MaxZ { get; set; }
-        public UserControl CurrentView { get; set; }
-        private OverlayMenu _colMenu;
+        public SelectionElement CurrentView { get; set; }
+        private OverlayMenu _collectionMenu;
         public CollectionViewModel ViewModel
         {
             get { return DataContext as CollectionViewModel;}
@@ -38,25 +38,39 @@ namespace Dash
         {
             InitializeComponent();
             ViewModel = vm;
-            CurrentView = new CollectionFreeformView();
-            xContentControl.Content = CurrentView;
+
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
+
+            Loaded += CollectionView_Loaded;
+            Unloaded += CollectionView_Unloaded;
         }
 
+        #region Load And Unload Initialization and Cleanup
 
+        private void CollectionView_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= CollectionView_Loaded;
+            Unloaded -= CollectionView_Unloaded;
+            ViewModel.OnLowestSelectionSet -= OnLowestSelectionSet;
+        }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
-
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+
+            CurrentView = new CollectionFreeformView();
+            xContentControl.Content = CurrentView;
+
             if (ParentDocument == MainPage.Instance.MainDocView)
             {
-
                 ParentDocument.IsMainCollection = true;
-                ParentSelectionElement?.SetSelectedElement(this);
                 xOuterGrid.BorderThickness = new Thickness(0);
+                CurrentView.InitializeAsRoot();
             }
         }
+
+        #endregion
 
         #region Operator connection stuff
 
@@ -129,15 +143,18 @@ namespace Dash
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
-            _colMenu.GoToDocumentMenu();
+            _collectionMenu.GoToDocumentMenu();
         }
 
         private void CloseMenu()
         {
-            var panel = _colMenu.Parent as Panel;
-            panel?.Children.Remove(_colMenu);
-            _colMenu.Dispose();
-            _colMenu = null;
+            // if the collection menu was already closed then return
+            if (_collectionMenu == null) return;
+
+            var panel = _collectionMenu.Parent as Panel;
+            panel?.Children.Remove(_collectionMenu);
+            _collectionMenu.Dispose();
+            _collectionMenu = null;
             xMenuColumn.Width = new GridLength(0);
         }
 
@@ -166,14 +183,14 @@ namespace Dash
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
             ViewModel.CanDragItems = true;
-            _colMenu.BackToCollectionMenu();
+            _collectionMenu.BackToCollectionMenu();
         }
 
         private void MakeSelectionModeNone()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
             ViewModel.CanDragItems = false;
-            _colMenu.BackToCollectionMenu();
+            _collectionMenu.BackToCollectionMenu();
         }
 
         private void DeleteSelection()
@@ -188,6 +205,9 @@ namespace Dash
 
         private void OpenMenu()
         {
+            // if the collcetion menu already exists then return
+            if (_collectionMenu != null) return;
+
             var multipleSelection = new Action(MakeSelectionModeMultiple);
             var deleteSelection = new Action(DeleteSelection);
             var singleSelection = new Action(MakeSelectionModeSingle);
@@ -226,8 +246,8 @@ namespace Dash
                 new MenuButton(Symbol.SelectAll, "All", menuColor, selectAll),
                 new MenuButton(Symbol.Delete, "Delete", menuColor, deleteSelection),
             };
-            _colMenu = new OverlayMenu(collectionButtons, documentButtons);
-            xMenuCanvas.Children.Add(_colMenu);
+            _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
+            xMenuCanvas.Children.Add(_collectionMenu);
             xMenuColumn.Width = new GridLength(50);
         }
 
@@ -246,45 +266,21 @@ namespace Dash
 
         #region Collection Activation
 
-        private void CollectionView_Tapped(object sender, TappedRoutedEventArgs e)
+        private void OnLowestSelectionSet(bool isLowestSelected)
         {
-            if (ParentDocument != null && ParentDocument.ViewModel.IsInInterfaceBuilder) return;
-            if (ParentDocument != null && ParentDocument.ViewModel.DocumentController.DocumentType == MainPage.MainDocumentType)
+            // if we're the lowest selected then open the menu
+            if (isLowestSelected)
             {
-                SetSelectedElement(null);
-                e.Handled = true;
-                return;
+                OpenMenu();
             }
-            if (ParentSelectionElement?.IsSelected != null && ParentSelectionElement.IsSelected)
+
+            // if we are no longer the lowest selected and we are not the main collection then close the menu
+            if (isLowestSelected == false && ParentDocument.IsMainCollection == false)
             {
-                OnSelected();
-                e.Handled = true;
+                CloseMenu();
             }
         }
-
-        protected override void OnActivated(bool isSelected)
-        {
-            if (isSelected)
-            {
-                CurrentView.IsHitTestVisible = true;
-            }
-            else
-            {
-                CurrentView.IsHitTestVisible = false;
-                ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
-                ViewModel.CanDragItems = false;
-            }
-        }
-
-        public override void OnLowestActivated(bool isLowestSelected)
-        {
-            if(_colMenu == null && isLowestSelected) OpenMenu();
-            else if (_colMenu != null && !isLowestSelected && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
-        }
-
 
         #endregion
-
-
     }
 }

@@ -12,7 +12,6 @@
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
     PointerWheelChanged="This_PointerWheelChanged"
-    Loaded="This_Loaded"
     ManipulationMode="{Binding ManipulationMode}"
     >
     

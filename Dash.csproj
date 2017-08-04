@@ -122,6 +122,7 @@
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\WebBox.cs" />
+    <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="ViewModels\CollectionViewModelExtensions.cs" />
     <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />

@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<local:SelectionElement
     x:Class="Dash.CollectionGridView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -21,7 +21,7 @@
                   AllowDrop="True"
                   DragOver="CollectionViewOnDragOver"
                   Drop="CollectionViewOnDrop"
-                  Tapped="xGridView_Tapped" Style="{StaticResource xCollectionGridViewStyle}">
+                  Tapped="OnTapped" Style="{StaticResource xCollectionGridViewStyle}">
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"
@@ -36,4 +36,4 @@
             </GridView.ItemTemplate>
         </GridView>
     </Grid>
-</UserControl>
+</local:SelectionElement>

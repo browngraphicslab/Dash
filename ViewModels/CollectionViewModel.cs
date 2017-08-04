@@ -14,55 +14,13 @@ using System.Linq;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase, ICollectionViewModel
+    public class CollectionViewModel : BaseCollectionViewModel
     {
 
-        #region Properties
-        private DocumentCollectionFieldModelController _collectionFieldModelController { get; }
-
-        public bool IsInterfaceBuilder { get; set; }
-
-        /// <summary>
-        /// The DocumentViewModels that the CollectionView actually binds to.
-        /// </summary>
-        public ObservableCollection<DocumentViewModel> DocumentViewModels
-        {
-            get { return _documentViewModels; }
-            set
-            {
-                SetProperty(ref _documentViewModels, value);
-            }
-        }
-        private ObservableCollection<DocumentViewModel> _documentViewModels;
-
-        private bool _canDragItems;
-
-        public bool CanDragItems
-        {
-            get { return _canDragItems; }
-            set { SetProperty(ref _canDragItems, value); }
-        }
-        /// <summary>
-        /// Determines the selection mode of the control currently displaying the documents
-        /// </summary>
-        public ListViewSelectionMode ItemSelectionMode
-        {
-            get { return _itemSelectionMode; }
-            set { SetProperty(ref _itemSelectionMode, value); }
-        }
-        private ListViewSelectionMode _itemSelectionMode;
-
-        /// <summary>
-        /// The size of each cell in the GridView.
-        /// </summary>
-        public double CellSize { get; set; }
-        #endregion
-
-        //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
+        private DocumentCollectionFieldModelController _collectionFieldModelController;
 
-
-        public CollectionViewModel(FieldModelController collection, bool IsInInterfaceBuilder, Context context = null)
+        public CollectionViewModel(FieldModelController collection, bool isInInterfaceBuilder, Context context = null) : base(isInInterfaceBuilder)
         {
             _selectedItems = new ObservableCollection<DocumentViewModel>();
             DocumentViewModels = new ObservableCollection<DocumentViewModel>();
@@ -97,7 +55,6 @@ namespace Dash
                         copiedContext);
                 };
             }
-            CellSize = 250;
         }
 
 
@@ -195,7 +152,7 @@ namespace Dash
             }
         }
 
-        public void AddDocuments(List<DocumentController> documents, Context context)
+        public override void AddDocuments(List<DocumentController> documents, Context context)
         {
             foreach (var doc in documents)
             {
@@ -203,7 +160,7 @@ namespace Dash
             }
         }
 
-        public void AddDocument(DocumentController doc, Context context)
+        public override void AddDocument(DocumentController doc, Context context)
         {
             if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
             {
@@ -214,7 +171,7 @@ namespace Dash
             _collectionFieldModelController.AddDocument(doc);
         }
 
-        public void RemoveDocuments(List<DocumentController> documents)
+        public override void RemoveDocuments(List<DocumentController> documents)
         {
             foreach (var doc in documents)
             {
@@ -222,7 +179,7 @@ namespace Dash
             }
         }
 
-        public void RemoveDocument(DocumentController document)
+        public override void RemoveDocument(DocumentController document)
         {
             // just update the collection, the colllection will update our view automatically
             _collectionFieldModelController.RemoveDocument(document);

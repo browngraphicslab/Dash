@@ -18,7 +18,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionGridView : UserControl
+    public sealed partial class CollectionGridView : SelectionElement
     {
         public ICollectionViewModel ViewModel { get; private set; }
 
@@ -44,11 +44,6 @@ namespace Dash
             xGridView.SelectionChanged += vm.SelectionChanged;
         }
 
-        private void xGridView_Tapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-        }
-
         #region DragAndDrop
 
         private void CollectionViewOnDragOver(object sender, DragEventArgs e)
@@ -63,5 +58,27 @@ namespace Dash
 
         #endregion
 
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+            e.Handled = true;
+        }
+
+        #endregion
     }
 }

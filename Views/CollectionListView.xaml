@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<local:SelectionElement
     x:Class="Dash.CollectionListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -24,7 +24,7 @@
                   AllowDrop="True"
                   DragOver="CollectionViewOnDragOver"
                   Drop="CollectionViewOnDrop"
-                  Tapped="HListView_Tapped"
+                  Tapped="OnTapped"
                   Style="{StaticResource ListViewStyle_SelectionEdit}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -45,4 +45,4 @@
             </ListView.ItemTemplate>
         </ListView>
     </Grid>
-</UserControl>
+</local:SelectionElement>

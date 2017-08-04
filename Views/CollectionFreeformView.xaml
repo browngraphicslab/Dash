@@ -1,4 +1,4 @@
-﻿<UserControl
+﻿<local:SelectionElement
     x:Class="Dash.CollectionFreeformView"
     x:Name="UserControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -18,7 +18,8 @@
           RightTapped="CollectionView_OnRightTapped"
           AllowDrop="True"
           DragOver="CollectionViewOnDragOver"
-          Drop="CollectionViewOnDrop">
+          Drop="CollectionViewOnDrop"
+          Tapped="OnTapped">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
@@ -50,4 +51,4 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
     </Grid>
-</UserControl>
+</local:SelectionElement>
