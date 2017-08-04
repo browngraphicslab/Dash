@@ -314,6 +314,7 @@ namespace Dash
         private void xImage_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             IsEditorModeOn = true;
+            IsClipRectVisible = true; 
         }
 
         private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                          // TODO gotta bind it to the ... the ... the clipcontroller thingy ... 
@@ -336,8 +337,8 @@ namespace Dash
         /// </summary>
         private void xImageButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (xImageButton.Background == new SolidColorBrush(Colors.Blue)) return;
-            xImageButton.Background = new SolidColorBrush(Colors.Blue);
+            if (xImageButton.Background == new SolidColorBrush(Colors.SteelBlue)) return;
+            xImageButton.Background = new SolidColorBrush(Colors.SteelBlue);
             xClipButton.Background = new SolidColorBrush(Colors.Gray);
 
             IsImageDraggerVisible = true;
@@ -349,8 +350,8 @@ namespace Dash
         /// </summary>
         private void xClipbutton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (xClipButton.Background == new SolidColorBrush(Colors.Blue)) return;
-            xClipButton.Background = new SolidColorBrush(Colors.Blue);
+            if (xClipButton.Background == new SolidColorBrush(Colors.SteelBlue)) return;
+            xClipButton.Background = new SolidColorBrush(Colors.SteelBlue);
             xImageButton.Background = new SolidColorBrush(Colors.Gray);
 
             IsClipRectVisible = true;

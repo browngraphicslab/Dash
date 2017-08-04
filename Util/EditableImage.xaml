@@ -42,26 +42,32 @@
 
     <!--edit pane-->
     <StackPanel x:Name="xEditStackPanel" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" 
-                    VerticalAlignment="Bottom" Background="#FF0F0F0F" CornerRadius="5">
+                    VerticalAlignment="Bottom" Background="#FF0F0F0F" CornerRadius="15">
 
-        <Button x:Name="xImageButton" Tapped="xImageButton_Tapped">
+        <Button Tapped="xImageButton_Tapped" Background="Transparent" Margin="2, 0, -10, 0">
             <ContentControl>
-                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" Background="DarkGray">
+                <Border x:Name="xImageButton" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" Background="Gray" CornerRadius="10, 0, 0, 10">
                     <SymbolIcon Symbol="Pictures" Foreground="WhiteSmoke"></SymbolIcon>
                 </Border>
             </ContentControl>
         </Button>
         <!--🖻-->
 
-        <Button x:Name="xClipButton" Tapped="xClipbutton_Tapped" >
+        <Button Tapped="xClipbutton_Tapped" Background="Transparent" Margin="-5, 0, 0, 0">
             <ContentControl>
-                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" Background="DarkGray">
+                <Border x:Name="xClipButton" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="40" Width="40" Background="SteelBlue" CornerRadius="0, 10, 10, 0">
                     <SymbolIcon Symbol="Crop" Foreground="WhiteSmoke" ></SymbolIcon>
                 </Border>
             </ContentControl>
         </Button>
         <!--⌗-->
 
-        <Button Background="DarkGray" Foreground="WhiteSmoke" Tapped="DoneButton_Tapped" VerticalContentAlignment="Center">Done</Button>
+        <Button Background="Transparent" Foreground="WhiteSmoke" Tapped="DoneButton_Tapped" VerticalContentAlignment="Center" >
+            <ContentControl>
+                <Border VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Height="30" Width="50"  Background="{StaticResource WindowsBlue}" CornerRadius="10">
+                    <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="WhiteSmoke">Done</TextBlock>
+                </Border>
+            </ContentControl>
+        </Button>
     </StackPanel>
 </Grid>
