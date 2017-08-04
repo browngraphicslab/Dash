@@ -63,7 +63,7 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
-            _editableImage = new EditableImage(docController);
+            _editableImage = new EditableImage(docController, context);
             var image = _editableImage.Image;
 
             SetupBindings(image, docController, context);

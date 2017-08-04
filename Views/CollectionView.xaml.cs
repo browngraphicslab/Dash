@@ -27,7 +27,7 @@ namespace Dash
         private OverlayMenu _colMenu;
         public CollectionViewModel ViewModel
         {
-            get { return DataContext as CollectionViewModel;}
+            get { return DataContext as CollectionViewModel; }
             set { DataContext = value; }
         }
         public CollectionView ParentCollection { get; set; }
@@ -45,7 +45,7 @@ namespace Dash
         private void InitializeFlyout()
         {
             _flyout = new MenuFlyout();
-            var menuItem = new MenuFlyoutItem {Text = "Add Operators"};
+            var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
             menuItem.Click += MenuItem_Click;
             _flyout.Items?.Add(menuItem);
         }
@@ -64,14 +64,14 @@ namespace Dash
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             var xCanvas = MainPage.Instance.xCanvas;
-            if(!xCanvas.Children.Contains(OperatorSearchView.Instance))
+            if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
                 xCanvas.Children.Add(OperatorSearchView.Instance);
             // set the operator menu to the current location of the flyout
             var menu = sender as MenuFlyoutItem;
             var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
             var pointOnCanvas = transform.TransformPoint(new Point());
             // reset the render transform on the operator search view
-            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();       
+            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
             var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
             if (floatBorder != null)
             {
@@ -174,13 +174,13 @@ namespace Dash
         private void CollectionGrid_DragOver(object sender, DragEventArgs e)
         {
             e.Handled = true;
-            if(ItemsCarrier.GetInstance().Source != ViewModel)
+            if (ItemsCarrier.GetInstance().Source != ViewModel)
                 e.AcceptedOperation = DataPackageOperation.Move;
         }
 
         private void CollectionGrid_Drop(object sender, DragEventArgs e)
         {
-            
+
             if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
             {
                 var action =
@@ -198,8 +198,8 @@ namespace Dash
                 //var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
                 ItemsCarrier.GetInstance().Destination = ViewModel;
                 ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
-                ItemsCarrier.GetInstance().Translate = CurrentView is CollectionFreeformView 
-                                                        ? e.GetPosition(((CollectionFreeformView) CurrentView).xItemsControl.ItemsPanelRoot) 
+                ItemsCarrier.GetInstance().Translate = CurrentView is CollectionFreeformView
+                                                        ? e.GetPosition(((CollectionFreeformView)CurrentView).xItemsControl.ItemsPanelRoot)
                                                         : new Point();
                 ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
             }
@@ -237,7 +237,7 @@ namespace Dash
             if (CurrentView is CollectionListView) return;
             ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionListView(this);
-            ((CollectionListView) CurrentView).HListView.SelectionChanged += ViewModel.SelectionChanged;
+            ((CollectionListView)CurrentView).HListView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
 
@@ -246,7 +246,7 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             ManipulationMode = ManipulationModes.None;
             CurrentView = new CollectionGridView(this);
-            ((CollectionGridView) CurrentView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
+            ((CollectionGridView)CurrentView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
 
@@ -261,8 +261,8 @@ namespace Dash
         {
             var panel = _colMenu.Parent as Panel;
             panel?.Children.Remove(_colMenu);
-            _colMenu.Dispose();
-            _colMenu = null;
+        //    _colMenu.Dispose();
+        //    _colMenu = null;
             xMenuColumn.Width = new GridLength(0);
         }
 
@@ -303,7 +303,7 @@ namespace Dash
             ParentDocument.DeleteDocument();
         }
 
-        private void OpenMenu()
+        private void MakeMenu()
         {
             var multipleSelection = new Action(MakeSelectionModeMultiple);
             var deleteSelection = new Action(DeleteSelection);
@@ -340,6 +340,11 @@ namespace Dash
                 new MenuButton(Symbol.Delete, "Delete", Colors.SteelBlue, deleteSelection),
             };
             _colMenu = new OverlayMenu(collectionButtons, documentButtons);
+        }
+
+        private void OpenMenu()
+        {
+            if (_colMenu == null) MakeMenu(); 
             xMenuCanvas.Children.Add(_colMenu);
             xMenuColumn.Width = new GridLength(50);
         }
@@ -391,7 +396,7 @@ namespace Dash
 
         public override void OnLowestActivated(bool isLowestSelected)
         {
-            if(_colMenu == null && isLowestSelected) OpenMenu();
+            if (/*_colMenu == null &&*/ isLowestSelected) OpenMenu();
             else if (_colMenu != null && !isLowestSelected && ParentDocument.ViewModel.DocumentController.DocumentType != MainPage.MainDocumentType) CloseMenu();
         }
 
@@ -400,7 +405,7 @@ namespace Dash
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if(_flyout == null)
+            if (_flyout == null)
                 InitializeFlyout();
             e.Handled = true;
             var thisUi = this as UIElement;

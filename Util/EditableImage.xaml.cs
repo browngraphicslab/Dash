@@ -93,16 +93,23 @@ namespace Dash
                 }
             }
         }
+
+        public DocumentController DocController { get; }
+        public Context Context { get; }
+
+        public RectFieldModelController ClipController
+        {
+            get { return DocController.GetDereferencedField(ImageBox.ClipKey, Context) as RectFieldModelController; }
+        }
 #endregion
 
         private ManipulationControls _imageManipulator;
 
-        public DocumentController DocController { get; }
-
-        public EditableImage(DocumentController docController)
+        public EditableImage(DocumentController docController, Context context)
         {
             InitializeComponent();
-            DocController = docController; 
+            DocController = docController;
+            Context = context; 
             _imageManipulator = new ManipulationControls(Image);
 
             IsClipRectVisible = false;
@@ -204,7 +211,7 @@ namespace Dash
         /// <summary>
         /// Moves the image and updates the position of image draggers 
         /// </summary>
-        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)                                          // TODO must update position and width height controllers!!!??????????? 
+        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)                                         // TODO must update position and width height controllers? 
         {
             var bottomLeft1 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
             var bottomRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
@@ -228,7 +235,7 @@ namespace Dash
         /// <summary>
         /// Translates the image by deltaX and deltaY; resizes the image by deltaW and deltaH 
         /// </summary>
-        private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)                                            // TODO must update position and width height controllers!!!??????????? 
+        private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)                                            // TODO must update position and width height controllers? 
         {
             var width = Image.Width + deltaW;
             var height = Image.Height + deltaH;
@@ -339,7 +346,7 @@ namespace Dash
             IsClipRectVisible = true; 
         }
 
-        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                          // TODO gotta bind it to the ... the ... the clipcontroller thingy ... 
+        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                       
         {
             IsEditorModeOn = false;
             IsImageDraggerVisible = false;
@@ -347,9 +354,20 @@ namespace Dash
 
             // accounts for image's position changing  
             var imageLeftTop = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
-            Rect clip = new Rect { X = ClipRect.X - imageLeftTop.X, Y = ClipRect.Y - imageLeftTop.Y, Width = ClipRect.Width, Height = ClipRect.Height };
+            Rect clip = new Rect { X = NormalizeWidth(ClipRect.X - imageLeftTop.X), Y = NormalizeHeight(ClipRect.Y - imageLeftTop.Y), Width = NormalizeWidth(ClipRect.Width), Height = NormalizeHeight(ClipRect.Height) };
 
-            Image.Clip = new RectangleGeometry { Rect = clip };
+            ClipController.Data = clip; 
+            //Image.Clip = new RectangleGeometry { Rect = clip };
+        }
+
+        private double NormalizeWidth(double num)
+        {
+            return (num / Image.ActualWidth) * 100; 
+        }
+
+        private double NormalizeHeight(double num)
+        {
+            return (num / Image.ActualHeight) * 100;
         }
 
         /// <summary>
