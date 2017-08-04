@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -25,7 +24,7 @@ namespace Dash
 
 
         public SearchView SearchView { get; private set; }
-        public static CollectionView AddsToThisCollection = MainPage.Instance.GetMainCollectionView();
+        public static CollectionFreeformView AddsToThisCollection = MainPage.Instance.GetMainCollectionView().CurrentView as CollectionFreeformView;
 
         private OperatorSearchView()
         {
@@ -35,44 +34,40 @@ namespace Dash
 
         private void MakeView()
         {
-            // set up the operators, these are all functions which produces new operator documents
-            var divide = new Func<DocumentController>(
-                () => OperatorDocumentModel.CreateOperatorDocumentModel(new DivideOperatorFieldModelController()));
-            var union = new Func<DocumentController>(
-                () => OperatorDocumentModel.CreateOperatorDocumentModel(new UnionOperatorFieldModelController()));
-            var intersection = new Func<DocumentController>(
-                () => OperatorDocumentModel.CreateOperatorDocumentModel(new IntersectionOperatorModelController()));
-            var filter = new Func<DocumentController>(OperatorDocumentModel.CreateFilterDocumentController);
-            var imagetoUri = new Func<DocumentController>(
-                () => OperatorDocumentModel.CreateOperatorDocumentModel(new ImageOperatorFieldModelController()));
-            var api = new Func<DocumentController>(OperatorDocumentModel.CreateApiDocumentController);
-            var map = new Func<DocumentController>(OperatorDocumentModel.CreateMapDocumentController);
-            var compoundOperator = new Func<DocumentController>(OperatorDocumentModel.CreateCompoundController);
 
 
-            var arithmetics = new ObservableCollection<KeyValuePair<string, object>>
+            var divide = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "divide");
+            var union = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "union");
+            var intersection = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "intersection");
+            var uriToImage = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "uriToImage");
+            var map = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "map");
+            var api = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "api");
+            var filter = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "filter");
+            var compound = OperationCreationHelper.Operators.FirstOrDefault(ob => ob.Name == "compound");
+
+            var arithmetics = new ObservableCollection<OperatorBuilder>
             {
-                new KeyValuePair<string, object>("divide", divide)
+                divide
             };
-            var sets = new ObservableCollection<KeyValuePair<string, object>> {
-                new KeyValuePair<string, object>("union", union),
-                new KeyValuePair<string, object>("intersection", intersection),
-                new KeyValuePair<string, object>("filter", filter)
+            var sets = new ObservableCollection<OperatorBuilder> {
+                union,
+                intersection,
+                filter
             };
-            var maps = new ObservableCollection<KeyValuePair<string, object>>
+            var maps = new ObservableCollection<OperatorBuilder>
             {
-                new KeyValuePair<string, object>("imageToUri", imagetoUri),
-                new KeyValuePair<string, object>("map", map)
+                uriToImage,
+                map
             };
-            var all = new ObservableCollection<KeyValuePair<string, object>>
+            var all = new ObservableCollection<OperatorBuilder>
             {
-                new KeyValuePair<string, object>("divide", divide),
-                new KeyValuePair<string, object>("union", union),
-                new KeyValuePair<string, object>("intersection", intersection),
-                new KeyValuePair<string, object>("imageToUri", imagetoUri),
-                new KeyValuePair<string, object>("filter", filter),
-                new KeyValuePair<string, object>("api", api),
-                new KeyValuePair<string, object>("compound", compoundOperator)
+                divide,
+                union,
+                intersection,
+                filter,
+                api, 
+                compound,
+                map
             };
 
             var categories = new List<SearchCategoryItem>

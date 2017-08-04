@@ -44,13 +44,20 @@ namespace Dash
             this.InitializeComponent();
             _richTextFieldModelController = richTextFieldModelController;
             Loaded += OnLoaded;
-            xRichEitBox.SelectionChanged += XRichEitBox_SelectionChanged;
-            xRichEitBox.LostFocus += XRichEitBox_LostFocus;
-            xRichEitBox.GotFocus += XRichEitBoxOnGotFocus;
-            xRichEitBox.TextChanged += XRichEitBoxOnTextChanged;
-            _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
+            Unloaded += UnLoaded;
+        }
+
+        private void UnLoaded(object sender, RoutedEventArgs e)
+        {
             if (_reftorichtext != null)
-                _reftorichtext.GetDocumentController(refcontext).DocumentFieldUpdated += RichTextView_DocumentFieldUpdated;
+            {
+                _reftorichtext.GetDocumentController(_refcontext).DocumentFieldUpdated -= RichTextView_DocumentFieldUpdated;
+            }
+            _richTextFieldModelController.FieldModelUpdated -= RichTextFieldModelControllerOnFieldModelUpdated;
+            xRichEitBox.TextChanged      -= XRichEitBoxOnTextChanged;
+            xRichEitBox.LostFocus        -= XRichEitBox_LostFocus;
+            xRichEitBox.GotFocus         -= XRichEitBoxOnGotFocus;
+            xRichEitBox.SelectionChanged -= XRichEitBox_SelectionChanged;
         }
 
         private void RichTextView_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
@@ -97,16 +104,20 @@ namespace Dash
 
         private async void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            if (_richTextFieldModelController.RichTextData != null)
-            {
-                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData.RtfFormatString);
-            }
-            else
-            {
-                var rtfString = await LoadText();
-                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, rtfString);
-            }
+            UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
 
+             xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData != null ? 
+                 _richTextFieldModelController.RichTextData.RtfFormatString : await LoadText());
+           
+            if (_reftorichtext != null)
+            {
+                _reftorichtext.GetDocumentController(_refcontext).DocumentFieldUpdated += RichTextView_DocumentFieldUpdated;
+            }
+            xRichEitBox.SelectionChanged += XRichEitBox_SelectionChanged;
+            xRichEitBox.LostFocus        += XRichEitBox_LostFocus;
+            xRichEitBox.GotFocus         += XRichEitBoxOnGotFocus;
+            xRichEitBox.TextChanged      += XRichEitBoxOnTextChanged;
+            _richTextFieldModelController.FieldModelUpdated += RichTextFieldModelControllerOnFieldModelUpdated;
         }
 
 

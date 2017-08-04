@@ -20,16 +20,19 @@ namespace Dash
 {
     public sealed partial class CollectionGridView : UserControl
     {
-        public CollectionGridView(CollectionView view)
+        public ICollectionViewModel ViewModel { get; private set; }
+
+        public CollectionGridView(ICollectionViewModel viewModel)
         {
+            ViewModel = viewModel;
             this.InitializeComponent();
-            xGridView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
+            xGridView.DragItemsStarting += viewModel.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted += viewModel.xGridView_OnDragItemsCompleted;
             DataContextChanged += OnDataContextChanged;
             Binding selectionBinding = new Binding
             {
-                Source = view.ViewModel,
-                Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
+                Source = viewModel,
+                Path = new PropertyPath(nameof(viewModel.ItemSelectionMode)),
                 Mode = BindingMode.OneWay,
             };
             xGridView.SetBinding(ListViewBase.SelectionModeProperty, selectionBinding);
@@ -46,32 +49,19 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void XGridView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        #region DragAndDrop
+
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
         {
-            args.Handled = true;
-            if (args.Phase != 0) throw new Exception("Please start in stage 0");
-            var rootGrid = (Grid) args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView) rootGrid?.FindName("Backdrop");
-            var border = (Border) rootGrid?.FindName("xBorder");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            backdrop.Visibility = Visibility.Visible;
-            Debug.Assert(border != null, "border != null");
-            border.Visibility = Visibility.Collapsed;
-            args.RegisterUpdateCallback(RenderDocumentPhaseOne);
+            ViewModel.CollectionViewOnDragOver(sender, e);
         }
 
-        private void RenderDocumentPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            if (args.Phase != 1) throw new Exception("Please start in phase 1");
-            var rootGrid = (Grid) args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView) rootGrid.FindName("Backdrop");
-            var border = (Border) rootGrid.FindName("xBorder");
-            var canvas = (Canvas) border.FindName("xDocumentCanvas");
-            var document = (DocumentView) canvas.FindName("xDocumentDisplay");
-            backdrop.Visibility = Visibility.Collapsed;
-            border.Visibility = Visibility.Visible;
-            document.IsHitTestVisible = false;
-            document.DataContext = ((CollectionViewModel) DataContext).DataBindingSource[args.ItemIndex];
+            ViewModel.CollectionViewOnDrop(sender, e);
         }
+
+        #endregion
+
     }
 }

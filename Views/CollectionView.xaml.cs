@@ -32,7 +32,7 @@ namespace Dash
         }
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
-        private MenuFlyout _flyout;
+
 
         public CollectionView(CollectionViewModel vm)
         {
@@ -42,47 +42,7 @@ namespace Dash
             xContentControl.Content = CurrentView;
         }
 
-        private void InitializeFlyout()
-        {
-            _flyout = new MenuFlyout();
-            var menuItem = new MenuFlyoutItem {Text = "Add Operators"};
-            menuItem.Click += MenuItem_Click;
-            _flyout.Items?.Add(menuItem);
-        }
 
-        private void DisposeFlyout()
-        {
-            if (_flyout.Items != null)
-                foreach (var item in _flyout.Items)
-                {
-                    var menuFlyoutItem = item as MenuFlyoutItem;
-                    if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
-                }
-            _flyout = null;
-        }
-
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            var xCanvas = MainPage.Instance.xCanvas;
-            if(!xCanvas.Children.Contains(OperatorSearchView.Instance))
-                xCanvas.Children.Add(OperatorSearchView.Instance);
-            // set the operator menu to the current location of the flyout
-            var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
-            var pointOnCanvas = transform.TransformPoint(new Point());
-            // reset the render transform on the operator search view
-            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();       
-            var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
-            if (floatBorder != null)
-            {
-                Canvas.SetLeft(floatBorder, 0);
-                Canvas.SetTop(floatBorder, 0);
-            }
-            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X - 250);
-            Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
-            OperatorSearchView.AddsToThisCollection = this;
-            DisposeFlyout();
-        }
 
         private void CollectionView_Loaded(object sender, RoutedEventArgs e)
         {
@@ -137,90 +97,6 @@ namespace Dash
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
 
-        public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
-        {
-            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
-            var carrier = ItemsCarrier.GetInstance();
-            carrier.Source = ViewModel;
-            foreach (var item in e.Items)
-                carrier.Payload.Add(item as DocumentViewModel);
-            e.Data.RequestedOperation = DataPackageOperation.Move;
-        }
-
-        public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
-        {
-            if (args.DropResult == DataPackageOperation.Move && !ViewModel.KeepItemsOnMove)
-                ChangeDocuments(ItemsCarrier.GetInstance().Payload, false);
-            //RefreshItemsBinding();
-            ViewModel.KeepItemsOnMove = true;
-            var carrier = ItemsCarrier.GetInstance();
-            carrier.Payload.Clear();
-            carrier.Source = null;
-            carrier.Destination = null;
-            carrier.Translate = new Point();
-            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.xCanvas_DragOver;
-        }
-
-        private void ChangeDocuments(List<DocumentViewModel> docViewModels, bool add)
-        {
-            var docControllers = docViewModels.Select(item => item.DocumentController);
-            var controller = ViewModel.CollectionFieldModelController;
-            if (controller == null) return;
-            foreach (var item in docControllers)
-                if (add) controller.AddDocument(item);
-                else controller.RemoveDocument(item);
-        }
-
-        private void CollectionGrid_DragOver(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-            if(ItemsCarrier.GetInstance().Source != ViewModel)
-                e.AcceptedOperation = DataPackageOperation.Move;
-        }
-
-        private void CollectionGrid_Drop(object sender, DragEventArgs e)
-        {
-            
-            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
-            {
-                var action =
-                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<CollectionView, DragEventArgs>;
-                if (action == null) return;
-                action.Invoke(this, e);
-                e.Handled = true;
-
-                return;
-            }
-            e.Handled = true;
-            RefreshItemsBinding();
-            if (ItemsCarrier.GetInstance().Source != null)
-            {
-                //var text = await e.DataView.GetTextAsync(StandardDataFormats.Html).AsTask();
-                ItemsCarrier.GetInstance().Destination = ViewModel;
-                ItemsCarrier.GetInstance().Source.KeepItemsOnMove = false;
-                ItemsCarrier.GetInstance().Translate = CurrentView is CollectionFreeformView 
-                                                        ? e.GetPosition(((CollectionFreeformView) CurrentView).xItemsControl.ItemsPanelRoot) 
-                                                        : new Point();
-                ChangeDocuments(ItemsCarrier.GetInstance().Payload, true);
-            }
-        }
-
-        private void RefreshItemsBinding()
-        {
-            var isGridView = CurrentView as CollectionGridView;
-            var isListView = CurrentView as CollectionListView;
-            if (isGridView != null)
-            {
-                isGridView.xGridView.ItemsSource = null;
-                isGridView.xGridView.ItemsSource = ViewModel.DataBindingSource;
-            }
-            else if (isListView != null)
-            {
-                isListView.HListView.ItemsSource = null;
-                isListView.HListView.ItemsSource = ViewModel.DataBindingSource;
-            }
-        }
-
         #endregion
 
         #region Menu
@@ -236,7 +112,8 @@ namespace Dash
         {
             if (CurrentView is CollectionListView) return;
             ManipulationMode = ManipulationModes.None;
-            CurrentView = new CollectionListView(this);
+            CurrentView = new CollectionListView(ViewModel);
+            // TODO see if these methods can be abstracted
             ((CollectionListView) CurrentView).HListView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
@@ -245,7 +122,8 @@ namespace Dash
         {
             if (CurrentView is CollectionGridView) return;
             ManipulationMode = ManipulationModes.None;
-            CurrentView = new CollectionGridView(this);
+            CurrentView = new CollectionGridView(ViewModel);
+            // TODO see if these methods can be abstracted
             ((CollectionGridView) CurrentView).xGridView.SelectionChanged += ViewModel.SelectionChanged;
             xContentControl.Content = CurrentView;
         }
@@ -272,7 +150,7 @@ namespace Dash
             if (view != null)
             {
                 var gridView = view.xGridView;
-                if (gridView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
+                if (gridView.SelectedItems.Count != ViewModel.DocumentViewModels.Count)
                     gridView.SelectAll();
                 else gridView.SelectedItems.Clear();
             }
@@ -280,7 +158,7 @@ namespace Dash
             if (currentView != null)
             {
                 var listView = currentView.HListView;
-                if (listView.SelectedItems.Count != ViewModel.DataBindingSource.Count)
+                if (listView.SelectedItems.Count != ViewModel.DocumentViewModels.Count)
                     listView.SelectAll();
                 else
                     listView.SelectedItems.Clear();
@@ -290,6 +168,14 @@ namespace Dash
         private void MakeSelectionModeSingle()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Single;
+            ViewModel.CanDragItems = true;
+            _colMenu.BackToCollectionMenu();
+        }
+
+        private void MakeSelectionModeNone()
+        {
+            ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
+            ViewModel.CanDragItems = false;
             _colMenu.BackToCollectionMenu();
         }
 
@@ -308,6 +194,7 @@ namespace Dash
             var multipleSelection = new Action(MakeSelectionModeMultiple);
             var deleteSelection = new Action(DeleteSelection);
             var singleSelection = new Action(MakeSelectionModeSingle);
+            var noSelection = new Action(MakeSelectionModeNone);
             var selectAll = new Action(SelectAllItems);
             var setGrid = new Action(SetGridView);
             var setList = new Action(SetListView);
@@ -331,7 +218,7 @@ namespace Dash
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, singleSelection)
+                new MenuButton(Symbol.Back, "Back", Colors.SteelBlue, noSelection)
                 {
                     RotateOnTap = true
                 },
@@ -398,14 +285,6 @@ namespace Dash
 
         #endregion
 
-        private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            if(_flyout == null)
-                InitializeFlyout();
-            e.Handled = true;
-            var thisUi = this as UIElement;
-            var position = e.GetPosition(thisUi);
-            _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
-        }
+
     }
 }

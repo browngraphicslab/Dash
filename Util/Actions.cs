@@ -41,7 +41,7 @@ namespace Dash
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var where = Util.GetCollectionDropPoint(
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
             MainPage.Instance.DisplayDocument(opModel, where);
@@ -107,9 +107,9 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(o, e);
         }
 
-        public static void AddOperator(object obj)
+        public static void AddOperator(Func<DocumentController> documentCreationFunc)
         {
-            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
+            var freeForm = OperatorSearchView.AddsToThisCollection;
 
             if (freeForm == null)
             {
@@ -119,27 +119,26 @@ namespace Dash
             var searchView = OperatorSearchView.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
+            var translate = transform.TransformPoint(new Point());
 
-            var opCreator = obj as KeyValuePair<string, object>? ?? new KeyValuePair<string, object>();
-            var opController = (opCreator.Value as Func<DocumentController>)?.Invoke();
+            var opController = documentCreationFunc?.Invoke();
 
             // using this as a setter for the transform massive hack - LM
-            var opvm = new DocumentViewModel(opController)
+            var _ = new DocumentViewModel(opController)
             {
                 GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
             };
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opController);
+                OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
             }
         }
         
         public static void AddCollection(CollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -189,44 +188,60 @@ namespace Dash
         /// <summary>
         ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
         /// </summary>
-        /// <param name="docModel"></param>
+        /// <param name="docController"></param>
         /// <param name="where"></param>
         /// <param name="collection"></param>
-        public static void DisplayDocument(CollectionView collection, DocumentController docModel, Point? where = null)
+        public static void DisplayDocument(CollectionView collection, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
-                var h = docModel.GetHeightField().Data; 
-                var w = docModel.GetWidthField().Data;
+                var h = docController.GetHeightField().Data; 
+                var w = docController.GetWidthField().Data;
 
                 var pos = (Point)where;
-                docModel.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
+                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
-            var children = collection.ViewModel.CollectionFieldModelController;
-            children?.AddDocument(docModel);
-            DBTest.DBDoc.AddChild(docModel);
+            collection.ViewModel.AddDocument(docController, null); 
+            DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddApiCreator(CollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             var a = new ApiDocumentModel().Document;
             DisplayDocument(collection, a, where);
         }
 
-        public static void AddDocuments(CollectionView col, DragEventArgs e)
+        public static void AddDocuments(CollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(col, d, where);
+            //Make second collection
+            var numbers2 = new Numbers().Document;
+            var fields2 = new Dictionary<Key, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new[]
+                    {numbers2})
+            };
+            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var layoutDoc2 =
+                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
+            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
+
+            //Display collections
+            DisplayDocument(collection, col2, where);
         }
 
-        public static void AddNotes(CollectionView col, DragEventArgs e)
+        public static void AddNotes(CollectionView collection, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            DisplayDocument(col, postitNote, where);
+            DisplayDocument(collection, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)
