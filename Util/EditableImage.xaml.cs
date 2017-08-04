@@ -346,7 +346,7 @@ namespace Dash
             IsClipRectVisible = true; 
         }
 
-        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                       
+        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                                                                     
         {
             IsEditorModeOn = false;
             IsImageDraggerVisible = false;
@@ -356,7 +356,10 @@ namespace Dash
             var imageLeftTop = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
             Rect clip = new Rect { X = NormalizeWidth(ClipRect.X - imageLeftTop.X), Y = NormalizeHeight(ClipRect.Y - imageLeftTop.Y), Width = NormalizeWidth(ClipRect.Width), Height = NormalizeHeight(ClipRect.Height) };
 
-            ClipController.Data = clip; 
+            // updates controllers 
+            ClipController.Data = clip;
+            var positionController = DocController.GetDereferencedField(DashShared.DashConstants.KeyStore.PositionFieldKey, Context) as PointFieldModelController;
+            positionController.Data = new Point(imageLeftTop.X, imageLeftTop.Y); 
             //Image.Clip = new RectangleGeometry { Rect = clip };
         }
 
