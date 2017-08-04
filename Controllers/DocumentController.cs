@@ -271,7 +271,7 @@ namespace Dash
                             if (count < refs.Count())
                                 opModel.SetField(i.Key, refs[count++], true);
                         (useProto ? proto:this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
-                        Debug.WriteLine("Value = " + GetDereferencedField(key, null));
+                        Debug.WriteLine("Value = " + (useProto ? proto : this).GetDereferencedField(key, null));
                     }
                     else
                     {
@@ -293,7 +293,7 @@ namespace Dash
                         }
                         else // start of path isn't a value ... treat it as a field and search for documents that reference this document that have it as a field
                         {
-                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+                            var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, strings[0], strings[0]);
                             SetField(key, new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey), true);
                         }
                         Debug.WriteLine("Value = " + GetDereferencedField(key, null));

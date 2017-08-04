@@ -121,7 +121,7 @@ namespace Dash
             SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
             return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce); 

@@ -4,6 +4,8 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Windows.UI.Xaml.Data;
+using Dash.Converters;
 
 namespace Dash
 {
@@ -79,19 +81,28 @@ namespace Dash
         /// </summary>
         public ReferenceFieldModel ReferenceFieldModel => FieldModel as ReferenceFieldModel;
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+            return GetTableCellViewOfScrollableText((tb) => BindTextOrSetOnce(tb, context));
         }
 
         public override FieldModelController GetDefaultController()
         {
             throw new NotImplementedException();
         }
+        
+        public DocumentCollectionFieldModelController DocumentCollectionFieldModelController => DereferenceToRoot<DocumentCollectionFieldModelController>(null);
+        public DocumentFieldModelController DocumentFieldModelController => DereferenceToRoot<DocumentFieldModelController>(null);
 
-        private void BindTextOrSetOnce(TextBlock textBlock)
+        private void BindTextOrSetOnce(TextBlock textBlock, Context context)
         {
-            textBlock.Text = $"Reference to a field: {FieldKey.Name}";
+            Binding textBinding = new Binding
+            {
+                Source = this,
+                Converter = new BoundReferenceToStringConverter(context),
+                Mode = BindingMode.OneWay
+            };
+            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
         public override FieldModelController Copy()

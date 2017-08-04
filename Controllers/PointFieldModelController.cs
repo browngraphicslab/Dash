@@ -24,7 +24,7 @@ namespace Dash
             Data = ((PointFieldModelController) fieldModel).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }

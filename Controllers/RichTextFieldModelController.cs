@@ -60,7 +60,7 @@ namespace Dash
             }
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             var richTextView = new RichTextView(this, null, null)
             {

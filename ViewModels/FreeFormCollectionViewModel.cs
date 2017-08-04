@@ -21,8 +21,8 @@ namespace Dash
 
         public ObservableCollection<DocumentViewModel> DocumentViewModels
         {
-            get => _documentViewModels;
-            set => SetProperty(ref _documentViewModels, value);
+            get { return _documentViewModels; }
+            set { SetProperty(ref _documentViewModels, value); }
         }
 
         public double CellSize { get; set; }

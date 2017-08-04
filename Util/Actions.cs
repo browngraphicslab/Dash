@@ -235,6 +235,10 @@ namespace Dash
 
             //Display collections
             DisplayDocument(collection, col2, where);
+
+
+            foreach (var d in new DBTest().Documents)
+                DisplayDocument(collection, d, where);
         }
 
         public static void AddNotes(CollectionView collection, DragEventArgs e)
