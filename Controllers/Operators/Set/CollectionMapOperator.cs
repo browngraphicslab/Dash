@@ -13,9 +13,9 @@ namespace Dash
     {
         public static readonly DocumentType MapType = new DocumentType("60B60218-966F-47F1-8291-B2FD5EEE444F", "Map");
 
-        public static readonly Key InputOperatorKey = new Key("520F5DC4-005E-4F0D-91A3-099358990E40", "Input Operator");
+        public static readonly KeyController InputOperatorKey = new KeyController("520F5DC4-005E-4F0D-91A3-099358990E40", "Input Operator");
 
-        public static readonly Key OutputCollectionKey = new Key("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
+        public static readonly KeyController OutputCollectionKey = new KeyController("5AB32970-0950-45BE-87CB-1FD82B38892E", "Output Collection");
 
         public CollectionMapOperator() : base(new OperatorFieldModel("CollectionMap"))
         {
@@ -26,12 +26,12 @@ namespace Dash
             return new CollectionMapOperator();
         }
 
-        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>()
+        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
             [InputOperatorKey] = TypeInfo.Operator
         };
 
-        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>()
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>()
         {
             [OutputCollectionKey] = TypeInfo.Collection
         };
@@ -58,15 +58,15 @@ namespace Dash
             }
         }
 
-        public Dictionary<Key, Key> InputKeyMap { get; set; } = new Dictionary<Key, Key>();
+        public Dictionary<KeyController, KeyController> InputKeyMap { get; set; } = new Dictionary<KeyController, KeyController>();
 
-        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
             OperatorFieldModelController operatorController = inputs[InputOperatorKey] as OperatorFieldModelController;
-            Dictionary<Key, FieldModelController> operatorInputs = new Dictionary<Key, FieldModelController>();
-            Dictionary<Key, FieldModelController> operatorOutputs = new Dictionary<Key, FieldModelController>();
+            Dictionary<KeyController, FieldModelController> operatorInputs = new Dictionary<KeyController, FieldModelController>();
+            Dictionary<KeyController, FieldModelController> operatorOutputs = new Dictionary<KeyController, FieldModelController>();
 
-            List<Key> keys = new List<Key>();
+            List<KeyController> keys = new List<KeyController>();
             List<List<DocumentController>> collections = new List<List<DocumentController>>();
             int numDocuments = -1;
             foreach (var key in inputs.Keys)

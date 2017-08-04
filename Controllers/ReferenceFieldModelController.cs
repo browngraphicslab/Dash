@@ -20,11 +20,11 @@ namespace Dash
             docController.AddFieldUpdatedListener(FieldKey, DocFieldUpdated);
         }
 
-        public ReferenceFieldModelController(string documentId, Key fieldKey) : this(
+        public ReferenceFieldModelController(string documentId, KeyController fieldKey) : this(
             new DocumentFieldReference(documentId, fieldKey))
         { }
 
-        public ReferenceFieldModelController(FieldReference documentReference, Key fieldKey) : this(
+        public ReferenceFieldModelController(FieldReference documentReference, KeyController fieldKey) : this(
             new DocumentPointerFieldReference(documentReference, fieldKey))
         {
         }
@@ -46,7 +46,7 @@ namespace Dash
             set { ReferenceFieldModel.Reference = value; }
         }
 
-        public Key FieldKey => FieldReference.FieldKey;
+        public KeyController FieldKey => FieldReference.FieldKey;
 
         public DocumentController GetDocumentController(Context context)
         {

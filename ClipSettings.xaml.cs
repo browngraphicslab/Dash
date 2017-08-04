@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Converters;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -45,21 +46,23 @@ namespace Dash
 
         private void InitializeClip(RectFieldModelController clipController)
         {
-            UpdateTextBoxes(clipController);
-            clipController.FieldModelUpdated += (ss, args, cc) =>
-            {
-                UpdateTextBoxes(clipController);
-            };
+            ClipBindingHelper(xClipXTextBox, "X", clipController.Data);
+            ClipBindingHelper(xClipYTextBox, "Y", clipController.Data);
+            ClipBindingHelper(xClipWidthTextBox, "Width", clipController.Data);
+            ClipBindingHelper(xClipHeightTextBox, "Height", clipController.Data);
         }
 
-        private void UpdateTextBoxes(RectFieldModelController clipController)
+        private void ClipBindingHelper(TextBox tb, string path, Rect clipRect)
         {
-            xClipXTextBox.Text = "" + clipController.Data.X;
-            xClipYTextBox.Text = "" + clipController.Data.Y;
-            xClipWidthTextBox.Text = "" + clipController.Data.Width;
-            xClipHeightTextBox.Text = "" + clipController.Data.Height;
+            var binding = new Binding
+            {
+                Source = clipRect,
+                Path = new PropertyPath(path),
+                Converter = new DoubleToStringConverter()
+            };
+            tb.SetBinding(TextBox.TextProperty, binding);
         }
-
+        
         private RectFieldModelController ClipController()
         {
             return _documentController.GetDereferencedField(ImageBox.ClipKey, _context) as RectFieldModelController;

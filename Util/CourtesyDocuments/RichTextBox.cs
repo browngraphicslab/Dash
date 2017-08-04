@@ -22,7 +22,7 @@ namespace Dash
         {
             RichTextView rtv = null;
             var refToRichText =
-                docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             Debug.Assert(refToRichText != null);
             var fieldModelController = refToRichText.DereferenceToRoot(context);
             if (fieldModelController is RichTextFieldModelController)

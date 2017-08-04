@@ -33,16 +33,16 @@ namespace DashWebServer.Controllers
 
         // GET api/document/5, returns the document with the given ID
         [HttpGet("{id}")]
-        public async Task<ServerDocumentModel> Get(string id)
+        public async Task<DocumentModel> Get(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<ServerDocumentModel>(id);
+            return await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
         }
 
         // POST api/document, adds a new document from the given docModel
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]ServerDocumentModel docModel)
+        public async Task<IActionResult> Post([FromBody]DocumentModel docModel)
         {
-            ServerDocumentModel DocModel;
+            DocumentModel DocModel;
             try {
                 Debug.WriteLine(docModel);
                 // add the shape model to the documentRepository
@@ -60,9 +60,9 @@ namespace DashWebServer.Controllers
 
         // PUT api/document, pushes updates of a given DocumentModel into the server?
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody]ServerDocumentModel docModel)
+        public async Task<IActionResult> Put([FromBody]DocumentModel docModel)
         {
-            ServerDocumentModel DocModel;
+            DocumentModel DocModel;
             try {
                 DocModel = await _documentRepository.UpdateItemAsync(docModel);
             }
@@ -81,7 +81,7 @@ namespace DashWebServer.Controllers
         {
             try
             {
-                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<ServerDocumentModel>(id));
+                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<DocumentModel>(id));
             }
             catch (Exception e)
             {

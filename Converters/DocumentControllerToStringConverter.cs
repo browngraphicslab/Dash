@@ -23,14 +23,14 @@ namespace Dash.Converters
 
         string GetPrimaryKeyString(DocumentController data)
         {
-            var keyList = data.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, _context);
+            var keyList = data.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
                 var docString = "<";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.GetDereferencedField(new Key((k as TextFieldModelController).Data), _context);
+                    var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), _context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                     else if (keyField is DocumentFieldModelController)
@@ -86,14 +86,14 @@ namespace Dash.Converters
         public override string ConvertDataToXaml(DocumentController data, object parameter = null)
         {
             _doc = data;
-            var keyList = data.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, _context);
+            var keyList = data.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
                 var docString = "<";
                 foreach (var k in keys.Data)
                 {
-                    var keyField = data.GetDereferencedField(new Key((k as TextFieldModelController).Data), _context);
+                    var keyField = data.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), _context);
                     if (keyField is TextFieldModelController)
                         docString += (keyField as TextFieldModelController).Data + " ";
                 }
@@ -105,7 +105,7 @@ namespace Dash.Converters
         public override DocumentController ConvertXamlToData(string xaml, object parameter = null)
         {
             var values = xaml.TrimStart('<').TrimEnd('>').Split(' ');
-            var keyList = _doc?.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, _context);
+            var keyList = _doc?.GetDereferencedField(KeyStore.PrimaryKeyKey, _context);
             var keys = keyList as ListFieldModelController<TextFieldModelController>;
             if (keys != null)
             {
@@ -115,7 +115,7 @@ namespace Dash.Converters
                         bool found = true;
                         foreach (var k in keys.Data)
                         {
-                            var key = new Key((k as TextFieldModelController).Data);
+                            var key = new KeyController((k as TextFieldModelController).Data);
                             var index = keys.Data.IndexOf(k);
                             var derefValue = (dmc.GetDereferencedField(key, _context) as TextFieldModelController)?.Data;
                             if (derefValue != null)

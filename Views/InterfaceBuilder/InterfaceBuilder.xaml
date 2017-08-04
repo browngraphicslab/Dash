@@ -46,13 +46,13 @@
 
                 <local:CollectionFreeformView x:Name="xDocumentPane" Grid.Column="1"></local:CollectionFreeformView>
 
-                <Grid  Grid.Column="2">
+                <Grid Grid.Column="2" >
                     <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" 
                   Background="White" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1,0,0,0">
                     </Grid>
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5">
+                    <StackPanel x:Name="xLayoutNamePanel"  Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5" >
                         <TextBlock Padding="0,0,8,0" VerticalAlignment="Top" FontWeight="Medium" >Layout: </TextBlock>
-                        <TextBox x:Name="xLayoutTextBox" Background="Transparent" BorderThickness="0" VerticalAlignment="Top" Padding="0,0,0,3"></TextBox>
+                        <TextBox x:Name="xLayoutTextBox" Background="Transparent" BorderThickness="0" VerticalAlignment="Top" Padding="0,0,0,3" IsTabStop="False"></TextBox>
                     </StackPanel>
                 </Grid>
 

@@ -11,7 +11,7 @@ namespace Dash
     {
         public FieldReference DocumentReference { get; set; }
 
-        public DocumentPointerFieldReference(FieldReference documentReference, Key fieldKey) : base(fieldKey)
+        public DocumentPointerFieldReference(FieldReference documentReference, KeyController fieldKey) : base(fieldKey)
         {
             DocumentReference = documentReference;
         }

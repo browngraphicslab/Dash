@@ -46,7 +46,7 @@ namespace Dash
             InitializeComponent();
 
             // create the collection document model using a request
-            var fields = new Dictionary<Key, FieldModelController>();
+            var fields = new Dictionary<KeyController, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, MainDocumentType);
             var collectionDocumentController =
@@ -193,9 +193,9 @@ namespace Dash
             // make document
             // generate single-image document model
             var m = new ImageFieldModelController(new Uri(url));
-            var fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldModelController>
             {
-                [new Key("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
+                [new KeyController("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
             };
 
             var col = new DocumentController(fields, new DocumentType("dragimage", "dragimage"));

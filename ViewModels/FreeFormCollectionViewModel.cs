@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Windows.UI.Xaml.Controls;
@@ -28,7 +29,6 @@ namespace Dash
         public double CellSize { get; set; }
         public bool CanDragItems { get; set; }
         public ListViewSelectionMode ItemSelectionMode { get; set; }
-
 
         public void AddDocuments(List<DocumentController> documents, Context context)
         {

@@ -8,14 +8,14 @@ namespace Dash
     public class AnnotatedImage : CourtesyDocument
     {
         public static DocumentType ImageDocType = new DocumentType("41E1280D-1BA9-4C3F-AE72-4080677E199E", "Image Doc");
-        public static Key Image1FieldKey = new Key("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Annotate Image");
-        public static Key TextFieldKey = new Key("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
+        public static KeyController Image1FieldKey = new KeyController("827F581B-6ECB-49E6-8EB3-B8949DE0FE21", "Annotate Image");
+        public static KeyController TextFieldKey = new KeyController("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
         static DocumentController _prototypeDoc = CreatePrototypeDoc();
         static DocumentController _prototypeLayout = CreatePrototypeLayout();
 
         static DocumentController CreatePrototypeDoc()
         {
-            return new DocumentController(new Dictionary<Key, FieldModelController>(), ImageDocType);
+            return new DocumentController(new Dictionary<KeyController, FieldModelController>(), ImageDocType);
         }
 
         /// <summary>
@@ -34,9 +34,9 @@ namespace Dash
 
             var prototypeLayout = new StackLayout(new DocumentController[] { prototypeImage1Layout.Document, prototypeTextLayout.Document }, true);
 
-            prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.WidthFieldKey), true);
-            prototypeImage1Layout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), DashConstants.KeyStore.HeightFieldKey), true);
+            prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
+            prototypeImage1Layout.Document.SetField(KeyStore.WidthFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.WidthFieldKey), true);
+            prototypeImage1Layout.Document.SetField(KeyStore.HeightFieldKey, new ReferenceFieldModelController(prototypeLayout.Document.GetId(), KeyStore.HeightFieldKey), true);
 
             return prototypeLayout.Document;
         }
@@ -47,9 +47,9 @@ namespace Dash
             Document.SetField(Image1FieldKey, new ImageFieldModelController(imageUri), true);
             Document.SetField(TextFieldKey, new TextFieldModelController(text), true);
             var docLayout = _prototypeLayout.MakeDelegate();
-            docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
-            docLayout.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(250), true);
-            docLayout.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+            docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+            docLayout.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(250), true);
+            docLayout.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             //SetLayoutForDocument(Document, docLayout);
         }
 

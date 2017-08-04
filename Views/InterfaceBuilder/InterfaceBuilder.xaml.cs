@@ -41,6 +41,9 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
+
+            xLayoutNamePanel.PointerEntered += (s,e) => xLayoutTextBox.IsTabStop = true;
+            xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
 
         /// <summary>
@@ -121,7 +124,7 @@ namespace Dash
             if (isDraggedFromKeyValuePane)
             {
                 // get data variables from the DragArgs
-                var kvp = (KeyValuePair<Key, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
+                var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
                 var dataDocController = kvp.Value;
                 var dataKey = kvp.Key;
                 var context = new Context(dataDocController);
@@ -136,16 +139,16 @@ namespace Dash
                 if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
-                    var widthOffset = (layoutDocument.GetField(DashConstants.KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
-                    var heightOffset = (layoutDocument.GetField(DashConstants.KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
+                    var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
+                    var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
                     var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
                     //var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
-                    layoutDocument.SetField(DashConstants.KeyStore.PositionFieldKey, positionController, forceMask: true);
+                    layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
                 // add the document to the composite
                 //if (layoutContainer.DataDocument != null) context.AddDocumentContext(layoutContainer.DataDocument);
-                var data = layoutContainer.LayoutDocument.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
+                var data = layoutContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
                 data?.AddDocument(layoutDocument);
             }
             else if (isDraggedFromLayoutBar)
@@ -172,7 +175,7 @@ namespace Dash
                 }
                 if (newLayoutDocument != null)
                 {
-                    var col = layoutContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+                    var col = layoutContainer.LayoutDocument.GetField(KeyStore.DataKey) as
                         DocumentCollectionFieldModelController;
                     col?.AddDocument(newLayoutDocument);
                 }
@@ -180,7 +183,7 @@ namespace Dash
         }
 
         private static DocumentController GetLayoutDocumentForData(FieldModelController fieldModelController,
-            DocumentController docController, Key key, Context context)
+            DocumentController docController, KeyController key, Context context)
         {
             DocumentController layoutDocument = null;
             if (fieldModelController is TextFieldModelController)
@@ -287,7 +290,7 @@ namespace Dash
             //if (_selectedContainer.ParentContainer != null)
             //{
             //    var collection =
-            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(DashConstants.KeyStore.DataKey) as
+            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(KeyStore.DataKey) as
             //            DocumentCollectionFieldModelController;
             //    collection?.RemoveDocument(_selectedContainer.LayoutDocument);
             //    _selectedContainer.ParentContainer.SetSelectedContainer(null);

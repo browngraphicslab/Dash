@@ -146,7 +146,7 @@ namespace Dash
             {
                 numbers.Add(new Numbers().Document);
             }
-            var fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldModelController>
             {
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
@@ -158,14 +158,14 @@ namespace Dash
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey,
+            col.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
+            col.SetField(KeyStore.LayoutListKey,
                 new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc}), true);
 
             //Make second collection
             var numbers2 = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
-            var fields2 = new Dictionary<Key, FieldModelController>
+            var fields2 = new Dictionary<KeyController, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]
@@ -176,8 +176,8 @@ namespace Dash
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
-            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
-            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(KeyStore.LayoutListKey,
                 new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc2}), true);
 
             //Display collections
@@ -218,7 +218,7 @@ namespace Dash
 
             //Make second collection
             var numbers2 = new Numbers().Document;
-            var fields2 = new Dictionary<Key, FieldModelController>
+            var fields2 = new Dictionary<KeyController, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]
@@ -229,8 +229,8 @@ namespace Dash
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
-            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
-            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(KeyStore.LayoutListKey,
                 new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
 
             //Display collections

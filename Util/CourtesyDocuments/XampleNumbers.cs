@@ -12,11 +12,11 @@ namespace Dash
         public static DocumentType NumbersType =
             new DocumentType("8FC422AB-015E-4B72-A28B-16271808C888", "Numbers");
 
-        public static Key Number1FieldKey = new Key("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
-        public static Key Number2FieldKey = new Key("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
-        public static Key Number3FieldKey = new Key("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
-        public static Key Number4FieldKey = new Key("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
-        public static Key Number5FieldKey = new Key("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
+        public static KeyController Number1FieldKey = new KeyController("0D3B939F-1E74-4577-8ACC-0685111E451C", "Number1");
+        public static KeyController Number2FieldKey = new KeyController("56162B53-B02D-4880-912F-9D66B5F1F15B", "Number2");
+        public static KeyController Number3FieldKey = new KeyController("61C34393-7DF7-4F26-9FDF-E0B138532F39", "Number3");
+        public static KeyController Number4FieldKey = new KeyController("953D09E5-5770-4ED3-BC3F-76DFB22619E8", "Number4");
+        public static KeyController Number5FieldKey = new KeyController("F59AAEC1-FCB6-4543-89CB-13ED5C5FD893", "Number5");
 
         private static Random r = new Random();
 
@@ -61,7 +61,7 @@ namespace Dash
             new RowDefinition{Height = new GridLength(1, GridUnitType.Star)}
         });
             gridPanel.SetHorizontalAlignment(HorizontalAlignment.Right);
-            gridPanel.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+            gridPanel.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             tBox1.SetGridRow(0);
             gridPanel.AddChild(tBox1);
             tBox2.SetGridRow(1);

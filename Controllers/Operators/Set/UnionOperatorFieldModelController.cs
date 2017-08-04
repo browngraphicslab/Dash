@@ -8,19 +8,19 @@ namespace Dash
     class UnionOperatorFieldModelController : OperatorFieldModelController
     {
         //Input keys
-        public static readonly Key AKey = new Key("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
-        public static readonly Key BKey = new Key("740CE0AA-C7FD-4E78-9FC7-C7ED5E828260", "Input B");
+        public static readonly KeyController AKey = new KeyController("FBEBB4BE-5077-4ADC-8DAD-61142C301F61", "Input A");
+        public static readonly KeyController BKey = new KeyController("740CE0AA-C7FD-4E78-9FC7-C7ED5E828260", "Input B");
 
         //Output keys
-        public static readonly Key UnionKey = new Key("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
+        public static readonly KeyController UnionKey = new KeyController("914B682E-E30C-46C5-80E2-7EC6B0B5C0F6", "Union");
 
-        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [AKey] = TypeInfo.Collection,
             [BKey] = TypeInfo.Collection
         };
 
-        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [UnionKey] = TypeInfo.Collection
         };
@@ -34,7 +34,7 @@ namespace Dash
         {
         }
 
-        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
             DocumentCollectionFieldModelController setA = (DocumentCollectionFieldModelController) inputs[AKey];
             DocumentCollectionFieldModelController setB = (DocumentCollectionFieldModelController)inputs[BKey];

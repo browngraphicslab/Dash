@@ -53,7 +53,7 @@ namespace Dash
         public override FieldModelController GetDefaultController()
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? 
-                new DocumentController(new Dictionary<Key, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
+                new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)

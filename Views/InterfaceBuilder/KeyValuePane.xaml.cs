@@ -74,7 +74,7 @@ namespace Dash
             {
                 var container = item as KeyFieldContainer;
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<Key, DocumentController>(container.Key, _documentControllerDataContext));
+                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<KeyController, DocumentController>(container.Key, _documentControllerDataContext));
             }
         }
 
@@ -96,7 +96,7 @@ namespace Dash
         private void AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            Key key = new Key((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
+            KeyController key = new KeyController((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldModelController fmController = new TextFieldModelController("something went wrong");
             if (true)
             {
@@ -158,12 +158,12 @@ namespace Dash
         /// </summary>
         public class KeyFieldContainer
         {
-            public Key Key { get; }
+            public KeyController Key { get; }
             public BoundFieldModelController Controller { get; }
             // Type of field, ex) Text, Image, Number  
             public string Type { get; }
 
-            public KeyFieldContainer(Key key, BoundFieldModelController controller)
+            public KeyFieldContainer(KeyController key, BoundFieldModelController controller)
             {
                 Key = key;
                 Controller = controller;
