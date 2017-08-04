@@ -97,6 +97,7 @@
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters\DoubleToStringConverter.cs" />
+    <Compile Include="Controllers\KeyController.cs" />
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\WebBox.cs" />

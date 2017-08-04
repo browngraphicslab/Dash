@@ -26,14 +26,14 @@ namespace DashWebServer.Controllers
 
         /// GET api/Key/5, returns the Key with the given ID
         [HttpGet("{id}")]
-        public async Task<Key> Get(string id)
+        public async Task<KeyModel> Get(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<Key>(id);
+            return await _documentRepository.GetItemByIdAsync<KeyModel>(id);
         }
 
         // POST api/Key, adds a Key with a given 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]Key Key)
+        public async Task<IActionResult> Post([FromBody]KeyModel Key)
         {
             try
             {
@@ -48,7 +48,7 @@ namespace DashWebServer.Controllers
 
         // PUT api/Key/5, updates a given Key Key
         [HttpPut()]
-        public async Task<IActionResult> Put([FromBody]Key Key)
+        public async Task<IActionResult> Put([FromBody]KeyModel Key)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace DashWebServer.Controllers
         {
             try
             {
-                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<Key>(id));
+                await _documentRepository.DeleteItemAsync(await _documentRepository.GetItemByIdAsync<KeyModel>(id));
             }
             catch (Exception e)
             {

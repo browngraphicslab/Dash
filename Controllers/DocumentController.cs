@@ -44,11 +44,11 @@ namespace Dash
 
         public delegate void OnDocumentFieldUpdatedHandler(DocumentController sender, DocumentFieldUpdatedEventArgs args);
 
-        private readonly Dictionary<Key, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<Key, OnDocumentFieldUpdatedHandler>();
+        private readonly Dictionary<KeyController, OnDocumentFieldUpdatedHandler> _fieldUpdatedDictionary = new Dictionary<KeyController, OnDocumentFieldUpdatedHandler>();
         public event OnDocumentFieldUpdatedHandler DocumentFieldUpdated;
         public event OnDocumentFieldUpdatedHandler PrototypeFieldUpdated;
 
-        public void AddFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
+        public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
@@ -60,7 +60,7 @@ namespace Dash
             }
         }
 
-        public void RemoveFieldUpdatedListener(Key key, OnDocumentFieldUpdatedHandler handler)
+        public void RemoveFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
@@ -73,10 +73,10 @@ namespace Dash
         ///     A wrapper for <see cref="DocumentModel.Fields" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
-        private Dictionary<Key, FieldModelController> _fields = new Dictionary<Key, FieldModelController>();
+        private Dictionary<KeyController, FieldModelController> _fields = new Dictionary<KeyController, FieldModelController>();
 
 
-        public DocumentController(IDictionary<Key, FieldModelController> fields, DocumentType type, string id = null)
+        public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null)
         {
             DocumentModel model =
                 new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type, id);
@@ -160,7 +160,7 @@ namespace Dash
             foreach (var dmc in ContentController.GetControllers<DocumentController>())
                 if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
                 {
-                    var primaryKeys = dmc.GetDereferencedField(DashConstants.KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
+                    var primaryKeys = dmc.GetDereferencedField(KeyStore.PrimaryKeyKey, null) as ListFieldModelController<TextFieldModelController>;
                     if (primaryKeys != null)
                     {
                         bool found = true;
@@ -169,7 +169,7 @@ namespace Dash
                             bool foundValue = false;
                             foreach (var kf in primaryKeys.Data)
                             {
-                                var key = new Key((kf as TextFieldModelController).Data);
+                                var key = new KeyController((kf as TextFieldModelController).Data);
                                 var derefValue = (dmc.GetDereferencedField(key, null) as TextFieldModelController)?.Data;
                                 if (derefValue != null)
                                 {
@@ -208,14 +208,14 @@ namespace Dash
         /// <param name="docController"></param>
         /// <param name="key"></param>
         /// <param name="textInput"></param>
-        public void ParseDocField(Key key, string textInput)
+        public void ParseDocField(KeyController key, string textInput)
         {
             textInput = textInput.Trim(' ');
             if (textInput.StartsWith("@"))
             {
                 var proto = GetPrototype() == null ? this : GetPrototype();
-                if (proto.GetField(DashConstants.KeyStore.PrimaryKeyKey) == null)
-                    proto.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
+                if (proto.GetField(KeyStore.PrimaryKeyKey) == null)
+                    proto.SetField(KeyStore.ThisKey, new DocumentFieldModelController(proto), true);
                 var fieldStr = textInput.Substring(1, textInput.Length - 1);
                 if (textInput.Contains("=")) // search globally for a document that has a field, FieldName, with contents that match FieldValue
                 {                       // @ FieldName = FieldValue
@@ -251,7 +251,7 @@ namespace Dash
                                 {
                                     if (path.Count() > 1)
                                     {
-                                        Key foundKey = null;
+                                        KeyController foundKey = null;
                                         foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
                                             if (e.Key.Name == path[1])
                                             {
@@ -261,7 +261,7 @@ namespace Dash
                                         refs.Add(new ReferenceFieldModelController(theDoc.GetId(), foundKey));
                                     }
                                     else
-                                        refs.Add(new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey));
+                                        refs.Add(new ReferenceFieldModelController(theDoc.GetId(), KeyStore.ThisKey));
                                 }
                             }
                         }
@@ -289,7 +289,7 @@ namespace Dash
                                     }
                             }
                             else
-                                SetField(key, new ReferenceFieldModelController(theDoc.GetId(), DashConstants.KeyStore.ThisKey), true);
+                                SetField(key, new ReferenceFieldModelController(theDoc.GetId(), KeyStore.ThisKey), true);
                         }
                         else // start of path isn't a value ... treat it as a field and search for documents that reference this document that have it as a field
                         {
@@ -313,13 +313,13 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Returns the first level of inheritance which references the passed in <see cref="Key" /> or
+        ///     Returns the first level of inheritance which references the passed in <see cref="KeyController" /> or
         ///     returns null if no level of inheritance has a <see cref="FieldModelController" /> associated with the passed in
-        ///     <see cref="Key" />
+        ///     <see cref="KeyController" />
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public DocumentController GetPrototypeWithFieldKey(Key key)
+        public DocumentController GetPrototypeWithFieldKey(KeyController key)
         {
             if (key == null)
                 return null;
@@ -342,12 +342,12 @@ namespace Dash
         public DocumentController GetPrototype()
         {
             // if there is no prototype return null
-            if (!_fields.ContainsKey(DashConstants.KeyStore.PrototypeKey))
+            if (!_fields.ContainsKey(KeyStore.PrototypeKey))
                 return null;
 
             // otherwise try to convert the field associated with the prototype key into a DocumentFieldModelController
             var documentFieldModelController =
-                _fields[DashConstants.KeyStore.PrototypeKey] as DocumentFieldModelController;
+                _fields[KeyStore.PrototypeKey] as DocumentFieldModelController;
 
 
             // if the field contained a DocumentFieldModelController return its data, otherwise return null
@@ -372,7 +372,7 @@ namespace Dash
             return result;
         }
 
-        private bool SetFieldHelper(Key key, FieldModelController field, bool forceMask, out FieldModelController replacedField)
+        private bool SetFieldHelper(KeyController key, FieldModelController field, bool forceMask, out FieldModelController replacedField)
         {
             var proto = forceMask ? this : GetPrototypeWithFieldKey(key) ?? this;
 
@@ -394,7 +394,7 @@ namespace Dash
             return true;
         }
 
-        private void SetupNewFieldListeners(Key key, FieldModelController newField, FieldModelController oldField, Context context)
+        private void SetupNewFieldListeners(KeyController key, FieldModelController newField, FieldModelController oldField, Context context)
         {
             FieldUpdatedAction action = oldField == null ? FieldUpdatedAction.Add : FieldUpdatedAction.Replace;
             var reference = new DocumentFieldReference(GetId(), key);
@@ -422,8 +422,8 @@ namespace Dash
         }
 
         /// <summary>
-        ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="Key" /> at the first
-        ///     prototype in the hierarchy that contains it. If the <see cref="Key" /> is not used at any level then it is
+        ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyController" /> at the first
+        ///     prototype in the hierarchy that contains it. If the <see cref="KeyController" /> is not used at any level then it is
         ///     created in this <see cref="DocumentController" />.
         ///     <para>
         ///         If <paramref name="forceMask" /> is set to true, then we never search for a prototype and simply override
@@ -433,7 +433,7 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask"></param>
-        public void SetField(Key key, FieldModelController field, bool forceMask)
+        public void SetField(KeyController key, FieldModelController field, bool forceMask)
         {
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))
@@ -454,7 +454,7 @@ namespace Dash
 
 
         /// <summary>
-        ///     returns the <see cref="FieldModelController" /> for the specified <see cref="Key" /> by looking first in this
+        ///     returns the <see cref="FieldModelController" /> for the specified <see cref="KeyController" /> by looking first in this
         ///     <see cref="DocumentController" />
         ///     and then sequentially up the hierarchy of prototypes of this <see cref="DocumentController" />. If the
         ///     key is not found then it returns null.
@@ -463,7 +463,7 @@ namespace Dash
         /// <param name="context"></param>
         /// <param name="ignorePrototype"></param>
         /// <returns></returns>
-        public FieldModelController GetField(Key key, bool ignorePrototype = false)
+        public FieldModelController GetField(KeyController key, bool ignorePrototype = false)
         {
             // search up the hiearchy starting at this for the first DocumentController which has the passed in key
             var firstProtoWithKeyOrNull = ignorePrototype ? this : GetPrototypeWithFieldKey(key);
@@ -482,9 +482,9 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="forceMask"></param>
-        public void SetFields(IDictionary<Key, FieldModelController> fields, bool forceMask)
+        public void SetFields(IDictionary<KeyController, FieldModelController> fields, bool forceMask)
         {
-            var oldFields = new List<Tuple<FieldModelController, FieldModelController, Key>>();
+            var oldFields = new List<Tuple<FieldModelController, FieldModelController, KeyController>>();
 
             Context c = new Context(this);
             bool shouldExecute = false;
@@ -517,7 +517,7 @@ namespace Dash
         public DocumentController MakeDelegate()
         {
             // create a controller for the child
-            var delegateController = new DocumentController(new Dictionary<Key, FieldModelController>(), DocumentType);
+            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType);
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {
@@ -528,7 +528,7 @@ namespace Dash
 
             // create and set a prototype field on the child, pointing to ourself
             var prototypeFieldController = new DocumentFieldModelController(this);
-            delegateController.SetField(DashConstants.KeyStore.PrototypeKey, prototypeFieldController, true);
+            delegateController.SetField(KeyStore.PrototypeKey, prototypeFieldController, true);
 
             // add the delegate to our delegates field
             var currentDelegates = GetDelegates();
@@ -570,8 +570,8 @@ namespace Dash
         public DocumentCollectionFieldModelController GetDelegates()
         {
             // see if we have a populated delegates field
-            var currentDelegates = _fields.ContainsKey(DashConstants.KeyStore.DelegatesKey)
-                ? _fields[DashConstants.KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
+            var currentDelegates = _fields.ContainsKey(KeyStore.DelegatesKey)
+                ? _fields[KeyStore.DelegatesKey] as DocumentCollectionFieldModelController
                 : null;
 
             // if not then populate it with a new list of documents
@@ -579,13 +579,13 @@ namespace Dash
             {
                 currentDelegates =
                     new DocumentCollectionFieldModelController(new List<DocumentController>());
-                SetField(DashConstants.KeyStore.DelegatesKey, currentDelegates, true);
+                SetField(KeyStore.DelegatesKey, currentDelegates, true);
             }
 
             return currentDelegates;
         }
 
-        public FieldModelController GetDereferencedField(Key key, Context context)
+        public FieldModelController GetDereferencedField(KeyController key, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
@@ -593,7 +593,7 @@ namespace Dash
         }
 
 
-        private bool ShouldExecute(Context context, Key updatedKey)
+        private bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
@@ -622,8 +622,8 @@ namespace Dash
             }
             try
             {
-                var inputs = new Dictionary<Key, FieldModelController>(opField.Inputs.Count);
-                var outputs = new Dictionary<Key, FieldModelController>(opField.Outputs.Count);
+                var inputs = new Dictionary<KeyController, FieldModelController>(opField.Inputs.Count);
+                var outputs = new Dictionary<KeyController, FieldModelController>(opField.Outputs.Count);
                 foreach (var opFieldInput in opField.Inputs.Keys)
                 {
                     var field = GetField(opFieldInput);
@@ -652,12 +652,12 @@ namespace Dash
         }
 
 
-        public IEnumerable<KeyValuePair<Key, FieldModelController>> PropFields => EnumFields();
+        public IEnumerable<KeyValuePair<KeyController, FieldModelController>> PropFields => EnumFields();
 
 
-        public IEnumerable<KeyValuePair<Key, FieldModelController>> EnumFields(bool ignorePrototype = false)
+        public IEnumerable<KeyValuePair<KeyController, FieldModelController>> EnumFields(bool ignorePrototype = false)
         {
-            foreach (KeyValuePair<Key, FieldModelController> fieldModelController in _fields)
+            foreach (KeyValuePair<KeyController, FieldModelController> fieldModelController in _fields)
             {
                 yield return fieldModelController;
             }
@@ -684,10 +684,10 @@ namespace Dash
 
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(DashConstants.KeyStore.DelegatesKey) ||
-                    f.Key.Equals(DashConstants.KeyStore.PrototypeKey) ||
-                    f.Key.Equals(DashConstants.KeyStore.LayoutListKey) ||
-                    f.Key.Equals(DashConstants.KeyStore.ActiveLayoutKey))
+                if (f.Key.Equals(KeyStore.DelegatesKey) ||
+                    f.Key.Equals(KeyStore.PrototypeKey) ||
+                    f.Key.Equals(KeyStore.LayoutListKey) ||
+                    f.Key.Equals(KeyStore.ActiveLayoutKey))
                 {
                     continue;
                 }
@@ -801,7 +801,7 @@ namespace Dash
                 return ApiOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
             // if document is not a known UI View, then see if it contains a Layout view field
-            var fieldModelController = GetDereferencedField(DashConstants.KeyStore.ActiveLayoutKey, context);
+            var fieldModelController = GetDereferencedField(KeyStore.ActiveLayoutKey, context);
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
@@ -834,7 +834,7 @@ namespace Dash
                 _fieldUpdatedDictionary[args.Reference.FieldKey]?.Invoke(sender, args);
             }
             DocumentFieldUpdated?.Invoke(sender, args);
-            if (updateDelegates && !args.Reference.FieldKey.Equals(DashConstants.KeyStore.DelegatesKey))
+            if (updateDelegates && !args.Reference.FieldKey.Equals(KeyStore.DelegatesKey))
             {
                 PrototypeFieldUpdated?.Invoke(sender, args);
             }

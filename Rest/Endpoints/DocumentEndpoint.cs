@@ -15,25 +15,6 @@ namespace Dash
             _connection = connection;
         }
 
-
-        /// <summary>
-        /// Converts Dash client-side representation of the DocModel into the server-side DashShared DocumentModel
-        /// </summary>
-        private ServerDocumentModel convertToServerModel(DocumentModel newDocument) {
-            return new ServerDocumentModel(newDocument.Fields, newDocument.DocumentType, newDocument.Id);
-        }
-
-        /// <summary>
-        /// Converts Dash server-side representation of the DocModel into the client-side DashShared DocumentModel
-        /// </summary>
-        private DocumentModel convertToClientModel(ServerDocumentModel newDocument)
-        {
-            Dictionary<Key, string> fields = new Dictionary<Key, string>();
-            foreach (KeyValuePair<string,string> item in newDocument.Fields)
-                fields.Add(new Key(item.Key), item.Value);
-            return new DocumentModel(fields, newDocument.DocumentType);
-        }
-
         /// <summary>
         /// Adds a new Document to the DashWebServer and returns that DocumentModel.
         /// </summary>
@@ -44,10 +25,9 @@ namespace Dash
             try
             {
                 // convert from Dash DocumentModel to DashShared DocumentModel (server representation)
-                var s = convertToServerModel(newDocument);
-                HttpResponseMessage result = _connection.Post("api/Document", s);
-                ServerDocumentModel resultdoc = await result.Content.ReadAsAsync<ServerDocumentModel>();
-                return new Result<DocumentModel>(true,convertToClientModel(resultdoc));
+                HttpResponseMessage result = _connection.Post("api/Document", newDocument);
+                var resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
+                return new Result<DocumentModel>(true, resultdoc);
             }
             catch (ApiException e)
             {
@@ -61,11 +41,11 @@ namespace Dash
         /// </summary>
         /// <param name="DocumentToUpdate"></param>
         /// <returns></returns>
-        public async Task<Result<DocumentModel>> UpdateDocument(DocumentModel DocumentToUpdate)
+        public async Task<Result<DocumentModel>> UpdateDocument(DocumentModel documentToUpdate)
         {
             try
             {
-                HttpResponseMessage result = _connection.Put("api/Document",convertToServerModel(DocumentToUpdate));
+                HttpResponseMessage result = _connection.Put("api/Document", documentToUpdate);
                 DocumentModel resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
                 return new Result<DocumentModel>(true, resultdoc);
             }
@@ -86,8 +66,8 @@ namespace Dash
         {
             try
             {
-                ServerDocumentModel result = await _connection.GetItem<ServerDocumentModel>($"api/Document/{id}");
-                return new Result<DocumentModel>(true,convertToClientModel(result));
+                var result = await _connection.GetItem<DocumentModel>($"api/Document/{id}");
+                return new Result<DocumentModel>(true, result);
             }
             catch (ApiException e)
             {

@@ -87,7 +87,7 @@ namespace Dash
                 case TypeInfo.Document:
                     return new DocumentFieldModelController(data as DocumentController);
                 case TypeInfo.Reference:
-                    var kvp = (KeyValuePair<Key, string>) data;
+                    var kvp = (KeyValuePair<KeyController, string>) data;
                     return new ReferenceFieldModelController(kvp.Value, kvp.Key);
                 case TypeInfo.Operator: //TODO What should this do?
                     return null;
