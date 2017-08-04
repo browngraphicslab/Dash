@@ -24,6 +24,7 @@ namespace Dash
     /// </summary>
     public partial class EditableImage
     {
+        #region FIELDS 
         public Image Image { get { return xImage; } }
 
         public Rect ClipRect { get; set; } = new Rect(0, 0, 0, 0);
@@ -81,24 +82,27 @@ namespace Dash
 
                 if (value)
                 {
-                    xImageGrid.ManipulationDelta += xImageGrid_ManipulationDelta;
                     _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
+                    // show the entire image 
                     var rect = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
                     Image.Clip = new RectangleGeometry { Rect = rect };
                 }
                 else
                 {
-                    xImageGrid.ManipulationDelta -= xImageGrid_ManipulationDelta;
                     _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
                 }
             }
         }
+#endregion
 
         private ManipulationControls _imageManipulator;
 
-        public EditableImage()
+        public DocumentController DocController { get; }
+
+        public EditableImage(DocumentController docController)
         {
             InitializeComponent();
+            DocController = docController; 
             _imageManipulator = new ManipulationControls(Image);
 
             IsClipRectVisible = false;
@@ -109,16 +113,17 @@ namespace Dash
 
             // set up cliprect draggers 
             SetUpDraggersHelper(xCLIPBottomLeftDragger, xCLIPBottomRightDragger, xCLIPTopLeftDragger, xCLIPTopRightDragger);
-
             // set up image draggers 
             SetUpDraggersHelper(xBottomLeftDragger, xBottomRightDragger, xTopLeftDragger, xTopRightDragger);
 
             SetUpEvents();
+
+            xImageGrid.ManipulationDelta += (s, e) => System.Diagnostics.Debug.WriteLine("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
         }
 
+        #region SETUP
         private void SetUpDraggersHelper(Ellipse bottomLeft, Ellipse bottomRight, Ellipse topLeft, Ellipse topRight)
         {
-            // set up cliprect draggers 
             Canvas.SetLeft(bottomLeft, ClipRect.X - 10);
             Canvas.SetTop(bottomLeft, ClipRect.Y + ClipRect.Height - 10);
 
@@ -154,7 +159,9 @@ namespace Dash
             var m4 = new ManipulationControls(xCLIPTopRightDragger);
             m4.OnManipulatorTranslatedOrScaled += CLIPTopRightManipulator_OnManipulatorTranslated;
         }
+        #endregion 
 
+        #region IMAGE TRANSFORMATIONS  
         private void BottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
         {
             if (!UpdateImage(0, 0, e.Translate.X, e.Translate.Y)) return;
@@ -197,7 +204,7 @@ namespace Dash
         /// <summary>
         /// Moves the image and updates the position of image draggers 
         /// </summary>
-        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e) // TODO must update position and width height controllers!!!??????????? 
+        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)                                          // TODO must update position and width height controllers!!!??????????? 
         {
             var bottomLeft1 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
             var bottomRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
@@ -221,7 +228,7 @@ namespace Dash
         /// <summary>
         /// Translates the image by deltaX and deltaY; resizes the image by deltaW and deltaH 
         /// </summary>
-        private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH) // TODO must update position and width height controllers!!!??????????? 
+        private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)                                            // TODO must update position and width height controllers!!!??????????? 
         {
             var width = Image.Width + deltaW;
             var height = Image.Height + deltaH;
@@ -232,6 +239,7 @@ namespace Dash
             TranslateHelper(deltaX, deltaY, Image);
             return true; 
         }
+#endregion
 
         private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)
         {
@@ -260,6 +268,7 @@ namespace Dash
             element.RenderTransform = new MatrixTransform { Matrix = group.Value };
         }
 
+        #region CLIP TRANSFORMATIONS 
         private void CLIPBottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
         {
             if (!UpdateClipRect(0, 0, e.Translate.X, e.Translate.Y)) return;
@@ -318,6 +327,8 @@ namespace Dash
             Canvas.SetTop(xClipRectangle, ClipRect.Y);
             return true;
         }
+        #endregion
+
 
         /// <summary>
         /// Brings up the editorview upon doubleclick 
@@ -339,8 +350,6 @@ namespace Dash
             Rect clip = new Rect { X = ClipRect.X - imageLeftTop.X, Y = ClipRect.Y - imageLeftTop.Y, Width = ClipRect.Width, Height = ClipRect.Height };
 
             Image.Clip = new RectangleGeometry { Rect = clip };
-
-
         }
 
         /// <summary>
@@ -373,21 +382,5 @@ namespace Dash
         {
             e.Handled = true;
         }
-
-        //    private class RectToGeometryConverter : IValueConverter
-        //    {
-        //        public object Convert(object value, Type targetType, object parameter, string language)
-        //        {
-        //            var gg = new GeometryGroup();
-        //            gg.Children.Add(new RectangleGeometry { Rect = new Rect(-2000, -2000, 4000, 4000) });
-        //            gg.Children.Add(new RectangleGeometry { Rect = (Rect)value });
-        //            return gg;
-        //        }
-
-        //        public object ConvertBack(object value, Type targetType, object parameter, string language)
-        //        {
-        //            throw new NotImplementedException();
-        //        }
-        //    }
     }
 }

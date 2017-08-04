@@ -42,7 +42,7 @@ namespace Dash
             docController.SetField(ClipKey, currentClipField, forceMask);
         }
 
-        protected static void SetupBindings(Image image, DocumentController docController,
+        private static void SetupBindings(Image image, DocumentController docController,
             Context context)
         {
             CourtesyDocument.SetupBindings(image, docController, context);
@@ -63,11 +63,10 @@ namespace Dash
             bool isInterfaceBuilderLayout = false)
         {
             // create the image
-            _editableImage = new EditableImage();
+            _editableImage = new EditableImage(docController);
             var image = _editableImage.Image;
 
             SetupBindings(image, docController, context);
-
 
             // set up interactions with operations
             var imageFMController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as ImageFieldModelController;
