@@ -22,10 +22,10 @@
         </Rectangle>-->
         
         <!--draggers for image-->
-        <Ellipse x:Name="xBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
+        <!--<Ellipse x:Name="xBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xBottomRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
         <Ellipse x:Name="xTopLeftDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
-        <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
+        <Ellipse x:Name="xTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>-->
 
         <!--draggers for clip rect-->
         <Ellipse x:Name="xCLIPBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>

@@ -26,7 +26,7 @@ namespace Dash
     {
         public Image Image { get { return xImage; } }
 
-        public Rect ClipRect { get; } = new Rect(30, 30, 100, 100);
+        public Rect ClipRect { get; set; } = new Rect(0, 0, 100, 100);
 
         private bool _isImageDraggerVisible;
         public bool IsImageDraggerVisible
@@ -37,10 +37,10 @@ namespace Dash
                 _isImageDraggerVisible = value;
                 Visibility visibility = value ? Visibility.Visible : Visibility.Collapsed;
 
-                xBottomLeftDragger.Visibility = visibility;
-                xBottomRightDragger.Visibility = visibility;
-                xTopLeftDragger.Visibility = visibility;
-                xTopRightDragger.Visibility = visibility;
+                //xBottomLeftDragger.Visibility = visibility;
+                //xBottomRightDragger.Visibility = visibility;
+                //xTopLeftDragger.Visibility = visibility;
+                //xTopRightDragger.Visibility = visibility;
             }
         }
 
@@ -73,21 +73,32 @@ namespace Dash
                 xEditStackPanel.Visibility = visibility;
                 //xShadeRectangle.Visibility = visibility;
 
-                if (value) xImageGrid.ManipulationDelta += xImageGrid_ManipulationDelta; 
-                else xImageGrid.ManipulationDelta -= xImageGrid_ManipulationDelta;
-
+                if (value)
+                {
+                    xImageGrid.ManipulationDelta += xImageGrid_ManipulationDelta;
+                    _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
+                }
+                else
+                {
+                    xImageGrid.ManipulationDelta -= xImageGrid_ManipulationDelta;
+                    _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
+                }
             }
         }
+
+        private ManipulationControls _imageManipulator; 
 
         public EditableImage()
         {
             InitializeComponent();
+            _imageManipulator = new ManipulationControls(Image);
 
             IsClipRectVisible = false;
             IsImageDraggerVisible = false;
-            IsEditorModeOn = false; 
+            IsEditorModeOn = false;
 
             SetUpBindings();
+            SetUpEvents();
         }
 
 
@@ -111,52 +122,126 @@ namespace Dash
 
         private void SetUpEvents()
         {
-            //image resize 
-            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
-            bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
-            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
-            bottomRightManipulator.OnManipulatorTranslatedOrScaled += (e) => ChangeSize(e.Translate.X, e.Translate.Y);
-            var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
-            topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
-            var topRightManipulator = new ManipulationControls(xTopRightDragger);
-            topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
+            //image draggers
+            //var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
+            //bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
+            //var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
+            //bottomRightManipulator.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslatedOrScaled;
+            //var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
+            //topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
+            //var topRightManipulator = new ManipulationControls(xTopRightDragger);
+            //topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
 
-            // rectangle resize 
+            // clip rect draggers 
+            var m1 = new ManipulationControls(xCLIPBottomLeftDragger);
+            m1.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
+            var m2 = new ManipulationControls(xCLIPBottomRightDragger);
+            m2.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslatedOrScaled;
+            var m3 = new ManipulationControls(xCLIPTopLeftDragger);
+            m3.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
+            var m4 = new ManipulationControls(xCLIPTopRightDragger);
+            m4.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
+        }
 
+        private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
+        {
+            ScaleHelper(e.ScaleCenter, e.ScaleAmount, Image); 
+            TranslateHelper(e.Translate.X, e.Translate.Y, Image);
+        }
+
+        private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)
+        {
+            ScaleTransform scale = new ScaleTransform
+            {
+                CenterX = scaleCenter.X,
+                CenterY = scaleCenter.Y,
+                ScaleX = scaleAmount.X,
+                ScaleY = scaleAmount.Y
+            };
+
+            var group = new TransformGroup();
+            group.Children.Add(scale);
+            group.Children.Add(element.RenderTransform);
+
+            element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+        }
+
+        private void TranslateHelper(double deltaX, double deltaY, FrameworkElement element)
+        {
+            var translate = new TranslateTransform { X = deltaX, Y = deltaY };
+            var group = new TransformGroup();
+            group.Children.Add(element.RenderTransform);
+            group.Children.Add(translate);
+
+            element.RenderTransform = new MatrixTransform { Matrix = group.Value };
+        }
+
+        private void BottomRightManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
+        {
+            //move draggers 
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomRightDragger);
+            TranslateHelper(0, e.Translate.Y, xCLIPBottomLeftDragger);
+            TranslateHelper(e.Translate.X, 0, xCLIPTopRightDragger);
+
+
+            //ChangeSize(e.Translate.X, e.Translate.Y); 
         }
 
         private void TopRightManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
-            ChangePosition(0, -sizeChange.Y);
+            //move draggers 
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopRightDragger);
+            TranslateHelper(0, e.Translate.Y, xCLIPTopLeftDragger);
+            TranslateHelper(e.Translate.X, 0, xCLIPBottomRightDragger);
+
+            ChangeImagePosition(0, -e.Translate.Y);
+            //var sizeChange = ChangeSize(e.Translate.X, -e.Translate.Y);
         }
 
         private void TopLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
-            ChangePosition(-sizeChange.X, -sizeChange.Y);
+            //move draggers  
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopLeftDragger);
+            TranslateHelper(0, e.Translate.Y, xCLIPTopRightDragger);
+            TranslateHelper(e.Translate.X, 0, xCLIPBottomLeftDragger);
+
+            //var sizeChange = ChangeSize(-e.Translate.X, -e.Translate.Y);
+
+            //ChangeImagePosition(-sizeChange.X, -sizeChange.Y);
         }
 
         private void BottomLeftManipulator_OnManipulatorTranslated(TransformGroupData e)
         {
-            var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
-            ChangePosition(-sizeChange.X, 0);
-        }
-        
-        /// <summary>
-        /// Update position controller BUT HOWWWWWW????????????????????????  
-        /// </summary>
-        private Point ChangePosition(double deltaX, double deltaY)                                                         // TODO holy shit 
-        {
-            return new Point(); 
+            //move draggers 
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomLeftDragger);
+            TranslateHelper(0, e.Translate.Y, xCLIPBottomRightDragger);
+            TranslateHelper(e.Translate.X, 0, xCLIPTopLeftDragger);
+
+            //var sizeChange = ChangeSize(-e.Translate.X, e.Translate.Y);
+
+            //ChangeImagePosition(-sizeChange.X, 0);
         }
 
         /// <summary>
-        /// Update width and height controller 
+        /// Update position controller; changes the position of the image   
+        /// </summary>
+        private void ChangeImagePosition(double deltaX, double deltaY)                                                         // TODO holy shit 
+        {
+
+            //return new Point(); 
+        }
+
+        /// <summary>
+        /// Update width and height controller; changes the dimensions of the image 
         /// </summary>
         private Point ChangeSize(double v, double y)                                                                   // TODO holy shit 
         {
             return new Point();
+        }
+
+        private void UpdateClipRect(double deltaX, double deltaY, double deltaW, double deltaH)
+        {
+            ClipRect = new Rect { X = ClipRect.X + deltaX, Y = ClipRect.Y + deltaY, Width = ClipRect.Width + deltaW, Height = ClipRect.Height + deltaH };
         }
 
         /// <summary>
@@ -164,12 +249,12 @@ namespace Dash
         /// </summary>
         private void xImage_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
-            IsEditorModeOn = true; 
+            IsEditorModeOn = true;
         }
 
         private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            IsEditorModeOn = false; 
+            IsEditorModeOn = false;
             IsImageDraggerVisible = false;
             IsClipRectVisible = false;
 
@@ -205,7 +290,7 @@ namespace Dash
 
         private void xImageGrid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
-            e.Handled = true; 
+            e.Handled = true;
         }
 
         //    private class RectToGeometryConverter : IValueConverter
