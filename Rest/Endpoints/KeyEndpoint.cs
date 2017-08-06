@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using DashShared;
 using System.Threading.Tasks;
 using System.Diagnostics;
@@ -16,75 +17,96 @@ namespace Dash
         }
 
         /// <summary>
-        /// Adds a new Key to the DashWebServer.
+        /// 
         /// </summary>
         /// <param name="newKey"></param>
-        /// <returns></returns>
-        public async Task<Result<KeyController>> AddKey(KeyController newKey)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                HttpResponseMessage result = _connection.Post("api/Key", newKey);
-                KeyController resultk = await result.Content.ReadAsAsync<KeyController>();
+                try
+                {
+                    var result = _connection.Post("api/Key", newKey);
+                    var resultK = result.Content.ReadAsAsync<KeyModel>().Result;
 
-                // convert from server dto back to Key model controller
-                return new Result<KeyController>(true, resultk);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<KeyController>(false, string.Join("\n", e.Errors));
-            }
+                    success(resultK);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         /// <summary>
-        /// Updates an existing Key in the DashWebServer
+        /// 
         /// </summary>
-        /// <param name="KeyToUpdate"></param>
-        /// <returns></returns>
-        public async Task<Result<KeyController>> UpdateKey(KeyController KeyToUpdate)
+        /// <param name="keyToUpdate"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                HttpResponseMessage result = _connection.Put("api/Key", KeyToUpdate);
-                KeyController resultk = await result.Content.ReadAsAsync<KeyController>();
+                try
+                {
+                    var result = _connection.Put("api/Key", keyToUpdate);
+                    var resultK = result.Content.ReadAsAsync<KeyModel>().Result;
 
-                return new Result<KeyController>(true, resultk);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<KeyController>(false, string.Join("\n", e.Errors));
-            }
+                    success(resultK);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
-        public async Task<Result<KeyController>> GetKey(string id)
+        public void GetKey(string id, Action<KeyModel> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                KeyController Key = await _connection.GetItem<KeyController>($"api/Key/{id}");
-                return new Result<KeyController>(true, Key);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<KeyController>(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    var key = _connection.GetItem<KeyModel>($"api/Key/{id}").Result;
+
+                    success(key);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
-        public Result DeleteKey(KeyController KeyToDelete)
+        public void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
         {
-            string id = KeyToDelete.GetId();
-            try
+            string id = keyToDelete.Id;
+            Task.Run(() =>
             {
-                _connection.Delete($"api/Key/{id}");
-                return new Result(true);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    var response = _connection.Delete($"api/Key/{id}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        success();
+                    }
+                    else
+                    {
+                        error(new ApiException(response));
+                    }
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
     }
 }

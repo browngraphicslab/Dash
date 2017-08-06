@@ -25,6 +25,14 @@ namespace Dash
             KeyModel = keyModel;
             ContentController.AddModel(keyModel);
             ContentController.AddController(this);
+
+            RESTClient.Instance.Keys.AddKey(KeyModel, model =>
+            {
+                // Yay!
+            }, exception =>
+            {
+                // Hayyyyy!
+            });
         }
 
         public KeyController(string guid) : this(new KeyModel(guid))
