@@ -23,7 +23,7 @@ namespace Dash
         public static readonly KeyController OpacityKey = new KeyController("78DB67E4-4D9F-47FA-980D-B8EEE87C4351", "Opacity Key");
         public static readonly KeyController ClipKey = new KeyController("8411212B-D56B-4B08-A0B3-094876D2BED2", "Clip Location Key");
         private const double DefaultOpacity = 1;
-        private readonly RectangleGeometry _defaultClip = new RectangleGeometry {Rect = new Rect(0,0,100,100)};
+        private readonly RectangleGeometry _defaultClip = new RectangleGeometry { Rect = new Rect(0, 0, 100, 100) };
         private static Uri DefaultImageUri => new Uri("ms-appx://Dash/Assets/DefaultImage.png");
         private static string PrototypeId = "ABDDCBAF-20D7-400E-BE2E-3761313520CC";
 
@@ -57,7 +57,7 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        private static EditableImage _editableImage; 
+        private static EditableImage _editableImage;
 
         public static FrameworkElement MakeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
@@ -75,12 +75,12 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                _editableImage.IsHitTestVisible = false; 
+                _editableImage.IsHitTestVisible = false;
                 var selectableContainer = new SelectableContainer(_editableImage, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
-            return _editableImage; 
+            return _editableImage;
         }
 
         protected static void SetupImageBinding(Image image, DocumentController controller,
@@ -128,7 +128,7 @@ namespace Dash
                 docController.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
             var clipController =
                 docController.GetDereferencedField(ClipKey, context) as RectFieldModelController;
-            if (clipController == null)  return;
+            if (clipController == null) return;
             Debug.Assert(widthController != null);
             Debug.Assert(heightController != null);
 
@@ -136,10 +136,13 @@ namespace Dash
             AddClipBindingEvents(clipController, widthController, heightController, image);
 
             // fixes vertical and horizontal stretch problems 
-            image.SizeChanged += (s, e) => UpdateClip(image, clipController.Data);
+            image.SizeChanged += (s, e) =>
+            {
+                UpdateClip(image, clipController.Data);
+            };
         }
 
-        private static void AddClipBindingEvents(RectFieldModelController clipController, 
+        private static void AddClipBindingEvents(RectFieldModelController clipController,
             NumberFieldModelController widthController, NumberFieldModelController heightController, Image image)
         {
             clipController.FieldModelUpdated += (ss, args, cc) =>
@@ -162,7 +165,7 @@ namespace Dash
             double width = image.ActualWidth;
             double height = image.ActualHeight;
             if (width <= 0) width = image.Width;
-            if (height <= 0) height = image.Height; 
+            if (height <= 0) height = image.Height;
             image.Clip = new RectangleGeometry
             {
                 Rect = new Rect(data.X * width / 100,
@@ -187,7 +190,7 @@ namespace Dash
             };
             image.SetBinding(UIElement.OpacityProperty, opacityBinding);
         }
-        
+
         protected override DocumentController GetLayoutPrototype()
         {
             var prototype = ContentController.GetController<DocumentController>(PrototypeId);
@@ -212,7 +215,7 @@ namespace Dash
         private static void SetOpacityField(DocumentController docController, double opacity, bool forceMask, Context context)
         {
             var currentOpacityField = new NumberFieldModelController(opacity);
-            docController.SetField(OpacityKey, currentOpacityField, forceMask); 
+            docController.SetField(OpacityKey, currentOpacityField, forceMask);
             // set the field here so that forceMask is respected
         }
 

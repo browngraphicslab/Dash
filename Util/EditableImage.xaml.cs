@@ -85,8 +85,14 @@ namespace Dash
 
                 if (value)
                 {
+                    _imageManipulator.AddAllAndHandle();
+                    _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
                     // show the entire image 
                     ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
+                } else
+                {
+                    _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
+                    _imageManipulator.RemoveAllAndDontHandle();
                 }
             }
         }
@@ -98,14 +104,17 @@ namespace Dash
         {
             get { return DocController.GetDereferencedField(ImageBox.ClipKey, Context) as RectFieldModelController; }
         }
-#endregion
+        #endregion
 
+        private ManipulationControls _imageManipulator;
+        private double _scaleAmount = 1; 
 
         public EditableImage(DocumentController docController, Context context)
         {
             InitializeComponent();
             DocController = docController;
-            Context = context; 
+            Context = context;
+            _imageManipulator = new ManipulationControls(Image); 
 
             IsClipRectVisible = false;
             IsImageDraggerVisible = false;
@@ -127,6 +136,7 @@ namespace Dash
             SetUpDraggersHelper(xBottomLeftDragger, xBottomRightDragger, xTopLeftDragger, xTopRightDragger);
 
             SetUpEvents();
+            //Image.SizeChanged += (s, e) => ClipController.Data = new Rect(ClipRect.X, ClipRect.Y, Image.ActualWidth, Image.ActualHeight); 
         }
 
         #region SETUP
@@ -238,12 +248,13 @@ namespace Dash
         /// </summary>
         private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)                                            // TODO must update position and width height controllers? 
         {
-            var width = Image.ActualWidth + deltaW;
-            var height = Image.ActualHeight + deltaH;
+            var width = Image.ActualWidth + deltaW / _scaleAmount;
+            var height = Image.ActualHeight + deltaH / _scaleAmount;
             if (width < 0 || height < 0) return false; 
 
             Image.Width = width;
-            Image.Height = height; 
+            Image.Height = height;
+            //ClipController.Data = new Rect(ClipRect.X, ClipRect.Y, width, height); 
             TranslateHelper(deltaX, deltaY, Image);
             return true; 
         }
@@ -251,6 +262,8 @@ namespace Dash
 
         private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)
         {
+            _scaleAmount *= scaleAmount.X; 
+
             ScaleTransform scale = new ScaleTransform
             {
                 CenterX = scaleCenter.X,
