@@ -82,20 +82,18 @@ namespace Dash
 
                 xClipRectangle.Visibility = visibility;
                 xEditStackPanel.Visibility = visibility;
-                //xShadeRectangle.Visibility = visibility;
 
                 if (value)
                 {
+                    _imageManipulator.AddAllAndHandle();
                     _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
                     // show the entire image 
                     ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
-
-                    //ManipulationDelta += xImageGrid_ManipulationDelta; 
                 }
                 else
                 {
                     _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
-                    //ManipulationDelta -= xImageGrid_ManipulationDelta;
+                    _imageManipulator.RemoveAllAndDontHandle(); 
                 }
             }
         }
@@ -122,7 +120,15 @@ namespace Dash
             IsImageDraggerVisible = false;
             IsEditorModeOn = false;
 
-            UpdateClipRect(0, 0, 200, 200);                                                                     // TODO get a better way to set up image width and height 
+            double width = 200;
+            double height = 200;
+            var container = this.GetFirstAncestorOfType<SelectableContainer>(); 
+            if (container != null)
+            {
+                width = container.Width;
+                height = container.Height;
+            }
+            UpdateClipRect(0, 0, width, height);                                                                     // TODO get a better way to set up image width and height 
 
             // set up cliprect draggers 
             SetUpDraggersHelper(xCLIPBottomLeftDragger, xCLIPBottomRightDragger, xCLIPTopLeftDragger, xCLIPTopRightDragger);
@@ -130,9 +136,6 @@ namespace Dash
             SetUpDraggersHelper(xBottomLeftDragger, xBottomRightDragger, xTopLeftDragger, xTopRightDragger);
 
             SetUpEvents();
-
-            //ManipulationDelta += (s, e) => { System.Diagnostics.Debug.WriteLine("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYY"); e.Handled = true; };
-            //ManipulationDelta += (s, e) => { e.Handled = true;  };
         }
 
         #region SETUP
@@ -404,11 +407,6 @@ namespace Dash
 
             IsClipRectVisible = true;
             IsImageDraggerVisible = false;
-        }
-
-        private void xImageGrid_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            e.Handled = true;
         }
     }
 }
