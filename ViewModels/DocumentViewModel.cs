@@ -28,9 +28,7 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
-        private TransformGroup _gridViewIconGroupTransform;
         private Visibility _docMenuVisibility;
-        private GridLength _menuColumnWidth;
         private bool _menuOpen = false;
         private bool _isDetailedUserInterfaceVisible = true;
         private bool _isMoveable = true;
@@ -63,12 +61,6 @@ namespace Dash
                 if (SetProperty(ref _menuOpen, value))
                     WidthBinding = new WidthAndMenuOpenWrapper(Width, value);
             }
-        }
-
-        public TransformGroup GridViewIconGroupTransform
-        {
-            get { return _gridViewIconGroupTransform; }
-            set { SetProperty(ref _gridViewIconGroupTransform, value); }
         }
 
         public IconTypeEnum IconType { get { return iconType; } }
@@ -192,12 +184,6 @@ namespace Dash
 
         public readonly bool IsInInterfaceBuilder;
 
-        public GridLength MenuColumnWidth
-        {
-            get { return _menuColumnWidth; }
-            set { SetProperty(ref _menuColumnWidth, value); }
-        }
-
         // == CONSTRUCTORS == 
         public DocumentViewModel() { }
 
@@ -307,12 +293,11 @@ namespace Dash
         public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
         {
             var max = actualWidth > actualHeight ? actualWidth : actualHeight;
-            var translate = new TranslateTransform() { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
-            var scale = new ScaleTransform() { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
+            var translate = new TranslateTransform { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
+            var scale = new ScaleTransform { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
             var group = new TransformGroup();
             group.Children.Add(translate);
             group.Children.Add(scale);
-            GridViewIconGroupTransform = group;
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 
@@ -375,16 +360,12 @@ namespace Dash
         public void CloseMenu()
         {
             DocMenuVisibility = Visibility.Collapsed;
-            MenuColumnWidth = new GridLength(0);
             MenuOpen = false;
         }
 
         public void OpenMenu()
         {
             DocMenuVisibility = Visibility.Visible;
-
-            MenuColumnWidth = new GridLength(55);
-
             MenuOpen = true;
         }
 

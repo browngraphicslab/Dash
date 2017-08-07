@@ -11,7 +11,7 @@ namespace Dash
 
         bool IsInterfaceBuilder { get; }
 
-        ObservableCollection<DocumentViewModel> DocumentViewModels { get; }
+        ObservableCollection<DocumentViewModelParameters> DocumentViewModels { get; }
 
         bool IsSelected { get; }
         bool IsLowestSelected { get; }

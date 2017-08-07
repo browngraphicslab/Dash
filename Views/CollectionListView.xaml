@@ -21,7 +21,8 @@
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
-                  Style="{StaticResource xCollectionListViewStyle}">
+                  Style="{StaticResource xCollectionListViewStyle}"
+                  ContainerContentChanging="HListView_OnContainerContentChanging">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
                     <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
@@ -29,14 +30,16 @@
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}">
-                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                            <local:DocumentView DataContext="{Binding}"
-                                                RenderTransform="{Binding GridViewIconGroupTransform}"
-                                                IsHitTestVisible="False" />
-                        </Canvas>
-                    </Border>
+                    <Grid>
+                        <Viewbox x:Name="XBackdropViewbox" Width="250"
+                                 Height="250" 
+                                 Visibility="Collapsed">
+                            <local:DocumentView Width="250" Height="250" IsHitTestVisible="False"/>
+                        </Viewbox>
+                        <Viewbox x:Name="xBorder" Width="250" Height="250">
+                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
+                        </Viewbox>
+                    </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>

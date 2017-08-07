@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
-    Width="{Binding WidthBinding, Converter={StaticResource WidthBindingToDoubleConverter}}"
+    Width="{Binding Width}"
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
     Tapped="OnTapped"
@@ -20,7 +20,6 @@
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
-        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
     </UserControl.Resources>
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
@@ -28,7 +27,7 @@
               SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
+            <ColumnDefinition x:Name="xMenuColumn" Width="0" MaxWidth="55"/>
         </Grid.ColumnDefinitions>
         
         <!-- Container for Icon view -->

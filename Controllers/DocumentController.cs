@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
+using Windows.UI.Xaml.Media;
 using DashShared;
 using Dash.Controllers.Operators;
 
@@ -681,13 +684,16 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context)
         {
-            var sp = new StackPanel();
+            var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
+            var source = new ObservableCollection<FrameworkElement>();
+            sp.ItemsSource = source;
+
             var isInterfaceBuilder = false;
 
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(KeyStore.DelegatesKey) ||
-                    f.Key.Equals(KeyStore.PrototypeKey) ||
+                if (f.Key.Equals(KeyStore.DelegatesKey)  ||
+                    f.Key.Equals(KeyStore.PrototypeKey)  ||
                     f.Key.Equals(KeyStore.LayoutListKey) ||
                     f.Key.Equals(KeyStore.ActiveLayoutKey))
                 {
@@ -704,10 +710,10 @@ namespace Dash
 
                     var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
 
-                    ele.MaxWidth = 200;
+                    //ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
 
-                    sp.Children.Add(hstack);
+                    source.Add(hstack);
                 }
                 else if (f.Value is DocumentFieldModelController)
                 {
@@ -719,13 +725,27 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    //sp.Children.Add(new CollectionBox(f.Value).Document.MakeViewUI(context, isInterfaceBuilder));
-                    foreach (var fieldDoc in (f.Value as DocumentCollectionFieldModelController).GetDocuments())
+                    var colView = new CollectionGridView(new CollectionViewModel());
+                    var documentBindingSource = new ObservableCollection<DocumentViewModelParameters>();                   
+
+                    colView.XGridView.ClearValue(ItemsControl.ItemsSourceProperty);
+                    colView.XGridView.ItemsSource = documentBindingSource;
+                    colView.XGridView.SelectionMode = ListViewSelectionMode.None;
+
+                    var border = new Border
                     {
-                        sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
-                        (sp.Children.Last() as FrameworkElement).MaxWidth = 300;
-                        (sp.Children.Last() as FrameworkElement).MaxHeight = 300;
+                        MaxWidth = 275,
+                        MaxHeight = 500,
+                        BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
+                        BorderThickness = new Thickness(1),
+                        CornerRadius = new CornerRadius(3),
+                        Child = colView
+                    };
+                    foreach (var fieldDoc in ((DocumentCollectionFieldModelController)f.Value).GetDocuments())
+                    {
+                        documentBindingSource.Add(new DocumentViewModelParameters(fieldDoc));
                     }
+                    source.Add(border);
                 }
             }
             return sp;

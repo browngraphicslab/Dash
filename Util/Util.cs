@@ -67,7 +67,7 @@ namespace Dash
         /// <returns></returns>
         public static Point GetCollectionDropPoint(CollectionFreeformView freeForm, Point absolutePosition)
         {
-            Debug.Assert(freeForm != null);
+            //Debug.Assert(freeForm != null);
             if (freeForm != null)
             {
                 var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);

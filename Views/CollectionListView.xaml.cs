@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -82,9 +84,37 @@ namespace Dash
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
-
             OnSelected();
+        }
 
+
+        private void HListView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            args.Handled = true;
+            if (args.Phase != 0) throw new Exception("Please start in stage 0");
+            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (Viewbox)rootGrid?.FindName("XBackdropViewbox");
+            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            backdrop.Visibility = Visibility.Visible;
+            Debug.Assert(border != null, "border != null");
+            border.Visibility = Visibility.Collapsed;
+            args.RegisterUpdateCallback(RenderDocumentPhaseOne);
+        }
+
+        private void RenderDocumentPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.Phase != 1) throw new Exception("Please start in phase 1");
+            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (Viewbox)rootGrid.FindName("XBackdropViewbox");
+            var border = (Viewbox)rootGrid.FindName("xBorder");
+            var document = (DocumentView)border.FindName("xDocumentDisplay");
+            backdrop.Visibility = Visibility.Collapsed;
+            border.Visibility = Visibility.Visible;
+            document.IsHitTestVisible = false;
+            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xListView.ItemsSource)?[args.ItemIndex];
+            Debug.Assert(dvParams != null, "dvParams != null");
+            document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
         }
 
         #endregion
