@@ -43,13 +43,10 @@ namespace Dash
         }
 
         #region ItemSelection
-
         public void ToggleSelectAllItems()
         {
             ViewModel.ToggleSelectAllItems(xListView);
         }
-
-
         #endregion
 
 
@@ -87,7 +84,6 @@ namespace Dash
             OnSelected();
         }
 
-
         private void HListView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
         {
             args.Handled = true;
@@ -111,15 +107,17 @@ namespace Dash
         {
             if (args.Phase != 1) throw new Exception("Please start in phase 1");
             var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid.FindName("xBorder");
-            var document = (DocumentView)border.FindName("xDocumentDisplay");
+            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            var document = (DocumentView)border?.FindName("xDocumentDisplay");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            Debug.Assert(border != null, "border != null");
+            Debug.Assert(document != null, "document != null");
             backdrop.Visibility = Visibility.Collapsed;
             backdrop.xProgressRing.IsActive = false;
             border.Visibility = Visibility.Visible;
             document.IsHitTestVisible = false;
             var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xListView.ItemsSource)?[args.ItemIndex];
-            Debug.Assert(dvParams != null, "dvParams != null");
             document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
         }
 

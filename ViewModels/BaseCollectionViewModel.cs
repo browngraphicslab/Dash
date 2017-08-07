@@ -164,7 +164,7 @@ namespace Dash
         {
             var listViewBase = sender as ListViewBase;
             SelectionGroup.Clear();
-            SelectionGroup.AddRange(listViewBase.SelectedItems.Cast<DocumentViewModelParameters>());
+            SelectionGroup.AddRange(listViewBase?.SelectedItems.Cast<DocumentViewModelParameters>());
         }
 
         #endregion

@@ -82,9 +82,7 @@ namespace Dash
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
-
             OnSelected();
-
         }
 
         #endregion

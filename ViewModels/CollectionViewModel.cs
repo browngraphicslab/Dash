@@ -16,13 +16,10 @@ namespace Dash
 {
     public class CollectionViewModel : BaseCollectionViewModel
     {
-
-        private ObservableCollection<DocumentViewModel> _selectedItems;
         private DocumentCollectionFieldModelController _collectionFieldModelController;
 
         public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            _selectedItems = new ObservableCollection<DocumentViewModel>();
             DocumentViewModels = new ObservableCollection<DocumentViewModelParameters>();
             if (collection == null) return;
             _collectionFieldModelController =
@@ -68,18 +65,13 @@ namespace Dash
         /// </summary>
         /// <param name="sender">The "Delete" menu option</param>
         /// <param name="e"></param>
-        public void DeleteSelected_Tapped(object sender, TappedRoutedEventArgs e)
+        public void DeleteSelected_Tapped()
         {
-            List<DocumentViewModel> itemsToDelete = new List<DocumentViewModel>();
-            foreach (var vm in _selectedItems)
+            var itemsToDelete = SelectionGroup.ToList();
+            SelectionGroup.Clear();
+            foreach (var vmp in itemsToDelete)
             {
-                itemsToDelete.Add(vm);
-            }
-            _selectedItems.Clear();
-            foreach (var vm in itemsToDelete)
-            {
-                //DocumentViewModels.Remove(vm);
-                _collectionFieldModelController.RemoveDocument(vm.DocumentController);
+                _collectionFieldModelController.RemoveDocument(vmp.Controller);
             }
         }
 

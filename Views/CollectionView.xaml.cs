@@ -118,6 +118,7 @@ namespace Dash
         {
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView();
+            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             xContentControl.Content = CurrentView;
         }
 
@@ -177,7 +178,7 @@ namespace Dash
 
         private void DeleteSelection()
         {
-            ViewModel.DeleteSelected_Tapped(null, null);
+            ViewModel.DeleteSelected_Tapped();
         }
 
         private void DeleteCollection()
