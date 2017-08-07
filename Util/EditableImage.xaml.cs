@@ -43,7 +43,11 @@ namespace Dash
                 xTopLeftDragger.Visibility = visibility;
                 xTopRightDragger.Visibility = visibility;
 
-                if (value) xImageButton.Background = new SolidColorBrush(Colors.SteelBlue);
+                if (value)
+                {
+                    xImageButton.Background = new SolidColorBrush(Colors.SteelBlue);
+                    ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight); 
+                }
                 else xImageButton.Background = new SolidColorBrush(Colors.Gray);
             }
         }
@@ -84,12 +88,14 @@ namespace Dash
                 {
                     _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
                     // show the entire image 
-                    var rect = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
-                    Image.Clip = new RectangleGeometry { Rect = rect };
+                    ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
+
+                    //ManipulationDelta += xImageGrid_ManipulationDelta; 
                 }
                 else
                 {
                     _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
+                    //ManipulationDelta -= xImageGrid_ManipulationDelta;
                 }
             }
         }
@@ -125,7 +131,8 @@ namespace Dash
 
             SetUpEvents();
 
-            xImageGrid.ManipulationDelta += (s, e) => System.Diagnostics.Debug.WriteLine("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
+            //ManipulationDelta += (s, e) => { System.Diagnostics.Debug.WriteLine("WHYYYYYYYYYYYYYYYYYYYYYYYYYYYY"); e.Handled = true; };
+            //ManipulationDelta += (s, e) => { e.Handled = true;  };
         }
 
         #region SETUP
@@ -237,8 +244,8 @@ namespace Dash
         /// </summary>
         private bool UpdateImage(double deltaX, double deltaY, double deltaW, double deltaH)                                            // TODO must update position and width height controllers? 
         {
-            var width = Image.Width + deltaW;
-            var height = Image.Height + deltaH;
+            var width = Image.ActualWidth + deltaW;
+            var height = Image.ActualHeight + deltaH;
             if (width < 0 || height < 0) return false; 
 
             Image.Width = width;

@@ -75,11 +75,11 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(_editableImage.xImageGrid, docController);
+                var selectableContainer = new SelectableContainer(_editableImage /*.xImageGrid*/ , docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
-            return _editableImage.xImageGrid;
+            return _editableImage /*.xImageGrid*/;
         }
 
         protected static void SetupImageBinding(Image image, DocumentController controller,
@@ -186,7 +186,7 @@ namespace Dash
             };
             image.SetBinding(UIElement.OpacityProperty, opacityBinding);
         }
-
+        
         protected override DocumentController GetLayoutPrototype()
         {
             var prototype = ContentController.GetController<DocumentController>(PrototypeId);
