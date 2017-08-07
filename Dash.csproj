@@ -101,6 +101,8 @@
     <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
+    <Compile Include="DocumentControllerToViewModelConverter.cs" />
+    <Compile Include="DocumentViewModelParameters.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />

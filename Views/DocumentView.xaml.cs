@@ -46,8 +46,8 @@ namespace Dash
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 120;
-            MinHeight = 96;
+            MinWidth = 100;
+            MinHeight = 100;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
@@ -212,6 +212,7 @@ namespace Dash
 
         private void updateIcon()
         {
+            if (ViewModel == null) return;
             // when you want a new icon, you have to add a check for it here!
             if (ViewModel.IconType == IconTypeEnum.Document)
             {
@@ -296,7 +297,6 @@ namespace Dash
             if (ViewModel != null)
             {
                 ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
             }
             // update collapse info
             // collapse to icon view on resize

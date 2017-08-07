@@ -28,7 +28,6 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
-        private TransformGroup _gridViewIconGroupTransform;
         private Visibility _docMenuVisibility;
         private GridLength _menuColumnWidth;
         private bool _menuOpen = false;
@@ -63,12 +62,6 @@ namespace Dash
                 if (SetProperty(ref _menuOpen, value))
                     WidthBinding = new WidthAndMenuOpenWrapper(Width, value);
             }
-        }
-
-        public TransformGroup GridViewIconGroupTransform
-        {
-            get { return _gridViewIconGroupTransform; }
-            set { SetProperty(ref _gridViewIconGroupTransform, value); }
         }
 
         public IconTypeEnum IconType { get { return iconType; } }
@@ -312,7 +305,6 @@ namespace Dash
             var group = new TransformGroup();
             group.Children.Add(translate);
             group.Children.Add(scale);
-            GridViewIconGroupTransform = group;
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 

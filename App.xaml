@@ -185,7 +185,7 @@
         <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
         <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
         <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
-
+        <local:DocumentControllerToViewModelConverter x:Key="DocumentControllerToViewModelConverter"></local:DocumentControllerToViewModelConverter>
 
         <!-- SAMPLE NODE HERE-->
 

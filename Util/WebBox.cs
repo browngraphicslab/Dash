@@ -111,7 +111,7 @@ namespace Dash
             return grid;
             //*/ 
 
-            return new TextBox();
+            //return new TextBox();
         }
 
         protected override DocumentController GetLayoutPrototype()

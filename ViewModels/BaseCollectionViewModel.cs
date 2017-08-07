@@ -13,27 +13,27 @@ namespace Dash
     {
         private bool _canDragItems;
         private double _cellSize;
-        private ObservableCollection<DocumentViewModel> _documentViewModels;
+        private ObservableCollection<DocumentViewModelParameters> _documentViewModels;
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
 
         protected BaseCollectionViewModel(bool isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
-            _documentViewModels = new ObservableCollection<DocumentViewModel>();
+            _documentViewModels = new ObservableCollection<DocumentViewModelParameters>();
             SelectionGroup = new List<DocumentViewModel>();
         }
 
         public bool IsInterfaceBuilder
         {
-            get => _isInterfaceBuilder;
-            private set => SetProperty(ref _isInterfaceBuilder, value);
+            get { return _isInterfaceBuilder; }
+            private set { SetProperty(ref _isInterfaceBuilder, value); } 
         }
 
-        public ObservableCollection<DocumentViewModel> DocumentViewModels
+        public ObservableCollection<DocumentViewModelParameters> DocumentViewModels
         {
-            get => _documentViewModels;
-            protected set => SetProperty(ref _documentViewModels, value);
+            get { return _documentViewModels; }
+            protected set { SetProperty(ref _documentViewModels, value); } 
         }
 
         // used to keep track of groups of the currently selected items in a collection
@@ -49,21 +49,21 @@ namespace Dash
 
         public double CellSize
         {
-            get => _cellSize;
-            protected set => SetProperty(ref _cellSize, value);
+            get { return _cellSize; }
+            protected set { SetProperty(ref _cellSize, value); } 
         }
 
         public bool CanDragItems
         {
-            get => _canDragItems;
-            set => SetProperty(ref _canDragItems, value);
+            get { return _canDragItems; } 
+            set { SetProperty(ref _canDragItems, value); } 
 // 
         }
 
         public ListViewSelectionMode ItemSelectionMode
         {
-            get => _itemSelectionMode;
-            set => SetProperty(ref _itemSelectionMode, value);
+            get { return _itemSelectionMode; } 
+            set { SetProperty(ref _itemSelectionMode, value); } 
         }
 
         #endregion
