@@ -14,7 +14,7 @@ namespace Dash
 {
     class InkBox : CourtesyDocument
     {
-        public static DocumentType DocumentType = new DocumentType("ACDF5539-656B-44B5-AC0A-BA6E1875A4C2", "Ink Box");
+        public static DocumentType DocumentType = new DocumentType("ACDF5539-656B-44B5-AC0A-BA6E1875A4C2", "Ink");
 
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "Ink Data Key");
 
@@ -25,6 +25,7 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
+            Document.SetField(InkDataKey, new InkFieldModelController(), true);
             SetLayoutForDocument(Document, Document, true, true);
         }
 
@@ -38,7 +39,7 @@ namespace Dash
                 BorderThickness = new Thickness(1)
             };
             SetupBindings(grid, docController, context);
-            if (controller != null && controller is InkFieldModelController)
+            if (controller is InkFieldModelController)
             {
                 var inkCanvas = new InkCanvas()
                 {
@@ -46,7 +47,7 @@ namespace Dash
                     HorizontalAlignment = HorizontalAlignment.Stretch
                 };
                 var inkController = controller as InkFieldModelController;
-                var ctrls = new InkCanvasControls(inkCanvas, inkController);
+                var ctrls = new InkCanvasControls(inkCanvas, MainPage.InkFieldModelController);
                 grid.Children.Add(inkCanvas);
                 if (isInterfaceBuilderLayout)
                 {

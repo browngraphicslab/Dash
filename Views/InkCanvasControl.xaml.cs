@@ -20,24 +20,10 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash.Views
 {
-    public sealed partial class InkCanvasControl : UserControl
+    public sealed partial class InkCanvasControl : SelectionElement
     {
         public InkFieldModelController InkFieldModelController;
-
-        public bool IsDrawing { get; set; }
-
-        public InkCanvasControl()
-        {
-            this.InitializeComponent();
-            InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
-            InkSettings.SetAttributes();
-            XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
-            XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
-            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            Loaded += OnLoaded;
-            InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
-        }
-
+        
         /// <summary>
         /// A control that contains an InkCanvas and interacts with an InkFieldModelController to reflect user strokes 
         /// on the canvas in the underlying data.
@@ -52,13 +38,20 @@ namespace Dash.Views
             InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            Loaded += OnLoaded;
             InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
+            Loaded += OnLoaded;
+            Tapped += OnTapped;
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            OnSelected();
+            e.Handled = true;
         }
 
         private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (!IsDrawing)
+            if (!IsLowestSelected)
             {
                 XInkCanvas.InkPresenter.StrokeContainer.Clear();
                 if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
@@ -87,8 +80,9 @@ namespace Dash.Views
         /// <param name="args"></param>
         private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
         {
-            if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                if (InkFieldModelController != null)
+                    InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            
         }
 
         /// <summary>
@@ -102,6 +96,20 @@ namespace Dash.Views
         {
             if (InkFieldModelController != null)
                 InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+        }
+
+        protected override void OnActivated(bool isSelected)
+        {
+            // Do nothing
+        }
+
+        protected override void OnLowestActivated(bool act)
+        {
+            //When lowest activated, ink canvas is drawable
+            if (act)
+            {
+                XInkCanvas.ManipulationMode = ManipulationModes.None;
+            }
         }
     }
 }

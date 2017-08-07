@@ -38,6 +38,7 @@ namespace Dash
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
+        
 
         public DocumentController MainDocument { get; private set; }
 
