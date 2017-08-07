@@ -210,6 +210,10 @@ namespace Dash
             {
                 layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
+            else if (fieldModelController is InkFieldModelController)
+            {
+                layoutDocument = new InkBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            }
             return layoutDocument;
         }
 

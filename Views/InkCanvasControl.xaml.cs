@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
@@ -18,7 +19,7 @@ using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace Dash.Views
+namespace Dash
 {
     public sealed partial class InkCanvasControl : SelectionElement
     {
@@ -32,8 +33,13 @@ namespace Dash.Views
         public InkCanvasControl(InkFieldModelController inkFieldModelController)
         {
             this.InitializeComponent();
+            Width = 200;
+            Height = 200;
+            Grid.Width = 200;
+            Grid.Height = 200;
             InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
             InkSettings.SetAttributes();
+            ManipulationControls controls = new ManipulationControls(XInkCanvas);
             XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
             InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
@@ -108,8 +114,24 @@ namespace Dash.Views
             //When lowest activated, ink canvas is drawable
             if (act)
             {
-                XInkCanvas.ManipulationMode = ManipulationModes.None;
+                EditingSymbol.Visibility = Visibility.Visible;
+                Grid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+            } else
+            {
+                EditingSymbol.Visibility = Visibility.Collapsed;
+                Grid.BorderBrush = new SolidColorBrush(Colors.Black);
             }
+        }
+
+        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
+        }
+
+        private void SelectionElement_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Grid.Width = Width;
+            Grid.Height = Height;
         }
     }
 }

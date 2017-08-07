@@ -14,49 +14,40 @@ namespace Dash
 {
     class InkBox : CourtesyDocument
     {
-        public static DocumentType DocumentType = new DocumentType("ACDF5539-656B-44B5-AC0A-BA6E1875A4C2", "Ink");
+        public static DocumentType DocumentType = new DocumentType("ACDF5539-656B-44B5-AC0A-BA6E1875A4C2", "Ink Box");
 
         public static KeyController InkDataKey = new KeyController("1F6A3D2F-28D8-4365-ADA8-4C345C3AF8B6", "Ink Data Key");
 
         private static string PrototypeId = "29BD18A0-8236-4305-B063-B77BA4192C59";
 
-        public InkBox(FieldModelController refToImage, double x = 0, double y = 0, double w = 200, double h = 200)
+        public InkBox(FieldModelController refToInk, double x = 0, double y = 0, double w = 200, double h = 200)
         {
-            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToImage);
+            var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToInk);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
-            Document.SetField(InkDataKey, new InkFieldModelController(), true);
+            //Document.SetField(InkDataKey, new InkFieldModelController(), true);
             SetLayoutForDocument(Document, Document, true, true);
         }
 
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
-            var controller = docController.GetField(InkDataKey);
-            var grid = new Grid()
+
+            var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkFieldModelController;
+            if (fmController != null)
             {
-                BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"],
-                BorderThickness = new Thickness(1)
-            };
-            SetupBindings(grid, docController, context);
-            if (controller is InkFieldModelController)
-            {
-                var inkCanvas = new InkCanvas()
-                {
-                    VerticalAlignment = VerticalAlignment.Stretch,
-                    HorizontalAlignment = HorizontalAlignment.Stretch
-                };
-                var inkController = controller as InkFieldModelController;
-                var ctrls = new InkCanvasControls(inkCanvas, MainPage.InkFieldModelController);
-                grid.Children.Add(inkCanvas);
+                var inkCanvas = new InkCanvasControl(fmController);
+                SetupBindings(inkCanvas, docController, context);
+                
                 if (isInterfaceBuilderLayout)
                 {
-                    var selectableContainer = new SelectableContainer(grid, docController, dataDocument);
+                    var selectableContainer = new SelectableContainer(inkCanvas, docController, dataDocument);
                     //SetupBindings(selectableContainer, docController, context);
                     return selectableContainer;
                 }
+                return inkCanvas;
             }
-            return grid;
+            return new Grid();
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -75,6 +66,11 @@ namespace Dash
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), inkFieldModelController);
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             return prototypeDocument;
+        }
+
+        private static ReferenceFieldModelController GetInkReference(DocumentController docController)
+        {
+            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
         }
     }
 }

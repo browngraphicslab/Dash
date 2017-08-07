@@ -63,12 +63,7 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView(Context context)
         {
-            var inkCanvas = new InkCanvas()
-            {
-                VerticalAlignment = VerticalAlignment.Stretch,
-                HorizontalAlignment = HorizontalAlignment.Stretch
-            };
-            var ctrls = new InkCanvasControls(inkCanvas, this);
+            var inkCanvas = new InkCanvasControl(this);
 
             return inkCanvas;
         }
