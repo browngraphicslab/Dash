@@ -356,12 +356,7 @@ namespace Dash
             // accounts for image's position changing  
             var imageLeftTop = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
             Rect clip = new Rect { X = NormalizeWidth(ClipRect.X - imageLeftTop.X), Y = NormalizeHeight(ClipRect.Y - imageLeftTop.Y), Width = NormalizeWidth(ClipRect.Width), Height = NormalizeHeight(ClipRect.Height) };
-
-            // updates controllers 
             ClipController.Data = clip;
-            var positionController = DocController.GetDereferencedField(KeyStore.PositionFieldKey, Context) as PointFieldModelController;
-            positionController.Data = new Point(imageLeftTop.X, imageLeftTop.Y); 
-            //Image.Clip = new RectangleGeometry { Rect = clip };
         }
 
         private double NormalizeWidth(double num)
