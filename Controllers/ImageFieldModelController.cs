@@ -3,6 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 
 namespace Dash
 {
@@ -31,7 +32,7 @@ namespace Dash
                     // update local
                     // update server    
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated(null);
             }
         }
 
@@ -40,13 +41,13 @@ namespace Dash
             Data = (fieldModel as ImageFieldModelController).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             var image = new Image
             {
                 Source = new BitmapImage(ImageSource),
                 HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Stretch
             };
 
             var imageSourceBinding = new Binding
@@ -60,6 +61,11 @@ namespace Dash
             return image;
         }
 
+        public override FieldModelController GetDefaultController()
+        {
+            return new ImageFieldModelController(new Uri("ms-appx:///Assets/DefaultImage.png"));
+        }
+
         /// <summary>
         ///     The image which this image controller is attached to. This is the <see cref="BitmapImage" /> representation of
         ///     the <see cref="ImageFieldModel.Data" />
@@ -71,7 +77,7 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, UriToBitmapImageConverter.Instance.ConvertXamlToData(value)))
                 {
-                    FireFieldModelUpdated();
+                    OnFieldModelUpdated(null);
                     // update local
                     // update server
                 }
@@ -82,6 +88,11 @@ namespace Dash
         public override string ToString()
         {
             return ImageSource.ToString();
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new ImageFieldModelController(Data.UriSource);
         }
     }
 }

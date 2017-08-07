@@ -22,7 +22,21 @@ namespace Dash.Views
 {
     public sealed partial class InkCanvasControl : UserControl
     {
-        private InkFieldModelController _inkFieldModelController;
+        public InkFieldModelController InkFieldModelController;
+
+        public bool IsDrawing { get; set; }
+
+        public InkCanvasControl()
+        {
+            this.InitializeComponent();
+            InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
+            InkSettings.SetAttributes();
+            XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
+            XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
+            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+            Loaded += OnLoaded;
+            InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
+        }
 
         /// <summary>
         /// A control that contains an InkCanvas and interacts with an InkFieldModelController to reflect user strokes 
@@ -35,18 +49,21 @@ namespace Dash.Views
             InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
             InkSettings.SetAttributes();
             XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
-            _inkFieldModelController = inkFieldModelController;
+            InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             Loaded += OnLoaded;
-            _inkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
+            InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
         }
 
-        private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender)
+        private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
         {
-            XInkCanvas.InkPresenter.StrokeContainer = new InkStrokeContainer();
-            if (_inkFieldModelController.GetStrokes() != null)
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+            if (!IsDrawing)
+            {
+                XInkCanvas.InkPresenter.StrokeContainer.Clear();
+                if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
+                    XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+            }
         }
 
         /// <summary>
@@ -57,8 +74,8 @@ namespace Dash.Views
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             XInkCanvas.InkPresenter.StrokeContainer = new InkStrokeContainer();
-            if (_inkFieldModelController.GetStrokes() != null)
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(_inkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+            if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
         }
 
         /// <summary>
@@ -70,7 +87,8 @@ namespace Dash.Views
         /// <param name="args"></param>
         private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
         {
-            _inkFieldModelController.SetStrokes(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            if (InkFieldModelController != null)
+                InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         /// <summary>
@@ -82,7 +100,8 @@ namespace Dash.Views
         /// <param name="args"></param>
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            _inkFieldModelController.SetStrokes(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            if (InkFieldModelController != null)
+                InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
     }
 }

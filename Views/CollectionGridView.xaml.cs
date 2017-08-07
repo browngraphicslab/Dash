@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -17,27 +18,72 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionGridView : UserControl
+    public sealed partial class CollectionGridView : SelectionElement, ICollectionView
     {
-        public CollectionGridView(CollectionView view)
+        public BaseCollectionViewModel ViewModel { get; private set; }
+
+        public CollectionGridView(BaseCollectionViewModel viewModel)
         {
+            ViewModel = viewModel;
             this.InitializeComponent();
-            xGridView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
-            DataContextChanged += OnDataContextChanged;
-            Binding selectionBinding = new Binding
-            {
-                Source = view.ViewModel,
-                Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
-                Mode = BindingMode.OneWay,
-            };
-            xGridView.SetBinding(GridView.SelectionModeProperty, selectionBinding);
+            xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+            xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+            this.Unloaded += CollectionGridView_Unloaded;
         }
 
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
         {
-            CollectionViewModel vm = DataContext as CollectionViewModel;
-            xGridView.SelectionChanged += vm.SelectionChanged;
+            xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+            xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+            xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+            this.Unloaded -= CollectionGridView_Unloaded;
         }
+
+        #region ItemSelection
+
+        public void ToggleSelectAllItems()
+        {
+            ViewModel.ToggleSelectAllItems(xGridView);
+        }
+
+        #endregion
+
+        #region DragAndDrop
+
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragOver(sender, e);
+        }
+
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+
+        }
+
+        #endregion
     }
 }

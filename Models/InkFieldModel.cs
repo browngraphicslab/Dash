@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 
 namespace Dash
 {
@@ -31,6 +32,11 @@ namespace Dash
         public InkFieldModel(string data)
         {
             Data = data;
+        }
+
+        protected override FieldModelDTO GetFieldDTOHelper()
+        {
+            throw new NotImplementedException();
         }
     }
 }

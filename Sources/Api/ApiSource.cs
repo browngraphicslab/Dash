@@ -9,7 +9,6 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.Web.Http;
 using Windows.Web.Http.Headers;
-using static Dash.CourtesyDocuments;
 
 namespace Dash {
     /// <summary>
@@ -67,9 +66,7 @@ namespace Dash {
         /// </summary>
         /// <param name="g"></param>
         public bool updateDocumentModelResults() {
-            
-
-            CourtesyDocuments.ApiDocumentModel.setResults(docController, responseAsDocuments);
+            ApiDocumentModel.setResults(docController, responseAsDocuments);
             return true;
         }
 
@@ -155,7 +152,6 @@ namespace Dash {
         public async virtual void makeRequest() {
             // load in parameters from listViews
             updateParametersFromListView();
-            var apiURI = new Uri(apiUrlTB.Text);
             
             // check that all required fields are filled
             if (!(requiredPropertiesValid(parameters) &&
@@ -164,159 +160,23 @@ namespace Dash {
                 return;
             }
 
-            // initialize request message and headers
-            HttpRequestMessage message = new HttpRequestMessage(requestType, apiURI);
+            var strHeaders = apiPropertyDictionaryToStringDictionary(headers);
+            var strParams = apiPropertyDictionaryToStringDictionary(parameters);
+            var strAuthHeaders = apiPropertyDictionaryToStringDictionary(authHeaders);
 
-            // populate headers with user input
-            foreach (KeyValuePair<string, ApiProperty> entry in headers) {
-                // add custom header properties to request
-                if (!message.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
-                    return; // TODO: have some error happen here
+            var trySetResponse = new Request(requestType, new Uri(apiUrlTB.Text)).SetHeaders(strHeaders)?
+                .SetMessageBody(new HttpFormUrlEncodedContent(strParams))
+                .SetAuthUri(authURI)
+                .SetAuthHeaders(strAuthHeaders).TrySetResponse();
+            if (trySetResponse != null)
+            {
+                await trySetResponse;
+                ResponseAsDocuments = trySetResponse.Result?.GetResponseAsDocuments();
+                if (ResponseAsDocuments == null) return;
+                updateDocumentModelResults();
             }
-
-            // populate parameters with URL encoded user input
-            HttpFormUrlEncodedContent messageBody
-                = new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(parameters));
-
-            // if get, we add parameters to the URI either in URL for GET or in body for POST requests
-            if (requestType == HttpMethod.Get) {
-                if (!String.IsNullOrWhiteSpace(messageBody.ToString()))
-                    message.RequestUri = new Uri(apiURI.OriginalString + "?" + messageBody.ToString());
-            } else {
-                message.Content = messageBody;
-            }
-
-
-            // fetch authentication token if required
-            if (!(string.IsNullOrWhiteSpace(apiURI.AbsolutePath) || string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(secret))) {
-                string token;
-                HttpRequestMessage tokenmsg = new HttpRequestMessage(HttpMethod.Post, authURI);
-                var byteArray = Encoding.ASCII.GetBytes("my_client_id:my_client_secret");
-                var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray));
-
-                // apply auth headers & parameters
-                tokenmsg.Content = new HttpFormUrlEncodedContent(apiPropertyDictionaryToStringDictionary(authParameters));
-                tokenmsg.Headers.Authorization = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(ASCIIEncoding.ASCII.GetBytes(
-                    string.Format("{0}:{1}", key, secret))));
-                foreach (KeyValuePair<string, ApiProperty> entry in authHeaders) {
-                    if (!tokenmsg.Headers.UserAgent.TryParseAdd(entry.Key + "=" + entry.Value.Value))
-                        return;
-                }
-                // fetch token
-                response = await client.SendRequestAsync(tokenmsg);
-
-                // parse resulting bearer token
-                JObject resultObject = JObject.Parse(response.Content.ToString());
-                token = (string)resultObject.GetValue("access_token");
-                message.Headers.Authorization = new HttpCredentialsHeaderValue("Bearer", token);
-            }
-
-            // send message
-            response = await client.SendRequestAsync(message);
-            Debug.WriteLine("Content: " + response.Content.ToString());
-
-            // generate and store response document by parsing HTTP output
-            // first try to parse it as a list of objects
-            responseAsDocuments = new List<DocumentController>();
-            var apiDocType = new DocumentType(apiURI.Host.ToString().Split('.').First(), apiURI.Host.ToString().Split('.').First());
-            try {
-                /*
-                var resultObjects = AllChildren(JObject.Parse(text.Text))
-                    .First(c => c.Type == JTokenType.Array && c.Path.Contains("results"))
-                    .Children<JObject>();
-
-                int max = 100000, i = 0; // this limits the # of results returned
-                // loop through all instantiated objects, making 
-                foreach (JObject result in resultObjects) {
-                    if (i > max)
-                        break;
-                    i++;
-                    Dictionary<Key, FieldModel> toAdd = new Dictionary<Key, FieldModel>();
-                    foreach (JProperty property in result.Properties()) {
-                        //Debug.WriteLine(property.Name + ": " + property.Value);
-
-                        // TODO: we can add special viewmodels for each of the JOBJECT types here
-                        //       concerns: rabbit hole-ing?
-                        toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModel(property.Value.ToString()));
-                    }
-
-                    DocumentController Document = new CreateNewDocumentRequest(new CreateNewDocumentRequestArgs(toAdd, new DocumentType(apiURI.Host))).GetReturnedDocumentController();
-                    responseAsDocuments.Add(Document); // /*apiURL.Host.ToString() DocumentType.DefaultType));
-                }
-                    
-                */
-
-                // parse JSON result. place first-tier documents in collection view. if there are none, simply
-                // put a single document into the collection view
-                DocumentController documentModel = JsonToDashUtil.Parse(response.Content.ToString());
-
-                var layDocCtrl = new DocumentController(new Dictionary<Key, FieldModelController>(), CollectionBox.DocumentType);
-                var cbox = new CollectionBox(new DocumentCollectionFieldModelController(new DocumentController[0]));
-                var cfmc = new DocumentFieldModelController(cbox.Document);
-                var widthFieldCtrl = new NumberFieldModelController(200);
-                var heightFieldCtrl = new NumberFieldModelController(200);
-                layDocCtrl.SetField(DashConstants.KeyStore.LayoutKey, cfmc, false);
-                layDocCtrl.SetField(DashConstants.KeyStore.WidthFieldKey, widthFieldCtrl, false);
-                layDocCtrl.SetField(DashConstants.KeyStore.HeightFieldKey, heightFieldCtrl, false);
-                
-                var dataFieldModelController = new DocumentCollectionFieldModelController(new DocumentController[] { });
-                ContentController.AddController(dataFieldModelController);
-                layDocCtrl.SetField(DashConstants.KeyStore.DataKey, dataFieldModelController, true);
-
-                // essentially, removes the outlying wrapper document JSONParser returns. this is a hack and
-                // the parser should be reworked to auto do this or do it in a more user-friendly way
-                foreach (var f in documentModel.EnumFields()) {
-                    Debug.WriteLine(f.Value.GetType().ToString());
-                    if (f.Value is DocumentFieldModelController)
-                        ResponseAsDocuments.Add((f.Value as DocumentFieldModelController).Data);
-                    if (f.Value is DocumentCollectionFieldModelController)
-                        ResponseAsDocuments = (f.Value as DocumentCollectionFieldModelController).GetDocuments();
-                } 
-
-                if (ResponseAsDocuments.Count == 0)
-                    ResponseAsDocuments.Add(documentModel);
-
-                var newresponseDocs = new List<DocumentController>();
-                foreach (var doc in ResponseAsDocuments)
-                {
-                    // make a delegate of each response document that will handle its visual display
-                    var visualDoc = doc.MakeDelegate();
-                    var prototypeFieldController = new DocumentFieldModelController(layDocCtrl);
-                    // make a delegate of the prototype layout that each visual doc will use and mask the Position field so that each 
-                    // document can be moved independently
-                    var layoutDelegate = layDocCtrl.MakeDelegate();
-                    visualDoc.SetField(DashConstants.KeyStore.LayoutKey, new DocumentFieldModelController(layoutDelegate), true);
-                    layoutDelegate.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Windows.Foundation.Point()), true);
-                    newresponseDocs.Add(visualDoc);
-                }
-
-                ResponseAsDocuments = newresponseDocs;
-
-
-                // at this point resultAsDocuments contains a list of all JSON results formatted
-                // as documents! They all have the same type, indexed by api URL you could store 
-                // this in a listview node or something wohoo
-                //
-                // TODO: generate unique identifiers for each ApiSource s.t. if two ApiSources had
-                // the same URL, the DocumentModel can still distinguish them
-
-                // then try and parse it as a single object
-            } catch (InvalidOperationException e) {
-                JObject result = JObject.Parse(response.Content.ToString());
-                Dictionary<Key, FieldModelController> toAdd = new Dictionary<Key, FieldModelController>();
-                foreach (JProperty property in result.Properties()) {
-                    toAdd.Add(new Key(apiURI.Host + property.Name, property.Name), new TextFieldModelController(property.Value.ToString()));
-                }
-
-                // at this point, resultAsDocument is a new document
-                //
-                // TODO: unique identifiers as above
-                DocumentController Document = new DocumentController(toAdd, new DocumentType(apiURI.Host));
-                responseAsDocuments.Add(Document); // /*apiURL.Host.ToString()*/ DocumentType.DefaultType));
-            }
-
             // add document to children
-            updateDocumentModelResults();
+            
         }
 
         // recursively yield all children of json

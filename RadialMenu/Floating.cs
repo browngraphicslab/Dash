@@ -1,5 +1,6 @@
 ﻿namespace RadialMenuControl.UserControl
 {
+    using Dash;
     using System;
     using Windows.Foundation;
     using Windows.UI.Xaml;
@@ -152,12 +153,18 @@
         /// <param name="y">Delta on the Y axis</param>
         /// <param name="exptectedHeight">Expected heigth of the floating control</param>
         /// <param name="expectedWidth">Expected width of the floating control</param>
-        public void ManipulateControlPosition(double x, double y, double exptectedHeight, double expectedWidth)
+        public void ManipulateControlPosition(double x, double y, double expectedHeight, double expectedWidth)
         {
             var left = Canvas.GetLeft(_border) + x;
             var top = Canvas.GetTop(_border) + y;
 
-            Rect rect = new Rect(left, top, exptectedHeight, expectedWidth);
+            Rect rect = new Rect(left, top, expectedWidth, expectedHeight);
+            AdjustCanvasPosition(rect);
+        }
+
+        public void SetControlPosition(double x, double y)
+        {
+            Rect rect = new Rect(x, y, _border.ActualWidth, _border.ActualHeight);
             AdjustCanvasPosition(rect);
         }
 
@@ -194,8 +201,9 @@
 
             if (IsBoundByScreen)
             {
-                var ttv = el.TransformToVisual(Window.Current.Content);
-                var topLeft = ttv.TransformPoint(new Point(0, 0));
+                //var ttv = el.TransformToVisual(Window.Current.Content);
+                //var topLeft = ttv.TransformPoint(new Point(0, 0));
+                var topLeft = Util.PointTransformFromVisual(new Point(0, 0), el); 
                 Rect parentRect = new Rect(topLeft.X, topLeft.Y, Window.Current.Bounds.Width - topLeft.X, Window.Current.Bounds.Height - topLeft.Y);
                 position = AdjustedPosition(rect, parentRect);
             }

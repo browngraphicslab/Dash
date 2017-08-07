@@ -1,4 +1,6 @@
-﻿namespace RadialMenuControl.UserControl
+﻿using Windows.UI.Xaml;
+
+namespace RadialMenuControl.UserControl
 {
     using Components;
     using Shims;
@@ -6,6 +8,7 @@
     using System.ComponentModel;
     using System.Runtime.CompilerServices;
     using Windows.UI;
+    using Windows.UI.Xaml;
     using Windows.UI.Xaml.Controls;
     using Windows.UI.Xaml.Media;
 
@@ -59,11 +62,11 @@
             set { SetField(ref _isDraggable, value); }
         }
 
-        private double _centerButtonBorderThickness = 2;
+        private Thickness _centerButtonBorderThickness = new Thickness(2);
         /// <summary>
         /// Border Brush for the Center Button
         /// </summary>
-        public double CenterButtonBorderThickness
+        public Thickness CenterButtonBorderThickness
         {
             get { return _centerButtonBorderThickness; }
             set { SetField(ref _centerButtonBorderThickness, value); }

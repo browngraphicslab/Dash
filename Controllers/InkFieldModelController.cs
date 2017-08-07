@@ -15,17 +15,24 @@ using Windows.UI.Xaml.Media.Imaging;
 using Dash.Converters;
 using Dash.Models;
 using Dash.Views;
+using DashShared;
 using Newtonsoft.Json;
 
 namespace Dash
 {
     public class InkFieldModelController : FieldModelController
     {
-        
+        private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
 
-        public InkFieldModelController() : base(new InkFieldModel()) { UpdateStrokes(); }
+        public InkFieldModelController() : base(new InkFieldModel())
+        {
+        }
 
-        public InkFieldModelController(string data) : base(new InkFieldModel(data)) { UpdateStrokes(); }
+        public InkFieldModelController(string data) : base(new InkFieldModel(data))
+        {
+            InkData = data;
+            UpdateStrokesData(GetStrokesFromJSON(data));
+        }
 
         /// <summary>
         ///     The <see cref="InkFieldModel" /> associated with this <see cref="InkFieldModelController" />,
@@ -44,7 +51,7 @@ namespace Dash
                     // update local
                     // update server    
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated(null);
             }
         }
 
@@ -53,83 +60,63 @@ namespace Dash
             var inkFieldModelController = fieldModel as InkFieldModelController;
             if (inkFieldModelController != null) InkData = inkFieldModelController.InkData;
         }
-        public override FrameworkElement GetTableCellView()
+
+        public override FrameworkElement GetTableCellView(Context context)
         {
-            var inkCanvasControl = new InkCanvasControl(this)
+            var inkCanvas = new InkCanvas()
             {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Stretch,
+                HorizontalAlignment = HorizontalAlignment.Stretch
             };
+            var ctrls = new InkCanvasControls(inkCanvas, this);
 
-            return inkCanvasControl;
+            return inkCanvas;
+        }
+
+        public override FieldModelController Copy()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override FieldModelController GetDefaultController()
+        {
+            return new InkFieldModelController();
+        }
+
+        public IEnumerable<InkStroke> GetStrokesFromJSON(string json)
+        {
+            var inkStrokes = JsonConvert.DeserializeObject<IEnumerable<InkStroke>>(json);
+            return inkStrokes;
         }
 
         /// <summary>
-        /// Converts the locally stored InkStrokes into a string and sets the field model's data to that string.
+        /// Method to allow InkCanvasControls to change data of InkFieldModelController when ink input is registered.
         /// </summary>
-        public async void UpdateData()
+        public async void UpdateStrokesData(IEnumerable<InkStroke> newStrokes)
         {
-            if (_strokeSet.Count != 0)
+            _strokeContainer.Clear();
+            foreach (var newStroke in newStrokes)
             {
-                MemoryStream stream = new MemoryStream();
-                var strokeContainer = new InkStrokeContainer();
-                foreach (var stroke in _strokeSet)
-                {
-                    strokeContainer.AddStroke(stroke.Clone());
-                }
-                using (IOutputStream outputStream = stream.AsOutputStream())
-                {
-                    await strokeContainer.SaveAsync(outputStream);
-                    await outputStream.FlushAsync();
-                }
-                InkData = JsonConvert.SerializeObject(stream.ToArray());
+                _strokeContainer.AddStroke(newStroke.Clone());
             }
-            else
+            MemoryStream stream = new MemoryStream();
+            using (IOutputStream outputStream = stream.AsOutputStream())
             {
-                InkData = null;
+                await _strokeContainer.SaveAsync(outputStream);
+                await outputStream.FlushAsync();
             }
-            
+            InkData = JsonConvert.SerializeObject(stream.ToArray());
+            stream.Dispose();
         }
 
-        /// <summary>
-        /// Converts InkFieldModel's Data to inkStrokes, which are stored in the stroke set
-        /// </summary>
-        public async void UpdateStrokes()
+
+
+        public IReadOnlyList<InkStroke> GetStrokes()
         {
-            if (InkFieldModel.Data != null)
-            {
-                var deserializedBytes = JsonConvert.DeserializeObject<byte[]>(InkFieldModel.Data);
-                if (deserializedBytes != null)
-                {
-                    var strokeContainer = new InkStrokeContainer();
-                    MemoryStream stream = new MemoryStream(deserializedBytes);
-                    using (var inputStream = stream.AsInputStream())
-                    {
-                        await strokeContainer.LoadAsync(inputStream);
-                    }
-                    stream.Dispose();
-                    _strokeSet = new HashSet<InkStroke>(strokeContainer.GetStrokes());
-                }
-            }
+            return _strokeContainer.GetStrokes();
         }
 
-        /// <summary>
-        /// A HashSet of strokes that can be edited locally without changing the field model's data
-        /// </summary>
-        private HashSet<InkStroke> _strokeSet = new HashSet<InkStroke>();
-
-        public void SetStrokes(IEnumerable<InkStroke> strokes)
-        {
-            _strokeSet = new HashSet<InkStroke>(strokes);
-            UpdateData();
-        }
-
-        public IEnumerable<InkStroke> GetStrokes()
-        {
-            return _strokeSet;
-        }
-
-        public override TypeInfo TypeInfo => TypeInfo.Image;
+        public override TypeInfo TypeInfo => TypeInfo.Ink;
 
         public override string ToString()
         {

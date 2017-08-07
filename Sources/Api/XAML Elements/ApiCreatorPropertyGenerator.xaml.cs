@@ -11,8 +11,12 @@ namespace Dash
     
     public sealed partial class ApiCreatorPropertyGenerator : UserControl {
 
-        public DashShared.Key parameterCollectionKey;
+        public KeyController parameterCollectionKey;
         public ApiSourceDisplay SourceDisplay;
+
+        public delegate void OnParametersChangedEventHandler(ApiCreatorPropertyGenerator generator, ApiCreatorProperty property);
+
+        public event OnParametersChangedEventHandler OnParametersChanged;
 
         private DocumentController docModel;
         public DocumentController DocModel {
@@ -26,7 +30,7 @@ namespace Dash
             xListView.Visibility = Visibility.Collapsed;
         }
 
-        public ApiCreatorPropertyGenerator(DashShared.Key key) {
+        public ApiCreatorPropertyGenerator(KeyController key) {
             DataContext = this;
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
@@ -74,10 +78,12 @@ namespace Dash
             xCollapseButtonText.Text = "-";
 
             Debug.Assert(SourceDisplay != null);
-            DocumentController c = CourtesyDocuments.ApiDocumentModel.addParameter(
+            DocumentController c = ApiDocumentModel.addParameter(
                 docModel, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
                 stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
             stackPanel.docModelRef = c; // update to contain ref to docmodel generated
+
+            OnParametersChanged?.Invoke(this, stackPanel);
         }
     }
 }

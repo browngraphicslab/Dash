@@ -1,4 +1,5 @@
-﻿<UserControl
+﻿<local:SelectionElement
+    x:Name="This"
     x:Class="Dash.DocumentView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,53 +7,79 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="300"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
-    PointerPressed="UserControl_PointerPressed">
-
+    Width="{Binding WidthBinding, Converter={StaticResource WidthBindingToDoubleConverter}}"
+    Height="{Binding Height}"
+    PointerPressed="UserControl_PointerPressed"
+    Tapped="OnTapped"
+    PointerWheelChanged="This_PointerWheelChanged"
+    ManipulationMode="{Binding ManipulationMode}"
+    >
+    
+    <UserControl.Resources>
+        <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
+            <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
+        </Storyboard>
+        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
+    </UserControl.Resources>
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public"
-              SizeChanged="OuterGrid_SizeChanged"
-              Background="Transparent">
+          x:FieldModifier="public" PointerReleased="OuterGrid_PointerReleased"
+              SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding MenuColumnWidth}" MaxWidth="50"/>
             <ColumnDefinition Width="*" />
+            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
         </Grid.ColumnDefinitions>
-            <Border x:Name="xBorder" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#0F000000" Margin="5,5,-10,-10" />
-            <!-- Container for Icon view -->
-            <Grid x:Name="xIcon" Grid.Column="1" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Image x:Name="xIconImage" Source="ms-appx:///Assets/if_11_1724127.png" />
-            </Grid>
-        <Canvas x:Name="xMenuCanvas" Grid.Column="0"  />
-        <Grid Grid.Column="1">
+        
+        <!-- Container for Icon view -->
+        <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto"></RowDefinition>
+            </Grid.RowDefinitions>
+
+            <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/if_11_1724127.png" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
+
+                <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
+                     HorizontalAlignment="Center"
+                     TextAlignment="Center"
+                     Background="Transparent" Text="Name Here" BorderThickness="0"/>
+
+            </StackPanel>
+        </Grid>
+        
+        <Canvas x:Name="xMenuCanvas" Grid.Column="1"/>
+        <Grid Grid.Column="0">
+            <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#33031A2C" Margin="5,5,-10,-10" />
             <!-- Container for document fields view -->
-            <Grid x:Name="XGrid" Background="{StaticResource TranslucentWhite}">
+            <Grid x:Name="XGrid" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>
-                <ContentPresenter Content="{Binding Content}" />
+                <FlyoutBase.AttachedFlyout >
+                    <Flyout Placement="Bottom">
+                        <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
+                    </Flyout>
+                </FlyoutBase.AttachedFlyout>
+                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" IsHitTestVisible="{Binding IsSelected}"/>
             </Grid>
-
-            <!-- Misc. Document Components-->
+            <!-- Dragger Button-->
             <Button x:Name="DraggerButton"
                     x:FieldModifier="public"
-                    Background="Black"
                     Margin="0,0,-20,-20"
-                    DoubleTapped="ExpandContract_DoubleTapped"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Bottom"
                     ManipulationMode="TranslateX, TranslateY">
                 <Button.Template>
                     <ControlTemplate TargetType="Button">
-                        <Border Padding="10,10,20,20" Background="Transparent">
-                            <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
-                                   HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-                        </Border>
                     </ControlTemplate>
                 </Button.Template>
+                <Border Padding="10,10,20,20" Background="Transparent">
+                    <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
+                                   HorizontalAlignment="Right" VerticalAlignment="Bottom" />
+                </Border>
             </Button>
         </Grid>
     </Grid>
-</UserControl>
+</local:SelectionElement>

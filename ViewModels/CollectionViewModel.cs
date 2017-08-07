@@ -11,82 +11,53 @@ using DashShared;
 using Windows.Foundation;
 using Visibility = Windows.UI.Xaml.Visibility;
 using System.Linq;
-using Dash.Views;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase
-    { 
+    public class CollectionViewModel : BaseCollectionViewModel
+    {
 
-
-    
-        #region Properties
-        public DocumentCollectionFieldModelController CollectionFieldModelController { get { return _collectionFieldModelController; } }
-        
-        /// <summary>
-        /// The DocumentViewModels that the CollectionView actually binds to.
-        /// </summary>
-        public ObservableCollection<DocumentViewModel> DataBindingSource
-        {
-            get { return _dataBindingSource; }
-            set
-            {
-                SetProperty(ref _dataBindingSource, value);
-            }
-        }
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        public bool KeepItemsOnMove { get; set; } = true;
-
-
-        
-
-        /// <summary>
-        /// Determines the selection mode of the control currently displaying the documents
-        /// </summary>
-        public ListViewSelectionMode ItemSelectionMode
-        {
-            get { return _itemSelectionMode; }
-            set { SetProperty(ref _itemSelectionMode, value); }
-        }
-        private ListViewSelectionMode _itemSelectionMode;
-        #endregion
-
-        /// <summary>
-        /// The collection creates delegates for each document it displays so that it can associate display-specific
-        /// information on the documents.  This allows different collection views to save different views of the same
-        /// document collection.
-        /// </summary>
-        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-
-        private DocumentCollectionFieldModelController _collectionFieldModelController;
-        //Not backing variable; used to keep track of which items selected in view
         private ObservableCollection<DocumentViewModel> _selectedItems;
+        private DocumentCollectionFieldModelController _collectionFieldModelController;
 
-        /// <summary>
-        /// The size of each cell in the GridView.
-        /// </summary>
-        public double CellSize { get; set; }
-
-        public List<DocumentController> DocContextList { get; }
-
-
-        public CollectionViewModel(DocumentCollectionFieldModelController collection, List<DocumentController> docContextList)
+        public CollectionViewModel(FieldModelController collection, bool isInInterfaceBuilder, Context context = null) : base(isInInterfaceBuilder)
         {
-            DocContextList = docContextList;
-            _collectionFieldModelController = collection;
             _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            UpdateViewModels(_collectionFieldModelController.DocumentCollectionFieldModel);
-            collection.FieldModelUpdated += Controller_FieldModelUpdatedEvent;
-            CellSize = 250;
+            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            _collectionFieldModelController =
+                collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
+            AddDocumentsCollectionIsCaller(_collectionFieldModelController.GetDocuments(), context);
+            var copiedContext = new Context(context);
+
+            if (collection is ReferenceFieldModelController)
+            {
+                var reference = collection as ReferenceFieldModelController;
+                reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
+                    delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+                    {
+                        if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                        {
+                            var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+                            UpdateViewModels(cargs, copiedContext);
+                        }
+                        else
+                        {
+                            DocumentViewModels.Clear();
+                            AddDocuments(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
+                        }
+                    });
+            }
+            else
+            {
+                collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
+                {
+                    UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs, 
+                        copiedContext);
+                };
+            }
+            CellSize = 250; // TODO figure out where this should be set
         }
 
-        private void Controller_FieldModelUpdatedEvent(FieldModelController sender)
-        {
-            UpdateViewModels((sender as DocumentCollectionFieldModelController).DocumentCollectionFieldModel);
-        }
 
         #region Event Handlers
 
@@ -106,13 +77,11 @@ namespace Dash
             _selectedItems.Clear();
             foreach (var vm in itemsToDelete)
             {
-                //DataBindingSource.Remove(vm);
-                CollectionFieldModelController.RemoveDocument(vm.DocumentController);
+                //DocumentViewModels.Remove(vm);
+                _collectionFieldModelController.RemoveDocument(vm.DocumentController);
             }
         }
 
-       
-        
 
         /// <summary>
         /// Updates an ObservableCollection of DocumentViewModels to contain 
@@ -144,46 +113,77 @@ namespace Dash
 
         #region DocumentModel and DocumentViewModel Data Changes
 
-        private bool ViewModelContains(ObservableCollection<DocumentViewModel> col, string id)
+        private void UpdateViewModels(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs args, Context c)
         {
-            foreach (var viewModel in col)
-                if (viewModel.DocumentController.GetId() == id)
-                    return true;
-            return false;
-        }
-
-        private bool ViewModelContains(IEnumerable<string> l, DocumentViewModel vm)
-        {
-            foreach (var s in l)
-                if (vm.DocumentController.GetId() == s)
-                    return true;
-            return false;
-        }
-
-        public void UpdateViewModels(DocumentCollectionFieldModel documents)
-        {
-            var offset = 0;
-            foreach (var id in documents.Data)
+            switch (args.CollectionAction)
             {
-                var controller = ContentController.GetController(id) as DocumentController;
-                if (ViewModelContains(DataBindingSource, id)) continue;
-                var viewModel = new DocumentViewModel(controller, DocContextList);
-                if (ItemsCarrier.GetInstance().Payload.Select(item => item.DocumentController).Contains(controller))
-                {
-                    var x = ItemsCarrier.GetInstance().Translate.X - 10 + offset;
-                    var y = ItemsCarrier.GetInstance().Translate.Y - 10 + offset;
-                    viewModel.Position = new Point(x, y);
-                    offset += 15;
-                }
-                viewModel.ManipulationMode = ManipulationModes.System;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
+                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
+                    break;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
+                    DocumentViewModels.Clear();
+                    break;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
+                    RemoveDocumentsCollectionIsCaller(args.ChangedDocuments);
+                    break;
+                case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
+                    DocumentViewModels.Clear();
+                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
+                    break;
+            }
+        }
+
+        private void RemoveDocumentsCollectionIsCaller(List<DocumentController> documents)
+        {
+            var ids = documents.Select(doc => doc.GetId());
+            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+            foreach (var vm in vms)
+            {
+                DocumentViewModels.Remove(vm);
+            }
+        }
+
+        private void AddDocumentsCollectionIsCaller(List<DocumentController> documents, Context context)
+        {
+            foreach (var doc in documents)
+            {
+                var viewModel = new DocumentViewModel(doc, IsInterfaceBuilder, context);
                 viewModel.DoubleTapEnabled = false;
-                DataBindingSource.Add(viewModel);
+                DocumentViewModels.Add(viewModel);
             }
-            for (int i = DataBindingSource.Count - 1; i >= 0; --i)
+        }
+
+        public override void AddDocuments(List<DocumentController> documents, Context context)
+        {
+            foreach (var doc in documents)
             {
-                if (ViewModelContains(documents.Data, DataBindingSource[i])) continue;
-                DataBindingSource.RemoveAt(i);
+                AddDocument(doc, context);
             }
+        }
+
+        public override void AddDocument(DocumentController doc, Context context)
+        {
+            if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+            {
+                return;
+            }
+
+            // just update the collection, the colllection will update our view automatically
+            _collectionFieldModelController.AddDocument(doc);
+        }
+
+        public override void RemoveDocuments(List<DocumentController> documents)
+        {
+            foreach (var doc in documents)
+            {
+                RemoveDocument(doc);
+            }
+        }
+
+        public override void RemoveDocument(DocumentController document)
+        {
+            // just update the collection, the colllection will update our view automatically
+            _collectionFieldModelController.RemoveDocument(document);
         }
 
         #endregion

@@ -11,23 +11,24 @@ namespace Dash
     public class DocumentModel : AuthorizableEntityBase
     {
         static public Dictionary<string, DocumentModel> Map = new Dictionary<string, DocumentModel>();
+
         /// <summary>
-        /// A dictionary of <see cref="Key"/> to <see cref="FieldModel.Id"/>. These fields represent all the 
+        /// A dictionary of <see cref="KeyController"/> to <see cref="FieldModel.Id"/>. These fields represent all the 
         /// data that is stored in the document model
         /// </summary>
-        public Dictionary<Key, string> Fields;
+        public Dictionary<KeyController, string> Fields;
 
         /// <summary>
         /// The type of this document.
         /// </summary>
         public DocumentType DocumentType;
-
+        
         /// <summary>
         /// Initializes a document with given data and type.
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<Key, FieldModel> fields, DocumentType type)
+        public DocumentModel(IDictionary<KeyController, FieldModel> fields, DocumentType type, string id = null) : base(id)
         {
             if (type == null)
             {
@@ -43,7 +44,7 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="type"></param>
-        public DocumentModel(IDictionary<Key, string> fields, DocumentType type)
+        public DocumentModel(IDictionary<KeyController, string> fields, DocumentType type, string id = null) : base(id)
         {
             if (type == null)
             {

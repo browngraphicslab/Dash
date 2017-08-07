@@ -31,10 +31,10 @@ namespace Dash {
             xAuthControl.HeaderControl.SourceDisplay = display;
             xAuthControl.ParameterControl.SourceDisplay = display;
 
-            xHeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.HeadersKey;
-            xParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.ParametersKey;
-            xAuthControl.ParameterControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthParametersKey;
-            xAuthControl.HeaderControl.parameterCollectionKey = CourtesyDocuments.ApiDocumentModel.AuthHeadersKey;
+            xHeaderControl.parameterCollectionKey = ApiDocumentModel.HeadersKey;
+            xParameterControl.parameterCollectionKey = ApiDocumentModel.ParametersKey;
+            xAuthControl.ParameterControl.parameterCollectionKey = ApiDocumentModel.AuthParametersKey;
+            xAuthControl.HeaderControl.parameterCollectionKey = ApiDocumentModel.AuthHeadersKey;
             SourceDisplay = display;
 
             updateSource();
@@ -96,10 +96,6 @@ namespace Dash {
             Source = new ApiSource(DocModel, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
             Source.setApiDisplay(SourceDisplay);
-
-        }
-
-        private void xHeaderControl_Loaded(object sender, RoutedEventArgs e) {
 
         }
         

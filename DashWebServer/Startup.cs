@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.WebSockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -63,6 +64,9 @@ namespace DashWebServer
                 var xmlPath = Path.Combine(basePath, "DashWebServer.xml");
                 c.IncludeXmlComments(xmlPath);
             });
+
+            // Push
+            services.AddWebSocketManager();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -88,6 +92,12 @@ namespace DashWebServer
 
             // Enable middleware to serve swagger-ui (HTML, JS, CSS etc.), specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1"); });
+
+            // Push
+            app.UseWebSockets();
+            app.MapWebSocketManager("/push", app.ApplicationServices.GetService<PushHandler>());
+
+            app.UseStaticFiles();
         }
     }
 }

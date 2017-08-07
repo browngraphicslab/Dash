@@ -33,7 +33,7 @@ namespace Dash
             if (_controllers.ContainsKey(newControllerId))
             {
                 var savedController = _controllers[newControllerId];
-                Debug.Assert(ReferenceEquals(savedController, newController),
+                Debug.Assert(!ReferenceEquals(savedController, newController) && savedController.GetId() == newController.GetId(),
                     "If we overwrite a reference to a saved controller bindings to the saved controller will no longer exist");
             }
             else
@@ -59,12 +59,22 @@ namespace Dash
                 Debug.Assert(false,
                     "The requested controller is not of the desired controller type and does not inhereit from the desired controller type");
             }
-            else
-            {
-                // TODO try and get the controller from the server
-            }
-            Debug.Assert(false, "No controller exists with the passed in id");
+            //Debug.Assert(false, "No controller exists with the passed in id");
             return null;
+        }
+
+        /// <summary>
+        /// Gets the requested controllers by it's id, checking to make sure that the controller is of the requested type
+        /// </summary>
+        public static IEnumerable<TControllerType> GetControllers<TControllerType>() where TControllerType : class, IController
+        {
+            List< string > ids = new List<string>();
+            foreach (var c in _controllers)
+                if (c.Value is TControllerType && !ids.Contains(c.Value.GetId()))
+                {
+                    ids.Add(c.Value.GetId());
+                    yield return c.Value as TControllerType;
+                }
         }
 
         /// <summary>
@@ -77,10 +87,6 @@ namespace Dash
             if (_controllers.ContainsKey(controllerId))
             {
                 return _controllers[controllerId];
-            }
-            else
-            {
-                // TODO try and get the controller from the server
             }
             Debug.Assert(false, "No controller exists with the passed in id");
             return null;
@@ -140,7 +146,7 @@ namespace Dash
             if (_models.ContainsKey(newModelId))
             {
                 var savedModel = _models[newModelId];
-                Debug.Assert(ReferenceEquals(savedModel, newModel),
+                Debug.Assert(!ReferenceEquals(savedModel, newModel) && savedModel.Id == newModel.Id,
                     "We probably don't want to overwrite references to a saved model");
             }
             else
@@ -166,10 +172,6 @@ namespace Dash
                 Debug.Assert(false,
                     "The requested model is not of the desired model type and does not inhereit from the desired model type");
             }
-            else
-            {
-                // TODO try and get the controller from the server
-            }
             Debug.Assert(false, "No model exists with the passed in id");
             return null;
         }
@@ -184,10 +186,6 @@ namespace Dash
             if (_models.ContainsKey(modelId))
             {
                 return _models[modelId];
-            }
-            else
-            {
-                // TODO try and get the model from the server
             }
             Debug.Assert(false, "No model exists with the passed in id");
             return null;
@@ -228,108 +226,6 @@ namespace Dash
 
             return succesfulModels;
         }
-
-        #endregion
-
-        #region FieldModels
-        
-
-        /// <summary>
-        /// Follows a <see cref="ReferenceFieldModel"/> to the first field that it references, and returns that reference as the passed in type. On error
-        /// this returns null
-        /// </summary>
-        public static FieldModel DereferenceFieldModel(ReferenceFieldModel reference, IEnumerable<DocumentController> contextList = null)
-        {
-            Debug.Assert(reference != null);
-            DocumentModel docModel = null;
-            string fieldModelId = null;
-            FieldModel fieldModel = null;
-            string refDocId = MapDocumentInstanceReference(reference.DocId, contextList);
-
-            // check if the document exists
-            if (_models.ContainsKey(refDocId))
-            {
-                // get the document model
-                docModel = _models[refDocId] as DocumentModel;
-                Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache.");
-
-                // get the field model id from the document model
-                fieldModelId = GetController<DocumentController>(refDocId).GetField(reference.FieldKey).GetId();// docModel.Fields[reference.FieldKey];
-            }
-            else
-            {
-                // TODO try and get the document model from the server
-            }
-
-            Debug.Assert(docModel != null, "The Document Model referenced by your ReferenceFieldModel does not exist in the local cache or on the server.");
-
-            // check if the field model exists
-            if (_models.ContainsKey(fieldModelId))
-            {
-                // get the field model from the local cache
-                fieldModel = _models[fieldModelId] as FieldModel;
-
-                Debug.Assert(fieldModel != null, "The field Model referenced by your ReferenceFieldModel does not exist in the local cache");
-
-            }
-            else
-            {
-                // TODO try and get the field model from the server
-            }
-
-            Debug.Assert(fieldModel != null, "The field Model referenced by your ReferenceFieldModel does not exist in the local cache or on the server.");
-
-            return fieldModel;
-        }
-
-        public static string MapDocumentInstanceReference(string referenceDocId, IEnumerable<DocumentController> contextList)
-        {
-            if (contextList != null)
-                foreach (var doc in contextList)
-                    if (doc.IsDelegateOf(referenceDocId))
-                        referenceDocId = doc.GetId();
-            return referenceDocId;
-        }
-
-
-        /// <summary>
-        /// Follows a <see cref="ReferenceFieldModel"/> or chain of <see cref="ReferenceFieldModel"/> to the "root" item, which is a <see cref="FieldModel"/>
-        /// </summary>
-        static FieldModel DereferenceToRootFieldModel(FieldModel reference, IEnumerable<DocumentController> contextList = null)
-        {
-            Debug.Assert(reference != null);
-            FieldModel possibleFieldModel = reference;
-            while (possibleFieldModel is ReferenceFieldModel)
-            {
-                possibleFieldModel = DereferenceFieldModel(possibleFieldModel as ReferenceFieldModel,  contextList);
-            }
-
-            Debug.Assert(possibleFieldModel != null, "The chain of references ended in a null field");
-
-            return possibleFieldModel;
-        }
-
-        /// <summary>
-        /// Follows a <see cref="FieldModelController"/>/<see cref="FieldModelController"/> or chain of <see cref="ReferenceFieldModelController"/> to the "root" item, which is a <see cref="FieldModelController"/>
-        /// </summary>
-        public static FieldModelController DereferenceToRootFieldModel(FieldModelController reference, IEnumerable<DocumentController> contextList = null)
-        {
-            var dereferencedFieldModel = DereferenceToRootFieldModel(reference.FieldModel, contextList);
-            var derefrencedFieldModelController = GetController<FieldModelController>(dereferencedFieldModel.Id);
-            return derefrencedFieldModelController;
-        }
-
-
-        /// <summary>
-        /// Follows a <see cref="ReferenceFieldModelController"/>/<see cref="FieldModelController"/> or chain of <see cref="ReferenceFieldModelController"/> to the "root" item, which is a <see cref="TFieldModelControllerType"/>
-        /// </summary>
-        public static TFieldModelControllerType DereferenceToRootFieldModel<TFieldModelControllerType>(FieldModelController reference, IEnumerable<DocumentController> contextList=null) where TFieldModelControllerType : FieldModelController
-        {
-            var rootFieldModelController = DereferenceToRootFieldModel(reference, contextList);
-            Debug.Assert(rootFieldModelController is TFieldModelControllerType, "The chain of references ends in a field model controller which is not of the desired type");
-            return rootFieldModelController as TFieldModelControllerType;
-        }
-
 
         #endregion
     }

@@ -44,7 +44,7 @@ namespace Dash
         ISerializable,
         IDeserializationCallback,
         INotifyCollectionChanged,
-        INotifyPropertyChanged, IList, IList<KeyValuePair<TKey, TValue>>
+        INotifyPropertyChanged, IList<KeyValuePair<TKey, TValue>>, IList
     {
         #region constructors
 
@@ -164,11 +164,6 @@ namespace Dash
         public bool ContainsValue(TValue value)
         {
             return TrueDictionary.ContainsValue(value);
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            return new Enumerator<TKey, TValue>(this, false);
         }
 
         public bool Remove(TKey key)
@@ -555,7 +550,7 @@ namespace Dash
             }
         }
 
-        KeyValuePair<TKey, TValue> IList<KeyValuePair<TKey, TValue>>.this[int index]
+        public KeyValuePair<TKey, TValue> this[int index]
         {
             get
             {
@@ -569,7 +564,7 @@ namespace Dash
             }
         }
 
-        public object this[int index]
+        object IList.this[int index]
         {
             get
             {
@@ -586,7 +581,7 @@ namespace Dash
 
         #region IEnumerable<KeyValuePair<TKey, TValue>>
 
-        IEnumerator<KeyValuePair<TKey, TValue>> IEnumerable<KeyValuePair<TKey, TValue>>.GetEnumerator()
+        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
         {
             return new Enumerator<TKey, TValue>(this, false);
         }
@@ -597,7 +592,7 @@ namespace Dash
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return ((IEnumerable<KeyValuePair<TKey, TValue>>)this).GetEnumerator();
         }
 
         #endregion IEnumerable

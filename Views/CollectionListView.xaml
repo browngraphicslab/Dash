@@ -1,46 +1,44 @@
-﻿<UserControl
+﻿<local:SelectionElement
     x:Class="Dash.CollectionListView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
-    xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
-    <Grid x:Name="Grid">
-        <ListView x:Name="HListView" 
-                          x:FieldModifier="public" 
-                          ItemsSource="{Binding DataBindingSource}"
-                          FlowDirection="LeftToRight" 
-                          HorizontalAlignment="Stretch" 
-                          VerticalAlignment="Stretch" 
-                          ScrollViewer.HorizontalScrollMode="Enabled"
-                          ScrollViewer.VerticalScrollMode="Disabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                          ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                          CanDragItems="True"
-                          CanReorderItems="True"
-                          AllowDrop="True"
-                  ManipulationMode="None">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
+    <Grid x:Name="Grid"
+          AllowDrop="True"
+          DragOver="CollectionViewOnDragOver"
+          Drop="CollectionViewOnDrop"
+          Tapped="OnTapped"
+          Background="Transparent"
+          >
+        <ListView x:Name="xListView"
+                  ItemsSource="{Binding DocumentViewModels}"
+                  CanDragItems="{Binding CanDragItems}"
+                  ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
+                  IsHitTestVisible="{Binding IsSelected}"
+                  SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
+                  Style="{StaticResource xCollectionListViewStyle}">
             <ListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
+                    <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
                 </ItemsPanelTemplate>
             </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Border Width="{Binding ElementName=Grid, Path=DataContext.CellSize}" Height="{Binding ElementName=Grid, Path=DataContext.CellSize}">
-                        <dash:DocumentView 
-                                    Width="250" 
-                                    Height="250" 
-                                    DataContext="{Binding}"
-                                    IsHitTestVisible="False">
-                        </dash:DocumentView>
+                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}">
+                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
+                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
+                            <local:DocumentView DataContext="{Binding}"
+                                                RenderTransform="{Binding GridViewIconGroupTransform}"
+                                                IsHitTestVisible="False" />
+                        </Canvas>
                     </Border>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
     </Grid>
-</UserControl>
+</local:SelectionElement>

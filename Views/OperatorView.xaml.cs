@@ -6,9 +6,14 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 using System.Collections.Generic;
+using Windows.ApplicationModel;
+using Windows.Foundation;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
+using Dash.Controllers.Operators;
+using Dash.Views;
+using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -16,55 +21,29 @@ namespace Dash
 {
     public sealed partial class OperatorView : UserControl
     {
-        public delegate void IODragEventHandler(IOReference ioReference);
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged off of and a connection should be started
-        /// </summary>
-        public event IODragEventHandler IoDragStarted;
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged on to and a connection should be ended
-        /// </summary>
-        public event IODragEventHandler IoDragEnded;
-
-        /// <summary>
-        /// Reference to either a field input or output with other information about the pointer
-        /// </summary>
-        public class IOReference
-        {
-            public ReferenceFieldModelController ReferenceFieldModelController { get; set; }
-            public bool IsOutput { get; set; }
-
-            public PointerRoutedEventArgs PointerArgs { get; set; }
-
-            public FrameworkElement FrameworkElement { get; set; }
-            public DocumentView ContainerView { get; set; }
-
-            public IOReference(ReferenceFieldModelController referenceFieldModelController, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
-            {
-                ReferenceFieldModelController = referenceFieldModelController;
-                IsOutput = isOutput;
-                PointerArgs = args;
-                FrameworkElement = e;
-                ContainerView = container;
-            }
-        }
+        private MenuFlyout _flyout;
 
         public OperatorView()
         {
             this.InitializeComponent();
         }
 
+        public object OperatorContent
+        {
+            get { return XPresenter.Content; }
+            set { XPresenter.Content = value; }
+        }
+
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var opCont = ContentController.DereferenceToRootFieldModel(DataContext as ReferenceFieldModelController) as OperatorFieldModelController;
+            var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
 
-            Binding inputsBinding = new Binding
+           
+            var inputsBinding = new Binding
             {
                 Source = opCont.Inputs,
             };
-            Binding outputsBinding = new Binding
+            var outputsBinding = new Binding
             {
                 Source = opCont.Outputs,
             };
@@ -79,27 +58,26 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void holdPointerOnEllipse(object sender, PointerRoutedEventArgs e) {
-
-            string docId = (DataContext as ReferenceFieldModelController).DocId;
-            FrameworkElement el = sender as FrameworkElement;
-            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), true, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-                (view.CurrentView as CollectionFreeformView).CanLink = true;
-                (view.CurrentView as CollectionFreeformView).StartDrag(ioRef);
-
-        }
-        
-
-        private void InputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+        void StartNewLink(object sender, PointerRoutedEventArgs e, bool isOutput)
         {
-            holdPointerOnEllipse(sender, e);
+            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var el = sender as FrameworkElement;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            var view = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            view.CanLink = true;
+            view.StartDrag(ioRef);
         }
-        
-        private void OutputEllipse_OnPointerExited(object sender, PointerRoutedEventArgs e)
+
+
+        private void InputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            holdPointerOnEllipse(sender, e);
+            StartNewLink(sender, e, false);
+        }
+
+        private void OutputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            StartNewLink(sender, e, true);
         }
 
         /// <summary>
@@ -110,48 +88,87 @@ namespace Dash
             e.Complete();
         }
 
-        private void OnIoDragStarted(IOReference ioreference)
-        {
-            IoDragStarted?.Invoke(ioreference);
-        }
-
-        private void OnIoDragEnded(IOReference ioreference)
-        {
-            IoDragEnded?.Invoke(ioreference);
-        }
-
         /// <summary>
         /// Envokes code to handle pointer released events on the link handle.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void releasePointerOnEllipse(object sender, PointerRoutedEventArgs e) {
-            string docId = (DataContext as ReferenceFieldModelController).DocId;
-            FrameworkElement el = sender as FrameworkElement;
-            Key outputKey = ((DictionaryEntry)el.DataContext).Key as Key;
-            IOReference ioRef = new IOReference(new ReferenceFieldModelController(docId, outputKey), false, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            CollectionView view = this.GetFirstAncestorOfType<CollectionView>();
-            (view.CurrentView as CollectionFreeformView).EndDrag(ioRef);
-
+        
+        void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput)
+        {
+            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var el = sender as FrameworkElement;
+            var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            var view = this.GetFirstAncestorOfType<CollectionFreeformView>();
+            view.EndDrag(ioRef);
         }
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e);
+            EndDraggedLink(sender, e, false);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            releasePointerOnEllipse(sender, e);
+            EndDraggedLink(sender, e, true);
         }
 
-        /// <summary>
-        /// Updates the background circle and rectangle height to accomodate new sizes.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Grid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            xBackgroundBorder.Margin = new Thickness(0, 0, xViewbox.ActualWidth - 1, 0);
+        #region expandoflyout
+        private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            var thisUi = this as UIElement;
+            var position = e.GetPosition(thisUi);
+            var menuFlyout = _flyout ?? (_flyout = InitializeFlyout());
+
+            if (menuFlyout.Items.Count != 0)
+            {
+                menuFlyout.ShowAt(thisUi, position);
+            }
         }
+
+        private MenuFlyout InitializeFlyout()
+        {
+            _flyout = new MenuFlyout();
+            var controller = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
+            Debug.Assert(controller != null);
+
+            if (controller.IsCompound())
+            {
+                var expandItem = new MenuFlyoutItem { Text = "Expando" };
+                var contractItem = new MenuFlyoutItem { Text = "Contracto" };
+                expandItem.Click += ExpandView;
+                contractItem.Click += ContractView;
+                _flyout.Items?.Add(expandItem);
+                _flyout.Items?.Add(contractItem);
+            }
+
+
+
+            return _flyout;
+
+        }
+
+        private void ContractView(object sender, RoutedEventArgs e)
+        {
+            XPresenter.Content = null;
+
+        }
+
+        private void ExpandView(object sender, RoutedEventArgs e)
+        {
+            // TODO do we want to resolve this field reference
+            var docId = (DataContext as DocumentFieldReference).DocumentId;
+            var documentController = ContentController.GetController<DocumentController>(docId);
+            var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
+            Debug.Assert(operatorFieldModelController != null);
+            XPresenter.Content = new CompoundOperatorEditor(documentController, operatorFieldModelController);
+        }
+
+        #endregion
+
+
+
     }
 }

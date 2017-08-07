@@ -1,0 +1,76 @@
+﻿<UserControl
+    x:Class="Dash.ClipSettings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+    <Grid Height="Auto" Width="230">
+        <local:SettingsPaneBlock>
+            <local:SettingsPaneBlock.MainContent>
+                <Grid Width="230">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition></RowDefinition>
+                        <RowDefinition></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Column="0" Grid.Row="0" Margin="0,5,5,0">
+                        <TextBox x:Name="xClipXTextBox" 
+                                 Header="Clip X" 
+                                 Height="Auto" 
+                                 BorderBrush="White" 
+                                 Background="White" 
+                                 VerticalContentAlignment="Center" 
+                                 VerticalAlignment="Top" 
+                                 Margin="0,0,0,10" 
+                                 FontSize="12" 
+                                 TextChanged="XClipXTextBox_OnTextChanged"/>
+                    </Grid>
+                    <Grid Grid.Column="1" Grid.Row="0" Margin="5,5,0,0">
+                        <TextBox x:Name="xClipYTextBox" 
+                                 Header="Clip Y" 
+                                 Height="Auto" 
+                                 BorderBrush="White" 
+                                 Background="White" 
+                                 VerticalContentAlignment="Center" 
+                                 VerticalAlignment="Top"  
+                                 Margin="0,0,0,10" 
+                                 FontSize="12"
+                                 TextChanged="XClipYTextBox_OnTextChanged"/>
+                    </Grid>
+                    <Grid Grid.Column="0" Grid.Row="1" Margin="0,5,5,0">
+                        <TextBox x:Name="xClipWidthTextBox" 
+                                 Header="Clip Width Ratio" 
+                                 Height="Auto" 
+                                 BorderBrush="White" 
+                                 Background="White" 
+                                 VerticalContentAlignment="Center" 
+                                 VerticalAlignment="Top" 
+                                 Margin="0,0,0,10" 
+                                 FontSize="12"
+                                 TextChanged="XClipWidthTextBox_OnTextChanged"/>
+                    </Grid>
+                    <Grid Grid.Column="1" Grid.Row="1" Margin="5,5,0,0">
+                        <TextBox x:Name="xClipHeightTextBox"
+                                 Header="Clip Height Ratio" 
+                                 Height="Auto" 
+                                 BorderBrush="White" 
+                                 Background="White" 
+                                 VerticalContentAlignment="Center" 
+                                 VerticalAlignment="Top"  
+                                 Margin="0,0,0,10" 
+                                 FontSize="12"
+                                 TextChanged="XClipHeightTextBox_OnTextChanged"/>
+                    </Grid>
+                </Grid>
+            </local:SettingsPaneBlock.MainContent>
+            <local:SettingsPaneBlock.Title>CROP</local:SettingsPaneBlock.Title>
+        </local:SettingsPaneBlock>
+    </Grid>
+</UserControl>

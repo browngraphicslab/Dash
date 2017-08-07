@@ -1,9 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using DashShared;
 
 namespace Dash
 {
@@ -24,7 +24,7 @@ namespace Dash
             Data = ((PointFieldModelController) fieldModel).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }
@@ -40,6 +40,11 @@ namespace Dash
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
         }
 
+        public override FieldModelController GetDefaultController()
+        {
+            return new PointFieldModelController(0, 0);
+        }
+
         public Point Data
         {
             get { return PointFieldModel.Data; }
@@ -50,7 +55,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Point;
@@ -58,6 +63,11 @@ namespace Dash
         public override string ToString()
         {
             return $"({Data})";
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new PointFieldModelController(Data);
         }
     }
 }

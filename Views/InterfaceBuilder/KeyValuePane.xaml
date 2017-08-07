@@ -9,25 +9,29 @@
     xmlns:collections="using:System.Collections.Generic"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
+    d:DesignWidth="450">
 
-    <Grid Background="White">
+    <Grid x:Name="xOuterGrid" Background="White" BorderThickness="0,1,0,1" BorderBrush="{StaticResource WindowsBlue}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="7*"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid>
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,3" BorderBrush="{StaticResource WindowsBlue}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="75"/>
             </Grid.ColumnDefinitions>
-            <TextBlock TextAlignment="Center">Keys</TextBlock>
-            <TextBlock Grid.Column="1" TextAlignment="Center">Values</TextBlock>
+            <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" >Keys</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
         </Grid>
-        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch"
+        <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
-                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}">
-            
+                  IsItemClickEnabled="true" ItemClick="xKeyValueListView_ItemClick"
+                  SelectionMode="Single" VerticalAlignment="Stretch" ItemsSource="{x:Bind ListItemSource}" Grid.RowSpan="2">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <!--Make the list view items stretch to the full width of the list view-->
@@ -38,20 +42,44 @@
             </ListView.ItemContainerStyle>
 
             <ListView.ItemTemplate>
-                <DataTemplate x:DataType="local:KeyFieldContainer">
-                    <Grid>
+                <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
+                    <Grid Tapped="Grid_Tapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="75"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
                         </ScrollViewer>
                         <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                            <TextBlock Text="{x:Bind Path=Type}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
+                        </ScrollViewer>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
-
         </ListView>
+        <Grid Grid.Row="3" x:Name="xImageGrid" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="xNewKeyField" Text="" TextAlignment="Left" Height="32" HorizontalAlignment ="Stretch" VerticalAlignment ="Bottom" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="LightBlue" ></TextBox>
+            
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Image x:Name="xDefaultImage" Source="ms-appx://Dash/Assets/DefaultImage.png" HorizontalAlignment ="Stretch"/>
+                <TextBox x:Name="xNewValueField" Grid.Row="1" HorizontalAlignment ="Stretch" TextChanged="xNewValueField_TextChanged" 
+                         Text="" TextAlignment="Left" PlaceholderText="Value" BorderBrush="LightBlue"/>
+            </Grid>
+            <ComboBox x:Name="xTypeComboBox" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged"/>
+            <Button x:Name="xAddButton" Grid.Column="3" FontSize="15" Height="50" Width="50" HorizontalAlignment="Right" VerticalAlignment ="Bottom" IsTapEnabled="True" Tapped="AddButton_Tapped"/>
+        </Grid>
     </Grid>
 </UserControl>

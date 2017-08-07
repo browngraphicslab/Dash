@@ -123,7 +123,7 @@ namespace Dash
             _allowTranslation = allowTranslation;
         }
 
-        private void _manipulator_OnManipulatorTranslated(Point translationDelta)
+        private void _manipulator_OnManipulatorTranslated(TransformGroupData delta)
         {
             // apply the position delta to the Container's render transform
             var currentTranslateTransform = Container.RenderTransform as TranslateTransform;
@@ -131,8 +131,8 @@ namespace Dash
 
             Container.RenderTransform = new TranslateTransform()
             {
-                X = currentTranslateTransform.X + translationDelta.X,
-                Y = currentTranslateTransform.Y + translationDelta.Y
+                X = currentTranslateTransform.X + delta.Translate.X,
+                Y = currentTranslateTransform.Y + delta.Translate.Y
             };
         }
 
@@ -194,7 +194,7 @@ namespace Dash
             if (_allowTranslation)
             {
                 _manipulator = new ManipulationControls(centerResizeHandle);
-                _manipulator.OnManipulatorTranslated += _manipulator_OnManipulatorTranslated;
+                _manipulator.OnManipulatorTranslatedOrScaled += _manipulator_OnManipulatorTranslated;
             }
 
         }

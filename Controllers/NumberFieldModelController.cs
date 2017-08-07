@@ -1,7 +1,9 @@
-﻿using System.Globalization;
+﻿using System;
+using Windows.Security.Authentication.Web.Provider;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using DashShared;
 
 namespace Dash
 {
@@ -17,6 +19,7 @@ namespace Dash
         /// <param name="numberFieldModel">The model which this controller will be operating over</param>
         private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
         {
+            Data = numberFieldModel.Data;
         }
 
         /// <summary>
@@ -30,9 +33,14 @@ namespace Dash
             Data = (fieldModel as NumberFieldModelController).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+
+        public override FieldModelController GetDefaultController()
+        {
+            return new NumberFieldModelController(0);
         }
 
         protected void BindTextOrSetOnce(TextBlock textBlock)
@@ -56,7 +64,7 @@ namespace Dash
                     // update local
                     // update server
                 }
-                FireFieldModelUpdated();
+                OnFieldModelUpdated(null);
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Number;
@@ -64,6 +72,11 @@ namespace Dash
         public override string ToString()
         {
             return Data.ToString();
+        }
+
+        public override FieldModelController Copy()
+        {
+            return new NumberFieldModelController(Data);
         }
     }
 }

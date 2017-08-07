@@ -14,12 +14,13 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Dash;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
-namespace DocumentMenu
+namespace Dash
 {
-    public sealed partial class OverlayMenu : UserControl
+    public sealed partial class OverlayMenu : UserControl, IDisposable
     {
 
         private List<MenuButton> _collectionButtons;
@@ -32,9 +33,24 @@ namespace DocumentMenu
             if (collectionButtons == null)
             {
                 this.MakeDocumentMenu();
-            } else
+            }
+            else
             {
                 this.MakeCollectionMenu();
+            }
+        }
+
+        public void Dispose()
+        {
+            if(_collectionButtons != null)
+            foreach (var item in _collectionButtons)
+            {
+                item.Dispose();
+            }
+            if(_documentButtons != null)
+            foreach (var item in _documentButtons)
+            {
+                item.Dispose();
             }
         }
 
@@ -58,7 +74,7 @@ namespace DocumentMenu
 
         private void MakeDocumentMenu()
         {
-            foreach(var button in _documentButtons)
+            foreach (var button in _documentButtons)
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }
@@ -67,11 +83,11 @@ namespace DocumentMenu
 
         private void MakeCollectionMenu()
         {
-            foreach(var button in _collectionButtons)
+            foreach (var button in _collectionButtons)
             {
                 xCollectionButtonsStackPanel.Children.Add(button);
             }
-            foreach(var button in _documentButtons)
+            foreach (var button in _documentButtons)
             {
                 xDocumentButtonsStackPanel.Children.Add(button);
             }
@@ -85,8 +101,9 @@ namespace DocumentMenu
             {
                 if (!button.RotateOnTap)
                 {
-                    var transform = button.TransformToVisual(parent);
-                    var yOffset = transform.TransformPoint(new Point(0, 0)).Y;
+                    //var transform = button.TransformToVisual(parent);
+                    //var yOffset = transform.TransformPoint(new Point(0, 0)).Y;
+                    var yOffset = Util.PointTransformFromVisual(new Point(0, 0), button, parent).Y; 
                     button.AddAndRunCollapseAnimation(yOffset);
                 }
                 else

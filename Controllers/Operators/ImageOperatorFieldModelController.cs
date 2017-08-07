@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DashShared;
 
 namespace Dash
@@ -11,28 +10,37 @@ namespace Dash
             OperatorFieldModel = operatorFieldModel;
         }
 
-        public static readonly Key URIKey = new Key("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
+        public ImageOperatorFieldModelController( ) : base(new OperatorFieldModel("ImageToUri"))
+        {
+        }
 
-        public static readonly Key ImageKey = new Key("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
+        public static readonly KeyController URIKey = new KeyController("A6D348D8-896B-4726-A2F9-EF1E8F1690C9", "URI");
 
-        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public static readonly KeyController ImageKey = new KeyController("5FD13EB5-E5B1-4904-A611-599E7D2589AF", "Image");
+
+        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [URIKey] = TypeInfo.Text
         };
 
-        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [ImageKey] = TypeInfo.Image
         };
 
-        public override void Execute(DocumentController doc, IEnumerable<DocumentController> contextList)
+        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
 
             //TextFieldModel uri = doc.Field(URIKey) as TextFieldModel;
             //Debug.Assert(uri != null, "Input is not a string");
 
             //(doc.Field(ImageKey) as ImageFieldModel).Data = new BitmapImage(new Uri(uri.Data));
+        }
+        
+        public override FieldModelController Copy()
+        {
+            return new ImageOperatorFieldModelController(OperatorFieldModel);
         }
     }
     /* 
