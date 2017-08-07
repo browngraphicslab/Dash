@@ -78,11 +78,9 @@ namespace Dash
 
         public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null)
         {
-            DocumentModel model =
-                new DocumentModel(fields.ToDictionary(kv => kv.Key, kv => kv.Value.FieldModel), type, id);
-            ContentController.AddModel(model);
-            // Initialize Local Variables
-            DocumentModel = model;
+            DocumentModel =
+                new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.FieldModel.GetFieldDTO()), type, id);
+            ContentController.AddModel(DocumentModel);
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
             ContentController.AddController(this);
@@ -91,8 +89,15 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
-            LayoutName = model.DocumentType.Type; 
+            LayoutName = DocumentModel.DocumentType.Type;
             // Add Events
+            RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
+            {
+                // Yay!
+            }, exception =>
+            {
+                // Hayyyyy!
+            });
         }
 
 
@@ -104,7 +109,7 @@ namespace Dash
 
         public string LayoutName { get; set; }
         /// <summary>
-        ///     A wrapper for <see cref="Dash.DocumentModel.DocumentType" />. Change this to propogate changes
+        ///     A wrapper for <see cref="DashShared.DocumentType" />. Change this to propogate changes
         ///     to the server and across the client
         /// </summary>
         public DocumentType DocumentType
@@ -114,15 +119,20 @@ namespace Dash
             {
                 if (SetProperty(ref DocumentModel.DocumentType, value))
                 {
-                    // update local
-                    // update server  
+                    //RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
+                    //{
+                        // Yay!
+                    //}, exception =>
+                    //{
+                        // Hayyyyy!
+                    //});
                 }
             }
         }
 
 
         /// <summary>
-        ///     Returns the <see cref="Dash.DocumentModel.Id" /> for the document which this controller encapsulates
+        ///     Returns the <see cref="DashShared.DocumentModel.Id" /> for the document which this controller encapsulates
         /// </summary>
         public string GetId()
         {
@@ -388,7 +398,7 @@ namespace Dash
             oldField?.Dispose();
 
             proto._fields[key] = field;
-            proto.DocumentModel.Fields[key] = field == null ? "" : field.FieldModel.Id;
+            proto.DocumentModel.Fields[key.KeyModel] = field == null ? "" : field.FieldModel.Id;
 
             replacedField = oldField;
             return true;
@@ -450,6 +460,14 @@ namespace Dash
             }
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+
+            //RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
+            //{
+                // Yay!
+            //}, exception =>
+            //{
+                // Hayyyyy!
+            //});
         }
 
 

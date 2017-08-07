@@ -13,8 +13,18 @@ namespace Dash
 
         public string Name
         {
-            get { return KeyModel.Name; }
-            set { KeyModel.Name = value; }
+            get => KeyModel.Name;
+            set
+            {
+                KeyModel.Name = value;
+                RESTClient.Instance.Keys.UpdateKey(KeyModel, model =>
+                {
+                    // Yay!
+                }, exception =>
+                {
+                    // Hayyyyy!
+                });
+            }
         }
 
         public string Id => KeyModel.Id;

@@ -11,7 +11,7 @@ namespace DashShared
     public class DocumentType : EntityBase, INotifyPropertyChanged
     {
         // reserved default display for layoutless documents
-        public static DocumentType DefaultType = new DocumentType("B492D995-701B-4703-B867-8C957762E352","Default");
+        public static DocumentType DefaultType = new DocumentType("B492D995-701B-4703-B867-8C957762E352", "Default");
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void NotifyPropertyChanged([CallerMemberName] string propertyName = null) {

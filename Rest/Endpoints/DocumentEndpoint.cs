@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DashShared;
 using System.Diagnostics;
@@ -14,86 +15,109 @@ namespace Dash
         {
             _connection = connection;
         }
-
+        
         /// <summary>
-        /// Adds a new Document to the DashWebServer and returns that DocumentModel.
+        /// Adds a document to the server.
         /// </summary>
         /// <param name="newDocument"></param>
-        /// <returns></returns>
-        public async Task<Result<DocumentModel>> AddDocument(DocumentModel newDocument)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                // convert from Dash DocumentModel to DashShared DocumentModel (server representation)
-                HttpResponseMessage result = _connection.Post("api/Document", newDocument);
-                var resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
-                return new Result<DocumentModel>(true, resultdoc);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    HttpResponseMessage result = _connection.Post("api/Document", newDocument);
+                    var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
+
+                    success(resultDoc);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         /// <summary>
-        /// Updates an existing Document in the DashWebServer and returns the updated document model.
+        /// Updates a document on the server.
         /// </summary>
-        /// <param name="DocumentToUpdate"></param>
-        /// <returns></returns>
-        public async Task<Result<DocumentModel>> UpdateDocument(DocumentModel documentToUpdate)
+        /// <param name="documentToUpdate"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                HttpResponseMessage result = _connection.Put("api/Document", documentToUpdate);
-                DocumentModel resultdoc = await result.Content.ReadAsAsync<DocumentModel>();
-                return new Result<DocumentModel>(true, resultdoc);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
-            }
-            
+                try
+                {
+                    HttpResponseMessage result = _connection.Put("api/Document", documentToUpdate);
+                    DocumentModel resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
+
+                    success(resultDoc);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         /// <summary>
-        /// Fetches a document with the given ID from the server.
+        /// Gets a document from the server.
         /// </summary>
         /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<Result<DocumentModel>> GetDocument(string id)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void GetDocument(string id, Action<DocumentModel> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                var result = await _connection.GetItem<DocumentModel>($"api/Document/{id}");
-                return new Result<DocumentModel>(true, result);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result<DocumentModel>(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    var result = _connection.GetItem<DocumentModel>($"api/Document/{id}").Result;
+                    success(result);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         /// <summary>
-        /// Deletes a document with the given ID from the server.
+        /// Deletes a document from the server.
         /// </summary>
         /// <param name="document"></param>
-        /// <returns></returns>
-        public Result DeleteDocument(DocumentModel document)
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
         {
             string id = document.Id;
-            try
+            Task.Run(() =>
             {
-                _connection.Delete($"api/Document/{id}");
-                return new Result(true);
-            }
-            catch (ApiException e)
-            {
-                // return the error message
-                return new Result(false, string.Join("\n", e.Errors));
-            }
+                try
+                {
+                    var response = _connection.Delete($"api/Document/{id}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        success();
+                    }
+                    else
+                    {
+                        error(new ApiException(response));
+                    }
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
     }
 }

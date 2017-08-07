@@ -128,7 +128,7 @@ namespace Dash
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
-            DBTest.DBDoc.AddChild(docModel);
+            //DBTest.DBDoc.AddChild(docModel);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

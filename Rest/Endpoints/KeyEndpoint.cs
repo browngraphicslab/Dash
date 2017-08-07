@@ -24,6 +24,7 @@ namespace Dash
         /// <param name="error"></param>
         public void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
+            return;
             Task.Run(() =>
             {
                 try
@@ -49,6 +50,7 @@ namespace Dash
         /// <param name="error"></param>
         public void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
+            return;
             Task.Run(() =>
             {
                 try
