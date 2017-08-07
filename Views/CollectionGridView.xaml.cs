@@ -118,7 +118,8 @@ namespace Dash
             var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xGridView.ItemsSource)?[args.ItemIndex];
             Debug.Assert(dvParams != null, "dvParams != null");
             var vm = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            vm.Width = vm.Height = 200;
+            vm.WidthBinding = new DocumentViewModel.WidthAndMenuOpenWrapper(200, false);
+            vm.Height = 200;
             document.DataContext = vm;
         }
     }

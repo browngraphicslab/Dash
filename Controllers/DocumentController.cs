@@ -690,8 +690,8 @@ namespace Dash
 
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(KeyStore.DelegatesKey) ||
-                    f.Key.Equals(KeyStore.PrototypeKey) ||
+                if (f.Key.Equals(KeyStore.DelegatesKey)  ||
+                    f.Key.Equals(KeyStore.PrototypeKey)  ||
                     f.Key.Equals(KeyStore.LayoutListKey) ||
                     f.Key.Equals(KeyStore.ActiveLayoutKey))
                 {
@@ -708,7 +708,7 @@ namespace Dash
 
                     var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
 
-                    ele.MaxWidth = 200;
+                    //ele.MaxWidth = 200;
                     hstack.Children.Add(ele);
 
                     source.Add(hstack);
