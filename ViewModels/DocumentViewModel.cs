@@ -37,11 +37,6 @@ namespace Dash
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
-        public WidthAndMenuOpenWrapper WidthBinding
-        {
-            get { return _widthBinding; }
-            set { SetProperty(ref _widthBinding, value); }
-        }
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
@@ -56,11 +51,7 @@ namespace Dash
         public bool MenuOpen
         {
             get { return _menuOpen; }
-            set
-            {
-                if (SetProperty(ref _menuOpen, value))
-                    WidthBinding = new WidthAndMenuOpenWrapper(Width, value);
-            }
+            set { SetProperty(ref _menuOpen, value); }
         }
 
         public IconTypeEnum IconType { get { return iconType; } }
@@ -97,7 +88,6 @@ namespace Dash
                     if (widthFieldModelController != null)
                     {
                         widthFieldModelController.Data = value;
-                        WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
                     }
                 }
             }
@@ -202,7 +192,6 @@ namespace Dash
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
-            WidthBinding = new WidthAndMenuOpenWrapper();
         }
 
         private void SetUpSmallIcon()

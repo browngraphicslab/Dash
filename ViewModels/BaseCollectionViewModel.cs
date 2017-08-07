@@ -21,7 +21,7 @@ namespace Dash
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
             _documentViewModels = new ObservableCollection<DocumentViewModelParameters>();
-            SelectionGroup = new List<DocumentViewModel>();
+            SelectionGroup = new List<DocumentViewModelParameters>();
         }
 
         public bool IsInterfaceBuilder
@@ -37,7 +37,7 @@ namespace Dash
         }
 
         // used to keep track of groups of the currently selected items in a collection
-        public List<DocumentViewModel> SelectionGroup { get; }
+        public List<DocumentViewModelParameters> SelectionGroup { get; }
 
         public abstract void AddDocuments(List<DocumentController> documents, Context context);
         public abstract void AddDocument(DocumentController document, Context context);
@@ -164,7 +164,7 @@ namespace Dash
         {
             var listViewBase = sender as ListViewBase;
             SelectionGroup.Clear();
-            SelectionGroup.AddRange(listViewBase.SelectedItems.Cast<DocumentViewModel>());
+            SelectionGroup.AddRange(listViewBase.SelectedItems.Cast<DocumentViewModelParameters>());
         }
 
         #endregion

@@ -31,11 +31,7 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>
-                        <Viewbox x:Name="XBackdropViewbox" Width="250"
-                                 Height="250" 
-                                 Visibility="Collapsed">
-                            <local:DocumentView Width="250" Height="250" IsHitTestVisible="False"/>
-                        </Viewbox>
+                        <local:DocumentView x:Name="XBackdrop" Width="250" Height="250" IsHitTestVisible="False"/>
                         <Viewbox x:Name="xBorder" Width="250" Height="250">
                             <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
                         </Viewbox>

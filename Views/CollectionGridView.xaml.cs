@@ -101,6 +101,8 @@ namespace Dash
             backdrop.ClearValue(WidthProperty);
             backdrop.ClearValue(HeightProperty);
             backdrop.Width = backdrop.Height = 250;
+            backdrop.xProgressRing.Visibility = Visibility.Visible;
+            backdrop.xProgressRing.IsActive = true;
             Debug.Assert(border != null, "border != null");
             border.Visibility = Visibility.Collapsed;
             args.RegisterUpdateCallback(RenderDocumentPhaseOne);
@@ -113,13 +115,12 @@ namespace Dash
             var border = (Viewbox)rootGrid.FindName("xBorder");
             var document = (DocumentView)border.FindName("xDocumentDisplay");
             backdrop.Visibility = Visibility.Collapsed;
+            backdrop.xProgressRing.IsActive = false;
             border.Visibility = Visibility.Visible;
             document.IsHitTestVisible = false;
             var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xGridView.ItemsSource)?[args.ItemIndex];
             Debug.Assert(dvParams != null, "dvParams != null");
             var vm = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            vm.WidthBinding = new DocumentViewModel.WidthAndMenuOpenWrapper(200, false);
-            vm.Height = 200;
             document.DataContext = vm;
         }
     }
