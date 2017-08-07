@@ -18,32 +18,75 @@ using Windows.UI.Xaml.Navigation;
 
 namespace Dash
 {
-    public sealed partial class CollectionListView : UserControl
+    public sealed partial class CollectionListView : SelectionElement, ICollectionView
     {
-        public CollectionListView(CollectionView view)
+        public BaseCollectionViewModel ViewModel { get; private set; }
+
+        public CollectionListView(BaseCollectionViewModel viewModel)
         {
+            ViewModel = viewModel;
             this.InitializeComponent();
-            HListView.DragItemsStarting += view.xGridView_OnDragItemsStarting;
-            HListView.DragItemsCompleted += view.xGridView_OnDragItemsCompleted;
-            DataContextChanged += OnDataContextChanged;
-            Binding selectionBinding = new Binding
-            {
-                Source = view.ViewModel,
-                Path = new PropertyPath(nameof(view.ViewModel.ItemSelectionMode)),
-                Mode = BindingMode.OneWay,
-            };
-            HListView.SetBinding(ListView.SelectionModeProperty, selectionBinding);
+            xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+            xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+            xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+            this.Unloaded += CollectionListView_Unloaded;
         }
 
-        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        private void CollectionListView_Unloaded(object sender, RoutedEventArgs e)
         {
-            var vm = DataContext as CollectionViewModel;
-            HListView.SelectionChanged += vm.SelectionChanged;
+            xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+            xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+            xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+            this.Unloaded -= CollectionListView_Unloaded;
         }
 
-        private void HListView_Tapped(object sender, TappedRoutedEventArgs e)
+        #region ItemSelection
+
+        public void ToggleSelectAllItems()
+        {
+            ViewModel.ToggleSelectAllItems(xListView);
+        }
+
+
+        #endregion
+
+
+        #region DragAndDrop
+
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragOver(sender, e);
+        }
+
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+
         }
+
+        #endregion
     }
 }

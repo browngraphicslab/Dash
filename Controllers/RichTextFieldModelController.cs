@@ -47,7 +47,7 @@ namespace Dash
 
         public override IEnumerable<DocumentController> GetReferences()
         {
-            var links = RichTextData.RtfFormatString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+            var links = RichTextData.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var link in links)
             {
                 var split = link.Split('\"');
@@ -60,7 +60,7 @@ namespace Dash
             }
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             var richTextView = new RichTextView(this, null, null)
             {

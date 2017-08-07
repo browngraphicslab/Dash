@@ -16,7 +16,7 @@ namespace Dash
     {
         public static DocumentType StackPanelDocumentType =
             new DocumentType("61369301-820F-4779-8F8C-701BCB7B0CB7", "Stack Layout");
-        public static Key StyleKey = new Key("943A801F-A4F4-44AE-8390-31630055D62F", "Style");
+        public static KeyController StyleKey = new KeyController("943A801F-A4F4-44AE-8390-31630055D62F", "Style");
 
         static public DocumentType DocumentType
         {
@@ -60,7 +60,7 @@ namespace Dash
         {
             var stack = new RelativePanel();
             var stackFieldData =
-                docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context)
+                docController.GetDereferencedField(KeyStore.DataKey, context)
                     as DocumentCollectionFieldModelController;
 
             var styleField = docController.GetDereferencedField(StyleKey, context) as TextFieldModelController;

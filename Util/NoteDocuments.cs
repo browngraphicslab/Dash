@@ -41,7 +41,7 @@ namespace Dash
                 if (prototype == null)
                 {
                     prototype = CreatePrototype(); // TODO should this be CreatePrototypeLayout ..?
-                    prototype.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(prototype), true);
+                    prototype.SetField(KeyStore.ThisKey, new DocumentFieldModelController(prototype), true);
                 }
                 return prototype;
             }
@@ -50,17 +50,17 @@ namespace Dash
         
         public class RichTextNote : NoteDocument
         {
-            public static Key TitleKey = new Key("EF1B8247-B31F-4821-859C-9E28FDD098D3", "Title");
-            public static Key RTFieldKey = new Key("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
+            public static KeyController TitleKey = new KeyController("EF1B8247-B31F-4821-859C-9E28FDD098D3", "Title");
+            public static KeyController RTFieldKey = new KeyController("0DBA83CB-D75B-4FCE-BBF0-9778B182836F", "RichTextField");
 
 
             public override DocumentController CreatePrototype()
             {
 
-                var fields = new Dictionary<Key, FieldModelController>();
+                var fields = new Dictionary<KeyController, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Prototype Content")));
-                fields.Add(DashConstants.KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
+                fields.Add(KeyStore.PrimaryKeyKey, new ListFieldModelController<TextFieldModelController>(
                     new TextFieldModelController[] { new TextFieldModelController(TitleKey.Id) }));
                 return new DocumentController(fields, Type, _prototypeID);
             }
@@ -71,8 +71,8 @@ namespace Dash
                 var titleLayout = new TextingBox(new ReferenceFieldModelController(prototype.GetId(), TitleKey), 0, 0, double.NaN, 25);
                 var richTextLayout = new RichTextBox(new ReferenceFieldModelController(prototype.GetId(), RTFieldKey), 0, 0, double.NaN, double.NaN);
                 var prototpeLayout = new StackLayout(new DocumentController[] { titleLayout.Document, richTextLayout.Document });
-                prototpeLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-                prototpeLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
+                prototpeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+                prototpeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(400), true);
                 prototpeLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 prototpeLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
 
@@ -87,10 +87,10 @@ namespace Dash
                 Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(TitleKey, new TextFieldModelController("Title?"), true);
                 Document.SetField(RTFieldKey, new RichTextFieldModelController(new RichTextFieldModel.RTD("Something to fill this space?")), true);
-                Document.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
+                Document.SetField(KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
-                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
 
                 Document.AddLayoutToLayoutList(docLayout);
                 Document.SetActiveLayout(docLayout, true, true);
@@ -99,12 +99,12 @@ namespace Dash
 
         public class ImageNote : NoteDocument
         {
-            public static Key TitleKey = new Key("290976B3-5FFA-4899-97B8-7DBFFF7C2E4A", "Title");
-            public static Key IamgeFieldKey = new Key("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
+            public static KeyController TitleKey = new KeyController("290976B3-5FFA-4899-97B8-7DBFFF7C2E4A", "Title");
+            public static KeyController IamgeFieldKey = new KeyController("FAE62A35-F463-4FE5-9E8D-CDE6DFEB5E20", "RichTextField");
 
             public override DocumentController CreatePrototype()
             {
-                var fields = new Dictionary<Key, FieldModelController>();
+                var fields = new Dictionary<KeyController, FieldModelController>();
                 fields.Add(TitleKey, new TextFieldModelController("Prototype Title"));
                 fields.Add(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
                 return new DocumentController(fields, Type, _prototypeID);
@@ -131,7 +131,7 @@ namespace Dash
                 Document.SetField(IamgeFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
-                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
 
                 Document.AddLayoutToLayoutList(docLayout);
                 Document.SetActiveLayout(docLayout, true, true);
@@ -140,12 +140,12 @@ namespace Dash
 
         public class PostitNote : NoteDocument
         {
-            public static Key NotesFieldKey = new Key("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
+            public static KeyController NotesFieldKey = new KeyController("A5486740-8AD2-4A35-A179-6FF1DA4D504F", "Notes");
             public static DocumentType DocumentType = new DocumentType("4C20B539-BF40-4B60-9FA4-2CC531D3C757", "Post it Note");
 
             public override DocumentController CreatePrototype()
             {
-                var fields = new Dictionary<Key, FieldModelController>();
+                var fields = new Dictionary<KeyController, FieldModelController>();
                 fields.Add(NotesFieldKey, new TextFieldModelController("Prototype Text"));
                 return new DocumentController(fields, Type, _prototypeID);
             }
@@ -154,8 +154,8 @@ namespace Dash
             {
                 var prototypeTextLayout =
                     new TextingBox(new ReferenceFieldModelController(GetLayoutPrototype().GetId(), NotesFieldKey), 0, 0, double.NaN, double.NaN);
-                prototypeTextLayout.Document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
-                prototypeTextLayout.Document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
+                prototypeTextLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(400), true);
+                prototypeTextLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
 
                 return prototypeTextLayout.Document;
             }
@@ -167,10 +167,10 @@ namespace Dash
 
                 Document = GetLayoutPrototype().MakeDelegate();
                 Document.SetField(NotesFieldKey, new TextFieldModelController("Write something amazing!"), true);
-                Document.SetField(DashConstants.KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
+                Document.SetField(KeyStore.ThisKey, new DocumentFieldModelController(Document), true);
 
                 var docLayout = _prototypeLayout.MakeDelegate();
-                docLayout.SetField(DashConstants.KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
+                docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 docLayout.SetHorizontalAlignment(HorizontalAlignment.Stretch);
                 
                 Document.AddLayoutToLayoutList(docLayout);

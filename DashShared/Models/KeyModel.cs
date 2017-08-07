@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DashShared
 {
-    public class Key : EntityBase
+    public class KeyModel : EntityBase
     {
         /// <summary>
         /// The name of the entity, this is useful for search and provides a front end that
@@ -16,17 +16,17 @@ namespace DashShared
         [Required]
         public string Name { get; set; }
 
-        public Key() 
+        public KeyModel() : this(Guid.NewGuid().ToString())
         {
         }
 
-        public Key(string guid)
+        public KeyModel(string guid)
         {
             Id = guid;
             Name = guid;
         }
 
-        public Key(string guid, string name)
+        public KeyModel(string guid, string name)
         {
             Id = guid;
             Name = name;
@@ -34,7 +34,7 @@ namespace DashShared
 
         public override bool Equals(object obj)
         {
-            Key k = obj as Key;
+            var k = obj as KeyModel;
             if (k == null)
             {
                 return false;

@@ -21,7 +21,7 @@ namespace Dash
             var fields = DefaultLayoutFields(position, size, layoutDocumentCollection);
             Document.SetFields(fields, true); //TODO add fields to constructor parameters     
 
-            //Document.SetField(DashConstants.KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
+            //Document.SetField(KeyStore.IconTypeFieldKey, new NumberFieldModelController((double)IconTypeEnum.Api), true);
         }
 
         public FreeFormDocument() : this(new List<DocumentController>()) { }
@@ -60,7 +60,7 @@ namespace Dash
             grid.SizeChanged += delegate (object sender, SizeChangedEventArgs args) { grid.Clip.Rect = new Rect(0, 0, args.NewSize.Width, args.NewSize.Height); };
 
             var c = new Context(context);
-            docController.AddFieldUpdatedListener(DashConstants.KeyStore.DataKey, delegate (DocumentController sender,
+            docController.AddFieldUpdatedListener(KeyStore.DataKey, delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
                 var collFieldArgs =
@@ -132,7 +132,7 @@ namespace Dash
         private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.DataKey)?
+            return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
         }
     }

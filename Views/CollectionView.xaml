@@ -1,4 +1,4 @@
-﻿<dash:SelectionElement
+﻿<UserControl
     x:Class="Dash.CollectionView"
     x:Name="Control"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -10,10 +10,7 @@
     d:DesignHeight="400"
     d:DesignWidth="670"
     d:DataContext="{d:DesignInstance dash:CollectionViewModel}"
-    ManipulationMode="All"
-    RightTapped="CollectionView_OnRightTapped"
-    Loaded="CollectionView_Loaded"
-    Tapped="CollectionView_Tapped">
+    ManipulationMode="All">
     <Grid x:Name="xOuterGrid" BorderThickness="3">
         <Grid>
             <Grid.ColumnDefinitions>
@@ -32,8 +29,7 @@
                       Margin="5,5,5,5"
                       VerticalAlignment="Stretch"
                       ManipulationMode="All"
-                      DragOver="CollectionGrid_DragOver"
-                      Drop="CollectionGrid_Drop">
+                      >
                     <ContentControl x:Name="xContentControl" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
                 </Grid>
                 <Ellipse x:Name="ConnectionEllipse"
@@ -47,4 +43,4 @@
         </Grid>
     </Grid>
 
-</dash:SelectionElement>
+</UserControl>

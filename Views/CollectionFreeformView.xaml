@@ -1,6 +1,5 @@
-﻿<UserControl
+﻿<local:SelectionElement
     x:Class="Dash.CollectionFreeformView"
-    x:Name="UserControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
@@ -13,34 +12,45 @@
     d:DesignWidth="400"
     Background="Transparent"
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}">
-    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" SizeChanged="XOuterGrid_OnSizeChanged">
+    
+    <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+          SizeChanged="XOuterGrid_OnSizeChanged" 
+          RightTapped="CollectionView_OnRightTapped"
+          AllowDrop="True"
+          DragOver="CollectionViewOnDragOver"
+          Drop="CollectionViewOnDrop"
+          Tapped="OnTapped">
         <Grid.Clip>
-            <RectangleGeometry x:Name="xClippingRect"/>
+            <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
-        <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw"/>
-        <ItemsControl x:Name="xItemsControl" 
-                              x:FieldModifier="public" 
-                              ItemsSource="{Binding DataBindingSource}">
+        
+        <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
+        <ItemsControl x:Name="xItemsControl"
+                      x:FieldModifier="public"
+                      ItemsSource="{Binding DocumentViewModels}"   
+                      IsHitTestVisible="{Binding IsSelected}"
+                      >
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Canvas x:Name="CollectionCanvas" 
-                                    x:FieldModifier="public"
-                                    Background="Transparent"
-                                    Width ="0" 
-                                    Height="0" 
-                                    VerticalAlignment="Top" 
-                                    HorizontalAlignment="Left">
-                    </Canvas>
+                    <Canvas x:Name="CollectionCanvas"
+                            x:FieldModifier="public"
+                            Background="Transparent"
+                            Width="0"
+                            Height="0"
+                            VerticalAlignment="Top"
+                            HorizontalAlignment="Left" />
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <dash:DocumentView DataContext="{Binding}"
-                                       IODragStarted="StartDrag" 
-                                       IODragEnded="EndDrag" 
-                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}" Loaded="DocumentViewOnLoaded"/>
+                                       IODragStarted="StartDrag"
+                                       IODragEnded="EndDrag"
+                                       RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
+                                       Loaded="DocumentViewOnLoaded"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
     </Grid>
-</UserControl>
+</local:SelectionElement>

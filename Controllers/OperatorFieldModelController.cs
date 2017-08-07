@@ -11,18 +11,18 @@ namespace Dash
         /// <summary>
         /// Keys of all inputs to the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<Key, TypeInfo> Inputs { get; }
+        public abstract ObservableDictionary<KeyController, TypeInfo> Inputs { get; }
 
         /// <summary>
         /// Keys of all outputs of the operator Document 
         /// </summary>
-        public abstract ObservableDictionary<Key, TypeInfo> Outputs { get; }
+        public abstract ObservableDictionary<KeyController, TypeInfo> Outputs { get; }
 
         /// <summary>
         /// Abstract method to execute the operator.
         /// </summary>
         /// <returns></returns>
-        public abstract void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs);
+        public abstract void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs);
 
         /// <summary>
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
@@ -40,7 +40,7 @@ namespace Dash
         protected OperatorFieldModel OperatorFieldModel { get; set; }
         public override TypeInfo TypeInfo => TypeInfo.Operator;
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }

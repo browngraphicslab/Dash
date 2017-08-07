@@ -16,7 +16,7 @@ namespace Dash
     {
         private static string PrototypeId = "C2EB5E08-1C04-44BF-970A-DB213949EE48";
         public static DocumentType DocumentType = new DocumentType("B7A022D4-B667-469C-B47E-3A84C0AA78A0", "Grid View Layout");
-        public static Key GridViewKey = new Key("C4336303-8FD8-4ED6-8F03-540E95EE3CC8", "Grid View Key");
+        public static KeyController GridViewKey = new KeyController("C4336303-8FD8-4ED6-8F03-540E95EE3CC8", "Grid View Key");
         public static double DefaultSpacing = 10;
 
         public GridViewLayout(IList<DocumentController> layoutDocuments, Point position = new Point(), Size size = new Size())
@@ -130,7 +130,7 @@ namespace Dash
             docController.DocumentFieldUpdated += delegate (DocumentController sender,
                 DocumentController.DocumentFieldUpdatedEventArgs args)
             {
-                if (args.Reference.FieldKey.Equals(DashConstants.KeyStore.DataKey))
+                if (args.Reference.FieldKey.Equals(KeyStore.DataKey))
                 {
                     LayoutDocuments(sender, c, gridView, isInterfaceBuilderLayout);
                 }
@@ -173,7 +173,7 @@ namespace Dash
         private static DocumentCollectionFieldModelController GetLayoutDocumentCollection(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.DataKey)?
+            return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<DocumentCollectionFieldModelController>(context);
         }
     }

@@ -96,8 +96,11 @@
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\Operators\CompoundOperator.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
+    <Compile Include="Controllers\KeyController.cs" />
+    <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
+    <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
+    <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
@@ -122,12 +125,16 @@
     <Compile Include="Util\EditableImage.xaml.cs">
       <DependentUpon>EditableImage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
+    <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\WebBox.cs" />
+    <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
+    <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />
     <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
-    <Compile Include="ViewModels\IFreeFormCollectionViewModel.cs" />
+    <Compile Include="ViewModels\ICollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
@@ -135,9 +142,13 @@
     <Compile Include="Views\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
+      <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ICollectionView.cs" />
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
       <DependentUpon>AlignmentSettings.xaml</DependentUpon>
     </Compile>
@@ -160,6 +171,7 @@
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\IOReference.cs" />
+    <Compile Include="Util\OperationCreationHelper.cs" />
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -509,6 +521,10 @@
     <Page Include="Views\CollectionMapView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\CompoundOperatorEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>

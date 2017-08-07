@@ -98,9 +98,9 @@ namespace Dash
             }
         }
 
-        public Result<IDictionary<Key, FieldModelController>>  GetFieldsDictionary(Dictionary<Key, string> fields)
+        public Result<IDictionary<KeyController, FieldModelController>>  GetFieldsDictionary(Dictionary<KeyController, string> fields)
         {
-            var controllersMap = new Dictionary<Key, FieldModelController>();
+            var controllersMap = new Dictionary<KeyController, FieldModelController>();
 
             foreach(var kv in fields)
             {
@@ -108,7 +108,7 @@ namespace Dash
                 controllersMap[kv.Key] = controller;
             }
 
-            return new Result<IDictionary<Key, FieldModelController>>(true, controllersMap);
+            return new Result<IDictionary<KeyController, FieldModelController>>(true, controllersMap);
         }
     }
 }

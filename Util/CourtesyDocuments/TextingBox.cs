@@ -21,9 +21,9 @@ namespace Dash
     /// </summary>
     public class TextingBox : CourtesyDocument
     {
-        public static Key FontWeightKey = new Key("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
-        public static Key FontSizeKey = new Key("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
-        public static Key TextAlignmentKey = new Key("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
+        public static KeyController FontWeightKey = new KeyController("03FC5C4B-6A5A-40BA-A262-578159E2D5F7", "FontWeight");
+        public static KeyController FontSizeKey = new KeyController("75902765-7F0E-4AA6-A98B-3C8790DBF7CE", "FontSize");
+        public static KeyController TextAlignmentKey = new KeyController("3BD4572A-C6C9-4710-8E74-831204D2C17D", "Font Alignment");
         public static DocumentType DocumentType =
             new DocumentType("181D19B4-7DEC-42C0-B1AB-365B28D8EA42", "Texting Box");
 
@@ -68,7 +68,7 @@ namespace Dash
 
             AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
             AddBinding(element, docController, FontSizeKey, context, BindFontSize);
-            //AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
+            //AddBinding(element, docController, KeyStore.DataKey, context, BindTextSource);
             SetupTextBinding(element, docController, context);
             AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
         }
@@ -97,12 +97,12 @@ namespace Dash
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
-                var fmController = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context);
+                var fmController = docController.GetDereferencedField(KeyStore.DataKey, context);
                 if (fmController is TextFieldModelController)
                     fmController = fmController as TextFieldModelController;
                 else if (fmController is NumberFieldModelController)
                     fmController = fmController as NumberFieldModelController;
-                var reference = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
                 BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
@@ -138,7 +138,7 @@ namespace Dash
 
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
-            var data = controller.GetField(DashConstants.KeyStore.DataKey);
+            var data = controller.GetField(KeyStore.DataKey);
             if (data is ReferenceFieldModelController)
             {
                 var reference = data as ReferenceFieldModelController;
@@ -161,10 +161,10 @@ namespace Dash
                     dataDoc.RemoveFieldUpdatedListener(reference.FieldKey, handler);
                 };
             }
-            BindTextSource(element, controller, context, DashConstants.KeyStore.DataKey);
+            BindTextSource(element, controller, context, KeyStore.DataKey);
         }
 
-        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, Key key)
+        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, KeyController key)
         {
             var data = docController.GetDereferencedField(key, context);
             if (data == null)
@@ -316,13 +316,13 @@ namespace Dash
         private static FieldModelController GetTextField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.DataKey)?
+            return docController.GetField(KeyStore.DataKey)?
                 .DereferenceToRoot<FieldModelController>(context);
         }
 
         private static ReferenceFieldModelController GetTextReference(DocumentController docController)
         {
-            return docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+            return docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
         }
 
         private void SetTextAlignmentField(DocumentController docController, double textAlignment, bool forceMask, Context context)

@@ -359,7 +359,7 @@ namespace Dash
 
             // updates controllers 
             ClipController.Data = clip;
-            var positionController = DocController.GetDereferencedField(DashShared.DashConstants.KeyStore.PositionFieldKey, Context) as PointFieldModelController;
+            var positionController = DocController.GetDereferencedField(KeyStore.PositionFieldKey, Context) as PointFieldModelController;
             positionController.Data = new Point(imageLeftTop.X, imageLeftTop.Y); 
             //Image.Clip = new RectangleGeometry { Rect = clip };
         }

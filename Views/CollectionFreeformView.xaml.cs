@@ -27,13 +27,15 @@ using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : UserControl
+    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
     {
 
         #region ScalingVariables
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
+        public BaseCollectionViewModel ViewModel { get; private set; }
+
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
 
@@ -55,6 +57,8 @@ namespace Dash
         #endregion
 
         private ManipulationControls _manipulationControls;
+        private MenuFlyout _flyout;
+        private float _backgroundOpacity = .7f;
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
@@ -77,19 +81,23 @@ namespace Dash
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        #region DataContext and Events
+
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as IFreeFormCollectionViewModel;
+            var vm = DataContext as BaseCollectionViewModel;
 
             if (vm != null)
             {
                 var itemsBinding = new Binding()
                 {
                     Source = vm,
-                    Path = new PropertyPath(nameof(vm.DataBindingSource)),
+                    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
                     Mode = BindingMode.OneWay
                 };
                 xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
+
+                ViewModel = vm;
             }
         }
 
@@ -105,8 +113,9 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
+        
 
-
+        #endregion
 
         #region DraggingLinesAround
 
@@ -248,7 +257,7 @@ namespace Dash
 
             DocumentController inputController =
                 inputReference.FieldReference.GetDocumentController(null);
-            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(DashConstants.KeyStore.ThisKey, null);
+            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
             if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
                 (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document &&
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
@@ -384,7 +393,10 @@ namespace Dash
             {
                 // Load the background image and create an image brush from it
                 _bgImage = await CanvasBitmap.LoadAsync(sender, _backgroundPath);
-                _bgBrush = new CanvasImageBrush(sender, _bgImage);
+                _bgBrush = new CanvasImageBrush(sender, _bgImage)
+                {
+                    Opacity = _backgroundOpacity
+                };
 
                 // Set the brush's edge behaviour to wrap, so the image repeats if the drawn region is too big
                 _bgBrush.ExtendX = _bgBrush.ExtendY = CanvasEdgeBehavior.Wrap;
@@ -441,6 +453,106 @@ namespace Dash
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             DBTest.ResetCycleDetection();
+        }
+
+        #region Flyout
+
+        private void InitializeFlyout()
+        {
+            _flyout = new MenuFlyout();
+            var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
+            menuItem.Click += MenuItem_Click;
+            _flyout.Items?.Add(menuItem);
+        }
+
+        private void DisposeFlyout()
+        {
+            if (_flyout.Items != null)
+                foreach (var item in _flyout.Items)
+                {
+                    var menuFlyoutItem = item as MenuFlyoutItem;
+                    if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
+                }
+            _flyout = null;
+        }
+
+        private void MenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var xCanvas = MainPage.Instance.xCanvas;
+            if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
+                xCanvas.Children.Add(OperatorSearchView.Instance);
+            // set the operator menu to the current location of the flyout
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+            // reset the render transform on the operator search view
+            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
+            var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+            if (floatBorder != null)
+            {
+                Canvas.SetLeft(floatBorder, 0);
+                Canvas.SetTop(floatBorder, 0);
+            }
+            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
+            Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
+            OperatorSearchView.AddsToThisCollection = this;
+            DisposeFlyout();
+        }
+
+        private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            if (_flyout == null)
+                InitializeFlyout();
+            e.Handled = true;
+            var thisUi = this as UIElement;
+            var position = e.GetPosition(thisUi);
+            _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
+        }
+
+        #endregion
+
+        #region DragAndDrop
+
+        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragOver(sender, e);
+        }
+
+        private void CollectionViewOnDrop(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+
+        }
+
+        #endregion
+
+
+        public void ToggleSelectAllItems()
+        {
+            throw new NotImplementedException();
         }
     }
 }

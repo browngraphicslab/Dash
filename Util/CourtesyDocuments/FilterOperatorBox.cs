@@ -37,7 +37,7 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetField(DashConstants.KeyStore.DataKey);
+            var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
             OperatorView opView = new OperatorView {DataContext = opfmc.FieldReference};
             var filterView = new FilterView();
@@ -74,7 +74,7 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context,
             bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetField(DashConstants.KeyStore.DataKey);
+            var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
             OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
             var opDoc = opfmc.FieldReference.GetDocumentController(null);
