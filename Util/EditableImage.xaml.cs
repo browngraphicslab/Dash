@@ -85,15 +85,8 @@ namespace Dash
 
                 if (value)
                 {
-                    _imageManipulator.AddAllAndHandle();
-                    _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
                     // show the entire image 
                     ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
-                }
-                else
-                {
-                    _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
-                    _imageManipulator.RemoveAllAndDontHandle(); 
                 }
             }
         }
@@ -107,14 +100,12 @@ namespace Dash
         }
 #endregion
 
-        private ManipulationControls _imageManipulator;
 
         public EditableImage(DocumentController docController, Context context)
         {
             InitializeComponent();
             DocController = docController;
             Context = context; 
-            _imageManipulator = new ManipulationControls(Image);
 
             IsClipRectVisible = false;
             IsImageDraggerVisible = false;

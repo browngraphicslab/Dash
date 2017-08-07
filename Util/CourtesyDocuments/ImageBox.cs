@@ -75,11 +75,12 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(_editableImage /*.xImageGrid*/ , docController);
+                _editableImage.IsHitTestVisible = false; 
+                var selectableContainer = new SelectableContainer(_editableImage, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
-            return _editableImage /*.xImageGrid*/;
+            return _editableImage; 
         }
 
         protected static void SetupImageBinding(Image image, DocumentController controller,
