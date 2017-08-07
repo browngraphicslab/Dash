@@ -24,7 +24,8 @@ namespace Dash
     public sealed partial class InkCanvasControl : SelectionElement
     {
         public InkFieldModelController InkFieldModelController;
-        
+        private ManipulationControls _controls;
+
         /// <summary>
         /// A control that contains an InkCanvas and interacts with an InkFieldModelController to reflect user strokes 
         /// on the canvas in the underlying data.
@@ -39,14 +40,15 @@ namespace Dash
             Grid.Height = 200;
             InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
             InkSettings.SetAttributes();
-            ManipulationControls controls = new ManipulationControls(XInkCanvas);
             XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
             InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
             Loaded += OnLoaded;
+            XInkCanvas.Tapped += OnTapped;
             Tapped += OnTapped;
+            OnLowestActivated(false);
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
@@ -59,10 +61,15 @@ namespace Dash
         {
             if (!IsLowestSelected)
             {
-                XInkCanvas.InkPresenter.StrokeContainer.Clear();
-                if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
-                    XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+                UpdateStrokes();
             }
+        }
+
+        private void UpdateStrokes()
+        {
+            XInkCanvas.InkPresenter.StrokeContainer.Clear();
+            if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
+                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
         }
 
         /// <summary>
@@ -84,10 +91,10 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs args)
+        private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
         {
-                if (InkFieldModelController != null)
-                    InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            if (InkFieldModelController != null)
+                InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
             
         }
 
@@ -114,12 +121,15 @@ namespace Dash
             //When lowest activated, ink canvas is drawable
             if (act)
             {
-                EditingSymbol.Visibility = Visibility.Visible;
+                EditingSymbol.Foreground = new SolidColorBrush(Colors.Black);
                 Grid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+                XInkCanvas.InkPresenter.IsInputEnabled = true;
+                UpdateStrokes();
             } else
             {
-                EditingSymbol.Visibility = Visibility.Collapsed;
+                EditingSymbol.Foreground = new SolidColorBrush(Colors.LightGray);
                 Grid.BorderBrush = new SolidColorBrush(Colors.Black);
+                XInkCanvas.InkPresenter.IsInputEnabled = false;
             }
         }
 
