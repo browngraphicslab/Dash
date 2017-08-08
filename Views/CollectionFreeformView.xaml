@@ -11,15 +11,15 @@
     d:DesignHeight="300"
     d:DesignWidth="400"
     Background="Transparent"
-    ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}">
+    ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
+    RightTapped="CollectionView_OnRightTapped"
+    AllowDrop="True"
+    Drop="CollectionViewOnDrop"
+    DragEnter="CollectionViewOnDragEnter"
+    Tapped="OnTapped">
     
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-          SizeChanged="XOuterGrid_OnSizeChanged" 
-          RightTapped="CollectionView_OnRightTapped"
-          AllowDrop="True"
-          DragOver="CollectionViewOnDragOver"
-          Drop="CollectionViewOnDrop"
-          Tapped="OnTapped">
+          SizeChanged="XOuterGrid_OnSizeChanged">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
@@ -44,7 +44,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <dash:DocumentView DataContext="{Binding}"
+                    <dash:DocumentView DataContext="{Binding Converter={StaticResource DocViewModelParamToViewModelConverter}}"
                                        IODragStarted="StartDrag"
                                        IODragEnded="EndDrag"
                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"

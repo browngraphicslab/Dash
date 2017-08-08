@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -21,23 +22,57 @@ namespace Dash
     public sealed partial class CollectionGridView : SelectionElement, ICollectionView
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
+        public GridView XGridView => xGridView;
 
-        public CollectionGridView(BaseCollectionViewModel viewModel)
+        public CollectionGridView()
         {
-            ViewModel = viewModel;
             this.InitializeComponent();
-            xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-            xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
-            this.Unloaded += CollectionGridView_Unloaded;
+            DataContextChanged += OnDataContextChanged;
+            Unloaded += CollectionGridView_Unloaded;
+
+        }
+
+        public CollectionGridView(BaseCollectionViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as BaseCollectionViewModel;
+
+            if (vm != null)
+            {
+                // remove events from current view model if there is a current view model
+                if (ViewModel != null)
+                {
+                    xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                    xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                    xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                    xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+
+                }
+
+                ViewModel = vm;
+                ViewModel.SetSelected(this, IsSelected);
+                xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+                xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+                xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+                xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
+            }
         }
 
         private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
         {
-            xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-            xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
-            this.Unloaded -= CollectionGridView_Unloaded;
+            if (ViewModel != null)
+            {
+                xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+
+            }
+            Unloaded -= CollectionGridView_Unloaded;
         }
 
         #region ItemSelection
@@ -51,9 +86,10 @@ namespace Dash
 
         #region DragAndDrop
 
-        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            ViewModel.CollectionViewOnDragOver(sender, e);
+            ViewModel.CollectionViewOnDragEnter(sender, e);
         }
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
@@ -79,11 +115,10 @@ namespace Dash
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
-
             OnSelected();
-
         }
 
         #endregion
+
     }
 }

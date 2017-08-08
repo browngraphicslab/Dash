@@ -42,12 +42,12 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this);
+            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel:true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 120;
-            MinHeight = 96;
+            MinWidth = 100;
+            MinHeight = 100;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
@@ -84,16 +84,19 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
-            var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-            if (view == null) return; // we can't always assume we're on a collection		
+            
+            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
+            //if (view == null) return; // we can't always assume we're on a collection		
 
-            view.CanLink = false;
+            //view.CanLink = false;
+            //args.Handled = true;
 
-            args.Handled = true;
+            //view.CancelDrag(args.Pointer); 
 
-            view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-                new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-                    OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
+            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
+            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            
         }
 
         private void SetUpMenu()
@@ -212,6 +215,7 @@ namespace Dash
 
         private void updateIcon()
         {
+            if (ViewModel == null) return;
             // when you want a new icon, you have to add a check for it here!
             if (ViewModel.IconType == IconTypeEnum.Document)
             {
@@ -295,8 +299,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize

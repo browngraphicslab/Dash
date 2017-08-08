@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -22,40 +24,69 @@ namespace Dash
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
 
-        public CollectionListView(BaseCollectionViewModel viewModel)
+
+        public CollectionListView()
         {
-            ViewModel = viewModel;
             this.InitializeComponent();
-            xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
-            xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-            xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
-            this.Unloaded += CollectionListView_Unloaded;
+            DataContextChanged += OnDataContextChanged;
+            Unloaded += CollectionListView_Unloaded;
+        }
+
+
+        public CollectionListView(BaseCollectionViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as BaseCollectionViewModel;
+
+            if (vm != null)
+            {
+                // remove events from current view model if there is a current view model
+                if (ViewModel != null)
+                {
+                    xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                    xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                    xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                    xListView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+                }
+
+                ViewModel = vm;
+                ViewModel.SetSelected(this, IsSelected);
+                xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+                xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+                xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+                xListView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
+            }
         }
 
         private void CollectionListView_Unloaded(object sender, RoutedEventArgs e)
         {
-            xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-            xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-            xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+            if (ViewModel != null)
+            {
+                xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                xListView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+            }
             this.Unloaded -= CollectionListView_Unloaded;
         }
 
         #region ItemSelection
-
         public void ToggleSelectAllItems()
         {
             ViewModel.ToggleSelectAllItems(xListView);
         }
-
-
         #endregion
 
 
         #region DragAndDrop
 
-        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            ViewModel.CollectionViewOnDragOver(sender, e);
+            ViewModel.CollectionViewOnDragEnter(sender, e);
         }
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
@@ -82,9 +113,7 @@ namespace Dash
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
-
             OnSelected();
-
         }
 
         #endregion

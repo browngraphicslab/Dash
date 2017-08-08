@@ -15,7 +15,7 @@ namespace Dash
         public List<DocumentController> Payload { get; set; }
         public ICollectionViewModel Source { get; set; }
         public ICollectionViewModel Destination { get; set; }    
-        public Point Translate { get; set; }
+
         private ItemsCarrier()
         {
             Payload = new List<DocumentController>();

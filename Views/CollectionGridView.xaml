@@ -7,31 +7,29 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
-    <Grid x:Name="Grid"
-          Tapped="OnTapped"
-          AllowDrop="True"
-          DragOver="CollectionViewOnDragOver"
-          Drop="CollectionViewOnDrop"
-          Background="Transparent"
-          >
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}"
+    AllowDrop="True"
+    Drop="CollectionViewOnDrop"
+    DragEnter="CollectionViewOnDragEnter"
+    Tapped="OnTapped"
+    >
+    <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
                   ItemsSource="{Binding DocumentViewModels}"
                   CanDragItems="{Binding CanDragItems}"
                   ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
-                  Style="{StaticResource xCollectionGridViewStyle}">
+                  Style="{StaticResource xCollectionGridViewStyle}"
+                  ShowsScrollingPlaceholders="False">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"
-                        Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                            <local:DocumentView DataContext="{Binding}" RenderTransform="{Binding GridViewIconGroupTransform}" IsHitTestVisible="False"/>
-                        </Canvas>
-                    </Border>
+                    <Grid>
+                        <local:DocumentView x:Name="XBackdrop" Visibility="Collapsed" IsHitTestVisible="False"/>
+                        <Viewbox x:Name="xBorder" Width="250" Height="250">
+                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
+                        </Viewbox>
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

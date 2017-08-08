@@ -16,14 +16,12 @@ namespace Dash
 {
     public class CollectionViewModel : BaseCollectionViewModel
     {
-
-        private ObservableCollection<DocumentViewModel> _selectedItems;
         private DocumentCollectionFieldModelController _collectionFieldModelController;
 
-        public CollectionViewModel(FieldModelController collection, bool isInInterfaceBuilder, Context context = null) : base(isInInterfaceBuilder)
+        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            DocumentViewModels = new ObservableCollection<DocumentViewModelParameters>();
+            if (collection == null) return;
             _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             AddDocumentsCollectionIsCaller(_collectionFieldModelController.GetDocuments(), context);
@@ -67,45 +65,13 @@ namespace Dash
         /// </summary>
         /// <param name="sender">The "Delete" menu option</param>
         /// <param name="e"></param>
-        public void DeleteSelected_Tapped(object sender, TappedRoutedEventArgs e)
+        public void DeleteSelected_Tapped()
         {
-            List<DocumentViewModel> itemsToDelete = new List<DocumentViewModel>();
-            foreach (var vm in _selectedItems)
+            var itemsToDelete = SelectionGroup.ToList();
+            SelectionGroup.Clear();
+            foreach (var vmp in itemsToDelete)
             {
-                itemsToDelete.Add(vm);
-            }
-            _selectedItems.Clear();
-            foreach (var vm in itemsToDelete)
-            {
-                //DocumentViewModels.Remove(vm);
-                _collectionFieldModelController.RemoveDocument(vm.DocumentController);
-            }
-        }
-
-
-        /// <summary>
-        /// Updates an ObservableCollection of DocumentViewModels to contain 
-        /// only those currently selected whenever the user changes the selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            foreach (object item in e.AddedItems)
-            {
-                var dvm = item as DocumentViewModel;
-                if (dvm != null)
-                {
-                    _selectedItems.Add(dvm);
-                }
-            }
-            foreach (object item in e.RemovedItems)
-            {
-                var dvm = item as DocumentViewModel;
-                if (dvm != null)
-                {
-                    _selectedItems.Remove(dvm);
-                }
+                _collectionFieldModelController.RemoveDocument(vmp.Controller);
             }
         }
 
@@ -136,7 +102,7 @@ namespace Dash
         private void RemoveDocumentsCollectionIsCaller(List<DocumentController> documents)
         {
             var ids = documents.Select(doc => doc.GetId());
-            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
+            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.Controller.GetId())).ToList();
             foreach (var vm in vms)
             {
                 DocumentViewModels.Remove(vm);
@@ -147,8 +113,7 @@ namespace Dash
         {
             foreach (var doc in documents)
             {
-                var viewModel = new DocumentViewModel(doc, IsInterfaceBuilder, context);
-                viewModel.DoubleTapEnabled = false;
+                var viewModel = new DocumentViewModelParameters(doc, IsInterfaceBuilder, context);
                 DocumentViewModels.Add(viewModel);
             }
         }
@@ -187,7 +152,5 @@ namespace Dash
         }
 
         #endregion
-
-
     }
 }

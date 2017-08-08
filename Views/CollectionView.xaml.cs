@@ -38,7 +38,6 @@ namespace Dash
         {
             InitializeComponent();
             ViewModel = vm;
-
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
@@ -123,14 +122,14 @@ namespace Dash
         private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
-            CurrentView = new CollectionListView(ViewModel);
+            CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
         }
 
         private void SetGridView()
         {
             if (CurrentView is CollectionGridView) return;
-            CurrentView = new CollectionGridView(ViewModel);
+            CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
         }
 
@@ -143,11 +142,7 @@ namespace Dash
 
         private void CloseMenu()
         {
-            //var panel = _collectionMenu.Parent as Panel;
-            //panel?.Children.Remove(_collectionMenu);
             xMenuCanvas.Children.Remove(_collectionMenu); 
-            //_collectionMenu.Dispose();
-            //_collectionMenu = null;
             xMenuColumn.Width = new GridLength(0);
         }
 
@@ -174,7 +169,7 @@ namespace Dash
 
         private void DeleteSelection()
         {
-            ViewModel.DeleteSelected_Tapped(null, null);
+            ViewModel.DeleteSelected_Tapped();
         }
 
         private void DeleteCollection()
@@ -227,8 +222,8 @@ namespace Dash
 
         private void OpenMenu()
         {
-            if (_collectionMenu == null) MakeMenu(); 
-            if (xMenuCanvas.Children.Contains(_collectionMenu)) return; 
+            if (_collectionMenu == null) MakeMenu();
+            if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
             xMenuColumn.Width = new GridLength(50);
         }

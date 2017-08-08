@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -13,31 +14,31 @@ namespace Dash
     {
         private bool _canDragItems;
         private double _cellSize;
-        private ObservableCollection<DocumentViewModel> _documentViewModels;
+        private ObservableCollection<DocumentViewModelParameters> _documentViewModels;
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
 
-        protected BaseCollectionViewModel(bool isInInterfaceBuilder)
+        protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
-            _documentViewModels = new ObservableCollection<DocumentViewModel>();
-            SelectionGroup = new List<DocumentViewModel>();
+            _documentViewModels = new ObservableCollection<DocumentViewModelParameters>();
+            SelectionGroup = new List<DocumentViewModelParameters>();
         }
 
         public bool IsInterfaceBuilder
         {
-            get => _isInterfaceBuilder;
-            private set => SetProperty(ref _isInterfaceBuilder, value);
+            get { return _isInterfaceBuilder; }
+            private set { SetProperty(ref _isInterfaceBuilder, value); } 
         }
 
-        public ObservableCollection<DocumentViewModel> DocumentViewModels
+        public ObservableCollection<DocumentViewModelParameters> DocumentViewModels
         {
-            get => _documentViewModels;
-            protected set => SetProperty(ref _documentViewModels, value);
+            get { return _documentViewModels; }
+            protected set { SetProperty(ref _documentViewModels, value); } 
         }
 
         // used to keep track of groups of the currently selected items in a collection
-        public List<DocumentViewModel> SelectionGroup { get; }
+        public List<DocumentViewModelParameters> SelectionGroup { get; }
 
         public abstract void AddDocuments(List<DocumentController> documents, Context context);
         public abstract void AddDocument(DocumentController document, Context context);
@@ -45,25 +46,50 @@ namespace Dash
         public abstract void RemoveDocument(DocumentController document);
 
 
+        private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
+        {
+            if (where != null)
+            {
+                var h = docController.GetHeightField().Data;
+                var w = docController.GetWidthField().Data;
+
+                w = double.IsNaN(w) ? 0 : w;
+                h = double.IsNaN(h) ? 0 : h;
+
+                var pos = (Point)where;
+                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2);
+            }
+            collectionView.ViewModel.AddDocument(docController, null);
+            DBTest.DBDoc.AddChild(docController);
+        }
+
+        private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers, Point? where = null)
+        {
+            foreach (var documentController in docControllers)
+            {
+                DisplayDocument(collectionView, documentController, where);
+            }
+        }
+
         #region Grid or List Specific Variables I want to Remove
 
         public double CellSize
         {
-            get => _cellSize;
-            protected set => SetProperty(ref _cellSize, value);
+            get { return _cellSize; }
+            protected set { SetProperty(ref _cellSize, value); } 
         }
 
         public bool CanDragItems
         {
-            get => _canDragItems;
-            set => SetProperty(ref _canDragItems, value);
+            get { return _canDragItems; } 
+            set { SetProperty(ref _canDragItems, value); } 
 // 
         }
 
         public ListViewSelectionMode ItemSelectionMode
         {
-            get => _itemSelectionMode;
-            set => SetProperty(ref _itemSelectionMode, value);
+            get { return _itemSelectionMode; } 
+            set { SetProperty(ref _itemSelectionMode, value); } 
         }
 
         #endregion
@@ -71,17 +97,22 @@ namespace Dash
 
         #region DragAndDrop
 
+        /// <summary>
+        /// fired by the starting collection when a drag event is initiated
+        /// </summary>
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
             var carrier = ItemsCarrier.Instance;
             carrier.Source = this;
-            carrier.Payload = e.Items.Cast<DocumentViewModel>().Select(dvm => dvm.DocumentController).ToList();
+            carrier.Payload = e.Items.Cast<DocumentViewModelParameters>().Select(dvmp => dvmp.Controller).ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
+        /// <summary>
+        /// fired by the starting collection when a drag event is over
+        /// </summary>
         public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(false);
@@ -97,59 +128,79 @@ namespace Dash
             carrier.Payload.Clear();
             carrier.Source = null;
             carrier.Destination = null;
-            carrier.Translate = new Point();
-            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.xCanvas_DragOver;
         }
 
-        public void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        /// <summary>
+        /// Fired by a collection when an item is dropped on it
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             e.Handled = true;
+
+            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            if (sourceIsRadialMenu)
+            {
+                var action =
+                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
+                        Action<ICollectionView, DragEventArgs>;
+                action?.Invoke(sender as ICollectionView, e);
+            }
+
+            var carrier = ItemsCarrier.Instance;
+            var sourceIsCollection = carrier.Source != null;
+            if (sourceIsCollection)
+            {
+
+                if (carrier.Source.Equals(carrier.Destination))
+                    return; // we don't want to drop items on ourself
+
+                var where = sender is CollectionFreeformView ?
+                    Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                    new Point();
+
+                DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
+            }
+
+            SetGlobalHitTestVisiblityOnSelectedItems(false);
+        }
+
+        /// <summary>
+        /// Fired by a collection when an item is dragged over it
+        /// </summary>
+        public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
 
             if (sourceIsRadialMenu)
                 e.AcceptedOperation = DataPackageOperation.Move;
 
-            // don't accept drops from other collections on ourself
-            if (ItemsCarrier.Instance.Source != null)
+            var sourceIsCollection = ItemsCarrier.Instance.Source != null;
+            if (sourceIsCollection)
             {
-                e.AcceptedOperation = ItemsCarrier.Instance.Source.Equals(this)
-                    ? DataPackageOperation.None
+                var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);
+                e.AcceptedOperation = sourceIsOurself
+                    ? DataPackageOperation.None // don't accept drag event from ourself
                     : DataPackageOperation.Move;
 
                 ItemsCarrier.Instance.Destination = this;
             }
-        }
 
-        public void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-
-            if (sourceIsRadialMenu)
+            // the soruce is assumed to be outside the app
+            if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
             {
-                var action =
-                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
-                        Action<CollectionView, DragEventArgs>;
-                action?.Invoke(MainPage.Instance.GetMainCollectionView(), e);
-
-                return;
+                e.AcceptedOperation = DataPackageOperation.Move;
+                e.DragUIOverride.IsContentVisible = true;
             }
-
-            var carrier = ItemsCarrier.Instance;
-
-            if (carrier.Source == null) return;
-            //carrier.Destination = viewModel;
-
-            if (carrier.Source.Equals(carrier.Destination))
-                return; // we don't want to drop items on ourself
-
-            //carrier.Translate = CurrentView is CollectionFreeformView
-            //    ? e.GetPosition(((CollectionFreeformView)CurrentView).xItemsControl.ItemsPanelRoot)
-            //    : new Point();
-            AddDocuments(carrier.Payload, null);
         }
+
+        #endregion
+
+
+        #region Selection
 
         public void ToggleSelectAllItems(ListViewBase listView)
         {
@@ -164,9 +215,51 @@ namespace Dash
         {
             var listViewBase = sender as ListViewBase;
             SelectionGroup.Clear();
-            SelectionGroup.AddRange(listViewBase.SelectedItems.Cast<DocumentViewModel>());
+            SelectionGroup.AddRange(listViewBase?.SelectedItems.Cast<DocumentViewModelParameters>());
         }
 
         #endregion
+
+        #region Virtualization
+
+        public void ContainerContentChangingPhaseZero(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            args.Handled = true;
+            if (args.Phase != 0) throw new Exception("Please start in stage 0");
+            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            backdrop.Visibility = Visibility.Visible;
+            backdrop.ClearValue(FrameworkElement.WidthProperty);
+            backdrop.ClearValue(FrameworkElement.HeightProperty);
+            backdrop.Width = backdrop.Height = 250;
+            backdrop.xProgressRing.Visibility = Visibility.Visible;
+            backdrop.xProgressRing.IsActive = true;
+            Debug.Assert(border != null, "border != null");
+            border.Visibility = Visibility.Collapsed;
+            args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+        }
+
+        private void ContainerContentChangingPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.Phase != 1) throw new Exception("Please start in phase 1");
+            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            var document = (DocumentView)border?.FindName("xDocumentDisplay");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            Debug.Assert(border != null, "border != null");
+            Debug.Assert(document != null, "document != null");
+            backdrop.Visibility = Visibility.Collapsed;
+            backdrop.xProgressRing.IsActive = false;
+            border.Visibility = Visibility.Visible;
+            document.IsHitTestVisible = false;
+            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
+            document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+        }
+
+        #endregion
+
     }
 }
