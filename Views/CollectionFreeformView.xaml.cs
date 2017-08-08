@@ -85,15 +85,16 @@ namespace Dash
 
             if (vm != null)
             {
-                var itemsBinding = new Binding
-                {
-                    Source = vm,
-                    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
-                    Mode = BindingMode.OneWay
-                };
-                xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
+                //var itemsBinding = new Binding
+                //{
+                //    Source = vm,
+                //    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
+                //    Mode = BindingMode.OneWay
+                //};
+                //xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
 
                 ViewModel = vm;
+                ViewModel.SetSelected(this, IsSelected);
             }
         }
 

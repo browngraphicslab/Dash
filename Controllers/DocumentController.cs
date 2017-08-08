@@ -686,7 +686,7 @@ namespace Dash
             var source = new ObservableCollection<FrameworkElement>();
             sp.ItemsSource = source;
 
-            var isInterfaceBuilder = false;
+            var isInterfaceBuilder = false; // TODO make this a parameter
 
             foreach (var f in EnumFields())
             {
@@ -723,12 +723,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    var colView = new CollectionGridView(new CollectionViewModel());
-                    var documentBindingSource = new ObservableCollection<DocumentViewModelParameters>();                   
-
-                    colView.XGridView.ClearValue(ItemsControl.ItemsSourceProperty);
-                    colView.XGridView.ItemsSource = documentBindingSource;
-                    colView.XGridView.SelectionMode = ListViewSelectionMode.None;
+                    var colView = new CollectionGridView(new CollectionViewModel(f.Value, isInterfaceBuilder, context));
 
                     var border = new Border
                     {
@@ -739,10 +734,6 @@ namespace Dash
                         CornerRadius = new CornerRadius(3),
                         Child = colView
                     };
-                    foreach (var fieldDoc in ((DocumentCollectionFieldModelController)f.Value).GetDocuments())
-                    {
-                        documentBindingSource.Add(new DocumentViewModelParameters(fieldDoc));
-                    }
                     source.Add(border);
                 }
             }

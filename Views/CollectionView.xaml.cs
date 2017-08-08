@@ -118,21 +118,20 @@ namespace Dash
         {
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView();
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             xContentControl.Content = CurrentView;
         }
 
         private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
-            CurrentView = new CollectionListView(ViewModel);
+            CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
         }
 
         private void SetGridView()
         {
             if (CurrentView is CollectionGridView) return;
-            CurrentView = new CollectionGridView(ViewModel);
+            CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
         }
 

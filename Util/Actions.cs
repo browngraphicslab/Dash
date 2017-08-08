@@ -185,12 +185,6 @@ namespace Dash
             DisplayDocument(collection, col, where);
         }
 
-        /// <summary>
-        ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
-        /// </summary>
-        /// <param name="docController"></param>
-        /// <param name="where"></param>
-        /// <param name="collectionView"></param>
         public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)

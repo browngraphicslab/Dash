@@ -24,21 +24,49 @@ namespace Dash
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
 
-        public CollectionListView(BaseCollectionViewModel viewModel)
+        public CollectionListView()
         {
-            ViewModel = viewModel;
             this.InitializeComponent();
-            xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
-            xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-            xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
-            this.Unloaded += CollectionListView_Unloaded;
+            DataContextChanged += OnDataContextChanged;
+            Unloaded += CollectionListView_Unloaded;
+        }
+
+
+        public CollectionListView(BaseCollectionViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as BaseCollectionViewModel;
+
+            if (vm != null)
+            {
+                // remove events from current view model if there is a current view model
+                if (ViewModel != null)
+                {
+                    xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                    xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                    xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                }
+
+                ViewModel = vm;
+                ViewModel.SetSelected(this, IsSelected);
+                xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+                xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+                xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+            }
         }
 
         private void CollectionListView_Unloaded(object sender, RoutedEventArgs e)
         {
-            xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-            xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-            xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+            if (ViewModel != null)
+            {
+                xListView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                xListView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                xListView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+            }
             this.Unloaded -= CollectionListView_Unloaded;
         }
 

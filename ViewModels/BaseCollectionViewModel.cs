@@ -46,6 +46,31 @@ namespace Dash
         public abstract void RemoveDocument(DocumentController document);
 
 
+        private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
+        {
+            if (where != null)
+            {
+                var h = docController.GetHeightField().Data;
+                var w = docController.GetWidthField().Data;
+
+                w = double.IsNaN(w) ? 0 : w;
+                h = double.IsNaN(h) ? 0 : h;
+
+                var pos = (Point)where;
+                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2);
+            }
+            collectionView.ViewModel.AddDocument(docController, null);
+            DBTest.DBDoc.AddChild(docController);
+        }
+
+        private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers, Point? where = null)
+        {
+            foreach (var documentController in docControllers)
+            {
+                DisplayDocument(collectionView, documentController, where);
+            }
+        }
+
         #region Grid or List Specific Variables I want to Remove
 
         public double CellSize
@@ -103,7 +128,6 @@ namespace Dash
             carrier.Payload.Clear();
             carrier.Source = null;
             carrier.Destination = null;
-            carrier.Translate = new Point();
         }
 
         /// <summary>
@@ -132,11 +156,11 @@ namespace Dash
                 if (carrier.Source.Equals(carrier.Destination))
                     return; // we don't want to drop items on ourself
 
-                carrier.Translate = sender is CollectionFreeformView ?
+                var where = sender is CollectionFreeformView ?
                     Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
-                AddDocuments(carrier.Payload, null);
+                DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
