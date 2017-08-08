@@ -84,6 +84,7 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
+            /* 
             var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
             if (view == null) return; // we can't always assume we're on a collection		
 
@@ -94,6 +95,7 @@ namespace Dash
             view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
                 new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
                     OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            */ 
         }
 
         private void SetUpMenu()
