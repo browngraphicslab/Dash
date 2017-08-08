@@ -262,7 +262,7 @@ namespace Dash
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new ReferenceFieldModelController(outputReference.FieldReference), true);
 
-            if (!ioReference.IsOutput && _connectionLine != null)
+            if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
             {
                 CheckLinePresence(_converter);
                 _lineDict.Add(_converter, _connectionLine);

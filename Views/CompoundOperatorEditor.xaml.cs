@@ -89,10 +89,5 @@ namespace Dash
             }
             
         }
-
-        public IOReference GetCurrentReference()
-        {
-            return xFreeFormEditor.GetCurrentReference(); 
-        }
     }
 }
