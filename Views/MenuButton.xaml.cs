@@ -164,6 +164,7 @@ namespace Dash
         {
             e.Handled = true;
             _buttonAction?.Invoke();
+            e.Handled = true;
         }
 
         public void Dispose()

@@ -89,6 +89,7 @@ namespace Dash
             {
                 UpdateRootLayout();
                 _editingDocView.DragOver += DocumentViewOnDragOver;
+                _editingDocView.DragEnter += DocumentViewOnDragOver;
                 _editingDocView.AllowDrop = true;
                 _editingDocView.Drop += DocumentViewOnDrop;
                 _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
@@ -209,6 +210,10 @@ namespace Dash
             {
                 layoutDocument = new RichTextBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
             }
+            else if (fieldModelController is InkFieldModelController)
+            {
+                layoutDocument = new InkBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
+            }
             return layoutDocument;
         }
 
@@ -298,6 +303,5 @@ namespace Dash
 
             throw new NotImplementedException();
         }
-        
     }
 }

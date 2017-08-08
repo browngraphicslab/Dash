@@ -405,6 +405,7 @@ namespace Dash
             Action<object> setTouchInput = Actions.SetTouchInput;
             Action<object> setMouseInput = Actions.SetMouseInput;
             Action<object> setNoInput = Actions.SetNoInput;
+            Action<object> chooseEraser = Actions.ChooseEraser;
             this.InitializeColors();
 
             var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
@@ -431,6 +432,10 @@ namespace Dash
                     new RadialActionModel("Pencil", "✏️")
                     {
                         GenericAction = choosePencil
+                    },
+                    new RadialActionModel("Eraser", "")
+                    {
+                        GenericAction = chooseEraser
                     }
                 });
 
