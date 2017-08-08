@@ -24,6 +24,7 @@ namespace Dash
     {
         private MenuFlyout _flyout;
         private bool _isCompound;
+        private IOReference _currInputRef; 
 
         public OperatorView()
         {
@@ -64,6 +65,7 @@ namespace Dash
                     {
                         compoundFMCont.Inputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
                     }
+                    _currInputRef = ioRef; 
                 };
 
                 OutputListView.PointerReleased += (s, e) =>
@@ -79,7 +81,6 @@ namespace Dash
             }
 
         }
-
 
         /// <summary>
         /// Envokes handler for starting a link by dragging on a link ellipse handle.
@@ -195,5 +196,13 @@ namespace Dash
 
         #endregion
 
+        private void InputEllipse_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!_isCompound) return; 
+            var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
+            view.CancelDrag(_currInputRef.PointerArgs.Pointer); 
+            StartNewLink(sender, _currInputRef.PointerArgs, true, view);
+            view.EndDrag(_currInputRef);
+        }
     }
 }
