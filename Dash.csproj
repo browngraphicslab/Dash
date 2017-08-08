@@ -130,10 +130,10 @@
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />
-    <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="ViewModels\ICollectionViewModel.cs" />
+    <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
