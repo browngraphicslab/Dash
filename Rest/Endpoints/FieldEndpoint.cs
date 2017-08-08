@@ -96,25 +96,5 @@ namespace Dash
                 error(e);
             }
         }
-
-        public void GetFieldsDictionary(
-            Dictionary<KeyController, string> fields, Action<IDictionary<KeyController, FieldModelController>> success, Action<Exception> error)
-        {
-            var controllersMap = new Dictionary<KeyController, FieldModelController>();
-
-            foreach (var kv in fields)
-            {
-                GetField(kv.Value, modelController =>
-                {
-
-                }, exception =>
-                {
-
-                });
-                controllersMap[kv.Key] = controller;
-            }
-
-            return new Result<IDictionary<KeyController, FieldModelController>>(true, controllersMap);
-        }
     }
 }
