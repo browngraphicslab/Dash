@@ -1,25 +1,21 @@
-﻿using System;
+﻿using DashShared;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Diagnostics;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI;
-using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using DashShared;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using Microsoft.Graphics.Canvas.UI.Xaml;
 using Path = Windows.UI.Xaml.Shapes.Path;
 
 
@@ -508,14 +504,14 @@ namespace Dash
 
         #region DragAndDrop
 
-        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragOver(sender, e);
-        }
-
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDrop(sender, e);
+        }
+
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragEnter(sender, e);
         }
 
         #endregion

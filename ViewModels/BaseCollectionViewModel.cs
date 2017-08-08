@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
@@ -71,17 +72,22 @@ namespace Dash
 
         #region DragAndDrop
 
+        /// <summary>
+        /// fired by the starting collection when a drag event is initiated
+        /// </summary>
         public void xGridView_OnDragItemsStarting(object sender, DragItemsStartingEventArgs e)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(true);
 
-            MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
             var carrier = ItemsCarrier.Instance;
             carrier.Source = this;
             carrier.Payload = e.Items.Cast<DocumentViewModelParameters>().Select(dvmp => dvmp.Controller).ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
+        /// <summary>
+        /// fired by the starting collection when a drag event is over
+        /// </summary>
         public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
             SetGlobalHitTestVisiblityOnSelectedItems(false);
@@ -98,58 +104,79 @@ namespace Dash
             carrier.Source = null;
             carrier.Destination = null;
             carrier.Translate = new Point();
-            MainPage.Instance.MainDocView.DragOver += MainPage.Instance.xCanvas_DragOver;
         }
 
-        public void CollectionViewOnDragOver(object sender, DragEventArgs e)
+        /// <summary>
+        /// Fired by a collection when an item is dropped on it
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             e.Handled = true;
+
+            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+            if (sourceIsRadialMenu)
+            {
+                var action =
+                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
+                        Action<ICollectionView, DragEventArgs>;
+                action?.Invoke(sender as ICollectionView, e);
+            }
+
+            var carrier = ItemsCarrier.Instance;
+            var sourceIsCollection = carrier.Source != null;
+            if (sourceIsCollection)
+            {
+
+                if (carrier.Source.Equals(carrier.Destination))
+                    return; // we don't want to drop items on ourself
+
+                carrier.Translate = sender is CollectionFreeformView ?
+                    Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                    new Point();
+
+                AddDocuments(carrier.Payload, null);
+            }
+
+            SetGlobalHitTestVisiblityOnSelectedItems(false);
+        }
+
+        /// <summary>
+        /// Fired by a collection when an item is dragged over it
+        /// </summary>
+        public void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
 
             if (sourceIsRadialMenu)
                 e.AcceptedOperation = DataPackageOperation.Move;
 
-            // don't accept drops from other collections on ourself
-            if (ItemsCarrier.Instance.Source != null)
+            var sourceIsCollection = ItemsCarrier.Instance.Source != null;
+            if (sourceIsCollection)
             {
-                e.AcceptedOperation = ItemsCarrier.Instance.Source.Equals(this)
-                    ? DataPackageOperation.None
+                var sourceIsOurself = ItemsCarrier.Instance.Source.Equals(this);
+                e.AcceptedOperation = sourceIsOurself
+                    ? DataPackageOperation.None // don't accept drag event from ourself
                     : DataPackageOperation.Move;
 
                 ItemsCarrier.Instance.Destination = this;
             }
-        }
 
-        public void CollectionViewOnDrop(object sender, DragEventArgs e)
-        {
-            e.Handled = true;
-
-            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
-
-            if (sourceIsRadialMenu)
+            // the soruce is assumed to be outside the app
+            if ((e.AllowedOperations & DataPackageOperation.Move) != 0)
             {
-                var action =
-                    e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as
-                        Action<CollectionView, DragEventArgs>;
-                action?.Invoke(MainPage.Instance.GetMainCollectionView(), e);
-
-                return;
+                e.AcceptedOperation = DataPackageOperation.Move;
+                e.DragUIOverride.IsContentVisible = true;
             }
-
-            var carrier = ItemsCarrier.Instance;
-
-            if (carrier.Source == null) return;
-            //carrier.Destination = viewModel;
-
-            if (carrier.Source.Equals(carrier.Destination))
-                return; // we don't want to drop items on ourself
-
-            //carrier.Translate = CurrentView is CollectionFreeformView
-            //    ? e.GetPosition(((CollectionFreeformView)CurrentView).xItemsControl.ItemsPanelRoot)
-            //    : new Point();
-            AddDocuments(carrier.Payload, null);
         }
+
+        #endregion
+
+
+        #region Selection
 
         public void ToggleSelectAllItems(ListViewBase listView)
         {
@@ -168,5 +195,7 @@ namespace Dash
         }
 
         #endregion
+
+
     }
 }

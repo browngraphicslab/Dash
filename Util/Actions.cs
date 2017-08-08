@@ -135,10 +135,10 @@ namespace Dash
             }
         }
         
-        public static void AddCollection(CollectionView collection, DragEventArgs e)
+        public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -190,8 +190,8 @@ namespace Dash
         /// </summary>
         /// <param name="docController"></param>
         /// <param name="where"></param>
-        /// <param name="collection"></param>
-        public static void DisplayDocument(CollectionView collection, DocumentController docController, Point? where = null)
+        /// <param name="collectionView"></param>
+        public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
@@ -201,20 +201,20 @@ namespace Dash
                 var pos = (Point)where;
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
-            collection.ViewModel.AddDocument(docController, null); 
+            collectionView.ViewModel.AddDocument(docController, null); 
             DBTest.DBDoc.AddChild(docController);
         }
 
-        public static void AddApiCreator(CollectionView collection, DragEventArgs e)
+        public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             var a = new ApiDocumentModel().Document;
-            DisplayDocument(collection, a, where);
+            DisplayDocument(collectionView, a, where);
         }
 
-        public static void AddDocuments(CollectionView collection, DragEventArgs e)
+        public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make second collection
             var numbers2 = new Numbers().Document;
@@ -234,18 +234,18 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
 
             //Display collections
-            DisplayDocument(collection, col2, where);
+            DisplayDocument(collectionView, col2, where);
 
 
             foreach (var d in new DBTest().Documents)
-                DisplayDocument(collection, d, where);
+                DisplayDocument(collectionView, d, where);
         }
 
-        public static void AddNotes(CollectionView collection, DragEventArgs e)
+        public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            DisplayDocument(collection, postitNote, where);
+            DisplayDocument(collectionView, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)
