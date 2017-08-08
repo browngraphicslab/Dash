@@ -28,7 +28,7 @@
             <!--Grid.Column="1"-->
 
             <!-- Input Operator Handles & Labels-->
-            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled"
+            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"
                       ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -55,8 +55,8 @@
 
 
             <!-- Output link handles and labels -->
-            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" HorizontalAlignment="Right"
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Margin="0,0,0,0" Background="{StaticResource WindowsBlue}" >
+            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50" 
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Margin" Value="0"/>
