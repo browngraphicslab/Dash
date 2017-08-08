@@ -20,7 +20,7 @@ namespace Dash.Models
         /// invoked when the RadialMenuButton associated with this model 
         /// is pressed. 
         /// </summary>
-        public Action<CollectionView, DragEventArgs> CollectionDropAction { get; set; }
+        public Action<ICollectionView, DragEventArgs> CollectionDropAction { get; set; }
         public Action<object, DragEventArgs> GenericDropAction { get; set; }
         public Action<Color, RadialMenu> ColorAction { get; set; }
         public Action<object> GenericAction { get; set; }
