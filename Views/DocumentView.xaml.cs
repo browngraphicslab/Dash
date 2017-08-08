@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using Windows.Foundation;
 using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -39,6 +43,8 @@ namespace Dash
         public DocumentView()
         {
             this.InitializeComponent();
+            InitializeDropShadow(xShadowHost, xShadowTarget);
+
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
@@ -55,6 +61,35 @@ namespace Dash
             DoubleTapped += ExpandContract_DoubleTapped;
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
+        }
+
+        private void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
+        {
+            Visual hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
+            Compositor compositor = hostVisual.Compositor;
+
+            // Create a drop shadow
+            var dropShadow = compositor.CreateDropShadow();
+            dropShadow.Color = Color.FromArgb(255, 75, 75, 80);
+            dropShadow.BlurRadius = 15.0f;
+            dropShadow.Offset = new Vector3(2.5f, 2.5f, 0.0f);
+            // Associate the shape of the shadow with the shape of the target element
+            dropShadow.Mask = shadowTarget.GetAlphaMask();
+
+            // Create a Visual to hold the shadow
+            var shadowVisual = compositor.CreateSpriteVisual();
+            shadowVisual.Shadow = dropShadow;
+
+            // Add the shadow as a child of the host in the visual tree
+            ElementCompositionPreview.SetElementChildVisual(shadowHost, shadowVisual);
+
+            // Make sure size of shadow host and shadow visual always stay in sync
+            var bindSizeAnimation = compositor.CreateExpressionAnimation("hostVisual.Size");
+            bindSizeAnimation.SetReferenceParameter("hostVisual", hostVisual);
+
+            shadowVisual.StartAnimation("Size", bindSizeAnimation);
+
+
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -237,12 +272,7 @@ namespace Dash
             var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
             if (docType.Type != null)
             {
-                // hide white background & drop shadow on operator views
-                if (docType.Type.Equals("operator"))
-                {
-                    XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                    xBorder.Opacity = 0;
-                }
+
             }
             else
             {
@@ -307,18 +337,16 @@ namespace Dash
             if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight)
             {
                 updateIcon();
-                XGrid.Visibility = Visibility.Collapsed;
+                xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
-                xBorder.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true); 
             }
             else if (xIcon.Visibility == Visibility.Visible)
             {
-                XGrid.Visibility = Visibility.Visible;
+                xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
-                xBorder.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
             }
@@ -371,7 +399,7 @@ namespace Dash
 
         public void CommandLine()
         {
-            FlyoutBase.ShowAttachedFlyout(XGrid);
+            FlyoutBase.ShowAttachedFlyout(xFieldContainer);
         }
 
         public void GetJson()

@@ -29,6 +29,10 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="0"/>
         </Grid.ColumnDefinitions>
+
+        <!--drop shadow ui elements-->
+        <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Rectangle x:Name="xShadowTarget" Fill="{StaticResource TranslucentWhite}" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         
         <!-- Container for Icon view -->
         <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -45,11 +49,14 @@
                      Background="Transparent" Text="Name Here" BorderThickness="0"/>
             </StackPanel>
         </Grid>
+        
+        <!--canvas to hold the document view menu-->
         <Canvas x:Name="xMenuCanvas" Grid.Column="1"/>
+        
+        <!--grid to hold the inner content of the document-->
         <Grid Grid.Column="0">
-            <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#33031A2C" Margin="5,5,-10,-10" />
             <!-- Container for document fields view -->
-            <Grid x:Name="XGrid" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
+            <Grid x:Name="xFieldContainer" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>
