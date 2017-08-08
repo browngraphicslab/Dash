@@ -54,9 +54,10 @@ namespace Dash
 
         #region DragAndDrop
 
-        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
+
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
         {
-            ViewModel.CollectionViewOnDragOver(sender, e);
+            ViewModel.CollectionViewOnDragEnter(sender, e);
         }
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
@@ -121,5 +122,6 @@ namespace Dash
             var vm = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
             document.DataContext = vm;
         }
+
     }
 }

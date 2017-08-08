@@ -7,12 +7,12 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}"
+    AllowDrop="True"
+    Drop="CollectionViewOnDrop"
+    DragEnter="CollectionViewOnDragEnter"
+    Tapped="OnTapped">
     <Grid x:Name="Grid"
-          AllowDrop="True"
-          DragOver="CollectionViewOnDragOver"
-          Drop="CollectionViewOnDrop"
-          Tapped="OnTapped"
           Background="Transparent"
           >
         <ListView x:Name="xListView"

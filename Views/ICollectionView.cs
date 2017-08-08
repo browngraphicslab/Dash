@@ -10,5 +10,7 @@ namespace Dash
     {
         void ToggleSelectAllItems();
 
+        BaseCollectionViewModel ViewModel { get; }
+
     }
 }
