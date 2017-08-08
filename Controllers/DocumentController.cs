@@ -398,7 +398,7 @@ namespace Dash
             oldField?.Dispose();
 
             proto._fields[key] = field;
-            proto.DocumentModel.Fields[key.KeyModel] = field == null ? "" : field.FieldModel.Id;
+            proto.DocumentModel.Fields[key.KeyModel.Id] = field == null ? "" : field.FieldModel.Id;
 
             replacedField = oldField;
             return true;

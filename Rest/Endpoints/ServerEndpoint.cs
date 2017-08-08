@@ -55,7 +55,7 @@ namespace Dash
             try
             {
                 var a = JsonConvert.SerializeObject(bodyObject);
-
+                var o = JsonConvert.DeserializeObject<DocumentModel>(a);
                 // make the post request and get the result
                 var response = PostAsJson ? Connection.PostAsync(DashConstants.ServerBaseUrl + path, new StringContent(a,Encoding.UTF8,"application/json")).Result :
                                             Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent).Result;

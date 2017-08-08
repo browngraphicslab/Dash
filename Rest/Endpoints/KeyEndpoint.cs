@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using DashShared;
-using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Net.Http;
+using System.Threading.Tasks;
+using DashShared;
 
 namespace Dash
 {
     public class KeyEndpoint
     {
-        private ServerEndpoint _connection;
+        private readonly ServerEndpoint _connection;
 
         public KeyEndpoint(ServerEndpoint connection)
         {
@@ -17,14 +15,12 @@ namespace Dash
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="newKey"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
         public void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
-            return;
             Task.Run(() =>
             {
                 try
@@ -43,14 +39,12 @@ namespace Dash
         }
 
         /// <summary>
-        /// 
         /// </summary>
         /// <param name="keyToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
         public void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
-            return;
             Task.Run(() =>
             {
                 try
@@ -88,20 +82,16 @@ namespace Dash
 
         public void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
         {
-            string id = keyToDelete.Id;
+            var id = keyToDelete.Id;
             Task.Run(() =>
             {
                 try
                 {
                     var response = _connection.Delete($"api/Key/{id}");
                     if (response.IsSuccessStatusCode)
-                    {
                         success();
-                    }
                     else
-                    {
                         error(new ApiException(response));
-                    }
                 }
                 catch (Exception e)
                 {

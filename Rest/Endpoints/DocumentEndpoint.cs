@@ -2,22 +2,20 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using DashShared;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace Dash
 {
     public class DocumentEndpoint
     {
-        private ServerEndpoint _connection;
+        private readonly ServerEndpoint _connection;
 
         public DocumentEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
         }
-        
+
         /// <summary>
-        /// Adds a document to the server.
+        ///     Adds a document to the server.
         /// </summary>
         /// <param name="newDocument"></param>
         /// <param name="success"></param>
@@ -28,7 +26,7 @@ namespace Dash
             {
                 try
                 {
-                    HttpResponseMessage result = _connection.Post("api/Document", newDocument);
+                    var result = _connection.Post("api/Document", newDocument);
                     var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
 
                     success(resultDoc);
@@ -42,19 +40,20 @@ namespace Dash
         }
 
         /// <summary>
-        /// Updates a document on the server.
+        ///     Updates a document on the server.
         /// </summary>
         /// <param name="documentToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success, Action<Exception> error)
+        public void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
+            Action<Exception> error)
         {
             Task.Run(() =>
             {
                 try
                 {
-                    HttpResponseMessage result = _connection.Put("api/Document", documentToUpdate);
-                    DocumentModel resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
+                    var result = _connection.Put("api/Document", documentToUpdate);
+                    var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
 
                     success(resultDoc);
                 }
@@ -67,7 +66,7 @@ namespace Dash
         }
 
         /// <summary>
-        /// Gets a document from the server.
+        ///     Gets a document from the server.
         /// </summary>
         /// <param name="id"></param>
         /// <param name="success"></param>
@@ -90,27 +89,23 @@ namespace Dash
         }
 
         /// <summary>
-        /// Deletes a document from the server.
+        ///     Deletes a document from the server.
         /// </summary>
         /// <param name="document"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
         public void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
         {
-            string id = document.Id;
+            var id = document.Id;
             Task.Run(() =>
             {
                 try
                 {
                     var response = _connection.Delete($"api/Document/{id}");
                     if (response.IsSuccessStatusCode)
-                    {
                         success();
-                    }
                     else
-                    {
                         error(new ApiException(response));
-                    }
                 }
                 catch (Exception e)
                 {
