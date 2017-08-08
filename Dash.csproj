@@ -127,6 +127,8 @@
     <Compile Include="Util\EditableImage.xaml.cs">
       <DependentUpon>EditableImage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\CourtesyDocuments\InkBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleInkDoc.cs" />
     <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
@@ -157,6 +159,8 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\InkFieldModelController.cs" />
+    <Compile Include="Models\InkFieldModel.cs" />
     <Compile Include="Push\Connection.cs" />
     <Compile Include="Push\PushClient.cs" />
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
@@ -168,6 +172,9 @@
     <Compile Include="Converters\StringToDoubleConverter.cs" />
     <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
       <DependentUpon>GridViewSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\InkSettings.xaml.cs">
+      <DependentUpon>InkSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
@@ -346,7 +353,7 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
-    <Compile Include="Util\InkSource.cs" />
+    <Compile Include="Util\GlobalInkSettings.cs" />
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
@@ -377,6 +384,9 @@
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
       <DependentUpon>ImageSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InkCanvasControl.xaml.cs">
+      <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
@@ -534,6 +544,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\InterfaceBuilder\InkSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\InterfaceBuilder\ListViewSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -659,6 +673,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\ImageSettings.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InkCanvasControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

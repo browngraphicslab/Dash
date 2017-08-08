@@ -11,7 +11,7 @@ using Windows.UI.Input.Inking;
 
 namespace Dash
 {
-    public static class InkSource
+    public static class GlobalInkSettings
     {
         private static ObservableCollection<InkPresenter> _presenters = new ObservableCollection<InkPresenter>();
         private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
@@ -24,7 +24,8 @@ namespace Dash
         public enum StrokeTypes
         {
             Pen,
-            Pencil
+            Pencil,
+            Eraser
         }
 
         public static StrokeTypes StrokeType
@@ -100,7 +101,7 @@ namespace Dash
                     presenter.InputDeviceTypes = InkInputType;
                 }
             }
-        }
+        } 
 
         private static Color ChangeColorBrightness()
         {
@@ -128,20 +129,29 @@ namespace Dash
 
         public static void SetAttributes()
         {
-            InkDrawingAttributes attributes;
-
+            
+            if (StrokeType == StrokeTypes.Eraser)
+            {
+                foreach (var presenter in Presenters)
+                {
+                    presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
+                }
+                return;
+            }
+            foreach (var presenter in Presenters)
+            {
+                presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
+            }
+            InkDrawingAttributes attributes = new InkDrawingAttributes();
             if (StrokeType == StrokeTypes.Pencil)
             {
                 attributes = InkDrawingAttributes.CreateForPencil();
-                attributes.PencilProperties.Opacity = InkSource.Opacity;
-            }
-            else
-            {
-                attributes = new InkDrawingAttributes();
+                attributes.PencilProperties.Opacity = GlobalInkSettings.Opacity;
             }
             attributes.Color = ChangeColorBrightness();
-            attributes.Size = new Size(InkSource.Size, InkSource.Size);
-            InkSource.Attributes = attributes;
+            attributes.Size = new Size(GlobalInkSettings.Size, GlobalInkSettings.Size);
+            GlobalInkSettings.Attributes = attributes;
+
         }
     }
 }
