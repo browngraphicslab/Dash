@@ -63,7 +63,6 @@ namespace Dash
                     var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor; 
                     var ioRef = freeform.GetCurrentReference();
                     if (ioRef == null) return;
-                    //compoundFMCont.AddInputreference(ioRef.FieldReference.FieldKey, ioRef.FMController);
                     if (!compoundFMCont.Inputs.ContainsKey(ioRef.FieldReference.FieldKey))
                     {
                         compoundFMCont.Inputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
@@ -72,7 +71,13 @@ namespace Dash
 
                 OutputListView.PointerReleased += (s, e) =>
                 {
-
+                    var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
+                    var ioRef = freeform.GetCurrentReference();
+                    if (ioRef == null) return;
+                    if (!compoundFMCont.Outputs.ContainsKey(ioRef.FieldReference.FieldKey))
+                    {
+                        compoundFMCont.Outputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
+                    }
                 }; 
             }
 
@@ -117,6 +122,11 @@ namespace Dash
 
         private void OutputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            //if (_isCompound)
+            //{
+            //    StartNewLinkInside(sender, e, false);
+            //    return;
+            //}
             StartNewLink(sender, e, true);
         }
 
@@ -156,16 +166,21 @@ namespace Dash
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (_isCompound)
-            {
-                EndDraggedLinkInside(sender, e, true);
-                return;
-            }
+            //if (_isCompound)
+            //{
+            //    EndDraggedLinkInside(sender, e, true);
+            //    return;
+            //}
             EndDraggedLink(sender, e, false);
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (_isCompound)
+            {
+                EndDraggedLinkInside(sender, e, false);
+                return;
+            }
             EndDraggedLink(sender, e, true);
         }
 
@@ -214,8 +229,8 @@ namespace Dash
             Debug.Assert(operatorFieldModelController != null);
             XPresenter.Content = new CompoundOperatorEditor(documentController, operatorFieldModelController);
 
-            InputListView.MaxWidth = 100;
-            OutputListView.MaxWidth = 100;
+            InputListView.MinWidth = 50;
+            OutputListView.MinWidth = 50;
         }
 
 

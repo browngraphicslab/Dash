@@ -535,6 +535,8 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
+
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
