@@ -211,12 +211,8 @@ namespace Dash
         {
             if (!_isCompound) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-            //view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
-            //view.StartDrag(_currOutputRef);
             EndDraggedLink(sender, null, false, view);
             view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
-            //StartNewLink(sender, _currInputRef.PointerArgs, true, view);
-            //view.EndDrag(_currInputRef);
         }
     }
 }
