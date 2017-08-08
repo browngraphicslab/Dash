@@ -78,7 +78,7 @@ namespace Dash
             MainPage.Instance.MainDocView.DragOver -= MainPage.Instance.xCanvas_DragOver;
             var carrier = ItemsCarrier.Instance;
             carrier.Source = this;
-            carrier.Payload = e.Items.Cast<DocumentViewModel>().Select(dvm => dvm.DocumentController).ToList();
+            carrier.Payload = e.Items.Cast<DocumentViewModelParameters>().Select(dvmp => dvmp.Controller).ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
