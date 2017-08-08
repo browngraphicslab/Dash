@@ -25,14 +25,14 @@ namespace Dash
         private readonly CompoundOperatorFieldController _operatorFieldModelController;
         private ObservableCollection<OperatorBuilder> _operatorList;
         public string OperationBarDragKey = "4D9172C1-266F-4119-BB76-961D7D6C37B0";
-        private FreeFormCollectionViewModel _collectionViewModel;
+        private SimpleCollectionViewModel _collectionViewModel;
 
         public CompoundOperatorEditor()
         {
             this.InitializeComponent();
             Unloaded += CompoundOperatorEditor_Unloaded;
             _operatorList = new ObservableCollection<OperatorBuilder>(OperationCreationHelper.Operators);
-            _collectionViewModel = new FreeFormCollectionViewModel(false);
+            _collectionViewModel = new SimpleCollectionViewModel(false);
             xFreeFormEditor.DataContext = _collectionViewModel;
         }
 

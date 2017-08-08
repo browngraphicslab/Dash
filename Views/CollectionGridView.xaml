@@ -7,13 +7,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}">
-    <Grid x:Name="Grid"
-          Tapped="OnTapped"
-          AllowDrop="True"
-          DragOver="CollectionViewOnDragOver"
-          Drop="CollectionViewOnDrop"
-          Background="Transparent">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}"
+    AllowDrop="True"
+    Drop="CollectionViewOnDrop"
+    DragEnter="CollectionViewOnDragEnter"
+    Tapped="OnTapped"
+    >
+    <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
                   ItemsSource="{Binding DocumentViewModels}"
                   CanDragItems="{Binding CanDragItems}"
@@ -21,7 +21,6 @@
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionGridViewStyle}"
-                  ContainerContentChanging="XGridView_OnContainerContentChanging"
                   ShowsScrollingPlaceholders="False">
             <GridView.ItemTemplate>
                 <DataTemplate>

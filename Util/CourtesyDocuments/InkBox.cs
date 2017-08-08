@@ -29,14 +29,6 @@ namespace Dash
             SetLayoutForDocument(Document, Document, true, true);
         }
 
-        public InkBox(FieldModelController refToInk)
-        {
-            Document = GetLayoutPrototype().MakeDelegate();
-            Document.SetField(KeyStore.DataKey, refToInk, true);
-            //Document.SetField(InkDataKey, new InkFieldModelController(), true);
-            SetLayoutForDocument(Document, Document, true, true);
-        }
-
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
@@ -44,7 +36,7 @@ namespace Dash
             var fmController = docController.GetDereferencedField(KeyStore.DataKey, context) as InkFieldModelController;
             if (fmController != null)
             {
-                var inkCanvas = new InkCanvasControl(fmController);
+                var inkCanvas = new InkCanvasControl(fmController, isInterfaceBuilderLayout);
                 SetupBindings(inkCanvas, docController, context);
                 
                 if (isInterfaceBuilderLayout)

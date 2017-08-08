@@ -26,6 +26,7 @@ namespace Dash
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
         private Stack<string> _undoStack = new Stack<string>();
         private Stack<string> _redoStack = new Stack<string>();
+        private Image _icon = new Image();
 
         public InkFieldModelController() : base(new InkFieldModel())
         {
@@ -65,10 +66,11 @@ namespace Dash
             if (inkFieldModelController != null) InkData = inkFieldModelController.InkData;
         }
 
-        public override FrameworkElement GetTableCellView(Context context)
+        //TODO needs work
+        public  override FrameworkElement GetTableCellView(Context context)
         {
-            var inkCanvas = new InkCanvasControl(this);
-
+            var inkCanvas = new InkCanvas() { Width = 50, Height = 50 };
+            inkCanvas.InkPresenter.StrokeContainer.AddStrokes(GetStrokes().Select(k => k.Clone()));
             return inkCanvas;
         }
 

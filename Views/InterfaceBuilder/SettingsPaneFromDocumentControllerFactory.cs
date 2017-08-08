@@ -43,11 +43,21 @@ namespace Dash
             {
                 return CreateGridViewsettingsLayout(layoutDocument); 
             }
+            if (type == InkBox.DocumentType)
+            {
+                return CreateInkSettingsLayout(layoutDocument);
+            }
 
 
             Debug.WriteLine($"InterfaceBulder.xaml.cs.SettingsPaneFromDocumentControllerFactory: \n\tWe do not create a settings pane for the document with type {layoutDocument.DocumentType}");
             
             return null;
+        }
+
+        private static UIElement CreateInkSettingsLayout(DocumentController layoutDocument)
+        {
+            var context = new Context();
+            return new InkSettings(layoutDocument, context);
         }
 
         private static UIElement CreateRichTextSettingsLayout(DocumentController layoutDocument)
@@ -92,4 +102,5 @@ namespace Dash
         }
 
     }
+   
 }

@@ -11,7 +11,7 @@ using Windows.UI.Input.Inking;
 
 namespace Dash
 {
-    public static class InkSettings
+    public static class GlobalInkSettings
     {
         private static ObservableCollection<InkPresenter> _presenters = new ObservableCollection<InkPresenter>();
         private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
@@ -146,11 +146,11 @@ namespace Dash
             if (StrokeType == StrokeTypes.Pencil)
             {
                 attributes = InkDrawingAttributes.CreateForPencil();
-                attributes.PencilProperties.Opacity = InkSettings.Opacity;
+                attributes.PencilProperties.Opacity = GlobalInkSettings.Opacity;
             }
             attributes.Color = ChangeColorBrightness();
-            attributes.Size = new Size(InkSettings.Size, InkSettings.Size);
-            InkSettings.Attributes = attributes;
+            attributes.Size = new Size(GlobalInkSettings.Size, GlobalInkSettings.Size);
+            GlobalInkSettings.Attributes = attributes;
 
         }
     }

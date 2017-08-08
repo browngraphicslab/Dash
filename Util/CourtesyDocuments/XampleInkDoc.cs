@@ -34,8 +34,10 @@ namespace Dash
             var prototypeInkLayout = new InkBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), InkFieldKey));
             prototypeInkLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             prototypeInkLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
+            prototypeInkLayout.Document.SetHeight(double.NaN);
+            prototypeInkLayout.Document.SetWidth(double.NaN);
             var prototypeLayout = new StackLayout(new[] {prototypeInkLayout.Document });
-            prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
+            prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
 
             return prototypeLayout.Document;

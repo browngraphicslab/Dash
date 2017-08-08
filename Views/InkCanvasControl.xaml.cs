@@ -24,20 +24,25 @@ namespace Dash
     public sealed partial class InkCanvasControl : SelectionElement
     {
         public InkFieldModelController InkFieldModelController;
+        private readonly bool _isInterfaceBuilder;
         private ManipulationControls _controls;
+
+        public Grid Grid => XGrid;
 
         /// <summary>
         /// A control that contains an InkCanvas and interacts with an InkFieldModelController to reflect user strokes 
         /// on the canvas in the underlying data.
         /// </summary>
         /// <param name="inkFieldModelController"></param>
-        public InkCanvasControl(InkFieldModelController inkFieldModelController)
+        public InkCanvasControl(InkFieldModelController inkFieldModelController, bool isInterfaceBuilder)
         {
             this.InitializeComponent();
-            InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
-            InkSettings.SetAttributes();
-            XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
+            _isInterfaceBuilder = isInterfaceBuilder;
+            GlobalInkSettings.Presenters.Add(XInkCanvas.InkPresenter);
+            GlobalInkSettings.SetAttributes();
+            XInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
             InkFieldModelController = inkFieldModelController;
+            _isInterfaceBuilder = isInterfaceBuilder;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
@@ -46,11 +51,15 @@ namespace Dash
             Tapped += OnTapped;
             OnLowestActivated(false);
         }
+        
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            OnSelected();
-            e.Handled = true;
+            if (!_isInterfaceBuilder)
+            {
+                OnSelected();
+                e.Handled = true;
+            }
         }
 
         private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
@@ -120,21 +129,32 @@ namespace Dash
             if (act)
             {
                 EditingSymbol.Foreground = new SolidColorBrush(Colors.Black);
-                Grid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+                EditButton.IsHitTestVisible = true;
+                XGrid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
                 XInkCanvas.InkPresenter.IsInputEnabled = true;
                 ScrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
                 ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
+                ManipulationMode = ManipulationModes.None;
             } else
             {
                 EditingSymbol.Foreground = new SolidColorBrush(Colors.LightGray);
-                Grid.BorderBrush = new SolidColorBrush(Colors.Black);
+                XGrid.BorderBrush = new SolidColorBrush(Colors.Black);
                 XInkCanvas.InkPresenter.IsInputEnabled = false;
                 ScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
                 ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
-                InkToolbar.Visibility = Visibility.Collapsed;
-                RedoButton.Visibility = Visibility.Collapsed;
-                UndoButton.Visibility = Visibility.Collapsed;
+                if(InkToolbar.Visibility == Visibility.Visible) xCollapseSettings.Begin();
+                ManipulationMode = ManipulationModes.All;
+                EditButton.IsHitTestVisible = false;
+                
             }
+        }
+
+        private void XCollapseSettingsOnCompleted(object sender, object o)
+        {
+            InkToolbar.Visibility = Visibility.Collapsed;
+            RedoButton.Visibility = Visibility.Collapsed;
+            UndoButton.Visibility = Visibility.Collapsed;
+            ToolbarScroller.Visibility = Visibility.Collapsed;
         }
 
         private void Grid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -144,23 +164,23 @@ namespace Dash
 
         private void SelectionElement_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            Grid.Width = Width;
-            Grid.Height = Height;
+            XGrid.Width = Width;
+            XGrid.Height = Height;
         }
 
         private void EditButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             if (InkToolbar.Visibility == Visibility.Visible)
             {
-                InkToolbar.Visibility = Visibility.Collapsed;
-                RedoButton.Visibility = Visibility.Collapsed;
-                UndoButton.Visibility = Visibility.Collapsed;
+                xCollapseSettings.Begin();
             }
             else
             {
                 InkToolbar.Visibility = Visibility.Visible;
                 RedoButton.Visibility = Visibility.Visible;
                 UndoButton.Visibility = Visibility.Visible;
+                ToolbarScroller.Visibility = Visibility.Visible;
+                xExpandSettings.Begin();
             }
         }
 

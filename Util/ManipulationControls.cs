@@ -22,6 +22,8 @@ namespace Dash {
         public double MaxScale { get; set; } = 2.0;
         private bool _disabled;
         private FrameworkElement _element;
+        private readonly bool _doesRespondToManipulationDelta;
+        private readonly bool _doesRespondToPointerWheel;
         private bool _handle;
         private double _elementScale = 1.0;
 
@@ -34,20 +36,37 @@ namespace Dash {
         /// NOTE: bounds checking is done relative to element.Parent so the element must be in an element with the proper size for bounds checking
         /// </summary>
         /// <param name="element">The element to add manipulation to</param>
-        public ManipulationControls(FrameworkElement element) {
+        public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel) {
             _element = element;
-            element.ManipulationDelta += ManipulateDeltaMoveAndScale;
-            element.PointerWheelChanged += PointerWheelMoveAndScale;
+            _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
+            _doesRespondToPointerWheel = doesRespondToPointerWheel;
+
+            if (_doesRespondToManipulationDelta)
+            {
+                element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            }
+            if (_doesRespondToPointerWheel)
+            {
+                element.PointerWheelChanged += PointerWheelMoveAndScale;
+            }
             element.ManipulationMode = ManipulationModes.All;
         }
 
         public void AddAllAndHandle()
         {
             if (!_disabled) return;
-            _element.ManipulationDelta -= EmptyManipulationDelta;
-            _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
-            _element.PointerWheelChanged -= EmptyPointerWheelChanged; 
-            _element.PointerWheelChanged += PointerWheelMoveAndScale;
+
+            if (_doesRespondToManipulationDelta)
+            {
+                _element.ManipulationDelta -= EmptyManipulationDelta;
+                _element.ManipulationDelta += ManipulateDeltaMoveAndScale;
+            }
+
+            if (_doesRespondToPointerWheel)
+            {
+                _element.PointerWheelChanged -= EmptyPointerWheelChanged; 
+                _element.PointerWheelChanged += PointerWheelMoveAndScale;
+            }
             _disabled = false;
         }
 
@@ -64,12 +83,17 @@ namespace Dash {
         private void RemoveAllSetHandle(bool handle)
         {
             if (_disabled) return;
-            // remove manipulation delta and add empty manipulation delta
-            _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
-            _element.ManipulationDelta += EmptyManipulationDelta;
-            // remove pointer wheel and add empty point wheel
-            _element.PointerWheelChanged -= PointerWheelMoveAndScale;
-            _element.PointerWheelChanged += EmptyPointerWheelChanged;
+
+            if (_doesRespondToManipulationDelta)
+            {
+                _element.ManipulationDelta -= ManipulateDeltaMoveAndScale;
+                _element.ManipulationDelta += EmptyManipulationDelta;
+            }
+            if (_doesRespondToPointerWheel)
+            {
+                _element.PointerWheelChanged -= PointerWheelMoveAndScale;
+                _element.PointerWheelChanged += EmptyPointerWheelChanged;
+            }
             _handle = handle;
             _disabled = true;
         }
