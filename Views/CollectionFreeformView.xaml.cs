@@ -89,7 +89,7 @@ namespace Dash
 
             if (vm != null)
             {
-                var itemsBinding = new Binding()
+                var itemsBinding = new Binding
                 {
                     Source = vm,
                     Path = new PropertyPath(nameof(vm.DocumentViewModels)),

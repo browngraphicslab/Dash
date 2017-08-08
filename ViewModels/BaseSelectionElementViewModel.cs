@@ -31,10 +31,10 @@ namespace Dash
 
         public bool IsSelected
         {
-            get { return _isSelected; }
+            get { return _isSelected || IsInInterfaceBuilder; }
             protected set
             {
-                if (SetProperty(ref _isSelected, value))
+                if (SetProperty(ref _isSelected, value || IsInInterfaceBuilder))
                 {
                     OnSelectionSet?.Invoke(value);
                 }
@@ -53,8 +53,12 @@ namespace Dash
             }
         }
 
-        protected BaseSelectionElementViewModel()
+        protected readonly bool IsInInterfaceBuilder;
+
+        protected BaseSelectionElementViewModel(bool isInInterfaceBuilder)
         {
+            IsInInterfaceBuilder = isInInterfaceBuilder;
+
             GlobalHitTestVisibilityChanged += newVisibility =>
             {
                 if (newVisibility)
