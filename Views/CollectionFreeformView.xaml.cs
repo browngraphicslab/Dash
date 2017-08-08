@@ -77,6 +77,11 @@ namespace Dash
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        public IOReference GetCurrentReference()
+        {
+            return _currReference; 
+        }
+
         #region DataContext and Events
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)

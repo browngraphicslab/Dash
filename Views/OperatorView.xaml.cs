@@ -22,7 +22,7 @@ namespace Dash
     public sealed partial class OperatorView : UserControl
     {
         private MenuFlyout _flyout;
-        private bool _isCompound; 
+        private bool _isCompound;
 
         public OperatorView()
         {
@@ -38,13 +38,12 @@ namespace Dash
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
             var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
+            _isCompound = opCont.IsCompound();
 
-            var controller = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
-            Debug.Assert(controller != null);
+            //var controller = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
+            //Debug.Assert(controller != null);
 
-            _isCompound = controller.IsCompound(); 
-
-                var inputsBinding = new Binding
+            var inputsBinding = new Binding
             {
                 Source = opCont.Inputs,
             };
@@ -54,15 +53,19 @@ namespace Dash
             };
             InputListView.SetBinding(ListView.ItemsSourceProperty, inputsBinding);
             OutputListView.SetBinding(ListView.ItemsSourceProperty, outputsBinding);
-            
-            //if (_isCompound)
-            //{
-            //    InputListView.PointerEntered += (s, e) =>
-            //    {
-            //        return;
-            //    }; 
-            //}
-            
+
+            if (_isCompound)
+            {
+                var compoundFMCont = opCont as CompoundOperatorFieldController;
+                InputListView.PointerReleased += (s, e) =>
+                {
+                    //add an ellipse 
+                    var ioRef = (XPresenter.Content as CompoundOperatorEditor).GetCurrentReference();
+                    //compoundFMCont.AddInputreference(ioRef.FieldReference.FieldKey, ioRef.FMController);
+                    if (!compoundFMCont.Inputs.ContainsKey(ioRef.FieldReference.FieldKey)) compoundFMCont.Inputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator); 
+                };
+            }
+
         }
 
         /// <summary>
@@ -105,7 +108,7 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        
+
         void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput)
         {
             var docId = (DataContext as DocumentFieldReference).DocumentId;
@@ -170,6 +173,9 @@ namespace Dash
             var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
             XPresenter.Content = new CompoundOperatorEditor(documentController, operatorFieldModelController);
+
+            InputListView.MaxWidth = 100;
+            OutputListView.MaxWidth = 100;
         }
 
         #endregion
