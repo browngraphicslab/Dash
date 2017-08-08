@@ -14,7 +14,6 @@ namespace Dash
         public static KeyController AnnotatedFieldKey = new KeyController("F370A8F6-22D9-4442-A528-A7FEEC29E306", "AnnotatedImage");
         public static KeyController TextFieldKey = new KeyController("73A8E9AB-A798-4FA0-941E-4C4A5A2BF9CE", "TextField");
         public static KeyController RichTextKey = new KeyController("1C46E96E-F3CB-4DEE-8799-AD71DB1FB4D1", "RichTextField");
-        public static KeyController InkFieldKey = new KeyController("inktest", "InkField");
         static DocumentController _prototypeTwoImages = CreatePrototype2Images();
         static DocumentController _prototypeLayout = CreatePrototypeLayout();
 
@@ -26,7 +25,6 @@ namespace Dash
             fields.Add(Image1FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat.jpg")));
             fields.Add(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
             fields.Add(AnnotatedFieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")));
-            fields.Add(InkFieldKey, new InkFieldModelController());
             return new DocumentController(fields, TwoImagesType);
 
         }
@@ -46,8 +44,7 @@ namespace Dash
             var prototypeImage2Layout = new ImageBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), Image2FieldKey), 0, 0, 200, 200);
             var prototypeAnnotatedLayout = new DocumentBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 0, 200, 250);
             var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), TextFieldKey), 0, 0, 200, 50);
-            var prototypeInkLayout = new InkBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), InkFieldKey), 0, 0, 200, 200);
-            var prototypeLayout = new StackLayout(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document, prototypeInkLayout.Document });
+            var prototypeLayout = new StackLayout(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document, });
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
 

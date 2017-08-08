@@ -23,6 +23,8 @@ namespace Dash
     public class InkFieldModelController : FieldModelController
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
+        private Stack<string> _undoStates = new Stack<string>();
+        private Stack<string> _currStates = new Stack<string>();
 
         public InkFieldModelController() : base(new InkFieldModel())
         {
@@ -102,6 +104,26 @@ namespace Dash
             }
             InkData = JsonConvert.SerializeObject(stream.ToArray());
             stream.Dispose();
+            _currStates.Push(InkData);
+        }
+        
+
+        public void Redo()
+        {
+            if (_undoStates.Count > 0)
+            {
+                _currStates.Push(_undoStates.Pop());
+                UpdateStrokesData(GetStrokesFromJSON(_currStates.Peek()));
+            }
+        }
+
+        public void Undo()
+        {
+            if (_currStates.Count > 0)
+            {
+                _undoStates.Push(_currStates.Pop());
+                UpdateStrokesData(GetStrokesFromJSON(_currStates.Peek()));
+            }
         }
 
 

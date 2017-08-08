@@ -10,7 +10,7 @@
     d:DesignWidth="400" ManipulationMode="None" SizeChanged="SelectionElement_SizeChanged"
     MaxWidth="1000"
     MaxHeight="1000">
-    <Grid x:Name="Grid" SizeChanged="Grid_SizeChanged" BorderThickness="1">
+    <Grid x:Name="Grid" SizeChanged="Grid_SizeChanged" BorderThickness="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <ScrollViewer x:Name="ScrollViewer" VerticalScrollMode="Enabled" HorizontalScrollMode="Enabled"
                       VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Auto"
@@ -19,8 +19,24 @@
                 <InkCanvas x:Name="XInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
             </Grid>
         </ScrollViewer>
-        <SymbolIcon x:Name="EditingSymbol" Symbol="Edit" Width="50" Height="50" VerticalAlignment="Top"
-                    HorizontalAlignment="Right" Foreground="LightGray" />
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+            <Button x:Name="EditButton" Width="50" Height="50" VerticalAlignment="Top"
+                    HorizontalAlignment="Left" Tapped="EditButton_OnTapped" Background="Transparent" BorderBrush="Transparent">
+                <Button.Content>
+                    <SymbolIcon x:Name="EditingSymbol" Symbol="Edit" Foreground="LightGray" />
+                </Button.Content>
+            </Button>
+
+            <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top" HorizontalAlignment="Center" TargetInkCanvas="{x:Bind XInkCanvas}">
+                <InkToolbarCustomToolButton x:Name="UndoButton" Tapped="UndoButton_OnTapped">
+                    <SymbolIcon Symbol="Undo"></SymbolIcon>
+                </InkToolbarCustomToolButton>
+                <InkToolbarCustomToolButton x:Name="RedoButton" Tapped="RedoButton_OnTapped">
+                    <SymbolIcon Symbol="Redo"></SymbolIcon>
+                </InkToolbarCustomToolButton>
+            </InkToolbar>
+
+        </StackPanel>
         <Grid.Clip>
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,400,300"></RectangleGeometry>
         </Grid.Clip>

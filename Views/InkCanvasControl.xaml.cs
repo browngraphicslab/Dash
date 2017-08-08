@@ -34,10 +34,6 @@ namespace Dash
         public InkCanvasControl(InkFieldModelController inkFieldModelController)
         {
             this.InitializeComponent();
-            Width = 200;
-            Height = 200;
-            Grid.Width = 200;
-            Grid.Height = 200;
             InkSettings.Presenters.Add(XInkCanvas.InkPresenter);
             InkSettings.SetAttributes();
             XInkCanvas.InkPresenter.InputDeviceTypes = InkSettings.InkInputType;
@@ -118,18 +114,23 @@ namespace Dash
 
         protected override void OnLowestActivated(bool act)
         {
+            UpdateStrokes();
             //When lowest activated, ink canvas is drawable
             if (act)
             {
                 EditingSymbol.Foreground = new SolidColorBrush(Colors.Black);
                 Grid.BorderBrush = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
                 XInkCanvas.InkPresenter.IsInputEnabled = true;
-                UpdateStrokes();
+                ScrollViewer.HorizontalScrollMode = ScrollMode.Enabled;
+                ScrollViewer.VerticalScrollMode = ScrollMode.Enabled;
             } else
             {
                 EditingSymbol.Foreground = new SolidColorBrush(Colors.LightGray);
                 Grid.BorderBrush = new SolidColorBrush(Colors.Black);
                 XInkCanvas.InkPresenter.IsInputEnabled = false;
+                ScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
+                ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
+                InkToolbar.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -142,6 +143,30 @@ namespace Dash
         {
             Grid.Width = Width;
             Grid.Height = Height;
+        }
+
+        private void EditButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (InkToolbar.Visibility == Visibility.Visible)
+            {
+                InkToolbar.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                InkToolbar.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            InkFieldModelController?.Redo();
+            UpdateStrokes();
+        }
+
+        private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            InkFieldModelController?.Undo();
+            UpdateStrokes();
         }
     }
 }
