@@ -113,7 +113,7 @@ namespace Dash
             InitializeComponent();
             DocController = docController;
             Context = context;
-            _imageManipulator = new ManipulationControls(Image); 
+            _imageManipulator = new ManipulationControls(Image, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false); 
 
             IsClipRectVisible = false;
             IsImageDraggerVisible = false;
@@ -158,23 +158,23 @@ namespace Dash
         private void SetUpEvents()
         {
             //image draggers
-            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
+            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
-            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
+            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             bottomRightManipulator.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslatedOrScaled;
-            var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
+            var topLeftManipulator = new ManipulationControls(xTopLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
-            var topRightManipulator = new ManipulationControls(xTopRightDragger);
+            var topRightManipulator = new ManipulationControls(xTopRightDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
 
             // clip rect draggers 
-            var m1 = new ManipulationControls(xCLIPBottomLeftDragger);
+            var m1 = new ManipulationControls(xCLIPBottomLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             m1.OnManipulatorTranslatedOrScaled += CLIPBottomLeftManipulator_OnManipulatorTranslated;
-            var m2 = new ManipulationControls(xCLIPBottomRightDragger);
+            var m2 = new ManipulationControls(xCLIPBottomRightDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             m2.OnManipulatorTranslatedOrScaled += CLIPBottomRightManipulator_OnManipulatorTranslatedOrScaled;
-            var m3 = new ManipulationControls(xCLIPTopLeftDragger);
+            var m3 = new ManipulationControls(xCLIPTopLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             m3.OnManipulatorTranslatedOrScaled += CLIPTopLeftManipulator_OnManipulatorTranslated;
-            var m4 = new ManipulationControls(xCLIPTopRightDragger);
+            var m4 = new ManipulationControls(xCLIPTopRightDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             m4.OnManipulatorTranslatedOrScaled += CLIPTopRightManipulator_OnManipulatorTranslated;
         }
         #endregion 
