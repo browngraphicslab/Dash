@@ -17,7 +17,7 @@ namespace Dash
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
 
-        protected BaseCollectionViewModel(bool isInInterfaceBuilder)
+        protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
             _documentViewModels = new ObservableCollection<DocumentViewModelParameters>();

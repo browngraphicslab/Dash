@@ -174,11 +174,8 @@ namespace Dash
 
         public readonly bool IsInInterfaceBuilder;
 
-        // == CONSTRUCTORS == 
-        public DocumentViewModel() { }
 
-
-        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null)
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
