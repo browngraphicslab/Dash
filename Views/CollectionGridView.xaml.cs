@@ -29,6 +29,7 @@ namespace Dash
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionGridView_Unloaded;
+
         }
 
         public CollectionGridView(BaseCollectionViewModel viewModel) : this()
@@ -48,6 +49,8 @@ namespace Dash
                     xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
                     xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                     xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                    xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+
                 }
 
                 ViewModel = vm;
@@ -55,9 +58,9 @@ namespace Dash
                 xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
                 xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
                 xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+                xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
             }
         }
-
 
         private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -66,6 +69,8 @@ namespace Dash
                 xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
                 xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                 xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+
             }
             Unloaded -= CollectionGridView_Unloaded;
         }
@@ -114,41 +119,6 @@ namespace Dash
         }
 
         #endregion
-
-        private void XGridView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            args.Handled = true;
-            if (args.Phase != 0) throw new Exception("Please start in stage 0");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid?.FindName("xBorder");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            backdrop.Visibility = Visibility.Visible;
-            backdrop.ClearValue(WidthProperty);
-            backdrop.ClearValue(HeightProperty);
-            backdrop.Width = backdrop.Height = 250;
-            backdrop.xProgressRing.Visibility = Visibility.Visible;
-            backdrop.xProgressRing.IsActive = true;
-            Debug.Assert(border != null, "border != null");
-            border.Visibility = Visibility.Collapsed;
-            args.RegisterUpdateCallback(RenderDocumentPhaseOne);
-        }
-        private void RenderDocumentPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            if (args.Phase != 1) throw new Exception("Please start in phase 1");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid.FindName("xBorder");
-            var document = (DocumentView)border.FindName("xDocumentDisplay");
-            backdrop.Visibility = Visibility.Collapsed;
-            backdrop.xProgressRing.IsActive = false;
-            border.Visibility = Visibility.Visible;
-            document.IsHitTestVisible = false;
-            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xGridView.ItemsSource)?[args.ItemIndex];
-            Debug.Assert(dvParams != null, "dvParams != null");
-            var vm = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            document.DataContext = vm;
-        }
 
     }
 }

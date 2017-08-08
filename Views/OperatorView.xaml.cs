@@ -22,6 +22,7 @@ namespace Dash
     public sealed partial class OperatorView : UserControl
     {
         private MenuFlyout _flyout;
+        private bool _isCompound; 
 
         public OperatorView()
         {
@@ -38,8 +39,12 @@ namespace Dash
         {
             var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
 
-           
-            var inputsBinding = new Binding
+            var controller = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
+            Debug.Assert(controller != null);
+
+            _isCompound = controller.IsCompound(); 
+
+                var inputsBinding = new Binding
             {
                 Source = opCont.Inputs,
             };
@@ -49,8 +54,15 @@ namespace Dash
             };
             InputListView.SetBinding(ListView.ItemsSourceProperty, inputsBinding);
             OutputListView.SetBinding(ListView.ItemsSourceProperty, outputsBinding);
-            //InputListView.ItemsSource = opCont.Inputs.Keys;
-            //OutputListView.ItemsSource = opCont.Outputs.Keys;
+            
+            //if (_isCompound)
+            //{
+            //    InputListView.PointerEntered += (s, e) =>
+            //    {
+            //        return;
+            //    }; 
+            //}
+            
         }
 
         /// <summary>
@@ -131,10 +143,8 @@ namespace Dash
         private MenuFlyout InitializeFlyout()
         {
             _flyout = new MenuFlyout();
-            var controller = (DataContext as DocumentFieldReference)?.DereferenceToRoot<OperatorFieldModelController>(null);
-            Debug.Assert(controller != null);
 
-            if (controller.IsCompound())
+            if (_isCompound)
             {
                 var expandItem = new MenuFlyoutItem { Text = "Expando" };
                 var contractItem = new MenuFlyoutItem { Text = "Contracto" };
@@ -143,11 +153,7 @@ namespace Dash
                 _flyout.Items?.Add(expandItem);
                 _flyout.Items?.Add(contractItem);
             }
-
-
-
             return _flyout;
-
         }
 
         private void ContractView(object sender, RoutedEventArgs e)

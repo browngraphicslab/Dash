@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dash
 {
-    public class DocumentControllerToViewModelConverter : SafeDataToXamlConverter<DocumentViewModelParameters, DocumentViewModel>
+    public class DocViewModelParamToDocViewModelConverter : SafeDataToXamlConverter<DocumentViewModelParameters, DocumentViewModel>
     {
         public override DocumentViewModel ConvertDataToXaml(DocumentViewModelParameters data, object parameter = null)
         {
