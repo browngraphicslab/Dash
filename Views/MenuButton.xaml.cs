@@ -30,7 +30,7 @@ namespace Dash
             this.CreateAndRunInstantiationAnimation(false);
         }
 
-
+        private int _selectedInd; 
         private List<Button> _buttons = new List<Button>();
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
@@ -39,6 +39,8 @@ namespace Dash
         {
             this.InitializeComponent();
             Debug.Assert(icons.Count == buttonActions.Count);
+
+            _selectedInd = icons.Count - 1; 
 
             this.InstantiateButtons(icons, background, buttonActions);
             this.CreateAndRunInstantiationAnimation(true);
@@ -74,8 +76,10 @@ namespace Dash
                 else if (i == icons.Count - 1)
                 {
                     border.CornerRadius = new CornerRadius(0, 0, 20, 20);
-                    border.Background = new SolidColorBrush(Colors.Gray);
+                    //border.Background = new SolidColorBrush(Colors.Gray);
                 }
+
+                if (i == _selectedInd) border.Background = new SolidColorBrush(Colors.Gray);
 
                 // create button to contain the border with the symbol
                 var button = new Button()
@@ -97,6 +101,8 @@ namespace Dash
                     foreach (var b in _buttons) (b.Content as Border).Background = new SolidColorBrush(background);
                     (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
                     buttonActions[i]?.Invoke();
+
+                    _selectedInd = i; 
                 };
                 button.DoubleTapped += (s, e) => e.Handled = true;
             }

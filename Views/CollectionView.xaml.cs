@@ -39,7 +39,6 @@ namespace Dash
             InitializeComponent();
             ViewModel = vm;
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
-
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
         }
@@ -143,13 +142,7 @@ namespace Dash
 
         private void CloseMenu()
         {
-            // if the collection menu was already closed then return
-            //if (_collectionMenu == null) return;
-
-            var panel = _collectionMenu.Parent as Panel;
-            panel?.Children.Remove(_collectionMenu);
-            //_collectionMenu.Dispose();
-            //_collectionMenu = null;
+            xMenuCanvas.Children.Remove(_collectionMenu); 
             xMenuColumn.Width = new GridLength(0);
         }
 
@@ -259,7 +252,7 @@ namespace Dash
             }
 
             // if we are no longer the lowest selected and we are not the main collection then close the menu
-            if (isLowestSelected == false && ParentDocument.IsMainCollection == false)
+            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsMainCollection == false)
             {
                 CloseMenu();
             }
