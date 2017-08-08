@@ -221,7 +221,7 @@ namespace Dash
         public void CancelDrag(Pointer p)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
-            _currentPointers.Remove(p.PointerId);
+            if (p != null) _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
 
@@ -237,7 +237,7 @@ namespace Dash
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
-            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
+            if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null)
             {
                 return;
@@ -271,7 +271,7 @@ namespace Dash
                 _lineDict.Add(_converter, _connectionLine);
                 _connectionLine = null;
             }
-            CancelDrag(ioReference.PointerArgs.Pointer);
+            if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
         }
 
         /// <summary>

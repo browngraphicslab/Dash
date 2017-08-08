@@ -24,7 +24,8 @@ namespace Dash
     {
         private MenuFlyout _flyout;
         private bool _isCompound;
-        private IOReference _currInputRef; 
+        private IOReference _currInputRef;
+        private IOReference _currOutputRef;
 
         public OperatorView()
         {
@@ -65,7 +66,7 @@ namespace Dash
                     {
                         compoundFMCont.Inputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
                     }
-                    _currInputRef = ioRef; 
+                    _currInputRef = ioRef;
                 };
 
                 OutputListView.PointerReleased += (s, e) =>
@@ -77,6 +78,7 @@ namespace Dash
                     {
                         compoundFMCont.Outputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
                     }
+                    _currOutputRef = ioRef;
                 };
             }
 
@@ -198,11 +200,23 @@ namespace Dash
 
         private void InputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!_isCompound) return; 
+            if (!_isCompound) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-            view.CancelDrag(_currInputRef.PointerArgs.Pointer); 
+            view.CancelDrag(_currInputRef.PointerArgs.Pointer);
             StartNewLink(sender, _currInputRef.PointerArgs, true, view);
             view.EndDrag(_currInputRef);
+        }
+
+        private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (!_isCompound) return;
+            var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
+            //view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
+            //view.StartDrag(_currOutputRef);
+            EndDraggedLink(sender, null, false, view);
+            view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
+            //StartNewLink(sender, _currInputRef.PointerArgs, true, view);
+            //view.EndDrag(_currInputRef);
         }
     }
 }
