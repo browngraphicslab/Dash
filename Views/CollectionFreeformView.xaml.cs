@@ -73,9 +73,9 @@ namespace Dash
 
         public CollectionFreeformView()
         {
-            this.InitializeComponent();
-            this.Loaded += Freeform_Loaded;
-            this.Unloaded += Freeform_Unloaded;
+            InitializeComponent();
+            Loaded += Freeform_Loaded;
+            Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
             _manipulationControls = new ManipulationControls(this);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
@@ -164,7 +164,7 @@ namespace Dash
 
         public void StartDrag(IOReference ioReference)
         {
-            if (_currReference != null) return; 
+            if (_currReference != null) return;
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
@@ -186,19 +186,11 @@ namespace Dash
                 IsHitTestVisible = false,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
-                //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
-
-            try
-            {
-                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
-
-            }
-            catch (COMException ex)
-            {
-            }
+            _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
 
             _lineBinding =
                 new MultiBinding<PathFigureCollection>(_converter, null);
@@ -242,11 +234,11 @@ namespace Dash
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
             _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
-            if (_connectionLine == null || _currReference == null)
+            if (_connectionLine == null)
             {
                 return;
             }
-            if (_currReference.IsOutput == ioReference.IsOutput)
+            if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
             {
                 UndoLine();
                 return;
@@ -262,7 +254,7 @@ namespace Dash
                 inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
             if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
-                /*(inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && */
+                // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
