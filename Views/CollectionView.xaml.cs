@@ -27,7 +27,7 @@ namespace Dash
         private OverlayMenu _collectionMenu;
         public CollectionViewModel ViewModel
         {
-            get { return DataContext as CollectionViewModel;}
+            get { return DataContext as CollectionViewModel; }
             set { DataContext = value; }
         }
         public CollectionView ParentCollection { get; set; }
@@ -144,12 +144,12 @@ namespace Dash
         private void CloseMenu()
         {
             // if the collection menu was already closed then return
-            if (_collectionMenu == null) return;
+            //if (_collectionMenu == null) return;
 
             var panel = _collectionMenu.Parent as Panel;
             panel?.Children.Remove(_collectionMenu);
-            _collectionMenu.Dispose();
-            _collectionMenu = null;
+            //_collectionMenu.Dispose();
+            //_collectionMenu = null;
             xMenuColumn.Width = new GridLength(0);
         }
 
@@ -184,11 +184,8 @@ namespace Dash
             ParentDocument.DeleteDocument();
         }
 
-        private void OpenMenu()
+        private void MakeMenu()
         {
-            // if the collcetion menu already exists then return
-            if (_collectionMenu != null) return;
-
             var multipleSelection = new Action(MakeSelectionModeMultiple);
             var deleteSelection = new Action(DeleteSelection);
             var singleSelection = new Action(MakeSelectionModeSingle);
@@ -228,6 +225,12 @@ namespace Dash
                 new MenuButton(Symbol.Delete, "Delete", menuColor, deleteSelection),
             };
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
+        }
+
+        private void OpenMenu()
+        {
+            if (_collectionMenu == null) MakeMenu();
+            if (xMenuCanvas.Children.Contains(_collectionMenu)) return;
             xMenuCanvas.Children.Add(_collectionMenu);
             xMenuColumn.Width = new GridLength(50);
         }
