@@ -16,9 +16,7 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
-    Tapped="OnTapped"
-    
-    >
+    Tapped="OnTapped">
     
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           SizeChanged="XOuterGrid_OnSizeChanged">

@@ -22,8 +22,7 @@
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionListViewStyle}"
-                  ShowsScrollingPlaceholders ="False"
-                  ContainerContentChanging="HListView_OnContainerContentChanging">
+                  ShowsScrollingPlaceholders ="False">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>

@@ -32,6 +32,7 @@ namespace Dash
             xListView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
             xListView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
             xListView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+            xListView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
             this.Unloaded += CollectionListView_Unloaded;
         }
 
@@ -85,45 +86,6 @@ namespace Dash
             OnSelected();
         }
 
-        private void HListView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            args.Handled = true;
-            if (args.Phase != 0) throw new Exception("Please start in stage 0");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid?.FindName("xBorder");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            backdrop.Visibility = Visibility.Visible;
-            backdrop.ClearValue(WidthProperty);
-            backdrop.ClearValue(HeightProperty);
-            backdrop.Width = backdrop.Height = 250;
-            backdrop.xProgressRing.Visibility = Visibility.Visible;
-            backdrop.xProgressRing.IsActive = true;
-            Debug.Assert(border != null, "border != null");
-            border.Visibility = Visibility.Collapsed;
-            args.RegisterUpdateCallback(RenderDocumentPhaseOne);
-        }
-
-        private void RenderDocumentPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            if (args.Phase != 1) throw new Exception("Please start in phase 1");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid?.FindName("xBorder");
-            var document = (DocumentView)border?.FindName("xDocumentDisplay");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            Debug.Assert(border != null, "border != null");
-            Debug.Assert(document != null, "document != null");
-            backdrop.Visibility = Visibility.Collapsed;
-            backdrop.xProgressRing.IsActive = false;
-            border.Visibility = Visibility.Visible;
-            document.IsHitTestVisible = false;
-            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xListView.ItemsSource)?[args.ItemIndex];
-            document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-        }
-
         #endregion
-
-
     }
 }
