@@ -10,6 +10,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
+using Dash.Views;
 using DashShared;
 using Visibility = Windows.UI.Xaml.Visibility;
 
@@ -32,6 +33,7 @@ namespace Dash
 
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
+
 
         public event IOReference.IODragEventHandler IODragStarted;
         public event IOReference.IODragEventHandler IODragEnded;
@@ -110,8 +112,7 @@ namespace Dash
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine),
-                new MenuButton(Symbol.Page, "Json",bgcolor, GetJson)
+                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding

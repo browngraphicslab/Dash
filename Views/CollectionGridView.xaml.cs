@@ -24,23 +24,55 @@ namespace Dash
         public BaseCollectionViewModel ViewModel { get; private set; }
         public GridView XGridView => xGridView;
 
-        public CollectionGridView(BaseCollectionViewModel viewModel)
+        public CollectionGridView()
         {
-            ViewModel = viewModel;
             this.InitializeComponent();
-            if (ViewModel == null) return;
-            xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
-            xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
-            this.Unloaded += CollectionGridView_Unloaded;
+            DataContextChanged += OnDataContextChanged;
+            Unloaded += CollectionGridView_Unloaded;
+
+        }
+
+        public CollectionGridView(BaseCollectionViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
+        }
+
+        private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var vm = DataContext as BaseCollectionViewModel;
+
+            if (vm != null)
+            {
+                // remove events from current view model if there is a current view model
+                if (ViewModel != null)
+                {
+                    xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                    xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                    xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                    xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+
+                }
+
+                ViewModel = vm;
+                ViewModel.SetSelected(this, IsSelected);
+                xGridView.DragItemsStarting += ViewModel.xGridView_OnDragItemsStarting;
+                xGridView.DragItemsCompleted += ViewModel.xGridView_OnDragItemsCompleted;
+                xGridView.SelectionChanged += ViewModel.XGridView_SelectionChanged;
+                xGridView.ContainerContentChanging += ViewModel.ContainerContentChangingPhaseZero;
+            }
         }
 
         private void CollectionGridView_Unloaded(object sender, RoutedEventArgs e)
         {
-            xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
-            xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
-            xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
-            this.Unloaded -= CollectionGridView_Unloaded;
+            if (ViewModel != null)
+            {
+                xGridView.DragItemsStarting -= ViewModel.xGridView_OnDragItemsStarting;
+                xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
+                xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
+                xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
+
+            }
+            Unloaded -= CollectionGridView_Unloaded;
         }
 
         #region ItemSelection
@@ -87,41 +119,6 @@ namespace Dash
         }
 
         #endregion
-
-        private void XGridView_OnContainerContentChanging(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            args.Handled = true;
-            if (args.Phase != 0) throw new Exception("Please start in stage 0");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid?.FindName("xBorder");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            backdrop.Visibility = Visibility.Visible;
-            backdrop.ClearValue(WidthProperty);
-            backdrop.ClearValue(HeightProperty);
-            backdrop.Width = backdrop.Height = 250;
-            backdrop.xProgressRing.Visibility = Visibility.Visible;
-            backdrop.xProgressRing.IsActive = true;
-            Debug.Assert(border != null, "border != null");
-            border.Visibility = Visibility.Collapsed;
-            args.RegisterUpdateCallback(RenderDocumentPhaseOne);
-        }
-        private void RenderDocumentPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
-        {
-            if (args.Phase != 1) throw new Exception("Please start in phase 1");
-            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
-            var backdrop = (DocumentView)rootGrid.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid.FindName("xBorder");
-            var document = (DocumentView)border.FindName("xDocumentDisplay");
-            backdrop.Visibility = Visibility.Collapsed;
-            backdrop.xProgressRing.IsActive = false;
-            border.Visibility = Visibility.Visible;
-            document.IsHitTestVisible = false;
-            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)xGridView.ItemsSource)?[args.ItemIndex];
-            Debug.Assert(dvParams != null, "dvParams != null");
-            var vm = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            document.DataContext = vm;
-        }
 
     }
 }

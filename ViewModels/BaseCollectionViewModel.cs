@@ -46,6 +46,31 @@ namespace Dash
         public abstract void RemoveDocument(DocumentController document);
 
 
+        private void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
+        {
+            if (where != null)
+            {
+                var h = docController.GetHeightField().Data;
+                var w = docController.GetWidthField().Data;
+
+                w = double.IsNaN(w) ? 0 : w;
+                h = double.IsNaN(h) ? 0 : h;
+
+                var pos = (Point)where;
+                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2);
+            }
+            collectionView.ViewModel.AddDocument(docController, null);
+            DBTest.DBDoc.AddChild(docController);
+        }
+
+        private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers, Point? where = null)
+        {
+            foreach (var documentController in docControllers)
+            {
+                DisplayDocument(collectionView, documentController, where);
+            }
+        }
+
         #region Grid or List Specific Variables I want to Remove
 
         public double CellSize
@@ -103,7 +128,6 @@ namespace Dash
             carrier.Payload.Clear();
             carrier.Source = null;
             carrier.Destination = null;
-            carrier.Translate = new Point();
         }
 
         /// <summary>
@@ -113,6 +137,9 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
+            var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
+            if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
             e.Handled = true;
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
@@ -132,11 +159,11 @@ namespace Dash
                 if (carrier.Source.Equals(carrier.Destination))
                     return; // we don't want to drop items on ourself
 
-                carrier.Translate = sender is CollectionFreeformView ?
+                var where = sender is CollectionFreeformView ?
                     Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
-                AddDocuments(carrier.Payload, null);
+                DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
@@ -196,6 +223,46 @@ namespace Dash
 
         #endregion
 
+        #region Virtualization
+
+        public void ContainerContentChangingPhaseZero(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            args.Handled = true;
+            if (args.Phase != 0) throw new Exception("Please start in stage 0");
+            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            backdrop.Visibility = Visibility.Visible;
+            backdrop.ClearValue(FrameworkElement.WidthProperty);
+            backdrop.ClearValue(FrameworkElement.HeightProperty);
+            backdrop.Width = backdrop.Height = 250;
+            backdrop.xProgressRing.Visibility = Visibility.Visible;
+            backdrop.xProgressRing.IsActive = true;
+            Debug.Assert(border != null, "border != null");
+            border.Visibility = Visibility.Collapsed;
+            args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+        }
+
+        private void ContainerContentChangingPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
+        {
+            if (args.Phase != 1) throw new Exception("Please start in phase 1");
+            var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
+            var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
+            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            var document = (DocumentView)border?.FindName("xDocumentDisplay");
+            Debug.Assert(backdrop != null, "backdrop != null");
+            Debug.Assert(border != null, "border != null");
+            Debug.Assert(document != null, "document != null");
+            backdrop.Visibility = Visibility.Collapsed;
+            backdrop.xProgressRing.IsActive = false;
+            border.Visibility = Visibility.Visible;
+            document.IsHitTestVisible = false;
+            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
+            document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+        }
+
+        #endregion
 
     }
 }

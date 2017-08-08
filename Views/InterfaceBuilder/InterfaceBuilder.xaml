@@ -35,7 +35,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource WindowsBlue}" Grid.Row="1">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource TranslucentWhite}" Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*" />
