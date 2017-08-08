@@ -20,20 +20,23 @@ using Newtonsoft.Json;
 
 namespace Dash
 {
+    
     public class InkFieldModelController : FieldModelController
     {
         private InkStrokeContainer _strokeContainer = new InkStrokeContainer();
-        private Stack<string> _undoStates = new Stack<string>();
-        private Stack<string> _currStates = new Stack<string>();
+        private Stack<string> _undoStack = new Stack<string>();
+        private Stack<string> _redoStack = new Stack<string>();
 
         public InkFieldModelController() : base(new InkFieldModel())
         {
+            UpdateStrokesFromList(null);
         }
 
         public InkFieldModelController(string data) : base(new InkFieldModel(data))
         {
             InkData = data;
-            UpdateStrokesData(GetStrokesFromJSON(data));
+            _undoStack.Push(data);
+            SetState(data);
         }
 
         /// <summary>
@@ -53,7 +56,6 @@ namespace Dash
                     // update local
                     // update server    
                 }
-                OnFieldModelUpdated(null);
             }
         }
 
@@ -80,19 +82,15 @@ namespace Dash
             return new InkFieldModelController();
         }
 
-        public IEnumerable<InkStroke> GetStrokesFromJSON(string json)
-        {
-            var inkStrokes = JsonConvert.DeserializeObject<IEnumerable<InkStroke>>(json);
-            return inkStrokes;
-        }
-
         /// <summary>
         /// Method to allow InkCanvasControls to change data of InkFieldModelController when ink input is registered.
         /// </summary>
-        public async void UpdateStrokesData(IEnumerable<InkStroke> newStrokes)
+        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes)
         {
+            
             _strokeContainer.Clear();
-            foreach (var newStroke in newStrokes)
+            var inkStrokes = newStrokes == null ?  new InkStroke[0] : newStrokes.ToArray();
+            foreach (var newStroke in inkStrokes)
             {
                 _strokeContainer.AddStroke(newStroke.Clone());
             }
@@ -103,29 +101,55 @@ namespace Dash
                 await outputStream.FlushAsync();
             }
             InkData = JsonConvert.SerializeObject(stream.ToArray());
+            _redoStack.Clear();
+            _undoStack.Push(InkData);
             stream.Dispose();
-            _currStates.Push(InkData);
+            OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Update));
         }
-        
+
+        public async void SetState(string data)
+        {
+            try
+            {
+                var bytes = JsonConvert.DeserializeObject<byte[]>(data);
+                _strokeContainer.Clear();
+                MemoryStream stream = new MemoryStream(bytes);
+                using (var inputStream = stream.AsInputStream())
+                {
+                    await _strokeContainer.LoadAsync(inputStream);
+                }
+                if (_strokeContainer.GetStrokes().Count > 0) IsEmpty = false;
+                stream.Dispose();
+                InkData = data;
+                OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Replace));
+            }
+            catch (JsonSerializationException e)
+            {
+                Debug.Fail("Json failed to parse");
+            }
+        }
 
         public void Redo()
         {
-            if (_undoStates.Count > 0)
+            if (_redoStack.Count > 0)
             {
-                _currStates.Push(_undoStates.Pop());
-                UpdateStrokesData(GetStrokesFromJSON(_currStates.Peek()));
+                var state = _redoStack.Pop();
+                SetState(state);
+                _undoStack.Push(state);
             }
         }
 
         public void Undo()
         {
-            if (_currStates.Count > 0)
+            if (_undoStack.Count > 1)
             {
-                _undoStates.Push(_currStates.Pop());
-                UpdateStrokesData(GetStrokesFromJSON(_currStates.Peek()));
+                var state = _undoStack.Pop();
+                SetState(_undoStack.Peek());
+                _redoStack.Push(state);
             }
         }
 
+        public bool IsEmpty { get; set; }
 
 
         public IReadOnlyList<InkStroke> GetStrokes()

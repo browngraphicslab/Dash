@@ -31,7 +31,7 @@ namespace Dash
             // set the default layout parameters on prototypes of field layout documents
             // these prototypes will be overridden by delegates when an instance is created
             
-            var prototypeInkLayout = new InkBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), InkFieldKey), 0, 0, 500, 500);
+            var prototypeInkLayout = new InkBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), InkFieldKey));
             prototypeInkLayout.Document.SetHorizontalAlignment(HorizontalAlignment.Stretch);
             prototypeInkLayout.Document.SetVerticalAlignment(VerticalAlignment.Stretch);
             var prototypeLayout = new StackLayout(new[] {prototypeInkLayout.Document });

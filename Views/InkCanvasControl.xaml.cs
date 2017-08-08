@@ -55,7 +55,7 @@ namespace Dash
 
         private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
         {
-            if (!IsLowestSelected)
+            if (!IsLowestSelected || args?.Action == DocumentController.FieldUpdatedAction.Replace)
             {
                 UpdateStrokes();
             }
@@ -78,6 +78,7 @@ namespace Dash
             XInkCanvas.InkPresenter.StrokeContainer = new InkStrokeContainer();
             if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
                 XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+            ScrollViewer.ChangeView(1000 - ActualWidth / 2, 1000 - ActualHeight / 2, 1);
         }
 
         /// <summary>
@@ -90,7 +91,7 @@ namespace Dash
         private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
         {
             if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                InkFieldModelController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
             
         }
 
@@ -104,7 +105,7 @@ namespace Dash
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
             if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesData(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                InkFieldModelController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
         protected override void OnActivated(bool isSelected)
@@ -131,6 +132,8 @@ namespace Dash
                 ScrollViewer.HorizontalScrollMode = ScrollMode.Disabled;
                 ScrollViewer.VerticalScrollMode = ScrollMode.Disabled;
                 InkToolbar.Visibility = Visibility.Collapsed;
+                RedoButton.Visibility = Visibility.Collapsed;
+                UndoButton.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -150,23 +153,25 @@ namespace Dash
             if (InkToolbar.Visibility == Visibility.Visible)
             {
                 InkToolbar.Visibility = Visibility.Collapsed;
+                RedoButton.Visibility = Visibility.Collapsed;
+                UndoButton.Visibility = Visibility.Collapsed;
             }
             else
             {
                 InkToolbar.Visibility = Visibility.Visible;
+                RedoButton.Visibility = Visibility.Visible;
+                UndoButton.Visibility = Visibility.Visible;
             }
         }
 
         private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             InkFieldModelController?.Redo();
-            UpdateStrokes();
         }
 
         private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             InkFieldModelController?.Undo();
-            UpdateStrokes();
         }
     }
 }
