@@ -176,6 +176,8 @@ namespace Dash
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true); 
+
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
@@ -218,6 +220,7 @@ namespace Dash
 
         public void CancelDrag(Pointer p)
         {
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
             _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
