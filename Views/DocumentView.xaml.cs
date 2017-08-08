@@ -84,18 +84,19 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
-            /* 
-            var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-            if (view == null) return; // we can't always assume we're on a collection		
+            
+            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
+            //if (view == null) return; // we can't always assume we're on a collection		
 
-            view.CanLink = false;
+            //view.CanLink = false;
+            //args.Handled = true;
 
-            args.Handled = true;
+            //view.CancelDrag(args.Pointer); 
 
-            view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-                new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-                    OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-            */ 
+            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
+            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
+            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            
         }
 
         private void SetUpMenu()

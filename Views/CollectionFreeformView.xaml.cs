@@ -113,7 +113,7 @@ namespace Dash
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
         }
-        
+
 
         #endregion
 
@@ -164,6 +164,7 @@ namespace Dash
 
         public void StartDrag(IOReference ioReference)
         {
+            if (_currReference != null) return; 
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
@@ -241,8 +242,10 @@ namespace Dash
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
             _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
-            if (_connectionLine == null) return;
-
+            if (_connectionLine == null || _currReference == null)
+            {
+                return;
+            }
             if (_currReference.IsOutput == ioReference.IsOutput)
             {
                 UndoLine();
