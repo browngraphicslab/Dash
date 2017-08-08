@@ -65,7 +65,7 @@ namespace Dash
             _editingDocument = docController;
             xDocumentPane.OnDocumentViewLoaded -= DocumentPaneOnDocumentViewLoaded;
             xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
-            var freeFormView = new FreeFormCollectionViewModel(true);
+            var freeFormView = new SimpleCollectionViewModel(true);
             xDocumentPane.DataContext = freeFormView;
             freeFormView.AddDocuments(new List<DocumentController>{ docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
