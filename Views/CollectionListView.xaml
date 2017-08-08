@@ -22,12 +22,8 @@
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionListViewStyle}"
+                  ShowsScrollingPlaceholders ="False"
                   ContainerContentChanging="HListView_OnContainerContentChanging">
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Background="Transparent" Orientation="Horizontal" />
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <Grid>

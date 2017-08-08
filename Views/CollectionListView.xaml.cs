@@ -24,6 +24,7 @@ namespace Dash
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
 
+        public ListView XListView => xListView;
         public CollectionListView(BaseCollectionViewModel viewModel)
         {
             ViewModel = viewModel;

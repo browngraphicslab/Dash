@@ -38,7 +38,6 @@ namespace Dash
         {
             InitializeComponent();
             ViewModel = vm;
-
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
 
             Loaded += CollectionView_Loaded;
@@ -118,7 +117,6 @@ namespace Dash
         {
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView();
-            ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             xContentControl.Content = CurrentView;
         }
 

@@ -172,12 +172,29 @@
             <Setter Property="ItemsPanel">
                 <Setter.Value>
                     <ItemsPanelTemplate>
-                        <ItemsStackPanel Orientation="Vertical"/>
+                        <ItemsStackPanel Orientation="Horizontal"/>
                     </ItemsPanelTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
+        <!-- Vertically scrolling Collection List View-->
+        <Style x:Key="xVerticalCollectionListViewStyle" TargetType="ListView">
+            <Setter Property="Background" Value="#FFE5E5E5"/>
+            <Setter Property="Opacity" Value=".7"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible"/>
+            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled"/>
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
         <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
