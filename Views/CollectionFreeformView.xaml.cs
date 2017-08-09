@@ -462,10 +462,6 @@ namespace Dash
             _flyout = new MenuFlyout();
             var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
             menuItem.Click += MenuItem_Click;
-            menuItem.LostFocus += (s, e) =>
-            {
-                _flyout = null;
-            }; 
             _flyout.Items?.Add(menuItem);
         }
 
@@ -500,6 +496,9 @@ namespace Dash
             Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
             Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
+
+            OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);  
+
             DisposeFlyout();
         }
 

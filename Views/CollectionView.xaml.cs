@@ -94,7 +94,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); // TODO KB 
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
@@ -104,7 +104,7 @@ namespace Dash
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); // TODO KB 
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
