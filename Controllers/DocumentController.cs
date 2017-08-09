@@ -602,9 +602,13 @@ namespace Dash
 
         public FieldModelController GetDereferencedField(KeyController key, Context context)
         {
-            context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
+        }
+
+        public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldModelController
+        {
+            return GetDereferencedField(key, context) as T;
         }
 
 

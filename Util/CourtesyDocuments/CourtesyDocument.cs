@@ -88,10 +88,10 @@ namespace Dash
 
         private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
         {
-            var field = binding.Document.GetField(binding.Key)?.DereferenceToRoot(binding.Context);
+            var field = binding.Document.GetDereferencedField<T>(binding.Key, binding.Context);
             if (field == null)
                 return null;
-            var value = binding.GetHandler(field as T);
+            var value = binding.GetHandler(field);
             return binding.Converter == null ? value : binding.Converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
         }
 
@@ -120,10 +120,14 @@ namespace Dash
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
             where T : FrameworkElement where U : FieldModelController
         {
+            bool update = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 delegate
                 {
-                    element.SetValue(property, EvaluateBinding(binding));
+                    if (update)
+                    {
+                        element.SetValue(property, EvaluateBinding(binding));
+                    }
                 };
             DependencyPropertyChangedCallback callback =
                 delegate(DependencyObject sender, DependencyProperty dp)
@@ -133,7 +137,9 @@ namespace Dash
                     {
                         value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
                     }
-                    binding.SetHandler(binding.Document.GetField(binding.Key) as U, value);
+                    update = false;
+                    binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
+                    update = true;
                 };
 
             long token = -1;
@@ -187,7 +193,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = DashConstants.KeyStore.WidthFieldKey,
+                Key = KeyStore.WidthFieldKey,
                 Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate(NumberFieldModelController field, object value)
@@ -208,7 +214,7 @@ namespace Dash
             {
                 Mode = BindingMode.TwoWay,
                 Document = docController,
-                Key = DashConstants.KeyStore.HeightFieldKey,
+                Key = KeyStore.HeightFieldKey,
                 Context = context,
                 GetHandler = field => field.Data,
                 SetHandler = delegate (NumberFieldModelController field, object value)
@@ -445,27 +451,16 @@ namespace Dash
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-<<<<<<< HEAD
-                view.CanLink = true;
-                if (view.CurrentView is CollectionFreeformView)
-                    (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
-                        renderElement.GetFirstAncestorOfType<DocumentView>()));
-=======
                 if (freeform != null) freeform.CanLink = true;
                 (view.CurrentView as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
                     renderElement.GetFirstAncestorOfType<DocumentView>()));
->>>>>>> 8a5380c5ff7837ac6219cd426896f4370cb76a36
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-<<<<<<< HEAD
-                view.PointerArgs = args;
-=======
                 if (freeform != null) freeform.PointerArgs = args;
->>>>>>> 8a5380c5ff7837ac6219cd426896f4370cb76a36
                 args.Handled = true;
                 if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
                 {
@@ -484,11 +479,7 @@ namespace Dash
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
                 var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-<<<<<<< HEAD
-                view.CanLink = false;
-=======
                 if (freeform != null) freeform.CanLink = false;
->>>>>>> 8a5380c5ff7837ac6219cd426896f4370cb76a36
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(

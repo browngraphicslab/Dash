@@ -16,7 +16,7 @@ namespace Dash
     {
         public BindingMode Mode;
         public DocumentController Document;
-        public Key Key;
+        public KeyController Key;
         public SetHandler<T> SetHandler;
         public GetHandler<T> GetHandler;
 
