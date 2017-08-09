@@ -39,6 +39,7 @@ namespace Dash
             var divide = OperationCreationHelper.Operators["divide"];
             var union = OperationCreationHelper.Operators["union"];
             var intersection = OperationCreationHelper.Operators["intersection"];
+            var zip = OperationCreationHelper.Operators["zip"];
             var uriToImage = OperationCreationHelper.Operators["uriToImage"];
             var map = OperationCreationHelper.Operators["map"];
             var api = OperationCreationHelper.Operators["api"];
@@ -52,6 +53,7 @@ namespace Dash
             var sets = new ObservableCollection<OperatorBuilder> {
                 union,
                 intersection,
+                zip,
                 filter
             };
             var maps = new ObservableCollection<OperatorBuilder>
@@ -64,6 +66,7 @@ namespace Dash
                 divide,
                 union,
                 intersection,
+                zip,
                 filter,
                 api, 
                 compound,
