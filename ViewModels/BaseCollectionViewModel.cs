@@ -179,7 +179,15 @@ namespace Dash
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
 
             if (sourceIsRadialMenu)
+            {
                 e.AcceptedOperation = DataPackageOperation.Move;
+                e.DragUIOverride.Clear();
+                e.DragUIOverride.Caption = e.DataView.Properties.Title;
+                e.DragUIOverride.IsContentVisible = false;
+                e.DragUIOverride.IsGlyphVisible = false;
+                
+            }
+                
 
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)

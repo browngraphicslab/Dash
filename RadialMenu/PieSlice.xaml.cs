@@ -9,6 +9,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using RadialMenuControl.Components;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
 using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Animation;
 using Dash;
@@ -732,7 +733,7 @@ namespace RadialMenuControl.UserControl
             }
             else
             {
-                InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
+                InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement)); 
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
                 switch (OriginalRadialMenuButton.Type)
