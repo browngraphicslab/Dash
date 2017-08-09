@@ -91,6 +91,7 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
@@ -101,6 +102,7 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return; 
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;

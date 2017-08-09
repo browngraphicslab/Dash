@@ -73,13 +73,13 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel: true);
+            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
         public IOReference GetCurrentReference()
         {
-            return _currReference; 
+            return _currReference;
         }
 
         #region DataContext and Events
@@ -177,7 +177,7 @@ namespace Dash
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true); 
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
@@ -228,7 +228,7 @@ namespace Dash
 
         private void UndoLine()
         {
-            itemsPanelCanvas.Children.Remove(_connectionLine);
+            if (_connectionLine != null) itemsPanelCanvas.Children.Remove(_connectionLine);
             _connectionLine = null;
             _currReference = null;
         }
@@ -453,6 +453,7 @@ namespace Dash
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             DBTest.ResetCycleDetection();
+            CancelDrag(e.Pointer);
         }
 
         #region Flyout
@@ -497,7 +498,7 @@ namespace Dash
             Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
 
-            OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);  
+            OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
 
             DisposeFlyout();
         }
