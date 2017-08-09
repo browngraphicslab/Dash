@@ -56,7 +56,7 @@
         </ItemsControl>
 
         <!--Ink Toolbar-->
-        <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed">
+        <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
             <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
                         TargetInkCanvas="{x:Bind xInkCanvas}" Height="50" Background="#FFE6E6E6" IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged"/>
             <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"

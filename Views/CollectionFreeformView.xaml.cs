@@ -124,21 +124,12 @@ namespace Dash
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
             if (InkFieldModelController != null)
             {
-                GlobalInkSettings.Presenters.Add(xInkCanvas.InkPresenter);
-                GlobalInkSettings.SetAttributes();
-                Canvas.SetLeft(xInkCanvas, -30000);
-                Canvas.SetTop(xInkCanvas, -30000);
-                xInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
-                GlobalInkSettings.OnInkInputChanged += GlobalInkSettingsOnOnInkInputChanged;
-                xInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
-                xInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-                InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
-                xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-                UpdateStrokes();
+                MakeInkCanvas();
             }
         }
 
         
+
 
         #endregion
 
@@ -575,6 +566,26 @@ namespace Dash
             throw new NotImplementedException();
         }
 
+        #region Ink
+
+        private void MakeInkCanvas()
+        {
+            GlobalInkSettings.Presenters.Add(xInkCanvas.InkPresenter);
+            GlobalInkSettings.SetAttributes();
+            Canvas.SetLeft(xInkCanvas, -30000);
+            Canvas.SetTop(xInkCanvas, -30000);
+            xInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
+            xItemsControl.ItemsPanelRoot.Children.Insert(0, xInkCanvas);
+            GlobalInkSettings.InkInputChanged += GlobalInkSettingsOnInkInputChanged;
+            xInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
+            xInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+            InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
+            InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
+            xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
+            UpdateStrokes();
+            ToggleDraw();
+        }
+
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
         {
             Canvas.SetZIndex(xInkCanvas, 0);
@@ -593,7 +604,7 @@ namespace Dash
                 IsDrawing = false;
                 InkSettingsPanel.Visibility = Visibility.Collapsed;
                 SetInkInputType(CoreInputDeviceTypes.None);
-                if(canvas.Children.Contains(xInkCanvas)) canvas.Children.Remove(xInkCanvas);
+                xInkCanvas.InkPresenter.IsInputEnabled = false;
             }
             else
             {
@@ -602,13 +613,14 @@ namespace Dash
                 SetInkInputType(GlobalInkSettings.InkInputType);
                 if (!canvas.Children.Contains(xInkCanvas))
                     canvas.Children.Insert(0, xInkCanvas);
+                xInkCanvas.InkPresenter.IsInputEnabled = true;
             }
             
         }
 
         public bool IsDrawing { get; set; }
 
-        private void GlobalInkSettingsOnOnInkInputChanged(CoreInputDeviceTypes newInputType)
+        private void GlobalInkSettingsOnInkInputChanged(CoreInputDeviceTypes newInputType)
         {
             SetInkInputType(newInputType);
         }
@@ -618,21 +630,32 @@ namespace Dash
             switch (type)
             {
                 case CoreInputDeviceTypes.Mouse:
-                    _manipulationControls.BlockedInput = PointerDeviceType.Mouse;
+                    _manipulationControls.BlockedInputType = PointerDeviceType.Mouse;
                     _manipulationControls.FilterInput = IsDrawing;
                     break;
                 case CoreInputDeviceTypes.Pen:
-                    _manipulationControls.BlockedInput = PointerDeviceType.Pen;
+                    _manipulationControls.BlockedInputType = PointerDeviceType.Pen;
                     _manipulationControls.FilterInput = IsDrawing;
                     break;
                 case CoreInputDeviceTypes.Touch:
-                    _manipulationControls.BlockedInput = PointerDeviceType.Touch;
+                    _manipulationControls.BlockedInputType = PointerDeviceType.Touch;
                     _manipulationControls.FilterInput = IsDrawing;
                     break;
                 default:
                     _manipulationControls.FilterInput = false;
                     break;
             }
+        }
+
+        private void UpdateInkFieldModelController()
+        {
+            if (InkFieldModelController != null)
+                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+        }
+
+        private void InkToolbarOnEraseAllClicked(InkToolbar sender, object args)
+        {
+            UpdateInkFieldModelController();
         }
 
         private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -660,31 +683,14 @@ namespace Dash
                 xInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
         }
 
-        /// <summary>
-        /// When strokes are erased, modifies the controller's Strokes field to remove those strokes.
-        /// Then calls update data on the controller so that the field model reflects the changes.
-        /// TODO: the field model need not be updated with every stroke
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
         private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
         {
-            if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
-
+            UpdateInkFieldModelController();
         }
 
-        /// <summary>
-        /// When strokes are collected, adds them to the controller's HashSet of InkStrokes.
-        /// Then calls update data on the controller so that the field model reflects the changes.
-        /// TODO: the field model need not be updated with every stroke
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+            UpdateInkFieldModelController();
         }
 
         //TODO: position ruler
@@ -692,5 +698,7 @@ namespace Dash
         {
             
         }
+
+        #endregion
     }
 }

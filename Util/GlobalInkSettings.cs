@@ -23,7 +23,7 @@ namespace Dash
 
         public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
 
-        public static event InkInputChangedEventHandler OnInkInputChanged;
+        public static event InkInputChangedEventHandler InkInputChanged;
 
         public enum StrokeTypes
         {
@@ -48,7 +48,7 @@ namespace Dash
                 {
                     inkPresenter.InputDeviceTypes = value;
                 }
-                OnInkInputChanged?.Invoke(value);
+                InkInputChanged?.Invoke(value);
             }
         }
 

@@ -33,7 +33,7 @@ namespace Dash {
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
 
-        public PointerDeviceType BlockedInput;
+        public PointerDeviceType BlockedInputType;
         public bool FilterInput;
 
         /// <summary>
@@ -55,6 +55,13 @@ namespace Dash {
                 element.PointerWheelChanged += PointerWheelMoveAndScale;
             }
             element.ManipulationMode = ManipulationModes.All;
+            element.ManipulationStarted += ElementOnManipulationStarted;
+        }
+
+        private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType == BlockedInputType && FilterInput) e.Complete();
+            e.Handled = true;
         }
 
         public void AddAllAndHandle()
@@ -107,7 +114,7 @@ namespace Dash {
 
         private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
         {
-            if (e.Pointer.PointerDeviceType == BlockedInput && FilterInput) return;
+            
             TranslateAndScale(e);
         }
 
@@ -125,7 +132,7 @@ namespace Dash {
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
-            if (e.PointerDeviceType == BlockedInput && FilterInput) return;
+            
             TranslateAndScale(e);
         }
 
