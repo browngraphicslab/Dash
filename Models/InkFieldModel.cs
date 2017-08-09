@@ -36,7 +36,7 @@ namespace Dash
 
         protected override FieldModelDTO GetFieldDTOHelper()
         {
-            throw new NotImplementedException();
+            return new FieldModelDTO(TypeInfo.Ink, Data);
         }
     }
 }

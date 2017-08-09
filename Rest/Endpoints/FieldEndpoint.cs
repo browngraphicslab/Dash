@@ -10,6 +10,7 @@ namespace Dash
     public class FieldEndpoint
     {
         private readonly ServerEndpoint _connection;
+        private static int count;
 
         public FieldEndpoint(ServerEndpoint connection)
         {
@@ -24,6 +25,7 @@ namespace Dash
         /// <param name="error"></param>
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
+            Debug.WriteLine(count++);
             Task.Run(() =>
             {
                 try
