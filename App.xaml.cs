@@ -78,6 +78,8 @@ namespace Dash
                 // Ensure the current window is active
                 Window.Current.Activate();
             }
+
+            //var result = RESTClient.Instance.Keys.AddKey(new DashShared.Key("B2C37434-04FD-4663-898A-944E3DB5AB78", "mykey")).Result;
         }
 
         /// <summary>

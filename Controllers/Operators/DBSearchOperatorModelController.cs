@@ -3,6 +3,7 @@ using System.Diagnostics;
 using DashShared;
 using System.Linq;
 using Dash.Converters;
+using System;
 
 namespace Dash.Controllers.Operators
 {
@@ -28,7 +29,7 @@ namespace Dash.Controllers.Operators
             searchOp.SetField(FieldPatternKey, new TextFieldModelController(fieldRef), true);
             searchOp.SetField(ReturnDocKey, new TextFieldModelController(retPath), true);
             searchOp.SetField(SearchForDocKey, new DocumentFieldModelController(searchForDoc), true);
-            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), DashConstants.KeyStore.DataKey), true);
+            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
 
 
             var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
@@ -46,7 +47,7 @@ namespace Dash.Controllers.Operators
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
             else
                 searchOp.SetField(SearchForDocKey, fieldContainingSearchForDoc, true);
-            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), DashConstants.KeyStore.DataKey), true);
+            searchOp.SetField(InputDocsKey, new ReferenceFieldModelController(dbDoc.GetId(), KeyStore.DataKey), true);
 
             var layoutDoc = new DBSearchOperatorBox(new ReferenceFieldModelController(searchOp.GetId(), OperatorDocumentModel.OperatorKey)).Document;
             searchOp.SetActiveLayout(layoutDoc, true, true);
@@ -58,34 +59,33 @@ namespace Dash.Controllers.Operators
         }
 
         //Output keys
-        public static readonly Key ResultsKey      = new Key("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
-        public static readonly Key InputDocsKey    = new Key("4181DD2A-2258-4BB7-BE0C-725B8E27FA4A", "Input Collection");
-        public static readonly Key FieldPatternKey = new Key("863F89AD-0FAF-42F4-9FBC-BF45457B8A3C", "Has Field");
-        public static readonly Key ReturnDocKey    = new Key("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
-        public static readonly Key SearchForDocKey = new Key("C544405C-6389-4F6D-8C17-31DEB14409D4", "[Contains Doc]");
+        public static readonly KeyController ResultsKey      = new KeyController("03A2157E-F03C-46A1-8F52-F59BD226944E", "Results");
+        public static readonly KeyController InputDocsKey    = new KeyController("4181DD2A-2258-4BB7-BE0C-725B8E27FA4A", "Input Collection");
+        public static readonly KeyController FieldPatternKey = new KeyController("863F89AD-0FAF-42F4-9FBC-BF45457B8A3C", "Has Field");
+        public static readonly KeyController ReturnDocKey    = new KeyController("DB03F66F-350D-49D9-B8EC-D6E8D54E9AB6", "[Return Doc]");
+        public static readonly KeyController SearchForDocKey = new KeyController("C544405C-6389-4F6D-8C17-31DEB14409D4", "[Contains Doc]");
 
-        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [FieldPatternKey] = TypeInfo.Text,
             [ReturnDocKey]    = TypeInfo.Text,
             [SearchForDocKey] = TypeInfo.Document,
             [InputDocsKey]    = TypeInfo.Collection
         };
-        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [ResultsKey] = TypeInfo.Collection
         };
         
-        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-
-            var retPathString = (inputs[ReturnDocKey] as TextFieldModelController).Data;
+            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data;
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
             var returnPath   = new List<string>(retPathString.Trim(' ', '\r').Split('.'));
-            var searchForDoc = (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
+            var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
             if (searchForDoc == DBTest.DBNull)
                 searchForDoc = null;
-            var dbDocs       = (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
+            var dbDocs       = (!inputs.ContainsKey(InputDocsKey)) ? null : (inputs[InputDocsKey] as DocumentCollectionFieldModelController)?.Data;
             if (dbDocs == null)
                 return;
             if (returnPath == null)
@@ -132,14 +132,11 @@ namespace Dash.Controllers.Operators
 
         private static ReferenceFieldModelController CheckForFieldReferencingTarget(DocumentController targetDocument, DocumentController dmc)
         {
-            foreach (var field in dmc.EnumFields())
-                if (field.Value is DocumentFieldModelController && field.Key != DashConstants.KeyStore.ThisKey)
-                {
-                    var dfmc = field.Value as DocumentFieldModelController;
-                    if (dfmc.Data == targetDocument)
-                    {
-                        return new ReferenceFieldModelController(dmc.GetId(), field.Key);
-                    }
+            foreach (var field in dmc.EnumFields()) 
+                if (field.Key != KeyStore.ThisKey) {
+                    foreach (var docRef in field.Value.GetReferences())
+                        if (docRef.GetId() == targetDocument.GetId())
+                            return new ReferenceFieldModelController(dmc.GetId(), field.Key);
                 }
             return null;
         }

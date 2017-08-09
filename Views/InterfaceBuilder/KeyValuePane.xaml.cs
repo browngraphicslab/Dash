@@ -54,7 +54,8 @@ namespace Dash
         {
             ListItemSource.Clear();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
-                ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, keyFieldPair.Value));
+                if (!keyFieldPair.Key.Name.StartsWith("_"))
+                    ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext)));
         }
 
         private void FocusOn(TextBox tb)
@@ -73,7 +74,7 @@ namespace Dash
             {
                 var container = item as KeyFieldContainer;
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<Key, DocumentController>(container.Key, _documentControllerDataContext));
+                e.Data.Properties.Add(DragPropertyKey, new KeyValuePair<KeyController, DocumentController>(container.Key, _documentControllerDataContext));
             }
         }
 
@@ -95,30 +96,37 @@ namespace Dash
         private void AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            Key key = new Key((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
+            KeyController key = new KeyController((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldModelController fmController = new TextFieldModelController("something went wrong");
-            if (item == TypeInfo.Number)
+            if (true)
             {
-                double number;
-                // if specified type is number only add a new keyvalue pair if the value is a number 
-                if (double.TryParse(xNewValueField.Text, out number))
-                    fmController = new NumberFieldModelController(number);
-                else
-                    return; 
+                _documentControllerDataContext.ParseDocField(key, xNewValueField.Text);
+                fmController = _documentControllerDataContext.GetField(key);
             }
-            else if (item == TypeInfo.Image)
+            else
             {
-                fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
+                if (item == TypeInfo.Number)
+                {
+                    double number;
+                    // if specified type is number only add a new keyvalue pair if the value is a number 
+                    if (double.TryParse(xNewValueField.Text, out number))
+                        fmController = new NumberFieldModelController(number);
+                    else
+                        return;
+                }
+                else if (item == TypeInfo.Image)
+                {
+                    fmController = new ImageFieldModelController(new Uri(xNewValueField.Text));
+                }
+                else if (item == TypeInfo.Text)
+                {
+                    fmController = new TextFieldModelController(xNewValueField.Text);
+                }
             }
-            else if (item == TypeInfo.Text)
-            {
-                fmController = new TextFieldModelController(xNewValueField.Text);
-            }
-            ListItemSource.Add(new KeyFieldContainer(key, fmController));
+            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
             _documentControllerDataContext.SetField(key, fmController, true);
         }
 
-//<<<<<<< HEAD
         /// <summary>
         /// Toggles the bottom pane UI for adding new key-value pairs 
         /// </summary>
@@ -150,27 +158,16 @@ namespace Dash
         /// </summary>
         public class KeyFieldContainer
         {
-            public Key Key { get; }
-            public FieldModelController Controller { get; }
+            public KeyController Key { get; }
+            public BoundFieldModelController Controller { get; }
             // Type of field, ex) Text, Image, Number  
             public string Type { get; }
 
-            public KeyFieldContainer(Key key, FieldModelController controller)
+            public KeyFieldContainer(KeyController key, BoundFieldModelController controller)
             {
                 Key = key;
                 Controller = controller;
-                Type = (controller.TypeInfo).ToString();
-//=======
-//                //var key = new Key(Guid.NewGuid().ToString(), (xNewKeyField as TextBox).Text); // TODO commented out cos i didn't want to waste guids on testing 
-//                var key = new Key((new Random()).Next(0, 100000000).ToString(), (xNewKeyField as TextBox).Text);
-
-//                DBTest.ResetCycleDetection();
-//                _documentControllerDataContext.ParseDocField(key, (sender as TextBox).Text);
-//                ListItemSource.Add(new KeyFieldContainer(key, _documentControllerDataContext.GetDereferencedField(key, null)));
-
-//                xNewKeyField.Text = "";
-//                xNewValueField.Text = "";
-//>>>>>>> 638992e6add090ae1944a065c1eb5b2e2890d667
+                Type = (controller.FieldModelController.TypeInfo).ToString();
             }
         }
 
@@ -258,8 +255,7 @@ namespace Dash
 
             //get position of mouse in screenspace 
             var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
-            var ttv = containerGrid.TransformToVisual(Window.Current.Content);
-            var p = ttv.TransformPoint(posInKVPane);
+            var p = Util.PointTransformFromVisual(posInKVPane, containerGrid); 
 
             _tb = new TextBox();
 
@@ -300,14 +296,14 @@ namespace Dash
                 return;
             }
 
-            TypeInfo type = _selectedKV.Controller.TypeInfo;
+            TypeInfo type = _selectedKV.Controller.FieldModelController.TypeInfo;
             if (type == TypeInfo.Text)
             {
                 _tb.KeyDown += (s, e) =>
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        var textCont = _selectedKV.Controller as TextFieldModelController;
+                        var textCont = _selectedKV.Controller.FieldModelController as TextFieldModelController;
                         textCont.Data = _tb.Text;
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
@@ -320,7 +316,7 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        var textCont = _selectedKV.Controller as NumberFieldModelController;
+                        var textCont = _selectedKV.Controller.FieldModelController as NumberFieldModelController;
                         double number;
                         if (double.TryParse(_tb.Text, out number))
                             textCont.Data = number;
@@ -336,7 +332,7 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
-                        var textCont = _selectedKV.Controller as ImageFieldModelController;
+                        var textCont = _selectedKV.Controller.FieldModelController as ImageFieldModelController;
                         (textCont.Data as BitmapImage).UriSource = new Uri(_tb.Text);
 
                         SetListItemSourceToCurrentDataContext();

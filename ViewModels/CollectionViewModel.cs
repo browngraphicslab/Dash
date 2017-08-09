@@ -14,70 +14,17 @@ using System.Linq;
 
 namespace Dash
 {
-    public class CollectionViewModel : ViewModelBase
+    public class CollectionViewModel : BaseCollectionViewModel
     {
+        private DocumentCollectionFieldModelController _collectionFieldModelController;
 
-
-
-        #region Properties
-        public DocumentCollectionFieldModelController CollectionFieldModelController { get; }
-
-        /// <summary>
-        /// The DocumentViewModels that the CollectionView actually binds to.
-        /// </summary>
-        public ObservableCollection<DocumentViewModel> DataBindingSource
+        public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            get { return _dataBindingSource; }
-            set
-            {
-                SetProperty(ref _dataBindingSource, value);
-            }
-        }
-        private ObservableCollection<DocumentViewModel> _dataBindingSource;
-
-        public bool KeepItemsOnMove { get; set; } = true;
-
-
-        private bool _canDragItems;
-        public bool CanDragItems
-        {
-            get { return _canDragItems; }
-            set { SetProperty(ref _canDragItems, value); }
-        }
-        /// <summary>
-        /// Determines the selection mode of the control currently displaying the documents
-        /// </summary>
-        public ListViewSelectionMode ItemSelectionMode
-        {
-            get { return _itemSelectionMode; }
-            set { SetProperty(ref _itemSelectionMode, value); }
-        }
-        private ListViewSelectionMode _itemSelectionMode;
-        #endregion
-
-        /// <summary>
-        /// The collection creates delegates for each document it displays so that it can associate display-specific
-        /// information on the documents.  This allows different collection views to save different views of the same
-        /// document collection.
-        /// </summary>
-        Dictionary<string, DocumentModel> DocumentToDelegateMap = new Dictionary<string, DocumentModel>();
-
-
-        //Not backing variable; used to keep track of which items selected in view
-        private ObservableCollection<DocumentViewModel> _selectedItems;
-
-        /// <summary>
-        /// The size of each cell in the GridView.
-        /// </summary>
-        public double CellSize { get; set; }
-
-        public CollectionViewModel(FieldModelController collection, Context context = null)
-        {
-            _selectedItems = new ObservableCollection<DocumentViewModel>();
-            DataBindingSource = new ObservableCollection<DocumentViewModel>();
-            CollectionFieldModelController =
+            DocumentViewModels = new ObservableCollection<DocumentViewModelParameters>();
+            if (collection == null) return;
+            _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            AddViewModels(CollectionFieldModelController.GetDocuments(), context);
+            AddDocumentsCollectionIsCaller(_collectionFieldModelController.GetDocuments(), context);
             var copiedContext = new Context(context);
 
             if (collection is ReferenceFieldModelController)
@@ -93,8 +40,8 @@ namespace Dash
                         }
                         else
                         {
-                            DataBindingSource.Clear();
-                            AddViewModels(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
+                            DocumentViewModels.Clear();
+                            AddDocuments(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
                         }
                     });
             }
@@ -106,7 +53,7 @@ namespace Dash
                         copiedContext);
                 };
             }
-            CellSize = 250;
+            CellSize = 250; // TODO figure out where this should be set
         }
 
 
@@ -118,47 +65,13 @@ namespace Dash
         /// </summary>
         /// <param name="sender">The "Delete" menu option</param>
         /// <param name="e"></param>
-        public void DeleteSelected_Tapped(object sender, TappedRoutedEventArgs e)
+        public void DeleteSelected_Tapped()
         {
-            List<DocumentViewModel> itemsToDelete = new List<DocumentViewModel>();
-            foreach (var vm in _selectedItems)
+            var itemsToDelete = SelectionGroup.ToList();
+            SelectionGroup.Clear();
+            foreach (var vmp in itemsToDelete)
             {
-                itemsToDelete.Add(vm);
-            }
-            _selectedItems.Clear();
-            foreach (var vm in itemsToDelete)
-            {
-                //DataBindingSource.Remove(vm);
-                CollectionFieldModelController.RemoveDocument(vm.DocumentController);
-            }
-        }
-
-
-
-
-        /// <summary>
-        /// Updates an ObservableCollection of DocumentViewModels to contain 
-        /// only those currently selected whenever the user changes the selection.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        public void SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            foreach (object item in e.AddedItems)
-            {
-                var dvm = item as DocumentViewModel;
-                if (dvm != null)
-                {
-                    _selectedItems.Add(dvm);
-                }
-            }
-            foreach (object item in e.RemovedItems)
-            {
-                var dvm = item as DocumentViewModel;
-                if (dvm != null)
-                {
-                    _selectedItems.Remove(dvm);
-                }
+                _collectionFieldModelController.RemoveDocument(vmp.Controller);
             }
         }
 
@@ -171,47 +84,73 @@ namespace Dash
             switch (args.CollectionAction)
             {
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
-                    AddViewModels(args.ChangedDocuments, c);
+                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
-                    DataBindingSource.Clear();
+                    DocumentViewModels.Clear();
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
-                    RemoveViewModels(args.ChangedDocuments);
+                    RemoveDocumentsCollectionIsCaller(args.ChangedDocuments);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
-                    DataBindingSource.Clear();
-                    AddViewModels(args.ChangedDocuments, c);
+                    DocumentViewModels.Clear();
+                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
                     break;
             }
         }
 
-        public void AddViewModels(List<DocumentController> documents, Context context)
+        private void RemoveDocumentsCollectionIsCaller(List<DocumentController> documents)
+        {
+            var ids = documents.Select(doc => doc.GetId());
+            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.Controller.GetId())).ToList();
+            foreach (var vm in vms)
+            {
+                DocumentViewModels.Remove(vm);
+            }
+        }
+
+        private void AddDocumentsCollectionIsCaller(List<DocumentController> documents, Context context)
         {
             foreach (var doc in documents)
             {
-                if (context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
-                {
-                    continue;
-                }
-                var viewModel = new DocumentViewModel(doc, false, context);
-                viewModel.DoubleTapEnabled = false;
-                DataBindingSource.Add(viewModel);
+                var viewModel = new DocumentViewModelParameters(doc, IsInterfaceBuilder, context);
+                DocumentViewModels.Add(viewModel);
             }
         }
 
-        public void RemoveViewModels(List<DocumentController> documents)
+        public override void AddDocuments(List<DocumentController> documents, Context context)
         {
-            var ids = documents.Select(doc => doc.GetId());
-            var vms = DataBindingSource.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
-            foreach (var vm in vms)
+            foreach (var doc in documents)
             {
-                DataBindingSource.Remove(vm);
+                AddDocument(doc, context);
             }
+        }
+
+        public override void AddDocument(DocumentController doc, Context context)
+        {
+            if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
+            {
+                return;
+            }
+
+            // just update the collection, the colllection will update our view automatically
+            _collectionFieldModelController.AddDocument(doc);
+        }
+
+        public override void RemoveDocuments(List<DocumentController> documents)
+        {
+            foreach (var doc in documents)
+            {
+                RemoveDocument(doc);
+            }
+        }
+
+        public override void RemoveDocument(DocumentController document)
+        {
+            // just update the collection, the colllection will update our view automatically
+            _collectionFieldModelController.RemoveDocument(document);
         }
 
         #endregion
-
-
     }
 }

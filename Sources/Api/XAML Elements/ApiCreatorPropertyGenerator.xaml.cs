@@ -11,7 +11,7 @@ namespace Dash
     
     public sealed partial class ApiCreatorPropertyGenerator : UserControl {
 
-        public DashShared.Key parameterCollectionKey;
+        public KeyController parameterCollectionKey;
         public ApiSourceDisplay SourceDisplay;
 
         public delegate void OnParametersChangedEventHandler(ApiCreatorPropertyGenerator generator, ApiCreatorProperty property);
@@ -30,7 +30,7 @@ namespace Dash
             xListView.Visibility = Visibility.Collapsed;
         }
 
-        public ApiCreatorPropertyGenerator(DashShared.Key key) {
+        public ApiCreatorPropertyGenerator(KeyController key) {
             DataContext = this;
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;

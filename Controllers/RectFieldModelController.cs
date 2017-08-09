@@ -8,6 +8,7 @@ using Windows.Foundation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
+using DashShared;
 
 namespace Dash
 {
@@ -28,7 +29,7 @@ namespace Dash
             Data = ((RectFieldModelController)fieldModel).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }

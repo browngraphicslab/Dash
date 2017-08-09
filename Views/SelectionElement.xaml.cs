@@ -17,42 +17,21 @@ namespace Dash
 {
     public abstract partial class SelectionElement : UserControl
     {
-        public SelectionElement ParentSelectionElement => this.GetFirstAncestorOfType<SelectionElement>();
-
-        public SelectionElement SelectedElement;
         private bool _isSelected;
         private bool _isLowestSelected;
+        private bool _isLoaded;
 
-        public void SetSelectedElement(SelectionElement elem)
-        {
-            if (SelectedElement != null && SelectedElement != elem)
-            {
-                SelectedElement.IsSelected = false;
-                if (SelectedElement.SelectedElement != null)
-                {
-                    SelectedElement.SetSelectedElement(null);
-                }
-            }
-            SelectedElement = elem;
-            if (elem != null)
-            {
-                elem.IsLowestSelected = true;
-                elem.SetSelectedElement(null);
-                if (IsLowestSelected) IsLowestSelected = false;
-            }
-            //else if (!IsLowestSelected)
-            //{
-            //    IsLowestSelected = true;
-            //}
-        }
+        public SelectionElement ParentSelectionElement => this.GetFirstAncestorOfType<SelectionElement>();
+        public SelectionElement CurrentSelectedElement { get; private set; }
 
         public bool IsSelected
         {
             get { return _isSelected; }
-            set
+            private set
             {
+                if (_isSelected == value) return;
+
                 _isSelected = value;
-                if (!value) IsLowestSelected = false;
                 OnActivated(value);
             }
         }
@@ -60,14 +39,31 @@ namespace Dash
         public bool IsLowestSelected
         {
             get { return _isLowestSelected; }
-            set
+            private set
             {
+                if (_isLowestSelected == value) return;
+
                 _isLowestSelected = value;
-                if (value) IsSelected = true;
                 OnLowestActivated(value);
             }
         }
-        
+
+        public SelectionElement() : base()
+        {
+            InitializeComponent();
+            Loaded += SelectionElement_Loaded;
+            Unloaded += SelectionElement_Unloaded;
+        }
+
+        private void SelectionElement_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Loaded -= SelectionElement_Loaded;
+            Unloaded -= SelectionElement_Unloaded;
+        }
+        private void SelectionElement_Loaded(object sender, RoutedEventArgs e)
+        {
+            _isLoaded = true;
+        }
 
         /// <summary>
         /// An abstract method to determine the UI response to user selection of an element.
@@ -79,31 +75,89 @@ namespace Dash
         /// An abstract method to determine the response when the selected element is/is not the lowest selected element.
         /// </summary>
         /// <param name="isLowestSelected"></param>
-        public abstract void OnLowestActivated(bool isLowestSelected);
-
-        public SelectionElement() : base()
-        {
-            InitializeComponent();
-            Loaded += SelectionElement_Loaded;
-        }
-
-        private void SelectionElement_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (ParentSelectionElement == null) IsSelected = true;
-            else IsSelected = false;
-        }
+        protected abstract void OnLowestActivated(bool isLowestSelected);
 
         protected void OnSelected()
         {
+            // if we don't already get the clicks tell our parent we want them
             if (!IsLowestSelected)
             {
-                ParentSelectionElement?.SetSelectedElement(this);
-                //SetSelectedElement(null);
+                // first deselect all of our children
+                CurrentSelectedElement?.Deactivate();
+
+                // then set up our ancestors
+                ParentSelectionElement?.SetAsAncestorOfSelected(this);
+
+                // finally set up our child
+                ParentSelectionElement?.SetCurrentlySelectedElement(this);
+            }
+        }
+
+        private void SetAsAncestorOfSelected(SelectionElement selected)
+        {
+            // if we are an ancestor of a selected element we are selected but not the lowest selected
+            IsSelected = true;
+            IsLowestSelected = false;
+
+            // if we had a child on a different branch deactivate that branch of children
+            if (CurrentSelectedElement != null && CurrentSelectedElement != selected)
+            {
+                CurrentSelectedElement.Deactivate();
+            }
+
+            // set the child to be the newly selected element
+            CurrentSelectedElement = selected;
+
+            // recursively set our parents to have the correct ancestors
+            ParentSelectionElement?.SetAsAncestorOfSelected(this);
+        }
+
+        public void InitializeAsRoot()
+        {
+            if (_isLoaded)
+            {
+                OnSelected();
             }
             else
             {
-                // ParentSelectionElement?.SetSelectedElement(null);
+                Loaded += (sender, args) => OnSelected();
             }
+        }
+
+        private void SetCurrentlySelectedElement(SelectionElement newSelectedElement)
+        {
+            // if the new selected is different from the current selected element
+            if (CurrentSelectedElement != null && CurrentSelectedElement != newSelectedElement)
+            {
+                CurrentSelectedElement.Deactivate(); // deactivate the current
+            }
+
+            // current = new
+            CurrentSelectedElement = newSelectedElement;
+
+            // if new is not null
+            if (newSelectedElement != null)
+            {
+                // new is lowest selected and new is selected
+                newSelectedElement.IsSelected = true;
+                newSelectedElement.IsLowestSelected = true;
+
+                // deselect all of the newly selected elements children (not sure if necessary)
+                newSelectedElement.SetCurrentlySelectedElement(null);
+
+                // the current item is no longer the lowest selected
+                IsLowestSelected = false;
+            }
+
+            // the current item is selected though
+            IsSelected = true;
+        }
+
+        private void Deactivate()
+        {
+            CurrentSelectedElement?.Deactivate();
+            IsSelected = false;
+            IsLowestSelected = false;
         }
     }
 }

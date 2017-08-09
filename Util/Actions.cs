@@ -41,7 +41,7 @@ namespace Dash
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
             var where = Util.GetCollectionDropPoint(
-                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionView>(),
+                MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
             MainPage.Instance.DisplayDocument(opModel, where);
@@ -52,33 +52,39 @@ namespace Dash
 
         public static void ChangeInkColor(Color color, RadialMenu menu=null)
         {
-            InkSource.Color = color;
-            InkSource.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSource.Attributes.Color);
+            GlobalInkSettings.Color = color;
+            GlobalInkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
         public static void ChoosePen(object o)
         {
-            InkSource.StrokeType = InkSource.StrokeTypes.Pen;
-            InkSource.SetAttributes();
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.SetAttributes();
         }
 
         public static void ChoosePencil(object o)
         {
-            InkSource.StrokeType = InkSource.StrokeTypes.Pencil;
-            InkSource.SetAttributes();
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+            GlobalInkSettings.SetAttributes();
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+            GlobalInkSettings.SetAttributes();
         }
 
         public static void SetOpacity(double opacity)
         {
-            InkSource.Opacity = opacity;
-            InkSource.SetAttributes();
+            GlobalInkSettings.Opacity = opacity;
+            GlobalInkSettings.SetAttributes();
         }
 
         public static void SetSize(double size)
         {
-            InkSource.Size = size;
-            InkSource.SetAttributes();
+            GlobalInkSettings.Size = size;
+            GlobalInkSettings.SetAttributes();
         }
 
 
@@ -95,9 +101,9 @@ namespace Dash
 
         public static void SetBrightness(double brightness, RadialMenu menu)
         {
-            InkSource.BrightnessFactor = brightness;
-            InkSource.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSource.Attributes.Color);
+            GlobalInkSettings.BrightnessFactor = brightness;
+            GlobalInkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
 
@@ -107,9 +113,9 @@ namespace Dash
             MainPage.Instance.AddOperatorsFilter(o, e);
         }
 
-        public static void AddOperator(object obj)
+        public static void AddOperator(Func<DocumentController> documentCreationFunc)
         {
-            var freeForm = OperatorSearchView.AddsToThisCollection.CurrentView as CollectionFreeformView;
+            var freeForm = OperatorSearchView.AddsToThisCollection;
 
             if (freeForm == null)
             {
@@ -119,27 +125,26 @@ namespace Dash
             var searchView = OperatorSearchView.Instance.SearchView;
             var transform = searchView.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
             Debug.Assert(transform != null);
-            var translate = transform.TransformPoint(new Point(searchView.ActualWidth, 0));
+            var translate = transform.TransformPoint(new Point());
 
-            var opCreator = obj as KeyValuePair<string, object>? ?? new KeyValuePair<string, object>();
-            var opController = (opCreator.Value as Func<DocumentController>)?.Invoke();
+            var opController = documentCreationFunc?.Invoke();
 
             // using this as a setter for the transform massive hack - LM
-            var opvm = new DocumentViewModel(opController)
+            var _ = new DocumentViewModel(opController)
             {
                 GroupTransform = new TransformGroupData(translate, new Point(), new Point(1, 1))
             };
 
             if (opController != null)
             {
-                OperatorSearchView.AddsToThisCollection.ViewModel.CollectionFieldModelController.AddDocument(opController);
+                OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
             }
         }
         
-        public static void AddCollection(CollectionView collection, DragEventArgs e)
+        public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -147,7 +152,7 @@ namespace Dash
             {
                 numbers.Add(new Numbers().Document);
             }
-            var fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldModelController>
             {
                 {
                     DocumentCollectionFieldModelController.CollectionKey,
@@ -159,14 +164,14 @@ namespace Dash
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController = new DocumentFieldModelController(layoutDoc);
-            col.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController, true);
-            col.SetField(DashConstants.KeyStore.LayoutListKey,
+            col.SetField(KeyStore.ActiveLayoutKey, layoutController, true);
+            col.SetField(KeyStore.LayoutListKey,
                 new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc}), true);
 
             //Make second collection
             var numbers2 = new Numbers().Document;
             var twoImages2 = new TwoImages(false).Document;
-            var fields2 = new Dictionary<Key, FieldModelController>
+            var fields2 = new Dictionary<KeyController, FieldModelController>
             {
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new[]
@@ -177,8 +182,8 @@ namespace Dash
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
             var layoutController2 = new DocumentFieldModelController(layoutDoc2);
-            col2.SetField(DashConstants.KeyStore.ActiveLayoutKey, layoutController2, true);
-            col2.SetField(DashConstants.KeyStore.LayoutListKey,
+            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(KeyStore.LayoutListKey,
                 new DocumentCollectionFieldModelController(new List<DocumentController> {layoutDoc2}), true);
 
             //Display collections
@@ -186,66 +191,84 @@ namespace Dash
             DisplayDocument(collection, col, where);
         }
 
-        /// <summary>
-        ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
-        /// </summary>
-        /// <param name="docModel"></param>
-        /// <param name="where"></param>
-        /// <param name="collection"></param>
-        public static void DisplayDocument(CollectionView collection, DocumentController docModel, Point? where = null)
+        public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
-                var h = docModel.GetHeightField().Data; 
-                var w = docModel.GetWidthField().Data;
+                var h = docController.GetHeightField().Data; 
+                var w = docController.GetWidthField().Data;
 
                 var pos = (Point)where;
-                docModel.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
+                docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
-            var children = collection.ViewModel.CollectionFieldModelController;
-            children?.AddDocument(docModel);
+            collectionView.ViewModel.AddDocument(docController, null); 
+            DBTest.DBDoc.AddChild(docController);
         }
 
-        public static void AddApiCreator(CollectionView collection, DragEventArgs e)
+        public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             var a = new ApiDocumentModel().Document;
-            DisplayDocument(collection, a, where);
+            DisplayDocument(collectionView, a, where);
         }
 
-        public static void AddDocuments(CollectionView col, DragEventArgs e)
+        public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+
+            //Make second collection
+            var numbers2 = new Numbers().Document;
+            var fields2 = new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new[]
+                    {numbers2})
+            };
+            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var layoutDoc2 =
+                new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
+                    DocumentCollectionFieldModelController.CollectionKey)).Document;
+            var layoutController2 = new DocumentFieldModelController(layoutDoc2);
+            col2.SetField(KeyStore.ActiveLayoutKey, layoutController2, true);
+            col2.SetField(KeyStore.LayoutListKey,
+                new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
+
+            //Display collections
+            DisplayDocument(collectionView, col2, where);
+
+
+            DisplayDocument(collectionView, new InkDoc().Document, where);
+
 
             foreach (var d in new DBTest().Documents)
-                DisplayDocument(col, d, where);
+                DisplayDocument(collectionView, d, where);
         }
 
-        public static void AddNotes(CollectionView col, DragEventArgs e)
+        public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(col, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            DisplayDocument(col, postitNote, where);
+            DisplayDocument(collectionView, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Touch;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Touch;
         }
 
         public static void SetPenInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Pen;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
         }
 
         public static void SetMouseInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Mouse;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Mouse;
         }
 
         public static void SetNoInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.None;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.None;
         }
     }
 }

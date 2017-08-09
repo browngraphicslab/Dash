@@ -8,28 +8,29 @@ namespace Dash
     {
         public AddOperatorModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
-            OperatorFieldModel = operatorFieldModel;
         }
+        public AddOperatorModelController() : base(new OperatorFieldModel("Add"))
+        {
+        }
+
         //Input keys
-        public static readonly Key AKey = new Key("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
-        public static readonly Key BKey = new Key("F9B2192D-3DFD-41B8-9A37-56D818153B59", "B");
+        public static readonly KeyController AKey = new KeyController("942F7A38-3E5D-4CD7-9A88-C61B962511B8", "A");
+        public static readonly KeyController BKey = new KeyController("F9B2192D-3DFD-41B8-9A37-56D818153B59", "B");
 
         //Output keys
-        public static readonly Key SumKey = new Key("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
+        public static readonly KeyController SumKey = new KeyController("7431D567-7582-477B-A372-5964C2D26AE6", "Sum");
 
-        public override ObservableDictionary<Key, TypeInfo> Inputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [AKey] = TypeInfo.Number,
             [BKey] = TypeInfo.Number
         };
-        public override ObservableDictionary<Key, TypeInfo> Outputs { get; } = new ObservableDictionary<Key, TypeInfo>
+        public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [SumKey] = TypeInfo.Number,
         };
 
-        private int nextChar = 'C';
-
-        public override void Execute(Dictionary<Key, FieldModelController> inputs, Dictionary<Key, FieldModelController> outputs)
+        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
             double sum = 0;
             foreach (var value in inputs.Values)
@@ -37,10 +38,6 @@ namespace Dash
                 if (value is NumberFieldModelController)
                     sum += ((NumberFieldModelController) value).Data;
             }
-
-            //Varargs proof of concept
-            string s = new string((char)nextChar++, 1);
-            Inputs.Add(new Key(s, s), TypeInfo.Number);
 
             outputs[SumKey] = new NumberFieldModelController(sum);
         }

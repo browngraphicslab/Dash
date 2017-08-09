@@ -16,10 +16,10 @@ namespace Dash
     {
         public static readonly DocumentType GridPanelDocumentType = new DocumentType("57305127-4B20-4FAA-B958-820F77C290B8", "Grid Layout");
 
-        public static readonly Key GridRowsTypeKey = new Key("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitionTypes");
-        public static readonly Key GridRowsValueKey = new Key("3761458D-757E-4350-8BF5-FC42D3DCF70F", "RowDefinitionValues");
-        public static readonly Key GridColumnsTypeKey = new Key("7B698361-0F0E-4322-983C-055989376C72", "ColumnDefinitionTypes");
-        public static readonly Key GridColumnsValueKey = new Key("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9", "ColumnDefinitionValues");
+        public static readonly KeyController GridRowsTypeKey = new KeyController("17F67B9A-A9C2-4325-BEC1-B8308B48FC39", "RowDefinitionTypes");
+        public static readonly KeyController GridRowsValueKey = new KeyController("3761458D-757E-4350-8BF5-FC42D3DCF70F", "RowDefinitionValues");
+        public static readonly KeyController GridColumnsTypeKey = new KeyController("7B698361-0F0E-4322-983C-055989376C72", "ColumnDefinitionTypes");
+        public static readonly KeyController GridColumnsValueKey = new KeyController("8AA607A7-1FED-4D4F-A606-1DDF4F86B7E9", "ColumnDefinitionValues");
 
         public GridLayout()
         {
@@ -87,7 +87,7 @@ namespace Dash
             }
         }
 
-        protected new static void SetupBindings(Grid grid, DocumentController docController, Context context)
+        protected static void SetupBindings(Grid grid, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(grid, docController, context);
 
@@ -103,7 +103,7 @@ namespace Dash
             
             SetupBindings(grid, docController, context);
 
-            var col = docController.GetDereferencedField(DashConstants.KeyStore.DataKey, context)
+            var col = docController.GetDereferencedField(KeyStore.DataKey, context)
                 ?.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(col != null);
             foreach (var documentController in col.GetDocuments())
@@ -157,7 +157,7 @@ namespace Dash
 
         public static void AddChild(this DocumentController document, DocumentController child, Context context = null)
         {
-            var children = document.GetDereferencedField(DashConstants.KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
+            var children = document.GetDereferencedField(KeyStore.DataKey, context) as DocumentCollectionFieldModelController;
             Debug.Assert(children != null);
             children.AddDocument(child);
         }

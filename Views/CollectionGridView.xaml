@@ -1,38 +1,37 @@
-﻿<UserControl
+﻿<local:SelectionElement
     x:Class="Dash.CollectionGridView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
-    xmlns:dash="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400">
-    <Grid x:Name="Grid">
+    d:DesignWidth="400" d:DataContext="{d:DesignInstance local:ICollectionViewModel}"
+    AllowDrop="True"
+    Drop="CollectionViewOnDrop"
+    DragEnter="CollectionViewOnDragEnter"
+    Tapped="OnTapped"
+    >
+    <Grid x:Name="Grid" Background="Transparent">
         <GridView x:Name="xGridView"
-                  x:FieldModifier="public"
-                  ItemsSource="{Binding DataBindingSource}"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  ScrollViewer.VerticalScrollMode="Enabled"
-                  ScrollViewer.VerticalScrollBarVisibility="Hidden"
+                  ItemsSource="{Binding DocumentViewModels}"
                   CanDragItems="{Binding CanDragItems}"
-                  AllowDrop="True"
-                  ManipulationMode="None"
-                  Tapped="xGridView_Tapped">
+                  ManipulationMode="{Binding CanDragItems, Converter={StaticResource BoolToManipulationAllOrNoneConverter}}"
+                  IsHitTestVisible="{Binding IsSelected}"
+                  SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
+                  Style="{StaticResource xCollectionGridViewStyle}"
+                  ShowsScrollingPlaceholders="False">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Border BorderThickness="1" BorderBrush="{StaticResource SelectedGrey}"
-                        Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                        <Canvas Width="{Binding ElementName=Grid, Path=DataContext.CellSize}"
-                                Height="{Binding ElementName=Grid,  Path=DataContext.CellSize}">
-                            <dash:DocumentView DataContext="{Binding}" RenderTransform="{Binding GridViewIconGroupTransform}" IsHitTestVisible="False"/>
-                        </Canvas>
-                    </Border>
+                    <Grid>
+                        <local:DocumentView x:Name="XBackdrop" Visibility="Collapsed" IsHitTestVisible="False"/>
+                        <Viewbox x:Name="xBorder" Width="250" Height="250">
+                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
+                        </Viewbox>
+                    </Grid>
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
     </Grid>
-</UserControl>
+</local:SelectionElement>

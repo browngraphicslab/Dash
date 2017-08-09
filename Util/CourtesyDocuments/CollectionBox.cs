@@ -41,7 +41,7 @@ namespace Dash
         {
             var docFieldModelController = new DocumentCollectionFieldModelController(new List<DocumentController>());
             var fields = DefaultLayoutFields(new Point(), new Size(double.NaN, double.NaN), docFieldModelController);
-            fields[DashConstants.KeyStore.IconTypeFieldKey] = new NumberFieldModelController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
+            fields[KeyStore.IconTypeFieldKey] = new NumberFieldModelController((int)IconTypeEnum.Collection); // TODO factor out into SetIconField() method in base class
             var prototypeDocument = new DocumentController(fields, DocumentType, PrototypeId);
             return prototypeDocument;
         }
@@ -55,16 +55,16 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, DocumentController dataDocument, bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetField(DashConstants.KeyStore.DataKey);
+            var data = docController.GetField(KeyStore.DataKey);
 
-            var opacity = (docController.GetDereferencedField(new Key("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
+            var opacity = (docController.GetDereferencedField(new KeyController("opacity", "opacity"), context) as NumberFieldModelController)?.Data;
 
             double opacityValue = opacity.HasValue ? (double)opacity : 1;
 
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(data, context);
+            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context);
 
             var view = new CollectionView(collectionViewModel);
 

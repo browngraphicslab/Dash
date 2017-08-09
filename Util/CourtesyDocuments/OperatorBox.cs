@@ -39,9 +39,9 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController,
             Context context, bool isInterfaceBuilderLayout = false)
         {
-            var data = docController.GetField(DashConstants.KeyStore.DataKey) ?? null;
+            var data = docController.GetField(KeyStore.DataKey) ?? null;
             var opfmc = (data as ReferenceFieldModelController);
-            OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
+            OperatorView opView = new OperatorView {DataContext = opfmc.FieldReference};
             if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
             return opView;
         }

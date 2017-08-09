@@ -38,15 +38,18 @@ namespace Dash
         private RadialMenuView _radialMenu;
         public static DocumentType MainDocumentType = new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
         private static CollectionView _mainCollectionView;
+        
 
         public DocumentController MainDocument { get; private set; }
+
+        public static InkFieldModelController InkFieldModelController = new InkFieldModelController();
 
         public MainPage()
         {
             InitializeComponent();
 
             // create the collection document model using a request
-            var fields = new Dictionary<Key, FieldModelController>();
+            var fields = new Dictionary<KeyController, FieldModelController>();
             fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
             MainDocument = new DocumentController(fields, MainDocumentType);
             var collectionDocumentController =
@@ -73,25 +76,11 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
-
-            MainDocView.AllowDrop = true;
-            MainDocView.DragEnter += MainDocViewOnDragEnter;
-            MainDocView.Drop += MainDocView_Drop;
-            MainDocView.DoubleTapped += XCanvas_OnDoubleTapped;
         }
 
         public CollectionView GetMainCollectionView()
         {
             return _mainCollectionView ?? (_mainCollectionView = MainDocView.GetFirstDescendantOfType<CollectionView>());
-        }
-
-        private void MainDocViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            e.AcceptedOperation = DataPackageOperation.Move;
-            if (e.DragUIOverride == null) return;
-            e.DragUIOverride.IsGlyphVisible = false;
-            e.DragUIOverride.IsContentVisible = false;
-            e.DragUIOverride.Caption = e.DataView.Properties.Title;
         }
 
         public void AddOperatorsFilter(object o, DragEventArgs e)
@@ -128,6 +117,7 @@ namespace Dash
             var children = MainDocument.GetDereferencedField(DocumentCollectionFieldModelController.CollectionKey, null) as DocumentCollectionFieldModelController;
             DBTest.ResetCycleDetection();
             children?.AddDocument(docModel);
+            DBTest.DBDoc.AddChild(docModel);
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -136,92 +126,15 @@ namespace Dash
             MainDocView.Height = e.NewSize.Height;
         }
 
-        //// FILE DRAG AND DROP
-
-        /// <summary>
-        ///     Handles drop events onto the canvas, usually by creating a copy document of the original and
-        ///     placing it into the canvas.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e">drag event arguments</param>
-        private async void MainDocView_Drop(object sender, DragEventArgs e)
-        {
-            if (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null)
-            {
-                (e.DataView.Properties[RadialMenuView.RadialMenuDropKey] as Action<object, DragEventArgs>)?.Invoke(sender, e);
-                return;
-            }
-
-            var dragged = new Image();
-            var url = "";
-
-            
-            // load items dragged from solution explorer
-            if (e.DataView.Contains(StandardDataFormats.StorageItems))
-            {
-                var items = await e.DataView.GetStorageItemsAsync();
-
-                if (items.Any())
-                {
-                    var storageFile = items[0] as StorageFile;
-                    var contentType = storageFile.ContentType;
-
-                    var folder = ApplicationData.Current.LocalFolder;
-
-                    // parse images dropped in
-                    if (contentType == "image/jpg" || contentType == "image/png" || contentType == "image/jpeg")
-                    {
-                        var newFile = await storageFile.CopyAsync(folder, storageFile.Name,
-                            NameCollisionOption.GenerateUniqueName);
-                        url = newFile.Path;
-                        var bitmapImg = new BitmapImage();
-
-                        bitmapImg.SetSource(await storageFile.OpenAsync(FileAccessMode.Read));
-                        dragged.Source = bitmapImg;
-                    }
-
-                    // parse text files dropped in
-                    if (contentType == "text/plain")
-                        return;
-                }
-            }
-
-            if (e.DataView.Properties["image"] != null)
-                dragged = e.DataView.Properties["image"] as Image; // fetches stored drag object
-
-            // make document
-            // generate single-image document model
-            var m = new ImageFieldModelController(new Uri(url));
-            var fields = new Dictionary<Key, FieldModelController>
-            {
-                [new Key("DRAGIMGF-1E74-4577-8ACC-0685111E451C", "image")] = m
-            };
-
-            var col = new DocumentController(fields, new DocumentType("dragimage", "dragimage"));
-            DisplayDocument(col);
-        }
-
-        public void xCanvas_DragOver(object sender, DragEventArgs e)
-        {
-            e.AcceptedOperation = DataPackageOperation.Move;
-        }
-
         public void DisplayElement(UIElement elementToDisplay, Point upperLeft, UIElement fromCoordinateSystem)
         {
-            var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
-
+            //var dropPoint = fromCoordinateSystem.TransformToVisual(xCanvas).TransformPoint(upperLeft);
+            var dropPoint = Util.PointTransformFromVisual(upperLeft, fromCoordinateSystem, xCanvas); 
             xCanvas.Children.Add(elementToDisplay);
             Canvas.SetLeft(elementToDisplay, dropPoint.X);
             Canvas.SetTop(elementToDisplay, dropPoint.Y);
         }
 
-        private void XCanvas_OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            if (!_radialMenu.IsVisible)
-                _radialMenu.JumpToPosition(e.GetPosition(xCanvas).X, e.GetPosition(xCanvas).Y);
-            //else _radialMenu.IsVisible = false;
-            e.Handled = true;
-        }
         #region Requests
 
         private enum HTTPRequestMethod
@@ -267,7 +180,8 @@ namespace Dash
             if (method == HTTPRequestMethod.Get)
             {
                 response = await client.GetAsync();
-            } else if (method == HTTPRequestMethod.Post)
+            }
+            else if (method == HTTPRequestMethod.Post)
             {
                 throw new NotImplementedException();
             }
@@ -295,7 +209,7 @@ namespace Dash
                 .PostUrlEncodedAsync(new
                 {
                     grant_type = "client_credentials"
-                });        
+                });
 
             // get the string from the response, including decompression and checking for success
             var responseString = await GetStringFromResponseAsync(authResponse);

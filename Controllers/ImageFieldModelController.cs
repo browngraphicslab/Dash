@@ -3,6 +3,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media.Imaging;
+using DashShared;
 
 namespace Dash
 {
@@ -40,7 +41,7 @@ namespace Dash
             Data = (fieldModel as ImageFieldModelController).Data;
         }
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             var image = new Image
             {

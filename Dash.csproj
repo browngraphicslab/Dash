@@ -11,12 +11,13 @@
     <AssemblyName>Dash</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion>10.0.14393.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.10240.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion>10.0.15063.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.15063.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PackageCertificateKeyFile>PanZoomCanvas_TemporaryKey.pfx</PackageCertificateKeyFile>
+    <RuntimeIdentifiers>win10-arm;win10-arm-aot;win10-x86;win10-x86-aot;win10-x64;win10-x64-aot</RuntimeIdentifiers>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -90,42 +91,79 @@
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
     <None Include="Assets\richtexttest.rtf" />
-    <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClipSettings.xaml.cs">
       <DependentUpon>ClipSettings.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controllers\Operators\CompoundOperator.cs" />
+    <Compile Include="Converters\DoubleToStringConverter.cs" />
+    <Compile Include="Controllers\KeyController.cs" />
+    <Compile Include="Controllers\Operators\CompoundOperatorFieldController.cs" />
+    <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
+    <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
+    <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
+    <Compile Include="Util\DocumentViewModelParameters.cs" />
+    <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
     <Compile Include="Controllers\RectFieldModelController.cs" />
     <Compile Include="Converters\DocumentControllerToStringConverter.cs" />
+    <Compile Include="Converters\StringToFontweightConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\CollectionMapOperatorBox.cs" />
     <Compile Include="Models\RectFieldModel.cs" />
+    <Compile Include="Push\IPushController.cs" />
+    <Compile Include="Rest\Endpoints\AccountEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\AuthenticationEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\DocumentEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\FieldEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\KeyEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ServerEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\ShapeEndpoint.cs" />
+    <Compile Include="Rest\Endpoints\TypeEndpoint.cs" />
+    <Compile Include="Rest\Exceptions\ApiException.cs" />
+    <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
     <Compile Include="Util\FieldBinding.cs" />
+    <Compile Include="Util\EditableImage.xaml.cs">
+      <DependentUpon>EditableImage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\CourtesyDocuments\InkBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleInkDoc.cs" />
+    <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
+    <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\WebBox.cs" />
-    <Compile Include="ViewModels\DocumentCanvasViewModel.cs" />
+    <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
+    <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
+    <Compile Include="ViewModels\ICollectionViewModel.cs" />
+    <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\BezierConverter.cs" />
     <Compile Include="Views\CollectionMapView.xaml.cs">
       <DependentUpon>CollectionMapView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\CompoundOperatorEditor.xaml.cs">
+      <DependentUpon>CompoundOperatorEditor.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ICollectionView.cs" />
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
       <DependentUpon>AlignmentSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\InkFieldModelController.cs" />
+    <Compile Include="Models\InkFieldModel.cs" />
+    <Compile Include="Push\Connection.cs" />
+    <Compile Include="Push\PushClient.cs" />
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
     <Compile Include="Controllers\Operators\DBSearchOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\MapOperatorController.cs" />
@@ -133,15 +171,17 @@
     <Compile Include="Converters\InverseVisibilityConverter.cs" />
     <Compile Include="Converters\StringToEnumConverter.cs" />
     <Compile Include="Converters\StringToDoubleConverter.cs" />
-    <Compile Include="Views\InterfaceBuilder\DocumentCanvasView.xaml.cs">
-      <DependentUpon>DocumentCanvasView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
       <DependentUpon>GridViewSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\InkSettings.xaml.cs">
+      <DependentUpon>InkSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\IOReference.cs" />
+    <Compile Include="Util\OperationCreationHelper.cs" />
     <Compile Include="Views\SelectionElement.xaml.cs">
       <DependentUpon>SelectionElement.xaml</DependentUpon>
     </Compile>
@@ -218,6 +258,7 @@
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
+    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
@@ -243,7 +284,6 @@
     <Compile Include="Controllers\ReferenceFieldModelController.cs" />
     <Compile Include="Controllers\TextFieldModelController.cs" />
     <Compile Include="Models\ListFieldModel.cs" />
-    <Compile Include="Util\TypeInfo.cs" />
     <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\DoubleToFontWeightConverter.cs" />
     <Compile Include="Converters\FieldModelControllerToFrameworkElementConverter.cs" />
@@ -257,7 +297,7 @@
     <Compile Include="Converters\UriToBitmapImageConverter.cs" />
     <Compile Include="Converters\VisibilityToVisibilityConverter.cs" />
     <Compile Include="Util\ItemsCarrier.cs" />
-    <Compile Include="ManipulationControls.cs" />
+    <Compile Include="Util\ManipulationControls.cs" />
     <Compile Include="Models\CollectionModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\DocumentCollectionFieldModel.cs" />
@@ -282,14 +322,6 @@
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerClient\Endpoints\AccountEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\AuthenticationEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\DocumentEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\KeyEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\ShapeEndpoint.cs" />
-    <Compile Include="ServerClient\Endpoints\TypeEndpoint.cs" />
-    <Compile Include="ServerClient\Exceptions\ApiException.cs" />
-    <Compile Include="ServerClient\Endpoints\ServerEndpoint.cs" />
     <Compile Include="Services\AppServiceExtensions.cs" />
     <Compile Include="Sources\Api\ApiCreatorDisplay.xaml.cs">
       <DependentUpon>ApiCreatorDisplay.xaml</DependentUpon>
@@ -322,7 +354,7 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
-    <Compile Include="Util\InkSource.cs" />
+    <Compile Include="Util\GlobalInkSettings.cs" />
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
@@ -345,7 +377,6 @@
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\EditableFieldFrame.cs" />
     <Compile Include="Views\EmailView.xaml.cs">
       <DependentUpon>EmailView.xaml</DependentUpon>
     </Compile>
@@ -354,6 +385,9 @@
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
       <DependentUpon>ImageSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InkCanvasControl.xaml.cs">
+      <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
@@ -406,7 +440,6 @@
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
-    <Compile Include="Converters\WidthBindingToDoubleConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -431,6 +464,7 @@
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
     <Content Include="Assets\gridbg.png" />
+    <Content Include="Assets\GRIDTRANSPARENT.png" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
@@ -487,6 +521,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Util\EditableImage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ApiOpView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -495,15 +533,19 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\CompoundOperatorEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\InterfaceBuilder\DocumentCanvasView.xaml">
+    <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
+    <Page Include="Views\InterfaceBuilder\InkSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -635,6 +677,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Views\InkCanvasControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Views\InterfaceBuilder\InterfaceBuilder.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -713,6 +759,32 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\OperatorModels\Set\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Flurl.Http">
+      <Version>1.2.0</Version>
+    </PackageReference>
+    <PackageReference Include="lightbuzz-smtp">
+      <Version>1.8.0</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client">
+      <Version>2.2.2</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client">
+      <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection">
+      <Version>1.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>5.2.3</Version>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json">
+      <Version>10.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Win2D.uwp">
+      <Version>1.19.0</Version>
+    </PackageReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

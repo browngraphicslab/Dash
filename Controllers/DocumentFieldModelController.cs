@@ -2,6 +2,8 @@
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Windows.UI.Xaml.Data;
+using Dash.Converters;
 
 namespace Dash
 {
@@ -39,20 +41,31 @@ namespace Dash
         }
         public override TypeInfo TypeInfo => TypeInfo.Document;
 
-        public override FrameworkElement GetTableCellView()
+        public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
+        }
+        public override IEnumerable<DocumentController> GetReferences()
+        {
+            yield return Data;
         }
 
         public override FieldModelController GetDefaultController()
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? 
-                new DocumentController(new Dictionary<Key, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
+                new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
         }
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
-            textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
+            Binding textBinding = new Binding
+            {
+                Source = this,
+                Converter = new DocumentFieldModelToStringConverter(),
+                Mode = BindingMode.TwoWay
+            };
+            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+           // textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
         }
 
         public override FieldModelController Copy()

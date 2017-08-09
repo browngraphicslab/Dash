@@ -20,7 +20,7 @@ using Dash;
 
 namespace Dash
 {
-    public sealed partial class OverlayMenu : UserControl
+    public sealed partial class OverlayMenu : UserControl, IDisposable
     {
 
         private List<MenuButton> _collectionButtons;
@@ -37,6 +37,20 @@ namespace Dash
             else
             {
                 this.MakeCollectionMenu();
+            }
+        }
+
+        public void Dispose()
+        {
+            if(_collectionButtons != null)
+            foreach (var item in _collectionButtons)
+            {
+                item.Dispose();
+            }
+            if(_documentButtons != null)
+            foreach (var item in _documentButtons)
+            {
+                item.Dispose();
             }
         }
 
@@ -87,8 +101,9 @@ namespace Dash
             {
                 if (!button.RotateOnTap)
                 {
-                    var transform = button.TransformToVisual(parent);
-                    var yOffset = transform.TransformPoint(new Point(0, 0)).Y;
+                    //var transform = button.TransformToVisual(parent);
+                    //var yOffset = transform.TransformPoint(new Point(0, 0)).Y;
+                    var yOffset = Util.PointTransformFromVisual(new Point(0, 0), button, parent).Y; 
                     button.AddAndRunCollapseAnimation(yOffset);
                 }
                 else

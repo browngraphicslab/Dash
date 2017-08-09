@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 
 namespace DashWebServer
 {
-    public class Message
+    public class RealtimeMessage
     {
         public Dictionary<string, object> Body = new Dictionary<string, object>();
         public string Type {
@@ -17,7 +17,7 @@ namespace DashWebServer
         }
         public readonly IPEndPoint Sender;
 
-        private Message(byte[] data)
+        private RealtimeMessage(byte[] data)
         {
             if (data.Length == 0)
             {
@@ -28,12 +28,12 @@ namespace DashWebServer
             Body = JsonConvert.DeserializeObject(message, typeof(Dictionary<string, object>)) as Dictionary<string, object>;
         }
 
-        public Message(UdpReceiveResult result) : this(result.Buffer)
+        public RealtimeMessage(UdpReceiveResult result) : this(result.Buffer)
         {
             Sender = result.RemoteEndPoint;
         }
 
-        public Message(Snapshot diff)
+        public RealtimeMessage(Snapshot diff)
         {
             Body = diff.WorldState.ToDictionary(pair => pair.Key, pair => (object)pair.Value);
         }

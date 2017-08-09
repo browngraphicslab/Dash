@@ -40,7 +40,7 @@
     -->
     <Application.Resources>
         <!-- COLORS -->
-        <SolidColorBrush x:Key="WindowsBlue" Color="SteelBlue"/>
+        <SolidColorBrush x:Key="WindowsBlue" Color="#FF0078D7"/>
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
@@ -147,6 +147,61 @@
             <Setter Property="Foreground" Value="#DE0074FF"/>
         </Style>
 
+        <!--Collection Grid View--> 
+        <Style TargetType="GridView" x:Key="xCollectionGridViewStyle">
+            <Setter Property="Background" Value="#FFE5E5E5"/>
+            <Setter Property="Opacity" Value=".7"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Hidden"/>
+        </Style>
+
+        <!--Collection List View-->
+        <Style x:Key="xCollectionListViewStyle" TargetType="ListView">
+            <Setter Property="Background" Value="#FFE5E5E5"/>
+            <Setter Property="Opacity" Value=".7"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Enabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Disabled"/>
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="VerticalAlignment" Value="Stretch"/>
+            <Setter Property="FlowDirection" Value="LeftToRight"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Vertically scrolling Collection List View-->
+        <Style x:Key="xVerticalCollectionListViewStyle" TargetType="ListView">
+            <Setter Property="Background" Value="#FFE5E5E5"/>
+            <Setter Property="Opacity" Value=".7"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Visible"/>
+            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled"/>
+            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <ItemsStackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
+        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
+        <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
+        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
+        <local:BoolToManipulationAllOrNoneConverter x:Key="BoolToManipulationAllOrNoneConverter"></local:BoolToManipulationAllOrNoneConverter>
+        <local:DocViewModelParamToDocViewModelConverter x:Key="DocViewModelParamToViewModelConverter"></local:DocViewModelParamToDocViewModelConverter>
 
         <!-- SAMPLE NODE HERE-->
 
@@ -157,16 +212,14 @@
             <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
             <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
         </Style>
+        
+        <!--TODO what is this doing here-->
         <ItemsPanelTemplate x:Key="ListViewLayoutTemplate">
             <DataTemplate>
                 <StackPanel Orientation="Vertical"></StackPanel>
             </DataTemplate>
         </ItemsPanelTemplate>
-        <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"></local:BoolToVisibilityConverter>
-        <local:PointToTranslateTransformConverter x:Key="PointToTranslateTransformConverter"></local:PointToTranslateTransformConverter>
-        <local:FieldModelControllerToFrameworkElementConverter x:Key="FieldModelControllerToFrameworkElementConverter"></local:FieldModelControllerToFrameworkElementConverter>
-        <local:TransformGroupDataToGroupTransformConverter x:Key="TransformGroupDataToGroupTransformConverter"></local:TransformGroupDataToGroupTransformConverter>
-        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
+
         <Style x:Key="xPlainTextBox" TargetType="TextBox">
             <Setter Property="MinWidth" Value="{ThemeResource TextControlThemeMinWidth}"/>
             <Setter Property="MinHeight" Value="{ThemeResource TextControlThemeMinHeight}"/>
@@ -237,38 +290,8 @@
                 </Setter.Value>
             </Setter>
         </Style>
-        <Style x:Key="ListViewStyle_SelectionEdit" TargetType="ListView">
-            <Setter Property="IsTabStop" Value="False"/>
-            <Setter Property="TabNavigation" Value="Once"/>
-            <Setter Property="IsSwipeEnabled" Value="True"/>
-            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
-            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
-            <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled"/>
-            <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False"/>
-            <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled"/>
-            <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="True"/>
-            <Setter Property="ScrollViewer.ZoomMode" Value="Disabled"/>
-            <Setter Property="ScrollViewer.IsDeferredScrollingEnabled" Value="False"/>
-            <Setter Property="ScrollViewer.BringIntoViewOnFocusChange" Value="True"/>
-            <Setter Property="UseSystemFocusVisuals" Value="True"/>
-            <Setter Property="ItemContainerTransitions">
-                <Setter.Value>
-                    <TransitionCollection>
-                        <AddDeleteThemeTransition/>
-                        <ContentThemeTransition/>
-                        <ReorderThemeTransition/>
-                        <EntranceThemeTransition IsStaggeringEnabled="False"/>
-                    </TransitionCollection>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="ItemsPanel">
-                <Setter.Value>
-                    <ItemsPanelTemplate>
-                        <ItemsStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </Application.Resources>
 </Application>
+
+
 

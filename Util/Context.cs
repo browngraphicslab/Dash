@@ -70,7 +70,7 @@ namespace Dash
 
         public string GetDeepestDelegateOf(string referenceDocId)
         {
-            foreach (var doc in _documentContextList)
+            foreach (var doc in _documentContextList.Reverse())
                 if (doc.IsDelegateOf(referenceDocId))
                     referenceDocId = doc.GetId();
             return referenceDocId;

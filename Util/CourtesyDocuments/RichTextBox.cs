@@ -22,14 +22,14 @@ namespace Dash
         {
             RichTextView rtv = null;
             var refToRichText =
-                docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+                docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             Debug.Assert(refToRichText != null);
             var fieldModelController = refToRichText.DereferenceToRoot(context);
             if (fieldModelController is RichTextFieldModelController)
             {
                 var richTextFieldModelController = fieldModelController as RichTextFieldModelController;
                 Debug.Assert(richTextFieldModelController != null);
-                var richText = new RichTextView(richTextFieldModelController);
+                var richText = new RichTextView(richTextFieldModelController, refToRichText, context);
                 rtv = richText;
                 rtv.HorizontalAlignment = HorizontalAlignment.Stretch;
                 rtv.VerticalAlignment = VerticalAlignment.Stretch;

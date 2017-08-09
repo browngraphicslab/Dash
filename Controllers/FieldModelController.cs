@@ -8,6 +8,7 @@ using DashShared;
 using TextWrapping = Windows.UI.Xaml.TextWrapping;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
+using System.Collections.Generic;
 
 namespace Dash
 {
@@ -67,6 +68,10 @@ namespace Dash
             return FieldModel.Id;
         }
 
+        public virtual IEnumerable<DocumentController> GetReferences()
+        {
+            return new List<DocumentController>();
+        }
         public virtual FieldModelController Dereference(Context context)
         {
             return this;
@@ -86,7 +91,7 @@ namespace Dash
         /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
         /// </summary>
         /// <returns></returns>
-        public abstract FrameworkElement GetTableCellView();
+        public abstract FrameworkElement GetTableCellView(Context context);
 
         /// <summary>
         /// Helper method for generating a table cell view in <see cref="GetTableCellView"/> for textboxes which may have to scroll

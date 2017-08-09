@@ -405,6 +405,7 @@ namespace Dash
             Action<object> setTouchInput = Actions.SetTouchInput;
             Action<object> setMouseInput = Actions.SetMouseInput;
             Action<object> setNoInput = Actions.SetNoInput;
+            Action<object> chooseEraser = Actions.ChooseEraser;
             this.InitializeColors();
 
             var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
@@ -431,6 +432,10 @@ namespace Dash
                     new RadialActionModel("Pencil", "✏️")
                     {
                         GenericAction = choosePencil
+                    },
+                    new RadialActionModel("Eraser", "")
+                    {
+                        GenericAction = chooseEraser
                     }
                 });
 
@@ -475,17 +480,17 @@ namespace Dash
 
             #endregion
 
-            Action<CollectionView, DragEventArgs> addSearch = Actions.AddSearch;
+            Action<ICollectionView, DragEventArgs> addSearch = Actions.AddSearch;
             var searchButton = new RadialActionModel("Search", "🔍")
             {
                 CollectionDropAction = addSearch
             };
 
             Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<CollectionView, DragEventArgs> addCollection = Actions.AddCollection;
-            Action<CollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
-            Action<CollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
-            Action<CollectionView, DragEventArgs> addNotes = Actions.AddNotes;
+            Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
+            Action<ICollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
+            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
             var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd };
             var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };

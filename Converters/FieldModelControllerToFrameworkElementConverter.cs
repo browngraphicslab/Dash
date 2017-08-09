@@ -7,14 +7,24 @@ using Windows.UI.Xaml;
 
 namespace Dash
 {
-    public class FieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<FieldModelController, FrameworkElement>
+    public class BoundFieldModelController
     {
-        public override FrameworkElement ConvertDataToXaml(FieldModelController data, object parameter = null)
+        public FieldModelController FieldModelController;
+        public DocumentController   ContextDocumentController;
+        public BoundFieldModelController(FieldModelController fieldModelController, DocumentController contextDocument)
         {
-            return data.GetTableCellView();
+            FieldModelController = fieldModelController;
+            ContextDocumentController = contextDocument;
+        }
+    }
+    public class FieldModelControllerToFrameworkElementConverter : SafeDataToXamlConverter<BoundFieldModelController, FrameworkElement>
+    {
+        public override FrameworkElement ConvertDataToXaml(BoundFieldModelController data, object parameter = null)
+        {
+            return data.FieldModelController.GetTableCellView(new Context(data.ContextDocumentController));
         }
 
-        public override FieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
+        public override BoundFieldModelController ConvertXamlToData(FrameworkElement xaml, object parameter = null)
         {
             throw new NotImplementedException();
         }

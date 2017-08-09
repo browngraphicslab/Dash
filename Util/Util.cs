@@ -43,11 +43,19 @@ namespace Dash
             return new MatrixTransform { Matrix = new Matrix(1 / m.M11, 0, 0, 1 / m.M22, 0, 0) }.TransformPoint(p);
         }
 
-        public static Point PointTransformFromVisual(Point p, UIElement to)
+        /// <summary>
+        /// Transforms point p in from-space to a point in to-space 
+        /// </summary>
+        public static Point PointTransformFromVisual(Point p, UIElement from, UIElement to = null)
         {
-            GeneralTransform r = to.TransformToVisual(Window.Current.Content).Inverse;
-            Debug.Assert(r != null);
-            return r.TransformPoint(p);
+            if (to == null) to = Window.Current.Content;
+            var ttv = from.TransformToVisual(to);
+            Debug.Assert(ttv != null); 
+            return ttv.TransformPoint(p);
+
+            //GeneralTransform r = from.TransformToVisual(Window.Current.Content).Inverse;
+            //Debug.Assert(r != null);
+            //return r.TransformPoint(p);
         }
 
         /// <summary>
@@ -57,9 +65,9 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionDropPoint(CollectionView collection, Point absolutePosition)
+        public static Point GetCollectionDropPoint(CollectionFreeformView freeForm, Point absolutePosition)
         {
-            var freeForm = collection.CurrentView as CollectionFreeformView;
+            //Debug.Assert(freeForm != null);
             if (freeForm != null)
             {
                 var r = MainPage.Instance.xCanvas.TransformToVisual(freeForm.xItemsControl.ItemsPanelRoot);
@@ -97,7 +105,7 @@ namespace Dash
                     if (enumFieldsA.Count != enumFieldsB.Count) continue;
 
                     bool equal = true;
-                    foreach (KeyValuePair<Key, FieldModelController> pair in enumFieldsA)
+                    foreach (KeyValuePair<KeyController, FieldModelController> pair in enumFieldsA)
                     {
                         if (enumFieldsB.Select(p => p.Key).Contains(pair.Key))
                         {
@@ -149,10 +157,10 @@ namespace Dash
         /// If there is a nested collection, nests the json recursively 
         /// </summary>
         /// <returns></returns>
-        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
+        public static Dictionary<string, object> JsonSerializeHelper(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
         {
             Dictionary<string, object> jsonDict = new Dictionary<string, object>();
-            foreach (KeyValuePair<Key, FieldModelController> pair in fields)
+            foreach (KeyValuePair<KeyController, FieldModelController> pair in fields)
             {
                 object data = null;
                 if (pair.Value is TextFieldModelController)
@@ -200,7 +208,7 @@ namespace Dash
         /// <summary>
         /// Exports the document's key to field as json object and saves it locally as .txt 
         /// </summary>
-        public static async void ExportAsJson(IEnumerable<KeyValuePair<Key, FieldModelController>> fields)
+        public static async void ExportAsJson(IEnumerable<KeyValuePair<KeyController, FieldModelController>> fields)
         {
             Dictionary<string, object> jsonDict = JsonSerializeHelper(fields);
             string json = JsonConvert.SerializeObject(jsonDict);
@@ -408,7 +416,7 @@ namespace Dash
 
             foreach (FieldModelController fm in fms)
             {
-                Key key = new Key();                                                                                  // TODO should give it a unique key? 
+                var key = new KeyController();                                                                                  // TODO should give it a unique key? 
                 doc.SetField(key, fm, true);
                 if (fm is TextFieldModelController || fm is NumberFieldModelController)
                 {
@@ -432,8 +440,8 @@ namespace Dash
             IEnumerable<FieldModelController> fms = RawToFieldModelControllerFactory(randomList, true);
 
             DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type w/ actual guid 
-            var fields = new Dictionary<Key, FieldModelController>();
-            fields.Add(DashConstants.KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
+            var fields = new Dictionary<KeyController, FieldModelController>();
+            fields.Add(KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
             DocumentController Document = new DocumentController(fields, ListType);
 
             IList<DocumentController> viewDocs = FMControllerToCourtesyDocs(ref Document, fms);

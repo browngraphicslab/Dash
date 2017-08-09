@@ -1,0 +1,53 @@
+﻿<UserControl
+    x:Class="Dash.CompoundOperatorEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400">
+
+    <Grid>
+        <local:CollectionFreeformView x:FieldModifier="public" x:Name="xFreeFormEditor" AllowDrop="True" DragOver="XFreeFormEditor_OnDragOver" Drop="XFreeFormEditor_OnDrop"/>
+        
+        <!--listview of all the operator options at the bottom-->
+        <ListView x:Name="xOperationListView" HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                  FlowDirection="LeftToRight" 
+                  ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsHorizontalRailEnabled="True"
+                  ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.IsVerticalRailEnabled="False"
+                  CanDragItems="True" DragItemsStarting="XOperationListView_OnDragItemsStarting"
+                  IsItemClickEnabled="true" ItemClick="XOperationListView_OnItemClick"
+                  SelectionMode="Single" ItemsSource="{x:Bind _operatorList}" ManipulationMode="None">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <!--Make the list view items stretch to the full width of the list view-->
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="Padding" Value="0"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="MinWidth" Value="0"/>
+                    <Setter Property="MinHeight" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <ItemsStackPanel Background="Transparent" Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListView.ItemsPanel>
+
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="local:OperatorBuilder">
+                    <Border Height="50">
+                        <TextBlock Text="{x:Bind Icon}" Padding="0" Width="50"
+                                   TextAlignment="Center" VerticalAlignment="Center" 
+                                   SelectionHighlightColor="Transparent"/>
+                    </Border>
+                    
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </Grid>
+</UserControl>

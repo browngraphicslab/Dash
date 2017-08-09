@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Numerics;
 using Windows.Foundation;
+using Windows.UI;
+using Windows.UI.Composition;
 using Windows.UI.Input;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Data;
+using Windows.UI.Xaml.Hosting;
 using Windows.UI.Xaml.Input;
-using Windows.UI;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
-using Visibility = Windows.UI.Xaml.Visibility;
-using Windows.UI.Xaml.Controls.Primitives;
+using Dash.Views;
+using Windows.UI.Xaml.Shapes;
 using DashShared;
-using Dash.Controllers.Operators;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -22,9 +25,8 @@ namespace Dash
 
     public sealed partial class DocumentView : SelectionElement
     {
-        public string DebugName = "";
-        public CollectionView ParentCollection;
-        public bool HasCollection { get; set; }
+        public CollectionView ParentCollection; // TODO document views should not be assumed to be in a collection this!
+        public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -36,38 +38,82 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
-        public event OperatorView.IODragEventHandler IODragStarted;
-        public event OperatorView.IODragEventHandler IODragEnded;
+        public delegate void IODragEventHandler(IOReference reference);
 
-        public void setBG(SolidColorBrush s) { XGrid.Background = s; }
-
-        public ICollectionView View { get; set; }
-        private double startWidth, startHeight; // used for restoring on double click in icon view
+        public event IODragEventHandler IODragStarted;
+        public event IODragEventHandler IODragEnded;
 
         public DocumentView()
         {
             this.InitializeComponent();
+            InitializeDropShadow(xShadowHost, xShadowTarget);
+
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            this.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY;
-            manipulator = new ManipulationControls(this);
-            manipulator.OnManipulatorTranslated += ManipulatorOnOnManipulatorTranslated;
+            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel:true);
+            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
-            MinWidth = 120;
-            MinHeight = 96;
-
-            startWidth = Width;
-            startHeight = Height;
-
-            //xContextMenu.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+            MinWidth = 100;
+            MinHeight = 100;
 
             DraggerButton.Holding += DraggerButtonHolding;
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            Tapped += OnTapped;
             DoubleTapped += ExpandContract_DoubleTapped;
+            Loaded += This_Loaded;
+            Unloaded += This_Unloaded;
+        }
+
+        private void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
+        {
+            Visual hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
+            Compositor compositor = hostVisual.Compositor;
+
+            // Create a drop shadow
+            var dropShadow = compositor.CreateDropShadow();
+            dropShadow.Color = Color.FromArgb(255, 75, 75, 80);
+            dropShadow.BlurRadius = 15.0f;
+            dropShadow.Offset = new Vector3(2.5f, 2.5f, 0.0f);
+            // Associate the shape of the shadow with the shape of the target element
+            dropShadow.Mask = shadowTarget.GetAlphaMask();
+
+            // Create a Visual to hold the shadow
+            var shadowVisual = compositor.CreateSpriteVisual();
+            shadowVisual.Shadow = dropShadow;
+
+            // Add the shadow as a child of the host in the visual tree
+            ElementCompositionPreview.SetElementChildVisual(shadowHost, shadowVisual);
+
+            // Make sure size of shadow host and shadow visual always stay in sync
+            var bindSizeAnimation = compositor.CreateExpressionAnimation("hostVisual.Size");
+            bindSizeAnimation.SetReferenceParameter("hostVisual", hostVisual);
+
+            shadowVisual.StartAnimation("Size", bindSizeAnimation);
+
+
+        }
+
+        public DocumentView(DocumentViewModel documentViewModel) : this()
+        {
+            DataContext = documentViewModel;
+        }
+
+        private void This_Unloaded(object sender, RoutedEventArgs e)
+        {
+            DraggerButton.Holding -= DraggerButtonHolding;
+            DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
+            DoubleTapped -= ExpandContract_DoubleTapped;
+            Loaded -= This_Loaded;
+            Unloaded -= This_Unloaded;
+        }
+
+
+        private void This_Loaded(object sender, RoutedEventArgs e)
+        {
+            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
         }
 
 
@@ -76,44 +122,42 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
-            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
-            if (view == null) return; // we can't always assume we're on a collection		
+            
+            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
+            //if (view == null) return; // we can't always assume we're on a collection		
 
-            view.CanLink = false;
+            //view.CanLink = false;
+            //args.Handled = true;
 
-            args.Handled = true;
-            (view.CurrentView as CollectionFreeformView)?.EndDragOnDocumentView(ref this.ViewModel.DocumentController,
-                new OperatorView.IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, DashConstants.KeyStore.DataKey), false, args, OuterGrid,
-                    OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-        }
+            //view.CancelDrag(args.Pointer); 
 
-        private void This_Loaded(object sender, RoutedEventArgs e)
-        {
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
+            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
+            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
+            
         }
 
         private void SetUpMenu()
         {
             Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
 
-            var documentButtons = new List<MenuButton>()
+            var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 new MenuButton(Symbol.Copy, "Copy",bgcolor,CopyDocument),
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine),
-                new MenuButton(Symbol.Page, "Json",bgcolor, GetJson)
+                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
-            Binding visibilityBinding = new Binding()
+            Binding visibilityBinding = new Binding
             {
                 Source = ViewModel,
                 Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
                 Mode = BindingMode.OneWay
             };
-            _docMenu.SetBinding(OverlayMenu.VisibilityProperty, visibilityBinding);
+            _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
             ViewModel.OpenMenu();
         }
@@ -137,11 +181,6 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
-        }
-
-        public DocumentView(DocumentViewModel documentViewModel) : this()
-        {
-            DataContext = documentViewModel;
         }
 
         /// <summary>
@@ -191,8 +230,8 @@ namespace Dash
             var dy = Math.Max(p.Y, 0);
             //p = new Point(dx, dy);
 
-            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X /*+ p.X / 2*/, position.Y /*- p.Y / 2.0f*/),
-                                                                new Point(/*s.Width / 2.0f, s.Height / 2.0f*/),
+            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X, position.Y),
+                                                                new Point(),
                                                                 ViewModel.GroupTransform.ScaleAmount);
             e.Handled = true;
         }
@@ -211,18 +250,9 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Called whenever a field is changed on the document
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        private void DocumentModel_DocumentFieldUpdated(ReferenceFieldModel fieldReference)
-        {
-            // ResetFields(_vm);
-            // Debug.WriteLine("DocumentView.DocumentModel_DocumentFieldUpdated COMMENTED OUT LINE");
-        }
-
         private void updateIcon()
         {
+            if (ViewModel == null) return;
             // when you want a new icon, you have to add a check for it here!
             if (ViewModel.IconType == IconTypeEnum.Document)
             {
@@ -238,20 +268,13 @@ namespace Dash
             }
         }
 
-
         void initDocumentOnDataContext()
         {
-
             // document type specific styles >> use VERY sparringly
             var docType = ViewModel.DocumentController.DocumentModel.DocumentType;
             if (docType.Type != null)
             {
-                // hide white background & drop shadow on operator views
-                if (docType.Type.Equals("operator"))
-                {
-                    XGrid.Background = new SolidColorBrush(Colors.Transparent);
-                    xBorder.Opacity = 0;
-                }
+
             }
             else
             {
@@ -301,14 +324,6 @@ namespace Dash
 
         private void SetInterfaceBuilderSpecificSettings()
         {
-            //if (ViewModel != null && ViewModel.MenuOpen)
-            //{
-            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height);
-            //}
-            //else
-            //{
-            //    ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-            //}
             RemoveScroll();
         }
 
@@ -316,8 +331,7 @@ namespace Dash
         {
             if (ViewModel != null)
             {
-                ClipRect.Rect = ViewModel.MenuOpen ? new Rect(0, 0, e.NewSize.Width - 55, e.NewSize.Height) : new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
-                ViewModel.UpdateGridViewIconGroupTransform(ActualWidth, ActualHeight);
+                ClipRect.Rect = new Rect(0, 0, e.NewSize.Width, e.NewSize.Height);
             }
             // update collapse info
             // collapse to icon view on resize
@@ -325,21 +339,31 @@ namespace Dash
             if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight)
             {
                 updateIcon();
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
+                xFieldContainer.Visibility = Visibility.Collapsed;
+                xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
-                Tapped -= OnTapped;
                 if (_docMenu != null) ViewModel.CloseMenu();
+                UpdateBinding(true); 
             }
-            else
+            else if (xIcon.Visibility == Visibility.Visible)
             {
-                XGrid.Visibility = Windows.UI.Xaml.Visibility.Visible;
-                xIcon.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
-                xBorder.Visibility = Windows.UI.Xaml.Visibility.Visible;
+                xFieldContainer.Visibility = Visibility.Visible;
+                xIcon.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 1;
-                Tapped += OnTapped;
+                UpdateBinding(false);
             }
+        }
+
+        /// <summary>
+        /// Updates the bindings on the lines when documentview is minimized/vice versa 
+        /// </summary>
+        /// <param name="becomeSmall"></param>
+        private void UpdateBinding(bool becomeSmall)
+        {
+            var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            if (view == null) return; // we can't always assume we're on a collection		
+
+            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this); 
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -349,34 +373,11 @@ namespace Dash
             {
                 Resize(300, 300);
 
-            }/*
-            else
-            {
-                Height = MinWidth;
-                Width = MinHeight;
-
-                var dvm = DataContext as DocumentViewModel;
-                dvm.Width = MinWidth;
-                dvm.Height = MinHeight;
             }
-            */
             e.Handled = true; // prevent propagating
         }
 
         #region Menu
-
-
-
-        private void OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            if (ViewModel.IsInInterfaceBuilder)
-            {
-                return;
-            }
-
-            OnSelected();
-            e.Handled = true;
-        }
 
         public void DeleteDocument()
         {
@@ -385,12 +386,12 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.Copy());
+            ParentCollection.ViewModel.AddDocument(ViewModel.Copy(), null);
         }
 
         private void MakeDelegate()
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.AddDocument(ViewModel.GetDelegate());
+            ParentCollection.ViewModel.AddDocument(ViewModel.GetDelegate(), null);
         }
 
         public void ScreenCap()
@@ -400,7 +401,7 @@ namespace Dash
 
         public void CommandLine()
         {
-            FlyoutBase.ShowAttachedFlyout((FrameworkElement)this.XGrid);
+            FlyoutBase.ShowAttachedFlyout(xFieldContainer);
         }
 
         public void GetJson()
@@ -408,16 +409,9 @@ namespace Dash
             Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
         }
 
-        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            if (ParentCollection == null) return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
-        }
-
         private void FadeOut_Completed(object sender, object e)
         {
-            ParentCollection.ViewModel.CollectionFieldModelController.RemoveDocument(ViewModel.DocumentController);
+            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -446,10 +440,10 @@ namespace Dash
             foreach (var tag in (sender as TextBox).Text.Split('#'))
                 if (tag.Contains("="))
                 {
-                    var eqPos = tag.IndexOfAny(new char[] { '=' });
+                    var eqPos = tag.IndexOfAny(new[] { '=' });
                     var word = tag.Substring(0, eqPos).TrimEnd(' ').TrimStart(' ');
                     var valu = tag.Substring(eqPos + 1, Math.Max(0, tag.Length - eqPos - 1)).TrimEnd(' ', '\r');
-                    var key = new Key(word, word);
+                    var key = new KeyController(word, word);
                     foreach (var keyFields in docController.EnumFields())
                         if (keyFields.Key.Name == word)
                         {
@@ -468,19 +462,41 @@ namespace Dash
         }
         #endregion
 
-        protected override void OnActivated(bool isSelected)
+        #region Activation
+
+        private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return;
+            ParentCollection.MaxZ += 1;
+            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (ViewModel.IsInInterfaceBuilder)
+                return;
+
+            OnSelected();
 
         }
 
-
-        public override void OnLowestActivated(bool isLowestSelected)
+        protected override void OnActivated(bool isSelected)
         {
-            if (xIcon.Visibility == Visibility.Collapsed && !HasCollection && isLowestSelected)
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+
+            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
                 ViewModel?.OpenMenu();
             else
                 ViewModel?.CloseMenu();
         }
+
+        #endregion
 
     }
 }

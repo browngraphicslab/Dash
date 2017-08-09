@@ -24,13 +24,13 @@ namespace Dash
     /// </summary>
     public abstract class CourtesyDocument
     {
-        public static readonly Key HorizontalAlignmentKey = new Key("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
-        public static readonly Key VerticalAlignmentKey = new Key("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
+        public static readonly KeyController HorizontalAlignmentKey = new KeyController("B43231DA-5A22-45A3-8476-005A62396686", "Horizontal Alignment");
+        public static readonly KeyController VerticalAlignmentKey = new KeyController("227B9887-BC09-40E4-A3F0-AD204D00E48D", "Vertical Alignment");
 
-        public static readonly Key GridRowKey = new Key("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
-        public static readonly Key GridColumnKey = new Key("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
-        public static readonly Key GridRowSpanKey = new Key("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
-        public static readonly Key GridColumnSpanKey = new Key("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
+        public static readonly KeyController GridRowKey = new KeyController("FC447698-1C96-4014-94A5-845D411C1CD1", "Grid.Row");
+        public static readonly KeyController GridColumnKey = new KeyController("E6663AA3-26E1-48D1-8A95-768EC0CFD4BC", "Grid.Column");
+        public static readonly KeyController GridRowSpanKey = new KeyController("3F305CD6-343E-4155-AFEB-5530E499727C", "Grid.RowSpan");
+        public static readonly KeyController GridColumnSpanKey = new KeyController("C0A16508-76AF-42B5-A3D7-D693FDD5AA84", "Grid.ColumnSpan");
 
         protected abstract DocumentController GetLayoutPrototype();
 
@@ -40,7 +40,7 @@ namespace Dash
 
         protected static FieldModelController GetDereferencedDataFieldModelController(DocumentController docController, Context context, FieldModelController defaultFieldModelController, out ReferenceFieldModelController refToData)
         {
-            refToData = docController.GetField(DashConstants.KeyStore.DataKey) as ReferenceFieldModelController;
+            refToData = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
             Debug.Assert(refToData != null);
             var fieldModelController = refToData.DereferenceToRoot(context);
 
@@ -155,7 +155,7 @@ namespace Dash
 
         }
 
-        protected static void AddBinding<T>(T element, DocumentController docController, Key k, Context context,
+        protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
             DocumentController.OnDocumentFieldUpdatedHandler handler = (sender, args) =>
@@ -167,24 +167,16 @@ namespace Dash
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
-        protected static void AddHandlers<T>(T element, DocumentController docController, Key k, Context context,
+        protected static void AddHandlers<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate, DocumentController.OnDocumentFieldUpdatedHandler handler) where T : FrameworkElement
         {
             element.Loaded += delegate
             {
-                if (loaded++ % 20 == 0)
-                {
-                    //Debug.WriteLine($"Loaded: {loaded}, Unloaded: {unloaded}, {loaded - unloaded}");
-                }
                 bindingDelegate(element, docController, context);
                 docController.AddFieldUpdatedListener(k, handler);
             };
             element.Unloaded += delegate
             {
-                if (unloaded++ % 20 == 0)
-                {
-                    //Debug.WriteLine($"Loaded: {loaded}, Unloaded: {unloaded}, {loaded - unloaded}");
-                }
                 docController.RemoveFieldUpdatedListener(k, handler);
             };
         }
@@ -394,28 +386,28 @@ namespace Dash
         }
 
         [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
-        protected static Dictionary<Key, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
+        protected static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(double x, double y, double w, double h,
             FieldModelController data)
         {
             return DefaultLayoutFields(new Point(x, y), new Size(w, h), data);
         }
 
-        public static Dictionary<Key, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
+        public static Dictionary<KeyController, FieldModelController> DefaultLayoutFields(Point pos, Size size, FieldModelController data = null)
         {
             // assign the default fields
-            var fields = new Dictionary<Key, FieldModelController>
+            var fields = new Dictionary<KeyController, FieldModelController>
             {
-                [DashConstants.KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
-                [DashConstants.KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
-                [DashConstants.KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
-                [DashConstants.KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
-                [DashConstants.KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
+                [KeyStore.WidthFieldKey] = new NumberFieldModelController(size.Width),
+                [KeyStore.HeightFieldKey] = new NumberFieldModelController(size.Height),
+                [KeyStore.PositionFieldKey] = new PointFieldModelController(pos),
+                [KeyStore.ScaleAmountFieldKey] = new PointFieldModelController(1, 1),
+                [KeyStore.ScaleCenterFieldKey] = new PointFieldModelController(0, 0),
                 [HorizontalAlignmentKey] = new TextFieldModelController(HorizontalAlignment.Left.ToString()),
                 [VerticalAlignmentKey] = new TextFieldModelController(VerticalAlignment.Top.ToString())
             };
 
             if (data != null)
-                fields.Add(DashConstants.KeyStore.DataKey, data);
+                fields.Add(KeyStore.DataKey, data);
             return fields;
         }
 
@@ -430,15 +422,16 @@ namespace Dash
         /// <summary>
         /// Adds bindings needed to create links between renderable fields on collections.
         /// </summary>
-        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, Key fieldKey, FieldModelController fmController)
+        protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
             //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
             renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
-                if (view.CanLink)
+                if (freeform != null && freeform.CanLink)
                 {
                     args.Complete(); // This was stopping manipulations from happening on the first try? 
                     //view.CanLink = false; // essential that this is false s.t. drag events don't get overriden
@@ -450,17 +443,29 @@ namespace Dash
             renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
+<<<<<<< HEAD
                 view.CanLink = true;
                 if (view.CurrentView is CollectionFreeformView)
                     (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, view.PointerArgs, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
+=======
+                if (freeform != null) freeform.CanLink = true;
+                (view.CurrentView as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
+                    renderElement.GetFirstAncestorOfType<DocumentView>()));
+>>>>>>> 8a5380c5ff7837ac6219cd426896f4370cb76a36
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
+<<<<<<< HEAD
                 view.PointerArgs = args;
+=======
+                if (freeform != null) freeform.PointerArgs = args;
+>>>>>>> 8a5380c5ff7837ac6219cd426896f4370cb76a36
                 args.Handled = true;
                 if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
                 {
@@ -468,21 +473,26 @@ namespace Dash
                 }
                 else if (args.GetCurrentPoint(view).Properties.IsRightButtonPressed)
                 {
-                    view.CanLink = true;
+                    if (freeform != null) freeform.CanLink = true;
                     if (view.CurrentView is CollectionFreeformView)
-                        (view.CurrentView as CollectionFreeformView).StartDrag(new OperatorView.IOReference(fieldKey, fmController, reference, true, args, renderElement,
+                        (view.CurrentView as CollectionFreeformView).StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
                             renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
             renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<CollectionView>();
+                var freeform = view?.CurrentView as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
+<<<<<<< HEAD
                 view.CanLink = false;
+=======
+                if (freeform != null) freeform.CanLink = false;
+>>>>>>> 8a5380c5ff7837ac6219cd426896f4370cb76a36
 
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
-                    new OperatorView.IOReference(fieldKey, fmController, reference, false, args, renderElement,
+                    new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
 
             };
@@ -546,21 +556,21 @@ namespace Dash
         protected static NumberFieldModelController GetHeightField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.HeightFieldKey)
+            return docController.GetField(KeyStore.HeightFieldKey)
                 .DereferenceToRoot<NumberFieldModelController>(context);
         }
 
         protected static NumberFieldModelController GetWidthField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.WidthFieldKey)
+            return docController.GetField(KeyStore.WidthFieldKey)
                 .DereferenceToRoot<NumberFieldModelController>(context);
         }
 
         protected static PointFieldModelController GetPositionField(DocumentController docController, Context context)
         {
             context = Context.SafeInitAndAddDocument(context, docController);
-            return docController.GetField(DashConstants.KeyStore.PositionFieldKey)
+            return docController.GetField(KeyStore.PositionFieldKey)
                 .DereferenceToRoot<PointFieldModelController>(context);
         }
 
@@ -606,12 +616,12 @@ namespace Dash
 
         public static void SetWidth(this DocumentController document, double width)
         {
-            document.SetField(DashConstants.KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
+            document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(width), true);
         }
 
         public static void SetHeight(this DocumentController document, double height)
         {
-            document.SetField(DashConstants.KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
+            document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(height), true);
         }
 
         public static void SetGridRow(this DocumentController document, int row)

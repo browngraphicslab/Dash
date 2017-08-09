@@ -25,7 +25,7 @@ namespace Dash
         /// <summary>
         /// All objects under this category
         /// </summary>
-        public ObservableCollection<KeyValuePair<string, object>> ListContent { get; }
+        public ObservableCollection<OperatorBuilder> ListContent { get; }
 
         /// <summary>
         /// Returns the list view used to display objects
@@ -59,18 +59,18 @@ namespace Dash
         /// <param name="title"></param>
         /// <param name="content"></param>
         /// <param name="action"></param>
-        public SearchCategoryItem(string icon, string title, ObservableCollection<KeyValuePair<string, object>> content, Action<object> action)
+        public SearchCategoryItem(string icon, string title, ObservableCollection<OperatorBuilder> content, Action<Func<DocumentController>> action)
         {
             this.InitializeComponent();
             Icon = icon;
             Title = title;
             ListContent = content;
-            xList.DisplayMemberPath = nameof(KeyValuePair<string, object>.Key);
+            xList.DisplayMemberPath = nameof(OperatorBuilder.Name);
             ListDisplayMemberPath = xList.DisplayMemberPath;
 
             xList.Tapped += delegate
             {
-                action?.Invoke(xList.SelectedItem);
+                action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
                 MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
             };
         }

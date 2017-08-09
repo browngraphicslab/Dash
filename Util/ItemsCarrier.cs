@@ -9,19 +9,16 @@ namespace Dash
 {
     public class ItemsCarrier
     {
-        private static ItemsCarrier _carrier = new ItemsCarrier();
-        public List<DocumentViewModel> Payload { get; set; }
-        public CollectionViewModel Source { get; set; }
-        public CollectionViewModel Destination { get; set; }    
-        public Point Translate { get; set; }
+        public static ItemsCarrier Instance = new ItemsCarrier();
+
+
+        public List<DocumentController> Payload { get; set; }
+        public ICollectionViewModel Source { get; set; }
+        public ICollectionViewModel Destination { get; set; }    
+
         private ItemsCarrier()
         {
-            Payload = new List<DocumentViewModel>();
-        }
-
-        public static ItemsCarrier GetInstance()
-        {
-            return _carrier;
+            Payload = new List<DocumentController>();
         }
     }
 }

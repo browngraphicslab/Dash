@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -23,7 +24,7 @@ namespace Dash
 {
     public sealed partial class CollectionMapView : UserControl
     {
-        private ObservableCollection<Key> _operatorKeys = new ObservableCollection<Key>();
+        private ObservableCollection<KeyController> _operatorKeys = new ObservableCollection<KeyController>();
 
         public CollectionMapView()
         {
@@ -31,11 +32,7 @@ namespace Dash
 
             DataContextChanged += CollectionMapView_DataContextChanged;
 
-            XOperatorType.ItemsSource = new List<string>
-            {
-                "Divide",
-                "Filter"
-            };
+            XOperatorType.ItemsSource = OperationCreationHelper.Operators;
 
             XOperatorType.SelectionChanged += XOperatorType_SelectionChanged;
 
@@ -44,15 +41,8 @@ namespace Dash
 
         private void XOperatorType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            OperatorFieldModelController opFmc;
-            if (XOperatorType.SelectedIndex == 0)
-            {
-                opFmc = new DivideOperatorFieldModelController();
-            }
-            else
-            {
-                opFmc = new FilterOperatorFieldModelController();
-            }
+            OperatorFieldModelController opFmc =
+                OperationCreationHelper.GetOperatorController(((DictionaryEntry)XOperatorType.SelectedItem).Key as string);
             _operatorDoc.SetField(CollectionMapOperator.InputOperatorKey,
                 opFmc, true);
 
@@ -83,7 +73,7 @@ namespace Dash
 
         private void AutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
-            var key = sender.DataContext as Key;
+            var key = sender.DataContext as KeyController;
             var coll = _operatorDoc.GetField(key).DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.GetDocuments();
             if (coll == null)
             {

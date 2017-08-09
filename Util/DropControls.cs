@@ -31,7 +31,7 @@ namespace Dash
 
         private void dropTargetOnDrop(object sender, Windows.UI.Xaml.DragEventArgs e)
         {
-            var kvp = (KeyValuePair<Key, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
+            var kvp = (KeyValuePair<KeyController, DocumentController>)e.Data.Properties[KeyValuePane.DragPropertyKey];
             var docController = kvp.Value;
             var key = kvp.Key;
             var context = new Context(docController);
@@ -58,10 +58,10 @@ namespace Dash
             // drop factory???
             if (_layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
             {
-                box.Document.SetField(DashConstants.KeyStore.PositionFieldKey, dropPointFMC, forceMask: true);
+                box.Document.SetField(KeyStore.PositionFieldKey, dropPointFMC, forceMask: true);
             }
             var data =
-                _layoutDocument.GetField(DashConstants.KeyStore.DataKey) as DocumentCollectionFieldModelController;
+                _layoutDocument.GetField(KeyStore.DataKey) as DocumentCollectionFieldModelController;
             data?.AddDocument(box.Document);
         }
     }

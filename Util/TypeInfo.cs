@@ -1,30 +1,22 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.Foundation;
+using DashShared;
 
 namespace Dash
 {
-    [Flags]
-    public enum TypeInfo
-    {
-        None = 0x0,
-        Number = 0x1,
-        Text = 0x2,
-        Image = 0x4,
-        Collection = 0x8,
-        Document = 0x10,
-        Reference = 0x20,
-        Operator = 0x40,
-        Point = 0x80,
-        List = 0x100
-    }
-
     public class TypeInfoHelper
     {
+        private static readonly Dictionary<Type, TypeInfo> TypeDict = new Dictionary<Type, TypeInfo>
+        {
+            [typeof(NumberFieldModelController)] = TypeInfo.Number,
+            [typeof(TextFieldModelController)] = TypeInfo.Text,
+            [typeof(PointFieldModelController)] = TypeInfo.Point,
+            [typeof(ListFieldModelController<>)] = TypeInfo.List,
+            [typeof(DocumentCollectionFieldModelController)] = TypeInfo.Collection,
+            [typeof(DocumentFieldModelController)] = TypeInfo.Document
+        };
+
         public static FieldModelController CreateFieldModelController(TypeInfo t, TypeInfo listType = TypeInfo.None)
         {
             switch (t)
@@ -41,12 +33,12 @@ namespace Dash
                     return new DocumentFieldModelController(null);
                 case TypeInfo.Reference:
                     return new ReferenceFieldModelController("", null);
-                case TypeInfo.Operator://TODO What should this do?
+                case TypeInfo.Operator: //TODO What should this do?
                     return null;
                 case TypeInfo.Point:
                     return new PointFieldModelController(0, 0);
                 case TypeInfo.List:
-                    switch (listType)//TODO support list of list?
+                    switch (listType) //TODO support list of list?
                     {
                         case TypeInfo.Number:
                             return new ListFieldModelController<NumberFieldModelController>();
@@ -70,15 +62,68 @@ namespace Dash
             }
         }
 
-        private static readonly Dictionary<Type, TypeInfo> TypeDict = new Dictionary<Type, TypeInfo>
+        public static FieldModelController CreateFieldModelController(FieldModelDTO fieldModelDTO,
+            TypeInfo listType = TypeInfo.None)
         {
-            [typeof(NumberFieldModelController)] = TypeInfo.Number,
-            [typeof(TextFieldModelController)] = TypeInfo.Text,
-            [typeof(PointFieldModelController)] = TypeInfo.Point,
-            [typeof(ListFieldModelController<>)] = TypeInfo.List,
-            [typeof(DocumentCollectionFieldModelController)] = TypeInfo.Collection,
-            [typeof(DocumentFieldModelController)] = TypeInfo.Document
-        };
+            var x = CreateFieldModelControllerHelper(fieldModelDTO, listType);
+            x.FieldModel.Id = fieldModelDTO.Id;
+            return x;
+        }
+
+        public static FieldModelController CreateFieldModelControllerHelper(FieldModelDTO fieldModelDTO,
+            TypeInfo listType = TypeInfo.None)
+        {
+            var data = fieldModelDTO.Data;
+            switch (fieldModelDTO.Type)
+            {
+                case TypeInfo.Text:
+                    return new TextFieldModelController(data as string);
+                case TypeInfo.Number:
+                    return new NumberFieldModelController((double) data);
+                case TypeInfo.Image:
+                    return new ImageFieldModelController(data as Uri);
+                case TypeInfo.Collection:
+                    return new DocumentCollectionFieldModelController(data as List<DocumentController>);
+                case TypeInfo.Document:
+                    return new DocumentFieldModelController(data as DocumentController);
+                case TypeInfo.Reference:
+                    var kvp = (KeyValuePair<KeyController, string>) data;
+                    return new ReferenceFieldModelController(kvp.Value, kvp.Key);
+                case TypeInfo.Operator: //TODO What should this do?
+                    return null;
+                case TypeInfo.Point:
+                    return new PointFieldModelController((Point) data);
+                case TypeInfo.List:
+                    switch (listType) //TODO support list of list?
+                    {
+                        case TypeInfo.Number:
+                            return new ListFieldModelController<NumberFieldModelController>(
+                                data as IEnumerable<NumberFieldModelController>);
+                        case TypeInfo.Image:
+                            return new ListFieldModelController<ImageFieldModelController>(
+                                data as IEnumerable<ImageFieldModelController>);
+                        case TypeInfo.Document:
+                            return new ListFieldModelController<DocumentFieldModelController>(
+                                data as IEnumerable<DocumentFieldModelController>);
+                        case TypeInfo.Point:
+                            return new ListFieldModelController<PointFieldModelController>(
+                                data as IEnumerable<PointFieldModelController>);
+                        case TypeInfo.Text:
+                            return new ListFieldModelController<TextFieldModelController>(
+                                data as IEnumerable<TextFieldModelController>);
+                        case TypeInfo.Reference:
+                            return new ListFieldModelController<ReferenceFieldModelController>(
+                                data as IEnumerable<ReferenceFieldModelController>);
+                        case TypeInfo.Collection:
+                            return new ListFieldModelController<DocumentCollectionFieldModelController>(
+                                data as IEnumerable<DocumentCollectionFieldModelController>);
+                        default:
+                            return null;
+                    }
+                default:
+                    return null;
+            }
+        }
 
         public static TypeInfo TypeToTypeInfo(Type type)
         {

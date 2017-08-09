@@ -1,25 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Diagnostics;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Animation;
-using Windows.UI.Xaml.Navigation;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
 namespace Dash
 {
-    public sealed partial class MenuButton : UserControl
+    public sealed partial class MenuButton : UserControl, IDisposable
     {
         private TextBlock _descriptionText;
         private Button _button;
@@ -33,9 +27,86 @@ namespace Dash
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
-            this.CreateAndRunInstantiationAnimation();
+            this.CreateAndRunInstantiationAnimation(false);
         }
-       
+
+        private int _selectedInd; 
+        private List<Button> _buttons = new List<Button>();
+        /// <summary>
+        /// Creates a toggle-able merged set of buttons ... 
+        /// </summary>
+        public MenuButton(List<Symbol> icons, Color background, List<Action> buttonActions)
+        {
+            this.InitializeComponent();
+            Debug.Assert(icons.Count == buttonActions.Count);
+
+            _selectedInd = icons.Count - 1; 
+
+            this.InstantiateButtons(icons, background, buttonActions);
+            this.CreateAndRunInstantiationAnimation(true);
+        }
+
+        /// <summary>
+        /// Create a set of related toggle-able buttons with edges rounded at the top and buttom 
+        /// </summary>
+        private void InstantiateButtons(List<Symbol> icons, Color background, List<Action> buttonActions)
+        {
+            foreach (Symbol icon in icons)
+            {
+                var i = icons.IndexOf(icon); // have to do this for eventhandling 
+
+                // create symbol for button
+                var symbol = new SymbolIcon()
+                {
+                    Symbol = icon,
+                    Foreground = new SolidColorBrush(Colors.White)
+                };
+                // create rounded(circular) border to hold the symbol
+                Border border = new Border()
+                {
+                    Height = 40,
+                    Width = 40,
+                    Background = new SolidColorBrush(background),
+                    BorderBrush = new SolidColorBrush(background),
+                    Child = symbol
+                };
+                // if it's the first button, round the top 
+                if (i == 0) border.CornerRadius = new CornerRadius(20, 20, 0, 0);
+                // if last button, round the buttom  
+                else if (i == icons.Count - 1)
+                {
+                    border.CornerRadius = new CornerRadius(0, 0, 20, 20);
+                    //border.Background = new SolidColorBrush(Colors.Gray);
+                }
+
+                if (i == _selectedInd) border.Background = new SolidColorBrush(Colors.Gray);
+
+                // create button to contain the border with the symbol
+                var button = new Button()
+                {
+                    Background = new SolidColorBrush(Colors.Transparent),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Padding = new Thickness(-2.5),
+                    Content = border
+                };
+
+                // add all content to stack panel
+                xButtonStackPanel.Children.Add(button);
+                _buttons.Add(button);
+
+                //events 
+                button.Tapped += (s, e) =>
+                {
+                    e.Handled = true;
+                    foreach (var b in _buttons) (b.Content as Border).Background = new SolidColorBrush(background);
+                    (button.Content as Border).Background = new SolidColorBrush(Colors.Gray);
+                    buttonActions[i]?.Invoke();
+
+                    _selectedInd = i; 
+                };
+                button.DoubleTapped += (s, e) => e.Handled = true;
+            }
+        }
 
         /// <summary>
         /// Create a circular button with an icon and a string description
@@ -64,7 +135,7 @@ namespace Dash
             // create button to contain the border with the symbol
             _button = new Button()
             {
-                Background = new SolidColorBrush( Colors.Transparent),
+                Background = new SolidColorBrush(Colors.Transparent),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Padding = new Thickness(-2.5),
                 Content = border
@@ -99,6 +170,14 @@ namespace Dash
         {
             e.Handled = true;
             _buttonAction?.Invoke();
+            e.Handled = true;
+        }
+
+        public void Dispose()
+        {
+            if (_button == null) return; 
+            _button.Tapped -= Button_Tapped;
+            _button.DoubleTapped -= Button_DoubleTapped;
         }
 
         /// <summary>
@@ -109,9 +188,19 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
             var rotationTransform = new RotateTransform();
-            _button.RenderTransform = rotationTransform;
-            _button.RenderTransformOrigin = new Point(0.5,0.5);
-
+            if (_button != null)
+            {
+                _button.RenderTransform = rotationTransform;
+                _button.RenderTransformOrigin = new Point(0.5, 0.5);
+            }
+            else
+            {
+                foreach (var b in _buttons)
+                {
+                    b.RenderTransform = rotationTransform;
+                    b.RenderTransformOrigin = new Point(0.5, 0.5);
+                }
+            }
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
             doubleAnimation.Duration = duration;
@@ -125,17 +214,27 @@ namespace Dash
             storyboard.Begin();
         }
 
+        private void OpactiyAnimationHelper(int from, int to)
+        {
+            if (_button != null)
+            {
+                this.CreateAndRunOpacityAnimation(_button, from, to);
+                this.CreateAndRunOpacityAnimation(_descriptionText, from, to);
+            }
+            else
+                foreach (var b in _buttons)
+                    CreateAndRunOpacityAnimation(b, from, to);
+        }
+
         public void AddAndRunCollapseAnimation(double verticalOffset)
         {
             this.CreateAndRunVerticalTranslationAnimation(verticalOffset);
-            this.CreateAndRunOpacityAnimation(_button, 1, 0);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 1, 0);
+            OpactiyAnimationHelper(1, 0); 
         }
 
         public void AddAndRunExpandAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 0, 1);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            OpactiyAnimationHelper(0,1);
             this.CreateAndRunReverseVerticalTranslationAnimation();
         }
 
@@ -144,8 +243,7 @@ namespace Dash
         /// </summary>
         public void AddAndRunRotateOutAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 1, 0);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 1, 0);
+            OpactiyAnimationHelper(1, 0);
             this.CreateAndRunRotationAnimation();
         }
 
@@ -154,23 +252,30 @@ namespace Dash
         /// </summary>
         public void AddAndRunRotateInAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button, 0, 1);
-            this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
+            OpactiyAnimationHelper(0, 1);
             this.CreateAndRunRotationAnimation();
         }
 
         public void AddAndRunDeleteAnimation()
         {
-            this.CreateAndRunOpacityAnimation(_button,1,0);
-            this.CreateAndRunOpacityAnimation(_descriptionText,1,0);
+            OpactiyAnimationHelper(1,0);
         }
         /// <summary>
         /// Create and run animation when button is created
         /// </summary>
-        private void CreateAndRunInstantiationAnimation()
+        private void CreateAndRunInstantiationAnimation(bool isComposite)
         {
-            this.CreateAndRunRepositionAnimation(_button, 200,0);
-            this.CreateAndRunRepositionAnimation(_descriptionText,0, 50);
+            if (isComposite)
+            {
+                foreach (var button in _buttons)
+                {
+                    this.CreateAndRunRepositionAnimation(button, 200, 0);
+                    this.CreateAndRunOpacityAnimation(button, 0, 1);
+                }
+                return;
+            }
+            this.CreateAndRunRepositionAnimation(_button, 200, 0);
+            this.CreateAndRunRepositionAnimation(_descriptionText, 0, 50);
 
             this.CreateAndRunOpacityAnimation(_button, 0, 1);
             this.CreateAndRunOpacityAnimation(_descriptionText, 0, 1);
@@ -188,8 +293,14 @@ namespace Dash
 
             var translateTransform = new TranslateTransform();
             translateTransform.Y = 0;
-            _button.RenderTransform = translateTransform;
-            _descriptionText.RenderTransform = translateTransform;
+            if (_button != null)
+            {
+                _button.RenderTransform = translateTransform;
+                _descriptionText.RenderTransform = translateTransform;
+            }
+            else
+                foreach (var b in _buttons)
+                    b.RenderTransform = translateTransform;
 
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
@@ -212,8 +323,14 @@ namespace Dash
             Duration duration = new Duration(TimeSpan.FromSeconds(0.5));
 
             var translateTransform = new TranslateTransform();
-            _button.RenderTransform = translateTransform;
-            _descriptionText.RenderTransform = translateTransform;
+            if (_button != null)
+            {
+                _button.RenderTransform = translateTransform;
+                _descriptionText.RenderTransform = translateTransform;
+            }
+            else
+                foreach (var b in _buttons)
+                    b.RenderTransform = translateTransform;
 
             var storyboard = new Storyboard();
             var doubleAnimation = new DoubleAnimation();
