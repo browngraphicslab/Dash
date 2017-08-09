@@ -21,7 +21,8 @@ namespace DashShared
         Point = 0x80,
         List = 0x100,
         Ink = 0x200,
-        RichTextField = 0x400
+        RichTextField = 0x400,
+        Rectangle = 0x800
     }
 
 }

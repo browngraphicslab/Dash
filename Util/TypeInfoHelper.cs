@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using Windows.Foundation;
 using DashShared;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Dash
 {
@@ -17,35 +19,38 @@ namespace Dash
             [typeof(DocumentFieldModelController)] = TypeInfo.Document
         };
 
-        public static FieldModel CreateFieldModelController(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
+        public static FieldModel CreateFieldModel(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
-            var x = CreateFieldModelControllerHelper(fieldModelDTO, listType);
-            //x.FieldModel.Id = fieldModelDTO.Id;
-            return x;
+           return CreateFieldModelHelper(fieldModelDTO, listType);
         }
 
-        private static FieldModel CreateFieldModelControllerHelper(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
+        private static FieldModel CreateFieldModelHelper(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
             var data = fieldModelDTO.Data;
             switch (fieldModelDTO.Type)
             {
                 case TypeInfo.Text:
-                    return new TextFieldModel(data as string, fieldModelDTO.Id);
+                    return new TextFieldModel(data.ToString(), fieldModelDTO.Id);
                 case TypeInfo.Number:
-                    return new NumberFieldModel((double) data, fieldModelDTO.Id);
+                    return new NumberFieldModel(JsonConvert.DeserializeObject<double>(data.ToString()), fieldModelDTO.Id);
                 case TypeInfo.Image:
-                    return new ImageFieldModel(data as Uri, fieldModelDTO.Id);
+                    return new ImageFieldModel(JsonConvert.DeserializeObject<Uri>(data.ToString()), fieldModelDTO.Id);
                 case TypeInfo.Collection:
-                    return new DocumentCollectionFieldModel(data as List<string>, fieldModelDTO.Id);
+                    return new DocumentCollectionFieldModel(JsonConvert.DeserializeObject<List<string>>(data.ToString()), fieldModelDTO.Id);
                 case TypeInfo.Document:
-                    return new DocumentFieldModel(data as DocumentModel, fieldModelDTO.Id);
-                case TypeInfo.Reference:                 
-                    return new ReferenceFieldModel(data as FieldReference, fieldModelDTO.Id);
+                    return new DocumentFieldModel(JsonConvert.DeserializeObject<DocumentModel>(data.ToString()), fieldModelDTO.Id);
+                case TypeInfo.Reference:
+                    FieldReference docFieldRefence = JsonConvert.DeserializeObject<DocumentFieldReference>(data.ToString());
+                    if ((docFieldRefence as DocumentFieldReference)?.DocumentId == null)
+                    {
+                        docFieldRefence = JsonConvert.DeserializeObject<DocumentPointerFieldReference>(data.ToString());
+                    }
+                    return new ReferenceFieldModel(docFieldRefence, fieldModelDTO.Id);
                 case TypeInfo.Operator: //TODO What should this do?
                     var typeAndCompound = data as Tuple<string, bool>;
                     return new OperatorFieldModel(typeAndCompound.Item1, typeAndCompound.Item2, fieldModelDTO.Id);
                 case TypeInfo.Point:
-                    return new PointFieldModel((Point) data, fieldModelDTO.Id);
+                    return new PointFieldModel(JsonConvert.DeserializeObject<Point>(data.ToString()), fieldModelDTO.Id);
                 case TypeInfo.List:
                     throw new NotImplementedException();
                     //switch (listType) //TODO support list of list?
@@ -74,6 +79,14 @@ namespace Dash
                     //    default:
                     //        return null;
                     //}
+                case TypeInfo.None:
+                    throw new NotImplementedException();
+                case TypeInfo.Ink:
+                    return new InkFieldModel(data.ToString(), fieldModelDTO.Id);
+                case TypeInfo.RichTextField:
+                    return new RichTextFieldModel(JsonConvert.DeserializeObject<RichTextFieldModel.RTD>(data.ToString()), fieldModelDTO.Id);
+                case TypeInfo.Rectangle:
+                    return new RectFieldModel(JsonConvert.DeserializeObject<Rect>(data.ToString()), fieldModelDTO.Id);
                 default:
                     return null;
             }

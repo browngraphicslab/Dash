@@ -60,7 +60,8 @@ namespace Dash
             RESTClient.Instance.Fields.AddField(fieldModel, fieldModelDto =>
             {
                 // Yay!
-                //TypeInfoHelper.CreateFieldModelController(fieldModelDto);
+                var fm = TypeInfoHelper.CreateFieldModel(fieldModelDto);
+                Debug.Assert(fm != null);
             }, exception =>
             {
                 // Haaay

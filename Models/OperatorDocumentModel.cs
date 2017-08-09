@@ -20,11 +20,11 @@ namespace Dash
             //TODO These loops make overloading not possible
             //foreach (var typeInfo in inputs)
             //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
+            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModel(typeInfo.Value);
             //}
             //foreach (var typeInfo in outputs)
             //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
+            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModel(typeInfo.Value);
             //}
             
             var doc = new DocumentController(fields, OperatorType);

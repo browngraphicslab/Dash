@@ -25,7 +25,7 @@ namespace Dash
 
         protected override FieldModelDTO GetFieldDTOHelper()
         {
-            return new FieldModelDTO(TypeInfo.Reference, Data);
+            return new FieldModelDTO(TypeInfo.Point, Data);
         }
     }
 }
