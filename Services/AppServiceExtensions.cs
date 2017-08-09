@@ -31,9 +31,6 @@ namespace Dash
             serviceCollection.AddTransient<FieldEndpoint, FieldEndpoint>();
             serviceCollection.AddTransient<KeyEndpoint, KeyEndpoint>(); 
 
-            // Examples to be removed
-            serviceCollection.AddSingleton<PricePerSquareFootApi, PricePerSquareFootApi>(); //TODO remove this its an example
-
 
             // view model services, these are here because they rely on access to server controllers in their constructors
             serviceCollection.AddTransient<LoginViewModel>();

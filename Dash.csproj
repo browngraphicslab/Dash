@@ -119,8 +119,6 @@
     <Compile Include="Rest\Endpoints\FieldEndpoint.cs" />
     <Compile Include="Rest\Endpoints\KeyEndpoint.cs" />
     <Compile Include="Rest\Endpoints\ServerEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\ShapeEndpoint.cs" />
-    <Compile Include="Rest\Endpoints\TypeEndpoint.cs" />
     <Compile Include="Rest\Exceptions\ApiException.cs" />
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
@@ -314,7 +312,6 @@
     <Compile Include="Controllers\Operators\Set\IntersectionOperatorModelController.cs" />
     <Compile Include="Controllers\Operators\Set\UnionOperatorFieldModelController.cs" />
     <Compile Include="Models\PointFieldModel.cs" />
-    <Compile Include="Models\PricePerSquareFootApi.cs" />
     <Compile Include="Models\ReferenceFieldModel.cs" />
     <Compile Include="Models\TextFieldModel.cs" />
     <Compile Include="Models\OperatorModels\OperatorFieldModel.cs" />
