@@ -143,7 +143,7 @@ namespace Dash
             Post
         }
 
-        private async void UIElement_OnTapped(object sender, TappedRoutedEventArgs e)
+        private async void TwitterTestButtonOnTapped(object sender, TappedRoutedEventArgs e)
         {
             // authorization on the tiwtter api
             var twitterBase = "https://api.twitter.com";
@@ -256,5 +256,23 @@ namespace Dash
 
 
         #endregion
+
+        private void DocumentTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddDocuments;
+            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void CollectionTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollection;
+            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
+
+        private void NotesTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
+        {
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
+            e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
+        }
     }
 }

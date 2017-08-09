@@ -487,25 +487,25 @@ namespace Dash
             };
 
             Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
-            Action<ICollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
-            Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
-            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
+            //Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
+            //Action<ICollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            //Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
+            //Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
-            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd };
-            var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
-            var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
-            var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments };
-            var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
+            var operatorButton = new RadialActionModel("Operators", "↔️") { GenericDropAction = onOperatorAdd };
+            //var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
+            //var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
+            var documentButton = new RadialSubmenuModel("Add Document", "🖺", new List<RadialItemModel>());
+            //var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
             
-            var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
-            {
-                operatorButton,
-                apiButton,
-                documentButton,
-                collectionButton,
-                notesButton
-            });
+            //var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
+            //{
+            //    operatorButton,
+            //    apiButton,
+            //    documentButton,
+            //    collectionButton,
+            //    notesButton
+            //});
 
             //TODO maybe this shouldn't go here 
             //Action<object> sendEmail = sendEmailHelper;
@@ -518,7 +518,8 @@ namespace Dash
             {
                 searchButton,
                 inkOptions,
-                addOptionsMenu,
+                operatorButton,
+                documentButton
                 //emailButton
             });
 

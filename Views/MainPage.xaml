@@ -11,6 +11,12 @@
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
         <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
-        <Button Tapped="UIElement_OnTapped" HorizontalAlignment="Left" VerticalAlignment="Center">TEST TEST TEST</Button>
+        <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Background="{StaticResource WindowsBlue}">
+            <Button Tapped="TwitterTestButtonOnTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TWITTER TEST</Button>
+            <TextBlock TextAlignment="Center" Foreground="White">--drag--</TextBlock>
+            <TextBlock DragStarting="DocumentTest_OnDragStarting" CanDrag="True" Foreground="White">DOC TEST</TextBlock>
+            <TextBlock DragStarting="CollectionTest_OnDragStarting" CanDrag="True" Text="COL TEST" Foreground="White"/>
+            <TextBlock DragStarting="NotesTest_OnDragStarting" CanDrag="True" Text="NOTES TEST" Foreground="White"/>
+        </StackPanel>
     </Grid>
 </Page>
