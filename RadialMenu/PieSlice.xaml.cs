@@ -2,6 +2,7 @@ using System;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
 using Windows.ApplicationModel.Store;
+using Windows.Devices.Input;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -733,7 +734,7 @@ namespace RadialMenuControl.UserControl
             }
             else
             {
-                InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement)); 
+                if(e.Pointer.PointerDeviceType == PointerDeviceType.Touch) InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement)); 
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
                 switch (OriginalRadialMenuButton.Type)
@@ -807,7 +808,8 @@ namespace RadialMenuControl.UserControl
         {
             OriginalRadialMenuButton.OnDragStarting(args);
             args.DragUI.SetContentFromDataPackage();
-            VisualStateManager.GoToState(this, "InnerNormal", true);
+            if(!args.Cancel)
+                VisualStateManager.GoToState(this, "InnerNormal", true);
         }
     }
 }

@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -57,7 +58,7 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
-            CurrentView = new CollectionFreeformView();
+            CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
 
             if (ParentDocument == MainPage.Instance.MainDocView)
@@ -83,6 +84,8 @@ namespace Dash
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
         private IOReference _currReference;
+
+        private MenuButton _toggleDrawButton;
 
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -115,8 +118,9 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView();
+            CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
+            _toggleDrawButton.Visibility = Visibility.Visible;
         }
 
         private void SetListView()
@@ -124,6 +128,7 @@ namespace Dash
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
+            _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
         private void SetGridView()
@@ -131,6 +136,7 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
+            _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
         private void MakeSelectionModeMultiple()
@@ -177,6 +183,12 @@ namespace Dash
             ParentDocument.DeleteDocument();
         }
 
+        private void ToggleDraw()
+        {
+            var view = CurrentView as CollectionFreeformView;
+            view.ToggleDraw();
+        }
+
         private void MakeMenu()
         {
             var multipleSelection = new Action(MakeSelectionModeMultiple);
@@ -188,9 +200,12 @@ namespace Dash
             var setList = new Action(SetListView);
             var setFreeform = new Action(SetFreeformView);
             var deleteCollection = new Action(DeleteCollection);
+            var toggleDraw = new Action(ToggleDraw);
+
 
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
 
+            _toggleDrawButton = new MenuButton(Symbol.Edit, "Draw", menuColor, toggleDraw);
 
             var collectionButtons = new List<MenuButton>
             {
@@ -202,7 +217,10 @@ namespace Dash
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { setGrid, setList, setFreeform}),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
+                _toggleDrawButton
             };
+
+
 
             if (ParentDocument != MainPage.Instance.MainDocView)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, deleteCollection));

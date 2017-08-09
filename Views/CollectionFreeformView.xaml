@@ -23,9 +23,11 @@
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
-        
+
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
+
+
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
                       ItemsSource="{Binding DocumentViewModels}"   
@@ -52,5 +54,19 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+
+        <!--Ink Toolbar-->
+        <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="Collapsed">
+            <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
+                        TargetInkCanvas="{x:Bind xInkCanvas}" Height="50" Background="#FFE6E6E6" IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged"/>
+            <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
+                    Background="#FFE6E6E6">
+                <SymbolIcon Symbol="Undo" Foreground="Black"></SymbolIcon>
+            </Button>
+            <Button x:Name="RedoButton" Tapped="RedoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
+                    Background="#FFE6E6E6">
+                <SymbolIcon Symbol="Redo" Foreground="Black"></SymbolIcon>
+            </Button>
+        </StackPanel>
     </Grid>
 </local:SelectionElement>

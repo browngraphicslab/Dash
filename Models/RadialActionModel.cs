@@ -13,7 +13,7 @@ using RadialMenuControl.UserControl;
 
 namespace Dash.Models
 {
-    class RadialActionModel: RadialItemModel
+    public class RadialActionModel: RadialItemModel
     {
         /// <summary>
         /// Different types of actions that can be set and will (all) be 

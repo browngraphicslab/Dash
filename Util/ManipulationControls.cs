@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -30,6 +32,9 @@ namespace Dash {
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
+
+        public PointerDeviceType BlockedInput;
+        public bool FilterInput;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -102,6 +107,7 @@ namespace Dash {
 
         private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
         {
+            if (e.Pointer.PointerDeviceType == BlockedInput && FilterInput) return;
             TranslateAndScale(e);
         }
 
@@ -119,12 +125,14 @@ namespace Dash {
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
+            if (e.PointerDeviceType == BlockedInput && FilterInput) return;
             TranslateAndScale(e);
         }
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
         {
             e.Handled = true;
+            
 
             //Get mousepoint in canvas space 
             var point = e.GetCurrentPoint(_element);

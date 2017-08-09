@@ -6,17 +6,23 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.Foundation.Collections;
 using Windows.UI;
+using Windows.UI.Core;
+using Windows.UI.Input.Inking;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Path = Windows.UI.Xaml.Shapes.Path;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
@@ -56,11 +62,18 @@ namespace Dash
         private MenuFlyout _flyout;
         private float _backgroundOpacity = .7f;
 
+        private InkCanvas xInkCanvas = new InkCanvas
+        {
+            Width = 60000, Height = 60000,
+        };
+        public InkFieldModelController InkFieldModelController;
+
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
+        private InkPresenterRuler _ruler;
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         #endregion
 
@@ -109,8 +122,23 @@ namespace Dash
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
+            if (InkFieldModelController != null)
+            {
+                GlobalInkSettings.Presenters.Add(xInkCanvas.InkPresenter);
+                GlobalInkSettings.SetAttributes();
+                Canvas.SetLeft(xInkCanvas, -30000);
+                Canvas.SetTop(xInkCanvas, -30000);
+                xInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
+                GlobalInkSettings.OnInkInputChanged += GlobalInkSettingsOnOnInkInputChanged;
+                xInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
+                xInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
+                InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
+                xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
+                UpdateStrokes();
+            }
         }
 
+        
 
         #endregion
 
@@ -545,6 +573,124 @@ namespace Dash
         public void ToggleSelectAllItems()
         {
             throw new NotImplementedException();
+        }
+
+        private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
+        {
+            Canvas.SetZIndex(xInkCanvas, 0);
+            if (xItemsControl.ItemsPanelRoot.Children.Contains(xInkCanvas))
+            {
+                xItemsControl.ItemsPanelRoot.Children.Remove(xInkCanvas);
+                xItemsControl.ItemsPanelRoot.Children.Insert(0, xInkCanvas);
+            }
+        }
+
+        public void ToggleDraw()
+        {
+            var canvas = xItemsControl.ItemsPanelRoot as Canvas;
+            if (InkSettingsPanel.Visibility == Visibility.Visible)
+            {
+                IsDrawing = false;
+                InkSettingsPanel.Visibility = Visibility.Collapsed;
+                SetInkInputType(CoreInputDeviceTypes.None);
+                if(canvas.Children.Contains(xInkCanvas)) canvas.Children.Remove(xInkCanvas);
+            }
+            else
+            {
+                IsDrawing = true;
+                InkSettingsPanel.Visibility = Visibility.Visible;
+                SetInkInputType(GlobalInkSettings.InkInputType);
+                if (!canvas.Children.Contains(xInkCanvas))
+                    canvas.Children.Insert(0, xInkCanvas);
+            }
+            
+        }
+
+        public bool IsDrawing { get; set; }
+
+        private void GlobalInkSettingsOnOnInkInputChanged(CoreInputDeviceTypes newInputType)
+        {
+            SetInkInputType(newInputType);
+        }
+
+        private void SetInkInputType(CoreInputDeviceTypes type)
+        {
+            switch (type)
+            {
+                case CoreInputDeviceTypes.Mouse:
+                    _manipulationControls.BlockedInput = PointerDeviceType.Mouse;
+                    _manipulationControls.FilterInput = IsDrawing;
+                    break;
+                case CoreInputDeviceTypes.Pen:
+                    _manipulationControls.BlockedInput = PointerDeviceType.Pen;
+                    _manipulationControls.FilterInput = IsDrawing;
+                    break;
+                case CoreInputDeviceTypes.Touch:
+                    _manipulationControls.BlockedInput = PointerDeviceType.Touch;
+                    _manipulationControls.FilterInput = IsDrawing;
+                    break;
+                default:
+                    _manipulationControls.FilterInput = false;
+                    break;
+            }
+        }
+
+        private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            InkFieldModelController?.Undo();
+        }
+
+        private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            InkFieldModelController?.Redo();
+        }
+
+        private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
+        {
+            if (!IsLowestSelected || args?.Action == DocumentController.FieldUpdatedAction.Replace)
+            {
+                UpdateStrokes();
+            }
+        }
+
+        private void UpdateStrokes()
+        {
+            xInkCanvas.InkPresenter.StrokeContainer.Clear();
+            if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
+                xInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+        }
+
+        /// <summary>
+        /// When strokes are erased, modifies the controller's Strokes field to remove those strokes.
+        /// Then calls update data on the controller so that the field model reflects the changes.
+        /// TODO: the field model need not be updated with every stroke
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
+        {
+            if (InkFieldModelController != null)
+                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+
+        }
+
+        /// <summary>
+        /// When strokes are collected, adds them to the controller's HashSet of InkStrokes.
+        /// Then calls update data on the controller so that the field model reflects the changes.
+        /// TODO: the field model need not be updated with every stroke
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
+        {
+            if (InkFieldModelController != null)
+                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+        }
+
+        //TODO: position ruler
+        private void InkToolbar_OnIsRulerButtonCheckedChanged(InkToolbar sender, object args)
+        {
+            
         }
     }
 }
