@@ -462,6 +462,10 @@ namespace Dash
             _flyout = new MenuFlyout();
             var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
             menuItem.Click += MenuItem_Click;
+            menuItem.LostFocus += (s, e) =>
+            {
+                _flyout = null;
+            }; 
             _flyout.Items?.Add(menuItem);
         }
 
