@@ -57,8 +57,14 @@ namespace Dash
             {
                 if (SetProperty(ref RectFieldModel.Data, value))
                 {
-                    // update local
-                    // update server
+                    // Update the server
+                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    {
+
+                    }, exception =>
+                    {
+
+                    });
                 }
                 OnFieldModelUpdated(null);
             }

@@ -43,7 +43,18 @@ namespace Dash
         public FieldReference FieldReference
         {
             get { return ReferenceFieldModel.Reference; }
-            set { ReferenceFieldModel.Reference = value; }
+            set
+            {
+                ReferenceFieldModel.Reference = value;
+                // Update the server
+                RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                {
+
+                }, exception =>
+                {
+
+                });
+            }
         }
 
         public KeyController FieldKey => FieldReference.FieldKey;

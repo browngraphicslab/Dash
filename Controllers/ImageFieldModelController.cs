@@ -29,8 +29,14 @@ namespace Dash
             {
                 if (SetProperty(ref ImageFieldModel.Data, value))
                 {
-                    // update local
-                    // update server    
+                    // Update the server
+                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    {
+                        
+                    }, exception =>
+                    {
+                        
+                    });
                 }
                 OnFieldModelUpdated(null);
             }

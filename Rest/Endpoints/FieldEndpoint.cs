@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Threading.Tasks;
 using DashShared;
 
 namespace Dash
@@ -23,20 +24,23 @@ namespace Dash
         /// <param name="error"></param>
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                // convert from field model to DTO
-                var dto = newField.GetFieldDTO();
-                var result = _connection.Post("api/Field", dto);
-                var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
+                try
+                {
+                    // convert from field model to DTO
+                    var dto = newField.GetFieldDTO();
+                    var result = _connection.Post("api/Field", dto);
+                    var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
 
-                success(resultDto);
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
+                    success(resultDto);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         /// <summary>
@@ -47,49 +51,58 @@ namespace Dash
         /// <param name="error"></param>
         public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                var dto = fieldToUpdate.GetFieldDTO();
-                var result = _connection.Put("api/Field", dto);
-                var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
-                
-                success(resultDto);
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
+                try
+                {
+                    var dto = fieldToUpdate.GetFieldDTO();
+                    var result = _connection.Put("api/Field", dto);
+                    var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
+
+                    success(resultDto);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         public void GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            try
+            Task.Run(() =>
             {
-                var fieldModelDTO = _connection.GetItem<FieldModelDTO>($"api/Field/{id}").Result;
-                success(fieldModelDTO);
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
+                try
+                {
+                    var fieldModelDTO = _connection.GetItem<FieldModelDTO>($"api/Field/{id}").Result;
+                    success(fieldModelDTO);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         public void DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error)
         {
-            var id = fieldToDelete.Id;
-            Debug.WriteLine(id);
-            try
+            Task.Run(() =>
             {
-                _connection.Delete($"api/Field/{id}");
-                success();
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
+                var id = fieldToDelete.Id;
+                Debug.WriteLine(id);
+                try
+                {
+                    _connection.Delete($"api/Field/{id}");
+                    success();
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
     }
 }

@@ -29,8 +29,14 @@ namespace Dash
                 if (SetProperty(ref RichTextFieldModel.Data, value))
                 {
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
+                    // Update the server
+                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+                    {
+
+                    }, exception =>
+                    {
+
+                    });
                 }
 
             }
