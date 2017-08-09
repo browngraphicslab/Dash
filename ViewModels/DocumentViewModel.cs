@@ -13,7 +13,7 @@ namespace Dash
 {
     public enum IconTypeEnum { Document, Collection, Api } // on super-collapse, what icon is displayed?
 
-    public class DocumentViewModel : ViewModelBase
+    public class DocumentViewModel : BaseSelectionElementViewModel
     {
 
         public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);
@@ -28,9 +28,7 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
-        private TransformGroup _gridViewIconGroupTransform;
         private Visibility _docMenuVisibility;
-        private GridLength _menuColumnWidth;
         private bool _menuOpen = false;
         private bool _isDetailedUserInterfaceVisible = true;
         private bool _isMoveable = true;
@@ -39,11 +37,6 @@ namespace Dash
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
         public DocumentController DocumentController;
-        public WidthAndMenuOpenWrapper WidthBinding
-        {
-            get { return _widthBinding; }
-            set { SetProperty(ref _widthBinding, value); }
-        }
         public struct WidthAndMenuOpenWrapper
         {
             public double Width { get; set; }
@@ -58,17 +51,7 @@ namespace Dash
         public bool MenuOpen
         {
             get { return _menuOpen; }
-            set
-            {
-                if (SetProperty(ref _menuOpen, value))
-                    WidthBinding = new WidthAndMenuOpenWrapper(Width, value);
-            }
-        }
-
-        public TransformGroup GridViewIconGroupTransform
-        {
-            get { return _gridViewIconGroupTransform; }
-            set { SetProperty(ref _gridViewIconGroupTransform, value); }
+            set { SetProperty(ref _menuOpen, value); }
         }
 
         public IconTypeEnum IconType { get { return iconType; } }
@@ -105,7 +88,6 @@ namespace Dash
                     if (widthFieldModelController != null)
                     {
                         widthFieldModelController.Data = value;
-                        WidthBinding = new WidthAndMenuOpenWrapper(value, MenuOpen);
                     }
                 }
             }
@@ -192,17 +174,8 @@ namespace Dash
 
         public readonly bool IsInInterfaceBuilder;
 
-        public GridLength MenuColumnWidth
-        {
-            get { return _menuColumnWidth; }
-            set { SetProperty(ref _menuColumnWidth, value); }
-        }
 
-        // == CONSTRUCTORS == 
-        public DocumentViewModel() { }
-
-
-        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null)
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
@@ -216,7 +189,6 @@ namespace Dash
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
-            WidthBinding = new WidthAndMenuOpenWrapper();
         }
 
         private void SetUpSmallIcon()
@@ -307,12 +279,11 @@ namespace Dash
         public void UpdateGridViewIconGroupTransform(double actualWidth, double actualHeight)
         {
             var max = actualWidth > actualHeight ? actualWidth : actualHeight;
-            var translate = new TranslateTransform() { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
-            var scale = new ScaleTransform() { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
+            var translate = new TranslateTransform { X = 125 - actualWidth / 2, Y = 125 - actualHeight / 2 };
+            var scale = new ScaleTransform { CenterX = translate.X + actualWidth / 2, CenterY = translate.Y + actualHeight / 2, ScaleX = 220.0 / max, ScaleY = 220.0 / max };
             var group = new TransformGroup();
             group.Children.Add(translate);
             group.Children.Add(scale);
-            GridViewIconGroupTransform = group;
         }
 
         // == FIELD UPDATED EVENT HANDLERS == 
@@ -375,16 +346,12 @@ namespace Dash
         public void CloseMenu()
         {
             DocMenuVisibility = Visibility.Collapsed;
-            MenuColumnWidth = new GridLength(0);
             MenuOpen = false;
         }
 
         public void OpenMenu()
         {
             DocMenuVisibility = Visibility.Visible;
-
-            MenuColumnWidth = new GridLength(55);
-
             MenuOpen = true;
         }
 

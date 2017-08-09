@@ -8,11 +8,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
-    Width="{Binding WidthBinding, Converter={StaticResource WidthBindingToDoubleConverter}}"
+    Width="{Binding Width}"
     Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
+    Tapped="OnTapped"
     PointerWheelChanged="This_PointerWheelChanged"
-    Loaded="This_Loaded"
     ManipulationMode="{Binding ManipulationMode}"
     >
     
@@ -20,16 +20,18 @@
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
-        <local:WidthBindingToDoubleConverter x:Key="WidthBindingToDoubleConverter"></local:WidthBindingToDoubleConverter>
     </UserControl.Resources>
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public" PointerReleased="OuterGrid_PointerReleased"
-              SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
+          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
-            <ColumnDefinition x:Name="xMenuColumn" Width="{Binding Path=MenuColumnWidth}" MaxWidth="55"/>
+            <ColumnDefinition Width="0"/>
         </Grid.ColumnDefinitions>
+
+        <!--drop shadow ui elements-->
+        <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Rectangle x:Name="xShadowTarget" Fill="{StaticResource TranslucentWhite}" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         
         <!-- Container for Icon view -->
         <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -40,20 +42,20 @@
 
             <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/if_11_1724127.png" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-
                 <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
                      HorizontalAlignment="Center"
                      TextAlignment="Center"
                      Background="Transparent" Text="Name Here" BorderThickness="0"/>
-
             </StackPanel>
         </Grid>
         
+        <!--canvas to hold the document view menu-->
         <Canvas x:Name="xMenuCanvas" Grid.Column="1"/>
+        
+        <!--grid to hold the inner content of the document-->
         <Grid Grid.Column="0">
-            <Border x:Name="xBorder" x:FieldModifier="public" Grid.Column="0" Grid.ColumnSpan="2" BorderThickness="0,0,10,10" BorderBrush="#33031A2C" Margin="5,5,-10,-10" />
             <!-- Container for document fields view -->
-            <Grid x:Name="XGrid" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
+            <Grid x:Name="xFieldContainer" x:FieldModifier="public" Background="{StaticResource TranslucentWhite}">
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>
@@ -62,9 +64,9 @@
                         <TextBox Name="CmdLine" AcceptsReturn="True" Background="Yellow" Height="50" Width="200" TextChanged="CommandLine_TextChanged"  />
                     </Flyout>
                 </FlyoutBase.AttachedFlyout>
-                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" />
+                <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" IsHitTestVisible="{Binding IsSelected}"/>
             </Grid>
-            <!-- Misc. Document Components-->
+            <!-- Dragger Button-->
             <Button x:Name="DraggerButton"
                     x:FieldModifier="public"
                     Margin="0,0,-20,-20"
@@ -81,5 +83,6 @@
                 </Border>
             </Button>
         </Grid>
+        <ProgressRing x:Name="xProgressRing" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
     </Grid>
 </local:SelectionElement>

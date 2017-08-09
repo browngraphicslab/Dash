@@ -19,7 +19,8 @@ namespace DashShared
         Reference = 0x20,
         Operator = 0x40,
         Point = 0x80,
-        List = 0x100
+        List = 0x100,
+        Ink = 0x200
     }
 
 }

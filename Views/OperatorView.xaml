@@ -21,8 +21,11 @@
                 <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
+            <!--Inner Content-->
+            <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+
             <!-- Input Operator Handles & Labels-->
-            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" 
+            <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"
                       ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
@@ -37,20 +40,20 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" Grid.Column="1" VerticalAlignment="Center"/>
-                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" 
+                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ListView>
-            
-            <!--Inner Content-->            
-            <ContentPresenter x:Name="XPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Column="1"/>
-            
+
+
+
             <!-- Output link handles and labels -->
-            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" Margin="0,0,0,0" >
+            <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50" 
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Margin" Value="0"/>
@@ -58,12 +61,12 @@
                         <Setter Property="HorizontalContentAlignment" Value="Right"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
-                
+
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,0,10,0" VerticalAlignment="Center">
                             <TextBlock Foreground="White" Text="{Binding Key.Name}" Padding="10,0,10,0" TextAlignment="Left"/>
-                            <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" 
+                            <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </StackPanel>
                     </DataTemplate>

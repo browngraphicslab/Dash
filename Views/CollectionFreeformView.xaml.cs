@@ -1,25 +1,21 @@
-﻿using System;
+﻿using DashShared;
+using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
+using Microsoft.Graphics.Canvas.UI;
+using Microsoft.Graphics.Canvas.UI.Xaml;
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+using System.Diagnostics;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
-using Windows.UI;
-using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using DashShared;
-using Microsoft.Graphics.Canvas;
-using Microsoft.Graphics.Canvas.Brushes;
-using Microsoft.Graphics.Canvas.UI;
-using Microsoft.Graphics.Canvas.UI.Xaml;
 using Path = Windows.UI.Xaml.Shapes.Path;
 
 
@@ -27,14 +23,14 @@ using Path = Windows.UI.Xaml.Shapes.Path;
 
 namespace Dash
 {
-    public sealed partial class CollectionFreeformView : UserControl
+    public sealed partial class CollectionFreeformView : SelectionElement, ICollectionView
     {
 
         #region ScalingVariables
 
         public Rect Bounds = new Rect(double.NegativeInfinity, double.NegativeInfinity, double.PositiveInfinity, double.PositiveInfinity);
         public double CanvasScale { get; set; } = 1;
-        public ICollectionViewModel ViewModel { get; private set; }
+        public BaseCollectionViewModel ViewModel { get; private set; }
 
         public const float MaxScale = 4;
         public const float MinScale = 0.25f;
@@ -73,29 +69,37 @@ namespace Dash
 
         public CollectionFreeformView()
         {
-            this.InitializeComponent();
-            this.Loaded += Freeform_Loaded;
-            this.Unloaded += Freeform_Unloaded;
+            InitializeComponent();
+            Loaded += Freeform_Loaded;
+            Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            _manipulationControls = new ManipulationControls(this);
+            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        public IOReference GetCurrentReference()
+        {
+            return _currReference; 
+        }
+
+        #region DataContext and Events
+
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var vm = DataContext as ICollectionViewModel;
+            var vm = DataContext as BaseCollectionViewModel;
 
             if (vm != null)
             {
-                var itemsBinding = new Binding()
-                {
-                    Source = vm,
-                    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
-                    Mode = BindingMode.OneWay
-                };
-                xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
+                //var itemsBinding = new Binding
+                //{
+                //    Source = vm,
+                //    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
+                //    Mode = BindingMode.OneWay
+                //};
+                //xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
 
                 ViewModel = vm;
+                ViewModel.SetSelected(this, IsSelected);
             }
         }
 
@@ -113,6 +117,7 @@ namespace Dash
         }
 
 
+        #endregion
 
         #region DraggingLinesAround
 
@@ -161,6 +166,7 @@ namespace Dash
 
         public void StartDrag(IOReference ioReference)
         {
+            if (_currReference != null) return;
             if (!CanLink)
             {
                 PointerArgs = ioReference.PointerArgs;
@@ -170,6 +176,8 @@ namespace Dash
             if (ioReference.PointerArgs == null) return;
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
+
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true); 
 
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
@@ -182,19 +190,11 @@ namespace Dash
                 IsHitTestVisible = false,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
-                //                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
-
-            try
-            {
-                _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
-
-            }
-            catch (COMException ex)
-            {
-            }
+            _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
 
             _lineBinding =
                 new MultiBinding<PathFigureCollection>(_converter, null);
@@ -221,7 +221,8 @@ namespace Dash
 
         public void CancelDrag(Pointer p)
         {
-            _currentPointers.Remove(p.PointerId);
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+            if (p != null) _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
 
@@ -237,10 +238,12 @@ namespace Dash
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
-            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
-            if (_connectionLine == null) return;
-
-            if (_currReference.IsOutput == ioReference.IsOutput)
+            if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
+            if (_connectionLine == null)
+            {
+                return;
+            }
+            if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
             {
                 UndoLine();
                 return;
@@ -256,20 +259,20 @@ namespace Dash
                 inputReference.FieldReference.GetDocumentController(null);
             var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
             if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
-                (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document &&
+                // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
                 inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                 inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
             else
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new ReferenceFieldModelController(outputReference.FieldReference), true);
 
-            if (!ioReference.IsOutput && _connectionLine != null)
+            if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
             {
                 CheckLinePresence(_converter);
                 _lineDict.Add(_converter, _connectionLine);
                 _connectionLine = null;
             }
-            CancelDrag(ioReference.PointerArgs.Pointer);
+            if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
         }
 
         /// <summary>
@@ -510,16 +513,48 @@ namespace Dash
 
         #region DragAndDrop
 
-        private void CollectionViewOnDragOver(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragOver(sender, e);
-        }
-
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDrop(sender, e);
         }
 
+        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragEnter(sender, e);
+        }
+
         #endregion
+
+        #region Activation
+
+        protected override void OnActivated(bool isSelected)
+        {
+            ViewModel.SetSelected(this, isSelected);
+        }
+
+        protected override void OnLowestActivated(bool isLowestSelected)
+        {
+            ViewModel.SetLowestSelected(this, isLowestSelected);
+        }
+
+        private void OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
+
+            e.Handled = true;
+            if (ViewModel.IsInterfaceBuilder)
+                return;
+
+            OnSelected();
+
+        }
+
+        #endregion
+
+
+        public void ToggleSelectAllItems()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -10,8 +10,10 @@
     d:DesignWidth="400">
 
     <Grid>
-        <local:CollectionFreeformView x:Name="xFreeFormEditor" AllowDrop="True" DragOver="XFreeFormEditor_OnDragOver" Drop="XFreeFormEditor_OnDrop"/>
-        <ListView x:Name="xOperationListView" HorizontalAlignment="Center" VerticalAlignment="Bottom" 
+        <local:CollectionFreeformView x:FieldModifier="public" x:Name="xFreeFormEditor" AllowDrop="True" DragOver="XFreeFormEditor_OnDragOver" Drop="XFreeFormEditor_OnDrop"/>
+        
+        <!--listview of all the operator options at the bottom-->
+        <ListView x:Name="xOperationListView" HorizontalAlignment="Center" VerticalAlignment="Bottom"
                   FlowDirection="LeftToRight" 
                   ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsHorizontalRailEnabled="True"
                   ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.IsVerticalRailEnabled="False"

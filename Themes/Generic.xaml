@@ -46,27 +46,6 @@
         </Setter>
     </Style>
 
-    <Style TargetType="local:EditableFieldFrame">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:EditableFieldFrame">
-                    <Grid Width="Auto" Height="Auto">
-                        <!--editable content-->
-                        <ContentControl x:Name="PART_EditableContent" Content="{TemplateBinding EditableContent}"
-                                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
-                        <Border x:Name="PART_Container"
-                                Background="Transparent"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}">
-                            <Canvas x:Name="PART_OverlayCanvas" UseLayoutRounding="False"/>
-                        </Border>
-                    </Grid>
-
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
     <!-- Floating Control Style -->
     <Style TargetType="userControl:Floating">
         <Setter Property="Template">

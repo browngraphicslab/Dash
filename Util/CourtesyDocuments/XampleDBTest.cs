@@ -311,9 +311,9 @@ namespace Dash
                 SetLayoutForDocument(game3Doc, game3Layout, forceMask: true, addToLayoutList: true);
                 Documents.Add(game3Doc);
             }
-            {
-                Documents.Add(CreateWebPage("http://www.msn.com"));
-            }
+            //{
+            //    Documents.Add(CreateWebPage("http://www.msn.com"));
+            //}
 
             DBDoc.SetField(KeyStore.DataKey, new ReferenceFieldModelController(MainPage.Instance.MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey), true);
             DBDoc.DocumentFieldUpdated += DBDoc_DocumentFieldUpdated;

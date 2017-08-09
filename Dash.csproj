@@ -102,6 +102,8 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Models\FieldModel.cs" />
+    <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
+    <Compile Include="Util\DocumentViewModelParameters.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
     <Compile Include="Controllers\Operators\Set\FilterOperatorFieldModelController.cs" />
@@ -123,15 +125,21 @@
     <Compile Include="Rest\RESTClient.cs" />
     <Compile Include="Util\CourtesyDocuments\ApiOperatorBox.cs" />
     <Compile Include="Util\CourtesyDocuments\FilterOperatorBox.cs" />
+    <Compile Include="Util\EditableImage.xaml.cs">
+      <DependentUpon>EditableImage.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\CourtesyDocuments\InkBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleInkDoc.cs" />
     <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
     <Compile Include="Util\WebBox.cs" />
-    <Compile Include="ViewModels\CollectionViewModelExtensions.cs" />
-    <Compile Include="ViewModels\FreeFormCollectionViewModel.cs" />
+    <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
+    <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />
     <Compile Include="Util\Request.cs" />
     <Compile Include="Util\RequestUtil.cs" />
     <Compile Include="ViewModels\ICollectionViewModel.cs" />
+    <Compile Include="ViewModels\SimpleCollectionViewModel.cs" />
     <Compile Include="Views\ApiOpView.xaml.cs">
       <DependentUpon>ApiOpView.xaml</DependentUpon>
     </Compile>
@@ -145,12 +153,15 @@
     <Compile Include="Views\FilterView.xaml.cs">
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\ICollectionView.cs" />
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
       <DependentUpon>AlignmentSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Controllers\InkFieldModelController.cs" />
+    <Compile Include="Models\InkFieldModel.cs" />
     <Compile Include="Push\Connection.cs" />
     <Compile Include="Push\PushClient.cs" />
     <Compile Include="Controllers\BaseListFieldModelController.cs" />
@@ -162,6 +173,9 @@
     <Compile Include="Converters\StringToDoubleConverter.cs" />
     <Compile Include="Views\InterfaceBuilder\GridViewSettings.xaml.cs">
       <DependentUpon>GridViewSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InterfaceBuilder\InkSettings.xaml.cs">
+      <DependentUpon>InkSettings.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ListViewSettings.xaml.cs">
       <DependentUpon>ListViewSettings.xaml</DependentUpon>
@@ -244,7 +258,7 @@
     <Compile Include="Util\Actions.cs" />
     <Compile Include="Util\DocumentExtensions.cs" />
     <Compile Include="Util\Context.cs" />
-    <Compile Include="Util\TypeInfo.cs" />
+    <Compile Include="Util\TypeInfoHelper.cs" />
     <Compile Include="Util\TransformGroupData.cs" />
     <Compile Include="Views\CollectionFreeformView.xaml.cs">
       <DependentUpon>CollectionFreeformView.xaml</DependentUpon>
@@ -337,7 +351,7 @@
     <Compile Include="Sources\Source.cs" />
     <Compile Include="Util\FilterUtils.cs" />
     <Compile Include="Util\Graph.cs" />
-    <Compile Include="Util\InkSource.cs" />
+    <Compile Include="Util\GlobalInkSettings.cs" />
     <Compile Include="Util\JsonToDashUtil.cs" />
     <Compile Include="Util\LocalCredentialHelper.cs" />
     <Compile Include="Util\MultiBinding.cs" />
@@ -360,7 +374,6 @@
     <Compile Include="Views\DocumentView.xaml.cs">
       <DependentUpon>DocumentView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\EditableFieldFrame.cs" />
     <Compile Include="Views\EmailView.xaml.cs">
       <DependentUpon>EmailView.xaml</DependentUpon>
     </Compile>
@@ -369,6 +382,9 @@
     </Compile>
     <Compile Include="Views\InterfaceBuilder\ImageSettings.xaml.cs">
       <DependentUpon>ImageSettings.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\InkCanvasControl.xaml.cs">
+      <DependentUpon>InkCanvasControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\InterfaceBuilder\InterfaceBuilder.xaml.cs">
       <DependentUpon>InterfaceBuilder.xaml</DependentUpon>
@@ -421,7 +437,6 @@
       <DependentUpon>WindowView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Util\VisualTreeHelperExtensions.cs" />
-    <Compile Include="Converters\WidthBindingToDoubleConverter.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -503,6 +518,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Util\EditableImage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\ApiOpView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -520,6 +539,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\InterfaceBuilder\InkSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -648,6 +671,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Views\InterfaceBuilder\ImageSettings.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InkCanvasControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

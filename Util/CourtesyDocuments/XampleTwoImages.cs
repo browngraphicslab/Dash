@@ -44,7 +44,7 @@ namespace Dash
             var prototypeImage2Layout = new ImageBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), Image2FieldKey), 0, 0, 200, 200);
             var prototypeAnnotatedLayout = new DocumentBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), AnnotatedFieldKey), 0, 0, 200, 250);
             var prototypeTextLayout = new TextingBox(new ReferenceFieldModelController(_prototypeTwoImages.GetId(), TextFieldKey), 0, 0, 200, 50);
-            var prototypeLayout = new StackLayout(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document });
+            var prototypeLayout = new StackLayout(new[] { prototypeTextLayout.Document, prototypeImage1Layout.Document, prototypeImage2Layout.Document, });
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(700), true);
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
 

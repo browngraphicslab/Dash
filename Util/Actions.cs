@@ -52,33 +52,39 @@ namespace Dash
 
         public static void ChangeInkColor(Color color, RadialMenu menu=null)
         {
-            InkSource.Color = color;
-            InkSource.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSource.Attributes.Color);
+            GlobalInkSettings.Color = color;
+            GlobalInkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
         public static void ChoosePen(object o)
         {
-            InkSource.StrokeType = InkSource.StrokeTypes.Pen;
-            InkSource.SetAttributes();
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.SetAttributes();
         }
 
         public static void ChoosePencil(object o)
         {
-            InkSource.StrokeType = InkSource.StrokeTypes.Pencil;
-            InkSource.SetAttributes();
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+            GlobalInkSettings.SetAttributes();
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+            GlobalInkSettings.SetAttributes();
         }
 
         public static void SetOpacity(double opacity)
         {
-            InkSource.Opacity = opacity;
-            InkSource.SetAttributes();
+            GlobalInkSettings.Opacity = opacity;
+            GlobalInkSettings.SetAttributes();
         }
 
         public static void SetSize(double size)
         {
-            InkSource.Size = size;
-            InkSource.SetAttributes();
+            GlobalInkSettings.Size = size;
+            GlobalInkSettings.SetAttributes();
         }
 
 
@@ -95,9 +101,9 @@ namespace Dash
 
         public static void SetBrightness(double brightness, RadialMenu menu)
         {
-            InkSource.BrightnessFactor = brightness;
-            InkSource.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(InkSource.Attributes.Color);
+            GlobalInkSettings.BrightnessFactor = brightness;
+            GlobalInkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
 
@@ -135,10 +141,10 @@ namespace Dash
             }
         }
         
-        public static void AddCollection(CollectionView collection, DragEventArgs e)
+        public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -185,13 +191,7 @@ namespace Dash
             DisplayDocument(collection, col, where);
         }
 
-        /// <summary>
-        ///     Adds new documents to the MainView document at position of mouse. New documents are added as children of the Main document.
-        /// </summary>
-        /// <param name="docController"></param>
-        /// <param name="where"></param>
-        /// <param name="collection"></param>
-        public static void DisplayDocument(CollectionView collection, DocumentController docController, Point? where = null)
+        public static void DisplayDocument(ICollectionView collectionView, DocumentController docController, Point? where = null)
         {
             if (where != null)
             {
@@ -201,20 +201,20 @@ namespace Dash
                 var pos = (Point)where;
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
-            collection.ViewModel.AddDocument(docController, null); 
+            collectionView.ViewModel.AddDocument(docController, null); 
             DBTest.DBDoc.AddChild(docController);
         }
 
-        public static void AddApiCreator(CollectionView collection, DragEventArgs e)
+        public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             var a = new ApiDocumentModel().Document;
-            DisplayDocument(collection, a, where);
+            DisplayDocument(collectionView, a, where);
         }
 
-        public static void AddDocuments(CollectionView collection, DragEventArgs e)
+        public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make second collection
             var numbers2 = new Numbers().Document;
@@ -234,38 +234,41 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new List<DocumentController> { layoutDoc2 }), true);
 
             //Display collections
-            DisplayDocument(collection, col2, where);
+            DisplayDocument(collectionView, col2, where);
+
+
+            DisplayDocument(collectionView, new InkDoc().Document, where);
 
 
             foreach (var d in new DBTest().Documents)
-                DisplayDocument(collection, d, where);
+                DisplayDocument(collectionView, d, where);
         }
 
-        public static void AddNotes(CollectionView collection, DragEventArgs e)
+        public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collection.CurrentView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
-            DisplayDocument(collection, postitNote, where);
+            DisplayDocument(collectionView, postitNote, where);
         }
 
         public static void SetTouchInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Touch;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Touch;
         }
 
         public static void SetPenInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Pen;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Pen;
         }
 
         public static void SetMouseInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.Mouse;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.Mouse;
         }
 
         public static void SetNoInput(object obj)
         {
-            InkSource.InkInputType = CoreInputDeviceTypes.None;
+            GlobalInkSettings.InkInputType = CoreInputDeviceTypes.None;
         }
     }
 }

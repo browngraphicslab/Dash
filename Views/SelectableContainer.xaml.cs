@@ -164,6 +164,7 @@ namespace Dash
         {
             if (XLayoutDisplay == null) return;
             XLayoutDisplay.Content = ContentElement;
+
             //ContentElement.IsHitTestVisible = IsSelected;
         }
 
@@ -247,16 +248,16 @@ namespace Dash
             // manipulation translated
             if (!IsRoot())
             {
-                _centerManipulator = new ManipulationControls(XGrid);
+                _centerManipulator = new ManipulationControls(XGrid, doesRespondToManipulationDelta:true, doesRespondToPointerWheel:false);
                 _centerManipulator.OnManipulatorTranslatedOrScaled += CenterManipulatorOnOnManipulatorTranslated;
             }
-            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger);
+            var bottomLeftManipulator = new ManipulationControls(xBottomLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             bottomLeftManipulator.OnManipulatorTranslatedOrScaled += BottomLeftManipulator_OnManipulatorTranslated;
-            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger);
+            var bottomRightManipulator = new ManipulationControls(xBottomRightDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             bottomRightManipulator.OnManipulatorTranslatedOrScaled += BottomRightManipulator_OnManipulatorTranslated;
-            var topLeftManipulator = new ManipulationControls(xTopLeftDragger);
+            var topLeftManipulator = new ManipulationControls(xTopLeftDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             topLeftManipulator.OnManipulatorTranslatedOrScaled += TopLeftManipulator_OnManipulatorTranslated;
-            var topRightManipulator = new ManipulationControls(xTopRightDragger);
+            var topRightManipulator = new ManipulationControls(xTopRightDragger, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
             topRightManipulator.OnManipulatorTranslatedOrScaled += TopRightManipulator_OnManipulatorTranslated;
 
             // manipulation stated
@@ -326,23 +327,23 @@ namespace Dash
             var positionController = LayoutDocument.GetPositionField();
 
             double X = positionController.Data.X;
-            double Y = positionController.Data.Y; 
+            double Y = positionController.Data.Y;
 
             // take into account the vertical and horizontal alignments 
-            var verticalAlignment = LayoutDocument.GetVerticalAlignment(); 
+            var verticalAlignment = LayoutDocument.GetVerticalAlignment();
             switch (verticalAlignment)
             {
                 case VerticalAlignment.Bottom:
                     Y = ContentElement.ActualHeight - LayoutDocument.GetHeightField().Data;
                     break;
                 case VerticalAlignment.Center:
-                    Y = (ContentElement.ActualHeight - LayoutDocument.GetHeightField().Data)/2;
+                    Y = (ContentElement.ActualHeight - LayoutDocument.GetHeightField().Data) / 2;
                     break;
                 case VerticalAlignment.Stretch:
-                    LayoutDocument.SetHeight(ContentElement.ActualHeight); 
-                    break; 
+                    LayoutDocument.SetHeight(ContentElement.ActualHeight);
+                    break;
             }
-            if (verticalAlignment != VerticalAlignment.Top) LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top); 
+            if (verticalAlignment != VerticalAlignment.Top) LayoutDocument.SetVerticalAlignment(VerticalAlignment.Top);
 
             var horizontalAlignment = LayoutDocument.GetHorizontalAlignment();
             switch (horizontalAlignment)
@@ -354,12 +355,12 @@ namespace Dash
                     Y = (ContentElement.ActualWidth - LayoutDocument.GetWidthField().Data) / 2;
                     break;
                 case HorizontalAlignment.Stretch:
-                    LayoutDocument.SetWidth(ContentElement.ActualWidth); 
-                    break; 
+                    LayoutDocument.SetWidth(ContentElement.ActualWidth);
+                    break;
             }
             if (horizontalAlignment != HorizontalAlignment.Left) LayoutDocument.SetHorizontalAlignment(HorizontalAlignment.Left);
 
-            positionController.Data = new Point(X + deltaX, Y + deltaY); 
+            positionController.Data = new Point(X + deltaX, Y + deltaY);
             return actualChange;
         }
 
@@ -760,7 +761,7 @@ namespace Dash
                 }
                 else
                 {
-                    toBeRenderPosition =  SnapActual(allLines, _actual);
+                    toBeRenderPosition = SnapActual(allLines, _actual);
                 }
 
 
