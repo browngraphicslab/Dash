@@ -57,7 +57,7 @@ namespace Dash
             ContentController.AddController(this);
 
             // Add Events
-            RESTClient.Instance.Fields.AddField(fieldModel, controller =>
+            RESTClient.Instance.Fields.AddField(fieldModel, dto =>
             {
                 // Yay!
             }, exception =>
