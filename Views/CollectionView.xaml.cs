@@ -187,6 +187,8 @@ namespace Dash
         {
             var view = CurrentView as CollectionFreeformView;
             view.ToggleDraw();
+            if (view.IsDrawing) _toggleDrawButton.Background = new SolidColorBrush(Colors.Gray);
+            else _toggleDrawButton.Background = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
         }
 
         private void MakeMenu()

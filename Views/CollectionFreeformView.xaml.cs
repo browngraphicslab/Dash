@@ -133,9 +133,6 @@ namespace Dash
             }
         }
 
-        
-
-
         #endregion
 
         #region DraggingLinesAround
@@ -554,6 +551,11 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
+            if (IsDrawing)
+            {
+                if (!isLowestSelected) xInkCanvas.InkPresenter.IsInputEnabled = false;
+                else xInkCanvas.InkPresenter.IsInputEnabled = true;
+            }
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
@@ -589,11 +591,20 @@ namespace Dash
             GlobalInkSettings.InkInputChanged += GlobalInkSettingsOnInkInputChanged;
             xInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             xInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            InkFieldModelController.FieldModelUpdated += InkFieldModelControllerOnFieldModelUpdated;
+            InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
             InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
             xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
             UpdateStrokes();
+            IsDrawing = true;
             ToggleDraw();
+        }
+
+        private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
+        {
+            if (!sender.Equals(xInkCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
+            {
+                UpdateStrokes();
+            }
         }
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
@@ -609,23 +620,22 @@ namespace Dash
         public void ToggleDraw()
         {
             var canvas = xItemsControl.ItemsPanelRoot as Canvas;
-            if (InkSettingsPanel.Visibility == Visibility.Visible)
+            if (IsDrawing)
             {
-                IsDrawing = false;
                 InkSettingsPanel.Visibility = Visibility.Collapsed;
                 SetInkInputType(CoreInputDeviceTypes.None);
                 xInkCanvas.InkPresenter.IsInputEnabled = false;
             }
             else
             {
-                IsDrawing = true;
                 InkSettingsPanel.Visibility = Visibility.Visible;
                 SetInkInputType(GlobalInkSettings.InkInputType);
                 if (!canvas.Children.Contains(xInkCanvas))
                     canvas.Children.Insert(0, xInkCanvas);
                 xInkCanvas.InkPresenter.IsInputEnabled = true;
             }
-            
+            IsDrawing = !IsDrawing;
+
         }
 
         public bool IsDrawing { get; set; }
@@ -660,7 +670,7 @@ namespace Dash
         private void UpdateInkFieldModelController()
         {
             if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes());
+                InkFieldModelController.UpdateStrokesFromList(xInkCanvas.InkPresenter.StrokeContainer.GetStrokes(), xInkCanvas);
         }
 
         private void InkToolbarOnEraseAllClicked(InkToolbar sender, object args)
@@ -670,20 +680,12 @@ namespace Dash
 
         private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            InkFieldModelController?.Undo();
+            InkFieldModelController?.Undo(xInkCanvas);
         }
 
         private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            InkFieldModelController?.Redo();
-        }
-
-        private void InkFieldModelControllerOnFieldModelUpdated(FieldModelController sender, FieldUpdatedEventArgs args, Context context)
-        {
-            if (!IsLowestSelected || args?.Action == DocumentController.FieldUpdatedAction.Replace)
-            {
-                UpdateStrokes();
-            }
+            InkFieldModelController?.Redo(xInkCanvas);
         }
 
         private void UpdateStrokes()

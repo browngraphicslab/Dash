@@ -56,17 +56,24 @@
         </ItemsControl>
 
         <!--Ink Toolbar-->
-        <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Top">
-            <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
-                        TargetInkCanvas="{x:Bind xInkCanvas}" Height="50" Background="#FFE6E6E6" IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged"/>
-            <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
-                    Background="#FFE6E6E6">
-                <SymbolIcon Symbol="Undo" Foreground="Black"></SymbolIcon>
-            </Button>
-            <Button x:Name="RedoButton" Tapped="RedoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
-                    Background="#FFE6E6E6">
-                <SymbolIcon Symbol="Redo" Foreground="Black"></SymbolIcon>
-            </Button>
-        </StackPanel>
+        <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto"
+                      VerticalScrollBarVisibility="Disabled"
+                      HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Top"
+                      Height="63" Padding="0" HorizontalAlignment="Stretch">
+            <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center"
+                        VerticalAlignment="Top">
+                <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
+                            TargetInkCanvas="{x:Bind xInkCanvas}" Height="50" Background="#FFE6E6E6"
+                            IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged" />
+                <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
+                        Background="#FFE6E6E6">
+                    <SymbolIcon Symbol="Undo" Foreground="Black"></SymbolIcon>
+                </Button>
+                <Button x:Name="RedoButton" Tapped="RedoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
+                        Background="#FFE6E6E6">
+                    <SymbolIcon Symbol="Redo" Foreground="Black"></SymbolIcon>
+                </Button>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </local:SelectionElement>

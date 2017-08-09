@@ -32,6 +32,15 @@ namespace Dash
 
         private int _selectedInd; 
         private List<Button> _buttons = new List<Button>();
+        private Border _border;
+
+        public new Brush Background
+        {
+            get => _border.Background;
+            set => _border.Background = value;
+        }
+
+
         /// <summary>
         /// Creates a toggle-able merged set of buttons ... 
         /// </summary>
@@ -123,7 +132,7 @@ namespace Dash
                 Foreground = new SolidColorBrush(Colors.White)
             };
             // create rounded(circular) border to hold the symbol
-            var border = new Border()
+            _border = new Border()
             {
                 Height = 40,
                 Width = 40,
@@ -138,7 +147,7 @@ namespace Dash
                 Background = new SolidColorBrush(Colors.Transparent),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Padding = new Thickness(-2.5),
-                Content = border
+                Content = _border
             };
             // create textblock containing a description of the button
             _descriptionText = new TextBlock()
