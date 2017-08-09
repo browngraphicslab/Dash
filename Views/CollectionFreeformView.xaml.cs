@@ -77,6 +77,11 @@ namespace Dash
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
+        public IOReference GetCurrentReference()
+        {
+            return _currReference; 
+        }
+
         #region DataContext and Events
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
@@ -172,6 +177,8 @@ namespace Dash
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true); 
+
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
@@ -214,7 +221,8 @@ namespace Dash
 
         public void CancelDrag(Pointer p)
         {
-            _currentPointers.Remove(p.PointerId);
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+            if (p != null) _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
 
@@ -230,7 +238,7 @@ namespace Dash
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
-            _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
+            if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null)
             {
                 return;
@@ -258,13 +266,13 @@ namespace Dash
                 inputController.SetField(inputReference.FieldReference.FieldKey,
                     new ReferenceFieldModelController(outputReference.FieldReference), true);
 
-            if (!ioReference.IsOutput && _connectionLine != null)
+            if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
             {
                 CheckLinePresence(_converter);
                 _lineDict.Add(_converter, _connectionLine);
                 _connectionLine = null;
             }
-            CancelDrag(ioReference.PointerArgs.Pointer);
+            if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
         }
 
         /// <summary>
@@ -531,6 +539,8 @@ namespace Dash
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
+            if (_connectionLine != null) CancelDrag(_currReference.PointerArgs.Pointer);
+
             e.Handled = true;
             if (ViewModel.IsInterfaceBuilder)
                 return;
