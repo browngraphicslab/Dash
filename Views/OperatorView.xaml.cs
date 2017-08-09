@@ -181,7 +181,7 @@ namespace Dash
         private void ContractView(object sender, RoutedEventArgs e)
         {
             XPresenter.Content = null;
-
+            XPresenter.Background = (SolidColorBrush) Application.Current.Resources["WindowsBlue"];
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)
@@ -192,6 +192,7 @@ namespace Dash
             var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
             XPresenter.Content = new CompoundOperatorEditor(documentController, operatorFieldModelController);
+            XPresenter.Background = (SolidColorBrush) Application.Current.Resources["TranslucentWhite"];
         }
 
 
