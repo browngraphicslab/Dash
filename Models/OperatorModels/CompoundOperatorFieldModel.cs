@@ -5,8 +5,8 @@ namespace Dash
 {
     public class CompoundOperatorFieldModel : OperatorFieldModel
     {
-        public Dictionary<KeyController, ReferenceFieldModel> InputFieldReferences = new Dictionary<KeyController, ReferenceFieldModel>();
-        public Dictionary<KeyController, ReferenceFieldModel> OutputFieldReferences = new Dictionary<KeyController, ReferenceFieldModel>();
+        public Dictionary<KeyController, FieldReference> InputFieldReferences = new Dictionary<KeyController, FieldReference>();
+        public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
 
         public CompoundOperatorFieldModel(string type) : base(type)
         {

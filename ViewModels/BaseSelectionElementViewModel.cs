@@ -85,7 +85,7 @@ namespace Dash
             IsLowestSelected = isLowestSelected;
         }
 
-        protected void SetGlobalHitTestVisiblityOnSelectedItems(bool isHitTestVisible)
+        public void SetGlobalHitTestVisiblityOnSelectedItems(bool isHitTestVisible)
         {
             GlobalHitTestVisibility = isHitTestVisible;
             Debug.WriteLine($"Global hit test visibility : {isHitTestVisible}");

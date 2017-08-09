@@ -6,14 +6,16 @@ namespace Dash
 {
     public class OperatorBuilder
     {
-        public OperatorBuilder(Func<DocumentController> operationConstructor, string name, string icon)
+        public OperatorBuilder(Func<DocumentController> operationDocumentConstructor, Func<OperatorFieldModelController> operationControllerConstructor, string name, string icon)
         {
-            OperationConstructor = operationConstructor;
+            OperationDocumentConstructor = operationDocumentConstructor;
+            OperationControllerConstructor = operationControllerConstructor;
             Name = name;
             Icon = icon;
         }
 
-        public Func<DocumentController> OperationConstructor { get; }
+        public Func<DocumentController> OperationDocumentConstructor { get; }
+        public Func<OperatorFieldModelController> OperationControllerConstructor { get; }
         public string Name { get; }
         public string Icon { get; }
     }
