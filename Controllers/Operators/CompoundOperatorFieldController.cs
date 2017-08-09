@@ -28,8 +28,8 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
 
-        public Dictionary<KeyController, ReferenceFieldModelController> InputFieldReferences = new Dictionary<KeyController, ReferenceFieldModelController>();
-        public Dictionary<KeyController, ReferenceFieldModelController> OutputFieldReferences = new Dictionary<KeyController, ReferenceFieldModelController>();
+        public Dictionary<KeyController, FieldReference> InputFieldReferences = new Dictionary<KeyController, FieldReference>();
+        public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
 
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
@@ -45,10 +45,10 @@ namespace Dash
             }
         }
 
-        public void AddInputreference(KeyController key, ReferenceFieldModelController reference)
+        public void AddInputreference(KeyController key, FieldReference reference)
         {
             InputFieldReferences.Add(key, reference);
-            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Add(key, reference.ReferenceFieldModel);
+            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Add(key, reference);
         }
 
         public void RemoveInputReference(KeyController key)
@@ -58,10 +58,10 @@ namespace Dash
 
         }
 
-        public void AddOutputreference(KeyController key, ReferenceFieldModelController reference)
+        public void AddOutputreference(KeyController key, FieldReference reference)
         {
             OutputFieldReferences.Add(key, reference);
-            (OperatorFieldModel as CompoundOperatorFieldModel).OutputFieldReferences.Add(key, reference.ReferenceFieldModel);
+            (OperatorFieldModel as CompoundOperatorFieldModel).OutputFieldReferences.Add(key, reference);
         }
 
         public void RemoveOutputReference(KeyController key)

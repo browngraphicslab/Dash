@@ -9,20 +9,10 @@ namespace Dash
 {
     public class IOReference
     {
-        public delegate void IODragEventHandler(IOReference ioReference);
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged off of and a connection should be started
-        /// </summary>
-        public event IODragEventHandler IoDragStarted;
-
-        /// <summary>
-        /// Event that gets fired when an ellipse is dragged on to and a connection should be ended
-        /// </summary>
-        public event IODragEventHandler IoDragEnded;
-
         public FieldReference FieldReference { get; set; }
         public bool IsOutput { get; set; }
+
+        public TypeInfo Type;
         //public bool IsReference { get; set; }
 
         public PointerRoutedEventArgs PointerArgs { get; set; }
@@ -33,25 +23,16 @@ namespace Dash
         public FieldModelController FMController { get; set; }
 
         public KeyController FieldKey { get; set; }
-        public IOReference(KeyController fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
+        public IOReference(KeyController fieldKey, FieldModelController controller, FieldReference fieldReference, bool isOutput, TypeInfo type, PointerRoutedEventArgs args, FrameworkElement e, DocumentView container)
         {
             FieldKey = fieldKey;
             FMController = controller;
             FieldReference = fieldReference;
             IsOutput = isOutput;
+            Type = type;
             PointerArgs = args;
             FrameworkElement = e;
             ContainerView = container;
-        }
-
-        public void FireDragStarted()
-        {
-            IoDragStarted?.Invoke(this);
-        }
-
-        public void FireDragEnded()
-        {
-            IoDragEnded?.Invoke(this);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -15,6 +16,7 @@ using Dash.Controllers.Operators;
 using Dash.Views;
 using static Dash.Controllers.Operators.DBSearchOperatorFieldModelController;
 using System.Collections.Specialized;
+using System.Linq;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -38,34 +40,45 @@ namespace Dash
             set { XPresenter.Content = value; }
         }
 
+        private OperatorFieldModelController _operator;
+
+        private object _lastDataContext = null;
         private void UserControl_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            var opCont = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
-            _isCompound = opCont.IsCompound();
+            if (args.NewValue == _lastDataContext)
+            {
+                return;
+            }
+            else
+            {
+                _lastDataContext = args.NewValue;
+            }
+            _operator = (DataContext as FieldReference).DereferenceToRoot<OperatorFieldModelController>(null);
+            _isCompound = _operator.IsCompound();
 
             var inputsBinding = new Binding
             {
-                Source = opCont.Inputs,
+                Source = _operator.Inputs,
             };
             var outputsBinding = new Binding
             {
-                Source = opCont.Outputs,
+                Source = _operator.Outputs,
             };
             InputListView.SetBinding(ListView.ItemsSourceProperty, inputsBinding);
             OutputListView.SetBinding(ListView.ItemsSourceProperty, outputsBinding);
 
             if (_isCompound)
             {
-                var compoundFMCont = opCont as CompoundOperatorFieldController;
+                var compoundFMCont = _operator as CompoundOperatorFieldController;
                 InputListView.PointerReleased += (s, e) =>
                 {
                     var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
                     var ioRef = freeform.GetCurrentReference();
                     if (ioRef == null) return;
-                    if (!compoundFMCont.Inputs.ContainsKey(ioRef.FieldReference.FieldKey) && !ioRef.IsOutput)
-                    {
-                        compoundFMCont.Inputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
-                    }
+                    if (ioRef.IsOutput) return;
+                    KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
+                    compoundFMCont.Inputs.Add(newInput, ioRef.Type);
+                    compoundFMCont.AddInputreference(newInput, ioRef.FieldReference);
                     _currInputRef = ioRef;
                 };
 
@@ -74,10 +87,10 @@ namespace Dash
                     var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
                     var ioRef = freeform.GetCurrentReference();
                     if (ioRef == null) return;
-                    if (!compoundFMCont.Outputs.ContainsKey(ioRef.FieldReference.FieldKey) && ioRef.IsOutput)
-                    {
-                        compoundFMCont.Outputs.Add(ioRef.FieldReference.FieldKey, TypeInfo.Operator);
-                    }
+                    if (!ioRef.IsOutput) return;
+                    KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
+                    compoundFMCont.Outputs.Add(newOutput, ioRef.Type);
+                    compoundFMCont.AddOutputreference(newOutput, ioRef.FieldReference);
                     _currOutputRef = ioRef;
                 };
             }
@@ -94,7 +107,8 @@ namespace Dash
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            TypeInfo type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
             view.CanLink = true;
             view.StartDrag(ioRef);
         }
@@ -131,7 +145,8 @@ namespace Dash
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            TypeInfo type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
             view.EndDrag(ioRef);
         }
 
@@ -203,15 +218,17 @@ namespace Dash
             if (!_isCompound) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
             view.CancelDrag(_currInputRef.PointerArgs.Pointer);
-            StartNewLink(sender, _currInputRef.PointerArgs, true, view);
-            view.EndDrag(_currInputRef);
+            //EndDraggedLink(sender, null, true, view);
+            //StartNewLink(sender, _currInputRef.PointerArgs, true, view);
+            //view.EndDrag(_currInputRef);
+            view.CancelDrag(_currInputRef.PointerArgs.Pointer);
         }
 
         private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
             if (!_isCompound) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-            EndDraggedLink(sender, null, false, view);
+            //EndDraggedLink(sender, null, false, view);
             view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
         }
     }
