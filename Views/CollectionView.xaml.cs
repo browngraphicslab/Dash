@@ -91,20 +91,22 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument); // TODO KB 
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return; 
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument); // TODO KB 
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
         }
