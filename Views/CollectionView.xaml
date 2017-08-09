@@ -38,7 +38,8 @@
                          HorizontalAlignment="Right"
                          PointerPressed="ConnectionEllipse_OnPointerPressed"
                          PointerReleased="ConnectionEllipse_OnPointerReleased"
-                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"/>
+                         ManipulationStarted="ConnectionEllipse_OnManipulationStarted"
+                         />
             </Grid>
         </Grid>
     </Grid>

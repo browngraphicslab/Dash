@@ -186,7 +186,7 @@ namespace Dash
             _connectionLine = new Path
             {
                 StrokeThickness = 5,
-                Stroke = new SolidColorBrush(Colors.Orange),
+                Stroke = Util.GetSolidColorBrush("#FF35C597"),
                 IsHitTestVisible = false,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 

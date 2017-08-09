@@ -49,8 +49,6 @@
                 </ItemsControl.ItemTemplate>
             </ListView>
 
-
-
             <!-- Output link handles and labels -->
             <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50" 
                       ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
