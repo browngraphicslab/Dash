@@ -60,8 +60,6 @@ namespace Dash
                 var response = PostAsJson ? Connection.PostAsync(DashConstants.ServerBaseUrl + path, new StringContent(a,Encoding.UTF8,"application/json")).Result :
                                             Connection.PostAsync(DashConstants.ServerBaseUrl + path, bodyObject as HttpContent).Result;
 
-                Debug.WriteLine(response.RequestMessage.Content);
-
                 // if the response failed throw an exception
                 if (!response.IsSuccessStatusCode)
                 {

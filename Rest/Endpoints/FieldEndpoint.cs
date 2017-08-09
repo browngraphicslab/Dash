@@ -34,8 +34,6 @@ namespace Dash
                     var result = _connection.Post("api/Field", dto);
                     var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
 
-                    Debug.Assert(resultDto != null);
-
                     success(resultDto);
                 }
                 catch (Exception e)

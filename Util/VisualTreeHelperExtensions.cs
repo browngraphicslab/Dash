@@ -9,17 +9,17 @@ namespace Dash
 {
     public static class VisualTreeHelperExtensions
     {
-        public static T GetFirstDescendantOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static T GetFirstDescendantOfType<T>(this DependencyObject start)
         {
             return start.GetDescendantsOfType<T>().FirstOrDefault();
         }
 
-        public static IEnumerable<T> GetDescendantsOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static IEnumerable<T> GetDescendantsOfType<T>(this DependencyObject start)
         {
             return start.GetDescendants().OfType<T>();
         }
 
-        public static IEnumerable<T> GetDescentantsOfNextGenerationOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static IEnumerable<T> GetDescentantsOfNextGenerationOfType<T>(this DependencyObject start)
         {
             return start.GetDescendantsOfNextGeneration().OfType<T>();
         }
@@ -61,12 +61,12 @@ namespace Dash
             }
         }
 
-        public static T GetFirstAncestorOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static T GetFirstAncestorOfType<T>(this DependencyObject start)
         {
             return start.GetAncestorsOfType<T>().FirstOrDefault();
         }
 
-        public static IEnumerable<T> GetAncestorsOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static IEnumerable<T> GetAncestorsOfType<T>(this DependencyObject start)
         {
             return start.GetAncestors().OfType<T>();
         }
