@@ -21,7 +21,7 @@ namespace Dash
         /// <param name="newField"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void AddField(FieldModel newField, Action<FieldModelController> success, Action<Exception> error)
+        public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
             try
             {
@@ -30,9 +30,7 @@ namespace Dash
                 var result = _connection.Post("api/Field", dto);
                 var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
 
-                // convert from server dto back to field model controller
-                var controller = TypeInfoHelper.CreateFieldModelController(resultDto);
-                success(controller);
+                success(resultDto);
             }
             catch (Exception e)
             {
@@ -47,17 +45,15 @@ namespace Dash
         /// <param name="fieldToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelController> success, Action<Exception> error)
+        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
             try
             {
                 var dto = fieldToUpdate.GetFieldDTO();
                 var result = _connection.Put("api/Field", dto);
                 var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
-
-                // convert from server dto back to field model controller
-                var controller = TypeInfoHelper.CreateFieldModelController(resultDto);
-                success(controller);
+                
+                success(resultDto);
             }
             catch (Exception e)
             {
@@ -66,13 +62,12 @@ namespace Dash
             }
         }
 
-        public void GetField(string id, Action<FieldModelController> success, Action<Exception> error)
+        public void GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
         {
             try
             {
                 var fieldModelDTO = _connection.GetItem<FieldModelDTO>($"api/Field/{id}").Result;
-                var controller = TypeInfoHelper.CreateFieldModelController(fieldModelDTO);
-                success(controller);
+                success(fieldModelDTO);
             }
             catch (Exception e)
             {
