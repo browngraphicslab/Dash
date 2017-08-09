@@ -54,7 +54,6 @@ namespace DashWebServer
         ///     </para>
         /// </summary>
         private readonly IMemoryCache _memoryCache;
-        
 
         #endregion
                
@@ -147,7 +146,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -164,18 +163,20 @@ namespace DashWebServer
             {
                 // we use upsert to replace the document if it exists or create a new one if it doesn't
                 var resourceResponse = await _client.UpsertDocumentAsync(GetCollectionLink, item);
-                T result = (dynamic)resourceResponse.Resource;
 
+                T result = (dynamic)resourceResponse.Resource;
                 // add the new document to the cache
                 var result2 = AddDocumentToCache(result);
                 return result;
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
+
+        //public object Lock2 = new object();
 
         #endregion
 
@@ -203,7 +204,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -227,7 +228,7 @@ namespace DashWebServer
                 }
                 catch (DocumentClientException e)
                 {
-                    Console.WriteLine(e);
+                    Debug.WriteLine(e);
                     throw;
                 }
             }
@@ -292,7 +293,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -312,7 +313,7 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
@@ -334,10 +335,14 @@ namespace DashWebServer
             }
             catch (DocumentClientException e)
             {
-                Console.WriteLine(e);
+                Debug.WriteLine(e);
                 throw;
             }
         }
+
+        public int FieldCount { get; set; } = 0;
+
+        public object Lock { get; set; } = new object();
 
         #endregion
 

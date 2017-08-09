@@ -19,9 +19,9 @@ namespace Dash
         /// <param name="newKey"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
+        public async void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
             {
                 try
                 {
@@ -35,7 +35,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            });
+            }));
         }
 
         /// <summary>
@@ -43,9 +43,9 @@ namespace Dash
         /// <param name="keyToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
+        public async void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
             {
                 try
                 {
@@ -59,7 +59,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            });
+            }));
         }
 
         public void GetKey(string id, Action<KeyModel> success, Action<Exception> error)

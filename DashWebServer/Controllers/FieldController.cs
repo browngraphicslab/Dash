@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
@@ -38,10 +39,17 @@ namespace DashWebServer.Controllers
         {
             try
             {
+                lock (_documentRepository.Lock)
+                {
+                    Debug.WriteLine($"{_documentRepository.FieldCount++}");
+                }
+
                 FieldModelDTO = await _documentRepository.AddItemAsync(FieldModelDTO);
+
             }
             catch (Exception e)
             {
+                Debug.WriteLine(e);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(FieldModelDTO);
@@ -57,6 +65,7 @@ namespace DashWebServer.Controllers
             }
             catch (Exception e)
             {
+                Debug.WriteLine(e);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(fieldModelDTO);
@@ -72,6 +81,7 @@ namespace DashWebServer.Controllers
             }
             catch (Exception e)
             {
+                Debug.WriteLine(e);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok();

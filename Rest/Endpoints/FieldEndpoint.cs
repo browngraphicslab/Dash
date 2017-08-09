@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -10,7 +9,9 @@ namespace Dash
     public class FieldEndpoint
     {
         private readonly ServerEndpoint _connection;
-        private static int count;
+
+        private static object l = new Object();
+        private static Int64 count = new int();
 
         public FieldEndpoint(ServerEndpoint connection)
         {
@@ -23,25 +24,33 @@ namespace Dash
         /// <param name="newField"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
+        public async void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
             {
                 try
                 {
                     // convert from field model to DTO
+
                     var dto = newField.GetFieldDTO();
                     var result = _connection.Post("api/Field", dto);
+
                     var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
 
                     success(resultDto);
+
+                    lock (l)
+                    {
+                        Debug.WriteLine($"{count++}");
+                    }
+
                 }
                 catch (Exception e)
                 {
                     // return the error message
                     error(e);
                 }
-            });
+            }));
         }
 
         /// <summary>
@@ -50,9 +59,9 @@ namespace Dash
         /// <param name="fieldToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
+        public async void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
             {
                 try
                 {
@@ -67,7 +76,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            });
+            }));
         }
 
         public void GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)

@@ -11,10 +11,12 @@ namespace Dash
 {
     public class ServerEndpoint
     {
+        public TaskQueue TaskQueue { get; }
 
         public ServerEndpoint()
         {
             Connection = InitializeConnection();
+            TaskQueue = new TaskQueue(10);
         }
 
         /// <summary>

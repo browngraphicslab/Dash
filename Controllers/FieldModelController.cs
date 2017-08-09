@@ -64,6 +64,8 @@ namespace Dash
             }, exception =>
             {
                 // Haaay
+                Debug.WriteLine(exception);
+
             });
         }
 

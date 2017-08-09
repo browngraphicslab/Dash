@@ -20,9 +20,9 @@ namespace Dash
         /// <param name="newDocument"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
+        public async void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
             {
                 try
                 {
@@ -36,7 +36,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            });
+            }));
         }
 
         /// <summary>
@@ -45,10 +45,10 @@ namespace Dash
         /// <param name="documentToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
+        public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
             Action<Exception> error)
         {
-            Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
             {
                 try
                 {
@@ -62,7 +62,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            });
+            }));
         }
 
         /// <summary>
