@@ -21,19 +21,14 @@ namespace Dash
 
         public RTD Data;
 
-        public RichTextFieldModel()
+        public RichTextFieldModel(RTD data = null, string id = null) : base(id)
         {
-            
-        }
-
-        public RichTextFieldModel(RTD data)
-        {
-            Data = data;
+            Data = data ?? new RTD("");
         }
 
         protected override FieldModelDTO GetFieldDTOHelper()
         {
-            throw new NotImplementedException();
+            return new FieldModelDTO(TypeInfo.RichTextField, Data);
         }
     }
 }

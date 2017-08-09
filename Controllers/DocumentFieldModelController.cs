@@ -9,21 +9,21 @@ namespace Dash
 {
     public class DocumentFieldModelController : FieldModelController
     {
-        public DocumentFieldModelController(DocumentController document) : base(new DocumentModelFieldModel(document?.DocumentModel))
+        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document?.DocumentModel))
         {
             Data = document;
         }
 
         /// <summary>
-        ///     The <see cref="DocumentModelFieldModel" /> associated with this <see cref="DocumentFieldModelController" />,
+        ///     The <see cref="DocumentFieldModel" /> associated with this <see cref="DocumentFieldModelController" />,
         ///     You should only set values on the controller, never directly on the model!
         /// </summary>
-        public DocumentModelFieldModel DocumentModelFieldModel => FieldModel as DocumentModelFieldModel;
+        public DocumentFieldModel DocumentFieldModel => FieldModel as DocumentFieldModel;
 
 
         private DocumentController _data;
         /// <summary>
-        ///     A wrapper for <see cref="DocumentModelFieldModel.Data" />. Change this to propagate changes
+        ///     A wrapper for <see cref="DocumentFieldModel.Data" />. Change this to propagate changes
         ///     to the server
         /// </summary>
         public DocumentController Data
@@ -65,7 +65,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-           // textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
+           // textBlock.Text = $"Document of type: {DocumentFieldModel.Data.DocumentType}";
         }
 
         public override FieldModelController Copy()

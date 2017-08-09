@@ -5,9 +5,8 @@ namespace Dash
 {
     public class NumberFieldModel : FieldModel
     {
-        public NumberFieldModel() { }
 
-        public NumberFieldModel(double data)
+        public NumberFieldModel(double data, string id = null) : base(id)
         {
             Data = data;
         }

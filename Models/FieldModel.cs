@@ -9,7 +9,7 @@ namespace Dash
     /// </summary>
     public abstract class FieldModel : EntityBase
     {
-        public FieldModel()
+        public FieldModel(string id = null) : base(id)
         {
             // Initialize Local Variables
 

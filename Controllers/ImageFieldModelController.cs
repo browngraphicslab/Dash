@@ -9,8 +9,6 @@ namespace Dash
 {
     public class ImageFieldModelController : FieldModelController
     {
-        public ImageFieldModelController() : base(new ImageFieldModel()) { }
-
         public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data)) { }
 
         /// <summary>

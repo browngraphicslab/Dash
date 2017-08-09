@@ -16,14 +16,19 @@ namespace Dash
         /// </summary>
         public List<string> Data;
 
+
+        public DocumentCollectionFieldModel(IEnumerable<string> documentIds, string id = null) : base(id)
+        {
+            Data = documentIds.ToList();
+        }
+
         /// <summary>
         /// Creates a new DocumentCollectionFieldModel using the passed in list of <see cref="DocumentModel"/>
         /// </summary>
         /// <param name="documents"></param>
-        public DocumentCollectionFieldModel(IEnumerable<DocumentModel> documents)
+        public DocumentCollectionFieldModel(IEnumerable<DocumentModel> documents, string id = null) : this(documents.Select(document => document.Id), id)
         {
-            Debug.Assert(documents != null);
-            Data = documents.Select(document => document.Id).ToList();
+            
         }
 
         /// <summary>

@@ -5,10 +5,9 @@ using Windows.Foundation;
 namespace Dash
 {
     public class PointFieldModel : FieldModel
-    {
-        public PointFieldModel() { }
+    { 
 
-        public PointFieldModel(Point data) : this()
+        public PointFieldModel(Point data, string id = null) : base(id)
         {
             Data = data;
         }

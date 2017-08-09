@@ -6,7 +6,7 @@ namespace Dash
     {
         public FieldReference Reference;
 
-        public ReferenceFieldModel(FieldReference reference)
+        public ReferenceFieldModel(FieldReference reference, string id = null) : base(id)
         {
             Reference = reference;
         }

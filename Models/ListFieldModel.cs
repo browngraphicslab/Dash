@@ -9,7 +9,7 @@ namespace Dash
 {
     class ListFieldModel : FieldModel
     {
-        public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo)
+        public ListFieldModel(IEnumerable<string> l, TypeInfo subTypeInfo, string id = null) : base(id)
         {
             Data = new List<string>(l);
             SubTypeInfo = subTypeInfo;

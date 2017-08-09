@@ -6,7 +6,7 @@ namespace Dash
     /// <summary>
     ///     A field model used to represent a Document
     /// </summary>
-    public class DocumentModelFieldModel : FieldModel
+    public class DocumentFieldModel : FieldModel
     {
         /// <summary>
         ///     The DocumentModel which this field is encapsulating
@@ -17,7 +17,7 @@ namespace Dash
         ///     Creates a new field model which represents a document
         /// </summary>
         /// <param name="data"></param>
-        public DocumentModelFieldModel(DocumentModel data)
+        public DocumentFieldModel(DocumentModel data, string id = null) : base(id)
         {
             Data = data;
         }

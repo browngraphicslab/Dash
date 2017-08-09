@@ -10,12 +10,14 @@ namespace Dash
         /// </summary>
         public string Type { get; set; }
 
-        public OperatorFieldModel(string type) {
-            Type = type; 
+        public OperatorFieldModel(string type, bool isCompound = false, string id = null) : base(id)
+        {
+            Type = type;
+            IsCompound = isCompound;
         }
 
         protected override FieldModelDTO GetFieldDTOHelper() {
-            return new FieldModelDTO(TypeInfo.Reference, Type);
+            return new FieldModelDTO(TypeInfo.Reference, Tuple.Create(Type, IsCompound));
 		}
 		
         public override string ToString() {

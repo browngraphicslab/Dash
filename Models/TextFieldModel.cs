@@ -13,7 +13,7 @@ namespace Dash
         /// Create a new text field model with the passed in string as data
         /// </summary>
         /// <param name="data">The data whcih the field model will encapsulate</param>
-        public TextFieldModel(string data)
+        public TextFieldModel(string data, string id = null) : base(id)
         {
             Data = data;
         }
