@@ -27,7 +27,7 @@ namespace DashShared
         [Key] // key in the database
         [Required] // cannot be null
         [JsonProperty("id")] // serialized as id (for documentdb)
-        public string Id { get; set; }
+        public string Id { get; protected set; }
 
         /// <summary>
         /// Pretty print the key for debugging purposes

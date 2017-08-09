@@ -3,14 +3,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DashShared
 {
-    /// <summary>
-    /// A mapping of keys to FieldModels.
-    /// </summary>
-    public class FieldModelDTO : EntityBase // TODO: AuthorizableEntityBase
+
+    public class FieldModelDTO : EntityBase
     {  
-        public FieldModelDTO(TypeInfo type, object data) {
-            this.Data = data;
-            this.Type = type;
+        public FieldModelDTO(TypeInfo type, object data)
+        {
+            Data = data;
+            Type = type;
         }
 
         [Required]

@@ -3,26 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Dash
 {
-    class RESTClient
+    public class RESTClient
     {
-        private static readonly Lazy<RESTClient> lazy =
-        new Lazy<RESTClient>(() => new RESTClient());
+
+        private static readonly Lazy<RESTClient> lazy = new Lazy<RESTClient>(() => new RESTClient());
 
         public static RESTClient Instance { get { return lazy.Value; } }
-        private ServerEndpoint _server;
-        public KeyEndpoint Keys { get; set; }
-        public FieldEndpoint Fields { get; set; }
-        public DocumentEndpoint Documents { get; set; }
 
-        private RESTClient()
-        {
-            _server = new ServerEndpoint();
-            Keys = new KeyEndpoint(_server);
-            Fields = new FieldEndpoint(_server);
-            Documents = new DocumentEndpoint(_server);
-        }
+        public KeyEndpoint Keys => App.Instance.Container.GetRequiredService<KeyEndpoint>();
+        public FieldEndpoint Fields => App.Instance.Container.GetRequiredService<FieldEndpoint>();   
+        public DocumentEndpoint Documents => App.Instance.Container.GetRequiredService<DocumentEndpoint>();
     }
 }

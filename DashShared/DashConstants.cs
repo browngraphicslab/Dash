@@ -127,7 +127,7 @@
         /// <summary>
         ///     The base url for the local version of the server, should end with a /
         /// </summary>
-        private const string ServerLocalBaseUrl = "http://localhost:55761/"; //
+        private const string ServerLocalBaseUrl = "http://localhost:58498/"; //
 
         /// <summary>
         ///     The base url for the production version of the server, should end with a /
