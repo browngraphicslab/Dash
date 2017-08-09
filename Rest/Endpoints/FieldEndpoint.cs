@@ -25,7 +25,6 @@ namespace Dash
         /// <param name="error"></param>
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            Debug.WriteLine(count++);
             Task.Run(() =>
             {
                 try
@@ -34,7 +33,7 @@ namespace Dash
                     var dto = newField.GetFieldDTO();
                     var result = _connection.Post("api/Field", dto);
                     var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
-
+                    Debug.WriteLine(count++);
                     success(resultDto);
                 }
                 catch (Exception e)
@@ -93,7 +92,6 @@ namespace Dash
             Task.Run(() =>
             {
                 var id = fieldToDelete.Id;
-                Debug.WriteLine(id);
                 try
                 {
                     _connection.Delete($"api/Field/{id}");

@@ -19,7 +19,6 @@ namespace DashWebServer
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<Startup>()
-                .UseUrls("http://localhost:55761/")
                 .Build();
 
             host.Run();
