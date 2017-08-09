@@ -56,9 +56,12 @@ namespace Dash
 
             if (_isCompound)
             {
+                Expand(); 
+
                 var compoundFMCont = opCont as CompoundOperatorFieldController;
                 InputListView.PointerReleased += (s, e) =>
                 {
+                    if (XPresenter.Content == null) return;
                     var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
                     var ioRef = freeform.GetCurrentReference();
                     if (ioRef == null) return;
@@ -71,6 +74,7 @@ namespace Dash
 
                 OutputListView.PointerReleased += (s, e) =>
                 {
+                    if (XPresenter.Content == null) return;
                     var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
                     var ioRef = freeform.GetCurrentReference();
                     if (ioRef == null) return;
@@ -102,7 +106,10 @@ namespace Dash
         private void InputEllipseOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (_isCompound)
+            {
+                if (XPresenter.Content == null) return;
                 StartNewLink(sender, e, true, (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor);
+            }
             else
                 StartNewLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
@@ -143,7 +150,10 @@ namespace Dash
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             if (_isCompound)
+            {
+                if (XPresenter.Content == null) return;
                 EndDraggedLink(sender, e, false, (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor);
+            }
             else
                 EndDraggedLink(sender, e, true, this.GetFirstAncestorOfType<CollectionFreeformView>());
         }
@@ -181,10 +191,14 @@ namespace Dash
         private void ContractView(object sender, RoutedEventArgs e)
         {
             XPresenter.Content = null;
-
         }
 
         private void ExpandView(object sender, RoutedEventArgs e)
+        {
+            Expand();
+        }
+
+        private void Expand()
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
