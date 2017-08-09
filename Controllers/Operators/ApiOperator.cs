@@ -39,6 +39,10 @@ namespace Dash
         //Output Keys
         public static readonly KeyController OutputCollection = new KeyController("DF1C5189-65D6-47F5-A0CC-7D3658DFB29B", "Output Collection");
 
+        public ApiOperator() : base(new OperatorFieldModel("Api"))
+        {
+        }
+
         public ApiOperator(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
