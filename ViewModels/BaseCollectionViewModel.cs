@@ -259,7 +259,18 @@ namespace Dash
             border.Visibility = Visibility.Visible;
             document.IsHitTestVisible = false;
             var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
-            document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            if (document.DataContext == null)
+            {
+                document.DataContext =
+                    new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            }
+            else if ((document.DataContext as DocumentViewModel).DocumentController.GetId() !=
+                     dvParams.Controller.GetId())
+            {
+                //(document.DataContext as DocumentViewModel).Dispose();
+                document.DataContext =
+                    new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            }
         }
 
         #endregion
