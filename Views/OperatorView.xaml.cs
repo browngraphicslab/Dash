@@ -23,6 +23,7 @@ namespace Dash
     public sealed partial class OperatorView : UserControl
     {
         private MenuFlyout _flyout;
+        private CompoundOperatorEditor _compoundOpEditor;
         private bool _isCompound;
         private IOReference _currInputRef;
         private IOReference _currOutputRef;
@@ -56,7 +57,8 @@ namespace Dash
 
             if (_isCompound)
             {
-                Expand(); 
+                MakeCompoundEditor();
+                XPresenter.Content = _compoundOpEditor; 
 
                 var compoundFMCont = opCont as CompoundOperatorFieldController;
                 InputListView.PointerReleased += (s, e) =>
@@ -195,17 +197,17 @@ namespace Dash
 
         private void ExpandView(object sender, RoutedEventArgs e)
         {
-            Expand();
+            XPresenter.Content = _compoundOpEditor;
         }
 
-        private void Expand()
+        private void MakeCompoundEditor()
         {
             // TODO do we want to resolve this field reference
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var documentController = ContentController.GetController<DocumentController>(docId);
             var operatorFieldModelController = (DataContext as FieldReference)?.DereferenceToRoot<CompoundOperatorFieldController>(null);
             Debug.Assert(operatorFieldModelController != null);
-            XPresenter.Content = new CompoundOperatorEditor(documentController, operatorFieldModelController);
+            _compoundOpEditor = new CompoundOperatorEditor(documentController, operatorFieldModelController);
         }
 
 
