@@ -18,10 +18,18 @@ namespace Dash
         {
         }
 
+        private CompoundOperatorFieldController(CompoundOperatorFieldController copy) : this()
+        {
+            Inputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Inputs);
+            Outputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Outputs);
+            InputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.InputFieldReferences);
+            OutputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.OutputFieldReferences);
+        }
+
         public override FieldModelController Copy()
         {
             Debug.Assert(OperatorFieldModel is CompoundOperatorFieldModel);
-            return new CompoundOperatorFieldController(OperatorFieldModel as CompoundOperatorFieldModel);
+            return new CompoundOperatorFieldController(this);
         }
 
         public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();

@@ -31,7 +31,7 @@ namespace Dash
         {
             this.InitializeComponent();
             Unloaded += CompoundOperatorEditor_Unloaded;
-            _operatorList = new ObservableCollection<OperatorBuilder>(OperationCreationHelper.Operators);
+            _operatorList = new ObservableCollection<OperatorBuilder>(OperationCreationHelper.Operators.Values);
             _collectionViewModel = new SimpleCollectionViewModel(false);
             xFreeFormEditor.DataContext = _collectionViewModel;
         }
@@ -79,7 +79,7 @@ namespace Dash
 
                 var pos = Util.GetCollectionDropPoint(xFreeFormEditor, e.GetPosition(MainPage.Instance));
 
-                var opDoc = opBuilder.OperationConstructor.Invoke();
+                var opDoc = opBuilder.OperationDocumentConstructor.Invoke();
 
                 opDoc.GetPositionField(null).Data = new Point(pos.X, pos.Y);
 

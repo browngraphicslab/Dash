@@ -70,7 +70,7 @@ namespace Dash
 
             xList.Tapped += delegate
             {
-                action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationConstructor);
+                action?.Invoke((xList.SelectedItem as OperatorBuilder)?.OperationDocumentConstructor);
                 MainPage.Instance.xCanvas.Children.Remove(OperatorSearchView.Instance);
             };
         }
