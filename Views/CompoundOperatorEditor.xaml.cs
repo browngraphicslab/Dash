@@ -67,6 +67,7 @@ namespace Dash
         private void XFreeFormEditor_OnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
+            e.Handled = true;
         }
 
         private void XFreeFormEditor_OnDrop(object sender, DragEventArgs e)
@@ -84,10 +85,7 @@ namespace Dash
                 opDoc.GetPositionField(null).Data = new Point(pos.X, pos.Y);
 
                 _collectionViewModel.AddDocuments(new List<DocumentController>{opDoc}, null);
-
-
             }
-            
         }
     }
 }
