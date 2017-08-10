@@ -38,7 +38,7 @@ namespace Dash
         }
 
         // used to keep track of groups of the currently selected items in a collection
-        public List<DocumentViewModelParameters> SelectionGroup { get; }
+        public List<DocumentViewModelParameters> SelectionGroup { get; set; }
 
         public abstract void AddDocuments(List<DocumentController> documents, Context context);
         public abstract void AddDocument(DocumentController document, Context context);
@@ -160,7 +160,7 @@ namespace Dash
                     return; // we don't want to drop items on ourself
 
                 var where = sender is CollectionFreeformView ?
-                    Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                    Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);

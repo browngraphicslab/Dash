@@ -13,11 +13,11 @@
         <Grid.Resources>
             <Storyboard x:Name="xCollapseSettings" Storyboard.TargetName="SettingsPanel"
                         Completed="XCollapseSettingsOnCompleted">
-                <DoubleAnimation Storyboard.TargetProperty="Width" From="400" To="0"
+                <DoubleAnimation Storyboard.TargetProperty="Width" From="340" To="0"
                                  Duration="0:0:0.2" EnableDependentAnimation="True" />
             </Storyboard>
             <Storyboard x:Name="xExpandSettings" Storyboard.TargetName="SettingsPanel">
-                <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="400"
+                <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="340"
                                  Duration="0:0:0.2" EnableDependentAnimation="True" />
             </Storyboard>
             <MenuFlyout x:Name="SelectionFlyout">
@@ -51,7 +51,7 @@
         <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Top"
                       Margin="50,0,0,0" Height="63" Padding="0" HorizontalAlignment="Stretch">
-            <StackPanel x:Name="SettingsPanel" Orientation="Horizontal" HorizontalAlignment="Left" Width="420">
+            <StackPanel x:Name="SettingsPanel" Orientation="Horizontal" HorizontalAlignment="Left" Width="340">
                 <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
                             TargetInkCanvas="{x:Bind XInkCanvas}" Height="50" Background="#FFE6E6E6">
                     <InkToolbarCustomToolButton x:Name="SelectButton" 

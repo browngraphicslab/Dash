@@ -27,7 +27,7 @@ namespace Dash {
         private readonly bool _doesRespondToManipulationDelta;
         private readonly bool _doesRespondToPointerWheel;
         private bool _handle;
-        private double _elementScale = 1.0;
+        public double ElementScale = 1.0;
 
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
@@ -159,7 +159,7 @@ namespace Dash {
             };
 
             //Clamp the scale factor 
-            var newScale = _elementScale * scaleAmount;
+            var newScale = ElementScale * scaleAmount;
             ClampScale(newScale, scale);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
@@ -190,7 +190,7 @@ namespace Dash {
             var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
             
             //Clamp the scale factor 
-            var newScale = _elementScale * e.Delta.Scale;
+            var newScale = ElementScale * e.Delta.Scale;
             ClampScale(newScale, scale);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
@@ -211,19 +211,19 @@ namespace Dash {
         {
             if (newScale > MaxScale)
             {
-                scale.ScaleX = MaxScale / _elementScale;
-                scale.ScaleY = MaxScale / _elementScale;
-                _elementScale = MaxScale;
+                scale.ScaleX = MaxScale / ElementScale;
+                scale.ScaleY = MaxScale / ElementScale;
+                ElementScale = MaxScale;
             }
             else if (newScale < MinScale)
             {
-                scale.ScaleX = MinScale / _elementScale;
-                scale.ScaleY = MinScale / _elementScale;
-                _elementScale = MinScale;
+                scale.ScaleX = MinScale / ElementScale;
+                scale.ScaleY = MinScale / ElementScale;
+                ElementScale = MinScale;
             }
             else
             {
-                _elementScale = newScale;
+                ElementScale = newScale;
             }
         }
     }

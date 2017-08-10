@@ -299,7 +299,7 @@ namespace Dash
             lasso = new Polyline()
             {
                 Stroke = new SolidColorBrush(Colors.Gray),
-                StrokeThickness = 1,
+                StrokeThickness = 1 / ScrollViewer.ZoomFactor,
                 StrokeDashArray = new DoubleCollection() { 5, 2 },
             };
 
@@ -347,7 +347,7 @@ namespace Dash
                 _rectangle = new Rectangle()
                 {
                     Stroke = new SolidColorBrush(Colors.DarkGray),
-                    StrokeThickness = 2,
+                    StrokeThickness = 2 / ScrollViewer.ZoomFactor,
                     StrokeDashArray = new DoubleCollection() { 5, 2 },
                     Width = boundingRect.Width,
                     Height = boundingRect.Height,

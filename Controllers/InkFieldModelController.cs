@@ -72,9 +72,7 @@ namespace Dash
         //TODO needs work
         public  override FrameworkElement GetTableCellView(Context context)
         {
-            var inkCanvas = new InkCanvas() { Width = 50, Height = 50 };
-            inkCanvas.InkPresenter.StrokeContainer.AddStrokes(GetStrokes().Select(k => k.Clone()));
-            return inkCanvas;
+            return new Grid();
         }
 
         public override FieldModelController Copy()

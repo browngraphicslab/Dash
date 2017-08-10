@@ -40,7 +40,7 @@ namespace Dash
             //}
             var opModel = DBSearchOperatorFieldModelController.CreateSearch(DBTest.DBNull, DBTest.DBDoc, "", "");
 
-            var where = Util.GetCollectionDropPoint(
+            var where = Util.GetCollectionFreeFormPoint(
                 MainPage.Instance.MainDocView.GetFirstDescendantOfType<CollectionFreeformView>(),
                 e.GetPosition(MainPage.Instance));
             var pos = new Point(where.X - 30, where.Y -30);
@@ -144,7 +144,7 @@ namespace Dash
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
-            var where = Util.GetCollectionDropPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make first collection
             List<DocumentController> numbers = new List<DocumentController>();
@@ -207,14 +207,14 @@ namespace Dash
 
         public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             var a = new ApiDocumentModel().Document;
             DisplayDocument(collectionView, a, where);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
 
             //Make second collection
             var numbers2 = new Numbers().Document;
@@ -246,7 +246,7 @@ namespace Dash
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)
         {
-            var where = Util.GetCollectionDropPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
+            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
             DocumentController postitNote = new NoteDocuments.RichTextNote(NoteDocuments.PostitNote.DocumentType).Document;
             DisplayDocument(collectionView, postitNote, where);
         }

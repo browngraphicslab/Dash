@@ -17,7 +17,7 @@
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
     Tapped="OnTapped">
-    
+
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           SizeChanged="XOuterGrid_OnSizeChanged">
         <Grid.Clip>
@@ -41,7 +41,8 @@
                             Width="0"
                             Height="0"
                             VerticalAlignment="Top"
-                            HorizontalAlignment="Left" />
+                            HorizontalAlignment="Left">
+                    </Canvas>
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
@@ -63,8 +64,21 @@
             <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center"
                         VerticalAlignment="Top">
                 <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
-                            TargetInkCanvas="{x:Bind xInkCanvas}" Height="50" Background="#FFE6E6E6"
-                            IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged" />
+                            TargetInkCanvas="{x:Bind XInkCanvas}" Height="50" Background="#FFE6E6E6"
+                            IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged">
+                    <InkToolbarCustomToolButton x:Name="SelectButton" 
+                        Tapped="SelectButton_OnTapped" 
+                        ToolTipService.ToolTip="Selection tool" Unchecked="SelectButton_Unchecked" >
+                        <SymbolIcon Symbol="{x:Bind SelectIcon}"/>
+                        <InkToolbarCustomToolButton.ConfigurationContent>
+                            <StackPanel Padding="2">
+                                <TextBlock>Select...</TextBlock>
+                                <RadioButton x:Name="InkSelect" GroupName="Selection" Checked="InkSelect_OnChecked" IsChecked="True">Ink</RadioButton>
+                                <RadioButton x:Name="DocumentSelect" GroupName="Selection" Checked="DocumentSelect_OnChecked">Documents</RadioButton>
+                            </StackPanel>
+                        </InkToolbarCustomToolButton.ConfigurationContent>
+                    </InkToolbarCustomToolButton>
+                </InkToolbar>
                 <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
                         Background="#FFE6E6E6">
                     <SymbolIcon Symbol="Undo" Foreground="Black"></SymbolIcon>
