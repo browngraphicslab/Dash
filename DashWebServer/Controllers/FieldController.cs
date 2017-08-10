@@ -35,22 +35,39 @@ namespace DashWebServer.Controllers
 
         // POST api/Field, adds a Field with a given 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody]FieldModelDTO FieldModelDTO)
+        public async Task<IActionResult> Post([FromBody]FieldModelDTO fieldModelDto)
         {
             try
             {
-                FieldModelDTO = await _documentRepository.AddItemAsync(FieldModelDTO);
+                fieldModelDto = await _documentRepository.AddItemAsync(fieldModelDto);
             }
             catch (Exception e)
             {
                 Debug.WriteLine(e);
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            return Ok(FieldModelDTO);
+            return Ok(fieldModelDto);
+        }
+
+        // POST api/field/batch, adds the complete list of fields
+        [HttpPost]
+        [Route("batch")]
+        public async Task<IActionResult> Post([FromBody]IEnumerable<FieldModelDTO> fieldModelDtOs)
+        {
+            try
+            {
+                fieldModelDtOs = await _documentRepository.AddItemsAsync(fieldModelDtOs);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return Ok(fieldModelDtOs);
         }
 
         // PUT api/field/5, updates a given Field field
-        [HttpPut()]
+        [HttpPut]
         public async Task<IActionResult> Put([FromBody]FieldModelDTO fieldModelDTO)
         {
             try
