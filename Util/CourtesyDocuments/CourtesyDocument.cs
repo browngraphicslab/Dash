@@ -335,7 +335,7 @@ namespace Dash
                 args.Handled = true;
                 (view.CurrentView as CollectionFreeformView)?.EndDrag(
                     new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
-                        renderElement.GetFirstAncestorOfType<DocumentView>()));
+                        renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
             };
         }

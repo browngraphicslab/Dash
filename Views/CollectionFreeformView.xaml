@@ -17,13 +17,13 @@
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
     Tapped="OnTapped">
-    
+
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           SizeChanged="XOuterGrid_OnSizeChanged">
         <Grid.Clip>
             <RectangleGeometry x:Name="xClippingRect" />
         </Grid.Clip>
-        
+
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
         <ItemsControl x:Name="xItemsControl"
@@ -44,9 +44,8 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
+                    <!--IODragStarted="StartDrag" IODragEnded="EndDrag"-->
                     <dash:DocumentView DataContext="{Binding Converter={StaticResource DocViewModelParamToViewModelConverter}}"
-                                       IODragStarted="StartDrag"
-                                       IODragEnded="EndDrag"
                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                                        Loaded="DocumentViewOnLoaded"/>
                 </DataTemplate>

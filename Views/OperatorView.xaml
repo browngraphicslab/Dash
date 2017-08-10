@@ -62,7 +62,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,0,10,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,10,0" Foreground="White" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
+                            <local:EditableTextBlock Grid.Column="0" Margin="10,0,10,0" Foreground="White" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </StackPanel>

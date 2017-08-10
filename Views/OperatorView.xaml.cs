@@ -158,10 +158,11 @@ namespace Dash
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
             TypeInfo type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            bool isCompound = false; 
             if (XPresenter.Content != null)
-                if (view == (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor) isOutput = !isOutput;
+                if (isCompound = view == (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor) isOutput = !isOutput;
             var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
-            view.EndDrag(ioRef);
+            view.EndDrag(ioRef, isCompound);
         }
 
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -241,7 +242,7 @@ namespace Dash
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
             view.CancelDrag(_currInputRef.PointerArgs.Pointer);
             StartNewLink(sender, _currInputRef.PointerArgs, false, view);
-            view.EndDrag(_currInputRef);
+            view.EndDrag(_currInputRef, true);
         }
 
         private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
