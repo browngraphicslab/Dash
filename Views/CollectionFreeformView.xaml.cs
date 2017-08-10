@@ -6,9 +6,11 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -262,16 +264,14 @@ namespace Dash
                 DocumentController inputController =
                     inputReference.FieldReference.GetDocumentController(null);
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
-                if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
-                    // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
-                    inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                     inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
                     inputController.SetField(inputReference.FieldReference.FieldKey,
                         new ReferenceFieldModelController(outputReference.FieldReference), true);
             }
 
-            if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
+            if (_connectionLine != null)
             {
                 CheckLinePresence(_converter);
                 _lineDict.Add(_converter, _connectionLine);
@@ -312,7 +312,7 @@ namespace Dash
                 if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
                 {
                     CancelDrag(e.Pointer);
-                    return; 
+                    return;
                 }
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
@@ -458,6 +458,7 @@ namespace Dash
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
+            (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -565,10 +566,65 @@ namespace Dash
 
         #endregion
 
+        #region SELECTION
+
+        private bool _isSelectionEnabled; 
+        public bool IsSelectionEnabled {
+            get { return _isSelectionEnabled; } 
+            set
+            {
+                _isSelectionEnabled = value; 
+                if (!value) // turn colors back ... 
+                {
+                    foreach (var pair in _payload)
+                    {
+                        var docView = pair.Key;
+                        docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
+                        docView.CanDrag = false; 
+                    }
+                    _payload = new Dictionary<DocumentView, DocumentController>();
+                }
+            }
+        }
+
+        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>(); 
 
         public void ToggleSelectAllItems()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException(); 
+
+            foreach (var parameter in xItemsControl.Items)
+            {
+                
+            }
+        }
+        #endregion
+
+        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (!IsSelectionEnabled) return;                                                                //TODO handle when it's tapped multiple times (ie select deselect) 
+
+            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>(); 
+            (sender as Grid).Background = new SolidColorBrush(Colors.DarkGoldenrod);
+            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController); 
+            docView.CanDrag = true;
+            docView.DragStarting += DocView_OnDragStarting;
+            xItemsControl.DragOver += DocView_DragOver;
+        }
+
+        private void DocView_DragOver(object sender, DragEventArgs args)                                                    // TODO this is never called so lol fuck ths
+        {
+            _payload = new Dictionary<DocumentView, DocumentController>();                                                  // how to call this??????????
+        }
+
+        public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
+        {
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+
+            var carrier = ItemsCarrier.Instance;
+            carrier.Source = ViewModel;
+            carrier.Payload = _payload.Values.ToList(); 
+            e.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }
 }
