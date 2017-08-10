@@ -1,4 +1,4 @@
-﻿<Canvas
+﻿<Grid
     x:Class="Dash.EditableTextBlock"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -7,6 +7,7 @@
     xmlns:local="using:Dash" 
     mc:Ignorable="d">
 
-    <TextBlock x:Name="xTextBlock" TextWrapping="Wrap"></TextBlock>
-    <TextBox x:Name="xTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" Visibility="Collapsed" BorderThickness="0" Background="Transparent"></TextBox>
-</Canvas>
+    <TextBlock x:Name="xTextBlock" TextWrapping="Wrap" DoubleTapped="xTextBlock_DoubleTapped"></TextBlock>
+    <TextBox x:Name="xTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" 
+             Visibility="Collapsed" BorderThickness="0" Background="Transparent" LostFocus="xTextBox_LostFocus"></TextBox>
+</Grid>
