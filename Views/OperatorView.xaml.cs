@@ -116,7 +116,7 @@ namespace Dash
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
             TypeInfo type;
             try { type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey]; }
-            catch(KeyNotFoundException e) { return; }
+            catch(KeyNotFoundException) { return; }
             if (XPresenter.Content != null)
                 if (view == (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor) isOutput = !isOutput; 
             var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
