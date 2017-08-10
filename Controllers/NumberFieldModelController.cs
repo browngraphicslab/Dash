@@ -9,17 +9,18 @@ namespace Dash
 {
     public class NumberFieldModelController : FieldModelController
     {
-        public NumberFieldModelController(double data = 0) : base(new NumberFieldModel(data))
+        public NumberFieldModelController(double data = 0) : base(new NumberFieldModel(data), false)
         {
         }
 
-        /// <summary>
-        ///     Create a new <see cref="NumberFieldModelController"/> associated with the passed in <see cref="Dash.NumberFieldModel" />
-        /// </summary>
-        /// <param name="numberFieldModel">The model which this controller will be operating over</param>
-        private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel)
+        private NumberFieldModelController(NumberFieldModel numberFieldModel) : base(numberFieldModel, true)
         {
-            Data = numberFieldModel.Data;
+            
+        }
+
+        public static NumberFieldModelController CreateFromServer(NumberFieldModel numberFieldModel)
+        {
+            return new NumberFieldModelController(numberFieldModel);
         }
 
         /// <summary>

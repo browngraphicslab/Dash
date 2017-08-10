@@ -49,24 +49,29 @@ namespace Dash
         {
         }
 
-        protected FieldModelController(FieldModel fieldModel)
+        protected FieldModelController(FieldModel fieldModel, bool isCreatedFromServer)
         {
             // Initialize Local Variables
             FieldModel = fieldModel;
             ContentController.AddModel(fieldModel);
             ContentController.AddController(this);
 
-            // Add Events
-            RESTClient.Instance.Fields.AddField(fieldModel, fieldModelDto =>
+            if (isCreatedFromServer == false)
             {
-                // Yay!
+                // Add Events
+                RESTClient.Instance.Fields.AddField(fieldModel, fieldModelDto =>
+                {
+                    // Yay!
 
-            }, exception =>
-            {
-                // Haaay
-                Debug.WriteLine(exception);
+                }, exception =>
+                {
+                    // Haaay
+                    Debug.WriteLine(exception);
 
-            });
+                });
+            } 
+
+
         }
 
 
@@ -194,6 +199,44 @@ namespace Dash
 
         public virtual void Dispose()
         {
+        }
+
+        public static FieldModelController CreateFromServer(FieldModelDTO fieldModelDto)
+        {
+            var fieldModel = TypeInfoHelper.CreateFieldModel(fieldModelDto);
+
+            switch (fieldModelDto.Type)
+            {
+                case TypeInfo.None:
+                    throw new NotImplementedException();
+                case TypeInfo.Number:
+                    return NumberFieldModelController.CreateFromServer(fieldModel as NumberFieldModel);
+                case TypeInfo.Text:
+                    return TextFieldModelController.CreateFromServer(fieldModel as TextFieldModel);
+                case TypeInfo.Image:
+                    return ImageFieldModelController.CreateFromServer(fieldModel as ImageFieldModel);
+                case TypeInfo.Collection:
+                    return DocumentCollectionFieldModelController.CreateFromServer(fieldModel as DocumentCollectionFieldModel);
+                case TypeInfo.Document:
+                    return DocumentFieldModelController.CreateFromServer(fieldModel as DocumentFieldModel);
+                case TypeInfo.Reference:
+                    return ReferenceFieldModelController.CreateFromServer(fieldModel as ReferenceFieldModel);
+                case TypeInfo.Operator:
+                    throw new NotImplementedException();
+                    //return OperatorFieldModelController.CreateFromServer(fieldModel as OperatorFieldModel);
+                case TypeInfo.Point:
+                    return PointFieldModelController.CreateFromServer(fieldModel as PointFieldModel);
+                case TypeInfo.List:
+                    throw new NotImplementedException();
+                case TypeInfo.Ink:
+                    return InkFieldModelController.CreateFromServer(fieldModel as InkFieldModel);
+                case TypeInfo.RichTextField:
+                    return RichTextFieldModelController.CreateFromServer(fieldModel as RichTextFieldModel);
+                case TypeInfo.Rectangle:
+                    return RectFieldModelController.CreateFromServer(fieldModel as RectFieldModel);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 }

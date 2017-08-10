@@ -63,9 +63,19 @@ namespace Dash
         {
         }
 
-        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)))
+        public DocumentCollectionFieldModelController(IEnumerable<DocumentController> documents) : base(new DocumentCollectionFieldModel(documents.Select(doc => doc.DocumentModel.Id)), false)
         {
             _documents = documents.ToList();
+        }
+
+        private DocumentCollectionFieldModelController(DocumentCollectionFieldModel docCollectionFieldModel) : base(docCollectionFieldModel, true)
+        {
+
+        }
+
+        public static DocumentCollectionFieldModelController CreateFromServer(DocumentCollectionFieldModel docCollectionFieldModel)
+        {
+            return new DocumentCollectionFieldModelController(docCollectionFieldModel);
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace Dash
 {
     public class ReferenceFieldModelController : FieldModelController
     {
-        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference))
+        public ReferenceFieldModelController(FieldReference reference) : base(new ReferenceFieldModel(reference), false)
         {
             // bcz: TODO check DocContextList - maybe this should come from the constructor?
             //var fmc = ContentController.DereferenceToRootFieldModel(this);//TODO Uncomment this
@@ -27,6 +27,16 @@ namespace Dash
         public ReferenceFieldModelController(FieldReference documentReference, KeyController fieldKey) : this(
             new DocumentPointerFieldReference(documentReference, fieldKey))
         {
+        }
+
+        private ReferenceFieldModelController(ReferenceFieldModel referenceFieldModel) : base(referenceFieldModel, true)
+        {
+
+        }
+
+        public static ReferenceFieldModelController CreateFromServer(ReferenceFieldModel referenceFieldModel)
+        {
+            return new ReferenceFieldModelController(referenceFieldModel);
         }
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)

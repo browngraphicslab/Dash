@@ -52,6 +52,8 @@
             public static DocumentType MainDocumentType = 
                 new DocumentType("011EFC3F-5405-4A27-8689-C0F37AAB9B2E", "Main Document");
 
+            public static DocumentType HomePageType =
+                new DocumentType("7E8A1CB6-9D2E-4FEF-8C35-1E85667A5395", "Home Page");
         }
 
         #region DocumentDB

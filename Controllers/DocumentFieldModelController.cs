@@ -9,9 +9,19 @@ namespace Dash
 {
     public class DocumentFieldModelController : FieldModelController
     {
-        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document?.DocumentModel))
+        public DocumentFieldModelController(DocumentController document) : base(new DocumentFieldModel(document?.DocumentModel), false)
         {
             Data = document;
+        }
+
+        private DocumentFieldModelController(DocumentFieldModel documentFieldModel) : base(documentFieldModel, true)
+        {
+
+        }
+
+        public static DocumentFieldModelController CreateFromServer(DocumentFieldModel documentFieldModel)
+        {
+            return new DocumentFieldModelController(documentFieldModel);
         }
 
         /// <summary>

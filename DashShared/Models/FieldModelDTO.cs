@@ -5,8 +5,8 @@ namespace DashShared
 {
 
     public class FieldModelDTO : EntityBase
-    {  
-        public FieldModelDTO(TypeInfo type, object data)
+    {
+        public FieldModelDTO(TypeInfo type, object data, string id = null) : base(id)
         {
             Data = data;
             Type = type;

@@ -28,16 +28,26 @@ namespace Dash
         private Stack<string> _redoStack = new Stack<string>();
         private Image _icon = new Image();
 
-        public InkFieldModelController() : base(new InkFieldModel())
+        public InkFieldModelController() : base(new InkFieldModel(), false)
         {
             UpdateStrokesFromList(null);
         }
 
-        public InkFieldModelController(string data) : base(new InkFieldModel(data))
+        public InkFieldModelController(string data) : base(new InkFieldModel(data), false)
         {
             InkData = data;
             _undoStack.Push(data);
             SetState(data);
+        }
+
+        private InkFieldModelController(InkFieldModel inkFieldModel) : base(inkFieldModel, true)
+        {
+            throw new NotImplementedException();
+        }
+
+        public static InkFieldModelController CreateFromServer(InkFieldModel inkFieldModel)
+        {
+            return new InkFieldModelController(inkFieldModel);
         }
 
         /// <summary>

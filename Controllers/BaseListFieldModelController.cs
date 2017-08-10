@@ -12,7 +12,7 @@ namespace Dash
     {
         public abstract List<FieldModelController> Data { get; set; }
 
-        protected BaseListFieldModelController(FieldModel fieldModel) : base(fieldModel)
+        protected BaseListFieldModelController(FieldModel fieldModel) : base(fieldModel, false)
         {
         }
 

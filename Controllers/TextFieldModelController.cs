@@ -7,9 +7,17 @@ namespace Dash
 {
     public class TextFieldModelController : FieldModelController
     {
-        public TextFieldModelController(string data) : base(new TextFieldModel(data))
+        public TextFieldModelController(string data) : base(new TextFieldModel(data), false)
         {
-            Data = data; 
+        }
+
+        private TextFieldModelController(TextFieldModel textFieldModel) : base(textFieldModel, true)
+        {
+        }
+
+        public static TextFieldModelController CreateFromServer(TextFieldModel textFieldModel)
+        {
+            return new TextFieldModelController(textFieldModel);
         }
 
         /// <summary>

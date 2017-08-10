@@ -14,8 +14,19 @@ namespace Dash
 {
     public class RichTextFieldModelController: FieldModelController
     {
-        public RichTextFieldModelController(): base(new RichTextFieldModel()) { }
-        public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data)) { }
+        public RichTextFieldModelController(): base(new RichTextFieldModel(), false) { }
+        public RichTextFieldModelController(RichTextFieldModel.RTD data):base(new RichTextFieldModel(data), false) { }
+
+        private RichTextFieldModelController(RichTextFieldModel richTextFieldModel) : base(richTextFieldModel, true)
+        {
+
+        }
+
+        public static RichTextFieldModelController CreateFromServer(RichTextFieldModel richTextFieldModel)
+        {
+            return new RichTextFieldModelController(richTextFieldModel);
+        }
+
         /// <summary>
         /// The <see cref="RichTextFieldModel"/> associated with this <see cref="RichTextFieldModelController"/>
         /// </summary>

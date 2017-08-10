@@ -24,7 +24,7 @@ namespace Dash
             try
             {
                 var result = await _connection.Post("api/Key", newKey);
-                var resultK = result.Content.ReadAsAsync<KeyModel>().Result;
+                var resultK = await result.Content.ReadAsAsync<KeyModel>();
 
                 success(resultK);
             }

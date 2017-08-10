@@ -9,7 +9,17 @@ namespace Dash
 {
     public class ImageFieldModelController : FieldModelController
     {
-        public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data)) { }
+        public ImageFieldModelController(Uri data) : base(new ImageFieldModel(data), false) { }
+
+        private ImageFieldModelController(ImageFieldModel imageFieldModel) : base(imageFieldModel, true)
+        {
+
+        }
+
+        public static ImageFieldModelController CreateFromServer(ImageFieldModel imageFieldModel)
+        {
+            return new ImageFieldModelController(imageFieldModel);
+        }
 
         /// <summary>
         ///     The <see cref="ImageFieldModel" /> associated with this <see cref="ImageFieldModelController" />,

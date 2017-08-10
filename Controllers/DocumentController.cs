@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -78,7 +79,6 @@ namespace Dash
         /// </summary>
         private Dictionary<KeyController, FieldModelController> _fields = new Dictionary<KeyController, FieldModelController>();
 
-
         public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null)
         {
             DocumentModel =
@@ -94,16 +94,34 @@ namespace Dash
 
             LayoutName = DocumentModel.DocumentType.Type;
 
-            // Add Events
-            RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
+            if (id == null)
             {
-                // Yay!
-            }, exception =>
-            {
-                // Hayyyyy!
-            });
+                // Add Events
+                RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
+                {
+                    // Yay!
+                }, exception =>
+                {
+                    // Hayyyyy!
+                });
+            }
+
         }
 
+        public static DocumentController CreateFromServer(DocumentModelDTO docModelDto)
+        {
+            var fields = docModelDto.KeyList.Zip(docModelDto.FieldList, (keyModel, field) =>
+            {
+                var keyController = new KeyController(keyModel, isCreatedFromServer: true);
+                var fieldController = FieldModelController.CreateFromServer(field);
+                return new { keyController, fieldController };
+            }).ToDictionary(keyFieldPair => keyFieldPair.keyController, keyFieldPair => keyFieldPair.fieldController);
+            var type = docModelDto.DocumentType;
+            var id = docModelDto.Id;
+
+            return new DocumentController(fields, type, id);
+
+        }
 
         /// <summary>
         ///     The <see cref="DocumentModel" /> associated with this <see cref="DocumentController" />,

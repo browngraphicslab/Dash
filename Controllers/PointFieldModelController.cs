@@ -9,8 +9,18 @@ namespace Dash
 {
     public class PointFieldModelController : FieldModelController
     {
-        public PointFieldModelController(Point data) :base(new PointFieldModel(data)) { }
-        public PointFieldModelController(double x, double y) : base(new PointFieldModel(x, y)) { }
+        public PointFieldModelController(Point data) :base(new PointFieldModel(data), false) { }
+        public PointFieldModelController(double x, double y) : base(new PointFieldModel(x, y), false) { }
+
+        private PointFieldModelController(PointFieldModel pointFieldModel) : base(pointFieldModel, true)
+        {
+
+        }
+
+        public static PointFieldModelController CreateFromServer(PointFieldModel pointFieldModel)
+        {
+            return new PointFieldModelController(pointFieldModel);
+        }
 
         /// <summary>
         ///     The <see cref="Dash.PointFieldModel" /> associated with this <see cref="PointFieldModelController" />,

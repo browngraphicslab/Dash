@@ -44,14 +44,40 @@ namespace Dash
         {
             InitializeComponent();
 
-            RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType);
+            var mainDocuments = new List<DocumentController>();
 
-            // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(MainDocument);
+            Task.Run(async () =>
+            {
+                await RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType, docModelDtos =>
+                {
+                    mainDocuments.AddRange(docModelDtos.Select(dmDto => DocumentController.CreateFromServer(dmDto)));
+                }, exception =>
+                {
 
-            // set the main view's width and height to avoid NaN errors
-            MainDocView.Width = MyGrid.ActualWidth;
-            MainDocView.Height = MyGrid.ActualHeight;
+                });
+
+            }).ContinueWith(task =>
+            {
+
+                var fields = new Dictionary<KeyController, FieldModelController>
+                {
+                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(mainDocuments)
+                };
+                var MainDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType);
+
+                var collectionDocumentController =
+                    new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+
+                MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+
+                // set the main view's datacontext to be the collection
+                MainDocView.DataContext = new DocumentViewModel(MainDocument);
+
+                // set the main view's width and height to avoid NaN errors
+                MainDocView.Width = MyGrid.ActualWidth;
+                MainDocView.Height = MyGrid.ActualHeight;
+
+            });
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)

@@ -29,23 +29,23 @@ namespace DashWebServer.Controllers
 
         // GET api/document/5, returns the document with the given ID
         [HttpGet("{id}")]
-        public async Task<DocumentModel> GetDocumentById(string id)
+        public async Task<DocumentModelDTO> GetDocumentById(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
+            return await _documentRepository.GetItemByIdAsync<DocumentModelDTO>(id);
         }
 
         // GET api/document/type/5, returns a list of documents with type specified by the given id
         [HttpGet("type/{id}")]
-        public async Task<IEnumerable<DocumentModel>> GetDocumentsByType(string id)
+        public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByType(string id)
         {
-            return await _documentRepository.GetItemsAsync<DocumentModel>(documentModel => documentModel.DocumentType.Id == id);
+            return await _documentRepository.GetItemsAsync<DocumentModelDTO>(documentModel => documentModel.DocumentType.Id == id);
         }
 
         // POST api/document, adds a new document from the given docModel
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] DocumentModel docModel)
+        public async Task<IActionResult> Post([FromBody] DocumentModelDTO docModel)
         {
-            DocumentModel DocModel;
+            DocumentModelDTO DocModel;
             try
             {
                 // add the shape model to the documentRepository
@@ -64,9 +64,9 @@ namespace DashWebServer.Controllers
 
         // PUT api/document, pushes updates of a given DocumentModel into the server?
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] DocumentModel docModel)
+        public async Task<IActionResult> Put([FromBody] DocumentModelDTO docModel)
         {
-            DocumentModel DocModel;
+            DocumentModelDTO DocModel;
             try
             {
                 DocModel = await _documentRepository.UpdateItemAsync(docModel);
@@ -88,7 +88,7 @@ namespace DashWebServer.Controllers
             try
             {
                 await _documentRepository.DeleteItemAsync(
-                    await _documentRepository.GetItemByIdAsync<DocumentModel>(id));
+                    await _documentRepository.GetItemByIdAsync<DocumentModelDTO>(id));
             }
             catch (Exception e)
             {

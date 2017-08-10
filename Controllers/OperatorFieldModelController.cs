@@ -28,7 +28,7 @@ namespace Dash
         /// Create a new <see cref="OperatorFieldModelController"/> associated with the passed in <see cref="OperatorFieldModel" />
         /// </summary>
         /// <param name="operatorFieldModel">The model which this controller will be operating over</param>
-        protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
+        protected OperatorFieldModelController(OperatorFieldModel operatorFieldModel) : base(operatorFieldModel, false)
         {
             OperatorFieldModel = operatorFieldModel;
         }

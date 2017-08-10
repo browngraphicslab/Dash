@@ -14,8 +14,20 @@ namespace Dash
 {
     public class RectFieldModelController : FieldModelController
     {
-        public RectFieldModelController(Rect data) :base(new RectFieldModel(data)) { }
-        public RectFieldModelController(double x, double y, double width, double height) : base(new RectFieldModel(x, y, width, height)) { }
+        public RectFieldModelController(Rect data) :base(new RectFieldModel(data), false) { }
+        public RectFieldModelController(double x, double y, double width, double height) : base(new RectFieldModel(x, y, width, height), false) { }
+
+        private RectFieldModelController(RectFieldModel rectFieldModel) : base(rectFieldModel, true)
+        {
+
+        }
+
+        public static RectFieldModelController CreateFromServer(RectFieldModel rectFieldModel)
+        {
+            return new RectFieldModelController(rectFieldModel);
+        }
+
+
 
         /// <summary>
         ///     The <see cref="Dash.PointFieldModel" /> associated with this <see cref="PointFieldModelController" />,

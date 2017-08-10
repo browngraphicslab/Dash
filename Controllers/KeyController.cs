@@ -29,20 +29,23 @@ namespace Dash
 
         public string Id => KeyModel.Id;
 
-        public KeyController(KeyModel keyModel)
+        public KeyController(KeyModel keyModel, bool isCreatedFromServer = false)
         {
             // Initialize Local Variables
             KeyModel = keyModel;
             ContentController.AddModel(keyModel);
             ContentController.AddController(this);
 
-            RESTClient.Instance.Keys.AddKey(KeyModel, model =>
+            if (isCreatedFromServer == false)
             {
-                // Yay!
-            }, exception =>
-            {
-                // Hayyyyy!
-            });
+                RESTClient.Instance.Keys.AddKey(KeyModel, model =>
+                {
+                    // Yay!
+                }, exception =>
+                {
+                    // Hayyyyy!
+                });
+            }
         }
 
         public KeyController(string guid) : this(new KeyModel(guid))
