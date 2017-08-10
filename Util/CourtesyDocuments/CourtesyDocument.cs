@@ -70,96 +70,7 @@ namespace Dash
 
         private static int loaded = 0, unloaded = 0;
 
-        protected static void AddBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
-        {
-            switch (binding.Mode)
-            {
-                case BindingMode.OneTime:
-                    AddOneTimeBinding(element, property, binding);
-                    break;
-                case BindingMode.OneWay:
-                    AddOneWayBinding(element, property, binding);
-                    break;
-                case BindingMode.TwoWay:
-                    AddTwoWayBinding(element, property, binding);
-                    break;
-            }
-        }
-
-        private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
-        {
-            var field = binding.Document.GetDereferencedField<T>(binding.Key, binding.Context);
-            if (field == null)
-                return null;
-            var value = binding.GetHandler(field);
-            return binding.Converter == null ? value : binding.Converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
-        }
-
-        private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
-        {
-            element.SetValue(property, EvaluateBinding(binding));
-        }
-
-        private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
-        {
-            DocumentController.OnDocumentFieldUpdatedHandler handler =
-                delegate
-                {
-                    element.SetValue(property, EvaluateBinding(binding));
-                };
-            element.Loaded += delegate (object sender, RoutedEventArgs args)
-            {
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-            };
-            element.Unloaded += delegate (object sender, RoutedEventArgs args)
-            {
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-            };
-        }
-
-        private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
-            where T : FrameworkElement where U : FieldModelController
-        {
-            bool update = true;
-            DocumentController.OnDocumentFieldUpdatedHandler handler =
-                delegate
-                {
-                    if (update)
-                    {
-                        element.SetValue(property, EvaluateBinding(binding));
-                    }
-                };
-            DependencyPropertyChangedCallback callback =
-                delegate(DependencyObject sender, DependencyProperty dp)
-                {
-                    var value = sender.GetValue(dp);
-                    if (binding.Converter != null)
-                    {
-                        value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
-                    }
-                    update = false;
-                    binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
-                    update = true;
-                };
-
-            long token = -1;
-            element.Loaded += delegate (object sender, RoutedEventArgs args)
-            {
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                var value = EvaluateBinding(binding);
-                if (value != null)
-                {
-                    element.SetValue(property, value);
-                }
-                token = element.RegisterPropertyChangedCallback(property, callback);
-            };
-            element.Unloaded += delegate (object sender, RoutedEventArgs args)
-            {
-                binding.Document.RemoveFieldUpdatedListener(binding.Key, handler);
-                element.UnregisterPropertyChangedCallback(property, token);
-            };
-
-        }
+        
 
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
@@ -205,7 +116,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, FrameworkElement.WidthProperty, binding);
+            element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
         }
 
         protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
@@ -226,7 +137,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, FrameworkElement.HeightProperty, binding);
+            element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
         }
 
         protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
@@ -263,7 +174,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, FrameworkElement.HorizontalAlignmentProperty, binding);
+            element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
         }
 
         protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
@@ -287,7 +198,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, FrameworkElement.VerticalAlignmentProperty, binding);
+            element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
         protected static void BindGridRow(FrameworkElement element, DocumentController docController, Context context)
@@ -308,7 +219,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, Grid.RowProperty, binding);
+            element.AddFieldBinding(Grid.RowProperty, binding);
         }
 
         protected static void BindGridColumn(FrameworkElement element, DocumentController docController, Context context)
@@ -329,7 +240,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, Grid.ColumnProperty, binding);
+            element.AddFieldBinding(Grid.ColumnProperty, binding);
         }
 
         protected static void BindGridRowSpan(FrameworkElement element, DocumentController docController, Context context)
@@ -350,7 +261,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, Grid.RowSpanProperty, binding);
+            element.AddFieldBinding(Grid.RowSpanProperty, binding);
         }
 
         protected static void BindGridColumnSpan(FrameworkElement element, DocumentController docController, Context context)
@@ -371,7 +282,7 @@ namespace Dash
                 }
             };
 
-            AddBinding(element, Grid.ColumnSpanProperty, binding);
+            element.AddFieldBinding(Grid.ColumnSpanProperty, binding);
         }
 
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)

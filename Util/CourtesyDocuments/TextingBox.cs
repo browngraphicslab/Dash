@@ -125,11 +125,11 @@ namespace Dash
         {
             if (element is TextBlock)
             {
-                AddBinding(element, textBlockProperty, binding);
+                element.AddFieldBinding(textBlockProperty, binding);
             }
             else if (element is TextBox)
             {
-                AddBinding(element, textBoxProperty, binding);
+                element.AddFieldBinding(textBoxProperty, binding);
                 (element as TextBox).KeyDown += TextingBox_KeyDown;
             }
         }
