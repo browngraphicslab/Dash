@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -8,11 +11,28 @@ namespace Dash
 {
     public class FieldEndpoint
     {
+        private static readonly object l = new object();
+        private static int count;
         private readonly ServerEndpoint _connection;
+        private Timer _tick;
+
+        private List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batchList =
+            new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>();
+
 
         public FieldEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
+            _tick = new Timer(Tick, null, 0, 1000);
+        }
+
+        private void Tick(object o)
+        {
+            if (batchList.Count > 0)
+            {
+                AddFields(new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>(batchList));
+                batchList = new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>();
+            }
         }
 
         /// <summary>
@@ -23,26 +43,34 @@ namespace Dash
         /// <param name="error"></param>
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            Task.Run(async () =>
+            lock (l)
             {
-                try
+                Debug.WriteLine(count++);
+            }
+            batchList.Add(new Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>(newField, success, error));
+        }
+
+        private async void AddFields(List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batch)
+        {
+            try
+            {
+                // convert from field models to DTOs
+                var dtos = batch.Select(x => x.Item1.GetFieldDTO()).ToList();
+                var result = await _connection.Post("api/Field/batch", dtos);
+                var resultDtos = await result.Content.ReadAsAsync<List<FieldModelDTO>>();
+
+                var successHandlers = batch.Select(x => x.Item2);
+                successHandlers.Zip(resultDtos, (success, dto) =>
                 {
-                    // convert from field model to DTO
-
-                    var dto = newField.GetFieldDTO();
-                    var result = await _connection.Post("api/Field", dto);
-
-                    var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
-
-                    success(resultDto);
-
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                    success(dto);
+                    return true;
+                });  
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                batch.ForEach(x => x.Item3(e));
+            }
         }
 
         /// <summary>
@@ -53,6 +81,7 @@ namespace Dash
         /// <param name="error"></param>
         public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
+            return;
             Task.Run(async () =>
             {
                 try
@@ -75,7 +104,6 @@ namespace Dash
         {
             await Task.Run(async () =>
             {
-
                 try
                 {
                     var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
@@ -87,7 +115,6 @@ namespace Dash
                     error(e);
                 }
             });
-
         }
 
         public async Task DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error)

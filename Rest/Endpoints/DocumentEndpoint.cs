@@ -22,6 +22,7 @@ namespace Dash
         /// <param name="error"></param>
         public void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
+            return;
             Task.Run( async () =>
             {
                 try
