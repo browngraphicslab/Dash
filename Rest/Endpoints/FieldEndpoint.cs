@@ -21,28 +21,25 @@ namespace Dash
         /// <param name="newField"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
+        public async Task AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    // convert from field model to DTO
+                // convert from field model to DTO
 
-                    var dto = newField.GetFieldDTO();
-                    var result = await _connection.Post("api/Field", dto);
+                var dto = newField.GetFieldDTO();
+                var result = await _connection.Post("api/Field", dto);
 
-                    var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
+                var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
 
-                    success(resultDto);
+                success(resultDto);
 
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
 
         /// <summary>
@@ -51,61 +48,51 @@ namespace Dash
         /// <param name="fieldToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
+        public async Task UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            Task.Run(async () =>
+            try
             {
-                try
-                {
-                    var dto = fieldToUpdate.GetFieldDTO();
-                    var result = await _connection.Put("api/Field", dto);
-                    var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
+                var dto = fieldToUpdate.GetFieldDTO();
+                var result = await _connection.Put("api/Field", dto);
+                var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
 
-                    success(resultDto);
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                success(resultDto);
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
 
         public async Task GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            await Task.Run(async () =>
+            try
             {
-
-                try
-                {
-                    var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
-                    success(fieldModelDTO);
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
+                success(fieldModelDTO);
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
 
         }
 
         public async Task DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error)
         {
-            await Task.Run(async () =>
+            var id = fieldToDelete.Id;
+            try
             {
-                var id = fieldToDelete.Id;
-                try
-                {
-                    await _connection.Delete($"api/Field/{id}");
-                    success();
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                await _connection.Delete($"api/Field/{id}");
+                success();
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
     }
 }
