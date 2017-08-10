@@ -15,15 +15,14 @@ namespace Dash
         public TextBox Box
         {
             get { return xTextBox; }
-            set { xTextBox = value; }
         }
 
         public TextBlock Block
         {
             get { return xTextBlock; }
-            set { xTextBlock = value; }
         }
 
+        #region BINDING PROPERTIES 
         public static readonly DependencyProperty TextDependency = 
             DependencyProperty.Register("Text", typeof(string), typeof(EditableTextBlock), new PropertyMetadata(false));
 
@@ -41,14 +40,17 @@ namespace Dash
             get { return (SolidColorBrush)GetValue(ColorDependency); }
             set { SetValue(ColorDependency, value); }
         }
+#endregion
 
         public EditableTextBlock()
         {
             InitializeComponent();
 
+            //events 
             Box.PointerWheelChanged += (s, e) => e.Handled = true;
             Box.ManipulationDelta += (s, e) => e.Handled = true;
 
+            // bindings 
             var textBinding = new Binding
             {
                 Source = this,
