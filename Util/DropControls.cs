@@ -56,7 +56,7 @@ namespace Dash
             }
 
             // drop factory???
-            if (_layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            if (_layoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
             {
                 box.Document.SetField(KeyStore.PositionFieldKey, dropPointFMC, forceMask: true);
             }

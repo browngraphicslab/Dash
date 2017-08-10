@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using DashShared;
 using Microsoft.AspNetCore.Http;
@@ -50,8 +49,7 @@ namespace DashWebServer.Controllers
         }
 
         // POST api/field/batch, adds the complete list of fields
-        [HttpPost]
-        [Route("batch")]
+        [HttpPost("batch")]
         public async Task<IActionResult> Post([FromBody]IEnumerable<FieldModelDTO> fieldModelDtOs)
         {
             try

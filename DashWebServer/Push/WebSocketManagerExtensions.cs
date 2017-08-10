@@ -26,7 +26,7 @@ namespace DashWebServer
                                                               PathString path,
                                                               WebSocketHandler handler)
         {
-            return app.Map(path, (_app) => _app.UseMiddleware<WebSocketManagerMiddleware>(handler));
+            return app.Map(path, _app => _app.UseMiddleware<WebSocketManagerMiddleware>(handler));
         }
     }
 }

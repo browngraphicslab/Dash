@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using DashShared;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -45,7 +42,7 @@ namespace DashWebServer
             var blockBlob = _blobContainer.GetBlockBlobReference(blobName);
 
             // Create or overwrite the "myblob" blob with contents from a local file.
-            using (var fileStream = System.IO.File.OpenRead(@"path\myfile"))
+            using (var fileStream = File.OpenRead(@"path\myfile"))
             {
                 blockBlob.UploadFromStreamAsync(fileStream);
             }

@@ -792,7 +792,7 @@ namespace Dash
             {
                 return OperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+            if (DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
             {
                 return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
