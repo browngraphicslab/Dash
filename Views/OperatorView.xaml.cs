@@ -114,7 +114,9 @@ namespace Dash
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            TypeInfo type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            TypeInfo type;
+            try { type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey]; }
+            catch(KeyNotFoundException e) { return; }
             if (XPresenter.Content != null)
                 if (view == (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor) isOutput = !isOutput; 
             var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
@@ -157,7 +159,9 @@ namespace Dash
             var docId = (DataContext as DocumentFieldReference).DocumentId;
             var el = sender as FrameworkElement;
             var outputKey = ((DictionaryEntry)el.DataContext).Key as KeyController;
-            TypeInfo type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
+            TypeInfo type;
+            try { type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey]; }
+            catch(KeyNotFoundException) { return; }
             bool isCompound = false; 
             if (XPresenter.Content != null)
                 if (isCompound = view == (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor) isOutput = !isOutput;

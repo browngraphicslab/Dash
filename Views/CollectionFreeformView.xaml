@@ -44,7 +44,6 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <!--IODragStarted="StartDrag" IODragEnded="EndDrag"-->
                     <dash:DocumentView DataContext="{Binding Converter={StaticResource DocViewModelParamToViewModelConverter}}"
                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
                                        Loaded="DocumentViewOnLoaded"/>
