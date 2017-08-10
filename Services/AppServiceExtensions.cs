@@ -28,7 +28,7 @@ namespace Dash
             serviceCollection.AddTransient<AccountEndpoint, AccountEndpoint>();
             serviceCollection.AddTransient<AuthenticationEndpoint, AuthenticationEndpoint>();
             serviceCollection.AddTransient<DocumentEndpoint, DocumentEndpoint>();
-            serviceCollection.AddTransient<FieldEndpoint, FieldEndpoint>();
+            serviceCollection.AddSingleton<FieldEndpoint, FieldEndpoint>();
             serviceCollection.AddTransient<KeyEndpoint, KeyEndpoint>(); 
 
 

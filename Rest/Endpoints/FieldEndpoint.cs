@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using DashShared;
 
@@ -8,11 +11,28 @@ namespace Dash
 {
     public class FieldEndpoint
     {
+        private static readonly object l = new object();
+        private static int count;
         private readonly ServerEndpoint _connection;
+        private Timer _tick;
+
+        private List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batchList =
+            new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>();
+
 
         public FieldEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
+            _tick = new Timer(Tick, null, 0, 1000);
+        }
+
+        private void Tick(object o)
+        {
+            if (batchList.Count > 0)
+            {
+                AddFields(new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>(batchList));
+                batchList = new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>();
+            }
         }
 
         /// <summary>
@@ -21,24 +41,35 @@ namespace Dash
         /// <param name="newField"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
+        public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
+        {
+            lock (l)
+            {
+                Debug.WriteLine(count++);
+            }
+            batchList.Add(new Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>(newField, success, error));
+        }
+
+        private async void AddFields(List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batch)
         {
             try
             {
-                // convert from field model to DTO
+                // convert from field models to DTOs
+                var dtos = batch.Select(x => x.Item1.GetFieldDTO()).ToList();
+                var result = await _connection.Post("api/Field/batch", dtos);
+                var resultDtos = await result.Content.ReadAsAsync<List<FieldModelDTO>>();
 
-                var dto = newField.GetFieldDTO();
-                var result = await _connection.Post("api/Field", dto);
-
-                var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
-
-                success(resultDto);
-
+                var successHandlers = batch.Select(x => x.Item2);
+                successHandlers.Zip(resultDtos, (success, dto) =>
+                {
+                    success(dto);
+                    return true;
+                });  
             }
             catch (Exception e)
             {
                 // return the error message
-                error(e);
+                batch.ForEach(x => x.Item3(e));
             }
         }
 
@@ -48,51 +79,60 @@ namespace Dash
         /// <param name="fieldToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
+        public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            try
+            return;
+            Task.Run(async () =>
             {
-                var dto = fieldToUpdate.GetFieldDTO();
-                var result = await _connection.Put("api/Field", dto);
-                var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
+                try
+                {
+                    var dto = fieldToUpdate.GetFieldDTO();
+                    var result = await _connection.Put("api/Field", dto);
+                    var resultDto = await result.Content.ReadAsAsync<FieldModelDTO>();
 
-                success(resultDto);
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
+                    success(resultDto);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         public async Task GetField(string id, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            try
+            await Task.Run(async () =>
             {
-                var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
-                success(fieldModelDTO);
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
-
+                try
+                {
+                    var fieldModelDTO = await _connection.GetItem<FieldModelDTO>($"api/Field/{id}");
+                    success(fieldModelDTO);
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
 
         public async Task DeleteField(FieldModel fieldToDelete, Action success, Action<Exception> error)
         {
-            var id = fieldToDelete.Id;
-            try
+            await Task.Run(async () =>
             {
-                await _connection.Delete($"api/Field/{id}");
-                success();
-            }
-            catch (Exception e)
-            {
-                // return the error message
-                error(e);
-            }
+                var id = fieldToDelete.Id;
+                try
+                {
+                    await _connection.Delete($"api/Field/{id}");
+                    success();
+                }
+                catch (Exception e)
+                {
+                    // return the error message
+                    error(e);
+                }
+            });
         }
     }
 }
