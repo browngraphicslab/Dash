@@ -201,8 +201,13 @@ namespace Dash
             return WebDoc;
         }
 
+        private static bool instantiated;
+
         public DBTest()
         {
+
+            if (instantiated) return;
+            instantiated = true;
             
             var Ump1Doc = PrototypeUmp.MakeDelegate();
             var Ump2Doc = PrototypeUmp.MakeDelegate();

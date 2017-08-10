@@ -240,6 +240,7 @@ namespace Dash
             DisplayDocument(collectionView, new InkDoc().Document, where);
 
 
+
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(collectionView, d, where);
         }

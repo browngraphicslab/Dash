@@ -1,38 +1,26 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Dash.Rest.Endpoints;
 using DashShared;
 
 namespace Dash
 {
-    public class FieldEndpoint
+    public class FieldEndpoint : Endpoint<FieldModel, FieldModelDTO>
     {
         private static readonly object l = new object();
         private static int count;
         private readonly ServerEndpoint _connection;
-        private Timer _tick;
-
-        private List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batchList =
-            new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>();
-
 
         public FieldEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
-            _tick = new Timer(Tick, null, 0, 1000);
-        }
-
-        private void Tick(object o)
-        {
-            if (batchList.Count > 0)
-            {
-                AddFields(new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>(batchList));
-                batchList = new List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>>();
-            }
+            AddBatchHandler(AddFields);
         }
 
         /// <summary>
@@ -43,17 +31,16 @@ namespace Dash
         /// <param name="error"></param>
         public void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            lock (l)
+            Task.Run(() =>
             {
-                Debug.WriteLine(count++);
-            }
-            batchList.Add(new Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>(newField, success, error));
+                AddRequest(AddFields, new Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>(newField, success, error));
+            });
         }
 
         private async void AddFields(List<Tuple<FieldModel, Action<FieldModelDTO>, Action<Exception>>> batch)
         {
             try
-            {
+             {
                 // convert from field models to DTOs
                 var dtos = batch.Select(x => x.Item1.GetFieldDTO()).ToList();
                 var result = await _connection.Post("api/Field/batch", dtos);
@@ -64,7 +51,11 @@ namespace Dash
                 {
                     success(dto);
                     return true;
-                });  
+                });
+                 lock (l)
+                 {
+                     Debug.WriteLine(count++);
+                 }
             }
             catch (Exception e)
             {
