@@ -53,6 +53,11 @@ namespace Dash
 
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
+            //++totalCount;
+            //if (++addCount % 100 == 0)
+            //{
+            //    Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 _fieldUpdatedDictionary[key] += handler;
@@ -65,6 +70,11 @@ namespace Dash
 
         public void RemoveFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
+            //--totalCount;
+            //if (++removeCount % 100 == 0)
+            //{
+            //    Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -592,9 +602,13 @@ namespace Dash
 
         public FieldModelController GetDereferencedField(KeyController key, Context context)
         {
-            context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
+        }
+
+        public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldModelController
+        {
+            return GetDereferencedField(key, context) as T;
         }
 
 
