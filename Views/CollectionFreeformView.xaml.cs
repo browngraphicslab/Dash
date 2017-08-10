@@ -235,7 +235,7 @@ namespace Dash
             _currReference = null;
         }
 
-        public void EndDrag(IOReference ioReference)
+        public void EndDrag(IOReference ioReference, bool isCompoundOperator)
         {
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
@@ -257,16 +257,19 @@ namespace Dash
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
 
-            DocumentController inputController =
-                inputReference.FieldReference.GetDocumentController(null);
-            var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
-            if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
-                // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
-                inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
-            else
-                inputController.SetField(inputReference.FieldReference.FieldKey,
-                    new ReferenceFieldModelController(outputReference.FieldReference), true);
+            if (!isCompoundOperator)
+            {
+                DocumentController inputController =
+                    inputReference.FieldReference.GetDocumentController(null);
+                var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
+                    // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
+                    inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+                else
+                    inputController.SetField(inputReference.FieldReference.FieldKey,
+                        new ReferenceFieldModelController(outputReference.FieldReference), true);
+            }
 
             if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
             {
@@ -280,14 +283,14 @@ namespace Dash
         /// <summary>
         /// Method to add the dropped off field to the documentview; shows up in keyvalue pane but not in the immediate displauy  
         /// </summary>
-        public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
-        {
-            if (_currReference != null)
-            {
-                cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
-                EndDrag(ioReference);
-            }
-        }
+        //public void EndDragOnDocumentView(ref DocumentController cont, IOReference ioReference)
+        //{
+        //    if (_currReference != null)
+        //    {
+        //        cont.SetField(_currReference.FieldKey, _currReference.FMController, true);
+        //        EndDrag(ioReference);
+        //    }
+        //}
 
         /// <summary>
         /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  

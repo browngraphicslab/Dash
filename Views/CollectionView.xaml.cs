@@ -108,7 +108,7 @@ namespace Dash
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
+            (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef, false);
         }
 
         #endregion

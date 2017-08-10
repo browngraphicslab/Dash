@@ -38,11 +38,6 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
-        public delegate void IODragEventHandler(IOReference reference);
-
-        public event IODragEventHandler IODragStarted;
-        public event IODragEventHandler IODragEnded;
-
         public DocumentView()
         {
             this.InitializeComponent();

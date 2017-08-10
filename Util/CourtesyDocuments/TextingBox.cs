@@ -94,7 +94,7 @@ namespace Dash
             SetupBindings(tb.Block, docController, context);
             SetupBindings(tb.Box, docController, context);
             tb.Box.AcceptsReturn = true;
-            CourtesyDocument.SetupBindings(tb.Container, docController, context);
+            CourtesyDocument.SetupBindings(tb, docController, context);
 
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
@@ -111,12 +111,12 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(tb.Container, docController);
+                var selectableContainer = new SelectableContainer(tb, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
 
-            return tb.Container;
+            return tb;
         }
         #region Bindings
 
