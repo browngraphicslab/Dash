@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using DashShared;
@@ -28,9 +29,16 @@ namespace DashWebServer.Controllers
 
         // GET api/document/5, returns the document with the given ID
         [HttpGet("{id}")]
-        public async Task<DocumentModel> Get(string id)
+        public async Task<DocumentModel> GetDocumentById(string id)
         {
             return await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
+        }
+
+        // GET api/document/type/5, returns a list of documents with type specified by the given id
+        [HttpGet("type/{id}")]
+        public async Task<IEnumerable<DocumentModel>> GetDocumentsByType(string id)
+        {
+            return await _documentRepository.GetItemsAsync<DocumentModel>(documentModel => documentModel.DocumentType.Id == id);
         }
 
         // POST api/document, adds a new document from the given docModel

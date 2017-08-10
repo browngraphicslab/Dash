@@ -101,5 +101,22 @@ namespace Dash
                 error(e);
             }
         }
+
+        public async Task GetDocumentByType(DocumentType mainDocumentType, Action success, Action<Exception> error)
+        {
+            try
+            {
+                var response = await _connection.Delete($"api/Document/type/{mainDocumentType.Id}");
+                if (response.IsSuccessStatusCode)
+                    success();
+                else
+                    error(new ApiException(response));
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
+        }
     }
 }

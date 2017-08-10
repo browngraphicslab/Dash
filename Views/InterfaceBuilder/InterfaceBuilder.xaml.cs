@@ -137,7 +137,7 @@ namespace Dash
                     return;
 
                 // apply position if we are dropping on a freeform
-                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout)
+                if (layoutContainer.LayoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
                 {
                     var posInLayoutContainer = e.GetPosition(layoutContainer);
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
@@ -253,7 +253,7 @@ namespace Dash
 
         public bool IsCompositeLayout( DocumentController layoutDocument)
         {
-            return layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout ||
+            return layoutDocument.DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout ||
                    layoutDocument.DocumentType == GridViewLayout.DocumentType ||
                    layoutDocument.DocumentType == ListViewLayout.DocumentType;
         }
