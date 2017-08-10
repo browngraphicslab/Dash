@@ -77,6 +77,8 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+
+            DragLeave += DocView_DragOver;
         }
 
         public IOReference GetCurrentReference()
@@ -568,34 +570,36 @@ namespace Dash
 
         #region SELECTION
 
-        private bool _isSelectionEnabled; 
-        public bool IsSelectionEnabled {
-            get { return _isSelectionEnabled; } 
+        private bool _isSelectionEnabled;
+        public bool IsSelectionEnabled
+        {
+            get { return _isSelectionEnabled; }
             set
             {
-                _isSelectionEnabled = value; 
+                _isSelectionEnabled = value;
                 if (!value) // turn colors back ... 
                 {
                     foreach (var pair in _payload)
                     {
                         var docView = pair.Key;
                         docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
-                        docView.CanDrag = false; 
+                        docView.CanDrag = false;
+                        docView.ManipulationMode = ManipulationModes.All;
                     }
                     _payload = new Dictionary<DocumentView, DocumentController>();
                 }
             }
         }
 
-        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>(); 
+        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
 
         public void ToggleSelectAllItems()
         {
-            throw new NotImplementedException(); 
+            throw new NotImplementedException();
 
             foreach (var parameter in xItemsControl.Items)
             {
-                
+
             }
         }
         #endregion
@@ -604,12 +608,12 @@ namespace Dash
         {
             if (!IsSelectionEnabled) return;                                                                //TODO handle when it's tapped multiple times (ie select deselect) 
 
-            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>(); 
+            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
             (sender as Grid).Background = new SolidColorBrush(Colors.DarkGoldenrod);
-            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController); 
+            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
             docView.CanDrag = true;
+            docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
-            xItemsControl.DragOver += DocView_DragOver;
         }
 
         private void DocView_DragOver(object sender, DragEventArgs args)                                                    // TODO this is never called so lol fuck ths
@@ -623,7 +627,7 @@ namespace Dash
 
             var carrier = ItemsCarrier.Instance;
             carrier.Source = ViewModel;
-            carrier.Payload = _payload.Values.ToList(); 
+            carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
     }

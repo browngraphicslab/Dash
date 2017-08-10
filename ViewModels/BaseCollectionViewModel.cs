@@ -28,13 +28,13 @@ namespace Dash
         public bool IsInterfaceBuilder
         {
             get { return _isInterfaceBuilder; }
-            private set { SetProperty(ref _isInterfaceBuilder, value); }
+            private set { SetProperty(ref _isInterfaceBuilder, value); } 
         }
 
         public ObservableCollection<DocumentViewModelParameters> DocumentViewModels
         {
             get { return _documentViewModels; }
-            protected set { SetProperty(ref _documentViewModels, value); }
+            protected set { SetProperty(ref _documentViewModels, value); } 
         }
 
         // used to keep track of groups of the currently selected items in a collection
@@ -76,20 +76,20 @@ namespace Dash
         public double CellSize
         {
             get { return _cellSize; }
-            protected set { SetProperty(ref _cellSize, value); }
+            protected set { SetProperty(ref _cellSize, value); } 
         }
 
         public bool CanDragItems
         {
-            get { return _canDragItems; }
-            set { SetProperty(ref _canDragItems, value); }
-            // 
+            get { return _canDragItems; } 
+            set { SetProperty(ref _canDragItems, value); } 
+// 
         }
 
         public ListViewSelectionMode ItemSelectionMode
         {
-            get { return _itemSelectionMode; }
-            set { SetProperty(ref _itemSelectionMode, value); }
+            get { return _itemSelectionMode; } 
+            set { SetProperty(ref _itemSelectionMode, value); } 
         }
 
         #endregion
@@ -115,20 +115,15 @@ namespace Dash
         /// </summary>
         public void xGridView_OnDragItemsCompleted(ListViewBase sender, DragItemsCompletedEventArgs args)
         {
-            DragEndHelper();
-
-            if (args.DropResult == DataPackageOperation.Move)
-                RemoveDocuments(ItemsCarrier.Instance.Payload);
-        }
-
-        public void DragEndHelper()
-        {
             SetGlobalHitTestVisiblityOnSelectedItems(false);
 
             var carrier = ItemsCarrier.Instance;
 
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
+
+            if (args.DropResult == DataPackageOperation.Move)
+                RemoveDocuments(ItemsCarrier.Instance.Payload);
 
             carrier.Payload.Clear();
             carrier.Source = null;
@@ -142,12 +137,10 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-
-
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
-            //e.Handled = true;
+            
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -162,9 +155,12 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-
+                carrier.Destination = this; 
                 if (carrier.Source.Equals(carrier.Destination))
+                {
+                    e.Handled = true;
                     return; // we don't want to drop items on ourself
+                }
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
@@ -172,6 +168,7 @@ namespace Dash
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
             }
+
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 
