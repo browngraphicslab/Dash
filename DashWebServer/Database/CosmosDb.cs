@@ -340,10 +340,6 @@ namespace DashWebServer
             }
         }
 
-        public int FieldCount { get; set; } = 0;
-
-        public object Lock { get; set; } = new object();
-
         #endregion
 
         #region MemoryCacheFunctionality

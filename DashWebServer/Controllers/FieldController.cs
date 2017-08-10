@@ -39,13 +39,7 @@ namespace DashWebServer.Controllers
         {
             try
             {
-                lock (_documentRepository.Lock)
-                {
-                    Debug.WriteLine($"{_documentRepository.FieldCount++}");
-                }
-
                 FieldModelDTO = await _documentRepository.AddItemAsync(FieldModelDTO);
-
             }
             catch (Exception e)
             {

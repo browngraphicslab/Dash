@@ -78,9 +78,5 @@ namespace DashWebServer
         /// <param name="document">The document that is going to be deleted</param>
         /// <returns>The document which was deleted from the database</returns>
         Task DeleteItemAsync<T>(T document) where T : EntityBase;
-
-        int FieldCount { get; set; }
-
-        object Lock { get; set; }
     }
 }

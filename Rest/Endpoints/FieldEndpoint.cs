@@ -10,9 +10,6 @@ namespace Dash
     {
         private readonly ServerEndpoint _connection;
 
-        private static object l = new Object();
-        private static Int64 count = new int();
-
         public FieldEndpoint(ServerEndpoint connection)
         {
             _connection = connection;
@@ -26,23 +23,18 @@ namespace Dash
         /// <param name="error"></param>
         public async void AddField(FieldModel newField, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
             {
                 try
                 {
                     // convert from field model to DTO
 
                     var dto = newField.GetFieldDTO();
-                    var result = _connection.Post("api/Field", dto);
+                    var result = await _connection.Post("api/Field", dto);
 
                     var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
 
                     success(resultDto);
-
-                    lock (l)
-                    {
-                        Debug.WriteLine($"{count++}");
-                    }
 
                 }
                 catch (Exception e)
@@ -61,12 +53,12 @@ namespace Dash
         /// <param name="error"></param>
         public async void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
             {
                 try
                 {
                     var dto = fieldToUpdate.GetFieldDTO();
-                    var result = _connection.Put("api/Field", dto);
+                    var result = await _connection.Put("api/Field", dto);
                     var resultDto = result.Content.ReadAsAsync<FieldModelDTO>().Result;
 
                     success(resultDto);

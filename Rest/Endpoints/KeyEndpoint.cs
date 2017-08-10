@@ -21,11 +21,11 @@ namespace Dash
         /// <param name="error"></param>
         public async void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
             {
                 try
                 {
-                    var result = _connection.Post("api/Key", newKey);
+                    var result = await _connection.Post("api/Key", newKey);
                     var resultK = result.Content.ReadAsAsync<KeyModel>().Result;
 
                     success(resultK);
@@ -45,11 +45,11 @@ namespace Dash
         /// <param name="error"></param>
         public async void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
             {
                 try
                 {
-                    var result = _connection.Put("api/Key", keyToUpdate);
+                    var result = await _connection.Put("api/Key", keyToUpdate);
                     var resultK = result.Content.ReadAsAsync<KeyModel>().Result;
 
                     success(resultK);
@@ -83,11 +83,11 @@ namespace Dash
         public void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
         {
             var id = keyToDelete.Id;
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 try
                 {
-                    var response = _connection.Delete($"api/Key/{id}");
+                    var response = await _connection.Delete($"api/Key/{id}");
                     if (response.IsSuccessStatusCode)
                         success();
                     else

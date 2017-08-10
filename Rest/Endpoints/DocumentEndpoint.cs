@@ -22,11 +22,11 @@ namespace Dash
         /// <param name="error"></param>
         public async void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
             {
                 try
                 {
-                    var result = _connection.Post("api/Document", newDocument);
+                    var result = await _connection.Post("api/Document", newDocument);
                     var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
 
                     success(resultDoc);
@@ -48,11 +48,11 @@ namespace Dash
         public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
             Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(() =>
+            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
             {
                 try
                 {
-                    var result = _connection.Put("api/Document", documentToUpdate);
+                    var result = await _connection.Put("api/Document", documentToUpdate);
                     var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
 
                     success(resultDoc);
@@ -97,11 +97,11 @@ namespace Dash
         public void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
         {
             var id = document.Id;
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 try
                 {
-                    var response = _connection.Delete($"api/Document/{id}");
+                    var response = await _connection.Delete($"api/Document/{id}");
                     if (response.IsSuccessStatusCode)
                         success();
                     else
