@@ -73,13 +73,13 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel: true);
+            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
         public IOReference GetCurrentReference()
         {
-            return _currReference; 
+            return _currReference;
         }
 
         #region DataContext and Events
@@ -177,7 +177,7 @@ namespace Dash
 
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true); 
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
@@ -186,8 +186,10 @@ namespace Dash
             _connectionLine = new Path
             {
                 StrokeThickness = 5,
-                Stroke = new SolidColorBrush(Colors.Orange),
+                Stroke = Util.GetSolidColorBrush("#FF35C597"),
                 IsHitTestVisible = false,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
@@ -228,7 +230,7 @@ namespace Dash
 
         private void UndoLine()
         {
-            itemsPanelCanvas.Children.Remove(_connectionLine);
+            if (_connectionLine != null) itemsPanelCanvas.Children.Remove(_connectionLine);
             _connectionLine = null;
             _currReference = null;
         }
@@ -304,6 +306,11 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
+                if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
+                {
+                    CancelDrag(e.Pointer);
+                    return; 
+                }
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
                 _lineBinding.ForceUpdate();
@@ -453,6 +460,7 @@ namespace Dash
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             DBTest.ResetCycleDetection();
+            CancelDrag(e.Pointer);
         }
 
         #region Flyout
@@ -496,6 +504,9 @@ namespace Dash
             Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
             Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
             OperatorSearchView.AddsToThisCollection = this;
+
+            OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
+
             DisposeFlyout();
         }
 

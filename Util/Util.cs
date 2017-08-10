@@ -376,79 +376,18 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// Method that returns a list of different types of FieldModelControllers
-        ///                                                                 TODO what if people want to display url as textfieldmodel??? 
-        /// </summary>
-        /// <returns></returns>
-        public static IEnumerable<FieldModelController> RawToFieldModelControllerFactory(IEnumerable<object> rawValues, bool displayAsImage = false)
+        public static SolidColorBrush GetSolidColorBrush(string hex)
         {
-            var result = new LinkedList<FieldModelController>();
-
-            foreach (object value in rawValues)
-            {
-                string stringVal = value.ToString();
-
-                double n;
-                Uri outUri;
-
-                if (double.TryParse(stringVal, out n))                             // if it's a number
-                {
-                    result.AddLast(new NumberFieldModelController(n));
-                }
-                else if (displayAsImage && Uri.TryCreate(stringVal, UriKind.Absolute, out outUri)         // if it's a url...  
-                       && Uri.IsWellFormedUriString(stringVal, UriKind.Absolute))
-                {
-                    result.AddLast(new ImageFieldModelController(outUri));
-                }
-                else
-                {
-                    result.AddLast(new TextFieldModelController(stringVal));
-                }
-            }
-            return result;
+            hex = hex.Replace("#", string.Empty);
+            byte a = (byte)(Convert.ToUInt32(hex.Substring(0, 2), 16));
+            byte r = (byte)(Convert.ToUInt32(hex.Substring(2, 2), 16));
+            byte g = (byte)(Convert.ToUInt32(hex.Substring(4, 2), 16));
+            byte b = (byte)(Convert.ToUInt32(hex.Substring(6, 2), 16));
+            SolidColorBrush myBrush = new SolidColorBrush(Windows.UI.Color.FromArgb(a, r, g, b));
+            return myBrush;
         }
 
-        public static IList<DocumentController> FMControllerToCourtesyDocs(ref DocumentController doc, IEnumerable<FieldModelController> fms)
-        {
-            var result = new List<DocumentController>();
-            string docID = doc.GetId();
 
-            foreach (FieldModelController fm in fms)
-            {
-                var key = new KeyController();                                                                                  // TODO should give it a unique key? 
-                doc.SetField(key, fm, true);
-                if (fm is TextFieldModelController || fm is NumberFieldModelController)
-                {
-                    result.Add(new TextingBox(new ReferenceFieldModelController(docID, key)).Document);
-                }
-                else if (fm is ImageFieldModelController)
-                {
-                    result.Add(new ImageBox(new ReferenceFieldModelController(docID, key)).Document);
-                }
-                else
-                {
-                    throw new NotImplementedException();
-                }
-            }
-            return result;
-        }
 
-        // TODO move this somewhere else 
-        public static DocumentController MakeListView(List<object> randomList)
-        {
-            IEnumerable<FieldModelController> fms = RawToFieldModelControllerFactory(randomList, true);
-
-            DocumentType ListType = new DocumentType("testingattentionpls", "List");                         // TODO give it proper document type w/ actual guid 
-            var fields = new Dictionary<KeyController, FieldModelController>();
-            fields.Add(KeyStore.DataKey, new ListFieldModelController<FieldModelController>(fms));
-            DocumentController Document = new DocumentController(fields, ListType);
-
-            IList<DocumentController> viewDocs = FMControllerToCourtesyDocs(ref Document, fms);
-            var layoutDoc = new ListViewLayout(viewDocs, new Point(), new Size(300, Math.Min(50 * viewDocs.Count, 400)));
-            Document.SetActiveLayout(layoutDoc.Document, true, true);
-
-            return Document; 
-        }
     }
 }

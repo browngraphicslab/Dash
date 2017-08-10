@@ -15,8 +15,9 @@ namespace Dash
         {
             AddOperator<DivideOperatorFieldModelController>("divide", "÷");
             AddOperator<IntersectionOperatorModelController>("intersection", "∩");
-            AddOperator<ImageOperatorFieldModelController>("uriToImage", "◑");
             AddOperator<UnionOperatorFieldModelController>("union", "∪");
+            AddOperator<ZipOperatorFieldController>("zip");
+            AddOperator<ImageOperatorFieldModelController>("uriToImage", "◑");
             AddOperator<FilterOperatorFieldModelController>("filter", OperatorDocumentModel.CreateFilterDocumentController, "⊇");
             AddOperator<ApiOperator>("api", OperatorDocumentModel.CreateApiDocumentController, "⚡");
             AddOperator<CollectionMapOperator>("map", OperatorDocumentModel.CreateMapDocumentController, "⇨");

@@ -17,7 +17,7 @@
 
         <!--<Rectangle x:Name="xShadeRectangle" Fill="#99000000" Stretch="Fill" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsHitTestVisible="False">
         </Rectangle>-->
-
+        
         <Canvas>
             <!--draggers for image-->
             <Ellipse x:Name="xBottomLeftDragger" HorizontalAlignment="Left" VerticalAlignment="Top" Style="{StaticResource xDraggerEllipseStyle}"/>
@@ -32,7 +32,8 @@
             <Ellipse x:Name="xCLIPTopRightDragger" Style="{StaticResource xDraggerEllipseStyle}"/>
 
             <!--clipping rectangle-->
-            <Rectangle x:Name="xClipRectangle" StrokeDashArray="4 4" StrokeThickness="1" Stroke="LightBlue" HorizontalAlignment="Left" VerticalAlignment="Top"></Rectangle>
+            <Rectangle x:Name="xClipRectangle" StrokeDashArray="4 4" StrokeThickness="1" Stroke="LightBlue" Fill="Transparent"
+                       HorizontalAlignment="Left" VerticalAlignment="Top"></Rectangle>
         </Canvas>
     </Grid>
 

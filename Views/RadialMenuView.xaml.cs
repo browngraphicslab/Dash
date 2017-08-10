@@ -488,47 +488,32 @@ namespace Dash
 
             Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
-            Action<ICollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
             Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
             Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
             var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd };
             var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
-            var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
             var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments };
             var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
             
             var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
             {
                 operatorButton,
-                apiButton,
                 documentButton,
                 collectionButton,
                 notesButton
             });
-
-            //TODO maybe this shouldn't go here 
-            //Action<object> sendEmail = sendEmailHelper;
-            //var emailButton = new RadialActionModel("Email", "📧")
-            //{
-            //    GenericAction = sendEmail
-            //};
 
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
                 inkOptions,
                 addOptionsMenu,
-                //emailButton
             });
 
             
         }
-
-        //private void sendEmailHelper(object obj)
-        //{
-        //    _parentCanvas.Children.Add(new EmailView()); 
-        //}
+        
 
         private void InitializeColors()
         {
