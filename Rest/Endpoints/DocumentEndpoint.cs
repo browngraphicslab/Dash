@@ -20,14 +20,14 @@ namespace Dash
         /// <param name="newDocument"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
+        public void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
+            Task.Run( async () =>
             {
                 try
                 {
                     var result = await _connection.Post("api/Document", newDocument);
-                    var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
+                    var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
                     success(resultDoc);
                 }
@@ -36,7 +36,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            }));
+            });
         }
 
         /// <summary>
@@ -48,12 +48,12 @@ namespace Dash
         public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
             Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
+            await Task.Run(async () =>
             {
                 try
                 {
                     var result = await _connection.Put("api/Document", documentToUpdate);
-                    var resultDoc = result.Content.ReadAsAsync<DocumentModel>().Result;
+                    var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
                     success(resultDoc);
                 }
@@ -62,7 +62,7 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            }));
+            });
         }
 
         /// <summary>
@@ -71,13 +71,13 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void GetDocument(string id, Action<DocumentModel> success, Action<Exception> error)
+        public async Task GetDocument(string id, Action<DocumentModel> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            await Task.Run(async () =>
             {
                 try
                 {
-                    var result = _connection.GetItem<DocumentModel>($"api/Document/{id}").Result;
+                    var result = await _connection.GetItem<DocumentModel>($"api/Document/{id}");
                     success(result);
                 }
                 catch (Exception e)
@@ -94,14 +94,13 @@ namespace Dash
         /// <param name="document"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
+        public async Task DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
         {
-            var id = document.Id;
-            Task.Run(async () =>
+            await Task.Run(async () =>
             {
                 try
                 {
-                    var response = await _connection.Delete($"api/Document/{id}");
+                    var response = await _connection.Delete($"api/Document/{document.Id}");
                     if (response.IsSuccessStatusCode)
                         success();
                     else

@@ -19,9 +19,9 @@ namespace Dash
         /// <param name="newKey"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
+        public void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
+            Task.Run(async () =>
             {
                 try
                 {
@@ -35,7 +35,8 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            }));
+            });
+
         }
 
         /// <summary>
@@ -43,14 +44,14 @@ namespace Dash
         /// <param name="keyToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
+        public void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
-            await _connection.TaskQueue.Enqueue(() => Task.Run(async () =>
+            Task.Run(async () =>
             {
                 try
                 {
                     var result = await _connection.Put("api/Key", keyToUpdate);
-                    var resultK = result.Content.ReadAsAsync<KeyModel>().Result;
+                    var resultK = await result.Content.ReadAsAsync<KeyModel>();
 
                     success(resultK);
                 }
@@ -59,16 +60,16 @@ namespace Dash
                     // return the error message
                     error(e);
                 }
-            }));
+            });
         }
 
         public void GetKey(string id, Action<KeyModel> success, Action<Exception> error)
         {
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 try
                 {
-                    var key = _connection.GetItem<KeyModel>($"api/Key/{id}").Result;
+                    var key = await _connection.GetItem<KeyModel>($"api/Key/{id}");
 
                     success(key);
                 }
@@ -82,12 +83,11 @@ namespace Dash
 
         public void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
         {
-            var id = keyToDelete.Id;
             Task.Run(async () =>
             {
                 try
                 {
-                    var response = await _connection.Delete($"api/Key/{id}");
+                    var response = await _connection.Delete($"api/Key/{keyToDelete.Id}");
                     if (response.IsSuccessStatusCode)
                         success();
                     else
