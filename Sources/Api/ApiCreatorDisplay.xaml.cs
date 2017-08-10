@@ -10,7 +10,12 @@ namespace Dash {
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class ApiCreatorDisplay : UserControl {
+    public sealed partial class ApiCreatorDisplay : UserControl
+    {
+        public delegate void MakeApiHandler();
+
+        public event MakeApiHandler MakeApi;
+
         public DocumentController DocModel;
         public ApiSourceDisplay SourceDisplay;
         private ApiSource Source;
@@ -62,8 +67,9 @@ namespace Dash {
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void createAPINodeTemplate(object sender, RoutedEventArgs e) {
-            this.Visibility = Visibility.Collapsed;
-            updateSource();
+            MakeApi?.Invoke();
+            //this.Visibility = Visibility.Collapsed;
+            //updateSource();
         }
 
         private void updateSource() {
@@ -74,7 +80,7 @@ namespace Dash {
             parameters = new Dictionary<string, ApiProperty>();
             authHeaders = new Dictionary<string, ApiProperty>();
             authParameters = new Dictionary<string, ApiProperty>();
-           
+
             // dropdown to Httprequest type
             Windows.Web.Http.HttpMethod requestType;
             if (requestTypePicker.SelectedIndex == 0)
