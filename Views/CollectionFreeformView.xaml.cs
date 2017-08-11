@@ -461,6 +461,7 @@ namespace Dash
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
             (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
+            _documentViews.Add((sender as DocumentView)); 
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -588,18 +589,28 @@ namespace Dash
             }
         }
 
+        private bool _isToggleOn; 
+
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+        private List<DocumentView> _documentViews = new List<DocumentView>(); 
 
         public void ToggleSelectAllItems()
         {
-            throw new NotImplementedException();
-
-            foreach (var parameter in xItemsControl.Items)
+            _isToggleOn = !_isToggleOn; 
+            foreach (var docView in _documentViews)
             {
-
+                if (_isToggleOn)
+                {
+                    Select(docView);
+                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                } else
+                {
+                    Deselect(docView);
+                    _payload.Remove(docView); 
+                }
             }
         }
-        #endregion
+        
 
         private void Deselect(DocumentView docView)
         {
@@ -611,7 +622,7 @@ namespace Dash
 
         private void Select(DocumentView docView)
         {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.DarkGoldenrod);
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
@@ -645,7 +656,9 @@ namespace Dash
             if (carrier.Source == carrier.Destination)
                 return; // we don't want to drop items on ourself
 
-           ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
+            ViewModel.RemoveDocuments(carrier.Payload);
+            foreach (var view in _payload.Keys.ToList())
+                _documentViews.Remove(view); 
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
@@ -659,5 +672,6 @@ namespace Dash
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
+    #endregion
     }
 }
