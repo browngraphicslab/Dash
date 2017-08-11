@@ -50,11 +50,11 @@
                             <ColumnDefinition Width="75"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
+                            <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
                         </ScrollViewer>
                         <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
                         <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Type}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
+                            <TextBlock Text="{x:Bind Path=Type}" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
                     </Grid>
                 </DataTemplate>

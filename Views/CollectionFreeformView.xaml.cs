@@ -126,6 +126,24 @@ namespace Dash
         #region DraggingLinesAround
 
         /// <summary>
+        /// Called when documentview is deleted; delete all connections coming from it as well  
+        /// </summary>
+        public void DeleteConnections(DocumentView docView)
+        {
+            foreach (var line in _lineDict)
+            {
+                var converter = line.Key;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+
+                if (view1 == docView || view2 == docView)
+                {
+                    itemsPanelCanvas.Children.Remove(line.Value);
+                }
+            }
+        }
+
+        /// <summary>
         /// Update the bindings on lines when documentview is minimized to icon view 
         /// </summary>
         /// <param name="becomeSmall">whether the document has minimized or regained normal view</param>

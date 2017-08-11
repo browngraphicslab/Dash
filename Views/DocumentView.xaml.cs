@@ -406,7 +406,14 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+                        (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
+ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+
+            // DELETE CONNECTIONS....
+
+            //var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
+            //if (view == null) return; // we can't always assume we're on a collection... or can we 
+
         }
 
         private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
