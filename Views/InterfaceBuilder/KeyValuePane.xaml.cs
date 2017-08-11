@@ -7,6 +7,7 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
 using System;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers.Operators;
 
@@ -80,7 +81,10 @@ namespace Dash
 
         private void AddButton_Tapped(object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e)
         {
-            if ((string)xAddButton.Content == "↵")
+            Debug.Assert(xAddButton.Content != null, "xAddButton.Content != null");
+            var view = (Viewbox) xAddButton.Content;
+            var icon = ((SymbolIcon) view.Child).Symbol;
+            if (icon == Symbol.Accept)
             {
                 // only execute if all fields are specified 
                 if (xNewKeyField.Text != "" && (TypeInfo)xTypeComboBox.SelectedItem != TypeInfo.None && xNewValueField.Text != "")
@@ -135,7 +139,7 @@ namespace Dash
             _addKVPaneOpen = !_addKVPaneOpen;
             if (_addKVPaneOpen)
             {
-                xAddButton.Content = "↵";
+                xAddButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.Accept)};
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Visible;
                 xNewValueField.Visibility = Windows.UI.Xaml.Visibility.Visible;
@@ -143,7 +147,7 @@ namespace Dash
             }
             else
             {
-                xAddButton.Content = "+";
+                xAddButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.Add)};
                 xNewKeyField.Visibility = Windows.UI.Xaml.Visibility.Collapsed;
                 xTypeComboBox.IsEnabled = false;
                 xTypeComboBox.Visibility = Windows.UI.Xaml.Visibility.Collapsed;

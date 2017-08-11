@@ -47,8 +47,6 @@ namespace Dash
                 //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
             var border = new Border();
             border.Child = docView;
-            border.BorderThickness = new Thickness(3);
-            border.BorderBrush = new SolidColorBrush(Colors.Black);
 
             // bind the text height
             var docheightController = GetHeightField(docController, context);

@@ -68,6 +68,7 @@ namespace Dash
 
             // Create a drop shadow
             var dropShadow = compositor.CreateDropShadow();
+
             dropShadow.Color = Color.FromArgb(255, 75, 75, 80);
             dropShadow.BlurRadius = 15.0f;
             dropShadow.Offset = new Vector3(2.5f, 2.5f, 0.0f);
