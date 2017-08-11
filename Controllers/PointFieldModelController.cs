@@ -28,12 +28,6 @@ namespace Dash
         /// </summary>
         public PointFieldModel PointFieldModel => FieldModel as PointFieldModel;
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Debug.Assert(fieldModel is PointFieldModelController);
-            Data = ((PointFieldModelController) fieldModel).Data;
-        }
-
         public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);

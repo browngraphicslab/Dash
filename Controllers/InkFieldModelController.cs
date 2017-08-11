@@ -76,12 +76,6 @@ namespace Dash
             }
         }
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            var inkFieldModelController = fieldModel as InkFieldModelController;
-            if (inkFieldModelController != null) InkData = inkFieldModelController.InkData;
-        }
-
         //TODO needs work
         public  override FrameworkElement GetTableCellView(Context context)
         {

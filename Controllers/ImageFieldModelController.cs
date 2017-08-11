@@ -50,11 +50,6 @@ namespace Dash
             }
         }
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Data = (fieldModel as ImageFieldModelController).Data;
-        }
-
         public override FrameworkElement GetTableCellView(Context context)
         {
             var image = new Image

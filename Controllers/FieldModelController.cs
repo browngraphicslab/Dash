@@ -40,14 +40,6 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
-        /// <summary>
-        ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
-        ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />
-        /// </summary>
-        /// <param name="fieldReference"></param>
-        protected virtual void UpdateValue(FieldModelController fieldModel)
-        {
-        }
 
         protected FieldModelController(FieldModel fieldModel, bool isCreatedFromServer)
         {

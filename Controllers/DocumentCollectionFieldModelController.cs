@@ -126,11 +126,6 @@ namespace Dash
             return _documents.ToList();
         }
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
-        }
-
         public override FrameworkElement GetTableCellView(Context context)
         {
             //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);

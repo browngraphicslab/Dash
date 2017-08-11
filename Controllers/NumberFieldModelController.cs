@@ -29,11 +29,6 @@ namespace Dash
         /// </summary>
         public NumberFieldModel NumberFieldModel => FieldModel as NumberFieldModel;
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Data = (fieldModel as NumberFieldModelController).Data;
-        }
-
         public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);

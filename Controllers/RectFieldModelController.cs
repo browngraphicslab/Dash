@@ -35,12 +35,6 @@ namespace Dash
         /// </summary>
         public RectFieldModel RectFieldModel => FieldModel as RectFieldModel;
 
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            Debug.Assert(fieldModel is RectFieldModelController);
-            Data = ((RectFieldModelController)fieldModel).Data;
-        }
-
         public override FrameworkElement GetTableCellView(Context context)
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);

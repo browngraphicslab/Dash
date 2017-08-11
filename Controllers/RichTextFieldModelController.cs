@@ -54,11 +54,6 @@ namespace Dash
         }
 
         public ITextSelection SelectedText { get; set; }
-        protected override void UpdateValue(FieldModelController fieldModel)
-        {
-            var richTextFieldModelController = fieldModel as RichTextFieldModelController;
-            if (richTextFieldModelController != null) RichTextData = richTextFieldModelController.RichTextData;
-        }
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
 
