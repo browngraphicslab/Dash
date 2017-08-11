@@ -60,7 +60,7 @@ namespace Dash
 
         #endregion
 
-        private ManipulationControls _manipulationControls;
+        public ManipulationControls ManipulationControls;
         private MenuFlyout _flyout;
         private float _backgroundOpacity = .7f;
 
@@ -85,7 +85,7 @@ namespace Dash
         private Rect _boundingRect;
         private InkSelectionRect _rectangle;
         private LassoSelectHelper _lassoHelper;
-        public double Zoom => _manipulationControls.ElementScale;
+        public double Zoom => ManipulationControls.ElementScale;
         #endregion
 
         #region Background Translation Variables
@@ -108,8 +108,8 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel: true);
-            _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel: true);
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
         }
 
         public IOReference GetCurrentReference()
@@ -141,7 +141,7 @@ namespace Dash
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
         {
-            _manipulationControls.Dispose();
+            ManipulationControls.Dispose();
         }
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
@@ -710,24 +710,24 @@ namespace Dash
             switch (type)
             {
                 case CoreInputDeviceTypes.Mouse:
-                    _manipulationControls.BlockedInputType = PointerDeviceType.Mouse;
-                    _manipulationControls.FilterInput = IsDrawing;
+                    ManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
+                    ManipulationControls.FilterInput = IsDrawing;
                     break;
                 case CoreInputDeviceTypes.Pen:
-                    _manipulationControls.BlockedInputType = PointerDeviceType.Pen;
-                    _manipulationControls.FilterInput = IsDrawing;
+                    ManipulationControls.BlockedInputType = PointerDeviceType.Pen;
+                    ManipulationControls.FilterInput = IsDrawing;
                     break;
                 case CoreInputDeviceTypes.Touch:
-                    _manipulationControls.BlockedInputType = PointerDeviceType.Touch;
-                    _manipulationControls.FilterInput = IsDrawing;
+                    ManipulationControls.BlockedInputType = PointerDeviceType.Touch;
+                    ManipulationControls.FilterInput = IsDrawing;
                     break;
                 default:
-                    _manipulationControls.FilterInput = false;
+                    ManipulationControls.FilterInput = false;
                     break;
             }
         }
 
-        private void UpdateInkFieldModelController()
+        public void UpdateInkFieldModelController()
         {
             if (InkFieldModelController != null)
                 InkFieldModelController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes(), XInkCanvas);
@@ -741,11 +741,13 @@ namespace Dash
         private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             InkFieldModelController?.Undo(XInkCanvas);
+            ClearSelection();
         }
 
         private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             InkFieldModelController?.Redo(XInkCanvas);
+            ClearSelection();
         }
 
         private void UpdateStrokes()
@@ -799,7 +801,8 @@ namespace Dash
         //TODO: position ruler
         private void InkToolbar_OnIsRulerButtonCheckedChanged(InkToolbar sender, object args)
         {
-            
+            InkPresenterRuler ruler = new InkPresenterRuler(XInkCanvas.InkPresenter);
+            ruler.Transform = Matrix3x2.CreateTranslation(new Vector2(30000, 30000));
         }
 
         private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)
@@ -813,38 +816,21 @@ namespace Dash
 
             // Draw a bounding rectangle only if there are ink strokes 
             // within the lasso area.
-            if (!((_boundingRect.Width == 0) ||
-                  (_boundingRect.Height == 0) ||
+            if (!(_boundingRect.Width == 0 ||
+                  _boundingRect.Height == 0 ||
                   _boundingRect.IsEmpty))
             {
                 _rectangle = new InkSelectionRect(this, XInkCanvas.InkPresenter.StrokeContainer)
                 {
                     Width = _boundingRect.Width + 30,
                     Height = _boundingRect.Height + 30,
-                    ManipulationMode = ManipulationModes.All
                 };
-                _rectangle.ManipulationDelta += RectangleOnManipulationDelta;
-                _rectangle.ManipulationCompleted += RectangleOnManipulationCompleted;
 
                 Canvas.SetLeft(_rectangle, _boundingRect.X - 15);
                 Canvas.SetTop(_rectangle, _boundingRect.Y - 15);
 
                 SelectionCanvas.Children.Add(_rectangle);
             }
-        }
-
-        private void RectangleOnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs manipulationCompletedRoutedEventArgs)
-        {
-            UpdateInkFieldModelController();
-        }
-
-        private void RectangleOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var delta = new Point(e.Delta.Translation.X / _manipulationControls.ElementScale, e.Delta.Translation.Y / _manipulationControls.ElementScale);
-            Canvas.SetLeft(_rectangle, Canvas.GetLeft(_rectangle) + delta.X);
-            Canvas.SetTop(_rectangle, Canvas.GetTop(_rectangle) + delta.Y);
-            XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(delta);
-            e.Handled = true;
         }
 
         private void InkSelect_OnChecked(object sender, RoutedEventArgs e)
