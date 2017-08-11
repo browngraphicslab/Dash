@@ -19,8 +19,9 @@ namespace Dash
         /// <param name="newKey"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
+        public async void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
+            return;
             try
             {
                 var result = await _connection.Post("api/Key", newKey);
@@ -41,8 +42,9 @@ namespace Dash
         /// <param name="keyToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
+        public async void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
+            return;
             try
             {
                 var result = await _connection.Put("api/Key", keyToUpdate);
@@ -57,7 +59,7 @@ namespace Dash
             }
         }
 
-        public async Task GetKey(string id, Action<KeyModel> success, Action<Exception> error)
+        public async void GetKey(string id, Action<KeyModel> success, Action<Exception> error)
         {
             try
             {
@@ -72,7 +74,7 @@ namespace Dash
             }
         }
 
-        public async Task DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
+        public async void DeleteKey(KeyModel keyToDelete, Action success, Action<Exception> error)
         {
             try
             {
