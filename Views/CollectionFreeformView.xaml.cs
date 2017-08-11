@@ -581,10 +581,7 @@ namespace Dash
                 {
                     foreach (var pair in _payload)
                     {
-                        var docView = pair.Key;
-                        docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
-                        docView.CanDrag = false;
-                        docView.ManipulationMode = ManipulationModes.All;
+                        Deselect(pair.Key);
                     }
                     _payload = new Dictionary<DocumentView, DocumentController>();
                 }
@@ -604,21 +601,51 @@ namespace Dash
         }
         #endregion
 
-        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
+        private void Deselect(DocumentView docView)
         {
-            if (!IsSelectionEnabled) return;                                                                //TODO handle when it's tapped multiple times (ie select deselect) 
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
+            docView.CanDrag = false;
+            docView.ManipulationMode = ManipulationModes.All;
+            docView.DragStarting -= DocView_OnDragStarting;
+        }
 
-            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
-            (sender as Grid).Background = new SolidColorBrush(Colors.DarkGoldenrod);
-            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+        private void Select(DocumentView docView)
+        {
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.DarkGoldenrod);
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
         }
 
-        private void DocView_DragOver(object sender, DragEventArgs args)                                                    // TODO this is never called so lol fuck ths
+        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            _payload = new Dictionary<DocumentView, DocumentController>();                                                  // how to call this??????????
+            if (!IsSelectionEnabled) return;
+
+            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
+            if (docView.CanDrag)    
+            {
+                Deselect(docView);
+                _payload.Remove(docView);
+            }
+            else                     
+            {
+                Select(docView);
+                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+            }
+            e.Handled = true;
+        }
+
+        private void DocView_DragOver(object sender, DragEventArgs args)
+        {
+            _payload = new Dictionary<DocumentView, DocumentController>();
+
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+
+            var carrier = ItemsCarrier.Instance;
+            if (carrier.Source == carrier.Destination)
+                return; // we don't want to drop items on ourself
+
+           ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
@@ -626,6 +653,8 @@ namespace Dash
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
 
             var carrier = ItemsCarrier.Instance;
+
+            carrier.Destination = null;
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
