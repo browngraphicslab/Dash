@@ -7,7 +7,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="400"
-    d:DesignWidth="470">
+    d:DesignWidth="470"
+    DataContextChanged="ApiCreatorDisplay_OnDataContextChanged">
     <Grid x:Name="xGrid">
     <StackPanel Padding="20" x:Name="xApiSourceCreatorPanel" Background="Transparent" Width="470" Orientation="Vertical" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0">
         <TextBlock Text="HTTP API Builder" HorizontalAlignment="Center" Style="{StaticResource xTitleStyle}" FontWeight="Normal"/>

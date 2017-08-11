@@ -9,6 +9,7 @@
     d:DesignHeight="200"
     d:DesignWidth="422"
     DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        DataContextChanged="ApiCreatorPropertyGenerator_OnDataContextChanged"
     x:Name="xApiCreatorPropertyGenerator">
 
     <StackPanel  Background="Transparent" HorizontalAlignment="Stretch">

@@ -91,7 +91,7 @@ namespace Dash
         {
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
             var method = (inputs[MethodKey] as TextFieldModelController).Data;
-            var methodEnum = (HttpMethod)Enum.Parse(typeof(HttpMethod), method);
+            var methodEnum = (HttpMethod)Enum.Parse(typeof(HttpMethod), method, true);
 
             var parameters = new List<KeyValuePair<string, string>>();
             var headers = new List<KeyValuePair<string, string>>();

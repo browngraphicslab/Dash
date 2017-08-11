@@ -6,7 +6,8 @@ using Windows.UI.Xaml.Controls;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
-namespace Dash {
+namespace Dash
+{
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -16,21 +17,25 @@ namespace Dash {
 
         public event MakeApiHandler MakeApi;
 
-        public DocumentController DocModel;
+        public DocumentController Document;
         public ApiSourceDisplay SourceDisplay;
         private ApiSource Source;
 
+        private DocumentController _operatorDocument;
+        private ApiOperatorController _operatorController;
+
         // == CONSTRUCTORS ==
-        public ApiCreatorDisplay(DocumentController docModel, ApiSourceDisplay display) {
+        public ApiCreatorDisplay(DocumentController document, ApiSourceDisplay display)
+        {
             this.InitializeComponent();
 
             // todo: probably put collectionkey, docmodel, and display in a separate class for readability
-            this.DocModel = docModel;
-            xHeaderControl.DocModel = docModel;
-            xParameterControl.DocModel = docModel;
-            xAuthControl.HeaderControl.DocModel = docModel;
-            xAuthControl.ParameterControl.DocModel = docModel;
-            
+            this.Document = document;
+            xHeaderControl.Document = document;
+            xParameterControl.Document = document;
+            xAuthControl.HeaderControl.Document = document;
+            xAuthControl.ParameterControl.Document = document;
+
             xHeaderControl.SourceDisplay = display;
             xParameterControl.SourceDisplay = display;
             xAuthControl.HeaderControl.SourceDisplay = display;
@@ -44,7 +49,8 @@ namespace Dash {
 
             updateSource();
         }
-        public ApiCreatorDisplay() {
+        public ApiCreatorDisplay()
+        {
             this.InitializeComponent();
 
             // manipulator = new ManipulationControls(this);
@@ -66,13 +72,21 @@ namespace Dash {
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void createAPINodeTemplate(object sender, RoutedEventArgs e) {
+        private void createAPINodeTemplate(object sender, RoutedEventArgs e)
+        {
+            var method = (requestTypePicker.SelectedItem as ComboBoxItem).Content.ToString();
+            var fields = new Dictionary<KeyController, FieldModelController>
+            {
+                {ApiOperatorController.MethodKey, new TextFieldModelController(method) },
+                {ApiOperatorController.UrlKey, new TextFieldModelController(xApiURLTB.Text) }
+            };
+            _operatorDocument.SetFields(fields, true);
+
             MakeApi?.Invoke();
-            //this.Visibility = Visibility.Collapsed;
-            //updateSource();
         }
 
-        private void updateSource() {
+        private void updateSource()
+        {
 
             // convert listviews to dictionaries
             Dictionary<string, ApiProperty> headers, parameters, authHeaders, authParameters;
@@ -90,7 +104,8 @@ namespace Dash {
 
             // validate URI
             Uri outUri;
-            if (!(Uri.TryCreate(xApiURLTB.Text, UriKind.RelativeOrAbsolute, out outUri))) {
+            if (!(Uri.TryCreate(xApiURLTB.Text, UriKind.RelativeOrAbsolute, out outUri)))
+            {
                 //debugger.Text = "Invalid API URL";
                 return;
             }
@@ -99,11 +114,17 @@ namespace Dash {
                 xApiURLTB.Text = "https://itunes.apple.com/search";
 
             // instantiate new APISource
-            Source = new ApiSource(DocModel, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
+            Source = new ApiSource(Document, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
                 xAuthControl.Key);
             Source.setApiDisplay(SourceDisplay);
 
         }
-        
+
+        private void ApiCreatorDisplay_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            var reference = (args.NewValue as FieldReference);
+            _operatorDocument = reference.GetDocumentController(null);
+            _operatorController = _operatorDocument.GetField(reference.FieldKey) as ApiOperatorController;
+        }
     }
 }

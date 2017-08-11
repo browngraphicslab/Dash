@@ -58,7 +58,7 @@ namespace Dash {
                 parent.SourceDisplay.RemoveFromListView(index);
 
                 // propagate changes to the document model
-                ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
+                ApiDocumentModel.removeParameter(parent.Document,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
 
                 
 

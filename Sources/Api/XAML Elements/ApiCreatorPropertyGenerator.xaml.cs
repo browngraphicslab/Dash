@@ -18,11 +18,7 @@ namespace Dash
 
         public event OnParametersChangedEventHandler OnParametersChanged;
 
-        private DocumentController docModel;
-        public DocumentController DocModel {
-            get { return this.docModel; }
-            set { this.docModel = value; }
-        }
+        public DocumentController Document { get; set; }
 
         public ApiCreatorPropertyGenerator() {
             DataContext = this;
@@ -34,7 +30,7 @@ namespace Dash
             DataContext = this;
             InitializeComponent();
             xListView.Visibility = Visibility.Collapsed;
-            docModel = null;
+            Document = null;
             parameterCollectionKey = key;
 
         }
@@ -79,11 +75,16 @@ namespace Dash
 
             Debug.Assert(SourceDisplay != null);
             DocumentController c = ApiDocumentModel.addParameter(
-                docModel, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
+                Document, stackPanel.XPropertyName, stackPanel.XPropertyValue, stackPanel.XToDisplay,
                 stackPanel.XRequired, parameterCollectionKey, SourceDisplay);
             stackPanel.docModelRef = c; // update to contain ref to docmodel generated
 
             OnParametersChanged?.Invoke(this, stackPanel);
+        }
+
+        private void ApiCreatorPropertyGenerator_OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
+        {
+            
         }
     }
 }
