@@ -21,7 +21,6 @@ namespace Dash
         /// <param name="error"></param>
         public async void AddKey(KeyModel newKey, Action<KeyModel> success, Action<Exception> error)
         {
-            return;
             try
             {
                 var result = await _connection.Post("api/Key", newKey);
@@ -44,7 +43,6 @@ namespace Dash
         /// <param name="error"></param>
         public async void UpdateKey(KeyModel keyToUpdate, Action<KeyModel> success, Action<Exception> error)
         {
-            return;
             try
             {
                 var result = await _connection.Put("api/Key", keyToUpdate);
