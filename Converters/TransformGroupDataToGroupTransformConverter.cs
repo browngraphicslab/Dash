@@ -14,7 +14,6 @@ namespace Dash
         public override TransformGroup ConvertDataToXaml(TransformGroupData data, object parameter = null)
         {
             var group = new TransformGroup();
-            //Debug.WriteLine(data.ScaleCenter.X + ", " + data.ScaleCenter.Y);
             group.Children.Add(new ScaleTransform
             {
                 CenterX = data.ScaleCenter.X,
