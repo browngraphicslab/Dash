@@ -156,6 +156,8 @@
         /// </summary>
         public const int PasswordMinimumLength = 1;
 
+        public const string StoredProceduresDirectory = "StoredProcedures/";
+
         #endregion
     }
 }

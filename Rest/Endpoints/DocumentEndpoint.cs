@@ -115,7 +115,7 @@ namespace Dash
             });
         }
 
-        public async Task GetDocumentByType(DocumentType mainDocumentType, Action success, Action<Exception> error)
+        public async void GetDocumentByType(DocumentType mainDocumentType, Action success, Action<Exception> error)
         {
             try
             {

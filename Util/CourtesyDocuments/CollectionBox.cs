@@ -68,7 +68,7 @@ namespace Dash
 
             var view = new CollectionView(collectionViewModel);
 
-            if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
+            if (context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.MainDocumentType)
             {
                 SetupBindings(view, docController, context);
             }

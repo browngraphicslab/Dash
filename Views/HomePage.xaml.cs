@@ -44,10 +44,16 @@ namespace Dash
         {
             InitializeComponent();
 
-            RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType);
+            RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType, () =>
+            {
+                
+            }, exception =>
+            {
+                
+            });
 
             // set the main view's datacontext to be the collection
-            MainDocView.DataContext = new DocumentViewModel(MainDocument);
+            MainDocView.DataContext = new DocumentViewModel(MainPage.Instance.MainDocument);
 
             // set the main view's width and height to avoid NaN errors
             MainDocView.Width = MyGrid.ActualWidth;
