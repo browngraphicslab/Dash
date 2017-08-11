@@ -239,9 +239,10 @@ namespace Dash
 
             DisplayDocument(collectionView, new InkDoc().Document, where);
 
+            //foreach (var d in new DBTest().Documents)
+            //    DisplayDocument(collectionView, d, where);
 
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(collectionView, d, where);
+            DisplayDocument(collectionView, new XampleText().Document, where);
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)

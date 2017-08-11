@@ -41,24 +41,27 @@ namespace Dash
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
 
-            var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-            var docView = new KeyValuePane();
-            docView.SetDataContextToDocumentController(documentfieldModelController.Data);
+            //var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+            //var docView = new KeyValuePane();
+            //docView.SetDataContextToDocumentController(documentfieldModelController.Data);
                 //documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
+            
+            var docView = new DocumentView(new DocumentViewModel(documentfieldModelController.Data, isInterfaceBuilderLayout, context));
+
             var border = new Border();
             border.Child = docView;
             border.BorderThickness = new Thickness(3);
             border.BorderBrush = new SolidColorBrush(Colors.Black);
 
             // bind the text height
-            var docheightController = GetHeightField(docController, context);
-            if (docheightController != null)
-                BindHeight(docView, docheightController);
+            //var docheightController = GetHeightField(docController, context);
+            //if (docheightController != null)
+                //BindHeight(docView, docheightController);
 
             // bind the text width
-            var docwidthController = GetWidthField(docController, context);
-            if (docwidthController != null)
-                BindWidth(docView, docwidthController);
+            //var docwidthController = GetWidthField(docController, context);
+            //if (docwidthController != null)
+                //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {
