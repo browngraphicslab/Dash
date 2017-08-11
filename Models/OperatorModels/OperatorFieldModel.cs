@@ -17,7 +17,7 @@ namespace Dash
         }
 
         protected override FieldModelDTO GetFieldDTOHelper() {
-            return new FieldModelDTO(TypeInfo.Operator, Tuple.Create(Type, IsCompound));
+            return new FieldModelDTO(TypeInfo.Operator, Tuple.Create(Type, IsCompound), Id);
 		}
 		
         public override string ToString() {

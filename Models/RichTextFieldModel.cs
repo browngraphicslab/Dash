@@ -28,7 +28,7 @@ namespace Dash
 
         protected override FieldModelDTO GetFieldDTOHelper()
         {
-            return new FieldModelDTO(TypeInfo.RichTextField, Data);
+            return new FieldModelDTO(TypeInfo.RichTextField, Data, Id);
         }
     }
 }

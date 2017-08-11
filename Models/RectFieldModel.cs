@@ -29,7 +29,7 @@ namespace Dash
 
         protected override FieldModelDTO GetFieldDTOHelper()
         {
-            return new FieldModelDTO(TypeInfo.Rectangle, Data);
+            return new FieldModelDTO(TypeInfo.Rectangle, Data, Id);
         }
     }
 }

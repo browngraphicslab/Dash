@@ -35,7 +35,6 @@ namespace Dash
         /// <returns>the data transfer object</returns>
         public FieldModelDTO GetFieldDTO() {
             var fieldModelDto = GetFieldDTOHelper();
-            //fieldModelDto.Id = Id;
             return fieldModelDto;
         }
     }
