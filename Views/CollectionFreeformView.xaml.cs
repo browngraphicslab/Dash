@@ -311,11 +311,6 @@ namespace Dash
         {
             if (_connectionLine != null)
             {
-                if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
-                {
-                    CancelDrag(e.Pointer);
-                    return;
-                }
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
                 _lineBinding.ForceUpdate();
