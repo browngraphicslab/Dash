@@ -154,6 +154,9 @@
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
+    <Compile Include="Views\InkSelectionRect.xaml.cs">
+      <DependentUpon>InkSelectionRect.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\InterfaceBuilder\AlignmentSettings.xaml.cs">
       <DependentUpon>AlignmentSettings.xaml</DependentUpon>
     </Compile>
@@ -540,6 +543,10 @@
     <Page Include="Views\FilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\InkSelectionRect.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\InterfaceBuilder\GridViewSettings.xaml">
       <SubType>Designer</SubType>

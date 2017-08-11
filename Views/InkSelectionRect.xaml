@@ -1,0 +1,63 @@
+﻿<UserControl
+    x:Class="Dash.Views.InkSelectionRect"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    d:DesignHeight="300"
+    d:DesignWidth="400"
+    MinWidth="30"
+    MinHeight="30">
+
+    <Grid x:Name="Grid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid.Resources>
+            <Style x:Key="RectStyle" TargetType="Shape">
+                <Setter Property="Margin" Value="7.5,7.5,7.5,7.5"></Setter>
+                <Setter Property="HorizontalAlignment" Value="Stretch"></Setter>
+                <Setter Property="VerticalAlignment" Value="Stretch"></Setter>
+                <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
+                <Setter Property="Fill" Value="Transparent"></Setter>
+                <Setter Property="StrokeDashArray" Value="5, 2"></Setter>
+            </Style>
+        </Grid.Resources>
+        <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="15,15,15,15" StrokeThickness="{x:Bind RectStrokeThickness}"
+                   StrokeDashArray="5, 2" Stroke="{StaticResource WindowsBlue}" Fill="Transparent"/>
+        <Grid VerticalAlignment="Center" HorizontalAlignment="Center" Width="50" Height="50">
+            <Ellipse x:Name="CenterDragger" Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}">
+                <Ellipse.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem>Copy</MenuFlyoutItem>
+                        <MenuFlyoutItem>Cut</MenuFlyoutItem>
+                    </MenuFlyout>
+                </Ellipse.ContextFlyout>
+            </Ellipse>
+            
+        </Grid>
+        <Grid x:Name="BottomLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Left" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="BottomRightDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Right" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="BottomCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="TopLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="TopRightDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Top" HorizontalAlignment="Right" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="TopCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Top" HorizontalAlignment="Center" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="RightCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Right" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+        <Grid x:Name="LeftCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Center" HorizontalAlignment="Left" ManipulationMode="TranslateX, TranslateY">
+            <Rectangle Style="{StaticResource RectStyle}" StrokeThickness="{x:Bind RectStrokeThickness}"></Rectangle>
+        </Grid>
+    </Grid>
+</UserControl>

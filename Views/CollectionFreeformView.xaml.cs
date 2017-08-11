@@ -23,6 +23,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 
@@ -82,7 +83,7 @@ namespace Dash
         private InkAnalyzer _inkAnalyzer;
         private Polyline _lasso;
         private Rect _boundingRect;
-        private Rectangle _rectangle;
+        private InkSelectionRect _rectangle;
         private LassoSelectHelper _lassoHelper;
         public double Zoom => _manipulationControls.ElementScale;
         #endregion
@@ -816,21 +817,17 @@ namespace Dash
                   (_boundingRect.Height == 0) ||
                   _boundingRect.IsEmpty))
             {
-                _rectangle = new Rectangle()
+                _rectangle = new InkSelectionRect(this, XInkCanvas.InkPresenter.StrokeContainer)
                 {
-                    Stroke = (SolidColorBrush)Application.Current.Resources["WindowsBlue"],
-                    StrokeThickness = 2 / _manipulationControls.ElementScale,
-                    StrokeDashArray = new DoubleCollection() { 5, 2 },
-                    Width = _boundingRect.Width,
-                    Height = _boundingRect.Height,
-                    Fill = new SolidColorBrush(Colors.Transparent),
+                    Width = _boundingRect.Width + 30,
+                    Height = _boundingRect.Height + 30,
                     ManipulationMode = ManipulationModes.All
                 };
                 _rectangle.ManipulationDelta += RectangleOnManipulationDelta;
                 _rectangle.ManipulationCompleted += RectangleOnManipulationCompleted;
 
-                Canvas.SetLeft(_rectangle, _boundingRect.X);
-                Canvas.SetTop(_rectangle, _boundingRect.Y);
+                Canvas.SetLeft(_rectangle, _boundingRect.X - 15);
+                Canvas.SetTop(_rectangle, _boundingRect.Y - 15);
 
                 SelectionCanvas.Children.Add(_rectangle);
             }

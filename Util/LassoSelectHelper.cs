@@ -228,7 +228,7 @@ namespace Dash
             _visualHull.StrokeThickness = 1;
             _visualHull.ManipulationMode = ManipulationModes.All;
             _visualHull.ManipulationDelta += VisualHullOnManipulationDelta;
-
+            _visualHull.CompositeMode = ElementCompositeMode.SourceOver;
             (_view.xItemsControl.ItemsPanelRoot as Canvas).Children.Add(_visualHull);
         }
 
