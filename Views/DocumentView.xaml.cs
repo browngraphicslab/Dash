@@ -46,7 +46,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel:true);
+            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnOnManipulatorTranslated;
 
             // set bounds
@@ -117,7 +117,7 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
-            
+
             //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
             //if (view == null) return; // we can't always assume we're on a collection		
 
@@ -129,7 +129,7 @@ namespace Dash
             //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
             //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
             //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-            
+
         }
 
         private void SetUpMenu()
@@ -338,7 +338,7 @@ namespace Dash
                 xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
-                UpdateBinding(true); 
+                UpdateBinding(true);
             }
             else if (xIcon.Visibility == Visibility.Visible)
             {
@@ -358,7 +358,7 @@ namespace Dash
             var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
             if (view == null) return; // we can't always assume we're on a collection		
 
-            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this); 
+            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this);
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -406,14 +406,8 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-                        (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
-ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-
-            // DELETE CONNECTIONS....
-
-            //var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
-            //if (view == null) return; // we can't always assume we're on a collection... or can we 
-
+            (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
+            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)

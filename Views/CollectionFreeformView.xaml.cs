@@ -42,6 +42,17 @@ namespace Dash
 
         #region LinkingVariables
 
+        public class LinePackage
+        {
+            public Path Line;
+            public BezierConverter Converter; 
+            public LinePackage(BezierConverter converter, Path line)
+            {
+                Converter = converter;
+                Line = line; 
+            }
+        }
+
         public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
@@ -49,7 +60,7 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private Dictionary<BezierConverter, Path> _lineDict = new Dictionary<BezierConverter, Path>();
+        private Dictionary<FieldReference, LinePackage> _lineDict = new Dictionary<FieldReference, LinePackage>();
         private Canvas itemsPanelCanvas;
 
         #endregion
@@ -130,15 +141,18 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            foreach (var line in _lineDict)
+            var refs = _lineDict.Keys.ToList(); 
+            for (int i = _lineDict.Count -1; i >= 0; i--)
             {
-                var converter = line.Key;
+                var package = _lineDict[refs[i]];
+                var converter = package.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
 
                 if (view1 == docView || view2 == docView)
                 {
-                    itemsPanelCanvas.Children.Remove(line.Value);
+                    itemsPanelCanvas.Children.Remove(package.Line);
+                    _lineDict.Remove(refs[i]); 
                 }
             }
         }
@@ -150,9 +164,9 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var line in _lineDict)
+            foreach (var package in _lineDict.Values)
             {
-                var converter = line.Key;
+                var converter = package.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 Debug.Assert(view1 != null);
@@ -236,11 +250,11 @@ namespace Dash
 
             itemsPanelCanvas.Children.Add(_connectionLine);
 
-            if (!ioReference.IsOutput)
-            {
-                CheckLinePresence(_converter);
-                _lineDict.Add(_converter, _connectionLine);
-            }
+            //if (!ioReference.IsOutput)
+            //{
+                //CheckLinePresence(_converter);
+                //_lineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
+            //}
         }
 
         public void CancelDrag(Pointer p)
@@ -293,8 +307,8 @@ namespace Dash
 
             if (_connectionLine != null)
             {
-                CheckLinePresence(_converter);
-                _lineDict.Add(_converter, _connectionLine);
+                CheckLinePresence(ioReference.FieldReference);
+                _lineDict.Add(ioReference.FieldReference, new LinePackage(_converter, _connectionLine));
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -317,12 +331,12 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(BezierConverter converter)
+        private void CheckLinePresence(FieldReference reference)
         {
-            if (!_lineDict.ContainsKey(converter)) return;
-            var line = _lineDict[converter];
-            itemsPanelCanvas.Children.Remove(line);
-            _lineDict.Remove(converter);
+            if (!_lineDict.ContainsKey(reference)) return;
+            var line = _lineDict[reference];
+            itemsPanelCanvas.Children.Remove(line.Line);
+            _lineDict.Remove(reference);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
