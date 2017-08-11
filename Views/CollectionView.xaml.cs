@@ -60,9 +60,8 @@ namespace Dash
             CurrentView = new CollectionFreeformView();
             xContentControl.Content = CurrentView;
 
-            if (ParentDocument == MainPage.Instance.MainDocView)
+            if (ParentDocument.IsRoot())
             {
-                ParentDocument.IsMainCollection = true;
                 xOuterGrid.BorderThickness = new Thickness(0);
                 CurrentView.InitializeAsRoot();
             }
@@ -204,7 +203,7 @@ namespace Dash
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
             };
 
-            if (ParentDocument != MainPage.Instance.MainDocView)
+            if (ParentDocument.IsRoot() == false)
                 collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, deleteCollection));
 
             var documentButtons = new List<MenuButton>
@@ -252,7 +251,7 @@ namespace Dash
             }
 
             // if we are no longer the lowest selected and we are not the main collection then close the menu
-            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsMainCollection == false)
+            else if (_collectionMenu != null && !isLowestSelected && ParentDocument.IsRoot() == false)
             {
                 CloseMenu();
             }

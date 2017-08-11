@@ -10,15 +10,15 @@ namespace DashShared
     public class DocumentModelDTO : EntityBase
     {
         [Required]
-        public List<KeyModel> KeyList;
+        public IEnumerable<KeyModel> KeyList;
 
         [Required]
-        public List<FieldModelDTO> FieldList;
+        public IEnumerable<FieldModelDTO> FieldList;
 
         [Required]
         public DocumentType DocumentType;
 
-        public DocumentModelDTO(List<FieldModelDTO> fieldList, List<KeyModel> keyList, DocumentType type, string id = null) : base(id)
+        public DocumentModelDTO(IEnumerable<FieldModelDTO> fieldList, IEnumerable<KeyModel> keyList, DocumentType type, string id = null) : base(id)
         {
             FieldList = fieldList ?? new List<FieldModelDTO>();
             KeyList = keyList ?? new List<KeyModel>();

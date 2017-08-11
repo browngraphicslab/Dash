@@ -23,7 +23,6 @@ namespace DashShared
         /// The type of this document.
         /// </summary>
         public DocumentType DocumentType;
-        private Dictionary<KeyModel, global::Dash.FieldModel> dictionary;
         private DocumentType type;
 
         private DocumentModel() : base(null)
@@ -54,11 +53,6 @@ namespace DashShared
             Map.Add(Id, this);
         }
 
-        public DocumentModel(Dictionary<KeyModel, FieldModel> dictionary, DocumentType type, string id)
-        {
-            this.dictionary = dictionary;
-            this.type = type;
-            Id = id;
-        }
+
     }
 }

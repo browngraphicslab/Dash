@@ -21,12 +21,12 @@ namespace Dash
         /// <param name="newDocument"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task AddDocument(DocumentModel newDocument, Action<DocumentModelDTO> success, Action<Exception> error)
+        public async Task AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
             try
             {
                 var result = await _connection.Post("api/Document", newDocument);
-                var resultDoc = await result.Content.ReadAsAsync<DocumentModelDTO>();
+                var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
                 success(resultDoc);
             }
@@ -43,13 +43,13 @@ namespace Dash
         /// <param name="documentToUpdate"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModelDTO> success,
+        public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
             Action<Exception> error)
         {
             try
             {
                 var result = await _connection.Put("api/Document", documentToUpdate);
-                var resultDoc = await result.Content.ReadAsAsync<DocumentModelDTO>();
+                var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
                 success(resultDoc);
             }

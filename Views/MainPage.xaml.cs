@@ -34,7 +34,7 @@ namespace Dash
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        public static MainPage Instance;
+        public static MainPage Instance { get; private set; }
         private RadialMenuView _radialMenu;
         private static CollectionView _mainCollectionView;
         

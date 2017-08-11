@@ -39,6 +39,7 @@ namespace Dash
     /// </summary>
     public sealed partial class HomePage : Page
     {
+        private DocumentController _mainDocument;
 
         public HomePage()
         {
@@ -53,7 +54,7 @@ namespace Dash
                     mainDocuments.AddRange(docModelDtos.Select(dmDto => DocumentController.CreateFromServer(dmDto)));
                 }, exception =>
                 {
-
+                    Debug.WriteLine(exception);
                 });
 
             }).ContinueWith(task =>
@@ -63,27 +64,51 @@ namespace Dash
                 {
                     [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(mainDocuments)
                 };
-                var MainDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType);
+                _mainDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType);
 
                 var collectionDocumentController =
-                    new CollectionBox(new ReferenceFieldModelController(MainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+                    new CollectionBox(new ReferenceFieldModelController(_mainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
 
-                MainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+                _mainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
                 // set the main view's datacontext to be the collection
-                MainDocView.DataContext = new DocumentViewModel(MainDocument);
+                MainDocView.DataContext = new DocumentViewModel(_mainDocument);
 
                 // set the main view's width and height to avoid NaN errors
                 MainDocView.Width = MyGrid.ActualWidth;
                 MainDocView.Height = MyGrid.ActualHeight;
 
-            });
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             MainDocView.Width = e.NewSize.Width;
             MainDocView.Height = e.NewSize.Height;
+        }
+
+        private void OnAddNewWorkspaceTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var newDocument = CreateNewWorkspace();
+            var collectionField =
+                _mainDocument.GetField(DocumentCollectionFieldModelController.CollectionKey) as
+                    DocumentCollectionFieldModelController;
+
+            Debug.Assert(collectionField != null, "collection field should never be null if we created it in the constructor correctly");
+            collectionField.AddDocument(newDocument);
+        }
+
+        private DocumentController CreateNewWorkspace()
+        {
+            // create the collection document model using a request
+            var fields = new Dictionary<KeyController, FieldModelController>();
+            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
+            var collectionDocumentController =
+                new CollectionBox(new ReferenceFieldModelController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            newDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+
+            return newDocument;
         }
     }
 }

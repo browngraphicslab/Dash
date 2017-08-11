@@ -25,8 +25,6 @@ namespace Dash
 
     public sealed partial class DocumentView : SelectionElement
     {
-        public CollectionView ParentCollection; // TODO document views should not be assumed to be in a collection this!
-        public bool IsMainCollection { get; set; } //TODO document views should not be aware of if they are the main collection!
         /// <summary>
         /// Contains methods which allow the document to be moved around a free form canvas
         /// </summary>
@@ -61,7 +59,6 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             DoubleTapped += ExpandContract_DoubleTapped;
-            Loaded += This_Loaded;
             Unloaded += This_Unloaded;
         }
 
@@ -105,15 +102,12 @@ namespace Dash
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DoubleTapped -= ExpandContract_DoubleTapped;
-            Loaded -= This_Loaded;
+            manipulator.Dispose();
             Unloaded -= This_Unloaded;
         }
 
 
-        private void This_Loaded(object sender, RoutedEventArgs e)
-        {
-            ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-        }
+
 
 
         /// <summary>
@@ -385,12 +379,14 @@ namespace Dash
 
         private void CopyDocument()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.Copy(), null);
+            throw new NotImplementedException();
+            //ParentCollection.ViewModel.AddDocument(ViewModel.Copy(), null);
         }
 
         private void MakeDelegate()
         {
-            ParentCollection.ViewModel.AddDocument(ViewModel.GetDelegate(), null);
+            throw new NotImplementedException();
+            //ParentCollection.ViewModel.AddDocument(ViewModel.GetDelegate(), null);
         }
 
         public void ScreenCap()
@@ -410,13 +406,14 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
-            ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            throw new NotImplementedException();
+            //ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
         }
 
         private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
             e.Handled = true;
-            var point = e.GetCurrentPoint(ParentCollection);
+            var point = e.GetCurrentPoint(this.GetFirstAncestorOfType<ICollectionView>() as UIElement);
             var scaleSign = point.Properties.MouseWheelDelta / 120.0f;
             var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
             var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
@@ -465,9 +462,10 @@ namespace Dash
 
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            if (ParentCollection == null) return;
-            ParentCollection.MaxZ += 1;
-            Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+            //var parentCollection = this.GetFirstAncestorOfType<ICollectionView>() as UIElement;
+            //if (parentCollection == null) return;
+            //parentCollection.MaxZ += 1;
+            //Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), parentCollection.MaxZ);
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
@@ -489,7 +487,7 @@ namespace Dash
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
 
-            if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            if (xIcon.Visibility == Visibility.Collapsed && !IsRoot() && isLowestSelected)
                 ViewModel?.OpenMenu();
             else
                 ViewModel?.CloseMenu();
@@ -497,5 +495,9 @@ namespace Dash
 
         #endregion
 
+        public bool IsRoot()
+        {
+            return ParentSelectionElement == null;
+        }
     }
 }

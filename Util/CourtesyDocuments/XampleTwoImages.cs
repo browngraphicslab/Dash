@@ -58,7 +58,7 @@ namespace Dash
             Document.SetField(Image2FieldKey, new ImageFieldModelController(new Uri("ms-appx://Dash/Assets/cat2.jpeg")), true);
             Document.SetField(AnnotatedFieldKey, new DocumentFieldModelController(new AnnotatedImage(new Uri("ms-appx://Dash/Assets/cat2.jpeg"), "Yowling").Document), true);
             Document.SetField(TextFieldKey, new TextFieldModelController("Hello World!"), true);
-            Document.SetField(RichTextKey, new RichTextFieldModelController(null), true);
+            Document.SetField(RichTextKey, new RichTextFieldModelController(), true);
 
             var docLayout = _prototypeLayout.MakeDelegate();
             docLayout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);

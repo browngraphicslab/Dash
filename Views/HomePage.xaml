@@ -8,6 +8,8 @@
     mc:Ignorable="d">
 
     <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
+        <TextBlock Style="{StaticResource HeaderTextBlockStyle}" VerticalAlignment="Top" HorizontalAlignment="Center">Workspaces</TextBlock>
         <local:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
+        <Button HorizontalAlignment="Center" VerticalAlignment="Bottom" Tapped="OnAddNewWorkspaceTapped">Add New Workspace</Button>
     </Grid>
 </Page>

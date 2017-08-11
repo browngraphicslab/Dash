@@ -21,7 +21,8 @@
                   IsHitTestVisible="{Binding IsSelected}"
                   SelectionMode="{Binding ItemSelectionMode, Mode=OneWay}"
                   Style="{StaticResource xCollectionGridViewStyle}"
-                  ShowsScrollingPlaceholders="False">
+                  ShowsScrollingPlaceholders="False"
+                  >
             <GridView.ItemTemplate>
                 <DataTemplate>
                     <Grid>

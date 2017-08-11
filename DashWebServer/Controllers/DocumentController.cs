@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using DashShared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -31,21 +34,56 @@ namespace DashWebServer.Controllers
         [HttpGet("{id}")]
         public async Task<DocumentModelDTO> GetDocumentById(string id)
         {
-            return await _documentRepository.GetItemByIdAsync<DocumentModelDTO>(id);
+            var docModel = await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
+
+            var fieldTasks =
+                docModel.Fields.Values.Select(
+                    async fieldId => await _documentRepository.GetItemByIdAsync<FieldModelDTO>(fieldId));
+            var fieldModelDtos = await Task.WhenAll(fieldTasks);
+
+            var keyTasks =
+                docModel.Fields.Keys.Select(async keyId => await _documentRepository.GetItemByIdAsync<KeyModel>(keyId));
+            var keyModels = await Task.WhenAll(keyTasks);
+
+            return new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType);
         }
 
         // GET api/document/type/5, returns a list of documents with type specified by the given id
         [HttpGet("type/{id}")]
         public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByType(string id)
         {
-            return await _documentRepository.GetItemsAsync<DocumentModelDTO>(documentModel => documentModel.DocumentType.Id == id);
+            var docModels = await _documentRepository.GetItemsAsync<DocumentModel>(documentModel => documentModel.DocumentType.Id == id);
+
+            var docModelDtos = new List<DocumentModelDTO>();
+
+            foreach (var docModel in docModels)
+            {
+                var fieldModelDtos = new List<FieldModelDTO>();
+                var keyModels = new List<KeyModel>();
+
+                foreach (var fieldId in docModel.Fields.Values)
+                {
+                    var field = await _documentRepository.GetItemByIdAsync<FieldModelDTO>(fieldId);
+                    fieldModelDtos.Add(field);
+                }
+
+                foreach (var keyId in docModel.Fields.Keys)
+                {
+                    var key = await _documentRepository.GetItemByIdAsync<KeyModel>(keyId);
+                    keyModels.Add(key);
+                }
+
+                docModelDtos.Add(new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType));
+            }
+
+            return docModelDtos;
         }
 
         // POST api/document, adds a new document from the given docModel
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] DocumentModelDTO docModel)
+        public async Task<IActionResult> Post([FromBody] DocumentModel docModel)
         {
-            DocumentModelDTO DocModel;
+            DocumentModel DocModel;
             try
             {
                 // add the shape model to the documentRepository
@@ -64,9 +102,9 @@ namespace DashWebServer.Controllers
 
         // PUT api/document, pushes updates of a given DocumentModel into the server?
         [HttpPut]
-        public async Task<IActionResult> Put([FromBody] DocumentModelDTO docModel)
+        public async Task<IActionResult> Put([FromBody] DocumentModel docModel)
         {
-            DocumentModelDTO DocModel;
+            DocumentModel DocModel;
             try
             {
                 DocModel = await _documentRepository.UpdateItemAsync(docModel);
@@ -88,7 +126,7 @@ namespace DashWebServer.Controllers
             try
             {
                 await _documentRepository.DeleteItemAsync(
-                    await _documentRepository.GetItemByIdAsync<DocumentModelDTO>(id));
+                    await _documentRepository.GetItemByIdAsync<DocumentModel>(id));
             }
             catch (Exception e)
             {
