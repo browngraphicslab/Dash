@@ -8,8 +8,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    MinWidth="95"
-    MinHeight="95">
+    MinWidth="50"
+    MinHeight="50">
 
     <Grid x:Name="Grid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid.Resources>
@@ -37,7 +37,8 @@
             </Ellipse>
 
         </Grid>
-        <Grid x:Name="BottomLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom"
+        <!--Lots of trouble with point transforms-->
+        <!--<Grid x:Name="BottomLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom"
               HorizontalAlignment="Left" ManipulationMode="TranslateX, TranslateY"
               ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
               ManipulationStarted="OnManipulationStarted">
@@ -84,6 +85,6 @@
               ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
               ManipulationStarted="OnManipulationStarted">
             <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
-        </Grid>
+        </Grid>-->
     </Grid>
 </UserControl>

@@ -76,7 +76,7 @@ namespace Dash.Views
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            _manipulationStartSize = new Size(Grid.ActualWidth, Grid.ActualHeight);
+            _manipulationStartSize = new Size(Width - 30, Height - 30);
         }
 
         private void DraggerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -114,12 +114,13 @@ namespace Dash.Views
                 yScale = (float) ((Height - 30 + translate.Y) / _manipulationStartSize.Height);
             }
             Point center = GetScaleCenter(dragger.Name);
-            ResizeStrokes(center, xScale, yScale);
+            Point scaleCompensation = GetScaleCompensation(dragger.Name, xScale, yScale);
+            ResizeStrokes(center, xScale, yScale, scaleCompensation);
         }
 
-        private void ResizeStrokes(Point center, float xScale, float yScale)
+        private void ResizeStrokes(Point center, float xScale, float yScale, Point scaleCompensation)
         {
-            Vector2 centerVect = new Vector2((float) (Position().X + Width/2), (float) (Position().Y + Height /2));
+            Vector2 centerVect = new Vector2((float) center.X, (float) center.Y);
             var matrix = Matrix3x2.CreateScale(xScale, yScale, centerVect);
             foreach (var stroke in StrokeContainer.GetStrokes())
             {
@@ -128,6 +129,7 @@ namespace Dash.Views
                     stroke.PointTransform = matrix;
                 }
             }
+            StrokeContainer.MoveSelected(scaleCompensation);
         }
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -198,6 +200,32 @@ namespace Dash.Views
                     return new Point(Position().X + Width - margin, Position().Y + Height / 2);
                 default:
                     return Position();
+            }
+        }
+
+        private Point GetScaleCompensation(string draggerName, double xScale, double yScale)
+        {
+            switch (draggerName)
+            {
+                case "BottomRightDragger":
+                    return new Point(0 , 0);
+                case "BottomCenterDragger":
+                    return new Point(0,0);
+                case "BottomLeftDragger":
+                    return new Point(0, 0);
+                case "TopRightDragger":
+                    return new Point(0, 0);
+                case "TopCenterDragger":
+                    return new Point(0, 0);
+                case "TopLeftDragger":
+                    return new Point(0, 0);
+                case "RightCenterDragger":
+                    return new Point(0, 0);
+                case "LeftCenterDragger":
+                    return new Point(0, 0);
+
+                default:
+                    return new Point(0,0);
             }
         }
     }
