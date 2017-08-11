@@ -22,20 +22,48 @@ namespace Dash
     public sealed partial class CollectionGridView : SelectionElement, ICollectionView
     {
         public BaseCollectionViewModel ViewModel { get; private set; }
-        public GridView XGridView => xGridView;
+        //private ScrollViewer _scrollViewer;
 
         public CollectionGridView()
         {
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionGridView_Unloaded;
-
         }
 
         public CollectionGridView(BaseCollectionViewModel viewModel) : this()
         {
             DataContext = viewModel;
         }
+        private void XGridView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            //_scrollViewer = xGridView.GetFirstDescendantOfType<ScrollViewer>();
+            //_scrollViewer.ViewChanging += ScrollViewerOnViewChanging;
+            //UpdateVisibleIndices(true);
+        }
+
+        private int _prevOffset;
+        //private void ScrollViewerOnViewChanging(object sender, ScrollViewerViewChangingEventArgs scrollViewerViewChangingEventArgs)
+        //{
+        //    UpdateVisibleIndices();
+        //}
+
+        //private void UpdateVisibleIndices(bool forceUpdate = false)
+        //{
+        //    var source = ViewModel.DocumentViewModels;
+        //    _scrollViewer.UpdateLayout();
+        //    var displayableOnRow = (int)(_scrollViewer.ActualWidth / ViewModel.CellSize);
+        //    var displayableOnCol = (int)(_scrollViewer.ActualHeight / ViewModel.CellSize) + 1;
+        //    var verticalOffset = (int)(_scrollViewer.VerticalOffset / ViewModel.CellSize);
+        //    if (_prevOffset == verticalOffset && !forceUpdate) return;
+        //    _prevOffset = verticalOffset;
+        //    var firstIndex = verticalOffset * displayableOnRow;
+        //    for (var i = firstIndex; i < firstIndex + displayableOnRow * displayableOnCol; i++)
+        //    {
+        //        Debug.WriteLine(i);
+        //        source[i].VisibleOnView = true;
+        //    }
+        //}
 
         private void OnDataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
@@ -50,7 +78,6 @@ namespace Dash
                     xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                     xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                     xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
-
                 }
 
                 ViewModel = vm;
@@ -70,7 +97,8 @@ namespace Dash
                 xGridView.DragItemsCompleted -= ViewModel.xGridView_OnDragItemsCompleted;
                 xGridView.SelectionChanged -= ViewModel.XGridView_SelectionChanged;
                 xGridView.ContainerContentChanging -= ViewModel.ContainerContentChangingPhaseZero;
-
+                xGridView.Loaded -= XGridView_OnLoaded;
+                //_scrollViewer.ViewChanging -= ScrollViewerOnViewChanging;
             }
             Unloaded -= CollectionGridView_Unloaded;
         }
@@ -119,6 +147,5 @@ namespace Dash
         }
 
         #endregion
-
     }
 }

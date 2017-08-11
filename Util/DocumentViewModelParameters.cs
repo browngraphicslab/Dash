@@ -11,6 +11,7 @@ namespace Dash
         public DocumentController Controller { get; set; }
         public bool IsInInterfaceBuilder { get; set; }
         public Context Context { get; set; }
+        public bool VisibleOnView { get; set; }
 
         public DocumentViewModelParameters(DocumentController controller, bool isInInterfaceBuilder = false, Context context = null)
         {

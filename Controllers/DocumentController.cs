@@ -836,7 +836,6 @@ namespace Dash
 
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
-            //Debug.Assert(false, "Everything should have an active layout maybe");
             if (isInterfaceBuilder)
             {
                 return new SelectableContainer(makeAllViewUI(context), this, dataDocument);
