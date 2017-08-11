@@ -190,7 +190,7 @@ namespace Dash
             _connectionLine = new Path
             {
                 StrokeThickness = 5,
-                Stroke = Util.GetSolidColorBrush("#FF35C597"),
+                Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHitTestVisible = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,

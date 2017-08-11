@@ -25,6 +25,7 @@ namespace Dash.Models
         public Action<Color, RadialMenu> ColorAction { get; set; }
         public Action<object> GenericAction { get; set; }
         public Action<double> NumberAction { get; set; }
+
         public RadialActionModel(string description, ImageSource iconSource)
         {
             Description = description;

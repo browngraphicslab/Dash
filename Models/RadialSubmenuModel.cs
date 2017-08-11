@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml.Media;
 using RadialMenuControl.UserControl;
+using Dash.Models;
 
 namespace Dash
 {
@@ -49,7 +50,6 @@ namespace Dash
             IsAction = false;
             IsDraggable = true;
             IsSubMenu = true;
-
         }
     }
 }

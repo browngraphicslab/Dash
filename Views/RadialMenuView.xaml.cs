@@ -91,6 +91,9 @@ namespace Dash
             }
         }
 
+        private MeterSubMenu _strokeMeter;
+        private MeterSubMenu _opacityMeter;
+
         /// <summary>
         /// Default radial menu with certain menu items
         /// </summary>
@@ -100,8 +103,11 @@ namespace Dash
             this.InitializeComponent();
             _parentCanvas = canvas;
             _colors = new List<RadialItemModel>();
+
+            _strokeMeter = MakeMeterSubMenu(24, 2);
+            _opacityMeter = MakeMeterSubMenu(1, 0.2);
+
             this.SetUpBaseMenu();
-            //_parentCanvas.OnDoubleTapped += Overlay_DoubleTapped;
             this.SampleRadialMenu(canvas);
         }
 
@@ -154,6 +160,9 @@ namespace Dash
                 Margin = new Thickness(0,0,5,0),
                 Padding = new Thickness(3,3,3,3)
             };
+
+            MakeSlider("Brightness ", Actions.SetBrightness);
+
             _stackPanel.Children.Add(_sliderPanel);
             _stackPanel.Children.Add(_mainMenu);
 
@@ -179,12 +188,18 @@ namespace Dash
         /// </summary>
         /// <param name="header"></param>
         /// <param name="valueSetAction"></param>
-        public void OpenSlider(string header, Action<double, RadialMenu> valueSetAction)
+        public void OpenSlider()
         {
-            _sliderPanel.Children.Clear();
+            _sliderPanel.Visibility = Visibility.Visible;
+            _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
+
+        private void MakeSlider(string header, Action<double, RadialMenu> valueSetAction)
+        {
             _sliderHeader = new TextBlock()
             {
-                Text = header, HorizontalAlignment = HorizontalAlignment.Center,
+                Text = header,
+                HorizontalAlignment = HorizontalAlignment.Center,
                 FontStyle = FontStyle.Normal,
             };
             _slider = new Slider()
@@ -210,16 +225,17 @@ namespace Dash
             {
                 Content = grey,
                 FontSize = 12,
-                Padding = new Thickness(3,3,3,3),
+                Padding = new Thickness(3, 3, 3, 3),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0,3,6,0),
+                Margin = new Thickness(0, 3, 6, 0),
                 Background = new SolidColorBrush(Colors.Transparent)
             };
-            blackButton.Tapped += delegate(object sender, TappedRoutedEventArgs args) { Actions.ChangeInkColor(Colors.Gray, _mainMenu); };
+            blackButton.Tapped += delegate (object sender, TappedRoutedEventArgs args) { Actions.ChangeInkColor(Colors.Gray, _mainMenu); };
             _sliderPanel.Children.Add(_sliderHeader);
             _sliderPanel.Children.Add(_slider);
             _sliderPanel.Children.Add(blackButton);
-            _sliderPanel.Visibility = Visibility.Visible;
+
+
         }
 
         /// <summary>
@@ -280,6 +296,7 @@ namespace Dash
                 IconFontFamily = new FontFamily("Segoe UI Symbol"),
                 IconSize = 5,
             };
+                   
             if (item.IconSource != null)
             {
                 button.IconImage = item.IconSource;
@@ -317,6 +334,8 @@ namespace Dash
             if (item.IsAction && item is RadialActionModel)
             {
                 var actionButton = item as RadialActionModel;
+                button.Type = RadialMenuButton.ButtonType.Radio; 
+
                 button.InnerArcReleased += delegate
                 {
                     actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
@@ -411,14 +430,14 @@ namespace Dash
             var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
             {
                 IsMeter = true,
-                MeterSubMenu = MakeMeterSubMenu(24, 2),
+                MeterSubMenu = _strokeMeter,
                 MeterValueSelectionAction = setSize
             };
 
             var opacityMeter = new RadialSubmenuModel("Opacity", "💧", null)
             {
                 IsMeter = true,
-                MeterSubMenu = MakeMeterSubMenu(1, 0.2),
+                MeterSubMenu = _opacityMeter,
                 MeterValueSelectionAction = setOpacity
             };
 
@@ -510,8 +529,6 @@ namespace Dash
                 inkOptions,
                 addOptionsMenu,
             });
-
-            
         }
         
 
@@ -544,7 +561,7 @@ namespace Dash
                 _colors.Add(button);
             }
         }
-
+        
         /// <summary>
         /// Constructs a meter submenu with a range from 0 to the length parameter and intervals of length "interval" between ticks 
         /// </summary>
