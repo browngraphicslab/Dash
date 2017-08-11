@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -92,8 +93,19 @@ namespace Dash
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
-            var method = (inputs[MethodKey] as TextFieldModelController).Data;
-            var methodEnum = new HttpMethod(method);
+            var method = (inputs[MethodKey] as TextFieldModelController).Data.ToLower();
+            HttpMethod httpMethod;
+            if (method == "get")
+            {
+                httpMethod = HttpMethod.Get;
+            } else if (method == "post")
+            {
+                httpMethod = HttpMethod.Post;
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
 
             var parameters = new List<KeyValuePair<string, string>>();
             var headers = new List<KeyValuePair<string, string>>();
@@ -113,7 +125,7 @@ namespace Dash
                         continue;
                     }
                 }
-                TextFieldModelController p = (TextFieldModelController) param;
+                TextFieldModelController p = (TextFieldModelController)param;
                 var split = p.Data.Split(':');
                 if (split.Length != 2)
                 {
@@ -146,16 +158,16 @@ namespace Dash
                 headers.Add(new KeyValuePair<string, string>(split[0], split[1]));
             }
 
-            var request = new Request(methodEnum, new Uri(url))
+            var requestTask = new Request(httpMethod, new Uri(url))
                 .SetHeaders(headers)
-                .SetMessageBody(new HttpFormUrlEncodedContent(parameters)).TrySetResponse();
+                .SetMessageBody(new HttpFormUrlEncodedContent(parameters))
+                .SetAuthUri(null)
+                .SetAuthHeaders(new Dictionary<string, string>()).TrySetResponse();
 
-            if (request != null)
-            {
-                var doc = request.Result.GetResult();
-                doc.SetField(KeyStore.DataKey, new TextFieldModelController("Test"), true);
-                outputs[OutputKey] = new DocumentFieldModelController(doc);
-            }
+            var request = requestTask.Result;
+            var doc = request.GetResult();
+            doc.SetField(KeyStore.DataKey, new TextFieldModelController("Test"), true);
+            outputs[OutputKey] = new DocumentFieldModelController(doc);
         }
     }
 }
