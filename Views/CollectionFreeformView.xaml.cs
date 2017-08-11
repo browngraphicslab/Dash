@@ -6,9 +6,11 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -75,6 +77,8 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+
+            DragLeave += DocView_DragOver;
         }
 
         public IOReference GetCurrentReference()
@@ -262,16 +266,14 @@ namespace Dash
                 DocumentController inputController =
                     inputReference.FieldReference.GetDocumentController(null);
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
-                if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
-                    // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
-                    inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                     inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
                     inputController.SetField(inputReference.FieldReference.FieldKey,
                         new ReferenceFieldModelController(outputReference.FieldReference), true);
             }
 
-            if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
+            if (_connectionLine != null)
             {
                 CheckLinePresence(_converter);
                 _lineDict.Add(_converter, _connectionLine);
@@ -312,7 +314,7 @@ namespace Dash
                 if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
                 {
                     CancelDrag(e.Pointer);
-                    return; 
+                    return;
                 }
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
@@ -458,6 +460,8 @@ namespace Dash
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
+            (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
+            _documentViews.Add((sender as DocumentView)); 
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -565,10 +569,109 @@ namespace Dash
 
         #endregion
 
+        #region SELECTION
+
+        private bool _isSelectionEnabled;
+        public bool IsSelectionEnabled
+        {
+            get { return _isSelectionEnabled; }
+            set
+            {
+                _isSelectionEnabled = value;
+                if (!value) // turn colors back ... 
+                {
+                    foreach (var pair in _payload)
+                    {
+                        Deselect(pair.Key);
+                    }
+                    _payload = new Dictionary<DocumentView, DocumentController>();
+                }
+            }
+        }
+
+        private bool _isToggleOn; 
+
+        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+        private List<DocumentView> _documentViews = new List<DocumentView>(); 
 
         public void ToggleSelectAllItems()
         {
-            throw new NotImplementedException();
+            _isToggleOn = !_isToggleOn; 
+            foreach (var docView in _documentViews)
+            {
+                if (_isToggleOn)
+                {
+                    Select(docView);
+                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                } else
+                {
+                    Deselect(docView);
+                    _payload.Remove(docView); 
+                }
+            }
         }
+        
+
+        private void Deselect(DocumentView docView)
+        {
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
+            docView.CanDrag = false;
+            docView.ManipulationMode = ManipulationModes.All;
+            docView.DragStarting -= DocView_OnDragStarting;
+        }
+
+        private void Select(DocumentView docView)
+        {
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
+            docView.CanDrag = true;
+            docView.ManipulationMode = ManipulationModes.None;
+            docView.DragStarting += DocView_OnDragStarting;
+        }
+
+        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (!IsSelectionEnabled) return;
+
+            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
+            if (docView.CanDrag)    
+            {
+                Deselect(docView);
+                _payload.Remove(docView);
+            }
+            else                     
+            {
+                Select(docView);
+                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+            }
+            e.Handled = true;
+        }
+
+        private void DocView_DragOver(object sender, DragEventArgs args)
+        {
+            _payload = new Dictionary<DocumentView, DocumentController>();
+
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+
+            var carrier = ItemsCarrier.Instance;
+            if (carrier.Source == carrier.Destination)
+                return; // we don't want to drop items on ourself
+
+            ViewModel.RemoveDocuments(carrier.Payload);
+            foreach (var view in _payload.Keys.ToList())
+                _documentViews.Remove(view); 
+        }
+
+        public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
+        {
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+
+            var carrier = ItemsCarrier.Instance;
+
+            carrier.Destination = null;
+            carrier.Source = ViewModel;
+            carrier.Payload = _payload.Values.ToList();
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+    #endregion
     }
 }

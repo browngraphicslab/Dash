@@ -140,6 +140,11 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
             _collectionMenu.GoToDocumentMenu();
+
+            if (CurrentView is CollectionFreeformView)
+            {
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true; 
+            }
         }
 
         private void CloseMenu()
@@ -167,6 +172,11 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
             ViewModel.CanDragItems = false;
             _collectionMenu.BackToCollectionMenu();
+
+            if (CurrentView is CollectionFreeformView)
+            {
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
+            }
         }
 
         private void DeleteSelection()

@@ -140,7 +140,7 @@ namespace Dash
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
-            //e.Handled = true;
+            
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -155,9 +155,12 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-
+                carrier.Destination = this; 
                 if (carrier.Source.Equals(carrier.Destination))
+                {
+                    e.Handled = true;
                     return; // we don't want to drop items on ourself
+                }
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
@@ -212,6 +215,11 @@ namespace Dash
                 listView.SelectAll();
             else
                 listView.SelectedItems.Clear();
+        }
+
+        public void ToggleSelectFreeformView()
+        {
+
         }
 
         public void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
