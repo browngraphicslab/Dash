@@ -45,6 +45,7 @@ namespace Dash
         private Dictionary<Ellipse, LinesAndTextBlocks> _lineMap;
         private Ellipse _pressedEllipse;
 
+        public SelectableContainer ParentContainer { get { return _parentContainer; } }
         public readonly DocumentController LayoutDocument;
         public readonly DocumentController DataDocument;
         private ManipulationControls _manipulator;

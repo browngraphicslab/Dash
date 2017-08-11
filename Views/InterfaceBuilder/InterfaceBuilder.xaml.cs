@@ -143,7 +143,6 @@ namespace Dash
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
                     var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
                     var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
-                    //var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
@@ -292,16 +291,10 @@ namespace Dash
 
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //if (_selectedContainer.ParentContainer != null)
-            //{
-            //    var collection =
-            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(KeyStore.DataKey) as
-            //            DocumentCollectionFieldModelController;
-            //    collection?.RemoveDocument(_selectedContainer.LayoutDocument);
-            //    _selectedContainer.ParentContainer.SetSelectedContainer(null);
-            //}
-
-            throw new NotImplementedException();
+            if (_selectedContainer.ParentContainer == null) return; 
+            var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
+            data?.RemoveDocument(_selectedContainer.LayoutDocument);
+            _selectedContainer.ParentContainer.SetSelectedContainer(null);
         }
     }
 }
