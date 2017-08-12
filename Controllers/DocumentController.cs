@@ -481,13 +481,13 @@ namespace Dash
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
 
-            //RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
-            //{
-                // Yay!
-            //}, exception =>
-            //{
-                // Hayyyyy!
-            //});
+            RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
+            {
+                //Yay!
+            }, exception =>
+            {
+                //Hayyyyy!
+            });
         }
 
 

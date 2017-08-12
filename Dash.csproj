@@ -133,6 +133,7 @@
     <Compile Include="Util\KeyStore.cs" />
     <Compile Include="Util\FieldUpdatedEventArgs.cs" />
     <Compile Include="Util\OperatorBuilder.cs" />
+    <Compile Include="Util\UITask.cs" />
     <Compile Include="Util\WebBox.cs" />
     <Compile Include="ViewModels\BaseCollectionViewModel.cs" />
     <Compile Include="ViewModels\BaseSelectionElementViewModel.cs" />

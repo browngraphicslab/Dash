@@ -24,7 +24,8 @@ namespace Dash.Rest.Endpoints
 
         protected Endpoint()
         {
-            _tick = new Timer(ProcessBatches, null, 0, 10000);
+            int numSecondsBetweenBatches = 1;
+            _tick = new Timer(ProcessBatches, null, 0, numSecondsBetweenBatches * 1000);
         }
 
         protected void ProcessBatches(Object o)

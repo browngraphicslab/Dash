@@ -66,7 +66,7 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void GetDocument(string id, Action<DocumentModelDTO> success, Action<Exception> error)
+        public async Task GetDocument(string id, Action<DocumentModelDTO> success, Action<Exception> error)
         {
             try
             {
@@ -80,6 +80,20 @@ namespace Dash
             }
         }
 
+        public async Task<DocumentModelDTO> GetDocument(string id)
+        {
+            try
+            {
+                var result = await _connection.GetItem<DocumentModelDTO>($"api/Document/{id}");
+                return result;
+            }
+            catch (Exception e)
+            {
+                throw;
+                // return the error message
+            }
+        }
+
         /// <summary>
         ///     Gets a document from the server.
         /// </summary>
@@ -90,7 +104,7 @@ namespace Dash
         {
             try
             {
-                var result = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/batch/{string.Join(",", ids)}");
+                var result = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/batch/{ string.Join(",", ids)}");
                 success(result);
             }
             catch (Exception e)

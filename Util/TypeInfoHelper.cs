@@ -19,11 +19,13 @@ namespace Dash
             [typeof(DocumentFieldModelController)] = TypeInfo.Document
         };
 
+        // TODO move this to FieldModel
         public static FieldModel CreateFieldModel(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
            return CreateFieldModelHelper(fieldModelDTO, listType);
         }
 
+        // TODO move this to FieldModel
         private static FieldModel CreateFieldModelHelper(FieldModelDTO fieldModelDTO, TypeInfo listType = TypeInfo.None)
         {
             var data = fieldModelDTO.Data;

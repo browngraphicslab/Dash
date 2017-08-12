@@ -16,7 +16,7 @@ namespace Dash
 
         private DocumentFieldModelController(DocumentFieldModel documentFieldModel) : base(documentFieldModel, true)
         {
-
+            Data = DocumentController.CreateFromServer(RESTClient.Instance.Documents.GetDocument(documentFieldModel.Id).Result);
         }
 
         public static DocumentFieldModelController CreateFromServer(DocumentFieldModel documentFieldModel)
@@ -32,6 +32,7 @@ namespace Dash
 
 
         private DocumentController _data;
+
         /// <summary>
         ///     A wrapper for <see cref="DocumentFieldModel.Data" />. Change this to propagate changes
         ///     to the server
@@ -44,8 +45,7 @@ namespace Dash
                 if (SetProperty(ref _data, value))
                 {
                     OnFieldModelUpdated(null);
-                    // update local
-                    // update server
+                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto => { }, exception => { });
                 }
             }
         }
@@ -55,6 +55,7 @@ namespace Dash
         {
             return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
         }
+
         public override IEnumerable<DocumentController> GetReferences()
         {
             yield return Data;

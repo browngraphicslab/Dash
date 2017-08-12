@@ -107,8 +107,11 @@ namespace Dash
         private DocumentController CreateNewWorkspace()
         {
             // create the collection document model using a request
-            var fields = new Dictionary<KeyController, FieldModelController>();
-            fields[DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(new List<DocumentController>());
+            var fields = new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] =
+                new DocumentCollectionFieldModelController(new List<DocumentController>())
+            };
             var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;

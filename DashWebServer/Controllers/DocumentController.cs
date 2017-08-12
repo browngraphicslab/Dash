@@ -36,23 +36,27 @@ namespace DashWebServer.Controllers
         {
             var docModel = await _documentRepository.GetItemByIdAsync<DocumentModel>(id);
 
-            var fieldTasks =
-                docModel.Fields.Values.Select(
-                    async fieldId => await _documentRepository.GetItemByIdAsync<FieldModelDTO>(fieldId));
-            var fieldModelDtos = await Task.WhenAll(fieldTasks);
-
-            var keyTasks =
-                docModel.Fields.Keys.Select(async keyId => await _documentRepository.GetItemByIdAsync<KeyModel>(keyId));
-            var keyModels = await Task.WhenAll(keyTasks);
-
-            return new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType);
+            return await GetDocumentModelDtoFromDocumentModel(docModel);
         }
         
         // GET api/batch/document/5, returns the document with the given ID
         [HttpGet("batch/{ids}")]
+        [HttpGet("batch")]
         public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByIds(IEnumerable<string> ids)
         {
-            return new List<DocumentModelDTO>{};
+            var docModels = new List<DocumentModel>();
+            foreach (var docId in ids)
+            {
+                docModels.Add(await _documentRepository.GetItemByIdAsync<DocumentModel>(docId));
+            }
+
+            var docModelDtos = new List<DocumentModelDTO>();
+            foreach (var docModel in docModels)
+            {
+                docModelDtos.Add(await GetDocumentModelDtoFromDocumentModel(docModel));
+            }
+
+            return docModelDtos;
         }
 
         // GET api/document/type/5, returns a list of documents with type specified by the given id
@@ -60,30 +64,35 @@ namespace DashWebServer.Controllers
         public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByType(string id)
         {
             var docModels = await _documentRepository.GetItemsAsync<DocumentModel>(documentModel => documentModel.DocumentType.Id == id);
-
             var docModelDtos = new List<DocumentModelDTO>();
 
             foreach (var docModel in docModels)
             {
-                var fieldModelDtos = new List<FieldModelDTO>();
-                var keyModels = new List<KeyModel>();
-
-                foreach (var fieldId in docModel.Fields.Values)
-                {
-                    var field = await _documentRepository.GetItemByIdAsync<FieldModelDTO>(fieldId);
-                    fieldModelDtos.Add(field);
-                }
-
-                foreach (var keyId in docModel.Fields.Keys)
-                {
-                    var key = await _documentRepository.GetItemByIdAsync<KeyModel>(keyId);
-                    keyModels.Add(key);
-                }
-
-                docModelDtos.Add(new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType));
+                docModelDtos.Add(await GetDocumentModelDtoFromDocumentModel(docModel));
             }
 
             return docModelDtos;
+        }
+
+        // private helper method to transform a doucmentmodel into a document model dto
+        private async Task<DocumentModelDTO> GetDocumentModelDtoFromDocumentModel(DocumentModel docModel)
+        {
+            var fieldModelDtos = new List<FieldModelDTO>();
+            var keyModels = new List<KeyModel>();
+
+            foreach (var fieldId in docModel.Fields.Values)
+            {
+                var field = await _documentRepository.GetItemByIdAsync<FieldModelDTO>(fieldId);
+                fieldModelDtos.Add(field);
+            }
+
+            foreach (var keyId in docModel.Fields.Keys)
+            {
+                var key = await _documentRepository.GetItemByIdAsync<KeyModel>(keyId);
+                keyModels.Add(key);
+            }
+
+            return new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType);
         }
 
         // POST api/document, adds a new document from the given docModel
