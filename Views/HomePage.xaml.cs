@@ -79,6 +79,7 @@ namespace Dash
                 _mainDocView.Height = xOuterGrid.ActualHeight;
 
                 Grid.SetRow(_mainDocView, 1);
+                xOuterGrid.Children.Add(_mainDocView);
 
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }

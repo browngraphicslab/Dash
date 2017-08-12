@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="StoredProcedures\getDocumentDTO.js" />
     <Content Include="StoredProcedures\bulkImport.js" />
   </ItemGroup>
 

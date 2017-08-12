@@ -47,6 +47,13 @@ namespace DashWebServer.Controllers
 
             return new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType);
         }
+        
+        // GET api/batch/document/5, returns the document with the given ID
+        [HttpGet("batch/{ids}")]
+        public async Task<IEnumerable<DocumentModelDTO>> GetDocumentsByIds(IEnumerable<string> ids)
+        {
+            return new List<DocumentModelDTO>{};
+        }
 
         // GET api/document/type/5, returns a list of documents with type specified by the given id
         [HttpGet("type/{id}")]

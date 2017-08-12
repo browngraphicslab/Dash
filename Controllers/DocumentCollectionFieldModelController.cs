@@ -70,6 +70,9 @@ namespace Dash
 
         private DocumentCollectionFieldModelController(DocumentCollectionFieldModel docCollectionFieldModel) : base(docCollectionFieldModel, true)
         {
+            var documentIds = docCollectionFieldModel.Data;
+
+            RESTClient.Instance.Documents.GetDocuments();
 
         }
 
