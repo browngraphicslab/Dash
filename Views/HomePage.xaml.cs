@@ -85,8 +85,11 @@ namespace Dash
 
         private void XOutterGridSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            _mainDocView.Width = e.NewSize.Width;
-            _mainDocView.Height = e.NewSize.Height;
+            if (_mainDocView != null)
+            {
+                _mainDocView.Width = e.NewSize.Width;
+                _mainDocView.Height = e.NewSize.Height;
+            }
         }
 
         private void OnAddNewWorkspaceTapped(object sender, TappedRoutedEventArgs e)

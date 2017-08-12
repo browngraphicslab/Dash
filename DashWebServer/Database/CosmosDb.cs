@@ -84,7 +84,7 @@ namespace DashWebServer
                 _client.CreateDocumentCollectionIfNotExistsAsync(GetDatabaseLink,
                     new DocumentCollection { Id = DashConstants.DocDbCollectionId }).Wait();
 
-                AddStoredProcedures(new [] {"bulkImport.js"});
+                AddStoredProcedures(new [] {"bulkImport.js"}).Wait();
             }
             catch (DocumentClientException e)
             {
@@ -101,12 +101,12 @@ namespace DashWebServer
             }
         }
 
-        private void AddStoredProcedures(IEnumerable<string> scripts)
+        private async Task AddStoredProcedures(IEnumerable<string> scripts)
         {
             foreach (var script in scripts)
             {
-                var storedProcedure = new StoredProcedure {Body = File.ReadAllText(DashConstants.StoredProceduresDirectory + script)};
-                _client.CreateStoredProcedureAsync(GetCollectionLink, storedProcedure);
+                var storedProcedure = new StoredProcedure {Body = File.ReadAllText(DashConstants.StoredProceduresDirectory + script), Id = "bulkImport"};
+                await _client.CreateStoredProcedureAsync(GetCollectionLink, storedProcedure);
             }
         }
 
