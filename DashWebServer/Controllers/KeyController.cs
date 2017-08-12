@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using DashShared;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +44,22 @@ namespace DashWebServer.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
             return Ok(Key);
+        }
+
+        // POST api/Key/batch, adds the complete list of fields
+        [HttpPost("batch")]
+        public async Task<IActionResult> Post([FromBody]IEnumerable<KeyModel> keyModels)
+        {
+            try
+            {
+                keyModels = await _documentRepository.AddItemsAsync(keyModels);
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
+            return Ok(keyModels);
         }
 
         // PUT api/Key/5, updates a given Key Key

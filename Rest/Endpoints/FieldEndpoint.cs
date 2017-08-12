@@ -72,7 +72,6 @@ namespace Dash
         /// <param name="error"></param>
         public void UpdateField(FieldModel fieldToUpdate, Action<FieldModelDTO> success, Action<Exception> error)
         {
-            return;
             Task.Run(async () =>
             {
                 try

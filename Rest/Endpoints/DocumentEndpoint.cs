@@ -20,24 +20,20 @@ namespace Dash
         /// <param name="newDocument"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
+        public async void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
-            return;
-            Task.Run( async () =>
+            try
             {
-                try
-                {
-                    var result = await _connection.Post("api/Document", newDocument);
-                    var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
+                var result = await _connection.Post("api/Document", newDocument);
+                var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
-                    success(resultDoc);
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                success(resultDoc);
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
 
         /// <summary>
@@ -49,21 +45,18 @@ namespace Dash
         public async void UpdateDocument(DocumentModel documentToUpdate, Action<DocumentModel> success,
             Action<Exception> error)
         {
-            await Task.Run(async () =>
+            try
             {
-                try
-                {
-                    var result = await _connection.Put("api/Document", documentToUpdate);
-                    var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
+                var result = await _connection.Put("api/Document", documentToUpdate);
+                var resultDoc = await result.Content.ReadAsAsync<DocumentModel>();
 
-                    success(resultDoc);
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                success(resultDoc);
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
 
         /// <summary>
@@ -72,21 +65,18 @@ namespace Dash
         /// <param name="id"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task GetDocument(string id, Action<DocumentModel> success, Action<Exception> error)
+        public async void GetDocument(string id, Action<DocumentModel> success, Action<Exception> error)
         {
-            await Task.Run(async () =>
+            try
             {
-                try
-                {
-                    var result = await _connection.GetItem<DocumentModel>($"api/Document/{id}");
-                    success(result);
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                var result = await _connection.GetItem<DocumentModel>($"api/Document/{id}");
+                success(result);
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
 
         /// <summary>
@@ -95,24 +85,21 @@ namespace Dash
         /// <param name="document"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async Task DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
+        public async void DeleteDocument(DocumentModel document, Action success, Action<Exception> error)
         {
-            await Task.Run(async () =>
+            try
             {
-                try
-                {
-                    var response = await _connection.Delete($"api/Document/{document.Id}");
-                    if (response.IsSuccessStatusCode)
-                        success();
-                    else
-                        error(new ApiException(response));
-                }
-                catch (Exception e)
-                {
-                    // return the error message
-                    error(e);
-                }
-            });
+                var response = await _connection.Delete($"api/Document/{document.Id}");
+                if (response.IsSuccessStatusCode)
+                    success();
+                else
+                    error(new ApiException(response));
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
         }
 
         public async void GetDocumentByType(DocumentType mainDocumentType, Action success, Action<Exception> error)

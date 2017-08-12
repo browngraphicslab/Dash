@@ -48,7 +48,7 @@ namespace DashWebServer.Controllers
             return Ok(fieldModelDto);
         }
 
-        // POST api/field/batch, adds the complete list of fields
+        // POST api/Field/batch, adds the complete list of fields
         [HttpPost("batch")]
         public async Task<IActionResult> Post([FromBody]IEnumerable<FieldModelDTO> fieldModelDtOs)
         {
