@@ -68,6 +68,7 @@ namespace Dash
 
             var view = new CollectionView(collectionViewModel);
 
+
             if (context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.MainDocumentType &&
                 context.DocContextList.FirstOrDefault().DocumentType != DashConstants.TypeStore.HomePageType)
             {

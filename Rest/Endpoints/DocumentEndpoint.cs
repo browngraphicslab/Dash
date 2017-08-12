@@ -106,6 +106,7 @@ namespace Dash
             });
         }
 
+
         public async Task GetDocumentByType(DocumentType mainDocumentType, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error)
         {
             try

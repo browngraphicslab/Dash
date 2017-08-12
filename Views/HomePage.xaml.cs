@@ -40,6 +40,7 @@ namespace Dash
     public sealed partial class HomePage : Page
     {
         private DocumentController _mainDocument;
+        private DocumentView _mainDocView;
 
         public HomePage()
         {
@@ -71,20 +72,21 @@ namespace Dash
 
                 _mainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
-                // set the main view's datacontext to be the collection
-                MainDocView.DataContext = new DocumentViewModel(_mainDocument);
+                _mainDocView = new DocumentView(new DocumentViewModel(_mainDocument));
 
                 // set the main view's width and height to avoid NaN errors
-                MainDocView.Width = MyGrid.ActualWidth;
-                MainDocView.Height = MyGrid.ActualHeight;
+                _mainDocView.Width = xOuterGrid.ActualWidth;
+                _mainDocView.Height = xOuterGrid.ActualHeight;
+
+                Grid.SetRow(_mainDocView, 1);
 
             }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
-        private void MyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void XOutterGridSizeChanged(object sender, SizeChangedEventArgs e)
         {
-            MainDocView.Width = e.NewSize.Width;
-            MainDocView.Height = e.NewSize.Height;
+            _mainDocView.Width = e.NewSize.Width;
+            _mainDocView.Height = e.NewSize.Height;
         }
 
         private void OnAddNewWorkspaceTapped(object sender, TappedRoutedEventArgs e)

@@ -55,7 +55,7 @@ namespace Dash.Rest.Endpoints
             {
                 var bag = batches.Batches[handler];
                 bag.Add(request);
-                if (bag.Count > 50)
+                if (bag.Count > 700)
                 {
                     handler(bag.ToList());
                     batches.Batches[handler] = new ConcurrentBag<Tuple<T, Action<T2>, Action<Exception>>>();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 
 // cache design which could be really nice http://pdalinis.blogspot.com/2013/06/auto-refresh-caching-for-net-using.html
 // it could also make things a little more complicated (dependency injection with two instances of the same interface)
@@ -81,6 +83,8 @@ namespace DashWebServer
                 // Creates the collection with the passed in documentId if it does not exist, and returns the collection with the passed in documentId
                 _client.CreateDocumentCollectionIfNotExistsAsync(GetDatabaseLink,
                     new DocumentCollection { Id = DashConstants.DocDbCollectionId }).Wait();
+
+                AddStoredProcedures(new [] {"bulkImport.js"});
             }
             catch (DocumentClientException e)
             {
@@ -94,6 +98,15 @@ namespace DashWebServer
                     Debug.WriteLine("  " + exception.Message);
                 // If you throw here the database did not connect
                 throw;
+            }
+        }
+
+        private void AddStoredProcedures(IEnumerable<string> scripts)
+        {
+            foreach (var script in scripts)
+            {
+                var storedProcedure = new StoredProcedure {Body = File.ReadAllText(DashConstants.StoredProceduresDirectory + script)};
+                _client.CreateStoredProcedureAsync(GetCollectionLink, storedProcedure);
             }
         }
 
@@ -120,6 +133,12 @@ namespace DashWebServer
             return UriFactory.CreateDocumentUri(DashConstants.DocDbDatabaseId, DashConstants.DocDbCollectionId, docId);
         }
 
+        private Uri GetStoredProcedureLink(string sprocId)
+        {
+            return UriFactory.CreateStoredProcedureUri(DashConstants.DocDbDatabaseId, DashConstants.DocDbCollectionId,
+                sprocId);
+        }
+
         #endregion
 
         #region CREATE
@@ -132,23 +151,27 @@ namespace DashWebServer
         /// <returns>The added items</returns>
         public async Task<IEnumerable<T>> AddItemsAsync<T>(IEnumerable<T> items) where T : EntityBase
         {
-            var results = new List<T>();
+            dynamic argsJson = JsonConvert.SerializeObject(items.ToArray());
+            var args = new [] { JsonConvert.DeserializeObject<dynamic[]>(argsJson) };
+            var results = await _client.ExecuteStoredProcedureAsync<List<T>>(GetStoredProcedureLink("bulkImport"), args);
+            return results.Response;
 
-            try
-            {
-                // transfer over all the new models
-                foreach (var item in items)
-                {
-                    results.Add(await AddItemAsync(item));
-                }
+            //var results = new List<T>();
+            //try
+            //{
+            //    // transfer over all the new models
+            //    foreach (var item in items)
+            //    {
+            //        results.Add(await AddItemAsync(item));
+            //    }
 
-                return results;
-            }
-            catch (DocumentClientException e)
-            {
-                Debug.WriteLine(e);
-                throw;
-            }
+            //    return results;
+            //}
+            //catch (DocumentClientException e)
+            //{
+            //    Debug.WriteLine(e);
+            //    throw;
+            //}
         }
 
         /// <summary>
