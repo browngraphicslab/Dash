@@ -132,26 +132,27 @@ namespace Dash.Views
                 TransformStrokes(xScale, yScale);
                 return;
             }
-            if (dragger.Name.Contains("Left") && Width - translate.X > MinWidth)
+            if (dragger.Name.Contains("Left"))
             {
-                Canvas.SetLeft(this, Position().X + translate.X);
+                if(Width - translate.X > MinWidth) Canvas.SetLeft(this, Position().X + translate.X);
                 translate.X *= -1;
 
             }
-            if (dragger.Name.Contains("Top") && Height - translate.Y > MinHeight)
+            if (dragger.Name.Contains("Top"))
             {
-                Canvas.SetTop(this, Position().Y + translate.Y);
+                if (Height - translate.Y > MinHeight) Canvas.SetTop(this, Position().Y + translate.Y);
                 translate.Y *= -1;
             }
-            if (Width + translate.X > MinWidth)
+            if (Width + translate.X > MinWidth || translate.X > 0)
             {
-                Width += translate.X;
                 xScale = (float)((Width - 30 + translate.X) / _startSize.Width);
+                Width += translate.X;
+                
             }
-            if (Height + translate.Y > MinHeight)
+            if (Height + translate.Y > MinHeight || translate.Y > 0)
             {
-                Height += translate.Y;
                 yScale = (float)((Height - 30 + translate.Y) / _startSize.Height);
+                Height += translate.Y;
             }
             TransformStrokes(xScale, yScale);
 

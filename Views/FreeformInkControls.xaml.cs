@@ -65,8 +65,6 @@ namespace Dash
             IsDrawing = true;
             _lassoHelper = new LassoSelectHelper(FreeformView);
             TargetCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
-            GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
-            GlobalInkSettings.SetAttributes();
             UpdateStrokes();
             ToggleDraw();
             AddEventHandlers();
@@ -225,7 +223,7 @@ namespace Dash
             {
                 InkSettingsPanel.Visibility = Visibility.Visible;
                 SetInkInputType(GlobalInkSettings.InkInputType);
-                TargetCanvas.InkPresenter.IsInputEnabled = true;
+                UpdateSelectionMode();
             }
             IsDrawing = !IsDrawing;
 
@@ -240,6 +238,8 @@ namespace Dash
 
         private void SetInkInputType(CoreInputDeviceTypes type)
         {
+            TargetCanvas.InkPresenter.InputDeviceTypes = type;
+            TargetCanvas.InkPresenter.IsInputEnabled = true;
             switch (type)
             {
                 case CoreInputDeviceTypes.Mouse:
@@ -256,6 +256,7 @@ namespace Dash
                     break;
                 default:
                     FreeformView.ManipulationControls.FilterInput = false;
+                    TargetCanvas.InkPresenter.IsInputEnabled = false;
                     break;
             }
         }
@@ -311,6 +312,7 @@ namespace Dash
         {
             InkPresenterRuler ruler = new InkPresenterRuler(TargetCanvas.InkPresenter);
             ruler.Transform = Matrix3x2.CreateTranslation(new Vector2(30000, 30000));
+            ruler.IsVisible = true;
         }
 
         private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)

@@ -26,22 +26,25 @@ namespace Dash
         private Polygon _hull;
         private Polygon _visualHull;
         private MenuFlyout _menu = new MenuFlyout();
-        private bool _menuShowing;
+        private Grid _flyoutBase;
 
         public LassoSelectHelper(CollectionFreeformView view)
         {
             _view = view;
-            var delete = new MenuFlyoutItem {Text = "Delete"};
-            delete.Tapped += DeleteOnTapped;
-            _menu.Items.Add(delete);
-            _menu.Placement = FlyoutPlacementMode.Bottom;
+            //var delete = new MenuFlyoutItem {Text = "Delete"};
+            //delete.Tapped += DeleteOnTapped;
+            //_menu.Items.Add(delete);
+            //_menu.Placement = FlyoutPlacementMode.Bottom;
         }
 
         private void DeleteOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
                 _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
-            _view.ViewModel.RemoveDocuments(new List<DocumentController>(_view.ViewModel.SelectionGroup.Select(doc => doc.Controller)));
+            foreach (var doc in _view.ViewModel.SelectionGroup.Select(doc => doc.Controller))
+            {
+                _view.ViewModel.RemoveDocument(doc);
+            }
         }
 
         /// <summary>
@@ -234,7 +237,7 @@ namespace Dash
 
         private void AddVisualHull()
         {
-            
+            _flyoutBase = new Grid {Width = 1, Height = 1};
             // format visual hull
             _visualHull.Fill = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
             _visualHull.Opacity = .1;
@@ -243,16 +246,18 @@ namespace Dash
             _visualHull.ManipulationMode = ManipulationModes.All;
             _visualHull.ManipulationDelta += VisualHullOnManipulationDelta;
             _visualHull.CompositeMode = ElementCompositeMode.SourceOver;
-            _visualHull.Tapped += VisualHullOnTapped;
+            //_visualHull.Tapped += VisualHullOnTapped;
             (_view.xItemsControl.ItemsPanelRoot as Canvas).Children.Add(_visualHull);
         }
 
         private void VisualHullOnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (_menuShowing) _menu.ShowAt(_visualHull);
-            else _menu.Hide();
-            _menuShowing = !_menuShowing;
+            if (!_view.xItemsControl.ItemsPanelRoot.Children.Contains(_flyoutBase))
+                _view.xItemsControl.ItemsPanelRoot.Children.Add(_flyoutBase);
+            Canvas.SetLeft(_flyoutBase, e.GetPosition(_view.xItemsControl.ItemsPanelRoot).X);
+            Canvas.SetTop(_flyoutBase, e.GetPosition(_view.xItemsControl.ItemsPanelRoot).Y);
+            _menu.ShowAt(_flyoutBase);
         }
 
         private void VisualHullOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -302,17 +307,7 @@ namespace Dash
                     selectedDocs.Add(docVM);
                 }
             }
-            RemoveManipulations(selectedDocs);
             return selectedDocs;
-        }
-
-        private void RemoveManipulations(List<DocumentViewModelParameters> docVms)
-        {
-            var selectedViews = _view.xItemsControl.ItemsPanelRoot.Children.OfType<DocumentView>().Where(dv => docVms.Select(v => v.Controller).Contains(dv.ViewModel.DocumentController));
-            foreach (var view in selectedViews)
-            {
-                view.ManipulationMode = ManipulationModes.System;
-            }
         }
 
         private bool IsPointInHull(Point testPoint)
