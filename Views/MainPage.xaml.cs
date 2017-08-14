@@ -6,6 +6,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
@@ -76,6 +77,31 @@ namespace Dash
 
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
+            var matrix = new Matrix3x2(1,0,0,1,1,1);
+            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
+            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
+            TestMatrix(2,2,0,0,1,1);
+            TestMatrix(2,2,1,1,1,1);
+            TestMatrix(2,2,2,2,1,1);
+            TestMatrix(2,2,4,4,1,1);
+            TestMatrix(4, 4, 0, 0,2,2);
+            TestMatrix(4, 4, 1, 1,2,2);
+            TestMatrix(4, 4, 2, 2,2,2);
+            TestMatrix(4, 4, 4, 4,2,2);
+
+        }
+
+        private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
+        {
+            var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
+            Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
+            Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
+            Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
+            Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
+            
+
+
         }
 
         public CollectionView GetMainCollectionView()

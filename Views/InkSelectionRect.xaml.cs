@@ -27,6 +27,7 @@ namespace Dash.Views
         public CollectionFreeformView FreeformView;
         public InkStrokeContainer StrokeContainer;
         private Size _manipulationStartSize;
+        private Point _startPosition;
 
         private Point Position()
         {
@@ -36,6 +37,8 @@ namespace Dash.Views
         private List<Grid> _draggers;
 
         private double RectStrokeThickness = 1;
+
+        private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
 
         public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes)
         {
@@ -56,11 +59,29 @@ namespace Dash.Views
                 RightCenterDragger
             };
             UpdateStrokeThickness();
+            UpdateStartingTransforms();
         }
 
         private void ManipulationControlsOnOnManipulatorTranslatedOrScaled(TransformGroupData transformationDelta)
         {
             UpdateStrokeThickness();
+        }
+
+        private void UpdateStartingTransforms()
+        {
+            _startingTransforms = new Dictionary<InkStroke, Matrix3x2>();
+            foreach (InkStroke stroke in StrokeContainer.GetStrokes())
+            {
+                if (stroke.Selected)
+                {
+                    _startingTransforms[stroke] = stroke.PointTransform;
+                    Debug.WriteLine("stroke ID: " + stroke.Id);
+                    Debug.WriteLine("x scale: " + stroke.PointTransform.M11);
+                    Debug.WriteLine("y scale: " + stroke.PointTransform.M22);
+                    Debug.WriteLine("Center: " + "(" + stroke.PointTransform.M31 + ", " + stroke.PointTransform.M32 + ")");
+                    Debug.WriteLine("Rect Pos: (" + Position().X + ", " + Position().Y + ")");
+                }
+            }
         }
 
         private void UpdateStrokeThickness()
@@ -70,13 +91,14 @@ namespace Dash.Views
             {
                 (grid.Children[0] as Shape).StrokeThickness = RectStrokeThickness;
             }
-                    (CenterDragger.Children[0] as Shape).StrokeThickness = 2 * RectStrokeThickness;
+            (CenterDragger.Children[0] as Shape).StrokeThickness = 2 * RectStrokeThickness;
             (Grid.Children[0] as Shape).StrokeThickness = RectStrokeThickness;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
             _manipulationStartSize = new Size(Width - 30, Height - 30);
+            _startPosition = Position();
         }
 
         private void DraggerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -84,19 +106,22 @@ namespace Dash.Views
             e.Handled = true;
             var translate = e.Delta.Translation;
             var dragger = sender as Grid;
-            float xScale = 1;
-            float yScale = 1;
+            Point oldCenter = new Point(Position().X + 15, Position().Y + 15);
+            float xScale = (float) ((Width - 30)/_manipulationStartSize.Width);
+            float yScale = (float)((Height - 30) / _manipulationStartSize.Height);
             if (dragger.Name == "CenterDragger")
             {
                 Canvas.SetLeft(this, Position().X + translate.X);
                 Canvas.SetTop(this, Position().Y + translate.Y);
-                StrokeContainer.MoveSelected(translate);
+                //StrokeContainer.MoveSelected(translate);
+                ResizeStrokes(new Point(Position().X + 15, Position().Y + 15), translate, xScale, yScale);
                 return;
             }
             if (dragger.Name.Contains("Left") && Width - translate.X > MinWidth)
             {
                 Canvas.SetLeft(this, Position().X + translate.X);
                 translate.X *= -1;
+                
             }
             if (dragger.Name.Contains("Top") && Height - translate.Y > MinHeight)
             {
@@ -113,23 +138,32 @@ namespace Dash.Views
                 Height += translate.Y;
                 yScale = (float) ((Height - 30 + translate.Y) / _manipulationStartSize.Height);
             }
+            Point newCenter = new Point(Position().X + 15, Position().Y + 15);
+            Point deltaPos = new Point(newCenter.X - oldCenter.X, newCenter.Y - oldCenter.Y);
             Point center = GetScaleCenter(dragger.Name);
-            Point scaleCompensation = GetScaleCompensation(dragger.Name, xScale, yScale);
-            ResizeStrokes(center, xScale, yScale, scaleCompensation);
+            ResizeStrokes(center, deltaPos, xScale, yScale);
         }
 
-        private void ResizeStrokes(Point center, float xScale, float yScale, Point scaleCompensation)
+        private void ResizeStrokes(Point center, Point translation, float xScale, float yScale)
         {
+            var totalTranslation = new Point(Position().X - _startPosition.X, Position().Y - _startPosition.Y);
+            Matrix3x2 translationMatrix = Matrix3x2.CreateTranslation(new Vector2((float)totalTranslation.X, (float)totalTranslation.Y));
             Vector2 centerVect = new Vector2((float) center.X, (float) center.Y);
-            var matrix = Matrix3x2.CreateScale(xScale, yScale, centerVect);
             foreach (var stroke in StrokeContainer.GetStrokes())
             {
                 if (stroke.Selected)
                 {
+                    var ogTransform = _startingTransforms[stroke];
+                    //Account for stroke already having point transform
+                    var dXScale = ogTransform.M11 * xScale - ogTransform.M11;
+                    var dYScale = ogTransform.M22 * yScale - ogTransform.M22;
+                    var scaleMatrix = Matrix3x2.CreateScale(ogTransform.M11 + dXScale, ogTransform.M22 + dYScale, centerVect);
+                    Debug.WriteLine("Scale matrix " + scaleMatrix);
+                    var matrix = new Matrix3x2(xScale, 0, 0, yScale, - centerVect.X * (xScale - 1), - centerVect.Y * (yScale - 1)) * translationMatrix;
+                    Debug.WriteLine("Custom matrix: " + matrix);
                     stroke.PointTransform = matrix;
                 }
             }
-            StrokeContainer.MoveSelected(scaleCompensation);
         }
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
@@ -183,21 +217,15 @@ namespace Dash.Views
             switch (draggerName)
             {
                 case "BottomRightDragger":
-                    return new Point(Position().X + margin, Position().Y + margin);
-                case "BottomCenterDragger":
-                    return new Point(Position().X + Width/2 + margin, Position().Y + margin);
-                case "BottomLeftDragger":
-                    return new Point(Position().X + Width - margin, Position().Y + margin);
                 case "TopRightDragger":
-                    return new Point(Position().X + margin, Position().Y + Height - margin);
+                case "RightCenterDragger":
+                case "BottomCenterDragger":
+                    return new Point(Position().X + margin, Position().Y + margin);
+                case "BottomLeftDragger":
+                case "LeftCenterDragger":
                 case "TopCenterDragger":
-                    return new Point(Position().X + Width / 2 + margin, Position().Y + Height - margin);
                 case "TopLeftDragger":
                     return new Point(Position().X + Width - margin, Position().Y + Height - margin);
-                case "RightCenterDragger":
-                    return new Point(Position().X + margin, Position().Y + Height / 2);
-                case "LeftCenterDragger":
-                    return new Point(Position().X + Width - margin, Position().Y + Height / 2);
                 default:
                     return Position();
             }

@@ -21,6 +21,9 @@
                 <Setter Property="Fill" Value="Transparent"></Setter>
             </Style>
         </Grid.Resources>
+        <Grid.RenderTransform>
+            <MatrixTransform x:Name="MatrixTransform"></MatrixTransform>
+        </Grid.RenderTransform>
         <Rectangle Style="{StaticResource RectStyle}" Margin="15,15,15,15"
                    StrokeDashArray="5, 2" />
         <Grid x:Name="CenterDragger" VerticalAlignment="Center" HorizontalAlignment="Center" Width="50" Height="50"
@@ -38,7 +41,7 @@
 
         </Grid>
         <!--Lots of trouble with point transforms-->
-        <!--<Grid x:Name="BottomLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom"
+        <Grid x:Name="BottomLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom"
               HorizontalAlignment="Left" ManipulationMode="TranslateX, TranslateY"
               ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
               ManipulationStarted="OnManipulationStarted">
@@ -85,6 +88,6 @@
               ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
               ManipulationStarted="OnManipulationStarted">
             <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
-        </Grid>-->
+        </Grid>
     </Grid>
 </UserControl>
