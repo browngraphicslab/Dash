@@ -18,6 +18,8 @@ namespace Dash
     {
         private DocumentCollectionFieldModelController _collectionFieldModelController;
 
+        public InkFieldModelController InkFieldModelController;
+
         public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             DocumentViewModels = new ObservableCollection<DocumentViewModelParameters>();
