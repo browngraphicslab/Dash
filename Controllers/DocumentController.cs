@@ -740,7 +740,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    var colView = new CollectionView(new CollectionViewModel(f.Value, isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
+                    var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
 
                     var border = new Border
                     {
@@ -757,12 +757,6 @@ namespace Dash
             return sp;
         }
 
-<<<<<<< HEAD
-        private static int count = 0;
-        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
-        {
-            Debug.WriteLine(++count);
-=======
         public static int count = 0;
 
 
@@ -772,7 +766,6 @@ namespace Dash
             {
                 Debug.WriteLine(count);
             }
->>>>>>> b4d4ee9bb0ab6588486a4e7353f2e68c19151208
             context = new Context(context);
             context.AddDocumentContext(this);
 

@@ -18,6 +18,8 @@ namespace Dash
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
 
+        public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
+
         protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;

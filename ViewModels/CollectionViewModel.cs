@@ -30,6 +30,7 @@ namespace Dash
             if (collection is ReferenceFieldModelController)
             {
                 var reference = collection as ReferenceFieldModelController;
+                _collectionKey = reference.FieldKey;
                 reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
                     delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
@@ -55,6 +56,9 @@ namespace Dash
             }
             CellSize = 250; // TODO figure out where this should be set
         }
+
+        private KeyController _collectionKey = null;
+        public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
 
 
         #region Event Handlers
