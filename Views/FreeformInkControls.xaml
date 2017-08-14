@@ -18,7 +18,7 @@
                         VerticalAlignment="Top">
                 <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top" Height="50" Background="#FFE6E6E6"
                             IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged">
-                    <InkToolbarCustomToolButton x:Name="SelectButton" 
+                    <InkToolbarCustomToolButton x:Name="SelectButton" IsChecked="False"
                                                 Tapped="SelectButton_OnTapped" 
                                                 ToolTipService.ToolTip="Selection tool" Unchecked="SelectButton_Unchecked" >
                         <SymbolIcon Symbol="{x:Bind SelectIcon}"/>

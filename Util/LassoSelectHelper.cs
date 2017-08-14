@@ -7,6 +7,7 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
@@ -24,10 +25,23 @@ namespace Dash
         private CollectionFreeformView _view;
         private Polygon _hull;
         private Polygon _visualHull;
+        private MenuFlyout _menu = new MenuFlyout();
+        private bool _menuShowing;
 
         public LassoSelectHelper(CollectionFreeformView view)
         {
             _view = view;
+            var delete = new MenuFlyoutItem {Text = "Delete"};
+            delete.Tapped += DeleteOnTapped;
+            _menu.Items.Add(delete);
+            _menu.Placement = FlyoutPlacementMode.Bottom;
+        }
+
+        private void DeleteOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
+        {
+            if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
+                _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
+            _view.ViewModel.RemoveDocuments(new List<DocumentController>(_view.ViewModel.SelectionGroup.Select(doc => doc.Controller)));
         }
 
         /// <summary>
@@ -229,7 +243,16 @@ namespace Dash
             _visualHull.ManipulationMode = ManipulationModes.All;
             _visualHull.ManipulationDelta += VisualHullOnManipulationDelta;
             _visualHull.CompositeMode = ElementCompositeMode.SourceOver;
+            _visualHull.Tapped += VisualHullOnTapped;
             (_view.xItemsControl.ItemsPanelRoot as Canvas).Children.Add(_visualHull);
+        }
+
+        private void VisualHullOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (_menuShowing) _menu.ShowAt(_visualHull);
+            else _menu.Hide();
+            _menuShowing = !_menuShowing;
         }
 
         private void VisualHullOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)

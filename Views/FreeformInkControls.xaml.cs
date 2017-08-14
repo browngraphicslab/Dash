@@ -47,7 +47,7 @@ namespace Dash
         }
         private bool _isSelectionEnabled;
         private InkSelectionMode _inkSelectionMode;
-        private Polyline _lasso;
+        private Polygon _lasso;
         private Rect _boundingRect;
         private InkSelectionRect _rectangle;
         private LassoSelectHelper _lassoHelper;
@@ -62,10 +62,19 @@ namespace Dash
             SelectionCanvas = selectionCanvas;
             _menu = MakeMenuFlyout();
             InkFieldModelController = view.InkFieldModelController;
-            GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
-            GlobalInkSettings.SetAttributes();
+            IsDrawing = true;
             _lassoHelper = new LassoSelectHelper(FreeformView);
             TargetCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
+            GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
+            GlobalInkSettings.SetAttributes();
+            UpdateStrokes();
+            ToggleDraw();
+            AddEventHandlers();
+
+        }
+
+        private void AddEventHandlers()
+        {
             GlobalInkSettings.InkInputChanged += GlobalInkSettingsOnInkInputChanged;
             TargetCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             TargetCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
@@ -74,9 +83,6 @@ namespace Dash
             InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
             InkToolbar.ActiveToolChanged += InkToolbarOnActiveToolChanged;
             TargetCanvas.Holding += TargetCanvas_Holding;
-            UpdateStrokes();
-            IsDrawing = true;
-            ToggleDraw();
         }
 
         private void TargetCanvas_Holding(object sender, HoldingRoutedEventArgs e)
@@ -291,37 +297,13 @@ namespace Dash
 
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
         {
-            if (_isSelectionEnabled)
-            {
-                switch (_inkSelectionMode)
-                {
-                    case InkSelectionMode.Ink:
-                        SelectInk(args.Strokes.Last());
-                        break;
-                    case InkSelectionMode.Document:
-                        SelectDocs(args.Strokes.Last());
-                        break;
-                }
-            }
             UpdateInkFieldModelController();
         }
 
-        private void SelectDocs(InkStroke selectionStroke)
+        private void SelectDocs(PointCollection selectionPoints)
         {
-            selectionStroke.Selected = true;
-            TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-            var points = selectionStroke.GetInkPoints().Select(i => new Point(i.Position.X - 30000, i.Position.Y - 30000));
-            FreeformView.ViewModel.SelectionGroup = _lassoHelper.GetSelectedDocuments(new List<Point>(points));
-        }
-
-        private void SelectInk(InkStroke selectionStroke)
-        {
-            selectionStroke.Selected = true;
-            TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-            _boundingRect =
-                TargetCanvas.InkPresenter.StrokeContainer.SelectWithPolyLine(
-                    selectionStroke.GetInkPoints().Select(i => i.Position));
-            DrawBoundingRect();
+            SelectionCanvas.Children.Clear();
+            FreeformView.ViewModel.SelectionGroup = _lassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
         }
 
         //TODO: position ruler
@@ -365,10 +347,11 @@ namespace Dash
         private void UnprocessedInput_PointerPressed(
             InkUnprocessedInput sender, PointerEventArgs args)
         {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Hand, 0);
             // Initialize a selection lasso.
-            _lasso = new Polyline()
+            _lasso = new Polygon()
             {
-                Stroke = (SolidColorBrush)Application.Current.Resources["WindowsBlue"],
+                Stroke = new SolidColorBrush(Colors.Gray),
                 StrokeThickness = 1.5 / FreeformView.Zoom,
                 StrokeDashArray = new DoubleCollection() { 5, 2 },
                 CompositeMode = ElementCompositeMode.SourceOver
@@ -389,6 +372,7 @@ namespace Dash
         private void UnprocessedInput_PointerReleased(
             InkUnprocessedInput sender, PointerEventArgs args)
         {
+            Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
             // Add the final point to the Polyline object and 
             // select strokes within the lasso area.
             // Draw a bounding box on the selection canvas 
@@ -399,7 +383,8 @@ namespace Dash
                 TargetCanvas.InkPresenter.StrokeContainer.SelectWithPolyLine(
                     _lasso.Points);
 
-            DrawBoundingRect();
+            if(_inkSelectionMode==InkSelectionMode.Ink) DrawBoundingRect();
+            else if (_inkSelectionMode == InkSelectionMode.Document) SelectDocs(_lasso.Points);
         }
     }
 }
