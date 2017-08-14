@@ -83,12 +83,10 @@ namespace Dash
 
                 var opDoc = opBuilder.OperationDocumentConstructor.Invoke();
 
-                if ((opDoc as OperatorFieldModelController) == null) return; 
-
                 opDoc.GetPositionField(null).Data = new Point(pos.X, pos.Y);
 
                 _collectionViewModel.AddDocuments(new List<DocumentController>{opDoc}, null);
-            }
+            } 
         }
     }
 }

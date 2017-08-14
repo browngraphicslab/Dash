@@ -144,6 +144,8 @@ namespace Dash
             // handle but only if it's not in a compoundoperatoreditor view 
             if ((sender as CollectionFreeformView).GetFirstAncestorOfType<CompoundOperatorEditor>() == null)
                 e.Handled = true;
+            else
+                return;
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
