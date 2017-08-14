@@ -530,6 +530,14 @@ namespace Dash
             var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
             menuItem.Click += MenuItem_Click;
             _flyout.Items?.Add(menuItem);
+
+            var menuItem2 = new MenuFlyoutItem { Text = "Add Document" };
+            menuItem2.Click += MenuItem_Click2;
+            _flyout.Items?.Add(menuItem2);
+
+            var menuItem3 = new MenuFlyoutItem { Text = "Add Collection" };
+            menuItem3.Click += MenuItem_Click3;
+            _flyout.Items?.Add(menuItem3);
         }
 
         private void DisposeFlyout()
@@ -565,6 +573,42 @@ namespace Dash
             OperatorSearchView.AddsToThisCollection = this;
 
             OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
+
+            DisposeFlyout();
+        }
+
+        private void MenuItem_Click2(object sender, RoutedEventArgs e)
+        {
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), pointOnCanvas, new Size(100, 100)).Document)
+            };
+
+            ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+
+
+            DisposeFlyout();
+        }
+
+        private void MenuItem_Click3(object sender, RoutedEventArgs e)
+        {
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
+            };
+
+            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+            documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), pointOnCanvas.X, pointOnCanvas.Y).Document, true, true);
+            ViewModel.AddDocument(documentController, null);
+
 
             DisposeFlyout();
         }
