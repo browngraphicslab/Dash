@@ -6,8 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1">
-        <Grid x:Name="XGrid" Background="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent">
+        <Grid x:Name="XGrid" Background="Transparent" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
         <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged" UseLayoutRounding="True">

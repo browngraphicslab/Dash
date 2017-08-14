@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -11,6 +12,10 @@ using Windows.UI.Xaml.Input;
 using DashShared;
 using Windows.UI.Xaml.Media;
 using Windows.UI;
+using Windows.UI.Composition;
+using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Shapes;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -30,6 +35,7 @@ namespace Dash
         public InterfaceBuilder(DocumentController docController, int width = 1000, int height = 545)
         {
             this.InitializeComponent();
+            Util.InitializeDropShadow(xShadowHost, xShadowTarget);
             Width = width;
             Height = height;
 
@@ -42,20 +48,20 @@ namespace Dash
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
 
-            xLayoutNamePanel.PointerEntered += (s,e) => xLayoutTextBox.IsTabStop = true;
+            xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
             xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
 
         /// <summary>
         /// Bind the textbox that shows the layout's name to the current layout being used 
         /// </summary>
-        private void BindLayoutText(DocumentController currentLayout)               
+        private void BindLayoutText(DocumentController currentLayout)
         {
             var textBinding = new Binding
             {
                 Source = /*CurrentLayout*/ currentLayout,
                 Path = new PropertyPath(nameof(currentLayout.LayoutName)),
-                Mode = BindingMode.TwoWay 
+                Mode = BindingMode.TwoWay
             };
             xLayoutTextBox.SetBinding(TextBox.TextProperty, textBinding);
         }
@@ -67,7 +73,7 @@ namespace Dash
             xDocumentPane.OnDocumentViewLoaded += DocumentPaneOnDocumentViewLoaded;
             var freeFormView = new SimpleCollectionViewModel(true);
             xDocumentPane.DataContext = freeFormView;
-            freeFormView.AddDocuments(new List<DocumentController>{ docController }, null);
+            freeFormView.AddDocuments(new List<DocumentController> { docController }, null);
             xKeyValuePane.SetDataContextToDocumentController(docController);
         }
 
@@ -159,7 +165,7 @@ namespace Dash
                 var size = new Size(200, 200);
                 var position = e.GetPosition(layoutContainer);
                 //center
-                position = new Point(position.X - size.Width / 2, position.Y - size.Height / 2); 
+                position = new Point(position.X - size.Width / 2, position.Y - size.Height / 2);
                 switch (displayType)
                 {
                     case DisplayTypeEnum.Freeform:
@@ -198,10 +204,12 @@ namespace Dash
             else if (fieldModelController is ImageFieldModelController)
             {
                 layoutDocument = new ImageBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-            } else if (fieldModelController is DocumentCollectionFieldModelController)
+            }
+            else if (fieldModelController is DocumentCollectionFieldModelController)
             {
                 layoutDocument = new CollectionBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
-            } else if (fieldModelController is DocumentFieldModelController)
+            }
+            else if (fieldModelController is DocumentFieldModelController)
             {
                 //layoutDocument = new TextingBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
                 layoutDocument = new DocumentBox(new ReferenceFieldModelController(docController.GetId(), key)).Document;
@@ -230,10 +238,10 @@ namespace Dash
             {
                 return false;
             }
-            var cont = (SelectableContainer) obj;
+            var cont = (SelectableContainer)obj;
             return this.IsCompositeLayout(cont.LayoutDocument);
         }
-        
+
         private void RootSelectableContainerOnOnSelectionChanged(SelectableContainer sender, DocumentController layoutDocument, DocumentController dataDocument)
         {
             xSettingsPane.Children.Clear();
@@ -245,19 +253,19 @@ namespace Dash
                 if (newSettingsPane is FreeformSettings)
                 {
                     var currLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
-                    BindLayoutText(currLayout); 
+                    BindLayoutText(currLayout);
                 }
                 xSettingsPane.Children.Add(newSettingsPane);
             }
         }
 
-        public bool IsCompositeLayout( DocumentController layoutDocument)
+        public bool IsCompositeLayout(DocumentController layoutDocument)
         {
             return layoutDocument.DocumentType == DashConstants.DocumentTypeStore.FreeFormDocumentLayout ||
                    layoutDocument.DocumentType == GridViewLayout.DocumentType ||
                    layoutDocument.DocumentType == ListViewLayout.DocumentType;
         }
-        
+
         private void BreadcrumbListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             DocumentController cont = e.ClickedItem as DocumentController;
@@ -302,6 +310,26 @@ namespace Dash
             //}
 
             throw new NotImplementedException();
+        }
+
+        private void xDocumentPane_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void XSettingsPane_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            bool visible;
+            // ReSharper disable once AssignmentInConditionalExpression
+            ButtonsView.Visibility = (visible = ButtonsView.Visibility == Visibility.Collapsed)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            xDeleteButton.Visibility = visible
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            BreadcrumbListView.Visibility = visible
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
     }
 }

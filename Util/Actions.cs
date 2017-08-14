@@ -238,7 +238,7 @@ namespace Dash
 
 
             DisplayDocument(collectionView, new InkDoc().Document, where);
-
+            DisplayDocument(collectionView, new Numbers().Document, where);
 
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(collectionView, d, where);
