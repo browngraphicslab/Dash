@@ -733,13 +733,14 @@ namespace Dash
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
                     // bcz: commented this out because it generated exceptions after making a search List of Umpires
-                    //sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
-                    //(sp.Children.Last() as FrameworkElement).MaxWidth = 300;
-                    //(sp.Children.Last() as FrameworkElement).MaxHeight = 300;
+                    var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
+                    source.Add(view);
+                    view.MaxWidth = 300;
+                    view.MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    var colView = new CollectionGridView(new CollectionViewModel(f.Value, isInterfaceBuilder, context));
+                    var colView = new CollectionView(new CollectionViewModel(f.Value, isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
 
                     var border = new Border
                     {
@@ -756,10 +757,22 @@ namespace Dash
             return sp;
         }
 
+<<<<<<< HEAD
         private static int count = 0;
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
             Debug.WriteLine(++count);
+=======
+        public static int count = 0;
+
+
+        public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
+        {
+            if (++count % 20 == 0)
+            {
+                Debug.WriteLine(count);
+            }
+>>>>>>> b4d4ee9bb0ab6588486a4e7353f2e68c19151208
             context = new Context(context);
             context.AddDocumentContext(this);
 

@@ -152,8 +152,8 @@ namespace Dash
             var twitterConsumerSecret = "6QOcnCElbr4u80tiWspoGQTYryFyyRoXxMgiSZv4fq0Fox3dhV";
             var token = await OAuth2Authentication(twitterAuthEndpoint, twitterConsumerKey, twitterConsumerSecret);
 
-            var userName = "realdonaldtrump";
-            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName });
+            var userName = "alanalevinson";
+            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
             var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
 
             var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));

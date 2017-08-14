@@ -179,7 +179,6 @@ namespace Dash
 
             var request = requestTask.Result;
             var doc = request.GetResult();
-            doc.SetField(KeyStore.DataKey, new TextFieldModelController("Test"), true);
             outputs[OutputKey] = new DocumentFieldModelController(doc);
         }
     }

@@ -60,14 +60,14 @@ namespace Dash
             Block.SetBinding(TextBlock.TextProperty, textBinding);
             Box.SetBinding(TextBox.TextProperty, textBinding);
 
-            var colorBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(Foreground)),
-                Mode = BindingMode.TwoWay
-            };
-            Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
-            Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
+            //var colorBinding = new Binding
+            //{
+            //    Source = this,
+            //    Path = new PropertyPath(nameof(Foreground)),
+            //    Mode = BindingMode.TwoWay
+            //};
+            //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
+            //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
