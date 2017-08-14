@@ -635,6 +635,7 @@ namespace Dash
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
+            _payload = new Dictionary<DocumentView, DocumentController>();
             foreach (var docView in _documentViews)
             {
                 if (_isToggleOn)
@@ -702,7 +703,7 @@ namespace Dash
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
             foreach (var cont in ItemsCarrier.Instance.Payload)
             {
-                var view = new DocumentView(); 
+                var view = new DocumentView(new DocumentViewModel(cont)); 
                 _documentViews.Add(view);
                 _payload.Add(view, cont);
             }
