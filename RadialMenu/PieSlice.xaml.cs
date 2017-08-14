@@ -469,10 +469,10 @@ namespace RadialMenuControl.UserControl
 
         private void SetupIndicationArc()
         {
-            var indicationArcRadius = Radius - OuterArcThickness - IndicationArcDistanceFromEdge;
+            var indicationArcRadius = Radius - OuterArcThickness /*- IndicationArcDistanceFromEdge*/;
             IndicationArc.Size = new Size(indicationArcRadius, indicationArcRadius);
-            double startAngle = (StartAngle + .10 * Angle) * (Math.PI / 180),
-                    endAngle = (StartAngle + .90 * Angle) * (Math.PI / 180);
+            double startAngle = (StartAngle /*+ .10 * Angle*/) * (Math.PI / 180),
+                    endAngle = (StartAngle + /*.90 * */Angle) * (Math.PI / 180);
             double startX = Radius + indicationArcRadius * Math.Sin(startAngle),
                    startY = Radius - indicationArcRadius * Math.Cos(startAngle),
                    endX = Radius + indicationArcRadius * Math.Sin(endAngle),
@@ -763,7 +763,7 @@ namespace RadialMenuControl.UserControl
             {
                 case RadialMenuButton.ButtonType.Toggle:
                     VisualStateManager.GoToState(this,
-                        (OriginalRadialMenuButton.Value != null && ((bool) OriginalRadialMenuButton.Value))
+                        (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value))
                             ? "InnerReleased"
                             : "InnerNormal", true);
                     break;

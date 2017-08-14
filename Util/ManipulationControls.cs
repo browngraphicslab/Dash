@@ -36,6 +36,8 @@ namespace Dash {
         /// NOTE: bounds checking is done relative to element.Parent so the element must be in an element with the proper size for bounds checking
         /// </summary>
         /// <param name="element">The element to add manipulation to</param>
+        /// <param name="doesRespondToManipulationDelta"></param>
+        /// <param name="doesRespondToPointerWheel"></param>
         public ManipulationControls(FrameworkElement element, bool doesRespondToManipulationDelta, bool doesRespondToPointerWheel) {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
@@ -147,7 +149,6 @@ namespace Dash {
             var newScale = _elementScale * scaleAmount;
             ClampScale(newScale, scale);
 
-            // TODO we may need to take into account the _element's render transform here with regards to scale
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, 0),
                 new Point(scale.CenterX, scale.CenterY),
                 new Point(scale.ScaleX, scale.ScaleY)));

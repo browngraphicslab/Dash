@@ -6,9 +6,11 @@ using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -40,6 +42,17 @@ namespace Dash
 
         #region LinkingVariables
 
+        public class LinePackage
+        {
+            public Path Line;
+            public BezierConverter Converter; 
+            public LinePackage(BezierConverter converter, Path line)
+            {
+                Converter = converter;
+                Line = line; 
+            }
+        }
+
         public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
@@ -47,7 +60,7 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private Dictionary<BezierConverter, Path> _lineDict = new Dictionary<BezierConverter, Path>();
+        private Dictionary<FieldReference, LinePackage> _lineDict = new Dictionary<FieldReference, LinePackage>();
         private Canvas itemsPanelCanvas;
 
         #endregion
@@ -75,6 +88,8 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
             _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+
+            DragLeave += DocView_DragOver;
         }
 
         public IOReference GetCurrentReference()
@@ -122,15 +137,36 @@ namespace Dash
         #region DraggingLinesAround
 
         /// <summary>
+        /// Called when documentview is deleted; delete all connections coming from it as well  
+        /// </summary>
+        public void DeleteConnections(DocumentView docView)
+        {
+            var refs = _lineDict.Keys.ToList(); 
+            for (int i = _lineDict.Count -1; i >= 0; i--)
+            {
+                var package = _lineDict[refs[i]];
+                var converter = package.Converter;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+
+                if (view1 == docView || view2 == docView)
+                {
+                    itemsPanelCanvas.Children.Remove(package.Line);
+                    _lineDict.Remove(refs[i]); 
+                }
+            }
+        }
+
+        /// <summary>
         /// Update the bindings on lines when documentview is minimized to icon view 
         /// </summary>
         /// <param name="becomeSmall">whether the document has minimized or regained normal view</param>
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var line in _lineDict)
+            foreach (var package in _lineDict.Values)
             {
-                var converter = line.Key;
+                var converter = package.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 Debug.Assert(view1 != null);
@@ -186,7 +222,7 @@ namespace Dash
             _connectionLine = new Path
             {
                 StrokeThickness = 5,
-                Stroke = Util.GetSolidColorBrush("#FF35C597"),
+                Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHitTestVisible = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
@@ -214,11 +250,11 @@ namespace Dash
 
             itemsPanelCanvas.Children.Add(_connectionLine);
 
-            if (!ioReference.IsOutput)
-            {
-                CheckLinePresence(_converter);
-                _lineDict.Add(_converter, _connectionLine);
-            }
+            //if (!ioReference.IsOutput)
+            //{
+                //CheckLinePresence(_converter);
+                //_lineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
+            //}
         }
 
         public void CancelDrag(Pointer p)
@@ -262,19 +298,17 @@ namespace Dash
                 DocumentController inputController =
                     inputReference.FieldReference.GetDocumentController(null);
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
-                if (inputController.DocumentType == OperatorDocumentModel.OperatorType &&
-                    // (inputController.GetDereferencedField(OperatorDocumentModel.OperatorKey, null) as OperatorFieldModelController).Inputs[inputReference.FieldReference.FieldKey] == TypeInfo.Document && 
-                    inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                     inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
                     inputController.SetField(inputReference.FieldReference.FieldKey,
                         new ReferenceFieldModelController(outputReference.FieldReference), true);
             }
 
-            if (/*!ioReference.IsOutput &&*/ _connectionLine != null)
+            if (_connectionLine != null)
             {
-                CheckLinePresence(_converter);
-                _lineDict.Add(_converter, _connectionLine);
+                CheckLinePresence(ioReference.FieldReference);
+                _lineDict.Add(ioReference.FieldReference, new LinePackage(_converter, _connectionLine));
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -297,23 +331,18 @@ namespace Dash
         /// </summary>
         /// <param name="x"></param>
         /// <param name="y"></param>
-        private void CheckLinePresence(BezierConverter converter)
+        private void CheckLinePresence(FieldReference reference)
         {
-            if (!_lineDict.ContainsKey(converter)) return;
-            var line = _lineDict[converter];
-            itemsPanelCanvas.Children.Remove(line);
-            _lineDict.Remove(converter);
+            if (!_lineDict.ContainsKey(reference)) return;
+            var line = _lineDict[reference];
+            itemsPanelCanvas.Children.Remove(line.Line);
+            _lineDict.Remove(reference);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             if (_connectionLine != null)
             {
-                if (!e.GetCurrentPoint(this).Properties.IsRightButtonPressed)
-                {
-                    CancelDrag(e.Pointer);
-                    return; 
-                }
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
                 _lineBinding.ForceUpdate();
@@ -458,6 +487,8 @@ namespace Dash
         private void DocumentViewOnLoaded(object sender, RoutedEventArgs e)
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
+            (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
+            _documentViews.Add((sender as DocumentView)); 
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -577,10 +608,109 @@ namespace Dash
 
         #endregion
 
+        #region SELECTION
+
+        private bool _isSelectionEnabled;
+        public bool IsSelectionEnabled
+        {
+            get { return _isSelectionEnabled; }
+            set
+            {
+                _isSelectionEnabled = value;
+                if (!value) // turn colors back ... 
+                {
+                    foreach (var pair in _payload)
+                    {
+                        Deselect(pair.Key);
+                    }
+                    _payload = new Dictionary<DocumentView, DocumentController>();
+                }
+            }
+        }
+
+        private bool _isToggleOn; 
+
+        private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
+        private List<DocumentView> _documentViews = new List<DocumentView>(); 
 
         public void ToggleSelectAllItems()
         {
-            throw new NotImplementedException();
+            _isToggleOn = !_isToggleOn; 
+            foreach (var docView in _documentViews)
+            {
+                if (_isToggleOn)
+                {
+                    Select(docView);
+                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                } else
+                {
+                    Deselect(docView);
+                    _payload.Remove(docView); 
+                }
+            }
         }
+        
+
+        private void Deselect(DocumentView docView)
+        {
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
+            docView.CanDrag = false;
+            docView.ManipulationMode = ManipulationModes.All;
+            docView.DragStarting -= DocView_OnDragStarting;
+        }
+
+        private void Select(DocumentView docView)
+        {
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
+            docView.CanDrag = true;
+            docView.ManipulationMode = ManipulationModes.None;
+            docView.DragStarting += DocView_OnDragStarting;
+        }
+
+        private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (!IsSelectionEnabled) return;
+
+            var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
+            if (docView.CanDrag)    
+            {
+                Deselect(docView);
+                _payload.Remove(docView);
+            }
+            else                     
+            {
+                Select(docView);
+                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+            }
+            e.Handled = true;
+        }
+
+        private void DocView_DragOver(object sender, DragEventArgs args)
+        {
+            _payload = new Dictionary<DocumentView, DocumentController>();
+
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+
+            var carrier = ItemsCarrier.Instance;
+            if (carrier.Source == carrier.Destination)
+                return; // we don't want to drop items on ourself
+
+            ViewModel.RemoveDocuments(carrier.Payload);
+            foreach (var view in _payload.Keys.ToList())
+                _documentViews.Remove(view); 
+        }
+
+        public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
+        {
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+
+            var carrier = ItemsCarrier.Instance;
+
+            carrier.Destination = null;
+            carrier.Source = ViewModel;
+            carrier.Payload = _payload.Values.ToList();
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+        }
+    #endregion
     }
 }

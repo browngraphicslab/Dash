@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using Windows.UI;
@@ -13,7 +14,7 @@ namespace Dash
 {
     public enum IconTypeEnum { Document, Collection, Api } // on super-collapse, what icon is displayed?
 
-    public class DocumentViewModel : BaseSelectionElementViewModel
+    public class DocumentViewModel : BaseSelectionElementViewModel, IDisposable
     {
 
         public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);
@@ -207,8 +208,29 @@ namespace Dash
         {
             Debug.Assert(args.Reference.FieldKey.Equals(KeyStore.ActiveLayoutKey));
             Debug.WriteLine(args.Action);
-            OnActiveLayoutChanged(new Dash.Context(DocumentController));
+            OnActiveLayoutChanged(new Context(DocumentController));
+            if (args.OldValue == null) return;
+            var oldLayoutDoc = ((DocumentFieldModelController) args.OldValue).Data;
+            RemoveListenersFromLayout(oldLayoutDoc);
         }
+
+        private void RemoveListenersFromLayout(DocumentController oldLayoutDoc)
+        {
+            if (oldLayoutDoc == null) return;
+            oldLayoutDoc.GetHeightField().FieldModelUpdated -= HeightFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetWidthField().FieldModelUpdated -= WidthFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetPositionField().FieldModelUpdated -= PosFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetScaleCenterField().FieldModelUpdated -= ScaleCenterFieldModelController_FieldModelUpdatedEvent;
+            oldLayoutDoc.GetScaleAmountField().FieldModelUpdated -= ScaleAmountFieldModelController_FieldModelUpdatedEvent;
+        }
+
+        private void RemoveControllerListeners()
+        {
+            DocumentController.RemoveFieldUpdatedListener(KeyStore.ActiveLayoutKey, DocumentController_DocumentFieldUpdated);
+            var icon = (NumberFieldModelController) DocumentController.GetDereferencedField(KeyStore.IconTypeFieldKey, new Context(DocumentController));
+            icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
+        }
+
         private void OnActiveLayoutChanged(Context context)
         {
             Content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
@@ -229,12 +251,8 @@ namespace Dash
             var activeLayout = docController.GetActiveLayout()?.Data;
             if (activeLayout != null)
             {
-                var scaleCenterFieldModelController =
-                    activeLayout.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
-                        new Context(DocumentController)) as PointFieldModelController;
-                var scaleAmountFieldModelController =
-                    activeLayout.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
-                        new Context(DocumentController)) as PointFieldModelController;
+                var scaleCenterFieldModelController = docController.GetScaleCenterField();
+                var scaleAmountFieldModelController = docController.GetScaleAmountField();
                 if (scaleCenterFieldModelController != null)
                 {
                     if (scaleAmountFieldModelController != null)
@@ -379,6 +397,12 @@ namespace Dash
                 true);
             del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
             return del;
+        }
+
+        public void Dispose()
+        {
+            RemoveListenersFromLayout(DocumentController.GetActiveLayout().Data);
+            RemoveControllerListeners();
         }
     }
 }

@@ -22,8 +22,7 @@ namespace Dash
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            var task = ParseA();
-            task.Wait();
+            ParseRecipes().Wait();
             stopwatch.Stop();
             return JsonDocument;
         }

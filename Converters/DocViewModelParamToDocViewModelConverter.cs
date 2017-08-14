@@ -17,7 +17,7 @@ namespace Dash
 
         public override DocumentViewModelParameters ConvertXamlToData(DocumentViewModel xaml, object parameter = null)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }
