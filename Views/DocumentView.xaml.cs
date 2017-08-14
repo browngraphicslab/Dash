@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Numerics;
 using Windows.Foundation;
 using Windows.UI;
@@ -46,8 +47,8 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta:true, doesRespondToPointerWheel:true);
-            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnOnManipulatorTranslated;
+            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
 
             // set bounds
             MinWidth = 100;
@@ -109,6 +110,11 @@ namespace Dash
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
+            if (ViewModel != null)
+            {
+                ViewModel.Width = ActualWidth;
+                ViewModel.Height = ActualHeight;
+            }
         }
 
 
@@ -117,7 +123,7 @@ namespace Dash
         /// </summary>
         private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
         {
-            
+
             //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
             //if (view == null) return; // we can't always assume we're on a collection		
 
@@ -129,7 +135,7 @@ namespace Dash
             //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
             //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
             //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-            
+
         }
 
         private void SetUpMenu()
@@ -162,7 +168,7 @@ namespace Dash
         /// Update viewmodel when manipulator moves document
         /// </summary>
         /// <param name="delta"></param>
-        private void ManipulatorOnOnManipulatorTranslated(TransformGroupData delta)
+        private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
         {
             var currentTranslate = ViewModel.GroupTransform.Translate;
             var currentScaleAmount = ViewModel.GroupTransform.ScaleAmount;
@@ -171,8 +177,8 @@ namespace Dash
             var deltaScaleAmount = delta.ScaleAmount;
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
-            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh.a
-            var scaleCenter = new Point(ActualWidth / 2, ActualHeight / 2);
+            //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
+            var scaleCenter = new Point(0, 0);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -188,8 +194,11 @@ namespace Dash
         public Size Resize(double dx = 0, double dy = 0)
         {
             var dvm = DataContext as DocumentViewModel;
-            dvm.Width = Math.Max(double.IsNaN(dvm.Width) ? ActualWidth + dx : dvm.Width + dx, 0);
-            dvm.Height = Math.Max(double.IsNaN(dvm.Height) ? ActualHeight + dy : dvm.Height + dy, 0);
+            Debug.Assert(dvm != null, "dvm != null");
+            dvm.Width = Math.Max(dvm.Width + dx, 100);
+            dvm.Height = Math.Max(dvm.Height + dy, 100);
+            Debug.WriteLine(ActualWidth + ", " + ActualHeight);
+            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate, new Point(0, 0), ViewModel.GroupTransform.ScaleAmount);
             return new Size(dvm.Width, dvm.Height);
         }
 
@@ -219,15 +228,7 @@ namespace Dash
         public void Dragger_OnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             Point p = Util.DeltaTransformFromVisual(e.Delta.Translation, sender as FrameworkElement);
-            var s = Resize(p.X, p.Y);
-            var position = ViewModel.GroupTransform.Translate;
-            var dx = Math.Max(p.X, 0);
-            var dy = Math.Max(p.Y, 0);
-            //p = new Point(dx, dy);
-
-            ViewModel.GroupTransform = new TransformGroupData(new Point(position.X, position.Y),
-                                                                new Point(),
-                                                                ViewModel.GroupTransform.ScaleAmount);
+            Resize(p.X, p.Y);
             e.Handled = true;
         }
 
@@ -305,21 +306,9 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
-
             initDocumentOnDataContext();
             SetUpMenu();
             ViewModel.CloseMenu();
-
-            if (ViewModel.IsInInterfaceBuilder)
-            {
-                SetInterfaceBuilderSpecificSettings();
-            }
-
-        }
-
-        private void SetInterfaceBuilderSpecificSettings()
-        {
-            RemoveScroll();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -338,7 +327,7 @@ namespace Dash
                 xIcon.Visibility = Visibility.Visible;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
-                UpdateBinding(true); 
+                UpdateBinding(true);
             }
             else if (xIcon.Visibility == Visibility.Visible)
             {
@@ -358,7 +347,7 @@ namespace Dash
             var view = OuterGrid.GetFirstAncestorOfType<CollectionView>();
             if (view == null) return; // we can't always assume we're on a collection		
 
-            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this); 
+            (view.CurrentView as CollectionFreeformView)?.UpdateBinding(becomeSmall, this);
         }
 
         private void ExpandContract_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
@@ -366,8 +355,7 @@ namespace Dash
             // if in icon view expand to default size
             if (xIcon.Visibility == Visibility.Visible)
             {
-                Resize(300, 300);
-
+                Resize(250, 250);
             }
             e.Handled = true; // prevent propagating
         }
@@ -406,19 +394,8 @@ namespace Dash
 
         private void FadeOut_Completed(object sender, object e)
         {
+            (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
-        }
-
-        private void This_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = true;
-            var point = e.GetCurrentPoint(ParentCollection);
-            var scaleSign = point.Properties.MouseWheelDelta / 120.0f;
-            var scale = scaleSign > 0 ? 1.05 : 1.0 / 1.05;
-            var newScale = new Point(ViewModel.GroupTransform.ScaleAmount.X * scale, ViewModel.GroupTransform.ScaleAmount.Y * scale);
-            ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate,
-                                                              ViewModel.GroupTransform.ScaleCenter,
-                                                              newScale);
         }
 
         private void OpenLayout()
@@ -429,7 +406,8 @@ namespace Dash
         private void CommandLine_TextChanged(object sender, TextChangedEventArgs e)
         {
             var tb = sender as TextBox;
-            if (!(tb.Text.EndsWith("\r")))
+            Debug.Assert(tb != null, "tb != null");
+            if (!tb.Text.EndsWith("\r"))
                 return;
             var docController = (DataContext as DocumentViewModel).DocumentController;
             foreach (var tag in (sender as TextBox).Text.Split('#'))
@@ -449,11 +427,6 @@ namespace Dash
                     DBTest.ResetCycleDetection();
                     docController.ParseDocField(key, valu);
                 }
-        }
-
-        public void RemoveScroll()
-        {
-            PointerWheelChanged -= This_PointerWheelChanged;
         }
         #endregion
 
