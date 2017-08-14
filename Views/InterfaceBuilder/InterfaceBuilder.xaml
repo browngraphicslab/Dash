@@ -24,7 +24,7 @@
                 </Grid.RowDefinitions>
 
                 <ListView x:Name ="BreadcrumbListView" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                          ItemClick="BreadcrumbListView_ItemClick" IsItemClickEnabled="True" Grid.Row="0" Visibility="Collapsed">
+                          ItemClick="BreadcrumbListView_ItemClick" IsItemClickEnabled="True" Grid.Row="0" Visibility="Collapsed" Background="#99FFFFFF">
                     <ListView.ItemsPanel>
                         <ItemsPanelTemplate>
                             <ItemsStackPanel Orientation="Horizontal"></ItemsStackPanel>
@@ -41,17 +41,17 @@
 
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent" Grid.Row="1">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*" />
+                        <ColumnDefinition Width="250" />
                     </Grid.ColumnDefinitions>
 
-                    <local:KeyValuePane x:Name="xKeyValuePane" Grid.Column="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Width="300" MinWidth="300"></local:KeyValuePane>
+                    <local:KeyValuePane x:Name="xKeyValuePane" Grid.Column="0" Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:KeyValuePane>
 
                     <local:CollectionFreeformView x:Name="xDocumentPane" Grid.Column="1" Loaded="xDocumentPane_Loaded"></local:CollectionFreeformView>
 
-                    <Grid Grid.Column="2" >
-                        <Grid x:Name="xSettingsPane" Width="300" MinWidth="300" Height="Auto" HorizontalAlignment="Center" VerticalAlignment="Stretch" 
+                    <Grid Grid.Column="2">
+                        <Grid x:Name="xSettingsPane"
                       Background="Transparent" BorderThickness="1,0,0,0">
                         </Grid>
                         <StackPanel x:Name="xLayoutNamePanel"  Orientation="Horizontal" VerticalAlignment="Bottom" HorizontalAlignment="Center" Padding="0,0,0,5" >
@@ -63,6 +63,7 @@
 
                 </Grid>
 
+                <Rectangle Grid.Row="2" Fill="#99FFFFFF"></Rectangle>
                 <GridView x:Name="ButtonsView" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" CanDragItems="True" DragItemsStarting="ListViewBase_OnDragItemsStarting" Visibility="Collapsed">
                     <StackPanel Orientation="Vertical" x:Name="GridButton" Padding="5,10,5,0" VerticalAlignment="Center">
                         <Button IsHitTestVisible="False" Background="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0,0,0,-2.5">

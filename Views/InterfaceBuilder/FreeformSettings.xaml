@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" BorderBrush="Transparent">
+    <Grid HorizontalAlignment="Stretch" BorderBrush="Transparent">
         <Grid.Background>
             <SolidColorBrush Color="LightSteelBlue" Opacity="0.75"></SolidColorBrush>
         </Grid.Background>
@@ -19,68 +19,63 @@
             <RowDefinition />
             <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Width="250" VerticalAlignment="Center">
+        <Grid Grid.Row="0" VerticalAlignment="Center">
             <TextBlock HorizontalAlignment="Center" FontSize="20" FontWeight="SemiBold">
                 <Run Text="SETTINGS" />
             </TextBlock>
         </Grid>
-        <Grid Grid.Row="1" Width="250" Height="50" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock>
-                    <Run Text="Type" />
-                </TextBlock>
-                <TextBlock x:Name="TypeBlock" Margin="30,0,0,0" TextWrapping="Wrap" MaxWidth="190">
+        <Grid Grid.Row="1" Height="50" VerticalAlignment="Top" HorizontalAlignment="Center">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock x:Name="TypeBlock" TextWrapping="Wrap" MaxWidth="190">
                     <Run Text="Document" />
                 </TextBlock>
             </StackPanel>
         </Grid>
-        <Grid Grid.Row="2" Width="250">
-            <ScrollViewer VerticalScrollMode="Auto" VerticalScrollBarVisibility="Visible" IsVerticalRailEnabled="True">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition x:Name="xCollapsableDocRow" Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+        <Grid Grid.Row="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition x:Name="xCollapsableDocRow" Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                    <!--DOC SETTINGS-->
-                    <Grid x:Name="xDocRow" Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
-                    
-                    <!--SIZE-->
-                    <Grid x:Name="xSizeRow" Grid.Row="1" Width="230" HorizontalAlignment="Left"
+                <!--DOC SETTINGS-->
+                <Grid x:Name="xDocRow" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center"></Grid>
+
+                <!--SIZE-->
+                <Grid x:Name="xSizeRow" Grid.Row="1" HorizontalAlignment="Center"
                           VerticalAlignment="Center" />
 
-                    <!--POSITION-->
-                    <Grid x:Name="xPositionRow" Grid.Row="2" Width="230" HorizontalAlignment="Left"
+                <!--POSITION-->
+                <Grid x:Name="xPositionRow" Grid.Row="2" HorizontalAlignment="Center"
                           VerticalAlignment="Center" />
 
-                    <!--ALIGNMENT-->
-                    <Grid x:Name="xAlignmentRow" Grid.Row="3" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"></Grid>
+                <!--ALIGNMENT-->
+                <Grid x:Name="xAlignmentRow" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center"></Grid>
 
-                    <!--SPACING-->
-                    <Grid Grid.Row="4" x:Name="xSpacingGrid" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
-                        <local:SettingsPaneBlock>
-                            <local:SettingsPaneBlock.MainContent>
-                                <Grid Margin="0,5,0,5">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="1.2*"/>
-                                        <ColumnDefinition Width="0.8*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Grid Grid.Column="0">
-                                        <Slider x:Name="xSpacingSlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="50" StepFrequency="1" Foreground="SteelBlue"/>
-                                    </Grid>
-                                    <Grid Grid.Column="1" Margin="15,0,0,0">
-                                        <TextBox x:Name="xSpacingSliderTextBox" Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12"/>
-                                    </Grid>
+                <!--SPACING-->
+                <Grid Grid.Row="4" x:Name="xSpacingGrid" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                    <local:SettingsPaneBlock>
+                        <local:SettingsPaneBlock.MainContent>
+                            <Grid Margin="0,5,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.2*"/>
+                                    <ColumnDefinition Width="0.8*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid Grid.Column="0">
+                                    <Slider x:Name="xSpacingSlider" IsThumbToolTipEnabled="True" Minimum="0" Maximum="50" StepFrequency="1" Foreground="SteelBlue"/>
                                 </Grid>
-                            </local:SettingsPaneBlock.MainContent>
-                            <local:SettingsPaneBlock.Title>SPACING</local:SettingsPaneBlock.Title>
-                        </local:SettingsPaneBlock>
-                    </Grid>
+                                <Grid Grid.Column="1" Margin="15,0,0,0">
+                                    <TextBox x:Name="xSpacingSliderTextBox" Height="15" Width="Auto" BorderBrush="Transparent" FontSize="12"/>
+                                </Grid>
+                            </Grid>
+                        </local:SettingsPaneBlock.MainContent>
+                        <local:SettingsPaneBlock.Title>SPACING</local:SettingsPaneBlock.Title>
+                    </local:SettingsPaneBlock>
                 </Grid>
-            </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

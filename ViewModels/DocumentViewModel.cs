@@ -192,7 +192,7 @@ namespace Dash
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            Debug.WriteLine($"DVM: {count++}");
+            //Debug.WriteLine($"DVM: {count++}");
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);

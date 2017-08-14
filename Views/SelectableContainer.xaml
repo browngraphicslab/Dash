@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="Transparent">
+    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
         <Grid x:Name="XGrid" Background="#99FFFFFF" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
