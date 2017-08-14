@@ -45,11 +45,11 @@ namespace Dash
         public class LinePackage
         {
             public Path Line;
-            public BezierConverter Converter; 
+            public BezierConverter Converter;
             public LinePackage(BezierConverter converter, Path line)
             {
                 Converter = converter;
-                Line = line; 
+                Line = line;
             }
         }
 
@@ -141,8 +141,8 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            var refs = _lineDict.Keys.ToList(); 
-            for (int i = _lineDict.Count -1; i >= 0; i--)
+            var refs = _lineDict.Keys.ToList();
+            for (int i = _lineDict.Count - 1; i >= 0; i--)
             {
                 var package = _lineDict[refs[i]];
                 var converter = package.Converter;
@@ -152,7 +152,7 @@ namespace Dash
                 if (view1 == docView || view2 == docView)
                 {
                     itemsPanelCanvas.Children.Remove(package.Line);
-                    _lineDict.Remove(refs[i]); 
+                    _lineDict.Remove(refs[i]);
                 }
             }
         }
@@ -252,8 +252,8 @@ namespace Dash
 
             //if (!ioReference.IsOutput)
             //{
-                //CheckLinePresence(_converter);
-                //_lineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
+            //CheckLinePresence(_converter);
+            //_lineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
             //}
         }
 
@@ -288,6 +288,11 @@ namespace Dash
             }
             if (_currReference.FieldReference == null) return;
 
+            if (inputReference.FieldReference == outputReference.FieldReference)
+            {
+                UndoLine();
+                return;
+            }
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
@@ -488,7 +493,7 @@ namespace Dash
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
             (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
-            _documentViews.Add((sender as DocumentView)); 
+            _documentViews.Add((sender as DocumentView));
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -616,28 +621,29 @@ namespace Dash
             }
         }
 
-        private bool _isToggleOn; 
+        private bool _isToggleOn;
 
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
-        private List<DocumentView> _documentViews = new List<DocumentView>(); 
+        private List<DocumentView> _documentViews = new List<DocumentView>();
 
         public void ToggleSelectAllItems()
         {
-            _isToggleOn = !_isToggleOn; 
+            _isToggleOn = !_isToggleOn;
             foreach (var docView in _documentViews)
             {
                 if (_isToggleOn)
                 {
                     Select(docView);
                     _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
-                } else
+                }
+                else
                 {
                     Deselect(docView);
-                    _payload.Remove(docView); 
+                    _payload.Remove(docView);
                 }
             }
         }
-        
+
 
         private void Deselect(DocumentView docView)
         {
@@ -660,12 +666,12 @@ namespace Dash
             if (!IsSelectionEnabled) return;
 
             var docView = (sender as Grid).GetFirstAncestorOfType<DocumentView>();
-            if (docView.CanDrag)    
+            if (docView.CanDrag)
             {
                 Deselect(docView);
                 _payload.Remove(docView);
             }
-            else                     
+            else
             {
                 Select(docView);
                 _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
@@ -685,7 +691,7 @@ namespace Dash
 
             ViewModel.RemoveDocuments(carrier.Payload);
             foreach (var view in _payload.Keys.ToList())
-                _documentViews.Remove(view); 
+                _documentViews.Remove(view);
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
@@ -699,6 +705,6 @@ namespace Dash
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
-    #endregion
+        #endregion
     }
 }

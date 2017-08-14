@@ -87,8 +87,6 @@ namespace Dash
             bindSizeAnimation.SetReferenceParameter("hostVisual", hostVisual);
 
             shadowVisual.StartAnimation("Size", bindSizeAnimation);
-
-
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
