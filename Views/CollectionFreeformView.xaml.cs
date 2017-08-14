@@ -159,6 +159,27 @@ namespace Dash
         }
 
         /// <summary>
+        /// Adds the lines to be deleted as part of fading storyboard 
+        /// </summary>
+        /// <param name="fadeout"></param>
+        public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
+        {
+            foreach (var line in _lineDict.Values)
+            {
+                var converter = line.Converter;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+
+                if (view1 == docView || view2 == docView)
+                {
+                    var animation = new Windows.UI.Xaml.Media.Animation.FadeOutThemeAnimation();
+                    Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, line.Line);
+                    fadeout.Children.Add(animation);
+                }
+            }
+        }
+
+        /// <summary>
         /// Update the bindings on lines when documentview is minimized to icon view 
         /// </summary>
         /// <param name="becomeSmall">whether the document has minimized or regained normal view</param>
@@ -301,7 +322,7 @@ namespace Dash
             if (!isCompoundOperator)
             {
                 DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
-                bool canLink = true; 
+                bool canLink = true;
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                     canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
@@ -311,7 +332,7 @@ namespace Dash
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && !canLink)
                 {
                     UndoLine();
-                    return; 
+                    return;
                 }
             }
 

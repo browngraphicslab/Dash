@@ -462,25 +462,29 @@ namespace Dash
         }
 
         /// <summary>
-        /// Method that returns whether the input field is compatible to the key; if the document is not an operator type, return true always 
+        /// Method that returns whether the input fieldmodelcontroller type is compatible to the key; if the document is not an operator type, return true always 
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">key that field is mapped to</param>
+        /// <param name="field">reference field model that references the field to connect</param>
         private bool IsTypeCompatible(KeyController key, FieldModelController field)
         {
             var opCont = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
             if (opCont == null) return true;
-            if (!opCont.Inputs.ContainsKey(key)) return true; 
+            if (!opCont.Inputs.ContainsKey(key)) return true;
+
+            var rawField = (field as ReferenceFieldModelController)?.Dereference(null); 
             switch (opCont.Inputs[key])
             {
                 case TypeInfo.Number:
-                    return (field as ReferenceFieldModelController)?.Dereference(null) is NumberFieldModelController;
+                    return rawField is NumberFieldModelController;
                 case TypeInfo.Text:
-                    return (field as ReferenceFieldModelController)?.Dereference(null) is TextFieldModelController;
+                    return rawField is TextFieldModelController;
                 case TypeInfo.Image:
-                    return (field as ReferenceFieldModelController)?.Dereference(null) is ImageFieldModelController;
+                    return rawField is ImageFieldModelController;
                 case TypeInfo.Collection:
-                    return (field as ReferenceFieldModelController)?.Dereference(null) is DocumentCollectionFieldModelController;
+                    return rawField is DocumentCollectionFieldModelController;
+                case TypeInfo.Operator:
+                    return rawField is OperatorFieldModelController;
                 default: throw new NotImplementedException(); 
             }
         }
