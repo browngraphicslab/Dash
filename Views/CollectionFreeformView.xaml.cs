@@ -89,7 +89,8 @@ namespace Dash
             _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
-            DragLeave += DocView_DragOver;
+            DragLeave += Collection_DragLeave;
+            DragEnter += Collection_DragEnter;
         }
 
         public IOReference GetCurrentReference()
@@ -626,11 +627,11 @@ namespace Dash
             }
         }
 
-        private bool _isToggleOn;
 
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
         private List<DocumentView> _documentViews = new List<DocumentView>();
 
+        private bool _isToggleOn;
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
@@ -648,7 +649,6 @@ namespace Dash
                 }
             }
         }
-
 
         private void Deselect(DocumentView docView)
         {
@@ -684,19 +684,28 @@ namespace Dash
             e.Handled = true;
         }
 
-        private void DocView_DragOver(object sender, DragEventArgs args)
+        private void Collection_DragLeave(object sender, DragEventArgs args)
         {
-            _payload = new Dictionary<DocumentView, DocumentController>();
-
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
-
-            var carrier = ItemsCarrier.Instance;
-            if (carrier.Source == carrier.Destination)
-                return; // we don't want to drop items on ourself
-
-            ViewModel.RemoveDocuments(carrier.Payload);
+            ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
+
+            _payload = new Dictionary<DocumentView, DocumentController>();
+        }
+
+        private void Collection_DragEnter(object sender, DragEventArgs args)                             // TODO this code is fucked, think of a better way to do this 
+        {
+            var carrier = ItemsCarrier.Instance;
+            if (carrier.StartingCollection == null) return;
+            if (carrier.StartingCollection != this) return; 
+
+            ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
+            foreach (var cont in ItemsCarrier.Instance.Payload)
+            {
+                var view = new DocumentView(); 
+                _documentViews.Add(view);
+                _payload.Add(view, cont);
+            }
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
@@ -706,6 +715,7 @@ namespace Dash
             var carrier = ItemsCarrier.Instance;
 
             carrier.Destination = null;
+            carrier.StartingCollection = this; 
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;

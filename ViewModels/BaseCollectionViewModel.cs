@@ -142,7 +142,7 @@ namespace Dash
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
 
             // handle but only if it's not in a compoundoperatoreditor view 
-            if ((sender as CollectionFreeformView).GetFirstAncestorOfType<CompoundOperatorEditor>() == null)
+            if ((sender as CollectionFreeformView)?.GetFirstAncestorOfType<CompoundOperatorEditor>() == null)
                 e.Handled = true;
             else
                 return;
