@@ -47,7 +47,7 @@ namespace Dash
                 Source = docController.GetAllPrototypes()
             };
             BreadcrumbListView.SetBinding(ItemsControl.ItemsSourceProperty, listBinding);
-
+            ChromeButton.Content = new Viewbox {Child = new SymbolIcon(Symbol.View)};
             xLayoutNamePanel.PointerEntered += (s, e) => xLayoutTextBox.IsTabStop = true;
             xLayoutNamePanel.PointerExited += (s, e) => xLayoutTextBox.IsTabStop = false;
         }
@@ -149,7 +149,6 @@ namespace Dash
                     var widthOffset = (layoutDocument.GetField(KeyStore.WidthFieldKey) as NumberFieldModelController).Data / 2;
                     var heightOffset = (layoutDocument.GetField(KeyStore.HeightFieldKey) as NumberFieldModelController).Data / 2;
                     var positionController = new PointFieldModelController(posInLayoutContainer.X - widthOffset, posInLayoutContainer.Y - heightOffset);
-                    //var positionController = new PointFieldModelController(e.GetPosition(layoutContainer).X, e.GetPosition(layoutContainer).Y);
                     layoutDocument.SetField(KeyStore.PositionFieldKey, positionController, forceMask: true);
                 }
 
@@ -247,16 +246,14 @@ namespace Dash
             xSettingsPane.Children.Clear();
             var newSettingsPane = SettingsPaneFromDocumentControllerFactory.CreateSettingsPane(layoutDocument, dataDocument);
             _selectedContainer = sender;
-            if (newSettingsPane != null)
+            if (newSettingsPane == null) return;
+            // if newSettingsPane is a general document setting, bind the layoutname textbox 
+            if (newSettingsPane is FreeformSettings)
             {
-                // if newSettingsPane is a general document setting, bind the layoutname textbox 
-                if (newSettingsPane is FreeformSettings)
-                {
-                    var currLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
-                    BindLayoutText(currLayout);
-                }
-                xSettingsPane.Children.Add(newSettingsPane);
+                var currLayout = (newSettingsPane as FreeformSettings).SelectedDocument;
+                BindLayoutText(currLayout);
             }
+            xSettingsPane.Children.Add(newSettingsPane);
         }
 
         public bool IsCompositeLayout(DocumentController layoutDocument)
@@ -300,16 +297,10 @@ namespace Dash
 
         private void XDeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            //if (_selectedContainer.ParentContainer != null)
-            //{
-            //    var collection =
-            //        _selectedContainer.ParentContainer.LayoutDocument.GetField(KeyStore.DataKey) as
-            //            DocumentCollectionFieldModelController;
-            //    collection?.RemoveDocument(_selectedContainer.LayoutDocument);
-            //    _selectedContainer.ParentContainer.SetSelectedContainer(null);
-            //}
-
-            throw new NotImplementedException();
+            if (_selectedContainer.ParentContainer == null) return; 
+            var data = _selectedContainer.ParentContainer.LayoutDocument.GetDereferencedField(KeyStore.DataKey, null) as DocumentCollectionFieldModelController;
+            data?.RemoveDocument(_selectedContainer.LayoutDocument);
+            _selectedContainer.ParentContainer.SetSelectedContainer(null);
         }
 
         private void xDocumentPane_Loaded(object sender, RoutedEventArgs e)
@@ -317,7 +308,7 @@ namespace Dash
 
         }
 
-        private void XSettingsPane_OnTapped(object sender, TappedRoutedEventArgs e)
+        private void ChromeButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             bool visible;
             // ReSharper disable once AssignmentInConditionalExpression

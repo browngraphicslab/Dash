@@ -624,10 +624,10 @@ namespace Dash
             {
                 return true;
             }
-            if (opField.Outputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
+            //if (opField.Outputs.ContainsKey(updatedKey))
+            //{
+            //    return true;
+            //}
             return false;
         }
 
@@ -756,9 +756,10 @@ namespace Dash
             return sp;
         }
 
-
+        private static int count = 0;
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
+            Debug.WriteLine(++count);
             context = new Context(context);
             context.AddDocumentContext(this);
 
@@ -850,7 +851,6 @@ namespace Dash
 
                 return doc.Data.MakeViewUI(context, isInterfaceBuilder, this);
             }
-            //Debug.Assert(false, "Everything should have an active layout maybe");
             if (isInterfaceBuilder)
             {
                 return new SelectableContainer(makeAllViewUI(context), this, dataDocument);

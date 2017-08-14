@@ -90,8 +90,7 @@ namespace Dash
 
         public static void DisplayBrightnessSlider(RadialMenuView obj)
         {
-            Action<double, RadialMenu> setBrightness = SetBrightness;
-            obj.OpenSlider("Brightness ", setBrightness);
+            obj.OpenSlider();
         }
 
         public static void CloseSliderPanel(RadialMenuView obj)
@@ -240,8 +239,7 @@ namespace Dash
             DisplayDocument(collectionView, new InkDoc().Document, where);
             DisplayDocument(collectionView, new Numbers().Document, where);
 
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(collectionView, d, where);
+            DisplayDocument(collectionView, new XampleText().Document, where);
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)

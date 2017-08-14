@@ -51,19 +51,19 @@ namespace Dash
             return doc;
         }
 
-        //public static DocumentController CreateApiDocumentController()
-        //{
-        //    Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
-        //    var doc = new ApiDocumentModel().Document;
-        //    doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true );
-        //    doc.DocumentType = ApiOperator.ApiType;
+        public static DocumentController CreateApi1DocumentController()
+        {
+            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            var doc = new ApiDocumentModel().Document;
+            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true);
+            doc.DocumentType = ApiOperator.ApiType;
 
 
-        //    var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
-        //    doc.SetActiveLayout(layoutDoc, true, true);
+            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
 
-        //    return doc;
-        //}
+            return doc;
+        }
 
         public static DocumentController CreateApiDocumentController()
         {
@@ -83,7 +83,7 @@ namespace Dash
             {
                 [OperatorKey] = new CompoundOperatorFieldController()
             };
-            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+            var doc = new DocumentController(fields, CompoundOperatorFieldController.MapType);
 
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);

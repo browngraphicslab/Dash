@@ -80,6 +80,22 @@ namespace Dash
                 {ApiOperatorController.MethodKey, new TextFieldModelController(method) },
                 {ApiOperatorController.UrlKey, new TextFieldModelController(xApiURLTB.Text) }
             };
+            foreach (var key in xParameterControl.Keys)
+            {
+                string value = "";
+                xParameterControl.Values.TryGetValue(key.Key, out value);
+                fields[key.Key] = new TextFieldModelController(key.Value + ":" + value);
+            }
+            foreach (var key in xParameterControl.Values)
+            {
+                if (fields.ContainsKey(key.Key))
+                {
+                    continue;
+                }
+                string value = "";
+                xParameterControl.Keys.TryGetValue(key.Key, out value);
+                fields[key.Key] = new TextFieldModelController(value + ":" + key.Value);
+            }
             _operatorDocument.SetFields(fields, true);
 
             MakeApi?.Invoke();

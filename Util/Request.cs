@@ -114,7 +114,7 @@ namespace Dash
                 Message.Headers.Authorization = new HttpCredentialsHeaderValue("Bearer", token);
             }
 
-            Response = await RequestUtil.Client.SendRequestAsync(Message);
+            Response = await RequestUtil.Client.SendRequestAsync(Message).AsTask().ConfigureAwait(false);
             return this;
         }
 

@@ -97,6 +97,7 @@ namespace Dash
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
+            (view.CurrentView as CollectionFreeformView).CanLink = true; 
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
@@ -140,6 +141,11 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
             _collectionMenu.GoToDocumentMenu();
+
+            if (CurrentView is CollectionFreeformView)
+            {
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true; 
+            }
         }
 
         private void CloseMenu()
@@ -167,6 +173,11 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
             ViewModel.CanDragItems = false;
             _collectionMenu.BackToCollectionMenu();
+
+            if (CurrentView is CollectionFreeformView)
+            {
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
+            }
         }
 
         private void DeleteSelection()
@@ -203,7 +214,7 @@ namespace Dash
                 //toggle grid/list/freeform view buttons 
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { setGrid, setList, setFreeform}),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
-                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
+                //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
             };
 
             if (ParentDocument != MainPage.Instance.MainDocView)

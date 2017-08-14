@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,30 +65,32 @@ namespace Dash
             [OutputKey] = TypeInfo.Document
         };
 
-        private Dictionary<KeyController, ApiParameter> _parameters = new Dictionary<KeyController, ApiParameter>();
-        private Dictionary<KeyController, ApiParameter> _headers = new Dictionary<KeyController, ApiParameter>();
+        public ObservableDictionary<KeyController, ApiParameter> Parameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
+        public ObservableDictionary<KeyController, ApiParameter> Headers { get; } = new ObservableDictionary<KeyController, ApiParameter>();
 
         public void AddParameter(ApiParameter parameter)
         {
-            int index = _parameters.Count + 1;
+            int index = Parameters.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api parameter {index}"), $"Parameter {index}");
             parameter.Key = key;
-            _parameters[key] = parameter;
+            Inputs.Add(key, TypeInfo.Text);
+            Parameters[key] = parameter;
         }
         public void RemoveParameter(ApiParameter parameter)
         {
-            _parameters.Remove(parameter.Key);
+            Inputs.Remove(parameter.Key);
+            Parameters.Remove(parameter.Key);
         }
         public void AddHeader(ApiParameter header)
         {
-            int index = _headers.Count + 1;
+            int index = Headers.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
             header.Key = key;
-            _headers[key] = header;
+            Headers[key] = header;
         }
         public void RemoveHeader(ApiParameter header)
         {
-            _headers.Remove(header.Key);
+            Headers.Remove(header.Key);
         }
 
         private int test = 1;
@@ -103,22 +106,81 @@ namespace Dash
             outputs[OutputKey] = new DocumentFieldModelController(document);
             return;
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
-            var method = (inputs[MethodKey] as TextFieldModelController).Data;
-            var methodEnum = (HttpMethod)Enum.Parse(typeof(HttpMethod), method, true);
+            var method = (inputs[MethodKey] as TextFieldModelController).Data.ToLower();
+            HttpMethod httpMethod;
+            if (method == "get")
+            {
+                httpMethod = HttpMethod.Get;
+            } else if (method == "post")
+            {
+                httpMethod = HttpMethod.Post;
+            }
+            else
+            {
+                throw new ArgumentException();
+            }
 
             var parameters = new List<KeyValuePair<string, string>>();
             var headers = new List<KeyValuePair<string, string>>();
 
-            var request = new Request(methodEnum, new Uri(url))
-                .SetHeaders(headers)
-                .SetMessageBody(new HttpFormUrlEncodedContent(parameters)).TrySetResponse();
-
-            if (request != null)
+            foreach (var parameter in Parameters)
             {
-                var doc = request.Result.GetResult();
-                doc.SetField(KeyStore.DataKey, new TextFieldModelController("Test"), true);
-                outputs[OutputKey] = new DocumentFieldModelController(doc);
+                FieldModelController param;
+                bool hasValue = inputs.TryGetValue(parameter.Key, out param);
+                if (!hasValue)
+                {
+                    if (parameter.Value.Required)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                TextFieldModelController p = (TextFieldModelController)param;
+                var split = p.Data.Split(':');
+                if (split.Length != 2)
+                {
+                    continue;
+                }
+                parameters.Add(new KeyValuePair<string, string>(split[0], split[1]));
             }
+
+            foreach (var header in Headers)
+            {
+                FieldModelController head;
+                bool hasValue = inputs.TryGetValue(header.Key, out head);
+                if (!hasValue)
+                {
+                    if (header.Value.Required)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+                }
+                TextFieldModelController p = (TextFieldModelController)head;
+                var split = p.Data.Split(':');
+                if (split.Length != 2)
+                {
+                    continue;
+                }
+                headers.Add(new KeyValuePair<string, string>(split[0], split[1]));
+            }
+
+            var requestTask = new Request(httpMethod, new Uri(url))
+                .SetHeaders(headers)
+                .SetMessageBody(new HttpFormUrlEncodedContent(parameters))
+                .SetAuthUri(null)
+                .SetAuthHeaders(new Dictionary<string, string>()).TrySetResponse();
+
+            var request = requestTask.Result;
+            var doc = request.GetResult();
+            doc.SetField(KeyStore.DataKey, new TextFieldModelController("Test"), true);
+            outputs[OutputKey] = new DocumentFieldModelController(doc);
         }
     }
 }

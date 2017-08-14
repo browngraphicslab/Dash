@@ -32,7 +32,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var layoutList = doc.GetField(KeyStore.LayoutListKey) as DocumentCollectionFieldModelController;
-            
+
             if (layoutList == null)
             {
                 layoutList = InitializeLayoutList();
@@ -71,7 +71,7 @@ namespace Dash
         }
 
 
-        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context=null)
+        public static DocumentFieldModelController GetActiveLayout(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             return doc.GetDereferencedField(KeyStore.ActiveLayoutKey, context) as DocumentFieldModelController;
@@ -99,12 +99,12 @@ namespace Dash
 
             return heightField;
         }
-        
+
         public static NumberFieldModelController GetWidthField(this DocumentController doc, Context context = null)
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var widthField =  activeLayout?.Data.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+            var widthField = activeLayout?.Data.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
             if (widthField == null)
             {
                 widthField = doc.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
@@ -116,13 +116,28 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var posField = activeLayout?.Data.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
-            if (posField == null)
-            {
-                posField = doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
-            }
+            var posField = activeLayout?.Data.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController ??
+                           doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
 
             return posField;
+        }
+
+        public static PointFieldModelController GetScaleCenterField(this DocumentController doc, Context context = null)
+        {
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var scaleCenterField = activeLayout?.GetDereferencedField(KeyStore.ScaleCenterFieldKey,
+                                       new Context(context)) as PointFieldModelController ?? doc.GetDereferencedField(KeyStore.ScaleCenterFieldKey, context) as PointFieldModelController;
+            return scaleCenterField;
+        }
+
+        public static PointFieldModelController GetScaleAmountField(this DocumentController doc, Context context = null)
+        {
+            var activeLayout = doc.GetActiveLayout()?.Data;
+            var scaleAmountField = activeLayout?.GetDereferencedField(KeyStore.ScaleAmountFieldKey,
+                                       new Context(context)) as PointFieldModelController ??
+                                   doc.GetDereferencedField(KeyStore.ScaleAmountFieldKey, context) as
+                                       PointFieldModelController;
+            return scaleAmountField;
         }
 
         public static DocumentController GetCopy(this DocumentController doc, Context context = null)
@@ -137,7 +152,8 @@ namespace Dash
                     )
                 {
                     fields[kvp.Key] = new NumberFieldModelController((kvp.Value as NumberFieldModelController)?.Data ?? 0);
-                } else if (kvp.Key.Equals(KeyStore.PositionFieldKey))
+                }
+                else if (kvp.Key.Equals(KeyStore.PositionFieldKey))
                 {
                     fields[kvp.Key] = new PointFieldModelController((kvp.Value as PointFieldModelController)?.Data ?? new Point());
                 }
