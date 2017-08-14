@@ -92,6 +92,9 @@ namespace Dash
             }
         }
 
+        private MeterSubMenu _strokeMeter;
+        private MeterSubMenu _opacityMeter;
+
         /// <summary>
         /// Default radial menu with certain menu items
         /// </summary>
@@ -101,9 +104,15 @@ namespace Dash
             this.InitializeComponent();
             _parentCanvas = canvas;
             _colors = new List<RadialItemModel>();
+
+            _strokeMeter = MakeMeterSubMenu(24, 2);
+            _opacityMeter = MakeMeterSubMenu(1, 0.2);
+
             this.SetUpBaseMenu();
+
             MainMenu = _mainMenu;
             //_parentCanvas.OnDoubleTapped += Overlay_DoubleTapped;
+            
             this.SampleRadialMenu(canvas);
         }
 
@@ -156,6 +165,9 @@ namespace Dash
                 Margin = new Thickness(0,0,5,0),
                 Padding = new Thickness(3,3,3,3)
             };
+
+            MakeSlider("Brightness ", Actions.SetBrightness);
+
             _stackPanel.Children.Add(_sliderPanel);
             _stackPanel.Children.Add(_mainMenu);
 
@@ -181,12 +193,18 @@ namespace Dash
         /// </summary>
         /// <param name="header"></param>
         /// <param name="valueSetAction"></param>
-        public void OpenSlider(string header, Action<double, RadialMenu> valueSetAction)
+        public void OpenSlider()
         {
-            _sliderPanel.Children.Clear();
+            _sliderPanel.Visibility = Visibility.Visible;
+            _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
+
+        private void MakeSlider(string header, Action<double, RadialMenu> valueSetAction)
+        {
             _sliderHeader = new TextBlock()
             {
-                Text = header, HorizontalAlignment = HorizontalAlignment.Center,
+                Text = header,
+                HorizontalAlignment = HorizontalAlignment.Center,
                 FontStyle = FontStyle.Normal,
             };
             _slider = new Slider()
@@ -212,16 +230,17 @@ namespace Dash
             {
                 Content = grey,
                 FontSize = 12,
-                Padding = new Thickness(3,3,3,3),
+                Padding = new Thickness(3, 3, 3, 3),
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0,3,6,0),
+                Margin = new Thickness(0, 3, 6, 0),
                 Background = new SolidColorBrush(Colors.Transparent)
             };
-            blackButton.Tapped += delegate(object sender, TappedRoutedEventArgs args) { Actions.ChangeInkColor(Colors.Gray, _mainMenu); };
+            blackButton.Tapped += delegate (object sender, TappedRoutedEventArgs args) { Actions.ChangeInkColor(Colors.Gray, _mainMenu); };
             _sliderPanel.Children.Add(_sliderHeader);
             _sliderPanel.Children.Add(_slider);
             _sliderPanel.Children.Add(blackButton);
-            _sliderPanel.Visibility = Visibility.Visible;
+
+
         }
 
         /// <summary>
@@ -282,6 +301,7 @@ namespace Dash
                 IconFontFamily = new FontFamily("Segoe UI Symbol"),
                 IconSize = 5,
             };
+                   
             if (item.IconSource != null)
             {
                 button.IconImage = item.IconSource;
@@ -320,6 +340,28 @@ namespace Dash
             { 
                 var action = button.ActionModel = item as RadialActionModel;
                 if(!action.IsDraggable) { button.Type = RadialMenuButton.ButtonType.Radio; }
+
+                button.InnerArcReleased += delegate
+                {
+                    actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
+                    actionButton.GenericAction?.Invoke(null);
+                };
+                button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
+                {
+                    e.Data.RequestedOperation = DataPackageOperation.Move;
+                    if (actionButton.CollectionDropAction != null)
+                    {
+                        e.Data.Properties[RadialMenuDropKey] = actionButton.CollectionDropAction;
+                    } else if (actionButton.GenericDropAction != null)
+                    {
+                        e.Data.Properties[RadialMenuDropKey] = actionButton.GenericDropAction;
+                    }
+                    else
+                    {
+                        e.Cancel = true;
+                    }
+                    
+                };
             }
             menu.AddButton(button);
             return button;
@@ -393,32 +435,23 @@ namespace Dash
             var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
             {
                 IsMeter = true,
-                MeterSubMenu = MakeMeterSubMenu(24, 2),
+                MeterSubMenu = _strokeMeter,
                 MeterValueSelectionAction = setSize
             };
 
             var opacityMeter = new RadialSubmenuModel("Opacity", "💧", null)
             {
                 IsMeter = true,
-                MeterSubMenu = MakeMeterSubMenu(1, 0.2),
+                MeterSubMenu = _opacityMeter,
                 MeterValueSelectionAction = setOpacity
             };
 
             var strokeTypeMenu = new RadialSubmenuModel("Pen Type", "✍️",
                 new List<RadialItemModel>
                 {
-                    new RadialActionModel("Pen", "✒️")
-                    {
-                        GenericAction = choosePen
-                    },
-                    new RadialActionModel("Pencil", "✏️")
-                    {
-                        GenericAction = choosePencil
-                    },
-                    new RadialActionModel("Eraser", "")
-                    {
-                        GenericAction = chooseEraser
-                    }
+                    new RadialActionModel("Pen", "✒️") { GenericAction = choosePen },
+                    new RadialActionModel("Pencil", "✏️") { GenericAction = choosePencil },
+                    new RadialActionModel("Eraser", "") { GenericAction = chooseEraser }
                 });
 
             var inkPalette = new RadialSubmenuModel("Color Palette", "🎨", _colors)
@@ -446,7 +479,6 @@ namespace Dash
                 {
                     GenericAction = setNoInput
                 }
-
             });
 
 
@@ -490,13 +522,6 @@ namespace Dash
             //    notesButton
             //});
 
-            //TODO maybe this shouldn't go here 
-            //Action<object> sendEmail = sendEmailHelper;
-            //var emailButton = new RadialActionModel("Email", "📧")
-            //{
-            //    GenericAction = sendEmail
-            //};
-
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
@@ -505,14 +530,8 @@ namespace Dash
                 //documentButton
                 //emailButton
             });
-
-            
         }
-
-        //private void sendEmailHelper(object obj)
-        //{
-        //    _parentCanvas.Children.Add(new EmailView()); 
-        //}
+        
 
         private void InitializeColors()
         {
@@ -543,7 +562,7 @@ namespace Dash
                 _colors.Add(button);
             }
         }
-
+        
         /// <summary>
         /// Constructs a meter submenu with a range from 0 to the length parameter and intervals of length "interval" between ticks 
         /// </summary>

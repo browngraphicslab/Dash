@@ -140,7 +140,7 @@ namespace Dash
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
-            e.Handled = true;
+            
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -155,9 +155,12 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-
+                carrier.Destination = this; 
                 if (carrier.Source.Equals(carrier.Destination))
+                {
+                    e.Handled = true;
                     return; // we don't want to drop items on ourself
+                }
 
                 var where = sender is CollectionFreeformView ?
                     Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
@@ -222,6 +225,11 @@ namespace Dash
                 listView.SelectedItems.Clear();
         }
 
+        public void ToggleSelectFreeformView()
+        {
+
+        }
+
         public void XGridView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var listViewBase = sender as ListViewBase;
@@ -267,7 +275,21 @@ namespace Dash
             border.Visibility = Visibility.Visible;
             document.IsHitTestVisible = false;
             var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
-            document.DataContext = new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            if (document.ViewModel == null)
+            {
+                document.DataContext =
+                    new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);               
+            }
+            else if (document.ViewModel.DocumentController.GetId() != dvParams.Controller.GetId())
+            {
+                document.ViewModel.Dispose();
+                document.DataContext =
+                    new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            }
+            else
+            {
+                document.ViewModel.Dispose();
+            }
         }
 
         #endregion

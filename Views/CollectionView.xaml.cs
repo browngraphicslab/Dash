@@ -94,22 +94,25 @@ namespace Dash
 
         private void ConnectionEllipse_OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument); // TODO KB 
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
+            (view.CurrentView as CollectionFreeformView).CanLink = true; 
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
+            if (ParentCollection == null) return; 
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
             KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument); // TODO KB 
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument); 
             CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef);
+            (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef, false);
         }
 
         #endregion
@@ -144,6 +147,11 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
             _collectionMenu.GoToDocumentMenu();
+
+            if (CurrentView is CollectionFreeformView)
+            {
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true; 
+            }
         }
 
         private void CloseMenu()
@@ -171,6 +179,11 @@ namespace Dash
             ViewModel.ItemSelectionMode = ListViewSelectionMode.None;
             ViewModel.CanDragItems = false;
             _collectionMenu.BackToCollectionMenu();
+
+            if (CurrentView is CollectionFreeformView)
+            {
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = false;
+            }
         }
 
         private void DeleteSelection()
@@ -218,6 +231,7 @@ namespace Dash
                 //toggle grid/list/freeform view buttons 
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { setGrid, setList, setFreeform}),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
+
                 new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
                 _toggleDrawButton
             };

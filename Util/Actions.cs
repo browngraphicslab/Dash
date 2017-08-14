@@ -90,8 +90,7 @@ namespace Dash
 
         public static void DisplayBrightnessSlider(RadialMenuView obj)
         {
-            Action<double, RadialMenu> setBrightness = SetBrightness;
-            obj.OpenSlider("Brightness ", setBrightness);
+            obj.OpenSlider();
         }
 
         public static void CloseSliderPanel(RadialMenuView obj)

@@ -45,10 +45,17 @@ namespace Dash
 
                 if (value)
                 {
+                    _imageManipulator.AddAllAndHandle();
+                    _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
                     xImageButton.Background = new SolidColorBrush(Colors.SteelBlue);
-                    ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight); 
+                    ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
                 }
-                else xImageButton.Background = new SolidColorBrush(Colors.Gray);
+                else
+                {
+                    xImageButton.Background = new SolidColorBrush(Colors.Gray);
+                    _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
+                    _imageManipulator.RemoveAllAndDontHandle();
+                }
             }
         }
 
@@ -66,8 +73,20 @@ namespace Dash
                 xCLIPTopLeftDragger.Visibility = visibility;
                 xCLIPTopRightDragger.Visibility = visibility;
 
-                if (value) xClipButton.Background = new SolidColorBrush(Colors.SteelBlue);
-                else xClipButton.Background = new SolidColorBrush(Colors.Gray);
+                if (value)
+                {
+                    xClipButton.Background = new SolidColorBrush(Colors.SteelBlue);
+                    xClipRectangle.IsHitTestVisible = true;
+                    _clipRectManipulator.AddAllAndHandle();
+                    _clipRectManipulator.OnManipulatorTranslatedOrScaled += xClipRectManipulator_OnManipulatorTranslatedOrScaled;
+                }
+                else
+                {
+                    xClipButton.Background = new SolidColorBrush(Colors.Gray);
+                    xClipRectangle.IsHitTestVisible = false;
+                    _clipRectManipulator.OnManipulatorTranslatedOrScaled -= xClipRectManipulator_OnManipulatorTranslatedOrScaled;
+                    _clipRectManipulator.RemoveAllAndDontHandle(); 
+                }
             }
         }
 
@@ -83,17 +102,7 @@ namespace Dash
                 xClipRectangle.Visibility = visibility;
                 xEditStackPanel.Visibility = visibility;
 
-                if (value)
-                {
-                    _imageManipulator.AddAllAndHandle();
-                    _imageManipulator.OnManipulatorTranslatedOrScaled += ImageManipulator_OnManipulatorTranslatedOrScaled;
-                    // show the entire image 
-                    ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
-                } else
-                {
-                    _imageManipulator.OnManipulatorTranslatedOrScaled -= ImageManipulator_OnManipulatorTranslatedOrScaled;
-                    _imageManipulator.RemoveAllAndDontHandle();
-                }
+                if (value) ClipController.Data = new Rect(0, 0, Image.ActualWidth, Image.ActualHeight);
             }
         }
 
@@ -107,13 +116,15 @@ namespace Dash
         #endregion
 
         private ManipulationControls _imageManipulator;
+        private ManipulationControls _clipRectManipulator;
 
         public EditableImage(DocumentController docController, Context context)
         {
             InitializeComponent();
             DocController = docController;
             Context = context;
-            _imageManipulator = new ManipulationControls(Image, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false); 
+            _imageManipulator = new ManipulationControls(Image, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
+            _clipRectManipulator = new ManipulationControls(xClipRectangle, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: false);
 
             IsClipRectVisible = false;
             IsImageDraggerVisible = false;
@@ -121,7 +132,7 @@ namespace Dash
 
             double width = 200;
             double height = 200;
-            var container = this.GetFirstAncestorOfType<SelectableContainer>(); 
+            var container = this.GetFirstAncestorOfType<SelectableContainer>();
             if (container != null)
             {
                 width = container.Width;
@@ -136,7 +147,6 @@ namespace Dash
             SetUpDraggersHelper(xBottomLeftDragger, xBottomRightDragger, xTopLeftDragger, xTopRightDragger);
 
             SetUpEvents();
-            //Image.SizeChanged += (s, e) => ClipController.Data = new Rect(ClipRect.X, ClipRect.Y, Image.ActualWidth, Image.ActualHeight); 
         }
 
         #region SETUP
@@ -224,23 +234,20 @@ namespace Dash
         /// </summary>
         private void ImageManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)                                         // TODO must update position and width height controllers? 
         {
-            var bottomLeft1 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
-            var bottomRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
-            var topLeft1 = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
-            var topRight1 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, 0), Image, xGrid);
-
-            //ScaleHelper(e.ScaleCenter, e.ScaleAmount, Image);
             TranslateHelper(e.Translate.X, e.Translate.Y, Image);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xBottomLeftDragger);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xBottomRightDragger);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xTopLeftDragger);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xTopRightDragger);
+        }
 
-            var bottomLeft2 = Util.PointTransformFromVisual(new Point(0, Image.ActualHeight), Image, xGrid);
-            var bottomRight2 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, Image.ActualHeight), Image, xGrid);
-            var topLeft2 = Util.PointTransformFromVisual(new Point(0, 0), Image, xGrid);
-            var topRight2 = Util.PointTransformFromVisual(new Point(Image.ActualWidth, 0), Image, xGrid);
-
-            TranslateHelper(bottomLeft2.X - bottomLeft1.X, bottomLeft2.Y - bottomLeft1.Y, xBottomLeftDragger);
-            TranslateHelper(bottomRight2.X - bottomRight1.X, bottomRight2.Y - bottomRight1.Y, xBottomRightDragger);
-            TranslateHelper(topLeft2.X - topLeft1.X, topLeft2.Y - topLeft1.Y, xTopLeftDragger);
-            TranslateHelper(topRight2.X - topRight1.X, topRight2.Y - topRight1.Y, xTopRightDragger);
+        private void xClipRectManipulator_OnManipulatorTranslatedOrScaled(TransformGroupData e)
+        {
+            UpdateClipRect(e.Translate.X, e.Translate.Y, 0, 0);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomLeftDragger);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPBottomRightDragger);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopLeftDragger);
+            TranslateHelper(e.Translate.X, e.Translate.Y, xCLIPTopRightDragger);
         }
 
         /// <summary>
@@ -250,14 +257,14 @@ namespace Dash
         {
             var width = Image.ActualWidth + deltaW;
             var height = Image.ActualHeight + deltaH;
-            if (width < 0 || height < 0) return false; 
+            if (width < 0 || height < 0) return false;
 
             Image.Width = width;
             Image.Height = height;
             TranslateHelper(deltaX, deltaY, Image);
-            return true; 
+            return true;
         }
-#endregion
+        #endregion
 
         private void ScaleHelper(Point scaleCenter, Point scaleAmount, FrameworkElement element)
         {
@@ -354,10 +361,10 @@ namespace Dash
         private void xImage_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             IsEditorModeOn = true;
-            IsClipRectVisible = true; 
+            IsClipRectVisible = true;
         }
 
-        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)                                                                                                     
+        private void DoneButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
             IsEditorModeOn = false;
             IsImageDraggerVisible = false;
@@ -371,7 +378,7 @@ namespace Dash
 
         private double NormalizeWidth(double num)
         {
-            return (num / Image.ActualWidth) * 100; 
+            return (num / Image.ActualWidth) * 100;
         }
 
         private double NormalizeHeight(double num)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,19 +31,7 @@ namespace Dash
 
         public override TransformGroupData ConvertXamlToData(TransformGroup xaml, object parameter = null)
         {
-            var translate = xaml.Children[0] as TranslateTransform ?? xaml.Children[1] as TranslateTransform;
-            var scale = xaml.Children[0] as ScaleTransform ?? xaml.Children[1] as ScaleTransform;
-            return new TransformGroupData(translate == null ? new Point() : new Point(translate.X, translate.Y),
-                                          scale == null ? new Point() : new Point(scale.CenterX, scale.CenterY),
-                                          scale == null ? new Point(1, 1) : new Point(scale.ScaleX, scale.ScaleY));
-
-        }
-
-        public static TransformGroupDataToGroupTransformConverter Instance;
-
-        static TransformGroupDataToGroupTransformConverter()
-        {
-            Instance = new TransformGroupDataToGroupTransformConverter();
+            throw new NotImplementedException();
         }
     }
 }
