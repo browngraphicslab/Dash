@@ -298,23 +298,28 @@ namespace Dash
                 return;
             }
 
+            if (!isCompoundOperator)
+            {
+                DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
+                bool canLink = true; 
+                var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+                else
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
+
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && !canLink)
+                {
+                    UndoLine();
+                    return; 
+                }
+            }
+
             //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
-
-            if (!isCompoundOperator)
-            {
-                DocumentController inputController =
-                    inputReference.FieldReference.GetDocumentController(null);
-                var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
-                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
-                else
-                    inputController.SetField(inputReference.FieldReference.FieldKey,
-                        new ReferenceFieldModelController(outputReference.FieldReference), true);
-            }
 
             if (_connectionLine != null)
             {
@@ -504,7 +509,7 @@ namespace Dash
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            DBTest.ResetCycleDetection();
+            //DBTest.ResetCycleDetection();
             CancelDrag(e.Pointer);
         }
 
@@ -700,13 +705,13 @@ namespace Dash
             if (carrier.StartingCollection == null) return;
             if (carrier.StartingCollection != this)
             {
-                carrier.StartingCollection.Collection_DragLeave(sender, args); 
+                carrier.StartingCollection.Collection_DragLeave(sender, args);
                 return;
             }
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
             foreach (var cont in ItemsCarrier.Instance.Payload)
             {
-                var view = new DocumentView(new DocumentViewModel(cont)); 
+                var view = new DocumentView(new DocumentViewModel(cont));
                 _documentViews.Add(view);
                 _payload.Add(view, cont);
             }
@@ -719,7 +724,7 @@ namespace Dash
             var carrier = ItemsCarrier.Instance;
 
             carrier.Destination = null;
-            carrier.StartingCollection = this; 
+            carrier.StartingCollection = this;
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
