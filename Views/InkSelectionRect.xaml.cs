@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Reflection;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Core;
@@ -25,28 +27,34 @@ namespace Dash.Views
     public sealed partial class InkSelectionRect : UserControl
     {
         public CollectionFreeformView FreeformView;
+        public ScrollViewer Scroller;
         public InkStrokeContainer StrokeContainer;
-        private Size _manipulationStartSize;
+        private Size _startSize;
         private Point _startPosition;
+        private List<Grid> _draggers;
+        private double _rectStrokeThickness = 1;
+        private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
+        private bool _flyoutShowing;
 
         private Point Position()
         {
             return new Point(Canvas.GetLeft(this), Canvas.GetTop(this));
-        } 
+        }
 
-        private List<Grid> _draggers;
+        private Point InnerTopLeft()
+        {
+            return new Point(Canvas.GetLeft(this) + 15, Canvas.GetTop(this) + 15);
+        }
 
-        private double RectStrokeThickness = 1;
-
-        private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
-
-        public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes)
+        public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes, ScrollViewer scroller = null)
         {
             this.InitializeComponent();
             FreeformView = view;
+            Scroller = scroller;
             StrokeContainer = strokes;
             Loaded += OnLoaded;
-            FreeformView.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControlsOnOnManipulatorTranslatedOrScaled;
+            if(view != null) FreeformView.ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControlsOnOnManipulatorTranslatedOrScaled;
+            if(scroller != null) Scroller.ViewChanged += Scroller_ViewChanged;
             _draggers = new List<Grid>
             {
                 BottomRightDragger,
@@ -60,6 +68,11 @@ namespace Dash.Views
             };
             UpdateStrokeThickness();
             UpdateStartingTransforms();
+        }
+
+        private void Scroller_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
+        {
+            UpdateStrokeThickness();
         }
 
         private void ManipulationControlsOnOnManipulatorTranslatedOrScaled(TransformGroupData transformationDelta)
@@ -86,42 +99,44 @@ namespace Dash.Views
 
         private void UpdateStrokeThickness()
         {
-            RectStrokeThickness = 1 / FreeformView.Zoom;
+            if(FreeformView != null) _rectStrokeThickness = 1.5 / FreeformView.Zoom;
+            else if (Scroller != null) _rectStrokeThickness = 1.5 / Scroller.ZoomFactor;
             foreach (var grid in _draggers)
             {
-                (grid.Children[0] as Shape).StrokeThickness = RectStrokeThickness;
+                (grid.Children[0] as Shape).StrokeThickness = _rectStrokeThickness;
             }
-            (CenterDragger.Children[0] as Shape).StrokeThickness = 2 * RectStrokeThickness;
-            (Grid.Children[0] as Shape).StrokeThickness = RectStrokeThickness;
+            (CenterDragger.Children[0] as Shape).StrokeThickness = 2 * _rectStrokeThickness;
+            (Grid.Children[0] as Shape).StrokeThickness = _rectStrokeThickness;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            _manipulationStartSize = new Size(Width - 30, Height - 30);
+            _startSize = new Size(Width - 30, Height - 30);
             _startPosition = Position();
         }
 
         private void DraggerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
-            var translate = e.Delta.Translation;
+            double scale;
+            if (FreeformView != null) scale = FreeformView.Zoom;
+            else scale = Scroller.ZoomFactor;
+            var translate = new Point(e.Delta.Translation.X / scale, e.Delta.Translation.Y / scale);
             var dragger = sender as Grid;
-            Point oldCenter = new Point(Position().X + 15, Position().Y + 15);
-            float xScale = (float) ((Width - 30)/_manipulationStartSize.Width);
-            float yScale = (float)((Height - 30) / _manipulationStartSize.Height);
-            if (dragger.Name == "CenterDragger")
+            float xScale = (float)((Width - 30) / _startSize.Width);
+            float yScale = (float)((Height - 30) / _startSize.Height);
+            if (dragger.Name == "CenterDragger" || dragger.Name == "Grid")
             {
                 Canvas.SetLeft(this, Position().X + translate.X);
                 Canvas.SetTop(this, Position().Y + translate.Y);
-                //StrokeContainer.MoveSelected(translate);
-                ResizeStrokes(new Point(Position().X + 15, Position().Y + 15), translate, xScale, yScale);
+                TransformStrokes(xScale, yScale);
                 return;
             }
             if (dragger.Name.Contains("Left") && Width - translate.X > MinWidth)
             {
                 Canvas.SetLeft(this, Position().X + translate.X);
                 translate.X *= -1;
-                
+
             }
             if (dragger.Name.Contains("Top") && Height - translate.Y > MinHeight)
             {
@@ -131,44 +146,37 @@ namespace Dash.Views
             if (Width + translate.X > MinWidth)
             {
                 Width += translate.X;
-                xScale = (float) ((Width - 30 + translate.X) / _manipulationStartSize.Width);
+                xScale = (float)((Width - 30 + translate.X) / _startSize.Width);
             }
             if (Height + translate.Y > MinHeight)
             {
                 Height += translate.Y;
-                yScale = (float) ((Height - 30 + translate.Y) / _manipulationStartSize.Height);
+                yScale = (float)((Height - 30 + translate.Y) / _startSize.Height);
             }
-            Point newCenter = new Point(Position().X + 15, Position().Y + 15);
-            Point deltaPos = new Point(newCenter.X - oldCenter.X, newCenter.Y - oldCenter.Y);
-            Point center = GetScaleCenter(dragger.Name);
-            ResizeStrokes(center, deltaPos, xScale, yScale);
+            TransformStrokes(xScale, yScale);
+
         }
 
-        private void ResizeStrokes(Point center, Point translation, float xScale, float yScale)
+        private void TransformStrokes(float xScale, float yScale)
         {
             var totalTranslation = new Point(Position().X - _startPosition.X, Position().Y - _startPosition.Y);
             Matrix3x2 translationMatrix = Matrix3x2.CreateTranslation(new Vector2((float)totalTranslation.X, (float)totalTranslation.Y));
-            Vector2 centerVect = new Vector2((float) center.X, (float) center.Y);
+            Matrix3x2 scaleMatrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2((float)InnerTopLeft().X, (float)InnerTopLeft().Y));
             foreach (var stroke in StrokeContainer.GetStrokes())
             {
                 if (stroke.Selected)
                 {
-                    var ogTransform = _startingTransforms[stroke];
-                    //Account for stroke already having point transform
-                    var dXScale = ogTransform.M11 * xScale - ogTransform.M11;
-                    var dYScale = ogTransform.M22 * yScale - ogTransform.M22;
-                    var scaleMatrix = Matrix3x2.CreateScale(ogTransform.M11 + dXScale, ogTransform.M22 + dYScale, centerVect);
-                    Debug.WriteLine("Scale matrix " + scaleMatrix);
-                    var matrix = new Matrix3x2(xScale, 0, 0, yScale, - centerVect.X * (xScale - 1), - centerVect.Y * (yScale - 1)) * translationMatrix;
-                    Debug.WriteLine("Custom matrix: " + matrix);
-                    stroke.PointTransform = matrix;
+                    var startingTransform = _startingTransforms[stroke];
+                    var translate = Matrix3x2.Multiply(startingTransform, translationMatrix);
+                    var translateAndScale = Matrix3x2.Multiply(translate, scaleMatrix);
+                    stroke.PointTransform = translateAndScale;
                 }
             }
         }
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            FreeformView.UpdateInkFieldModelController();
+            FreeformView.InkControls.UpdateInkFieldModelController();
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
@@ -177,10 +185,15 @@ namespace Dash.Views
         {
             Grid.Opacity = 0.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(GetPointerCursor(sender as Grid), 0);
+            e.Handled = true;
         }
 
         private CoreCursorType GetPointerCursor(Grid grid)
         {
+            if (grid == null)
+            {
+                return CoreCursorType.SizeAll;
+            }
             var draggerName = grid.Name;
             switch (draggerName)
             {
@@ -201,60 +214,49 @@ namespace Dash.Views
                 case "LeftCenterDragger":
                     return CoreCursorType.SizeWestEast;
                 default:
-                    return CoreCursorType.Custom;
+                    return CoreCursorType.SizeAll;
             }
         }
 
-        /// <summary>
-        /// Returns point used as center for scale transform depending on dragger used to resize.
-        /// </summary>
-        /// <param name="dragger"></param>
-        /// <returns></returns>
-        private Point GetScaleCenter(string draggerName)
+        private void Delete()
         {
-            //account for margin around selection
-            double margin = 15;
-            switch (draggerName)
-            {
-                case "BottomRightDragger":
-                case "TopRightDragger":
-                case "RightCenterDragger":
-                case "BottomCenterDragger":
-                    return new Point(Position().X + margin, Position().Y + margin);
-                case "BottomLeftDragger":
-                case "LeftCenterDragger":
-                case "TopCenterDragger":
-                case "TopLeftDragger":
-                    return new Point(Position().X + Width - margin, Position().Y + Height - margin);
-                default:
-                    return Position();
-            }
+            StrokeContainer.DeleteSelected();
+            var canvas = Parent as Canvas;
+            canvas?.Children.Clear();
         }
 
-        private Point GetScaleCompensation(string draggerName, double xScale, double yScale)
+        private void Cut()
         {
-            switch (draggerName)
-            {
-                case "BottomRightDragger":
-                    return new Point(0 , 0);
-                case "BottomCenterDragger":
-                    return new Point(0,0);
-                case "BottomLeftDragger":
-                    return new Point(0, 0);
-                case "TopRightDragger":
-                    return new Point(0, 0);
-                case "TopCenterDragger":
-                    return new Point(0, 0);
-                case "TopLeftDragger":
-                    return new Point(0, 0);
-                case "RightCenterDragger":
-                    return new Point(0, 0);
-                case "LeftCenterDragger":
-                    return new Point(0, 0);
+            Copy();
+            Delete();
+        }
 
-                default:
-                    return new Point(0,0);
-            }
+        private void Copy()
+        {
+            StrokeContainer.CopySelectedToClipboard();
+        }
+
+        private void Grid_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (_flyoutShowing) Grid.ContextFlyout.Hide();
+            else Grid.ContextFlyout.ShowAt(Grid);
+            _flyoutShowing = !_flyoutShowing;
+
+        }
+
+        private void DeleteButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            Delete();
+        }
+
+        private void CopyButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            Copy();
+        }
+
+        private void CutButton_OnTappedButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            Cut();
         }
     }
 }

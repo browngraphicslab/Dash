@@ -21,6 +21,7 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 using Windows.UI.Xaml.Shapes;
+using Dash.Views;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,7 +32,6 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         private readonly bool _isInterfaceBuilder;
         private ManipulationControls _controls;
-        private InkAnalyzer _inkAnalyzer;
         Symbol SelectIcon = (Symbol) 0xEF20;
 
         public Grid Grid => XGrid;
@@ -40,10 +40,8 @@ namespace Dash
         private Polyline lasso;
         // Stroke selection area.
         private Rect boundingRect;
-
-        private UIElement _copyMenu;
-        private Rectangle _rectangle;
-        private Point _pastePos;
+        
+        private InkSelectionRect _rectangle;
 
         /// <summary>
         /// A control that contains an InkCanvas and interacts with an InkFieldModelController to reflect user strokes 
@@ -53,9 +51,7 @@ namespace Dash
         public InkCanvasControl(InkFieldModelController inkFieldModelController, bool isInterfaceBuilder)
         {
             this.InitializeComponent();
-            _inkAnalyzer = new InkAnalyzer();
             _isInterfaceBuilder = isInterfaceBuilder;
-            _copyMenu = MakeCopyMenu();
             GlobalInkSettings.Presenters.Add(XInkCanvas.InkPresenter);
             GlobalInkSettings.SetAttributes();
             XInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
@@ -63,33 +59,11 @@ namespace Dash
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             XInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
-            DoubleTapped += XInkCanvasOnDoubleTapped;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
             Loaded += OnLoaded;
             XInkCanvas.Tapped += OnTapped;
             Tapped += OnTapped;
             OnLowestActivated(false);
-        }
-
-        private void XInkCanvasOnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
-        {
-            var transform = ScrollViewer.TransformToVisual(Grid);
-            _pastePos = transform.TransformPoint(e.GetPosition(SelectionCanvas));
-            SelectionFlyout.ShowAt(SelectionCanvas, _pastePos);
-            e.Handled = true;
-        }
-
-        private UIElement MakeCopyMenu()
-        {
-            Button copy = new Button{Content = "Copy"};
-            copy.Tapped += copyButton_Click;
-            Button cut = new Button{Content = "Cut"};
-            cut.Tapped += cutButton_Click;
-            Button paste = new Button { Content = "Paste" };
-            paste.Tapped += pasteButton_Click;
-            StackPanel panel = new StackPanel() {Children = {copy, cut, paste}};
-            return panel;
-
         }
 
         private void StrokeInputOnStrokeStarted(InkStrokeInput sender, PointerEventArgs args)
@@ -344,64 +318,17 @@ namespace Dash
                   (boundingRect.Height == 0) ||
                   boundingRect.IsEmpty))
             {
-                _rectangle = new Rectangle()
+                _rectangle = new InkSelectionRect(null, XInkCanvas.InkPresenter.StrokeContainer, ScrollViewer)
                 {
-                    Stroke = new SolidColorBrush(Colors.DarkGray),
-                    StrokeThickness = 2 / ScrollViewer.ZoomFactor,
-                    StrokeDashArray = new DoubleCollection() { 5, 2 },
                     Width = boundingRect.Width,
-                    Height = boundingRect.Height,
-                    Fill = new SolidColorBrush(Colors.Transparent),
-                    ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY
+                    Height = boundingRect.Height
                 };
-                _rectangle.ManipulationDelta += RectangleOnManipulationDelta;
 
                 Canvas.SetLeft(_rectangle, boundingRect.X);
                 Canvas.SetTop(_rectangle, boundingRect.Y);
 
                 SelectionCanvas.Children.Add(_rectangle);
             }
-        }
-
-        private void RectangleOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var delta = new Point(e.Delta.Translation.X / ScrollViewer.ZoomFactor, e.Delta.Translation.Y/ ScrollViewer.ZoomFactor);
-            Canvas.SetLeft(_rectangle, Canvas.GetLeft(_rectangle) + delta.X);
-            Canvas.SetTop(_rectangle, Canvas.GetTop(_rectangle) + delta.Y);
-            XInkCanvas.InkPresenter.StrokeContainer.MoveSelected(delta);
-            UpdateInkFieldModelController();
-            e.Handled = true;
-        }
-
-        private void cutButton_Click(object sender, RoutedEventArgs e)
-        {
-            XInkCanvas.InkPresenter.StrokeContainer.CopySelectedToClipboard();
-            XInkCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-            ClearSelection();
-        }
-
-        private void copyButton_Click(object sender, RoutedEventArgs e)
-        {
-            XInkCanvas.InkPresenter.StrokeContainer.CopySelectedToClipboard();
-        }
-
-        private void pasteButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (XInkCanvas.InkPresenter.StrokeContainer.CanPasteFromClipboard())
-            {
-                XInkCanvas.InkPresenter.StrokeContainer.PasteFromClipboard(
-                    _pastePos);
-                
-            }
-            else
-            {
-                // Cannot paste from clipboard.
-            }
-        }
-
-        private void ScrollViewer_ViewChanged(object sender, ScrollViewerViewChangedEventArgs e)
-        {
-            if (_rectangle != null) _rectangle.StrokeThickness = 2 / ScrollViewer.ZoomFactor;
         }
     }
 }

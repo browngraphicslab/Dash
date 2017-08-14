@@ -72,19 +72,7 @@ namespace Dash
             Width = 60000, Height = 60000,
         };
         public InkFieldModelController InkFieldModelController;
-        Symbol SelectIcon = (Symbol)0xEF20;
-        private enum InkSelectionMode
-        {
-            Document, Ink
-        }
-        private InkSelectionMode _inkSelectionMode;
-        private bool _isSelectionEnabled;
-        private InkPresenterRuler _ruler;
-        private InkAnalyzer _inkAnalyzer;
-        private Polyline _lasso;
-        private Rect _boundingRect;
-        private InkSelectionRect _rectangle;
-        private LassoSelectHelper _lassoHelper;
+        public FreeformInkControls InkControls;
         public double Zoom => ManipulationControls.ElementScale;
         #endregion
 
@@ -104,7 +92,6 @@ namespace Dash
         public CollectionFreeformView()
         {
             InitializeComponent();
-            _lassoHelper = new LassoSelectHelper(this);
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
@@ -573,7 +560,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            if (IsDrawing)
+            if (InkControls.IsDrawing)
             {
                 if (!isLowestSelected) XInkCanvas.InkPresenter.IsInputEnabled = false;
                 else XInkCanvas.InkPresenter.IsInputEnabled = true;
@@ -599,74 +586,26 @@ namespace Dash
         {
             throw new NotImplementedException();
         }
-
-        #region Ink
+        
 
         private void MakeInkCanvas()
         {
-            _inkAnalyzer = new InkAnalyzer();
-            GlobalInkSettings.Presenters.Add(XInkCanvas.InkPresenter);
-            GlobalInkSettings.SetAttributes();
+            InkControls = new FreeformInkControls(this, XInkCanvas, SelectionCanvas)
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                VerticalAlignment = VerticalAlignment.Top
+            };
+            xOuterGrid.Children.Add(InkControls);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            XInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
             xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
             xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
-            GlobalInkSettings.InkInputChanged += GlobalInkSettingsOnInkInputChanged;
-            XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
-            XInkCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
-            XInkCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
-            InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
-            InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
-            InkToolbar.ActiveToolChanged += InkToolbarOnActiveToolChanged;
             xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-            UpdateStrokes();
-            IsDrawing = true;
-            ToggleDraw();
+            
         }
-
-        private void InkToolbarOnActiveToolChanged(InkToolbar sender, object args)
-        {
-            UpdateSelectionMode();
-            if (XInkCanvas.InkPresenter.InputProcessingConfiguration.Mode == InkInputProcessingMode.Erasing)
-            {
-                ClearSelection();
-            }
-        }
-
-        private void StrokeInputOnStrokeStarted(InkStrokeInput sender, PointerEventArgs args)
-        {
-            ClearSelection();
-        }
-
-        private void ClearSelection()
-        {
-            var strokes = XInkCanvas.InkPresenter.StrokeContainer.GetStrokes();
-            foreach (var stroke in strokes)
-            {
-                stroke.Selected = false;
-            }
-            ClearBoundingRect();
-        }
-
-        private void ClearBoundingRect()
-        {
-            if (SelectionCanvas.Children.Any())
-            {
-                SelectionCanvas.Children.Clear();
-                _boundingRect = Rect.Empty;
-            }
-        }
-
-        private void InkFieldModelControllerOnInkUpdated(InkCanvas sender, FieldUpdatedEventArgs args)
-        {
-            if (!sender.Equals(XInkCanvas) || args?.Action == DocumentController.FieldUpdatedAction.Replace)
-            {
-                UpdateStrokes();
-            }
-        }
+        
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
         {
@@ -679,207 +618,6 @@ namespace Dash
                 xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
             }
         }
-
-        public void ToggleDraw()
-        {
-            if (IsDrawing)
-            {
-                InkSettingsPanel.Visibility = Visibility.Collapsed;
-                SetInkInputType(CoreInputDeviceTypes.None);
-                XInkCanvas.InkPresenter.IsInputEnabled = false;
-            }
-            else
-            {
-                InkSettingsPanel.Visibility = Visibility.Visible;
-                SetInkInputType(GlobalInkSettings.InkInputType);
-                XInkCanvas.InkPresenter.IsInputEnabled = true;
-            }
-            IsDrawing = !IsDrawing;
-
-        }
-
-        public bool IsDrawing { get; set; }
-
-        private void GlobalInkSettingsOnInkInputChanged(CoreInputDeviceTypes newInputType)
-        {
-            SetInkInputType(newInputType);
-        }
-
-        private void SetInkInputType(CoreInputDeviceTypes type)
-        {
-            switch (type)
-            {
-                case CoreInputDeviceTypes.Mouse:
-                    ManipulationControls.BlockedInputType = PointerDeviceType.Mouse;
-                    ManipulationControls.FilterInput = IsDrawing;
-                    break;
-                case CoreInputDeviceTypes.Pen:
-                    ManipulationControls.BlockedInputType = PointerDeviceType.Pen;
-                    ManipulationControls.FilterInput = IsDrawing;
-                    break;
-                case CoreInputDeviceTypes.Touch:
-                    ManipulationControls.BlockedInputType = PointerDeviceType.Touch;
-                    ManipulationControls.FilterInput = IsDrawing;
-                    break;
-                default:
-                    ManipulationControls.FilterInput = false;
-                    break;
-            }
-        }
-
-        public void UpdateInkFieldModelController()
-        {
-            if (InkFieldModelController != null)
-                InkFieldModelController.UpdateStrokesFromList(XInkCanvas.InkPresenter.StrokeContainer.GetStrokes(), XInkCanvas);
-        }
-
-        private void InkToolbarOnEraseAllClicked(InkToolbar sender, object args)
-        {
-            UpdateInkFieldModelController();
-        }
-
-        private void UndoButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            InkFieldModelController?.Undo(XInkCanvas);
-            ClearSelection();
-        }
-
-        private void RedoButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            InkFieldModelController?.Redo(XInkCanvas);
-            ClearSelection();
-        }
-
-        private void UpdateStrokes()
-        {
-            XInkCanvas.InkPresenter.StrokeContainer.Clear();
-            if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
-                XInkCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
-        }
-
-        private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
-        {
-            UpdateInkFieldModelController();
-        }
-
-        private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs args)
-        {
-            if (_isSelectionEnabled)
-            {
-                switch (_inkSelectionMode)
-                {
-                    case InkSelectionMode.Ink:
-                        SelectInk(args.Strokes.Last());
-                        break;
-                    case InkSelectionMode.Document:
-                        SelectDocs(args.Strokes.Last());
-                        break;
-                }
-
-            }
-            UpdateInkFieldModelController();
-        }
-
-        private void SelectDocs(InkStroke selectionStroke)
-        {
-            selectionStroke.Selected = true;
-            XInkCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-            var points = selectionStroke.GetInkPoints().Select(i => new Point(i.Position.X - 30000, i.Position.Y - 30000));
-            ViewModel.SelectionGroup = _lassoHelper.GetSelectedDocuments(new List<Point>(points));
-        }
-
-        private void SelectInk(InkStroke selectionStroke)
-        {
-            selectionStroke.Selected = true;
-            XInkCanvas.InkPresenter.StrokeContainer.DeleteSelected();
-            _boundingRect =
-                XInkCanvas.InkPresenter.StrokeContainer.SelectWithPolyLine(
-                    selectionStroke.GetInkPoints().Select(i => i.Position));
-            DrawBoundingRect();
-        }
-
-        //TODO: position ruler
-        private void InkToolbar_OnIsRulerButtonCheckedChanged(InkToolbar sender, object args)
-        {
-            InkPresenterRuler ruler = new InkPresenterRuler(XInkCanvas.InkPresenter);
-            ruler.Transform = Matrix3x2.CreateTranslation(new Vector2(30000, 30000));
-        }
-
-        private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            UpdateSelectionMode();
-        }
-
-        private void DrawBoundingRect()
-        {
-            SelectionCanvas.Children.Clear();
-
-            // Draw a bounding rectangle only if there are ink strokes 
-            // within the lasso area.
-            if (!(_boundingRect.Width == 0 ||
-                  _boundingRect.Height == 0 ||
-                  _boundingRect.IsEmpty))
-            {
-                _rectangle = new InkSelectionRect(this, XInkCanvas.InkPresenter.StrokeContainer)
-                {
-                    Width = _boundingRect.Width + 30,
-                    Height = _boundingRect.Height + 30,
-                };
-
-                Canvas.SetLeft(_rectangle, _boundingRect.X - 15);
-                Canvas.SetTop(_rectangle, _boundingRect.Y - 15);
-
-                SelectionCanvas.Children.Add(_rectangle);
-            }
-        }
-
-        private void InkSelect_OnChecked(object sender, RoutedEventArgs e)
-        {
-            UpdateSelectionMode();
-        }
         
-
-        private void DocumentSelect_OnChecked(object sender, RoutedEventArgs e)
-        {
-            UpdateSelectionMode();
-        }
-        #endregion
-
-        private void SelectButton_Unchecked(object sender, RoutedEventArgs e)
-        {
-            UpdateSelectionMode();
-        }
-
-        private void UpdateSelectionMode()
-        {
-            if (SelectButton.IsChecked != null && (bool) SelectButton.IsChecked)
-            {
-                _isSelectionEnabled = true;
-                if (InkSelect.IsChecked != null && (bool) InkSelect.IsChecked)
-                {
-                    _inkSelectionMode = InkSelectionMode.Ink;
-                    var newAttributes = new InkDrawingAttributes();
-                    newAttributes.Size = new Size(2, 2);
-                    newAttributes.Color = ((SolidColorBrush) Application.Current.Resources["WindowsBlue"]).Color;
-                    XInkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(newAttributes);
-                    XInkCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
-                }
-                if (DocumentSelect.IsChecked != null && (bool) DocumentSelect.IsChecked)
-                {
-                    _inkSelectionMode = InkSelectionMode.Document;
-                    var newAttributes = new InkDrawingAttributes();
-                    newAttributes.Size = new Size(2, 2);
-                    newAttributes.Color = ((SolidColorBrush) Application.Current.Resources["WindowsBlue"]).Color;
-                    XInkCanvas.InkPresenter.UpdateDefaultDrawingAttributes(newAttributes);
-                    XInkCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
-                }
-            }
-            else
-            {
-                _isSelectionEnabled = false;
-            }
-            
-            
-        }
     }
 }

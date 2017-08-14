@@ -13,25 +13,20 @@
         <Grid.Resources>
             <Storyboard x:Name="xCollapseSettings" Storyboard.TargetName="SettingsPanel"
                         Completed="XCollapseSettingsOnCompleted">
-                <DoubleAnimation Storyboard.TargetProperty="Width" From="340" To="0"
+                <DoubleAnimation Storyboard.TargetProperty="Width" From="400" To="0"
                                  Duration="0:0:0.2" EnableDependentAnimation="True" />
             </Storyboard>
             <Storyboard x:Name="xExpandSettings" Storyboard.TargetName="SettingsPanel">
-                <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="340"
+                <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="400"
                                  Duration="0:0:0.2" EnableDependentAnimation="True" />
             </Storyboard>
-            <MenuFlyout x:Name="SelectionFlyout">
-                <MenuFlyoutItem Width="50" Height="50" Text="Copy" Padding="0" BorderThickness="0.5" Click="copyButton_Click"/>
-                <MenuFlyoutItem Width="50" Height="50" Text="Cut" Padding="0" BorderThickness="0.5" Click="cutButton_Click"></MenuFlyoutItem>
-                <MenuFlyoutItem Width="50" Height="50" Text="Paste" Padding="0" BorderThickness="0.5" Click="pasteButton_Click"></MenuFlyoutItem>
-            </MenuFlyout>
         </Grid.Resources>
 
         <!--INK CANVAS-->
         <ScrollViewer x:Name="ScrollViewer" VerticalScrollMode="Enabled" HorizontalScrollMode="Enabled"
                       VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Auto"
-                      ZoomMode="Enabled" MinZoomFactor=".1" MaxZoomFactor="4" Margin="1,1,1,1" ViewChanged="ScrollViewer_ViewChanged" >
+                      ZoomMode="Enabled" MinZoomFactor=".1" MaxZoomFactor="4" Margin="1,1,1,1">
             <Grid >
                 <InkCanvas x:Name="XInkCanvas" Width="10000" Height="10000"></InkCanvas>
                 <Canvas x:Name="SelectionCanvas"></Canvas>
@@ -51,7 +46,7 @@
         <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Top"
                       Margin="50,0,0,0" Height="63" Padding="0" HorizontalAlignment="Stretch">
-            <StackPanel x:Name="SettingsPanel" Orientation="Horizontal" HorizontalAlignment="Left" Width="340">
+            <StackPanel x:Name="SettingsPanel" Orientation="Horizontal" HorizontalAlignment="Left" Width="400">
                 <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
                             TargetInkCanvas="{x:Bind XInkCanvas}" Height="50" Background="#FFE6E6E6">
                     <InkToolbarCustomToolButton x:Name="SelectButton" 
