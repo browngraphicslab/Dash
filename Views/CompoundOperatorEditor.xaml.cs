@@ -72,6 +72,8 @@ namespace Dash
 
         private void XFreeFormEditor_OnDrop(object sender, DragEventArgs e)
         {
+            if (e.Data == null) return;
+
             var isDraggedFromOperationsBar = e.Data.Properties[OperationBarDragKey] != null;
 
             if (isDraggedFromOperationsBar)

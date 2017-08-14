@@ -96,15 +96,6 @@ namespace Dash
         private int test = 1;
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-            var fields = new Dictionary<KeyController, FieldModelController>
-            {
-                [TestKey] = new TextFieldModelController("Test"),
-                [Test2Key] = new NumberFieldModelController(54),
-                [Test3Key] = new TextFieldModelController($"{test++}")
-            };
-            var document = new DocumentController(fields, DocumentType.DefaultType);
-            outputs[OutputKey] = new DocumentFieldModelController(document);
-            return;
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
             var method = (inputs[MethodKey] as TextFieldModelController).Data.ToLower();
             HttpMethod httpMethod;
@@ -140,11 +131,8 @@ namespace Dash
                 }
                 TextFieldModelController p = (TextFieldModelController)param;
                 var split = p.Data.Split(':');
-                if (split.Length != 2)
-                {
-                    continue;
-                }
-                parameters.Add(new KeyValuePair<string, string>(split[0], split[1]));
+                var value = String.Join(":", split.Skip(1));
+                parameters.Add(new KeyValuePair<string, string>(split[0], value));
             }
 
             foreach (var header in Headers)

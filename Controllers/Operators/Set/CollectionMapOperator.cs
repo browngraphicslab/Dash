@@ -76,6 +76,7 @@ namespace Dash
                     continue;
                 }
                 var documentControllers = (inputs[key] as DocumentCollectionFieldModelController)?.GetDocuments();
+
                 if (numDocuments == -1)
                 {
                     numDocuments = documentControllers.Count;
