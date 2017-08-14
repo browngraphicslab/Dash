@@ -29,14 +29,14 @@ namespace Dash
 
         public string Id => KeyModel.Id;
 
-        public KeyController(KeyModel keyModel, bool isCreatedFromServer = false)
+        public KeyController(KeyModel keyModel, bool sendToServer = true)
         {
             // Initialize Local Variables
             KeyModel = keyModel;
             ContentController.AddModel(keyModel);
             ContentController.AddController(this);
 
-            if (isCreatedFromServer == false)
+            if (sendToServer)
             {
                 RESTClient.Instance.Keys.AddKey(KeyModel, model =>
                 {

@@ -49,7 +49,7 @@ namespace Dash
 
                     foreach (var docDto in docmodelDtos)
                     {
-                        var keys = docDto.KeyList.Select(key => new KeyController(key, true));
+                        var keys = docDto.KeyList.Select(key => new KeyController(key, false));
                         var fields = docDto.FieldList.Select(field => CreateFromServer(field));
 
                         var fieldDict = keys.Zip(fields,
@@ -85,7 +85,8 @@ namespace Dash
         public static DocumentCollectionFieldModelController CreateFromServer(
             DocumentCollectionFieldModel docCollectionFieldModel)
         {
-            return new DocumentCollectionFieldModelController(docCollectionFieldModel);
+            return ContentController.GetController<DocumentCollectionFieldModelController>(docCollectionFieldModel.Id) ?? 
+                new DocumentCollectionFieldModelController(docCollectionFieldModel);
         }
 
 

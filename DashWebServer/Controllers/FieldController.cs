@@ -43,7 +43,8 @@ namespace DashWebServer.Controllers
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
+
             }
             return Ok(fieldModelDto);
         }
@@ -59,7 +60,7 @@ namespace DashWebServer.Controllers
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
             return Ok(fieldModelDtOs);
         }
@@ -75,7 +76,7 @@ namespace DashWebServer.Controllers
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
             return Ok(fieldModelDTO);
         }
@@ -91,7 +92,7 @@ namespace DashWebServer.Controllers
             catch (Exception e)
             {
                 Debug.WriteLine(e);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
             return Ok();
         }

@@ -79,7 +79,7 @@ namespace Dash
         /// </summary>
         private Dictionary<KeyController, FieldModelController> _fields = new Dictionary<KeyController, FieldModelController>();
 
-        public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null)
+        public DocumentController(IDictionary<KeyController, FieldModelController> fields, DocumentType type, string id = null, bool sendToServer = true)
         {
             DocumentModel =
                 new DocumentModel(fields.ToDictionary(kv => kv.Key.KeyModel, kv => kv.Value.FieldModel.GetFieldDTO()), type, id);
@@ -87,17 +87,16 @@ namespace Dash
             // get the field controllers associated with the FieldModel id's stored in the document Model
             // put the field controllers in an observable dictionary
             ContentController.AddController(this);
-            foreach (var fieldModelController in fields)
-            {
-                SetField(fieldModelController.Key, fieldModelController.Value, true);
-            }
 
             LayoutName = DocumentModel.DocumentType.Type;
 
-            if (id == null)
+            SetFields(fields, true, false);
+            if (sendToServer)
             {
                 // Add Events
+#pragma warning disable 4014
                 RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
+#pragma warning restore 4014
                 {
                     // Yay!
                 }, exception =>
@@ -105,22 +104,23 @@ namespace Dash
                     // Hayyyyy!
                 });
             }
-
         }
 
         public static DocumentController CreateFromServer(DocumentModelDTO docModelDto)
         {
+            var localDocController = ContentController.GetController<DocumentController>(docModelDto.Id);
+            if (localDocController != null) return localDocController;
+
             var fields = docModelDto.KeyList.Zip(docModelDto.FieldList, (keyModel, field) =>
             {
-                var keyController = new KeyController(keyModel, isCreatedFromServer: true);
+                var keyController = new KeyController(keyModel, sendToServer: false);
                 var fieldController = FieldModelController.CreateFromServer(field);
                 return new { keyController, fieldController };
             }).ToDictionary(keyFieldPair => keyFieldPair.keyController, keyFieldPair => keyFieldPair.fieldController);
             var type = docModelDto.DocumentType;
             var id = docModelDto.Id;
 
-            return new DocumentController(fields, type, id);
-
+            return new DocumentController(fields, type, id, sendToServer: false);
         }
 
         /// <summary>
@@ -421,6 +421,7 @@ namespace Dash
             proto.DocumentModel.Fields[key.KeyModel.Id] = field == null ? "" : field.FieldModel.Id;
 
             replacedField = oldField;
+
             return true;
         }
 
@@ -488,6 +489,7 @@ namespace Dash
             {
                 //Hayyyyy!
             });
+
         }
 
 
@@ -520,7 +522,7 @@ namespace Dash
         /// </summary>
         /// <param name="fields"></param>
         /// <param name="forceMask"></param>
-        public void SetFields(IDictionary<KeyController, FieldModelController> fields, bool forceMask)
+        public void SetFields(IDictionary<KeyController, FieldModelController> fields, bool forceMask, bool updateServer = true)
         {
             var oldFields = new List<Tuple<FieldModelController, FieldModelController, KeyController>>();
 
@@ -545,6 +547,17 @@ namespace Dash
             {
                 Execute(c, true);
             }
+
+            if (updateServer)
+            {
+                RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
+                {
+                    //Yay!
+                }, exception =>
+                {
+                    //Hayyyyy!
+                });
+            }
         }
 
 
@@ -555,7 +568,7 @@ namespace Dash
         public DocumentController MakeDelegate()
         {
             // create a controller for the child
-            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType);
+            var delegateController = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType, id: "delegate of " + GetId() + " " + Guid.NewGuid());
             delegateController.DocumentFieldUpdated +=
                 delegate (DocumentController sender, DocumentFieldUpdatedEventArgs args)
                 {

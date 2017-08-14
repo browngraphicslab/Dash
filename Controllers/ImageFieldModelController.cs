@@ -18,7 +18,8 @@ namespace Dash
 
         public static ImageFieldModelController CreateFromServer(ImageFieldModel imageFieldModel)
         {
-            return new ImageFieldModelController(imageFieldModel);
+            return ContentController.GetController<ImageFieldModelController>(imageFieldModel.Id) ??
+                   new ImageFieldModelController(imageFieldModel);
         }
 
         /// <summary>

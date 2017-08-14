@@ -16,12 +16,21 @@ namespace Dash
 
         private DocumentFieldModelController(DocumentFieldModel documentFieldModel) : base(documentFieldModel, true)
         {
-            Data = DocumentController.CreateFromServer(RESTClient.Instance.Documents.GetDocument(documentFieldModel.Id).Result);
+#pragma warning disable 4014
+            RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data.Id, dto =>
+#pragma warning restore 4014
+            {
+                Data =  DocumentController.CreateFromServer(dto);
+            }, exception =>
+            {
+                
+            });            
         }
 
         public static DocumentFieldModelController CreateFromServer(DocumentFieldModel documentFieldModel)
         {
-            return new DocumentFieldModelController(documentFieldModel);
+            return ContentController.GetController<DocumentFieldModelController>(documentFieldModel.Id) ?? 
+                new DocumentFieldModelController(documentFieldModel);
         }
 
         /// <summary>
@@ -45,7 +54,7 @@ namespace Dash
                 if (SetProperty(ref _data, value))
                 {
                     OnFieldModelUpdated(null);
-                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto => { }, exception => { });
+                    RESTClient.Instance.Fields.UpdateField(FieldModel, dto => { }, exception => throw exception);
                 }
             }
         }

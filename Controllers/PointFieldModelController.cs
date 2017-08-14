@@ -19,7 +19,8 @@ namespace Dash
 
         public static PointFieldModelController CreateFromServer(PointFieldModel pointFieldModel)
         {
-            return new PointFieldModelController(pointFieldModel);
+            return ContentController.GetController<PointFieldModelController>(pointFieldModel.Id) ??
+                    new PointFieldModelController(pointFieldModel);
         }
 
         /// <summary>

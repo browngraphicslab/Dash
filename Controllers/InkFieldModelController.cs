@@ -47,7 +47,8 @@ namespace Dash
 
         public static InkFieldModelController CreateFromServer(InkFieldModel inkFieldModel)
         {
-            return new InkFieldModelController(inkFieldModel);
+            return ContentController.GetController<InkFieldModelController>(inkFieldModel.Id) ??
+                   new InkFieldModelController(inkFieldModel);
         }
 
         /// <summary>

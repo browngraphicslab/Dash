@@ -67,30 +67,6 @@ namespace DashWebServer
             }
         }
 
-        #region DELETE
-
-        /// <summary>
-        ///     Deletes the document from the database with the passed in documentId
-        /// </summary>
-        /// <param name="document">The document that is going to be deleted</param>
-        /// <returns>The document which was deleted from the database</returns>
-        public async Task DeleteItemAsync<T>(T document) where T : EntityBase
-        {
-            try
-            {
-                RemoveDocumentFromCache(document);
-                var resourceResponse = await _client.DeleteDocumentAsync(GetDocumentLink(document.Id));
-            }
-            catch (DocumentClientException e)
-            {
-                Debug.WriteLine(e);
-                throw;
-            }
-        }
-
-        #endregion
-
-
         private async Task AddStoredProcedures()
         {
             var scripts = Directory.GetFiles(DashConstants.StoredProceduresDirectory);
@@ -226,8 +202,15 @@ namespace DashWebServer
                 var resourceResponse = await _client.UpsertDocumentAsync(GetCollectionLink, item);
 
                 T result = (dynamic) resourceResponse.Resource;
+
+
                 // add the new document to the cache
                 var result2 = AddDocumentToCache(result);
+
+                Debug.Assert(item.Id == result.Id && result.Id == result2.Id);
+                Debug.WriteLine("Add " + result.Id, item.Id, result2.Id);
+
+
                 return result;
             }
             catch (DocumentClientException e)
@@ -280,8 +263,9 @@ namespace DashWebServer
         /// <returns></returns>
         public async Task<T> GetItemByIdAsync<T>(string documentId) where T : EntityBase
         {
-            var result = GetDocumentFromCacheOrNull<T>(documentId);
-            if (result is null)
+            T result;
+            //var result = GetDocumentFromCacheOrNull<T>(documentId);
+            //if (result is null)
                 try
                 {
                     var resourceResponse = await _client.ReadDocumentAsync(GetDocumentLink(documentId));
@@ -344,8 +328,13 @@ namespace DashWebServer
         {
             try
             {
+                Debug.WriteLine("updated: " + document.Id);
+                
+
                 // add the documetn to the cache and return it, it will update itself in the database when it needs to
-                var result = AddDocumentToCache(document);
+                //var result = AddDocumentToCache(document);
+                var resourceResponse = await _client.UpsertDocumentAsync(GetCollectionLink, document);
+                T result = (dynamic) resourceResponse.Resource;
                 return result;
             }
             catch (DocumentClientException e)
@@ -369,6 +358,54 @@ namespace DashWebServer
                 await _client.UpsertDocumentAsync(GetCollectionLink, document);
             }
             catch (DocumentClientException e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+        }
+
+        #endregion
+
+        #region DELETE
+
+        /// <summary>
+        ///     Deletes the document from the database with the passed in documentId
+        /// </summary>
+        /// <param name="document">The document that is going to be deleted</param>
+        /// <returns>The document which was deleted from the database</returns>
+        public async Task DeleteItemAsync<T>(T document) where T : EntityBase
+        {
+            try
+            {
+                //RemoveDocumentFromCache(document);
+                await _client.DeleteDocumentAsync(GetDocumentLink(document.Id));
+            }
+            catch (DocumentClientException e)
+            {
+                Debug.WriteLine(e);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Deletes all the documents from the database
+        /// </summary>
+        /// <returns></returns>
+        public async Task DeleteAllAsync()
+        {
+            try
+            {
+                var query = _client.CreateDocumentQuery<Document>(GetCollectionLink, "Select * From c").AsDocumentQuery();
+                var results = new List<Document>();
+                while (query.HasMoreResults)
+                    results.AddRange(await query.ExecuteNextAsync<Document>());
+
+                foreach (var doc in results)
+                {
+                    await _client.DeleteDocumentAsync(GetDocumentLink(doc.Id));
+                }
+            }
+            catch (Exception e)
             {
                 Debug.WriteLine(e);
                 throw;

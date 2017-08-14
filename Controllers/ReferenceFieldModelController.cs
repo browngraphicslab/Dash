@@ -36,7 +36,8 @@ namespace Dash
 
         public static ReferenceFieldModelController CreateFromServer(ReferenceFieldModel referenceFieldModel)
         {
-            return new ReferenceFieldModelController(referenceFieldModel);
+            return ContentController.GetController<ReferenceFieldModelController>(referenceFieldModel.Id) ??
+                    new ReferenceFieldModelController(referenceFieldModel);
         }
 
         private void DocFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)

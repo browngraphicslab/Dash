@@ -92,7 +92,7 @@ namespace DashWebServer.Controllers
                 keyModels.Add(key);
             }
 
-            return new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType);
+            return new DocumentModelDTO(fieldModelDtos, keyModels, docModel.DocumentType, docModel.Id);
         }
 
         // POST api/document, adds a new document from the given docModel
@@ -108,7 +108,7 @@ namespace DashWebServer.Controllers
             catch (Exception e)
             {
                 Debug.WriteLine(e.Message);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
 
             _pushHandler.SendCreate(DocModel);
@@ -127,7 +127,7 @@ namespace DashWebServer.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
 
             _pushHandler.SendUpdate(DocModel);
@@ -146,10 +146,27 @@ namespace DashWebServer.Controllers
             }
             catch (Exception e)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
             }
 
             _pushHandler.SendDelete(id);
+
+            return Ok();
+        }
+
+        // DELETE api/document/, deletes all documents from the database
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAllDocuments()
+        {
+            try
+            {
+                await _documentRepository.DeleteAllAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return StatusCode(StatusCodes.Status500InternalServerError, e);
+            }
 
             return Ok();
         }

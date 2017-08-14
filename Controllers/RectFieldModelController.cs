@@ -24,7 +24,8 @@ namespace Dash
 
         public static RectFieldModelController CreateFromServer(RectFieldModel rectFieldModel)
         {
-            return new RectFieldModelController(rectFieldModel);
+            return ContentController.GetController<RectFieldModelController>(rectFieldModel.Id) ??
+                    new RectFieldModelController(rectFieldModel);
         }
 
 

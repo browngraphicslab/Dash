@@ -20,7 +20,8 @@ namespace Dash
 
         public static NumberFieldModelController CreateFromServer(NumberFieldModel numberFieldModel)
         {
-            return new NumberFieldModelController(numberFieldModel);
+            return ContentController.GetController<NumberFieldModelController>(numberFieldModel.Id) ??
+                     new NumberFieldModelController(numberFieldModel);
         }
 
         /// <summary>

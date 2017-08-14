@@ -39,49 +39,12 @@ namespace Dash
     /// </summary>
     public sealed partial class HomePage : Page
     {
-        private DocumentController _mainDocument;
+        private DocumentController _homePageDocument;
         private DocumentView _mainDocView;
 
         public HomePage()
         {
             InitializeComponent();
-
-            var mainDocuments = new List<DocumentController>();
-
-            Task.Run(async () =>
-            {
-                await RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType, docModelDtos =>
-                {
-                    mainDocuments.AddRange(docModelDtos.Select(dmDto => DocumentController.CreateFromServer(dmDto)));
-                }, exception =>
-                {
-                    Debug.WriteLine(exception);
-                });
-
-            }).ContinueWith(task =>
-            {
-
-                var fields = new Dictionary<KeyController, FieldModelController>
-                {
-                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(mainDocuments)
-                };
-                _mainDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType);
-
-                var collectionDocumentController =
-                    new CollectionBox(new ReferenceFieldModelController(_mainDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
-
-                _mainDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
-
-                _mainDocView = new DocumentView(new DocumentViewModel(_mainDocument));
-
-                // set the main view's width and height to avoid NaN errors
-                _mainDocView.Width = xOuterGrid.ActualWidth;
-                _mainDocView.Height = xOuterGrid.ActualHeight;
-
-                Grid.SetRow(_mainDocView, 1);
-                xOuterGrid.Children.Add(_mainDocView);
-
-            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private void XOutterGridSizeChanged(object sender, SizeChangedEventArgs e)
@@ -97,11 +60,52 @@ namespace Dash
         {
             var newDocument = CreateNewWorkspace();
             var collectionField =
-                _mainDocument.GetField(DocumentCollectionFieldModelController.CollectionKey) as
+                _homePageDocument.GetField(DocumentCollectionFieldModelController.CollectionKey) as
                     DocumentCollectionFieldModelController;
 
             Debug.Assert(collectionField != null, "collection field should never be null if we created it in the constructor correctly");
             collectionField.AddDocument(newDocument);
+        }
+
+
+        private void OnCreateMainPageTapped(object sender, TappedRoutedEventArgs e)
+        {
+            var mainDocuments = new List<DocumentController>();
+
+            Task.Run(async () =>
+            {
+                await RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.MainDocumentType, docModelDtos =>
+                {
+                    mainDocuments.AddRange(docModelDtos.Select(dmDto => DocumentController.CreateFromServer(dmDto)));
+                }, exception =>
+                {
+                    Debug.WriteLine(exception);
+                });
+
+            }).ContinueWith(task =>
+            {
+                var fields = new Dictionary<KeyController, FieldModelController>
+                {
+                    [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(mainDocuments)
+                };
+                _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id:"home document " + Guid.NewGuid());
+
+                var collectionDocumentController =
+                    new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+
+                _homePageDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+
+                var documentViewModel = new DocumentViewModel(_homePageDocument);
+                _mainDocView = new DocumentView(documentViewModel);
+
+                // set the main view's width and height to avoid NaN errors
+                _mainDocView.Width = xOuterGrid.ActualWidth;
+                _mainDocView.Height = xOuterGrid.ActualHeight;
+
+                Grid.SetRow(_mainDocView, 1);
+                xOuterGrid.Children.Add(_mainDocView);
+
+            }, TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         private DocumentController CreateNewWorkspace()
@@ -112,12 +116,70 @@ namespace Dash
                 [DocumentCollectionFieldModelController.CollectionKey] =
                 new DocumentCollectionFieldModelController(new List<DocumentController>())
             };
-            var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType);
+            var newDocument = new DocumentController(fields, DashConstants.TypeStore.MainDocumentType, "main document " + Guid.NewGuid());
             var collectionDocumentController =
                 new CollectionBox(new ReferenceFieldModelController(newDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
             newDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
 
             return newDocument;
+        }   
+
+        private void OnDeleteAllDocumentsTapped(object sender, TappedRoutedEventArgs e)
+        {
+            RESTClient.Instance.Documents.DeleteAllDocuments(() =>
+            {
+                
+            }, exception =>
+            {
+                
+            });
+        }
+
+        private void OnCreateOrGetHomePage(object sender, TappedRoutedEventArgs e)
+        {
+            DocumentViewModel homePageViewModel;
+
+            void Success(IEnumerable<DocumentModelDTO> homePageDocDtos)
+            {
+                var documentModelDto = homePageDocDtos.FirstOrDefault();
+                if (documentModelDto != null)
+                {
+                   _homePageDocument = DocumentController.CreateFromServer(documentModelDto);
+                }
+                else
+                {
+                    var fields = new Dictionary<KeyController, FieldModelController>
+                    {
+                        [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController()
+                    };
+                    _homePageDocument = new DocumentController(fields, DashConstants.TypeStore.HomePageType, id: "home document " + Guid.NewGuid());
+                    var collectionDocumentController =
+                        new CollectionBox(new ReferenceFieldModelController(_homePageDocument.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+
+                    _homePageDocument.SetActiveLayout(collectionDocumentController, forceMask: true, addToLayoutList: true);
+                }
+
+                UITask.Run(() =>
+                {
+                    homePageViewModel = new DocumentViewModel(_homePageDocument);
+                    _mainDocView = new DocumentView(homePageViewModel);
+
+                    // set the main view's width and height to avoid NaN errors
+                    _mainDocView.Width = xOuterGrid.ActualWidth;
+                    _mainDocView.Height = xOuterGrid.ActualHeight;
+
+                    Grid.SetRow(_mainDocView, 1);
+                    xOuterGrid.Children.Add(_mainDocView);
+                });
+
+            }
+
+            RESTClient.Instance.Documents.GetDocumentByType(DashConstants.TypeStore.HomePageType, Success, exception => throw exception);
+        }
+
+        private void OnPopulatedHomePagedTapped(object sender, TappedRoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

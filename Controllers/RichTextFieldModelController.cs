@@ -24,7 +24,8 @@ namespace Dash
 
         public static RichTextFieldModelController CreateFromServer(RichTextFieldModel richTextFieldModel)
         {
-            return new RichTextFieldModelController(richTextFieldModel);
+            return ContentController.GetController<RichTextFieldModelController>(richTextFieldModel.Id) ??
+                    new RichTextFieldModelController(richTextFieldModel);
         }
 
         /// <summary>

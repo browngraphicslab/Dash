@@ -21,7 +21,7 @@ namespace Dash
         /// <param name="newDocument"></param>
         /// <param name="success"></param>
         /// <param name="error"></param>
-        public async void AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
+        public async Task AddDocument(DocumentModel newDocument, Action<DocumentModel> success, Action<Exception> error)
         {
             try
             {
@@ -80,20 +80,6 @@ namespace Dash
             }
         }
 
-        public async Task<DocumentModelDTO> GetDocument(string id)
-        {
-            try
-            {
-                var result = await _connection.GetItem<DocumentModelDTO>($"api/Document/{id}");
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw;
-                // return the error message
-            }
-        }
-
         /// <summary>
         ///     Gets a document from the server.
         /// </summary>
@@ -137,12 +123,35 @@ namespace Dash
             }
         }
 
-
-        public async Task GetDocumentByType(DocumentType mainDocumentType, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error)
+        /// <summary>
+        ///     Deletes all documents from the server.
+        /// </summary>
+        /// <param name="document"></param>
+        /// <param name="success"></param>
+        /// <param name="error"></param>
+        public async void DeleteAllDocuments(Action success, Action<Exception> error)
         {
             try
             {
-                var response = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/type/{mainDocumentType.Id}");
+                var response = await _connection.Delete($"api/Document");
+                if (response.IsSuccessStatusCode)
+                    success();
+                else
+                    error(new ApiException(response));
+            }
+            catch (Exception e)
+            {
+                // return the error message
+                error(e);
+            }
+        }
+
+
+        public async Task GetDocumentByType(DocumentType documentType, Action<IEnumerable<DocumentModelDTO>> success, Action<Exception> error)
+        {
+            try
+            {
+                var response = await _connection.GetItem<IEnumerable<DocumentModelDTO>>($"api/Document/type/{documentType.Id}");
                 success(response);
             }
             catch (Exception e)
