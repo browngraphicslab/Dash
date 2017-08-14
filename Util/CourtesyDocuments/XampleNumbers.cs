@@ -62,6 +62,7 @@ namespace Dash
         });
             gridPanel.SetHorizontalAlignment(HorizontalAlignment.Right);
             gridPanel.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
+            gridPanel.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
             tBox1.SetGridRow(0);
             gridPanel.AddChild(tBox1);
             tBox2.SetGridRow(1);

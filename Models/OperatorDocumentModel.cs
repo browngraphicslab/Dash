@@ -83,7 +83,7 @@ namespace Dash
             {
                 [OperatorKey] = new CompoundOperatorFieldController()
             };
-            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+            var doc = new DocumentController(fields, CompoundOperatorFieldController.MapType);
 
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);

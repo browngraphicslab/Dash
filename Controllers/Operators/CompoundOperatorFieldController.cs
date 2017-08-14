@@ -10,6 +10,8 @@ namespace Dash
 {
     public class CompoundOperatorFieldController : OperatorFieldModelController
     {
+        public static readonly DocumentType MapType = new DocumentType("CFB46F9B-03FB-48E1-9AF9-DBBD266F0D31", "Compound");
+
         public CompoundOperatorFieldController(CompoundOperatorFieldModel operatorFieldModel) : base(operatorFieldModel)
         {
         }
