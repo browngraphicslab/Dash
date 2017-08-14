@@ -142,21 +142,17 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            var refs = _lineDict.Keys.ToList();
-            for (int i = _lineDict.Count - 1; i >= 0; i--)
+            var refs = _linesToBeDeleted.Keys.ToList();
+            for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var package = _lineDict[refs[i]];
-                var converter = package.Converter;
-                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
-                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-
-                if (view1 == docView || view2 == docView)
-                {
-                    itemsPanelCanvas.Children.Remove(package.Line);
-                    _lineDict.Remove(refs[i]);
-                }
+                var package = _linesToBeDeleted[refs[i]];
+                itemsPanelCanvas.Children.Remove(package.Line);
+                _lineDict.Remove(refs[i]);
             }
+            _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>(); 
         }
+
+        private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
 
         /// <summary>
         /// Adds the lines to be deleted as part of fading storyboard 
@@ -164,8 +160,9 @@ namespace Dash
         /// <param name="fadeout"></param>
         public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
         {
-            foreach (var line in _lineDict.Values)
+            foreach (var pair in _lineDict)
             {
+                var line = pair.Value;
                 var converter = line.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
@@ -175,6 +172,7 @@ namespace Dash
                     var animation = new Windows.UI.Xaml.Media.Animation.FadeOutThemeAnimation();
                     Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, line.Line);
                     fadeout.Children.Add(animation);
+                    _linesToBeDeleted.Add(pair.Key, pair.Value);
                 }
             }
         }
