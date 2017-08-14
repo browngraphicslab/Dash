@@ -140,7 +140,10 @@ namespace Dash
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
-            
+
+            // handle but only if it's not in a compoundoperatoreditor view 
+            if ((sender as CollectionFreeformView).GetFirstAncestorOfType<CompoundOperatorEditor>() == null)
+                e.Handled = true;
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -158,7 +161,6 @@ namespace Dash
                 carrier.Destination = this; 
                 if (carrier.Source.Equals(carrier.Destination))
                 {
-                    e.Handled = true;
                     return; // we don't want to drop items on ourself
                 }
 

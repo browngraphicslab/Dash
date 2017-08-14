@@ -276,23 +276,28 @@ namespace Dash
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
+            // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null)
             {
                 return;
             }
+
+            // only allow input-output pairs to be connected 
             if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
             {
                 UndoLine();
                 return;
             }
-            if (_currReference.FieldReference == null) return;
 
-            if (inputReference.FieldReference == outputReference.FieldReference)
+            // undo line if connecting the same fields 
+            if (inputReference.FieldReference == outputReference.FieldReference || _currReference.FieldReference == null)
             {
                 UndoLine();
                 return;
             }
+
+            //binding line position 
             _converter.Element2 = ioReference.FrameworkElement;
             _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
