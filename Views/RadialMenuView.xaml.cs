@@ -343,24 +343,8 @@ namespace Dash
 
                 button.InnerArcReleased += delegate
                 {
-                    actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
-                    actionButton.GenericAction?.Invoke(null);
-                };
-                button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
-                {
-                    e.Data.RequestedOperation = DataPackageOperation.Move;
-                    if (actionButton.CollectionDropAction != null)
-                    {
-                        e.Data.Properties[RadialMenuDropKey] = actionButton.CollectionDropAction;
-                    } else if (actionButton.GenericDropAction != null)
-                    {
-                        e.Data.Properties[RadialMenuDropKey] = actionButton.GenericDropAction;
-                    }
-                    else
-                    {
-                        e.Cancel = true;
-                    }
-                    
+                    action.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
+                    action.GenericAction?.Invoke(null);
                 };
             }
             menu.AddButton(button);
