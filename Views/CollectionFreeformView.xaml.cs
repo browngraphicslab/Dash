@@ -698,8 +698,11 @@ namespace Dash
         {
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
-            if (carrier.StartingCollection != this) return; 
-
+            if (carrier.StartingCollection != this)
+            {
+                carrier.StartingCollection.Collection_DragLeave(sender, args); 
+                return;
+            }
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
             foreach (var cont in ItemsCarrier.Instance.Payload)
             {
