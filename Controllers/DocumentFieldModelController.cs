@@ -20,11 +20,11 @@ namespace Dash
             RESTClient.Instance.Documents.GetDocument(documentFieldModel.Data.Id, dto =>
 #pragma warning restore 4014
             {
-                Data =  DocumentController.CreateFromServer(dto);
-            }, exception =>
-            {
-                
-            });            
+                UITask.Run(() =>
+                {
+                    Data =  DocumentController.CreateFromServer(dto);
+                });
+            }, exception => throw exception);            
         }
 
         public static DocumentFieldModelController CreateFromServer(DocumentFieldModel documentFieldModel)

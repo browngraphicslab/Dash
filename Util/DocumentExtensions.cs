@@ -91,7 +91,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var heightField = activeLayout?.Data.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
+            var heightField = activeLayout?.Data?.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
             if (heightField == null)
             {
                 heightField = doc.GetDereferencedField(KeyStore.HeightFieldKey, context) as NumberFieldModelController;
@@ -104,7 +104,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var widthField =  activeLayout?.Data.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
+            var widthField =  activeLayout?.Data?.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
             if (widthField == null)
             {
                 widthField = doc.GetDereferencedField(KeyStore.WidthFieldKey, context) as NumberFieldModelController;
@@ -116,7 +116,7 @@ namespace Dash
         {
             context = Context.SafeInitAndAddDocument(context, doc);
             var activeLayout = doc.GetActiveLayout(context);
-            var posField = activeLayout?.Data.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
+            var posField = activeLayout?.Data?.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;
             if (posField == null)
             {
                 posField = doc.GetDereferencedField(KeyStore.PositionFieldKey, context) as PointFieldModelController;

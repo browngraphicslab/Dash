@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Shapes;
 using DashShared;
 using Dash.Controllers.Operators;
 
@@ -868,6 +870,16 @@ namespace Dash
             if (fieldModelController != null)
             {
                 var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
+
+                if (doc.Data == null)
+                {
+                    return new Rectangle {Fill = new SolidColorBrush(Colors.Red) };
+                }
+
+                doc.FieldModelUpdated += (sender, args, context1) =>
+                {
+
+                };
 
                 if (doc.Data.DocumentType == DefaultLayout.DocumentType)
                 {

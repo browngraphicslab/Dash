@@ -38,7 +38,7 @@ namespace DashShared
         {
             DocumentType = type ?? throw new ArgumentNullException();
             Fields = fields.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value.Id);
-            Map.Add(Id, this);
+            //Map.Add(Id, this);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace DashShared
         {
             DocumentType = type ?? throw new ArgumentNullException();
             Fields = fields.ToDictionary(kvp => kvp.Key.Id, kvp => kvp.Value);
-            Map.Add(Id, this);
+            //Map.Add(Id, this);
         }
 
 
