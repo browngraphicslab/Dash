@@ -7,17 +7,17 @@
     xmlns:dash="using:Dash"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" MaxWidth="2000"
+    d:DesignWidth="500" MaxWidth="2000"
     MaxHeight="2000" ManipulationMode="None" SizeChanged="SelectionElement_SizeChanged">
     <Grid x:Name="XGrid" SizeChanged="Grid_SizeChanged" BorderThickness="1">
         <Grid.Resources>
             <Storyboard x:Name="xCollapseSettings" Storyboard.TargetName="SettingsPanel"
                         Completed="XCollapseSettingsOnCompleted">
-                <DoubleAnimation Storyboard.TargetProperty="Width" From="340" To="0"
+                <DoubleAnimation Storyboard.TargetProperty="Width" From="400" To="0"
                                  Duration="0:0:0.2" EnableDependentAnimation="True" />
             </Storyboard>
             <Storyboard x:Name="xExpandSettings" Storyboard.TargetName="SettingsPanel">
-                <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="340"
+                <DoubleAnimation Storyboard.TargetProperty="Width" From="0" To="400"
                                  Duration="0:0:0.2" EnableDependentAnimation="True" />
             </Storyboard>
         </Grid.Resources>
@@ -27,8 +27,9 @@
                       VerticalScrollBarVisibility="Auto" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                       HorizontalScrollBarVisibility="Auto"
                       ZoomMode="Enabled" MinZoomFactor=".1" MaxZoomFactor="4" Margin="1,1,1,1">
-            <Grid Height="2000" Width="2000">
-                <InkCanvas x:Name="XInkCanvas" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></InkCanvas>
+            <Grid >
+                <InkCanvas x:Name="XInkCanvas" Width="10000" Height="10000"></InkCanvas>
+                <Canvas x:Name="SelectionCanvas"></Canvas>
             </Grid>
         </ScrollViewer>
 
@@ -42,12 +43,18 @@
         </Button>
 
         <!--SETTINGS-->
-        <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
+        <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Top"
-                      Margin="50,0,0,0" Height="63" Padding="0">
-            <StackPanel x:Name="SettingsPanel" Orientation="Horizontal" HorizontalAlignment="Left" Width="340">
+                      Margin="50,0,0,0" Height="63" Padding="0" HorizontalAlignment="Stretch">
+            <StackPanel x:Name="SettingsPanel" Orientation="Horizontal" HorizontalAlignment="Left" Width="400">
                 <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top"
-                            TargetInkCanvas="{x:Bind XInkCanvas}" Height="50" Background="#FFE6E6E6" />
+                            TargetInkCanvas="{x:Bind XInkCanvas}" Height="50" Background="#FFE6E6E6">
+                    <InkToolbarCustomToolButton x:Name="SelectButton" 
+                        Tapped="SelectButton_OnTapped" 
+                        ToolTipService.ToolTip="Selection tool">
+                        <SymbolIcon Symbol="{x:Bind SelectIcon}"/>
+                    </InkToolbarCustomToolButton>
+                </InkToolbar>
                 <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
                         Background="#FFE6E6E6">
                     <SymbolIcon Symbol="Undo" Foreground="Black"></SymbolIcon>
@@ -59,6 +66,7 @@
             </StackPanel>
         </ScrollViewer>
 
+        
         <Grid.Clip>
             <RectangleGeometry x:Name="ClipRect" Rect="0,0,400,300"></RectangleGeometry>
         </Grid.Clip>

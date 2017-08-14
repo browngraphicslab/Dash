@@ -19,12 +19,12 @@ namespace Dash
         public static DocumentType DocumentType = new DocumentType("7C59D0E9-11E8-4F12-B355-20035B3AC359", "Collection Box");
         private static string PrototypeId = "E1F828EA-D44D-4C3C-BE22-9AAF369C3F19";
 
-
         public CollectionBox(FieldModelController refToCollection, double x = 0, double y = 0, double w = 400, double h = 400)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToCollection);
             Document = GetLayoutPrototype().MakeDelegate();
             Document.SetFields(fields, true);
+            Document.SetField(InkBox.InkDataKey, new InkFieldModelController(), true);
         }
 
         protected override DocumentController GetLayoutPrototype()
@@ -64,7 +64,7 @@ namespace Dash
             var collectionFieldModelController = data.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
             Debug.Assert(collectionFieldModelController != null);
 
-            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context);
+            var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
 
             var view = new CollectionView(collectionViewModel);
 
