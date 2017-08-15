@@ -85,11 +85,17 @@ namespace Dash
                 {
                     return;//Collections with different lengths
                 }
+                if (!InputKeyMap.ContainsKey(key))
+                {
+                    return;//We don't have a key for one of the inputs
+                }
                 keys.Add(key);
                 collections.Add(documentControllers);
             }
 
             List<DocumentController> documents = new List<DocumentController>();
+
+            DocumentController prototype = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
 
             for (int i = 0; i < numDocuments; i++)
             {
@@ -100,7 +106,8 @@ namespace Dash
                 }
                 operatorOutputs.Clear();
                 operatorController.Execute(operatorInputs, operatorOutputs);
-                DocumentController doc = new DocumentController(operatorOutputs, DocumentType.DefaultType);
+                DocumentController doc = prototype.MakeDelegate();//new DocumentController(operatorOutputs, DocumentType.DefaultType);
+                doc.SetFields(operatorOutputs, true);
                 doc.SetActiveLayout(new DefaultLayout().Document, true, false);
                 documents.Add(doc);
             }
