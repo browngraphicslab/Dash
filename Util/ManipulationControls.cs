@@ -48,6 +48,7 @@ namespace Dash {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
             _doesRespondToPointerWheel = doesRespondToPointerWheel;
+            _processManipulation = true;
 
             if (_doesRespondToManipulationDelta)
             {
@@ -69,7 +70,7 @@ namespace Dash {
                 return;
             }
             _processManipulation = true;
-            e.Handled = true;
+            //e.Handled = true;
         }
 
         public void AddAllAndHandle()

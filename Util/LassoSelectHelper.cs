@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
@@ -11,12 +12,12 @@ using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using System.Numerics;
 
 namespace Dash
 {
     public class LassoSelectHelper
     {
-
         private List<Point> _points;
         private int _min;
         private Point _rootPoint;
@@ -26,28 +27,31 @@ namespace Dash
         private Polygon _hull;
         private Polygon _visualHull;
         private MenuFlyout _menu = new MenuFlyout();
-        private bool _menuShowing;
+        private Grid _flyoutBase;
 
         public LassoSelectHelper(CollectionFreeformView view)
         {
             _view = view;
-            var delete = new MenuFlyoutItem {Text = "Delete"};
-            delete.Tapped += DeleteOnTapped;
-            _menu.Items.Add(delete);
-            _menu.Placement = FlyoutPlacementMode.Bottom;
+            //var delete = new MenuFlyoutItem {Text = "Delete"};
+            //delete.Tapped += DeleteOnTapped;
+            //_menu.Items.Add(delete);
+            //_menu.Placement = FlyoutPlacementMode.Bottom;
         }
 
         private void DeleteOnTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
         {
             if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
                 _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
-            _view.ViewModel.RemoveDocuments(new List<DocumentController>(_view.ViewModel.SelectionGroup.Select(doc => doc.Controller)));
+            foreach (var doc in _view.ViewModel.SelectionGroup.Select(doc => doc.Controller))
+            {
+                _view.ViewModel.RemoveDocument(doc);
+            }
         }
 
         /// <summary>
         /// Executes hull tasks, i.e. sorting points and figuring out the hull. 
         /// </summary>
-        public List<DocumentViewModelParameters> GetSelectedDocuments(List<Point> points)
+        public List<DocumentView> GetSelectedDocuments(List<Point> points)
         {
             if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
                 _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
@@ -58,18 +62,17 @@ namespace Dash
             FigureOutConvexHull();
 
             // only make a hull if we have some points
-            if (_hullPoints != null )
+            if (_hullPoints != null)
             {
                 AddSelectionHull();
-                var selected = SelectContainedNodes(new List<DocumentViewModelParameters>(_view.ViewModel.DocumentViewModels));
+                var selected = SelectContainedNodes();
                 if (selected.Count > 0)
                 {
-                    AddVisualHull();
                     return selected;
                 }
             }
 
-            return new List<DocumentViewModelParameters>();
+            return new List<DocumentView>();
         }
 
         private void FindBottomLeftMostPoint()
@@ -89,7 +92,7 @@ namespace Dash
                 }
             }
         }
-   
+
 
         // swaps the bottom left point to be the first position
         private void PlaceBottomLeftMostPointAtFirstPosition()
@@ -107,7 +110,6 @@ namespace Dash
             var temp = one;
             _points[indexOne] = _points[indexTwo];
             _points[indexTwo] = temp;
-
         }
 
         // sorts all of the points by polar angle in counterclockwise order around the bottom-left-most point
@@ -124,7 +126,6 @@ namespace Dash
                 {
                     _sortedPoints.Add(quant, point);
                 }
-
 
                 // if there are multiple points with the same angle, keep the one in that is furthest away from the root point (but you shouldn't delete the root point)
                 else if (_sortedPoints.ContainsKey(quant) && _sortedPoints[quant] != _rootPoint)
@@ -154,7 +155,8 @@ namespace Dash
         // returns square of distance to the root point
         private double DistanceToRootPoint(Point point)
         {
-            return (point.X - _rootPoint.X) * (point.X - _rootPoint.X) + (point.Y - _rootPoint.Y) * (point.Y - _rootPoint.Y);
+            return (point.X - _rootPoint.X) * (point.X - _rootPoint.X) +
+                   (point.Y - _rootPoint.Y) * (point.Y - _rootPoint.Y);
         }
 
         // figures out the points in the convex hull and stores it as a list
@@ -177,7 +179,6 @@ namespace Dash
                 {
                     if (_hullPoints.Count() < 3) return;
                     _hullPoints.Pop();
-
                 }
                 _hullPoints.Push(sortedPoints[i]);
             }
@@ -220,7 +221,6 @@ namespace Dash
         {
             _hull = new Polygon();
             _visualHull = new Polygon();
-
             // give both hulls the proper points
             while (_hullPoints.Count() > 0)
             {
@@ -228,91 +228,49 @@ namespace Dash
                 _visualHull.Points.Add(point);
                 _hull.Points.Add(point);
             }
-
-            
-        }
-
-        private void AddVisualHull()
-        {
-            
-            // format visual hull
-            _visualHull.Fill = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
-            _visualHull.Opacity = .1;
-            _visualHull.Stroke = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
-            _visualHull.StrokeThickness = 1;
-            _visualHull.ManipulationMode = ManipulationModes.All;
-            _visualHull.ManipulationDelta += VisualHullOnManipulationDelta;
-            _visualHull.CompositeMode = ElementCompositeMode.SourceOver;
-            _visualHull.Tapped += VisualHullOnTapped;
-            (_view.xItemsControl.ItemsPanelRoot as Canvas).Children.Add(_visualHull);
-        }
-
-        private void VisualHullOnTapped(object sender, TappedRoutedEventArgs e)
-        {
-            e.Handled = true;
-            if (_menuShowing) _menu.ShowAt(_visualHull);
-            else _menu.Hide();
-            _menuShowing = !_menuShowing;
-        }
-
-        private void VisualHullOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        {
-            var delta = new Point(e.Delta.Translation.X / _view.Zoom, e.Delta.Translation.Y / _view.Zoom);
-            var pos = new Point(Canvas.GetLeft(_visualHull), Canvas.GetTop(_visualHull));
-            Canvas.SetLeft(_visualHull, pos.X + delta.X);
-            Canvas.SetTop(_visualHull, pos.Y + delta.Y);
-            foreach (var doc in _view.ViewModel.SelectionGroup)
-            {
-                var docPos = doc.Controller.GetPositionField().Data;
-                docPos.X += delta.X;
-                docPos.Y += delta.Y;
-                doc.Controller.GetPositionField().Data = docPos;
-            }
-            e.Handled = true;
         }
 
         // selects contained atoms by figuring out the atoms in the selection hull
-        private List<DocumentViewModelParameters> SelectContainedNodes(List<DocumentViewModelParameters> docVMs)
+        private List<DocumentView> SelectContainedNodes()
         {
-            var selectedDocs = new List<DocumentViewModelParameters>();
-            foreach (var docVM in docVMs)
+            var selectedDocs = new List<DocumentView>();
+            if (_view.xItemsControl.ItemsPanelRoot != null)
             {
-                var doc = docVM.Controller;
-                var topLeft = doc.GetPositionField(null).Data;
-                var width = doc.GetWidthField(null).Data;
-                var height = doc.GetHeightField(null).Data;
-                var points = new List<Point>
+                IEnumerable<DocumentViewModelParameters> parameters =
+                    _view.xItemsControl.Items.OfType<DocumentViewModelParameters>();
+                foreach (var param in parameters)
                 {
-                    topLeft,
-                    new Point(topLeft.X + width, topLeft.Y),
-                    new Point(topLeft.X + width, topLeft.Y + height),
-                    new Point(topLeft.X, topLeft.Y + height)
-
-                };
-                bool inHull = false;
-                foreach (var refPoint in points)
-                {
-                    if (this.IsPointInHull(refPoint))
+                    var doc = param.Controller;
+                    var position = doc.GetPositionField().Data;
+                    var width = doc.GetWidthField().Data;
+                    var height = doc.GetHeightField().Data;
+                    var points = new List<Point>
                     {
-                        inHull = true;
+                        position,
+                        new Point(position.X + width, position.Y),
+                        new Point(position.X + width, position.Y + height),
+                        new Point(position.X, position.Y + height)
+                    };
+                    bool inHull = false;
+                    foreach (var refPoint in points)
+                    {
+                        if (this.IsPointInHull(refPoint))
+                        {
+                            inHull = true;
+                        }
+                    }
+                    if (inHull)
+                    {
+                        if (_view.xItemsControl.ItemContainerGenerator != null && _view.xItemsControl
+                                .ContainerFromItem(param) is ContentPresenter contentPresenter)
+                        {
+                            selectedDocs.Add(
+                                contentPresenter.GetFirstDescendantOfType<DocumentView>());
+                        }
                     }
                 }
-                if (inHull)
-                {
-                    selectedDocs.Add(docVM);
-                }
             }
-            RemoveManipulations(selectedDocs);
             return selectedDocs;
-        }
-
-        private void RemoveManipulations(List<DocumentViewModelParameters> docVms)
-        {
-            var selectedViews = _view.xItemsControl.ItemsPanelRoot.Children.OfType<DocumentView>().Where(dv => docVms.Select(v => v.Controller).Contains(dv.ViewModel.DocumentController));
-            foreach (var view in selectedViews)
-            {
-                view.ManipulationMode = ManipulationModes.System;
-            }
         }
 
         private bool IsPointInHull(Point testPoint)
@@ -323,11 +281,12 @@ namespace Dash
             int j = polygon.Count() - 1;
             for (int i = 0; i < polygon.Count(); i++) //loop thru all points in the convex hull
             {
-
                 //if the test point is below the polygon point and above the  last polygon point OR if the testpoin is below the previous polygon point and above the current polygon pt.
-                if (polygon[i].Y < testPoint.Y && polygon[j].Y >= testPoint.Y || polygon[j].Y < testPoint.Y && polygon[i].Y >= testPoint.Y)
+                if (polygon[i].Y < testPoint.Y && polygon[j].Y >= testPoint.Y ||
+                    polygon[j].Y < testPoint.Y && polygon[i].Y >= testPoint.Y)
                 {
-                    if (polygon[i].X + (testPoint.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) * (polygon[j].X - polygon[i].X) < testPoint.X)
+                    if (polygon[i].X + (testPoint.Y - polygon[i].Y) / (polygon[j].Y - polygon[i].Y) *
+                        (polygon[j].X - polygon[i].X) < testPoint.X)
                     {
                         result = !result;
                     }

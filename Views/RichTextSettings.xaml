@@ -9,7 +9,7 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" Background="LightBlue" BorderBrush="Transparent">
+    <Grid Width="300" HorizontalAlignment="Stretch" Background="LightBlue" BorderBrush="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
@@ -22,14 +22,9 @@
             </TextBlock>
         </Grid>
         <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock>
-                    <Run Text="Type"/>
-                </TextBlock>
-                <TextBlock Margin="50,0,0,0">
-                    <Run Text="Rich Text"/>
-                </TextBlock>
-            </StackPanel>
+            <TextBlock HorizontalAlignment="Center">
+                <Run Text="Rich Text"/>
+            </TextBlock>
         </Grid>
         <Grid Grid.Row="2" Width="250">
             <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
@@ -47,7 +42,7 @@
                     </Grid.RowDefinitions>
 
                     <!--FONTS-->
-                    <Grid Grid.Row="0" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Grid Grid.Row="0" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <ComboBox x:Name="xFontComboBox" Background="White" BorderThickness="0" Foreground="DarkSlateBlue" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind fonts}" DisplayMemberPath="Source"></ComboBox>
@@ -57,7 +52,7 @@
                     </Grid>
 
                     <!--FONT SIZE-->
-                    <Grid Grid.Row="1" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Grid Grid.Row="1" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid Margin="0,5,0,5">
@@ -84,7 +79,7 @@
                     </Grid>
                     
                     <!--FONT WEIGHT-->
-                    <Grid Grid.Row="2" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Grid Grid.Row="2" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid Margin="0,5,0,5">
@@ -111,7 +106,7 @@
                     </Grid>
                     
                     <!--ALIGNMENT-->
-                    <Grid Grid.Row="3"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Grid Grid.Row="3"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid>
@@ -142,7 +137,7 @@
                     </Grid>
                     
                     <!--STYLE-->
-                    <Grid Grid.Row="4" Width="230" HorizontalAlignment="Left" VerticalAlignment="Stretch">
+                    <Grid Grid.Row="4" Width="230" HorizontalAlignment="Center" VerticalAlignment="Stretch">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <Grid>
@@ -196,7 +191,7 @@
                     </Grid>
 
                     <!--COLOR-->
-                    <Grid Grid.Row="5" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Grid Grid.Row="5" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <ComboBox x:Name="xFontColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
@@ -223,7 +218,7 @@
                     </Grid>
 
                     <!--HIGHLIGHT-->
-                    <Grid Grid.Row="6" Width="230" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <Grid Grid.Row="6" Width="230" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <local:SettingsPaneBlock>
                             <local:SettingsPaneBlock.MainContent>
                                 <ComboBox x:Name="xHighlightColorComboBox" Background="White" BorderThickness="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  ItemsSource="{x:Bind colors}">
@@ -250,10 +245,10 @@
                     </Grid>
 
                     <!--SIZE-->
-                    <Grid x:Name="xSizeRow" Grid.Row="7"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Grid x:Name="xSizeRow" Grid.Row="7"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
 
                     <!--POSITION-->
-                    <Grid x:Name="xPositionRow" Grid.Row="8"  Width="230" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                    <Grid x:Name="xPositionRow" Grid.Row="8"  Width="230" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </Grid>
             </ScrollViewer>
         </Grid>

@@ -44,6 +44,7 @@ namespace Dash
             var map = OperationCreationHelper.Operators["map"];
             var api = OperationCreationHelper.Operators["api"];
             var concat = OperationCreationHelper.Operators["concat"];
+            var docAppend = OperationCreationHelper.Operators["Document append"];
             var filter = OperationCreationHelper.Operators["filter"];
             var compound = OperationCreationHelper.Operators["compound"];
 
@@ -71,6 +72,7 @@ namespace Dash
                 filter,
                 api, 
                 concat,
+                docAppend,
                 compound,
                 map
             };
