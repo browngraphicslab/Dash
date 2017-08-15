@@ -292,6 +292,7 @@ namespace Dash
                 game1Layout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 SetLayoutForDocument(gameDoc, game1Layout, forceMask: true, addToLayoutList: true);
                 Documents.Add(gameDoc);
+                gameDoc.SetField(new KeyController("AKEY", "AKEY"), new DocumentCollectionFieldModelController(new DocumentController[] { Ump1Doc, Ump2Doc }), true);
             }
             {
                 game2Doc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(game2Doc), true);

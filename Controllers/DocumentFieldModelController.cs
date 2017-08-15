@@ -63,7 +63,8 @@ namespace Dash
             Binding textBinding = new Binding
             {
                 Source = this,
-                Converter = new DocumentFieldModelToStringConverter(),
+                Path = new PropertyPath("Data"),
+                Converter = new DocumentControllerToStringConverter(),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
@@ -78,7 +79,8 @@ namespace Dash
                     textBinding = new Binding
                     {
                         Source = this,
-                        Converter = new DocumentFieldModelToStringConverter(),
+                        Path = new PropertyPath("Data"),
+                        Converter = new DocumentControllerToStringConverter(),
                         Mode = BindingMode.TwoWay,
                         UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                     };

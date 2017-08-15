@@ -146,14 +146,34 @@ namespace Dash
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
+            // if the the Data field on this Controller changes, then this Binding updates the text.
             Binding textBinding = new Binding
             {
                 Source = this,
+                Path = new PropertyPath("Data"),
                 Converter = new DocumentCollectionToStringConverter(),
                 Mode = BindingMode.TwoWay,
                 UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+            // However, the PrimaryKey within the documents referenced by the Data field might change, too.  
+            // If they do, we need to forcibly update the Text since the Binding doesn't know that the Doucment has changed. 
+            // TODO:
+            //Data.DocumentFieldUpdated += ((sender, ctxt) =>
+            //{
+            //    if ((Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
+            //    {
+            //        textBinding = new Binding
+            //        {
+            //            Source = this,
+            //            Path = new PropertyPath("Data"),
+            //            Converter = new DocumentControllerToStringConverter(),
+            //            Mode = BindingMode.TwoWay,
+            //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            //        };
+            //        textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+            //    }
+            //});
         }
 
 
