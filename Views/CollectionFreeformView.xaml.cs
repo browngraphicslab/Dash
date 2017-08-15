@@ -808,7 +808,7 @@ namespace Dash
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
         {
             Canvas.SetZIndex(XInkCanvas, 0);
-            if (xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
+            if (xItemsControl.ItemsPanelRoot != null && xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
             {
                 xItemsControl.ItemsPanelRoot.Children.Remove(XInkCanvas);
                 xItemsControl.ItemsPanelRoot.Children.Remove(SelectionCanvas);
