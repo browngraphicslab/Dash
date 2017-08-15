@@ -185,5 +185,7 @@ namespace Dash
         public virtual void Dispose()
         {
         }
+
+        public event InkFieldModelController.InkUpdatedHandler InkUpdated;
     }
 }

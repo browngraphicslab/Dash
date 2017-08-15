@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Graphics.Imaging;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Dash;
+using Dash.Models;
 using RadialMenuControl.UserControl;
 
 namespace RadialMenuControl.Components
@@ -452,7 +455,9 @@ namespace RadialMenuControl.Components
         /// </summary>
         /// <returns></returns>
         public bool HasOuterArcAction => (Submenu != null || CustomMenu != null || HasOuterArcEvents);
-        
+
+        public RadialActionModel ActionModel { get; set; }
+
 
         public delegate void InnerArcPressedEventHandler(object sender, PointerRoutedEventArgs e);
 
@@ -496,6 +501,11 @@ namespace RadialMenuControl.Components
 
         public void OnInnerArcReleased(PointerRoutedEventArgs e)
         {
+            if (ActionModel != null)
+            {
+                ActionModel.ColorAction?.Invoke(InnerNormalColor.Value, RadialMenuView.MainMenu);
+                ActionModel.GenericAction?.Invoke(null);
+            }
             InnerArcReleased?.Invoke(this, e);
         }
 
@@ -513,22 +523,22 @@ namespace RadialMenuControl.Components
 
         #endregion
 
-        public delegate void DragStartedEventHandler(object sender, DragStartingEventArgs e);
-
-        public event DragStartedEventHandler InnerArcDragStarted;
-
-        public void OnDragStarting(DragStartingEventArgs args)
+        public void OnDragStarting(DragStartingEventArgs e)
         {
-            if (InnerArcDragStarted == null)
+            e.Data.RequestedOperation = DataPackageOperation.Move;
+            e.Data.Properties.Title = Icon + " " + Label;
+            if (ActionModel?.CollectionDropAction != null)
             {
-                args.Cancel = true;
+                e.Data.Properties[RadialMenuView.RadialMenuDropKey] = ActionModel.CollectionDropAction;
+            }
+            else if (ActionModel?.GenericDropAction != null)
+            {
+                e.Data.Properties[RadialMenuView.RadialMenuDropKey] = ActionModel.GenericDropAction;
             }
             else
             {
-                InnerArcDragStarted?.Invoke(this, args);
-                args.Data.Properties.Title = Icon + " " + Label;
+                e.Cancel = true;
             }
-            
         }
     }
 }

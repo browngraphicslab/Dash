@@ -94,9 +94,7 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
-            SetField(InkBox.InkDataKey, new InkFieldModelController(), true);
-
-            LayoutName = model.DocumentType.Type;
+            LayoutName = model.DocumentType.Type; 
             // Add Events
         }
 
