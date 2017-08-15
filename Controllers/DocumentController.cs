@@ -733,8 +733,6 @@ namespace Dash
                     // bcz: commented this out because it generated exceptions after making a search List of Umpires
                     var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
                     source.Add(view);
-                    view.MaxWidth = 300;
-                    view.MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
@@ -742,8 +740,6 @@ namespace Dash
 
                     var border = new Border
                     {
-                        MaxWidth = 500,
-                        MaxHeight = 500,
                         BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
                         BorderThickness = new Thickness(1),
                         CornerRadius = new CornerRadius(3),

@@ -36,17 +36,17 @@ namespace Dash
         {
 
 
-            var divide = OperationCreationHelper.Operators["divide"];
-            var union = OperationCreationHelper.Operators["union"];
-            var intersection = OperationCreationHelper.Operators["intersection"];
-            var zip = OperationCreationHelper.Operators["zip"];
-            var uriToImage = OperationCreationHelper.Operators["uriToImage"];
-            var map = OperationCreationHelper.Operators["map"];
-            var api = OperationCreationHelper.Operators["api"];
-            var concat = OperationCreationHelper.Operators["concat"];
-            var docAppend = OperationCreationHelper.Operators["Document append"];
-            var filter = OperationCreationHelper.Operators["filter"];
-            var compound = OperationCreationHelper.Operators["compound"];
+            var divide = OperationCreationHelper.Operators["Divide"];
+            var union = OperationCreationHelper.Operators["Union"];
+            var intersection = OperationCreationHelper.Operators["Intersection"];
+            var zip = OperationCreationHelper.Operators["Zip"];
+            var uriToImage = OperationCreationHelper.Operators["UriToImage"];
+            var map = OperationCreationHelper.Operators["Map"];
+            var api = OperationCreationHelper.Operators["Api"];
+            var concat = OperationCreationHelper.Operators["Concat"];
+            var docAppend = OperationCreationHelper.Operators["Append"];
+            var filter = OperationCreationHelper.Operators["Filter"];
+            var compound = OperationCreationHelper.Operators["Compound"];
 
             var arithmetics = new ObservableCollection<OperatorBuilder>
             {
