@@ -69,7 +69,7 @@ namespace Dash {
                 return;
             }
             _processManipulation = true;
-            e.Handled = true;
+            //e.Handled = true;
         }
 
         public void AddAllAndHandle()
