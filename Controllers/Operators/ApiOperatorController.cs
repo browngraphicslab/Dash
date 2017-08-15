@@ -29,7 +29,12 @@ namespace Dash
         public static readonly DocumentType ApiType = new DocumentType("478628DA-AB98-4402-B827-F8CB625D4233", "Api");
 
         public static readonly KeyController UrlKey = new KeyController("662E0839-51A7-4FBA-8BF8-BAE5FE92F701", "Url");
+        public static readonly KeyController AuthUrlKey = new KeyController("60159AFB-ADAE-414B-A47B-F9F3272C8681", "Auth Url");
         public static readonly KeyController MethodKey = new KeyController("FBB7AE95-CD1C-4C69-A602-4F2BC2B78A3E", "Method");
+        public static readonly KeyController AuthMethodKey = new KeyController("2AA724ED-C282-46AC-A844-053F42A6748F", "Auth Method");
+
+        public static readonly KeyController AuthSecretKey = new KeyController("1CBC001E-6536-4B3C-B870-4682DFEB4158", "Auth Secret");
+        public static readonly KeyController AuthKeyKey = new KeyController("564F0A13-4DDD-4446-B8D9-21AA206B62BF", "Auth Key");
 
         public static readonly KeyController OutputKey = new KeyController("EF1C2E17-3AD2-4780-8219-F4EAC683979D", "Output Document");
 
@@ -57,7 +62,9 @@ namespace Dash
         public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [UrlKey] = TypeInfo.Text,
-            [MethodKey] = TypeInfo.Text
+            [MethodKey] = TypeInfo.Text,
+            [AuthUrlKey] = TypeInfo.Text,
+            [AuthMethodKey] = TypeInfo.Text
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -67,6 +74,8 @@ namespace Dash
 
         public ObservableDictionary<KeyController, ApiParameter> Parameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
         public ObservableDictionary<KeyController, ApiParameter> Headers { get; } = new ObservableDictionary<KeyController, ApiParameter>();
+        public ObservableDictionary<KeyController, ApiParameter> AuthParameters { get; } = new ObservableDictionary<KeyController, ApiParameter>();
+        public ObservableDictionary<KeyController, ApiParameter> AuthHeaders { get; } = new ObservableDictionary<KeyController, ApiParameter>();
 
         public void AddParameter(ApiParameter parameter)
         {
@@ -81,30 +90,52 @@ namespace Dash
             Inputs.Remove(parameter.Key);
             Parameters.Remove(parameter.Key);
         }
+
         public void AddHeader(ApiParameter header)
         {
             int index = Headers.Count + 1;
             KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api header {index}"), $"Header {index}");
             header.Key = key;
+            Inputs.Add(key, TypeInfo.Text);
             Headers[key] = header;
         }
         public void RemoveHeader(ApiParameter header)
         {
+            Inputs.Remove(header.Key);
             Headers.Remove(header.Key);
+        }
+
+        public void AddAuthParameter(ApiParameter parameter)
+        {
+            int index = AuthParameters.Count + 1;
+            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth parameter {index}"), $"Auth Parameter {index}");
+            parameter.Key = key;
+            Inputs.Add(key, TypeInfo.Text);
+            AuthParameters[key] = parameter;
+        }
+        public void RemoveAuthParameter(ApiParameter parameter)
+        {
+            Inputs.Remove(parameter.Key);
+            AuthParameters.Remove(parameter.Key);
+        }
+
+        public void AddAuthHeader(ApiParameter header)
+        {
+            int index = AuthHeaders.Count + 1;
+            KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid($"Api auth header {index}"), $"Auth Header {index}");
+            header.Key = key;
+            Inputs.Add(key, TypeInfo.Text);
+            AuthHeaders[key] = header;
+        }
+        public void RemoveAuthHeader(ApiParameter header)
+        {
+            Inputs.Remove(header.Key);
+            AuthHeaders.Remove(header.Key);
         }
 
         private int test = 1;
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-            var fields = new Dictionary<KeyController, FieldModelController>
-            {
-                [TestKey] = new TextFieldModelController("Test"),
-                [Test2Key] = new NumberFieldModelController(54),
-                [Test3Key] = new TextFieldModelController($"{test++}")
-            };
-            var document = new DocumentController(fields, DocumentType.DefaultType);
-            outputs[OutputKey] = new DocumentFieldModelController(document);
-            return;
             var url = (inputs[UrlKey] as TextFieldModelController).Data;
             var method = (inputs[MethodKey] as TextFieldModelController).Data.ToLower();
             HttpMethod httpMethod;
@@ -140,11 +171,8 @@ namespace Dash
                 }
                 TextFieldModelController p = (TextFieldModelController)param;
                 var split = p.Data.Split(':');
-                if (split.Length != 2)
-                {
-                    continue;
-                }
-                parameters.Add(new KeyValuePair<string, string>(split[0], split[1]));
+                var value = String.Join(":", split.Skip(1));
+                parameters.Add(new KeyValuePair<string, string>(split[0], value));
             }
 
             foreach (var header in Headers)

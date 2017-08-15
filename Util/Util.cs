@@ -98,7 +98,7 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionDropPoint(CollectionFreeformView freeForm, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformView freeForm, Point absolutePosition)
         {
             //Debug.Assert(freeForm != null);
             if (freeForm != null)

@@ -32,6 +32,7 @@ namespace Dash
 {
     public sealed partial class RadialMenuView : UserControl
     {
+        public static RadialMenu MainMenu;
         private RadialMenu _mainMenu;
         private Canvas _parentCanvas;
         private List<RadialItemModel> _colors;
@@ -108,6 +109,10 @@ namespace Dash
             _opacityMeter = MakeMeterSubMenu(1, 0.2);
 
             this.SetUpBaseMenu();
+
+            MainMenu = _mainMenu;
+            //_parentCanvas.OnDoubleTapped += Overlay_DoubleTapped;
+            
             this.SampleRadialMenu(canvas);
         }
 
@@ -252,7 +257,7 @@ namespace Dash
             _mainMenu.IndicationArcColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
             _mainMenu.UseIndicationArcs = true;
             _mainMenu.IndicationArcStrokeThickness = 3;
-            _mainMenu.IndicationArcDistanceFromEdge = 20;
+            _mainMenu.IndicationArcDistanceFromEdge = 7;
             _mainMenu.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["TranslucentWhite"]).Color;
             _mainMenu.InnerHoverColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
             _mainMenu.InnerTappedColor = ((SolidColorBrush)App.Instance.Resources["SelectedGrey"]).Color;
@@ -332,30 +337,14 @@ namespace Dash
             }
             //Add the button model's actions as invoked actions when the button is pressed then released
             if (item.IsAction && item is RadialActionModel)
-            {
-                var actionButton = item as RadialActionModel;
-                if (actionButton.IsRadio) button.Type = RadialMenuButton.ButtonType.Radio; 
+            { 
+                var action = button.ActionModel = item as RadialActionModel;
+                if(!action.IsDraggable) { button.Type = RadialMenuButton.ButtonType.Radio; }
 
                 button.InnerArcReleased += delegate
                 {
-                    actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
-                    actionButton.GenericAction?.Invoke(null);
-                };
-                button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
-                {
-                    e.Data.RequestedOperation = DataPackageOperation.Move;
-                    if (actionButton.CollectionDropAction != null)
-                    {
-                        e.Data.Properties[RadialMenuDropKey] = actionButton.CollectionDropAction;
-                    } else if (actionButton.GenericDropAction != null)
-                    {
-                        e.Data.Properties[RadialMenuDropKey] = actionButton.GenericDropAction;
-                    }
-                    else
-                    {
-                        e.Cancel = true;
-                    }
-                    
+                    action.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
+                    action.GenericAction?.Invoke(null);
                 };
             }
             menu.AddButton(button);
@@ -456,12 +445,24 @@ namespace Dash
                 CenterButtonMenuModAction = closeSliderPanel
             };
 
-            var inputTypeMenu = new RadialSubmenuModel("Input Type", "⬇️", new List<RadialItemModel>()
+            var inputTypeMenu = new RadialSubmenuModel("Ink Input", "⬇️", new List<RadialItemModel>()
             {
-                new RadialActionModel("Pen", "🖊️") { GenericAction = setPenInput },
-                new RadialActionModel("Touch", "☝️") { GenericAction = setTouchInput },
-                new RadialActionModel("Mouse", "🖱️") { GenericAction = setMouseInput },
-                new RadialActionModel("None", "❎") { GenericAction = setNoInput }
+                new RadialActionModel("Pen", "🖊️")
+                {
+                    GenericAction = setPenInput
+                },
+                new RadialActionModel("Touch", "☝️")
+                {
+                    GenericAction = setTouchInput
+                },
+                new RadialActionModel("Mouse", "🖱️")
+                {
+                    GenericAction = setMouseInput
+                },
+                new RadialActionModel("None", "X")
+                {
+                    GenericAction = setNoInput
+                }
             });
 
 
@@ -481,32 +482,37 @@ namespace Dash
             var searchButton = new RadialActionModel("Search", "🔍")
             {
                 CollectionDropAction = addSearch,
-                IsRadio = false 
+                IsDraggable = true
             };
 
             Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
-            Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
-            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
+            //Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
+            //Action<ICollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            //Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
+            //Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
-            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd, IsRadio = false };
-            var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection, IsRadio = false };
-            var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments, IsRadio = false };
-            var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes, IsRadio = false }; 
+            var operatorButton = new RadialActionModel("Operators", "↔️") { GenericDropAction = onOperatorAdd, IsDraggable = true};
+            //var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
+            //var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
+            var documentButton = new RadialSubmenuModel("Add Document", "🖺", new List<RadialItemModel>());
+            //var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
             
-            var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
-            {
-                operatorButton,
-                documentButton,
-                collectionButton,
-                notesButton
-            });
+            //var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
+            //{
+            //    operatorButton,
+            //    apiButton,
+            //    documentButton,
+            //    collectionButton,
+            //    notesButton
+            //});
 
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
-                inkOptions,
-                addOptionsMenu,
+                inputTypeMenu,
+                operatorButton,
+                //documentButton
+                //emailButton
             });
         }
         

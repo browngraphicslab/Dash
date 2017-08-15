@@ -104,8 +104,6 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
-            SetField(InkBox.InkDataKey, new InkFieldModelController(), true);
-
             LayoutName = model.DocumentType.Type; 
             // Add Events
         }
@@ -740,7 +738,7 @@ namespace Dash
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    var colView = new CollectionView(new CollectionViewModel(f.Value, isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
+                    var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
 
                     var border = new Border
                     {
@@ -762,10 +760,17 @@ namespace Dash
 
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
+<<<<<<< HEAD
             //if (++count % 20 == 0)
             //{
             //    Debug.WriteLine(count);
             //}
+=======
+            if (++count % 20 == 0)
+            {
+                Debug.WriteLine(count);
+            }
+>>>>>>> af8bfddaac024541e7fa334283723ce24de43bbc
             context = new Context(context);
             context.AddDocumentContext(this);
 

@@ -1,5 +1,8 @@
 using System;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.ApplicationModel.DataTransfer.DragDrop.Core;
+using Windows.ApplicationModel.Store;
+using Windows.Devices.Input;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -7,7 +10,10 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using RadialMenuControl.Components;
 using Windows.Foundation;
+using Windows.Graphics.Imaging;
+using Windows.UI.Input;
 using Windows.UI.Xaml.Media.Animation;
+using Dash;
 
 namespace RadialMenuControl.UserControl
 {
@@ -728,6 +734,7 @@ namespace RadialMenuControl.UserControl
             }
             else
             {
+                if(e.Pointer.PointerDeviceType == PointerDeviceType.Touch) InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement)); 
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
                 switch (OriginalRadialMenuButton.Type)
@@ -747,6 +754,7 @@ namespace RadialMenuControl.UserControl
                         VisualStateManager.GoToState(this, "InnerNormal", true);
                         break;
                 }
+                
             }
         }
 
@@ -800,23 +808,8 @@ namespace RadialMenuControl.UserControl
         {
             OriginalRadialMenuButton.OnDragStarting(args);
             args.DragUI.SetContentFromDataPackage();
-            switch (OriginalRadialMenuButton.Type)
-            {
-                case RadialMenuButton.ButtonType.Toggle:
-                    VisualStateManager.GoToState(this,
-                        (OriginalRadialMenuButton.Value != null && ((bool)OriginalRadialMenuButton.Value))
-                            ? "InnerReleased"
-                            : "InnerNormal", true);
-                    break;
-                case RadialMenuButton.ButtonType.Radio:
-                    VisualStateManager.GoToState(this, "InnerReleased", true);
-                    // get all other menus to release now that this menu has been selected
-                    ChangeSelectedEvent?.Invoke(sender, this);
-                    break;
-                default:
-                    VisualStateManager.GoToState(this, "InnerNormal", true);
-                    break;
-            }
+            if(!args.Cancel)
+                VisualStateManager.GoToState(this, "InnerNormal", true);
         }
     }
 }

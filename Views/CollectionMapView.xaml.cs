@@ -74,7 +74,7 @@ namespace Dash
         private void AutoSuggestBox_OnTextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
         {
             var key = sender.DataContext as KeyController;
-            var coll = _operatorDoc.GetField(key).DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.GetDocuments();
+            var coll = _operatorDoc.GetField(key)?.DereferenceToRoot<DocumentCollectionFieldModelController>(null)?.GetDocuments();
             if (coll == null)
             {
                 return;
