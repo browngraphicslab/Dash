@@ -650,10 +650,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            if (InkControls != null && InkControls.IsDrawing)
-            {
-                InkControls.UpdateInputType();
-            }
+            InkControls?.UpdateInputType();
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
@@ -779,6 +776,7 @@ namespace Dash
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
         #endregion
+
         #region Ink
         private void MakeInkCanvas()
         {

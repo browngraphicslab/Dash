@@ -51,8 +51,6 @@ namespace Dash
         private Rect _boundingRect;
         private InkSelectionRect _rectangle;
         private LassoSelectHelper _lassoHelper;
-        private StackPanel _menu;
-        private bool _menuVisible;
 
         public FreeformInkControls(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
         {
@@ -60,7 +58,6 @@ namespace Dash
             TargetCanvas = canvas;
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
-            _menu = MakeMenuFlyout();
             InkFieldModelController = view.InkFieldModelController;
             IsDrawing = true;
             _lassoHelper = new LassoSelectHelper(FreeformView);
@@ -79,31 +76,6 @@ namespace Dash
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
             InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
             InkToolbar.ActiveToolChanged += InkToolbarOnActiveToolChanged;
-            TargetCanvas.Holding += TargetCanvas_Holding;
-        }
-
-        private void TargetCanvas_Holding(object sender, HoldingRoutedEventArgs e)
-        {
-            ClearSelection();
-            if (_menuVisible) _menu.Visibility = Visibility.Collapsed;
-            else
-            {
-                _menu.Visibility = Visibility.Visible;
-                SelectionCanvas.Children.Add(_menu);
-                Canvas.SetLeft(_menu, e.GetPosition(TargetCanvas).X);
-                Canvas.SetTop(_menu, e.GetPosition(TargetCanvas).Y);
-            }
-            _menuVisible = !_menuVisible;
-        }
-
-        private StackPanel MakeMenuFlyout()
-        {
-            StackPanel flyout = new StackPanel();
-            Button paste = new Button { Content = "Paste" };
-            paste.Tapped += Paste_Tapped;
-            flyout.Children.Add(paste);
-
-            return flyout;
         }
 
         private void Paste_Tapped(object sender, TappedRoutedEventArgs e)
@@ -142,11 +114,6 @@ namespace Dash
             {
                 stroke.Selected = false;
             }
-            ClearBoundingRect();
-        }
-
-        private void ClearBoundingRect()
-        {
             if (SelectionCanvas.Children.Any())
             {
                 SelectionCanvas.Children.Clear();
@@ -169,37 +136,36 @@ namespace Dash
 
         private void UpdateSelectionMode()
         {
-            if (SelectButton.IsChecked != null && (bool)SelectButton.IsChecked)
+            if (SelectButton.IsChecked != null && (bool) SelectButton.IsChecked)
             {
-                if (InkSelect.IsChecked != null && (bool)InkSelect.IsChecked)
+                if (InkSelect.IsChecked != null && (bool) InkSelect.IsChecked)
                 {
                     _inkSelectionMode = InkSelectionMode.Ink;
-                    TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
-                InkInputRightDragAction.LeaveUnprocessed;
-
-                    // Listen for unprocessed pointer events from modified input.
-                    // The input is used to provide selection functionality.
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed +=
-                        UnprocessedInput_PointerPressed;
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved +=
-                        UnprocessedInput_PointerMoved;
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased +=
-                        UnprocessedInput_PointerReleased;
                 }
                 if (DocumentSelect.IsChecked != null && (bool) DocumentSelect.IsChecked)
                 {
                     _inkSelectionMode = InkSelectionMode.Document;
                     FreeformView.IsSelectionEnabled = true;
-                    TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
-                        InkInputRightDragAction.LeaveUnprocessed;
+                }
+                TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
+                    InkInputRightDragAction.LeaveUnprocessed;
 
-                    // Listen for unprocessed pointer events from modified input.
-                    // The input is used to provide selection functionality.
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed +=
+                TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed +=
+                    UnprocessedInput_PointerPressed;
+                TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved +=
+                    UnprocessedInput_PointerMoved;
+                TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased +=
+                    UnprocessedInput_PointerReleased;
+            }
+            else
+            {
+                if (TargetCanvas != null)
+                {
+                    TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed -=
                         UnprocessedInput_PointerPressed;
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved +=
+                    TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved -=
                         UnprocessedInput_PointerMoved;
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased +=
+                    TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased -=
                         UnprocessedInput_PointerReleased;
                 }
             }
