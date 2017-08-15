@@ -27,7 +27,7 @@
         <Grid Grid.Row="1" Height="50" VerticalAlignment="Top" HorizontalAlignment="Center">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock x:Name="TypeBlock" TextWrapping="Wrap" MaxWidth="190">
-                    <Run Text="Document" />
+                    <Run Text="Document"/>
                 </TextBlock>
             </StackPanel>
         </Grid>
