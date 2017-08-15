@@ -731,10 +731,10 @@ namespace Dash
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
                     // bcz: commented this out because it generated exceptions after making a search List of Umpires
-                    var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
-                    source.Add(view);
-                    view.MaxWidth = 300;
-                    view.MaxHeight = 300;
+                    //var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
+                    //source.Add(view);
+                    //view.MaxWidth = 300;
+                    //view.MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
@@ -755,15 +755,8 @@ namespace Dash
             return sp;
         }
 
-        public static int count = 0;
-
-
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
-            if (++count % 20 == 0)
-            {
-                Debug.WriteLine(count);
-            }
             context = new Context(context);
             context.AddDocumentContext(this);
 

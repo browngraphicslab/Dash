@@ -7,39 +7,45 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:WindowTemplate">
-                    <Grid x:Name="PART_Container" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="30"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+                    <Grid x:Name="xAnimationGrid">
+                        <Grid.Resources>
+                            <Storyboard x:Name="FadeOut" SpeedRatio="0.7">
+                                <FadeOutThemeAnimation TargetName="xAnimationGrid"></FadeOutThemeAnimation>
+                            </Storyboard>
+                        </Grid.Resources>
+                        <Grid x:Name="PART_Container" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                        <!--window chrome-->
-                        <Rectangle x:Name="PART_Header" Fill="{StaticResource TranslucentWhite}"
+                            <!--window chrome-->
+                            <Rectangle x:Name="PART_Header" Fill="{StaticResource TranslucentWhite}"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                        <Button x:Name="PART_CloseButton" Width="30" Height="30"
+                            <Button x:Name="PART_CloseButton" Width="30" Height="30"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0">
-                            <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
-                        </Button>
+                                <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
+                            </Button>
 
-                        <!--window content-->
-                        <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}" 
+                            <!--window content-->
+                            <ContentControl x:Name="PART_InnerContent" Content="{TemplateBinding InnerContent}" 
                                         HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" Grid.Row="1"/>
 
-                        <Border Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
+                            <Border Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></Border>
 
-                        <!--resizer-->
-                        <Button x:Name="PART_Resizer"  Grid.Row="1" Background="Black" Margin="0,0,-20,-20"
+                            <!--resizer-->
+                            <Button x:Name="PART_Resizer"  Grid.Row="1" Background="Black" Margin="0,0,-20,-20"
                                  HorizontalAlignment="Right" VerticalAlignment="Bottom" ManipulationMode="TranslateX, TranslateY">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Padding="10,10,20,20" Background="Transparent">
-                                        <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
+                                <Button.Template>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Padding="10,10,20,20" Background="Transparent">
+                                            <Image Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
                                                 HorizontalAlignment="Right" VerticalAlignment="Bottom" />
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-
+                                        </Border>
+                                    </ControlTemplate>
+                                </Button.Template>
+                            </Button>
+                        </Grid>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>

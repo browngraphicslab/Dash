@@ -20,6 +20,7 @@
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
     </UserControl.Resources>
+    
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">

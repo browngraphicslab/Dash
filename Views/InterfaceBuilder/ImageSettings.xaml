@@ -9,7 +9,7 @@
     d:DesignHeight="800"
     d:DesignWidth="300">
 
-    <Grid Width="300" HorizontalAlignment="Stretch" MinHeight="300" MinWidth="250" Background="LightSteelBlue" BorderBrush="Transparent">
+    <Grid Width="300" HorizontalAlignment="Stretch" Background="LightSteelBlue" BorderBrush="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="75"/>
             <RowDefinition Height="30"/>
@@ -22,14 +22,9 @@
             </TextBlock>
         </Grid>
         <Grid Grid.Row="1" Width="250" VerticalAlignment="Top">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock>
-                    <Run Text="Type"/>
-                </TextBlock>
-                <TextBlock Margin="50,0,0,0">
-                    <Run Text="Image"/>
-                </TextBlock>
-            </StackPanel>
+            <TextBlock HorizontalAlignment="Center">
+                <Run Text="Image"/>
+            </TextBlock>
         </Grid>
         <Grid Grid.Row="2" Width="250">
             <ScrollViewer VerticalScrollMode="Auto"  VerticalScrollBarVisibility="Visible"  IsVerticalRailEnabled="True">
