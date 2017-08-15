@@ -8,8 +8,8 @@
     mc:Ignorable="d"
     d:DesignHeight="300"
     d:DesignWidth="400"
-    MinWidth="50"
-    MinHeight="50">
+    MinWidth="65"
+    MinHeight="65">
 
     <Grid x:Name="Grid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
           ManipulationMode="TranslateX, TranslateY" ManipulationStarted="OnManipulationStarted"
@@ -40,10 +40,36 @@
                 <MenuFlyoutItem x:Name="CutButton" Tapped="CutButton_OnTappedButton_OnTapped">Cut</MenuFlyoutItem>
             </MenuFlyout>
         </Grid.ContextFlyout>
-        <Rectangle Style="{StaticResource RectStyle}" Fill="Transparent" Margin="15,15,15,15"
+        <Rectangle Style="{StaticResource RectStyle}" Fill="Transparent" Margin="15"
                    StrokeDashArray="5, 2" />
         <!--Draggers-->
-        <Grid x:Name="CenterDragger" VerticalAlignment="Center" HorizontalAlignment="Center" Width="50" Height="50"
+        <Grid x:Name="RightCenterDragger" Background="Transparent" Width="30" Height="30"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Right" ManipulationMode="TranslateX"
+              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
+              ManipulationStarted="OnManipulationStarted">
+            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
+        </Grid>
+        <Grid x:Name="LeftCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Center"
+              HorizontalAlignment="Left" ManipulationMode="TranslateX"
+              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
+              ManipulationStarted="OnManipulationStarted">
+            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
+        </Grid>
+        <Grid x:Name="TopCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Top"
+              HorizontalAlignment="Center" ManipulationMode="TranslateY"
+              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
+              ManipulationStarted="OnManipulationStarted">
+            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
+        </Grid>
+        <Grid x:Name="BottomCenterDragger" Background="Transparent" Width="30" Height="30"
+              VerticalAlignment="Bottom"
+              HorizontalAlignment="Center" ManipulationMode="TranslateY"
+              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
+              ManipulationStarted="OnManipulationStarted">
+            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
+        </Grid>
+        <!--<Grid x:Name="CenterDragger" VerticalAlignment="Center" HorizontalAlignment="Center" Width="50" Height="50"
               Background="Transparent"
               ManipulationMode="TranslateX, TranslateY" ManipulationStarted="OnManipulationStarted"
               ManipulationDelta="DraggerOnManipulationDelta"
@@ -56,7 +82,7 @@
                     </MenuFlyout>
                 </Ellipse.ContextFlyout>
             </Ellipse>
-        </Grid>
+        </Grid>-->
         <Grid x:Name="BottomLeftDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Bottom"
               HorizontalAlignment="Left" ManipulationMode="TranslateX, TranslateY"
               ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
@@ -66,13 +92,6 @@
         <Grid x:Name="BottomRightDragger" Background="Transparent" Width="30" Height="30"
               VerticalAlignment="Bottom"
               HorizontalAlignment="Right" ManipulationMode="TranslateX, TranslateY"
-              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
-              ManipulationStarted="OnManipulationStarted">
-            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
-        </Grid>
-        <Grid x:Name="BottomCenterDragger" Background="Transparent" Width="30" Height="30"
-              VerticalAlignment="Bottom"
-              HorizontalAlignment="Center" ManipulationMode="TranslateY"
               ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
               ManipulationStarted="OnManipulationStarted">
             <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
@@ -89,24 +108,7 @@
               ManipulationStarted="OnManipulationStarted">
             <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
         </Grid>
-        <Grid x:Name="TopCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Top"
-              HorizontalAlignment="Center" ManipulationMode="TranslateY"
-              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
-              ManipulationStarted="OnManipulationStarted">
-            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
-        </Grid>
-        <Grid x:Name="RightCenterDragger" Background="Transparent" Width="30" Height="30"
-              VerticalAlignment="Center"
-              HorizontalAlignment="Right" ManipulationMode="TranslateX"
-              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
-              ManipulationStarted="OnManipulationStarted">
-            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
-        </Grid>
-        <Grid x:Name="LeftCenterDragger" Background="Transparent" Width="30" Height="30" VerticalAlignment="Center"
-              HorizontalAlignment="Left" ManipulationMode="TranslateX"
-              ManipulationDelta="DraggerOnManipulationDelta" ManipulationCompleted="OnManipulationCompleted"
-              ManipulationStarted="OnManipulationStarted">
-            <Rectangle Style="{StaticResource RectStyle}"></Rectangle>
-        </Grid>
+        
+        
     </Grid>
 </UserControl>

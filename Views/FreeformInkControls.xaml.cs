@@ -302,12 +302,6 @@ namespace Dash
             }
         }
 
-        //TODO: position ruler
-        private void InkToolbar_OnIsRulerButtonCheckedChanged(InkToolbar sender, object args)
-        {
-            
-        }
-
         private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
             UpdateSelectionMode();
@@ -325,12 +319,12 @@ namespace Dash
             {
                 _rectangle = new InkSelectionRect(FreeformView, TargetCanvas.InkPresenter.StrokeContainer)
                 {
-                    Width = _boundingRect.Width + 30,
-                    Height = _boundingRect.Height + 30,
+                    Width = _boundingRect.Width + 50,
+                    Height = _boundingRect.Height + 50,
                 };
 
-                Canvas.SetLeft(_rectangle, _boundingRect.X - 15);
-                Canvas.SetTop(_rectangle, _boundingRect.Y - 15);
+                Canvas.SetLeft(_rectangle, _boundingRect.X - 25);
+                Canvas.SetTop(_rectangle, _boundingRect.Y - 25);
 
                 SelectionCanvas.Children.Add(_rectangle);
             }
@@ -387,9 +381,9 @@ namespace Dash
             UpdateInputType();
         }
 
-        private void UpdateInputType()
+        public void UpdateInputType()
         {
-            if (IsDrawing)
+            if (IsDrawing && FreeformView.IsLowestSelected)
             { 
                 if(TouchInputToggle.IsChecked != null && (bool)TouchInputToggle.IsChecked) SetInkInputType(CoreInputDeviceTypes.Touch);
                 else SetInkInputType(CoreInputDeviceTypes.Pen);

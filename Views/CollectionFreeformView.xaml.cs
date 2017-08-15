@@ -652,8 +652,7 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
             if (InkControls != null && InkControls.IsDrawing)
             {
-                if (!isLowestSelected) XInkCanvas.InkPresenter.IsInputEnabled = false;
-                else XInkCanvas.InkPresenter.IsInputEnabled = true;
+                InkControls.UpdateInputType();
             }
         }
 
@@ -682,10 +681,7 @@ namespace Dash
                 _isSelectionEnabled = value;
                 if (!value) // turn colors back ... 
                 {
-                    foreach (var pair in _payload)
-                    {
-                        Deselect(pair.Key);
-                    }
+                    DeselectAll();
                     _payload = new Dictionary<DocumentView, DocumentController>();
                 }
             }
@@ -796,15 +792,18 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
-            xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
-            xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
+            if (xItemsControl.ItemsPanelRoot != null)
+            {
+                xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
+                xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
+            }
+            if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
         }
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
         {
             Canvas.SetZIndex(XInkCanvas, 0);
-            if (xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
+            if (xItemsControl.ItemsPanelRoot != null && xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
             {
                 xItemsControl.ItemsPanelRoot.Children.Remove(XInkCanvas);
                 xItemsControl.ItemsPanelRoot.Children.Remove(SelectionCanvas);
