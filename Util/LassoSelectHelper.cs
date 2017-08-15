@@ -50,7 +50,7 @@ namespace Dash
         /// <summary>
         /// Executes hull tasks, i.e. sorting points and figuring out the hull. 
         /// </summary>
-        public List<DocumentViewModelParameters> GetSelectedDocuments(List<Point> points)
+        public List<DocumentView> GetSelectedDocuments(List<Point> points)
         {
             if (_view.xItemsControl.ItemsPanelRoot.Children.Contains(_visualHull))
                 _view.xItemsControl.ItemsPanelRoot.Children.Remove(_visualHull);
@@ -64,15 +64,14 @@ namespace Dash
             if (_hullPoints != null )
             {
                 AddSelectionHull();
-                var selected = SelectContainedNodes(new List<DocumentViewModelParameters>(_view.ViewModel.DocumentViewModels));
+                var selected = SelectContainedNodes();
                 if (selected.Count > 0)
                 {
-                    AddVisualHull();
                     return selected;
                 }
             }
 
-            return new List<DocumentViewModelParameters>();
+            return new List<DocumentView>();
         }
 
         private void FindBottomLeftMostPoint()
@@ -277,35 +276,46 @@ namespace Dash
         }
 
         // selects contained atoms by figuring out the atoms in the selection hull
-        private List<DocumentViewModelParameters> SelectContainedNodes(List<DocumentViewModelParameters> docVMs)
+        private List<DocumentView> SelectContainedNodes()
         {
-            var selectedDocs = new List<DocumentViewModelParameters>();
-            foreach (var docVM in docVMs)
+            var selectedDocs = new List<DocumentView>();
+            if (_view.xItemsControl.ItemsPanelRoot != null)
             {
-                var doc = docVM.Controller;
-                var topLeft = doc.GetPositionField(null).Data;
-                var width = doc.GetWidthField(null).Data;
-                var height = doc.GetHeightField(null).Data;
-                var points = new List<Point>
-                {
-                    topLeft,
-                    new Point(topLeft.X + width, topLeft.Y),
-                    new Point(topLeft.X + width, topLeft.Y + height),
-                    new Point(topLeft.X, topLeft.Y + height)
+                IEnumerable<DocumentViewModelParameters> parameters =
+                    _view.xItemsControl.Items.OfType<DocumentViewModelParameters>();
 
-                };
-                bool inHull = false;
-                foreach (var refPoint in points)
+                foreach (var param in parameters)
                 {
-                    if (this.IsPointInHull(refPoint))
-                    {
-                        inHull = true;
+                        var doc = param.Controller;
+                        var position = doc.GetPositionField().Data;
+                        var width = doc.GetWidthField().Data;
+                        var height = doc.GetHeightField().Data;
+                        var points = new List<Point>
+                        {
+                            position,
+                            new Point(position.X + width, position.Y),
+                            new Point(position.X + width, position.Y + height),
+                            new Point(position.X, position.Y + height)
+                        };
+                        bool inHull = false;
+                        foreach (var refPoint in points)
+                        {
+                            if (this.IsPointInHull(refPoint))
+                            {
+                                inHull = true;
+                            }
+                        }
+                        if (inHull)
+                        {
+                        if (_view.xItemsControl.ItemContainerGenerator != null && _view.xItemsControl
+                                .ContainerFromItem(param) is ContentPresenter contentPresenter)
+                        {
+                            selectedDocs.Add(
+                                contentPresenter.GetFirstDescendantOfType<DocumentView>());
+                        }
                     }
                 }
-                if (inHull)
-                {
-                    selectedDocs.Add(docVM);
-                }
+                
             }
             return selectedDocs;
         }

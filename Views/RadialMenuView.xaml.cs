@@ -505,7 +505,7 @@ namespace Dash
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
-                inputTypeMenu,
+                //inputTypeMenu,
                 operatorButton,
                 //documentButton
                 //emailButton

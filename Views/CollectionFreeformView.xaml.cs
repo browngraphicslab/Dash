@@ -75,6 +75,7 @@ namespace Dash
         public ManipulationControls ManipulationControls;
         private MenuFlyout _flyout;
         private float _backgroundOpacity = .7f;
+        
 
         #region Ink
 
@@ -513,7 +514,7 @@ namespace Dash
         {
             OnDocumentViewLoaded?.Invoke(this, sender as DocumentView);
             (sender as DocumentView).OuterGrid.Tapped += DocumentView_Tapped;
-            _documentViews.Add((sender as DocumentView)); 
+            _documentViews.Add((sender as DocumentView));
         }
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -649,7 +650,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            if (InkControls.IsDrawing)
+            if (InkControls != null && InkControls.IsDrawing)
             {
                 if (!isLowestSelected) XInkCanvas.InkPresenter.IsInputEnabled = false;
                 else XInkCanvas.InkPresenter.IsInputEnabled = true;
@@ -703,15 +704,13 @@ namespace Dash
                 if (_isToggleOn)
                 {
                     Select(docView);
-                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                    
                 } else
                 {
                     Deselect(docView);
-                    _payload.Remove(docView); 
                 }
             }
         }
-        
 
         private void Deselect(DocumentView docView)
         {
@@ -719,14 +718,25 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
+            _payload.Remove(docView);
         }
 
-        private void Select(DocumentView docView)
+        public void DeselectAll()
+        {
+            foreach (var docView in _documentViews)
+            {
+                Deselect(docView);
+            }
+        }
+        
+
+        public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
+            if (!_payload.ContainsKey(docView)) _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
         private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
@@ -737,12 +747,11 @@ namespace Dash
             if (docView.CanDrag)    
             {
                 Deselect(docView);
-                _payload.Remove(docView);
             }
             else                     
             {
                 Select(docView);
-                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                
             }
             e.Handled = true;
         }
@@ -773,7 +782,8 @@ namespace Dash
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
         }
-
+        #endregion
+        #region Ink
         private void MakeInkCanvas()
         {
             InkControls = new FreeformInkControls(this, XInkCanvas, SelectionCanvas)
@@ -789,9 +799,7 @@ namespace Dash
             xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
             xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
             xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-            
         }
-        
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
         {

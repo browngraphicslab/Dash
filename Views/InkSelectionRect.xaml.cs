@@ -99,8 +99,8 @@ namespace Dash.Views
 
         private void UpdateStrokeThickness()
         {
-            if(FreeformView != null) _rectStrokeThickness = 1.5 / FreeformView.Zoom;
-            else if (Scroller != null) _rectStrokeThickness = 1.5 / Scroller.ZoomFactor;
+            if(FreeformView != null) _rectStrokeThickness = 1 / FreeformView.Zoom;
+            else if (Scroller != null) _rectStrokeThickness = 1 / Scroller.ZoomFactor;
             foreach (var grid in _draggers)
             {
                 (grid.Children[0] as Shape).StrokeThickness = _rectStrokeThickness;
