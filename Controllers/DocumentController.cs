@@ -742,7 +742,7 @@ namespace Dash
 
                     var border = new Border
                     {
-                        MaxWidth = 275,
+                        MaxWidth = 500,
                         MaxHeight = 500,
                         BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
                         BorderThickness = new Thickness(1),

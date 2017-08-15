@@ -64,9 +64,10 @@ namespace Dash
             if (!InputFieldReferences.ContainsKey(key))
             {
                 InputFieldReferences[key] = new List<FieldReference>();
+                (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key] = new List<FieldReference>();
             }
             InputFieldReferences[key].Add(reference);
-            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Add(key, reference);
+            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key].Add(reference);
         }
 
         public void RemoveInputReference(KeyController key, FieldReference reference)
@@ -76,8 +77,7 @@ namespace Dash
                 return;
             }
             InputFieldReferences[key].Remove(reference);
-            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Remove(key);
-
+            (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences[key].Remove(reference);
         }
 
         public void AddOutputreference(KeyController key, FieldReference reference)
