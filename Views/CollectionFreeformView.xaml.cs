@@ -661,7 +661,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            if (InkControls.IsDrawing)
+            if (InkControls != null && InkControls.IsDrawing)
             {
                 if (!isLowestSelected) XInkCanvas.InkPresenter.IsInputEnabled = false;
                 else XInkCanvas.InkPresenter.IsInputEnabled = true;
@@ -808,7 +808,7 @@ namespace Dash
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
         {
             Canvas.SetZIndex(XInkCanvas, 0);
-            if (xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
+            if (xItemsControl.ItemsPanelRoot != null && xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
             {
                 xItemsControl.ItemsPanelRoot.Children.Remove(XInkCanvas);
                 xItemsControl.ItemsPanelRoot.Children.Remove(SelectionCanvas);
