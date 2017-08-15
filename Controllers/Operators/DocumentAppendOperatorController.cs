@@ -44,6 +44,8 @@ namespace Dash
 
             var del = doc.MakeDelegate();
             del.SetField(new KeyController(Guid.NewGuid().ToString(), "Concat output"), field, true);
+
+            outputs[OutputDocumentKey] = new DocumentFieldModelController(del);
         }
     }
 }
