@@ -145,7 +145,7 @@ namespace Dash
                 if (DocumentSelect.IsChecked != null && (bool) DocumentSelect.IsChecked)
                 {
                     _inkSelectionMode = InkSelectionMode.Document;
-                    FreeformView.IsSelectionEnabled = true;
+                    
                 }
                 TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
                     InkInputRightDragAction.LeaveUnprocessed;
@@ -259,6 +259,11 @@ namespace Dash
 
         private void SelectDocs(PointCollection selectionPoints)
         {
+            if (!FreeformView.IsSelectionEnabled)
+            {
+                var colView = FreeformView.GetFirstAncestorOfType<CollectionView>();
+                colView.MakeSelectionModeMultiple();
+            }
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
             var selectionList =  _lassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
