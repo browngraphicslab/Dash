@@ -172,6 +172,8 @@ namespace Dash
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
                 carrier.Payload.Clear();
+                carrier.Source = null;
+                carrier.Destination = null;
             }
 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
