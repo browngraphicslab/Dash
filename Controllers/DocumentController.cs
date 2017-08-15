@@ -755,22 +755,8 @@ namespace Dash
             return sp;
         }
 
-        public static int count = 0;
-
-
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
-<<<<<<< HEAD
-            //if (++count % 20 == 0)
-            //{
-            //    Debug.WriteLine(count);
-            //}
-=======
-            if (++count % 20 == 0)
-            {
-                Debug.WriteLine(count);
-            }
->>>>>>> af8bfddaac024541e7fa334283723ce24de43bbc
             context = new Context(context);
             context.AddDocumentContext(this);
 
