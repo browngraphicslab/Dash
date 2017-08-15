@@ -24,7 +24,7 @@ namespace Dash
         {
             Inputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Inputs);
             Outputs = new ObservableDictionary<KeyController, TypeInfo>(copy.Outputs);
-            InputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.InputFieldReferences);
+            InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>(copy.InputFieldReferences);
             OutputFieldReferences = new Dictionary<KeyController, FieldReference>(copy.OutputFieldReferences);
         }
 
@@ -38,7 +38,7 @@ namespace Dash
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>();
 
-        public Dictionary<KeyController, FieldReference> InputFieldReferences = new Dictionary<KeyController, FieldReference>();
+        public Dictionary<KeyController, List<FieldReference>> InputFieldReferences = new Dictionary<KeyController, List<FieldReference>>();
         public Dictionary<KeyController, FieldReference> OutputFieldReferences = new Dictionary<KeyController, FieldReference>();
 
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
@@ -46,8 +46,12 @@ namespace Dash
             Context c = new Context();
             foreach (var reference in InputFieldReferences)
             {
-                var doc = reference.Value.GetDocumentController(c);
-                doc.SetField(reference.Value.FieldKey, inputs[reference.Key].Copy(), true);
+                var refList = reference.Value;
+                foreach (var fieldReference in refList)
+                {
+                    var doc = fieldReference.GetDocumentController(c);
+                    doc.SetField(fieldReference.FieldKey, inputs[reference.Key].Copy(), true);
+                }
             }
             foreach (var output in OutputFieldReferences)
             {
@@ -57,13 +61,21 @@ namespace Dash
 
         public void AddInputreference(KeyController key, FieldReference reference)
         {
-            InputFieldReferences.Add(key, reference);
+            if (!InputFieldReferences.ContainsKey(key))
+            {
+                InputFieldReferences[key] = new List<FieldReference>();
+            }
+            InputFieldReferences[key].Add(reference);
             (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Add(key, reference);
         }
 
-        public void RemoveInputReference(KeyController key)
+        public void RemoveInputReference(KeyController key, FieldReference reference)
         {
-            InputFieldReferences.Remove(key);
+            if (!InputFieldReferences.ContainsKey(key))
+            {
+                return;
+            }
+            InputFieldReferences[key].Remove(reference);
             (OperatorFieldModel as CompoundOperatorFieldModel).InputFieldReferences.Remove(key);
 
         }

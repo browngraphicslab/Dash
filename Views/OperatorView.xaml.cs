@@ -168,6 +168,8 @@ namespace Dash
                 view.CancelDrag(ioref.PointerArgs.Pointer);
                 StartNewLink(sender, ioref.PointerArgs, false, view);
                 view.EndDrag(ioref, true);
+                var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyController;
+                (_operator as CompoundOperatorFieldController).AddInputreference(key, ioref.FieldReference);
             }
             else
             {
