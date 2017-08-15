@@ -94,12 +94,12 @@ namespace Dash
 
         private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
         {
-            var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
-            Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
-            Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
-            Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
-            Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
-            
+            //var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
+            //Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
+            //Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
+            //Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
+            //Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
+
 
 
         }

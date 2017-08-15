@@ -661,7 +661,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            if (InkControls.IsDrawing)
+            if (InkControls != null && InkControls.IsDrawing)
             {
                 if (!isLowestSelected) XInkCanvas.InkPresenter.IsInputEnabled = false;
                 else XInkCanvas.InkPresenter.IsInputEnabled = true;

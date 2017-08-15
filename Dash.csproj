@@ -98,6 +98,7 @@
     </Compile>
     <Compile Include="Controllers\Operators\ApiOperatorController.cs" />
     <Compile Include="Controllers\Operators\ConcatOperator.cs" />
+    <Compile Include="Controllers\Operators\DocumentConcatOperatorController.cs" />
     <Compile Include="Controllers\Operators\Set\ZipOperatorFieldController.cs" />
     <Compile Include="Converters\DoubleToStringConverter.cs" />
     <Compile Include="Controllers\KeyController.cs" />
