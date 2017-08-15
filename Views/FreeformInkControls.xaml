@@ -16,8 +16,8 @@
                       Height="63" Padding="0" HorizontalAlignment="Stretch">
             <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center"
                         VerticalAlignment="Top">
-                <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top" Height="50" Background="#FFE6E6E6"
-                            IsRulerButtonCheckedChanged="InkToolbar_OnIsRulerButtonCheckedChanged">
+                <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top" Height="50" Background="#FFE6E6E6" InitialControls="PensOnly">
+                    <InkToolbarEraserButton IsClearAllVisible="True"></InkToolbarEraserButton>
                     <InkToolbarCustomToolButton x:Name="SelectButton" IsChecked="False"
                                                 Tapped="SelectButton_OnTapped" 
                                                 ToolTipService.ToolTip="Selection tool" Unchecked="SelectButton_Unchecked" >
@@ -30,6 +30,10 @@
                             </StackPanel>
                         </InkToolbarCustomToolButton.ConfigurationContent>
                     </InkToolbarCustomToolButton>
+                    <InkToolbarCustomToggleButton x:Name="TouchInputToggle" IsChecked="False"
+                                                  Tapped="TouchInputToggle_OnTapped" >
+                        <SymbolIcon Symbol="{x:Bind TouchIcon}"/>
+                    </InkToolbarCustomToggleButton>
                 </InkToolbar>
                 <Button x:Name="UndoButton" Tapped="UndoButton_OnTapped" VerticalAlignment="Top" Width="50" Height="50"
                         Background="#FFE6E6E6">
