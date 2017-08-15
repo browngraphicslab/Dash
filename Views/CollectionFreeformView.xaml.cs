@@ -320,8 +320,7 @@ namespace Dash
 
             if (!isCompoundOperator)
             {
-                DocumentController inputController =
-                    inputReference.FieldReference.GetDocumentController(null);
+                DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
                     inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
