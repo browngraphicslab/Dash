@@ -601,8 +601,6 @@ namespace Dash
             };
 
             ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
-
-
             DisposeFlyout();
         }
 
