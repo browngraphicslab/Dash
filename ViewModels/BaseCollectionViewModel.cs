@@ -60,7 +60,7 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2);
             }
             collectionView.ViewModel.AddDocument(docController, null);
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers, Point? where = null)
@@ -171,6 +171,7 @@ namespace Dash
                     new Point();
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
+                carrier.Payload.Clear();
             }
 
             SetGlobalHitTestVisiblityOnSelectedItems(false);
