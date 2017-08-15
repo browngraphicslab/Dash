@@ -9,6 +9,7 @@ using DashShared;
 using System;
 using Windows.UI.Xaml.Media.Imaging;
 using Dash.Controllers.Operators;
+using Dash.Converters;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -36,7 +37,11 @@ namespace Dash
 
         public void SetDataContextToDocumentController(DocumentController documentToDisplay)
         {
+            if (_documentControllerDataContext != null)
+                _documentControllerDataContext.DocumentFieldUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
             _documentControllerDataContext = documentToDisplay;
+            _documentControllerDataContext.DocumentFieldUpdated -= _documentControllerDataContext_DocumentFieldUpdated;
+            _documentControllerDataContext.DocumentFieldUpdated += _documentControllerDataContext_DocumentFieldUpdated;
             DataContext = documentToDisplay; // this line fires data context changed
         }
 
@@ -55,7 +60,24 @@ namespace Dash
             ListItemSource.Clear();
             foreach (var keyFieldPair in _documentControllerDataContext.EnumFields())
                 if (!keyFieldPair.Key.Name.StartsWith("_"))
+                {
                     ListItemSource.Add(new KeyFieldContainer(keyFieldPair.Key, new BoundFieldModelController(keyFieldPair.Value, _documentControllerDataContext)));
+                }
+        }
+
+        private void _documentControllerDataContext_DocumentFieldUpdated(DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
+        {
+            if (args.Action == DocumentController.FieldUpdatedAction.Replace || args.Action == DocumentController.FieldUpdatedAction.Update)
+                UpdateListItemSourceElement(args.Reference.FieldKey, args.NewValue);
+            else SetListItemSourceToCurrentDataContext();
+        }
+
+        void UpdateListItemSourceElement(KeyController fieldKey, FieldModelController fieldValue)
+        {
+            for (int i = 0; i < ListItemSource.Count; i++)
+                if (ListItemSource[i].Key == fieldKey)
+                    ListItemSource[i] = new KeyFieldContainer(fieldKey,
+                        new BoundFieldModelController(fieldValue, _documentControllerDataContext));
         }
 
         private void FocusOn(TextBox tb)
@@ -159,7 +181,7 @@ namespace Dash
         public class KeyFieldContainer
         {
             public KeyController Key { get; }
-            public BoundFieldModelController Controller { get; }
+            public BoundFieldModelController Controller { get; set; }
             // Type of field, ex) Text, Image, Number  
             public string Type { get; }
 
@@ -248,11 +270,11 @@ namespace Dash
             // make sure you can only edit the key or values; don't edit the type 
             if (posInKVPane.X < xHeaderGrid.ColumnDefinitions[0].ActualWidth)
                 _editKey = true;
-            else if (posInKVPane.X > xHeaderGrid.ColumnDefinitions[0].ActualWidth + xHeaderGrid.ColumnDefinitions[1].ActualWidth)
+            else if (posInKVPane.X > xHeaderGrid.ColumnDefinitions[0].ActualWidth && posInKVPane.X < xHeaderGrid.ColumnDefinitions[0].ActualWidth + xHeaderGrid.ColumnDefinitions[1].ActualWidth)
                 _editKey = false;
             else
                 return;
-
+            
             //get position of mouse in screenspace 
             var containerGrid = xOuterGrid.GetFirstAncestorOfType<Grid>();
             var p = Util.PointTransformFromVisual(posInKVPane, containerGrid); 
@@ -288,6 +310,7 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
+                        DBTest.ResetCycleDetection();
                         _selectedKV.Key.Name = _tb.Text;
                         SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
@@ -303,9 +326,9 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
+                        DBTest.ResetCycleDetection();
                         var textCont = _selectedKV.Controller.FieldModelController as TextFieldModelController;
                         textCont.Data = _tb.Text;
-                        SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
                     }
                 };
@@ -316,12 +339,11 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
+                        DBTest.ResetCycleDetection();
                         var textCont = _selectedKV.Controller.FieldModelController as NumberFieldModelController;
                         double number;
                         if (double.TryParse(_tb.Text, out number))
                             textCont.Data = number;
-
-                        SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
                     }
                 };
@@ -332,15 +354,40 @@ namespace Dash
                 {
                     if (e.Key == Windows.System.VirtualKey.Enter)
                     {
+                        DBTest.ResetCycleDetection();
                         var textCont = _selectedKV.Controller.FieldModelController as ImageFieldModelController;
                         (textCont.Data as BitmapImage).UriSource = new Uri(_tb.Text);
-
-                        SetListItemSourceToCurrentDataContext();
                         RemoveEditingTextBox();
                     }
                 };
             }
-            else
+            else if (type == TypeInfo.Document)
+            {
+                _tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        DBTest.ResetCycleDetection();
+                        var docCont = _selectedKV.Controller.FieldModelController as DocumentFieldModelController;
+                        docCont.Data = new DocumentControllerToStringConverter().ConvertXamlToData(_tb.Text);
+                        RemoveEditingTextBox();
+                    }
+                };
+            }
+            else if (type == TypeInfo.Reference)
+            {
+                _tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        DBTest.ResetCycleDetection();
+                        var docCont = _selectedKV.Controller.FieldModelController as DocumentCollectionFieldModelController;
+                        docCont.Data = new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text);
+                        RemoveEditingTextBox();
+                    }
+                };
+
+            } else
                 throw new NotImplementedException();
             
         }
@@ -361,7 +408,7 @@ namespace Dash
         private void xKeyValueListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             _selectedKV = e.ClickedItem as KeyFieldContainer;
-        }
+         }
 
         
     }

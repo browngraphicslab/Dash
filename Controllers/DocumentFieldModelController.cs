@@ -4,6 +4,7 @@ using Windows.UI.Xaml.Controls;
 using DashShared;
 using Windows.UI.Xaml.Data;
 using Dash.Converters;
+using System.Linq;
 
 namespace Dash
 {
@@ -58,14 +59,34 @@ namespace Dash
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
+            // if the field model is changed, then this Binding will fire and the text will update
             Binding textBinding = new Binding
             {
                 Source = this,
                 Converter = new DocumentFieldModelToStringConverter(),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
             };
             textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-           // textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
+
+            // if fields within the document change, then we need to recreate the binding to 
+            // force the text to update in case one of the fields that changed is a Primary Key (and thus affects the text conversion).
+            Data.DocumentFieldUpdated += ((sender, ctxt) =>
+            {
+                if ((Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
+                {
+                    textBinding = new Binding
+                    {
+                        Source = this,
+                        Converter = new DocumentFieldModelToStringConverter(),
+                        Mode = BindingMode.TwoWay,
+                        UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                    };
+                    textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+                }
+            });
+          
+            // textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
         }
 
         public override FieldModelController Copy()

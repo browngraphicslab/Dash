@@ -202,26 +202,10 @@ namespace Dash
                 sourceBinding = new Binding
                 {
                     Source = docData,
-                    Path = new PropertyPath(nameof(docData.Data)),
                     Mode = BindingMode.TwoWay,
-                    Converter = new DocumentControllerToStringConverter(),
+                    Converter = new DocumentFieldModelToStringConverter(),
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 };
-                if (docData.Data != null)
-                {
-                    docData.Data.DocumentFieldUpdated += ((sender, ctxt) =>
-                    {
-                        sourceBinding = new Binding
-                        {
-                            Source = docData,
-                            Path = new PropertyPath(nameof(docData.Data)),
-                            Mode = BindingMode.TwoWay,
-                            Converter = new DocumentControllerToStringConverter(),
-                            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                        };
-                        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
-                    });
-                }
             }
             else if (data is DocumentCollectionFieldModelController)
             {
