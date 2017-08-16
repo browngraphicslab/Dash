@@ -107,6 +107,7 @@
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
+    <Compile Include="Util\CourtesyDocuments\XampleFields.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
     <Compile Include="Views\FreeformInkControls.xaml.cs">
       <DependentUpon>FreeformInkControls.xaml</DependentUpon>

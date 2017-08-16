@@ -300,5 +300,30 @@ namespace Dash
             Action<ICollectionView, DragEventArgs> dropAction = Actions.AddNotes;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
         }
+
+        private void TestEnvOnButtonTapped(object sender, TappedRoutedEventArgs e)
+        {
+            int numDocuments = 1000;
+            int numFields = 50;
+
+            var docs = new List<DocumentController>();
+            for (int i = 0; i < numDocuments; ++i)
+            {
+                if (i % 20 == 0)
+                {
+                    Debug.WriteLine($"Generated {i} documents");
+                }
+                docs.Add(new XampleFields(numFields, TypeInfo.Text).Document);
+            }
+
+            var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docs)
+            }, DocumentType.DefaultType);
+
+            var colBox = new CollectionBox(new ReferenceFieldModelController(doc.GetId(), DocumentCollectionFieldModelController.CollectionKey)).Document;
+            doc.SetActiveLayout(colBox, true, false);
+            DisplayDocument(doc);
+        }
     }
 }
