@@ -480,7 +480,7 @@ namespace Dash
             if (opCont == null) return true;
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
-            var rawField = (field as ReferenceFieldModelController)?.Dereference(null); 
+            var rawField = field.DereferenceToRoot(null); 
             switch (opCont.Inputs[key])
             {
                 case TypeInfo.Number:
@@ -491,6 +491,8 @@ namespace Dash
                     return rawField is ImageFieldModelController;
                 case TypeInfo.Collection:
                     return rawField is DocumentCollectionFieldModelController;
+                case TypeInfo.Document:
+                    return rawField is DocumentFieldModelController;
                 case TypeInfo.Operator:
                     return rawField is OperatorFieldModelController;
                 default: throw new NotImplementedException(); 
