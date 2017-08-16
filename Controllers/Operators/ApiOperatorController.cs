@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.Web.Http;
@@ -149,7 +150,7 @@ namespace Dash
             throw new ArgumentException();
         }
 
-        private bool BuildParamList(Dictionary<KeyController, FieldModelController> inputs, IDictionary<KeyController, ApiParameter> parameters, 
+        private bool BuildParamList(Dictionary<KeyController, FieldModelController> inputs, IDictionary<KeyController, ApiParameter> parameters,
             List<KeyValuePair<string, string>> outParameters)
         {
             foreach (var parameter in parameters)
@@ -198,8 +199,8 @@ namespace Dash
             var headers = new List<KeyValuePair<string, string>>();
 
 
-            BuildParamList(inputs, Parameters, parameters);
-            BuildParamList(inputs, Headers, headers);
+            if (!BuildParamList(inputs, Parameters, parameters)) return;
+            if (!BuildParamList(inputs, Headers, headers)) return;
 
             var request = new Request(httpMethod, new Uri(url))
                 .SetHeaders(headers)
@@ -210,8 +211,8 @@ namespace Dash
                 var authHeaders = new List<KeyValuePair<string, string>>();
                 var authParams = new List<KeyValuePair<string, string>>();
 
-                BuildParamList(inputs, AuthHeaders, authHeaders);
-                BuildParamList(inputs, AuthParameters, authParams);
+                if (!BuildParamList(inputs, AuthHeaders, authHeaders)) return;
+                if (!BuildParamList(inputs, AuthParameters, authParams)) return;
 
                 request.SetAuthUri(new Uri(authUrl));
                 request.SetAuthMethod(autHttpMethod);
@@ -220,7 +221,7 @@ namespace Dash
                 request.SetKey(authKey);
                 request.SetSecret(authSecret);
             }
-            
+
             var newRequest = Task.Run(() => request.TrySetResponse()).Result;
 
             var doc = newRequest.GetResult();
