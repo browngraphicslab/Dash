@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Xaml;
@@ -454,6 +455,8 @@ namespace Dash
             }
         }
 
+        private readonly Object _updateLock = new Object();
+
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyController" /> at the first
         ///     prototype in the hierarchy that contains it. If the <see cref="KeyController" /> is not used at any level then it is
@@ -484,11 +487,14 @@ namespace Dash
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
 
+            Monitor.Enter(_updateLock);
             RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
             {
                 //Yay!
+                Monitor.Exit(_updateLock);
             }, exception =>
             {
+                Monitor.Exit(_updateLock);
                 //Hayyyyy!
             });
 
@@ -552,12 +558,15 @@ namespace Dash
 
             if (updateServer)
             {
+                Monitor.Enter(_updateLock);
                 RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
                 {
                     //Yay!
+                    Monitor.Exit(_updateLock);
                 }, exception =>
                 {
                     //Hayyyyy!
+                    Monitor.Exit(_updateLock);
                 });
             }
         }
