@@ -212,7 +212,9 @@
             <Setter Property="Fill" Value="{StaticResource TranslucentWhite}"></Setter>
             <Setter Property="Stroke" Value="{StaticResource WindowsBlue}"></Setter>
         </Style>
-        
+
+        <SolidColorBrush x:Key="InkToolbarButtonBackgroundThemeBrush" Color="White"/>
+
         <!--TODO what is this doing here-->
         <ItemsPanelTemplate x:Key="ListViewLayoutTemplate">
             <DataTemplate>

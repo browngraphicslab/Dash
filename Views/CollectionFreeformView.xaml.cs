@@ -75,6 +75,7 @@ namespace Dash
         public ManipulationControls ManipulationControls;
         private MenuFlyout _flyout;
         private float _backgroundOpacity = .7f;
+        
 
 
         #region Ink
@@ -697,10 +698,8 @@ namespace Dash
             {
                 if (_isToggleOn)
                 {
-                    Select(docView);
-
-                }
-                else
+                    Select(docView);                  
+                } else
                 {
                     Deselect(docView);
                 }
@@ -723,8 +722,7 @@ namespace Dash
                 Deselect(docView);
             }
         }
-
-
+        
         public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
@@ -746,7 +744,6 @@ namespace Dash
             else
             {
                 Select(docView);
-
             }
             e.Handled = true;
         }

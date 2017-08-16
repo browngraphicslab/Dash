@@ -32,9 +32,11 @@ namespace Dash.Views
         private Size _startSize;
         private Point _startPosition;
         private List<Grid> _draggers;
-        private double _rectStrokeThickness = 1;
         private Dictionary<InkStroke, Matrix3x2> _startingTransforms;
         private bool _flyoutShowing;
+        private double outerMargin = 15;
+        private double innerMargin = 10;
+        //public double TotalMargin = 25;
 
         private Point Position()
         {
@@ -43,7 +45,7 @@ namespace Dash.Views
 
         private Point InnerTopLeft()
         {
-            return new Point(Canvas.GetLeft(this) + 15, Canvas.GetTop(this) + 15);
+            return new Point(Canvas.GetLeft(this) + 25, Canvas.GetTop(this) + 25);
         }
 
         public InkSelectionRect(CollectionFreeformView view, InkStrokeContainer strokes, ScrollViewer scroller = null)
@@ -88,43 +90,36 @@ namespace Dash.Views
                 if (stroke.Selected)
                 {
                     _startingTransforms[stroke] = stroke.PointTransform;
-                    Debug.WriteLine("stroke ID: " + stroke.Id);
-                    Debug.WriteLine("x scale: " + stroke.PointTransform.M11);
-                    Debug.WriteLine("y scale: " + stroke.PointTransform.M22);
-                    Debug.WriteLine("Center: " + "(" + stroke.PointTransform.M31 + ", " + stroke.PointTransform.M32 + ")");
-                    Debug.WriteLine("Rect Pos: (" + Position().X + ", " + Position().Y + ")");
                 }
             }
         }
 
         private void UpdateStrokeThickness()
         {
-            if(FreeformView != null) _rectStrokeThickness = 1.5 / FreeformView.Zoom;
-            else if (Scroller != null) _rectStrokeThickness = 1.5 / Scroller.ZoomFactor;
+            double scale = FreeformView?.Zoom ?? Scroller.ZoomFactor;
+            double rectStrokeThickness = 1 / scale;
             foreach (var grid in _draggers)
             {
-                (grid.Children[0] as Shape).StrokeThickness = _rectStrokeThickness;
+                (grid.Children[0] as Shape).StrokeThickness = rectStrokeThickness;
             }
-            (CenterDragger.Children[0] as Shape).StrokeThickness = 2 * _rectStrokeThickness;
-            (Grid.Children[0] as Shape).StrokeThickness = _rectStrokeThickness;
+            //(CenterDragger.Children[0] as Shape).StrokeThickness = 2 * _rectStrokeThickness;
+            (Grid.Children[0] as Shape).StrokeThickness = rectStrokeThickness;
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            _startSize = new Size(Width - 30, Height - 30);
+            _startSize = new Size(Width - 50, Height - 50);
             _startPosition = Position();
         }
 
         private void DraggerOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
         {
             e.Handled = true;
-            double scale;
-            if (FreeformView != null) scale = FreeformView.Zoom;
-            else scale = Scroller.ZoomFactor;
+            double scale = FreeformView?.Zoom ?? Scroller.ZoomFactor;
             var translate = new Point(e.Delta.Translation.X / scale, e.Delta.Translation.Y / scale);
             var dragger = sender as Grid;
-            float xScale = (float)((Width - 30) / _startSize.Width);
-            float yScale = (float)((Height - 30) / _startSize.Height);
+            float xScale = (float)((Width - 50) / _startSize.Width);
+            float yScale = (float)((Height - 50) / _startSize.Height);
             if (dragger.Name == "CenterDragger" || dragger.Name == "Grid")
             {
                 Canvas.SetLeft(this, Position().X + translate.X);
@@ -134,7 +129,7 @@ namespace Dash.Views
             }
             if (dragger.Name.Contains("Left"))
             {
-                if(Width - translate.X > MinWidth) Canvas.SetLeft(this, Position().X + translate.X);
+                if (Width - translate.X > MinWidth) Canvas.SetLeft(this, Position().X + translate.X);
                 translate.X *= -1;
 
             }
@@ -145,18 +140,28 @@ namespace Dash.Views
             }
             if (Width + translate.X > MinWidth || translate.X > 0)
             {
-                xScale = (float)((Width - 30 + translate.X) / _startSize.Width);
+                xScale = (float)((Width - 50 + translate.X) / _startSize.Width);
                 Width += translate.X;
-                
+
             }
             if (Height + translate.Y > MinHeight || translate.Y > 0)
             {
-                yScale = (float)((Height - 30 + translate.Y) / _startSize.Height);
+                yScale = (float)((Height - 50 + translate.Y) / _startSize.Height);
                 Height += translate.Y;
             }
+
             TransformStrokes(xScale, yScale);
 
         }
+
+        //private void UpdateCenterVisibility()
+        //{
+        //    if (Height < 100 || Width < 100)
+        //    {
+        //        CenterDragger.Visibility = Visibility.Collapsed;
+        //    }
+        //    else CenterDragger.Visibility = Visibility.Visible;
+        //}
 
         private void TransformStrokes(float xScale, float yScale)
         {

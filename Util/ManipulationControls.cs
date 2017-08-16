@@ -67,10 +67,10 @@ namespace Dash {
             if (e.PointerDeviceType == BlockedInputType && FilterInput)
             {
                 _processManipulation = false;
+                e.Handled = true;
                 return;
             }
             _processManipulation = true;
-            //e.Handled = true;
         }
 
         public void AddAllAndHandle()
@@ -123,7 +123,7 @@ namespace Dash {
 
         private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
         {
-            
+            _processManipulation = true;
             TranslateAndScale(e);
         }
 

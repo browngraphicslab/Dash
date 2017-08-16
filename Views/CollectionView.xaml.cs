@@ -161,7 +161,7 @@ namespace Dash
             _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
-        private void MakeSelectionModeMultiple()
+        public void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
