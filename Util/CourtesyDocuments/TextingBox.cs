@@ -65,15 +65,10 @@ namespace Dash
         protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(element, docController, context);
-
             BindFontWeight(element, docController, context);
             BindFontSize(element, docController, context);
             BindTextAllignment(element, docController, context);
-            //AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
-            //AddBinding(element, docController, FontSizeKey, context, BindFontSize);
-            //AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
             SetupTextBinding(element, docController, context);
-            //AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
         }
 
         public override FrameworkElement makeView(DocumentController docController,
@@ -82,20 +77,20 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
+        // the text field model controller provides us with the DATA
+        // the Document on this courtesty document provides us with the parameters to display the DATA. X, Y, Width, and Height etc....
+        public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
-            // the text field model controller provides us with the DATA
-            // the Document on this courtesty document provides us with the parameters to display the DATA.
-            // X, Y, Width, and Height etc....
-
             // create the textblock
-            var tb = new TextBlock();
+            var editableTB = new EditableTextBlock();
+            TextBlock tb = isEditable ? editableTB.Block : new TextBlock(); 
+            //var tb = new TextBlock();
 
             SetupBindings(tb, docController, context);
-            //SetupBindings(tb.Box, docController, context);
-            //tb.Box.AcceptsReturn = true;
-            CourtesyDocument.SetupBindings(tb, docController, context);
-
+            if (isEditable) {
+                SetupBindings(editableTB.Box, docController, context);
+                CourtesyDocument.SetupBindings(editableTB, docController, context); 
+            }
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
@@ -116,6 +111,7 @@ namespace Dash
                 return selectableContainer;
             }
 
+            if (isEditable) return editableTB; 
             return tb;
         }
         #region Bindings

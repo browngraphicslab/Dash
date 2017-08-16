@@ -167,6 +167,12 @@ namespace Dash
         }
 
         #region expandoflyout
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (XPresenter.Content == null) ExpandView(null, null);
+            else ContractView(null, null);
+        }
+
         private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             e.Handled = true;
