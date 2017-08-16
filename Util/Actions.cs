@@ -158,7 +158,7 @@ namespace Dash
                     new DocumentCollectionFieldModelController(numbers)
                 }
             };
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc =
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -176,7 +176,7 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2, twoImages2})
             };
-            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -223,7 +223,7 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2})
             };
-            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;

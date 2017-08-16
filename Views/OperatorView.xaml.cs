@@ -241,15 +241,16 @@ namespace Dash
         {
             if (!_isCompound) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-            var currIOF = view.GetCurrentReference();
-            view.CancelDrag(currIOF.PointerArgs.Pointer);
-            StartNewLink(sender, currIOF.PointerArgs, false, view);
-            view.EndDrag(currIOF, true);
+            var ioRef = view.GetCurrentReference();
+            if (ioRef == null) return;
+            view.CancelDrag(ioRef.PointerArgs.Pointer);
+            StartNewLink(sender, ioRef.PointerArgs, false, view);
+            view.EndDrag(ioRef, true);
         }
 
         private void OutputEllipse_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!_isCompound) return;
+            if (!_isCompound || _currOutputRef == null) return;
             var view = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
             EndDraggedLink(sender, null, true, view);
             view.CancelDrag(_currOutputRef.PointerArgs.Pointer);
