@@ -803,13 +803,6 @@ namespace Dash
         #endregion
 
         #region Ink
-        //private Canvas SelectionCanvas = new Canvas();
-        //private InkCanvas XInkCanvas = new InkCanvas
-        //{
-        //    Width = 60000,
-        //    Height = 60000,
-        //};
-
         public ManipulationControls ManipulationControls;
 
         public InkFieldModelController InkFieldModelController;
@@ -828,17 +821,13 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-             //  /*                                                                                                  // TODO figure out why this bit of code messes up selection in collectionfreeformview 
+                                                                                                              
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 XInkCanvas.IsHitTestVisible = true;
                 SelectionCanvas.IsHitTestVisible = true;
-                //xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
-                //xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
             }
-            //*/
             //if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-            //   */ 
         }
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
