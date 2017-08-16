@@ -130,7 +130,7 @@ namespace Dash
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
             if (InkFieldModelController != null)
             {
-                //MakeInkCanvas();
+                MakeInkCanvas();
             }
         }
 
@@ -776,7 +776,7 @@ namespace Dash
             if (carrier.StartingCollection == null) return;
             if (carrier.StartingCollection != this)
             {
-                carrier.StartingCollection.Collection_DragLeave(sender, args);
+                // carrier.StartingCollection.Collection_DragLeave(sender, args);
                 return;
             }
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
@@ -828,12 +828,14 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
+            //   /*                                                                                                  // TODO figure out why this bit of code messes up selection in collectionfreeformview 
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
                 xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
             }
             if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
+            //   */ 
         }
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
