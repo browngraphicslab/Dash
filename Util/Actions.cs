@@ -201,7 +201,7 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
@@ -235,12 +235,10 @@ namespace Dash
             //Display collections
             DisplayDocument(collectionView, col2, where);
 
-
             DisplayDocument(collectionView, new InkDoc().Document, where);
 
-
-            foreach (var d in new DBTest().Documents)
-                DisplayDocument(collectionView, d, where);
+            //foreach (var d in new DBTest().Documents)
+            //    DisplayDocument(collectionView, d, where);
         }
 
         public static void AddNotes(ICollectionView collectionView, DragEventArgs e)

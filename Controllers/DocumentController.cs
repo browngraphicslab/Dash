@@ -240,8 +240,8 @@ namespace Dash
                     if (strings.Count() == 2)
                     {
                         var opModel = lookupOperator(strings[0]);
-                        var args    = strings[1].TrimEnd(')').Split(',');
-                        var refs    = new List<ReferenceFieldModelController>();
+                        var args = strings[1].TrimEnd(')').Split(',');
+                        var refs = new List<ReferenceFieldModelController>();
                         bool useProto = false;
                         foreach (var a in args)
                         {
@@ -273,7 +273,7 @@ namespace Dash
                         foreach (var i in opFieldController.Inputs.ToArray())
                             if (count < refs.Count())
                                 opModel.SetField(i.Key, refs[count++], true);
-                        (useProto ? proto:this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                        (useProto ? proto : this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
                         Debug.WriteLine("Value = " + (useProto ? proto : this).GetDereferencedField(key, null));
                     }
                     else
@@ -287,7 +287,7 @@ namespace Dash
                                 foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
                                     if (e.Key.Name == path[1])
                                     {
-                                        ((path[0] == "This") ? proto:this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
+                                        ((path[0] == "This") ? proto : this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
                                         break;
                                     }
                             }
@@ -436,13 +436,16 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask"></param>
-        public void SetField(KeyController key, FieldModelController field, bool forceMask)
+        public bool SetField(KeyController key, FieldModelController field, bool forceMask)
         {
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))
             {
-                return;
+                return false;
             }
+
+            // check field type compatibility if operator  
+            if (!IsTypeCompatible(key, field)) return false;
 
             SetupNewFieldListeners(key, field, oldField, new Context(this));
 
@@ -453,6 +456,35 @@ namespace Dash
             }
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
+            return true;
+        }
+
+        /// <summary>
+        /// Method that returns whether the input fieldmodelcontroller type is compatible to the key; if the document is not an operator type, return true always 
+        /// </summary>
+        /// <param name="key">key that field is mapped to</param>
+        /// <param name="field">reference field model that references the field to connect</param>
+        private bool IsTypeCompatible(KeyController key, FieldModelController field)
+        {
+            var opCont = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
+            if (opCont == null) return true;
+            if (!opCont.Inputs.ContainsKey(key)) return true;
+
+            var rawField = (field as ReferenceFieldModelController)?.Dereference(null); 
+            switch (opCont.Inputs[key])
+            {
+                case TypeInfo.Number:
+                    return rawField is NumberFieldModelController;
+                case TypeInfo.Text:
+                    return rawField is TextFieldModelController;
+                case TypeInfo.Image:
+                    return rawField is ImageFieldModelController;
+                case TypeInfo.Collection:
+                    return rawField is DocumentCollectionFieldModelController;
+                case TypeInfo.Operator:
+                    return rawField is OperatorFieldModelController;
+                default: throw new NotImplementedException(); 
+            }
         }
 
 
@@ -690,8 +722,8 @@ namespace Dash
 
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(KeyStore.DelegatesKey)  ||
-                    f.Key.Equals(KeyStore.PrototypeKey)  ||
+                if (f.Key.Equals(KeyStore.DelegatesKey) ||
+                    f.Key.Equals(KeyStore.PrototypeKey) ||
                     f.Key.Equals(KeyStore.LayoutListKey) ||
                     f.Key.Equals(KeyStore.ActiveLayoutKey))
                 {
