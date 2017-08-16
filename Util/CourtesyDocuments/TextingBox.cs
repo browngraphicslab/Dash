@@ -89,11 +89,11 @@ namespace Dash
             // X, Y, Width, and Height etc....
 
             // create the textblock
-            EditableTextBlock tb = new EditableTextBlock();
+            var tb = new TextBlock();
 
-            SetupBindings(tb.Block, docController, context);
-            SetupBindings(tb.Box, docController, context);
-            tb.Box.AcceptsReturn = true;
+            SetupBindings(tb, docController, context);
+            //SetupBindings(tb.Box, docController, context);
+            //tb.Box.AcceptsReturn = true;
             CourtesyDocument.SetupBindings(tb, docController, context);
 
             // add bindings to work with operators
@@ -106,7 +106,7 @@ namespace Dash
                 else if (fmController is NumberFieldModelController)
                     fmController = fmController as NumberFieldModelController;
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
+                BindOperationInteractions(tb, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
             if (isInterfaceBuilderLayout)
