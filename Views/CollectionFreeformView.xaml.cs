@@ -592,7 +592,7 @@ namespace Dash
         private void MenuItem_Click2(object sender, RoutedEventArgs e)
         {
             var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var transform = menu.TransformToVisual( xItemsControl.ItemsPanelRoot);
             var pointOnCanvas = transform.TransformPoint(new Point());
 
             var fields = new Dictionary<KeyController, FieldModelController>()
@@ -608,7 +608,7 @@ namespace Dash
         private void MenuItem_Click3(object sender, RoutedEventArgs e)
         {
             var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var transform = menu.TransformToVisual(xItemsControl.ItemsPanelRoot);
             var pointOnCanvas = transform.TransformPoint(new Point());
 
             var fields = new Dictionary<KeyController, FieldModelController>()
