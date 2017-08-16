@@ -23,8 +23,8 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" >Keys</TextBlock>
-            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
-            <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
@@ -50,8 +50,8 @@
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
-                        <Border Grid.Column="2" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
-                        <ScrollViewer Grid.Column="1" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
+                        <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
+                        <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Type}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
                     </Grid>
@@ -68,7 +68,7 @@
             <Button x:Name="xAddButton" Grid.Column="0" FontSize="15" Height="32" Width="32" HorizontalAlignment="Right" VerticalAlignment ="Bottom" IsTapEnabled="True" Tapped="AddButton_Tapped" Background="{StaticResource WindowsBlue}"/>
             <TextBox x:Name="xNewKeyField" Grid.Column="1" Text="" TextAlignment="Left" HorizontalAlignment ="Stretch" VerticalAlignment ="Bottom" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="#AA007AFF" Margin="0,0,0.333,0" ></TextBox>
 
-            <Grid Grid.Column="3">
+            <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
@@ -77,7 +77,7 @@
                 <TextBox x:Name="xNewValueField" Grid.Row="1" HorizontalAlignment ="Stretch" TextChanged="xNewValueField_TextChanged" 
                          Text="" TextAlignment="Left" PlaceholderText="Value" BorderBrush="#007AFF"/>
             </Grid>
-            <ComboBox x:Name="xTypeComboBox" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged"/>
+            <ComboBox x:Name="xTypeComboBox" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged"/>
         </Grid>
     </Grid>
 </UserControl>

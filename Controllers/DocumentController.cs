@@ -773,6 +773,10 @@ namespace Dash
             {
                 return DocumentBox.MakeView(this, context, isInterfaceBuilder);
             }
+            if (DocumentType == KeyValueDocumentBox.DocumentType)
+            {
+                return KeyValueDocumentBox.MakeView(this, context, isInterfaceBuilder);
+            }
             if (DocumentType == StackLayout.DocumentType)
             {
                 return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
