@@ -412,7 +412,10 @@ namespace Dash
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
 
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            var matrix = new MatrixTransform { Matrix = composite.Value };
+
+            canvas.RenderTransform = matrix;
+            InkHostCanvas.RenderTransform = matrix;
             SetTransformOnBackground(composite);
         }
 
@@ -616,12 +619,15 @@ namespace Dash
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (_flyout == null)
-                InitializeFlyout();
-            e.Handled = true;
-            var thisUi = this as UIElement;
-            var position = e.GetPosition(thisUi);
-            _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
+            if (!InkControls.IsDrawing)
+            {
+                if (_flyout == null)
+                    InitializeFlyout();
+                e.Handled = true;
+                var thisUi = this as UIElement;
+                var position = e.GetPosition(thisUi);
+                _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
+            }
         }
 
         #endregion
@@ -790,24 +796,8 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            if (xItemsControl.ItemsPanelRoot != null)
-            {
-                xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
-            }
-            if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-        }
-
-        private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
-        {
-            Canvas.SetZIndex(XInkCanvas, 0);
-            if (xItemsControl.ItemsPanelRoot != null && xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
-            {
-                xItemsControl.ItemsPanelRoot.Children.Remove(XInkCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Remove(SelectionCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
-            }
+            InkHostCanvas.Children.Add(XInkCanvas);
+            InkHostCanvas.Children.Add(SelectionCanvas);
         }
     #endregion
     }

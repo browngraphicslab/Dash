@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -22,6 +24,7 @@ using Windows.UI;
 using Windows.UI.Input;
 using Windows.UI.Input.Inking.Analysis;
 using DashShared;
+using Microsoft.Graphics.Canvas.Brushes;
 using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at https://go.microsoft.com/fwlink/?LinkId=234236
@@ -55,7 +58,22 @@ namespace Dash
         Symbol SelectIcon = (Symbol)0xEF20;
         Symbol TouchIcon = (Symbol)0xED5F;
         private Point _touchPoint;
+
+        private bool IsPressed
+        {
+            get { return _isPressed; }
+            set
+            {
+                _isPressed = value;
+            }
+        }
+
+        private InkAnalyzer _analyzer;
+        private double _docFromInkBuffer = 150;
         private bool _isPressed;
+        private Ellipse _touchIndicator;
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _textBoundsDictionary;
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _paragraphBoundsDictionary;
 
         public FreeformInkControls(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
         {
@@ -66,12 +84,13 @@ namespace Dash
             InkFieldModelController = view.InkFieldModelController;
             IsDrawing = true;
             _lassoHelper = new LassoSelectHelper(FreeformView);
+            _analyzer = new InkAnalyzer();
             UpdateStrokes();
             ToggleDraw();
             AddEventHandlers();
             UpdateInputType();
-
         }
+
 
         private void AddEventHandlers()
         {
@@ -79,41 +98,271 @@ namespace Dash
             TargetCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             TargetCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
             TargetCanvas.PointerPressed += TargetCanvasOnPointerPressed;
+            TargetCanvas.Holding += TargetCanvasOnHolding;
             TargetCanvas.PointerReleased += TargetCanvasOnPointerReleased;
             TargetCanvas.PointerExited += TargetCanvas_PointerExited;
+            TargetCanvas.PointerMoved += TargetCanvasOnPointerMoved;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
             InkToolbar.EraseAllClicked += InkToolbarOnEraseAllClicked;
             InkToolbar.ActiveToolChanged += InkToolbarOnActiveToolChanged;
         }
 
-        private async void TryCreateDocument(IEnumerable<InkStroke> strokes)
+        #region Documents From Drawings
+
+        private async void TryCreateDocument()
         {
-            InkAnalyzer analyzer = new InkAnalyzer();
-            analyzer.AddDataForStrokes(strokes);
-            var results = await analyzer.AnalyzeAsync();
-            if (results.Status == InkAnalysisStatus.Updated)
+            var result = await _analyzer.AnalyzeAsync();
+            if (result.Status == InkAnalysisStatus.Updated)
             {
-                var writingRegions = analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
-
-                foreach (InkAnalysisInkDrawing region in writingRegions)
+                //Dictionary<Rect, Tuple<string, IEnumerable<uint>>> listBoundsDictionary = GetListBoundsDictionary();
+                _paragraphBoundsDictionary = GetParagraphBoundsDictionary();
+               _textBoundsDictionary = GetTextBoundsDictionary();
+                // Make Documents
+                var shapeRegions = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
+                foreach (InkAnalysisInkDrawing region in shapeRegions)
                 {
-                    if (region.DrawingKind == InkAnalysisDrawingKind.Rectangle && region.BoundingRect.Contains(_touchPoint))
+                    if (region.DrawingKind == InkAnalysisDrawingKind.Rectangle || region.DrawingKind == InkAnalysisDrawingKind.Square)
                     {
-                        var pos = new Point(region.BoundingRect.X, region.BoundingRect.Y);
-                        var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
-                        var point = Util.PointTransformFromVisual(pos, SelectionCanvas,
-                            FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
-                        var fields = new Dictionary<KeyController, FieldModelController>()
+                        if (RectIntersectsTouchPoint(region.BoundingRect))
                         {
-                            [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), point, size).Document)
-                        };
-
-                        FreeformView.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+                            AddDocumentFromShapeRegion(region);
+                        }
+                        _analyzer.RemoveDataForStrokes(region.GetStrokeIds());
+                    }
+                    else if (region.DrawingKind == InkAnalysisDrawingKind.Circle || region.DrawingKind == InkAnalysisDrawingKind.Ellipse)
+                    {
+                        var rect = region.BoundingRect;
+                        var newRect = new Rect(rect.X - 100, rect.Y - 100, rect.Width + 200, rect.Width + 200);
+                        
+                        if (newRect.Contains(_touchPoint))
+                        {
+                            AddCollectionFromShapeRegion(region);
+                        }
+                        _analyzer.RemoveDataForStrokes(region.GetStrokeIds());
                     }
                 }
-
+                foreach (var key in _textBoundsDictionary.Keys)
+                {
+                    _analyzer.AddDataForStrokes(_textBoundsDictionary[key].Item2.Select(id => TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)));
+                }
             }
+            UpdateInkFieldModelController();
         }
+
+        private void AddCollectionFromShapeRegion(InkAnalysisInkDrawing region)
+        {
+            var selectionPoints = new List<Point>(GetPointsFromStrokeIDs(region.GetStrokeIds()).Select(p => Util.PointTransformFromVisual(p, SelectionCanvas,
+                FreeformView.xItemsControl.ItemsPanelRoot as Canvas)));
+            var selectedDocuments = _lassoHelper.GetSelectedDocuments(selectionPoints);
+            var docControllers = new List<DocumentController>();
+            var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
+            var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
+            var position = Util.PointTransformFromVisual(topLeft, SelectionCanvas,
+                FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+            foreach (var view in selectedDocuments)
+            {
+                var doc = (view.DataContext as DocumentViewModel).DocumentController;
+                var ogPos = doc.GetPositionField().Data;
+                var newPos = Util.PointTransformFromVisual(ogPos,
+                    FreeformView.xItemsControl.ItemsPanelRoot, SelectionCanvas);
+                var relativePos = new Point(newPos.X - topLeft.X, newPos.Y - topLeft.Y);
+                doc.GetPositionField().Data = relativePos;
+                FreeformView.ViewModel.RemoveDocument(doc);
+                docControllers.Add(doc);
+            }
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(docControllers),
+            };
+            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+            documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), position.X, position.Y, size.Width, size.Height).Document, true, true);
+            FreeformView.ViewModel.AddDocument(documentController, null);
+            DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
+        }
+
+        private List<Point> GetPointsFromStrokeIDs(IEnumerable<uint> ids)
+        {
+            var points = new List<Point>();
+            foreach (var id in ids)
+            {
+                points.AddRange(TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id).GetInkPoints().Select(inkPoint => inkPoint.Position));
+            }
+            return points;
+        }
+
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetTextBoundsDictionary()
+        {
+            List<InkAnalysisLine> textLineRegions = new List<InkAnalysisLine>(_analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Line).Select(o => o as InkAnalysisLine));
+            Dictionary<Rect, Tuple<string, IEnumerable<uint>>> textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+            foreach (InkAnalysisLine textLine in textLineRegions)
+            {
+                textBoundsDictionary[textLine.BoundingRect] = new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
+                _analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+            }
+
+            return textBoundsDictionary;
+        }
+
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetListBoundsDictionary()
+        {
+            List<InkAnalysisListItem> textLineRegions = new List<InkAnalysisListItem>(_analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.ListItem).Select(o => o as InkAnalysisListItem));
+            Dictionary<Rect, Tuple<string, IEnumerable<uint>>> textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+            foreach (InkAnalysisListItem textLine in textLineRegions)
+            {
+                textBoundsDictionary[textLine.BoundingRect] = new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
+                _analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+            }
+
+            return textBoundsDictionary;
+        }
+
+        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> GetParagraphBoundsDictionary()
+        {
+            List<InkAnalysisParagraph> textLineRegions = new List<InkAnalysisParagraph>(_analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.Paragraph).Select(o => o as InkAnalysisParagraph));
+            Dictionary<Rect, Tuple<string, IEnumerable<uint>>> textBoundsDictionary = new Dictionary<Rect, Tuple<string, IEnumerable<uint>>>();
+            foreach (InkAnalysisParagraph textLine in textLineRegions)
+            {
+                textBoundsDictionary[textLine.BoundingRect] = new Tuple<string, IEnumerable<uint>>(textLine.RecognizedText, textLine.GetStrokeIds());
+                _analyzer.RemoveDataForStrokes(textLine.GetStrokeIds());
+            }
+
+            return textBoundsDictionary;
+        }
+
+        private void AddDocumentFromShapeRegion(InkAnalysisInkDrawing region)
+        {
+            DeleteStrokesByID(region.GetStrokeIds().ToImmutableHashSet());
+            _analyzer.RemoveDataForStrokes(region.GetStrokeIds());
+            var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
+            var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
+            var position = Util.PointTransformFromVisual(topLeft, SelectionCanvas,
+                FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
+            var fields = new Dictionary<KeyController, FieldModelController>();
+            var doc = new DocumentController(fields, DocumentType.DefaultType);
+            List<DocumentController> textFields = new List<DocumentController>();
+            List<Rect> keysToRemove = new List<Rect>();
+            //TODO: need better differentiation between paragraphs and lines before we can to rtf for paragraphs.
+            //List<uint> idsToRemove = new List<uint>();
+            //foreach (var rect in _paragraphBoundsDictionary.Keys)
+            //{
+            //    if (RectContainsRect(region.BoundingRect, rect))
+            //    {
+            //        idsToRemove.AddRange(_paragraphBoundsDictionary[rect].Item2);
+            //        var str = _paragraphBoundsDictionary[rect].Item1;
+            //        var key = TryGetKey(str);
+            //        var text = TryGetText(str);
+            //        var richText = new RichTextFieldModelController(new RichTextFieldModel.RTD(text));
+            //        var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
+            //        doc.SetField(key, richText, true);
+            //        var textBox = new RichTextBox(new ReferenceFieldModelController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
+            //        textFields.Add(textBox.Document);
+            //        keysToRemove.Add(rect);
+            //    }
+            //}
+            //DeleteStrokesByID(idsToRemove.ToImmutableHashSet());
+            //foreach (var key in keysToRemove) _paragraphBoundsDictionary.Remove(key);
+            //keysToRemove.Clear();
+            foreach (var rect in _textBoundsDictionary.Keys)
+            {
+                if (RectContainsRect(region.BoundingRect, rect))
+                {
+                    DeleteStrokesByID(_textBoundsDictionary[rect].Item2.ToImmutableHashSet());
+                    var str = _textBoundsDictionary[rect].Item1;
+                    var key = TryGetKey(str);
+                    var text = TryGetText(str);
+                    var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
+                    doc.SetField(key, new TextFieldModelController(text), true);
+                    var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
+                    (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+                        rect.Height / 1.2;
+                    textFields.Add(textBox.Document);
+                    keysToRemove.Add(rect);
+                }
+            }
+            foreach (var key in keysToRemove) _textBoundsDictionary.Remove(key);
+            var layout = new FreeFormDocument(textFields,
+                position, size).Document;
+            doc.SetActiveLayout(layout, true, true);
+            FreeformView.ViewModel.AddDocument(doc, null);
+        }
+
+        private string TryGetText(string str)
+        {
+            if (str.Contains(':'))
+            {
+                var splitstring = str.Split(':');
+                var text = splitstring[1].TrimEnd(' ').TrimStart(' ');
+                return text;
+            }
+            return str;
+        }
+
+        private KeyController TryGetKey(string text)
+        {
+            if (text.Contains(':'))
+            {
+                var splitstring = text.Split(':');
+                var key = splitstring[0].TrimEnd(' ').TrimStart(' ');
+                return new KeyController(Guid.NewGuid().ToString(), key);
+            }
+            return new KeyController(Guid.NewGuid().ToString(), text);
+        }
+
+        private bool RectContainsRect(Rect outer, Rect inner)
+        {
+            var topLeft = new Point(inner.X, inner.Y);
+            var topRight = new Point(inner.X + inner.Width, inner.Y);
+            var bottomLeft = new Point(inner.X, inner.Y + inner.Height);
+            var bottomRight = new Point(inner.X + inner.Width, inner.Y + inner.Height);
+            var points = new List<Point>
+            {
+                topLeft,
+                topRight,
+                bottomLeft,
+                bottomRight
+            };
+            foreach (var point in points)
+            {
+                if (!outer.Contains(point)) return false;
+            }
+            return true;
+        }
+
+        private void DeleteStrokesByID(ICollection<uint> IDs)
+        {
+            ClearSelection();
+            foreach (var stroke in TargetCanvas.InkPresenter.StrokeContainer.GetStrokes())
+            {
+                if (IDs.Contains(stroke.Id))
+                {
+                    stroke.Selected = true;
+                }
+            }
+            TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+        }
+
+        private bool RectIntersectsTouchPoint(Rect rect)
+        {
+            var topLeft = new Point(rect.X, rect.Y);
+            var topRight = new Point(rect.X + rect.Width, rect.Y);
+            var bottomLeft = new Point(rect.X, rect.Y + rect.Height);
+            var bottomRight = new Point(rect.X + rect.Width, rect.Y + rect.Height);
+            var points = new List<Point>
+            {
+                topLeft,
+                topRight,
+                bottomLeft,
+                bottomRight
+            };
+            foreach (var point in points)
+            {
+                if (Math.Abs(_touchPoint.X - point.X) < 150 && Math.Abs(_touchPoint.Y - point.Y) < 150)
+                    return true;
+            }
+            return false;
+        }
+
+        #endregion
 
         #region Updating State
 
@@ -134,6 +383,43 @@ namespace Dash
             IsDrawing = !IsDrawing;
             UpdateInputType();
 
+        }
+
+        private void UpdateSelectionMode()
+        {
+            if (SelectButton.IsChecked != null && (bool)SelectButton.IsChecked)
+            {
+                if (InkSelect.IsChecked != null && (bool)InkSelect.IsChecked)
+                {
+                    _inkSelectionMode = InkSelectionMode.Ink;
+                }
+                if (DocumentSelect.IsChecked != null && (bool)DocumentSelect.IsChecked)
+                {
+                    _inkSelectionMode = InkSelectionMode.Document;
+                    FreeformView.IsSelectionEnabled = true;
+                }
+                TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
+                    InkInputRightDragAction.LeaveUnprocessed;
+
+                TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed +=
+                    UnprocessedInput_PointerPressed;
+                TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved +=
+                    UnprocessedInput_PointerMoved;
+                TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased +=
+                    UnprocessedInput_PointerReleased;
+            }
+            else
+            {
+                if (TargetCanvas != null)
+                {
+                    TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed -=
+                        UnprocessedInput_PointerPressed;
+                    TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved -=
+                        UnprocessedInput_PointerMoved;
+                    TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased -=
+                        UnprocessedInput_PointerReleased;
+                }
+            }
         }
 
         public bool IsDrawing { get; set; }
@@ -173,7 +459,24 @@ namespace Dash
         {
             TargetCanvas.InkPresenter.StrokeContainer.Clear();
             if (InkFieldModelController != null && InkFieldModelController.GetStrokes() != null)
-                TargetCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes().Select(stroke => stroke.Clone()));
+                TargetCanvas.InkPresenter.StrokeContainer.AddStrokes(InkFieldModelController.GetStrokes()
+                    .Select(stroke => stroke.Clone()));
+            RemoveRectangleData();
+        }
+
+        private async void RemoveRectangleData()
+        {
+            //Need this so that previously drawn rectangles dont get turned into documents by accident
+            foreach (var stroke in TargetCanvas.InkPresenter.StrokeContainer.GetStrokes())
+            {
+                _analyzer.AddDataForStroke(stroke);
+            }
+            await _analyzer.AnalyzeAsync();
+            var shapeRegions = _analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
+            foreach (InkAnalysisInkDrawing region in shapeRegions)
+            {
+                _analyzer.RemoveDataForStrokes(region.GetStrokeIds());
+            }
         }
 
         public void UpdateInputType()
@@ -202,43 +505,7 @@ namespace Dash
                 _boundingRect = Rect.Empty;
             }
         }
-
-        private void UpdateSelectionMode()
-        {
-            if (SelectButton.IsChecked != null && (bool)SelectButton.IsChecked)
-            {
-                if (InkSelect.IsChecked != null && (bool)InkSelect.IsChecked)
-                {
-                    _inkSelectionMode = InkSelectionMode.Ink;
-                }
-                if (DocumentSelect.IsChecked != null && (bool)DocumentSelect.IsChecked)
-                {
-                    _inkSelectionMode = InkSelectionMode.Document;
-                    FreeformView.IsSelectionEnabled = true;
-                }
-                TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
-                    InkInputRightDragAction.LeaveUnprocessed;
-
-                TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed +=
-                    UnprocessedInput_PointerPressed;
-                TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved +=
-                    UnprocessedInput_PointerMoved;
-                TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased +=
-                    UnprocessedInput_PointerReleased;
-            }
-            else
-            {
-                if (TargetCanvas != null)
-                {
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed -=
-                        UnprocessedInput_PointerPressed;
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerMoved -=
-                        UnprocessedInput_PointerMoved;
-                    TargetCanvas.InkPresenter.UnprocessedInput.PointerReleased -=
-                        UnprocessedInput_PointerReleased;
-                }
-            }
-        }
+        
 
         private void SelectDocs(PointCollection selectionPoints)
         {
@@ -294,24 +561,54 @@ namespace Dash
             InkFieldModelController?.Redo(TargetCanvas);
             ClearSelection();
         }
+
         private void TargetCanvasOnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            _touchPoint = e.GetCurrentPoint(SelectionCanvas).Position;
-            _isPressed = true;
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                _touchPoint = e.GetCurrentPoint(SelectionCanvas).Position;
+                IsPressed = true;
+                Debug.WriteLine(IsPressed);
+                e.Handled = true;
+            }
         }
+
+        private void TargetCanvasOnHolding(object sender, HoldingRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                _touchPoint = e.GetPosition(SelectionCanvas);
+                IsPressed = true;
+                Debug.WriteLine(IsPressed);
+                e.Handled = true;
+            }
+        }
+
         private void TargetCanvas_PointerExited(object sender, PointerRoutedEventArgs e)
         {
-            _isPressed = false;
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                //IsPressed = false;
+                Debug.WriteLine(IsPressed);
+            }
         }
 
-        private void TargetCanvasOnPointerReleased(object sender, PointerRoutedEventArgs pointerRoutedEventArgs)
+        private void TargetCanvasOnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            _isPressed = false;
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+            {
+                IsPressed = false;
+                Debug.WriteLine(IsPressed);
+            }
         }
 
-        private void Paste_Tapped(object sender, TappedRoutedEventArgs e)
+        private void TargetCanvasOnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
-            TargetCanvas.InkPresenter.StrokeContainer.PasteFromClipboard(e.GetPosition(TargetCanvas));
+            if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch && IsPressed)
+            {
+                _touchPoint = e.GetCurrentPoint(SelectionCanvas).Position;
+                e.Handled = true;
+            }
         }
 
 
@@ -386,16 +683,19 @@ namespace Dash
 
         private void InkPresenterOnStrokesErased(InkPresenter sender, InkStrokesErasedEventArgs e)
         {
+            _analyzer.RemoveDataForStrokes(e.Strokes.Select(stroke => stroke.Id));
             UpdateInkFieldModelController();
         }
 
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
         {
+            _analyzer.AddDataForStrokes(e.Strokes);
             UpdateInkFieldModelController();
-            if (_isPressed) TryCreateDocument(e.Strokes);
+            if (IsPressed)
+            {
+                TryCreateDocument();
+            }
         }
-
-        
 
         private void InkSelect_OnChecked(object sender, RoutedEventArgs e)
         {
@@ -422,49 +722,6 @@ namespace Dash
 
         #endregion
 
-        private class TouchGesture
-        {
-            private Canvas _reference;
-            private GestureRecognizer _gestureRecognizer;
-            private FrameworkElement _target;
-            public TouchGesture(FrameworkElement target, Canvas reference)
-            {
-                _reference = reference;
-                _target = target;
-
-                _target.PointerCanceled += OnPointerCanceled;
-                _target.PointerMoved += OnPointerMoved;
-                _target.PointerReleased += OnPointerReleased;
-
-                _gestureRecognizer = new GestureRecognizer {GestureSettings = GestureSettings.ManipulationRotate | GestureSettings.Hold };
-                _gestureRecognizer.ManipulationStarted += ManipulationStarted;
-            }
-
-            private void ManipulationStarted(GestureRecognizer sender, ManipulationStartedEventArgs args)
-            {
-                
-            }
-
-            private void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
-            {
-                _gestureRecognizer.ProcessUpEvent(e.GetCurrentPoint(_reference));
-
-                e.Handled = true;
-            }
-
-            private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-            {
-                _gestureRecognizer.ProcessUpEvent(e.GetCurrentPoint(_reference));
-
-                e.Handled = true;
-            }
-
-            private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
-            {
-                _gestureRecognizer.ProcessMoveEvents(e.GetIntermediatePoints(_reference));
-                
-                e.Handled = true;
-            }
-        }
+        
     }
 }

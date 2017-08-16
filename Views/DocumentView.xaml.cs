@@ -110,8 +110,11 @@ namespace Dash
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            ViewModel.Width = ActualWidth;
-            ViewModel.Height = ActualHeight;
+            if (ViewModel != null)
+            {
+                ViewModel.Width = ActualWidth;
+                ViewModel.Height = ActualHeight;
+            }
         }
 
 

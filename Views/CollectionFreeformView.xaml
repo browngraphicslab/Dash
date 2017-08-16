@@ -26,7 +26,8 @@
 
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
-
+        
+        <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"></Canvas>
 
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
