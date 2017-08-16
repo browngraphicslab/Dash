@@ -36,15 +36,20 @@ namespace Dash
                 reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
                     delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                        var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+                        if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                         {
-                            var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
                             UpdateViewModels(cargs, copiedContext);
                         }
                         else
                         {
                             DocumentViewModels.Clear();
-                            AddDocuments(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
+                            var documents = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments();
+                            AddDocuments(documents, copiedContext);
+
+                            if (cargs == null)
+                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                            UpdateViewModels(cargs, copiedContext);
                         }
                     });
             }

@@ -79,9 +79,9 @@ namespace Dash.Controllers.Operators
         
         public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
         {
-            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data;
+            var retPathString = (!inputs.ContainsKey(ReturnDocKey)) ? "" :  (inputs[ReturnDocKey] as TextFieldModelController).Data.Trim(' ','\r');
             var pattern      = new List<string>((inputs[FieldPatternKey] as TextFieldModelController).Data.Trim(' ', '\r').Split('.'));
-            var returnPath   = new List<string>(retPathString.Trim(' ', '\r').Split('.'));
+            var returnPath   = new List<string>(retPathString.Split('.'));
             var searchForDoc = (!inputs.ContainsKey(SearchForDocKey)) ? null : (inputs[SearchForDocKey] as DocumentFieldModelController).Data;
             if (searchForDoc == DBTest.DBNull)
                 searchForDoc = null;
@@ -124,7 +124,7 @@ namespace Dash.Controllers.Operators
                     {
                         docsInSearchScope.Add(dmc);
                     }
-                    if (CheckForFieldReferencingTarget(targetDocument, dmc) != null)
+                    else if (CheckForFieldReferencingTarget(targetDocument, dmc) != null)
                         docsInSearchScope.Add(dmc);
                 }
             return docsInSearchScope;
@@ -176,7 +176,7 @@ namespace Dash.Controllers.Operators
                 else if (pfieldDoc != null)
                     foreach (var f in pfieldDoc.EnumFields())
                     {
-                        if ((pattern[1] != "" && pattern[1][0] == '~' && f.Key.Name.Contains(pattern[1].Substring(1, pattern.Count - 1))) || f.Key.Name == pattern[1])
+                        if ((pattern[1] != "" && pattern[1][0] == '~' && f.Key.Name.Contains(pattern[1].TrimStart('~'))) || f.Key.Name == pattern[1])
                         {
                             if (f.Value is DocumentFieldModelController)
                                 return (f.Value as DocumentFieldModelController).Data;
