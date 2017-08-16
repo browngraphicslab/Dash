@@ -64,7 +64,9 @@ namespace Dash
             [UrlKey] = TypeInfo.Text,
             [MethodKey] = TypeInfo.Text,
             [AuthUrlKey] = TypeInfo.Text,
-            [AuthMethodKey] = TypeInfo.Text
+            [AuthMethodKey] = TypeInfo.Text,
+            [AuthKeyKey] = TypeInfo.Text,
+            [AuthSecretKey] = TypeInfo.Text
         };
 
         public override ObservableDictionary<KeyController, TypeInfo> Outputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
@@ -133,28 +135,24 @@ namespace Dash
             AuthHeaders.Remove(header.Key);
         }
 
-        private int test = 1;
-        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        public HttpMethod GetMethodFromString(string methodName)
         {
-            var url = (inputs[UrlKey] as TextFieldModelController).Data;
-            var method = (inputs[MethodKey] as TextFieldModelController).Data.ToLower();
-            HttpMethod httpMethod;
-            if (method == "get")
+            methodName = methodName.ToLower();
+            if (methodName == "get")
             {
-                httpMethod = HttpMethod.Get;
-            } else if (method == "post")
-            {
-                httpMethod = HttpMethod.Post;
+                return HttpMethod.Get;
             }
-            else
+            if (methodName == "post")
             {
-                throw new ArgumentException();
+                return HttpMethod.Post;
             }
+            throw new ArgumentException();
+        }
 
-            var parameters = new List<KeyValuePair<string, string>>();
-            var headers = new List<KeyValuePair<string, string>>();
-
-            foreach (var parameter in Parameters)
+        private bool BuildParamList(Dictionary<KeyController, FieldModelController> inputs, IDictionary<KeyController, ApiParameter> parameters, 
+            List<KeyValuePair<string, string>> outParameters)
+        {
+            foreach (var parameter in parameters)
             {
                 FieldModelController param;
                 bool hasValue = inputs.TryGetValue(parameter.Key, out param);
@@ -162,51 +160,70 @@ namespace Dash
                 {
                     if (parameter.Value.Required)
                     {
-                        return;
+                        return false;
                     }
-                    else
-                    {
-                        continue;
-                    }
+
+                    continue;
                 }
                 TextFieldModelController p = (TextFieldModelController)param;
                 var split = p.Data.Split(':');
                 var value = String.Join(":", split.Skip(1));
-                parameters.Add(new KeyValuePair<string, string>(split[0], value));
+                outParameters.Add(new KeyValuePair<string, string>(split[0], value));
             }
+            return true;
+        }
 
-            foreach (var header in Headers)
+        public override void Execute(Dictionary<KeyController, FieldModelController> inputs, Dictionary<KeyController, FieldModelController> outputs)
+        {
+            var url = (inputs[UrlKey] as TextFieldModelController).Data;
+            var method = (inputs[MethodKey] as TextFieldModelController).Data;
+
+            bool useAuth = false;
+            string authUrl = "", authMethod = "", authKey = "", authSecret = "";
+            HttpMethod autHttpMethod = HttpMethod.Get;
+            if (inputs.ContainsKey(AuthUrlKey) && inputs.ContainsKey(AuthMethodKey) &&
+                inputs.ContainsKey(AuthKeyKey) && inputs.ContainsKey(AuthSecretKey))
             {
-                FieldModelController head;
-                bool hasValue = inputs.TryGetValue(header.Key, out head);
-                if (!hasValue)
-                {
-                    if (header.Value.Required)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-                TextFieldModelController p = (TextFieldModelController)head;
-                var split = p.Data.Split(':');
-                if (split.Length != 2)
-                {
-                    continue;
-                }
-                headers.Add(new KeyValuePair<string, string>(split[0], split[1]));
+                authUrl = (inputs[AuthUrlKey] as TextFieldModelController).Data;
+                authMethod = (inputs[AuthMethodKey] as TextFieldModelController).Data;
+                authKey = (inputs[AuthKeyKey] as TextFieldModelController).Data;
+                authSecret = (inputs[AuthSecretKey] as TextFieldModelController).Data;
+                autHttpMethod = GetMethodFromString(authMethod);
+                useAuth = true;
             }
 
-            var requestTask = new Request(httpMethod, new Uri(url))
-                .SetHeaders(headers)
-                .SetMessageBody(new HttpFormUrlEncodedContent(parameters))
-                .SetAuthUri(null)
-                .SetAuthHeaders(new Dictionary<string, string>()).TrySetResponse();
+            HttpMethod httpMethod = GetMethodFromString(method);
 
-            var request = requestTask.Result;
-            var doc = request.GetResult();
+            var parameters = new List<KeyValuePair<string, string>>();
+            var headers = new List<KeyValuePair<string, string>>();
+
+
+            BuildParamList(inputs, Parameters, parameters);
+            BuildParamList(inputs, Headers, headers);
+
+            var request = new Request(httpMethod, new Uri(url))
+                .SetHeaders(headers)
+                .SetMessageBody(new HttpFormUrlEncodedContent(parameters));
+
+            if (useAuth)
+            {
+                var authHeaders = new List<KeyValuePair<string, string>>();
+                var authParams = new List<KeyValuePair<string, string>>();
+
+                BuildParamList(inputs, AuthHeaders, authHeaders);
+                BuildParamList(inputs, AuthParameters, authParams);
+
+                request.SetAuthUri(new Uri(authUrl));
+                request.SetAuthMethod(autHttpMethod);
+                request.SetAuthHeaders(authHeaders);
+                request.SetAuthMessageBody(new HttpFormUrlEncodedContent(authParams));
+                request.SetKey(authKey);
+                request.SetSecret(authSecret);
+            }
+            
+            var newRequest = Task.Run(() => request.TrySetResponse()).Result;
+
+            var doc = newRequest.GetResult();
             outputs[OutputKey] = new DocumentFieldModelController(doc);
         }
     }

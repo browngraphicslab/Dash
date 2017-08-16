@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using RadialMenuControl.UserControl;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -78,24 +79,38 @@ namespace Dash
             var fields = new Dictionary<KeyController, FieldModelController>
             {
                 {ApiOperatorController.MethodKey, new TextFieldModelController(method) },
-                {ApiOperatorController.UrlKey, new TextFieldModelController(xApiURLTB.Text) }
+                {ApiOperatorController.UrlKey, new TextFieldModelController(xApiURLTB.Text) },
+                {ApiOperatorController.AuthUrlKey, new TextFieldModelController(xAuthControl.AuthURL) },
+                {ApiOperatorController.AuthMethodKey, new TextFieldModelController(xAuthControl.AuthMethod) },
+                {ApiOperatorController.AuthKeyKey, new TextFieldModelController(xAuthControl.Key) },
+                {ApiOperatorController.AuthSecretKey, new TextFieldModelController(xAuthControl.Secret) }
             };
-            foreach (var key in xParameterControl.Keys)
-            {
-                string value = "";
-                xParameterControl.Values.TryGetValue(key.Key, out value);
-                fields[key.Key] = new TextFieldModelController(key.Value + ":" + value);
-            }
-            foreach (var key in xParameterControl.Values)
-            {
-                if (fields.ContainsKey(key.Key))
+
+            Action<Dictionary<KeyController, string>, Dictionary<KeyController, string>,
+                Dictionary<KeyController, FieldModelController>> buildParams =
+                (keys, values, fieldDict) =>
                 {
-                    continue;
-                }
-                string value = "";
-                xParameterControl.Keys.TryGetValue(key.Key, out value);
-                fields[key.Key] = new TextFieldModelController(value + ":" + key.Value);
-            }
+                    foreach (var key in keys)
+                    {
+                        string value = "";
+                        values.TryGetValue(key.Key, out value);
+                        fieldDict[key.Key] = new TextFieldModelController(key.Value + ":" + value);
+                    }
+                    foreach (var key in values)
+                    {
+                        if (fieldDict.ContainsKey(key.Key))
+                        {
+                            continue;
+                        }
+                        string value = "";
+                        keys.TryGetValue(key.Key, out value);
+                        fieldDict[key.Key] = new TextFieldModelController(value + ":" + key.Value);
+                    }
+                };
+
+            buildParams(xParameterControl.Keys, xParameterControl.Values, fields);
+            buildParams(xAuthControl.ParameterControl.Keys, xAuthControl.ParameterControl.Values, fields);
+           
             _operatorDocument.SetFields(fields, true);
 
             MakeApi?.Invoke();
