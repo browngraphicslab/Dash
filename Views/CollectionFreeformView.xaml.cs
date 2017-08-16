@@ -922,7 +922,6 @@ namespace Dash
 
         #endregion
 
-        private ManipulationControls _manipulationControls;
         private MenuFlyout _flyout;
         private float _backgroundOpacity = .7f;
 
@@ -943,8 +942,8 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            _manipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
-            _manipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
             DragLeave += Collection_DragLeave;
             DragEnter += Collection_DragEnter;
@@ -979,7 +978,7 @@ namespace Dash
 
         private void Freeform_Unloaded(object sender, RoutedEventArgs e)
         {
-            _manipulationControls.Dispose();
+            ManipulationControls.Dispose();
         }
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
