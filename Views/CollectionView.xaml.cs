@@ -142,6 +142,7 @@ namespace Dash
             CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
             _toggleDrawButton.Visibility = Visibility.Visible;
+            if((_toggleDrawButton.Background as SolidColorBrush).Color == Colors.Gray) (CurrentView as CollectionFreeformView).InkControls.ToggleDraw();
         }
 
         private void SetListView()
@@ -160,7 +161,7 @@ namespace Dash
             _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
-        private void MakeSelectionModeMultiple()
+        public void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;

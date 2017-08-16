@@ -50,60 +50,60 @@ namespace Dash
 
 
 
-        public static void ChangeInkColor(Color color, RadialMenu menu=null)
-        {
-            GlobalInkSettings.Color = color;
-            GlobalInkSettings.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
+        //public static void ChangeInkColor(Color color, RadialMenu menu=null)
+        //{
+        //    GlobalInkSettings.Color = color;
+        //    GlobalInkSettings.SetAttributes();
+        //    if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        //}
 
-        public static void ChoosePen(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.SetAttributes();
-        }
+        //public static void ChoosePen(object o)
+        //{
+        //    GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+        //    GlobalInkSettings.SetAttributes();
+        //}
 
-        public static void ChoosePencil(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.SetAttributes();
-        }
+        //public static void ChoosePencil(object o)
+        //{
+        //    GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+        //    GlobalInkSettings.SetAttributes();
+        //}
 
-        public static void ChooseEraser(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.SetAttributes();
-        }
+        //public static void ChooseEraser(object o)
+        //{
+        //    GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+        //    GlobalInkSettings.SetAttributes();
+        //}
 
-        public static void SetOpacity(double opacity)
-        {
-            GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.SetAttributes();
-        }
+        //public static void SetOpacity(double opacity)
+        //{
+        //    GlobalInkSettings.Opacity = opacity;
+        //    GlobalInkSettings.SetAttributes();
+        //}
 
-        public static void SetSize(double size)
-        {
-            GlobalInkSettings.Size = size;
-            GlobalInkSettings.SetAttributes();
-        }
+        //public static void SetSize(double size)
+        //{
+        //    GlobalInkSettings.Size = size;
+        //    GlobalInkSettings.SetAttributes();
+        //}
 
 
-        public static void DisplayBrightnessSlider(RadialMenuView obj)
-        {
-            obj.OpenSlider();
-        }
+        //public static void DisplayBrightnessSlider(RadialMenuView obj)
+        //{
+        //    obj.OpenSlider();
+        //}
 
         public static void CloseSliderPanel(RadialMenuView obj)
         {
             obj.CloseSlider();
         }
 
-        public static void SetBrightness(double brightness, RadialMenu menu)
-        {
-            GlobalInkSettings.BrightnessFactor = brightness;
-            GlobalInkSettings.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
+        //public static void SetBrightness(double brightness, RadialMenu menu)
+        //{
+        //    GlobalInkSettings.BrightnessFactor = brightness;
+        //    GlobalInkSettings.SetAttributes();
+        //    if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        //}
 
 
         public static void OnOperatorAdd(object o, DragEventArgs e)
@@ -201,7 +201,7 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
@@ -234,7 +234,6 @@ namespace Dash
 
             //Display collections
             DisplayDocument(collectionView, col2, where);
-
 
             DisplayDocument(collectionView, new InkDoc().Document, where);
             DisplayDocument(collectionView, new Numbers().Document, where);

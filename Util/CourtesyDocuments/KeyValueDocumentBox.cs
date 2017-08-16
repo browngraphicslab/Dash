@@ -11,14 +11,11 @@ using Windows.UI;
 
 namespace Dash
 {
-    /// <summary>
-    /// A generic document type containing a single text element.
-    /// </summary>
-    public class KeyValueBox : CourtesyDocument
+
+    public class KeyValueDocumentBox : CourtesyDocument
     {
-        public static DocumentType DocumentType =
-            new DocumentType("FE361332-E581-429C-B139-60A947130BC4", "Key Value Box");
-        public KeyValueBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
+        public static DocumentType DocumentType = new DocumentType("737BB31D-52B4-4C57-AD33-D519F40B57DC", "Key Value Document Box");
+        public KeyValueDocumentBox(FieldModelController refToDoc, double x = 0, double y = 0, double w = 200, double h = 20)
         {
             var fields = DefaultLayoutFields(new Point(x, y), new Size(w, h), refToDoc);
             Document = new DocumentController(fields, DocumentType);
@@ -42,22 +39,23 @@ namespace Dash
             Debug.Assert(documentfieldModelController != null);
 
             var doc = fieldModelController.DereferenceToRoot<DocumentFieldModelController>(context);
-            var docView = new KeyValuePane();
-            docView.SetDataContextToDocumentController(documentfieldModelController.Data);
-            documentfieldModelController.Data.MakeViewUI(context, isInterfaceBuilderLayout);
 
             var border = new Border();
+
+            var docView = new KeyValuePane();
+            docView.SetDataContextToDocumentController(documentfieldModelController.Data);
+
             border.Child = docView;
 
             // bind the text height
-            var docheightController = GetHeightField(docController, context);
-            if (docheightController != null)
-                BindHeight(docView, docheightController);
+            //var docheightcontroller = getheightfield(doccontroller, context);
+            //if (docheightcontroller != null)
+            //bindheight(docView, docheightController);
 
             // bind the text width
-            var docwidthController = GetWidthField(docController, context);
-            if (docwidthController != null)
-                BindWidth(docView, docwidthController);
+            //var docwidthController = GetWidthField(docController, context);
+            //if (docwidthController != null)
+            //BindWidth(docView, docwidthController);
 
             if (isInterfaceBuilderLayout)
             {

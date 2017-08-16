@@ -52,8 +52,6 @@ namespace Dash
         {
             this.InitializeComponent();
             _isInterfaceBuilder = isInterfaceBuilder;
-            GlobalInkSettings.Presenters.Add(XInkCanvas.InkPresenter);
-            GlobalInkSettings.SetAttributes();
             XInkCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
             InkFieldModelController = inkFieldModelController;
             XInkCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;

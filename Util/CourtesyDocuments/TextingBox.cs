@@ -89,11 +89,11 @@ namespace Dash
             // X, Y, Width, and Height etc....
 
             // create the textblock
-            EditableTextBlock tb = new EditableTextBlock();
+            var tb = new TextBlock();
 
-            SetupBindings(tb.Block, docController, context);
-            SetupBindings(tb.Box, docController, context);
-            tb.Box.AcceptsReturn = true;
+            SetupBindings(tb, docController, context);
+            //SetupBindings(tb.Box, docController, context);
+            //tb.Box.AcceptsReturn = true;
             CourtesyDocument.SetupBindings(tb, docController, context);
 
             // add bindings to work with operators
@@ -106,7 +106,7 @@ namespace Dash
                 else if (fmController is NumberFieldModelController)
                     fmController = fmController as NumberFieldModelController;
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
+                BindOperationInteractions(tb, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
             if (isInterfaceBuilderLayout)
@@ -190,21 +190,13 @@ namespace Dash
                 converter = new DocumentControllerToStringConverter();
                 var docData = data as DocumentFieldModelController;
 
-                //if (docData.Data != null)
+                //sourceBinding = new Binding
                 //{
-                //    docData.Data.DocumentFieldUpdated += ((sender, ctxt) =>
-                //    {
-                //        sourceBinding = new Binding
-                //        {
-                //            Source = docData,
-                //            Path = new PropertyPath(nameof(docData.Data)),
-                //            Mode = BindingMode.TwoWay,
-                //            Converter = new DocumentControllerToStringConverter(),
-                //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                //        };
-                //        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
-                //    });
-                //}
+                //    Source = docData,
+                //    Mode = BindingMode.TwoWay,
+                //    Converter = new DocumentFieldModelToStringConverter(),
+                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                //};
             }
             else if (data is DocumentCollectionFieldModelController)
             {

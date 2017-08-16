@@ -62,7 +62,7 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2);
             }
             collectionView.ViewModel.AddDocument(docController, null);
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         private void DisplayDocuments(ICollectionView collectionView, IEnumerable<DocumentController> docControllers, Point? where = null)
@@ -139,12 +139,17 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            e.Handled = true;
+            //e.Handled = true;
 
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
-            
+
+            // handle but only if it's not in a compoundoperatoreditor view 
+            if ((sender as CollectionFreeformView)?.GetFirstAncestorOfType<CompoundOperatorEditor>() == null)
+                e.Handled = true;
+            else
+                return;
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -162,7 +167,6 @@ namespace Dash
                 carrier.Destination = this; 
                 if (carrier.Source.Equals(carrier.Destination))
                 {
-                    e.Handled = true;
                     return; // we don't want to drop items on ourself
                 }
 
@@ -171,6 +175,9 @@ namespace Dash
                     new Point();
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
+                carrier.Payload.Clear();
+                carrier.Source = null;
+                carrier.Destination = null;
             }
 
             SetGlobalHitTestVisiblityOnSelectedItems(false);

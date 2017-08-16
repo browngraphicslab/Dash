@@ -8,25 +8,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Windows.Devices.Input;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI;
-using Windows.UI.Core;
-using Windows.UI.Input.Inking;
-using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
-using Dash.Views;
-using Visibility = Windows.UI.Xaml.Visibility;
-
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -72,31 +64,14 @@ namespace Dash
 
         #endregion
 
-        public ManipulationControls ManipulationControls;
         private MenuFlyout _flyout;
         private float _backgroundOpacity = .7f;
-
-
-        #region Ink
-
-        private Canvas SelectionCanvas = new Canvas();
-        private InkCanvas XInkCanvas = new InkCanvas
-        {
-            Width = 60000,
-            Height = 60000,
-        };
-        public InkFieldModelController InkFieldModelController;
-        public FreeformInkControls InkControls;
-        public double Zoom => ManipulationControls.ElementScale;
-        #endregion
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
         private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
-
-
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         #endregion
 
@@ -109,11 +84,11 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-
             ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
-            DragLeave += DocView_DragOver;
+            DragLeave += Collection_DragLeave;
+            DragEnter += Collection_DragEnter;
         }
 
         public IOReference GetCurrentReference()
@@ -159,6 +134,7 @@ namespace Dash
             }
         }
 
+
         #endregion
 
         #region DraggingLinesAround
@@ -168,18 +144,37 @@ namespace Dash
         /// </summary>
         public void DeleteConnections(DocumentView docView)
         {
-            var refs = _lineDict.Keys.ToList();
-            for (int i = _lineDict.Count - 1; i >= 0; i--)
+            var refs = _linesToBeDeleted.Keys.ToList();
+            for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var package = _lineDict[refs[i]];
-                var converter = package.Converter;
+                var package = _linesToBeDeleted[refs[i]];
+                itemsPanelCanvas.Children.Remove(package.Line);
+                _lineDict.Remove(refs[i]);
+            }
+            _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
+        }
+
+        private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
+
+        /// <summary>
+        /// Adds the lines to be deleted as part of fading storyboard 
+        /// </summary>
+        /// <param name="fadeout"></param>
+        public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
+        {
+            foreach (var pair in _lineDict)
+            {
+                var line = pair.Value;
+                var converter = line.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
 
                 if (view1 == docView || view2 == docView)
                 {
-                    itemsPanelCanvas.Children.Remove(package.Line);
-                    _lineDict.Remove(refs[i]);
+                    var animation = new Windows.UI.Xaml.Media.Animation.FadeOutThemeAnimation();
+                    Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, line.Line);
+                    fadeout.Children.Add(animation);
+                    _linesToBeDeleted.Add(pair.Key, pair.Value);
                 }
             }
         }
@@ -255,7 +250,7 @@ namespace Dash
                 StrokeEndLineCap = PenLineCap.Round,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
-                //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
+                                                    //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
@@ -303,33 +298,49 @@ namespace Dash
             IOReference inputReference = ioReference.IsOutput ? _currReference : ioReference;
             IOReference outputReference = ioReference.IsOutput ? ioReference : _currReference;
 
+            // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
             if (_connectionLine == null)
             {
                 return;
             }
+
+            // only allow input-output pairs to be connected 
             if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
             {
                 UndoLine();
                 return;
             }
-            if (_currReference.FieldReference == null) return;
 
-            _converter.Element2 = ioReference.FrameworkElement;
-            _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
-            _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
-            _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
+            // undo line if connecting the same fields 
+            if (inputReference.FieldReference == outputReference.FieldReference || _currReference.FieldReference == null)
+            {
+                UndoLine();
+                return;
+            }
 
             if (!isCompoundOperator)
             {
                 DocumentController inputController = inputReference.FieldReference.GetDocumentController(null);
+                bool canLink = true;
                 var thisRef = (outputReference.ContainerView.DataContext as DocumentViewModel).DocumentController.GetDereferencedField(KeyStore.ThisKey, null);
                 if (inputController.DocumentType == OperatorDocumentModel.OperatorType && inputReference.FieldReference is DocumentFieldReference && thisRef != null)
-                    inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, thisRef, true);
                 else
-                    inputController.SetField(inputReference.FieldReference.FieldKey,
-                        new ReferenceFieldModelController(outputReference.FieldReference), true);
+                    canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
+
+                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && !canLink)
+                {
+                    UndoLine();
+                    return;
+                }
             }
+
+            //binding line position 
+            _converter.Element2 = ioReference.FrameworkElement;
+            _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
+            _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
 
             if (_connectionLine != null)
             {
@@ -519,7 +530,8 @@ namespace Dash
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            DBTest.ResetCycleDetection();
+            //DBTest.ResetCycleDetection();
+            //DBTest.ResetCycleDetection();
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
@@ -620,7 +632,6 @@ namespace Dash
             documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), pointOnCanvas.X, pointOnCanvas.Y).Document, true, true);
             ViewModel.AddDocument(documentController, null);
 
-
             DisposeFlyout();
         }
 
@@ -660,7 +671,6 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-            InkControls?.UpdateInputType();
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
@@ -688,41 +698,37 @@ namespace Dash
                 _isSelectionEnabled = value;
                 if (!value) // turn colors back ... 
                 {
-                    DeselectAll();
+                    foreach (var pair in _payload)
+                    {
+                        Deselect(pair.Key);
+                    }
                     _payload = new Dictionary<DocumentView, DocumentController>();
                 }
             }
         }
 
-        private bool _isToggleOn;
 
         private Dictionary<DocumentView, DocumentController> _payload = new Dictionary<DocumentView, DocumentController>();
         private List<DocumentView> _documentViews = new List<DocumentView>();
 
+        private bool _isToggleOn;
         public void ToggleSelectAllItems()
         {
             _isToggleOn = !_isToggleOn;
+            _payload = new Dictionary<DocumentView, DocumentController>();
             foreach (var docView in _documentViews)
             {
                 if (_isToggleOn)
                 {
                     Select(docView);
-
+                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
                 }
                 else
                 {
                     Deselect(docView);
+                    _payload.Remove(docView);
                 }
             }
-        }
-
-        private void Deselect(DocumentView docView)
-        {
-            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
-            docView.CanDrag = false;
-            docView.ManipulationMode = ManipulationModes.All;
-            docView.DragStarting -= DocView_OnDragStarting;
-            _payload.Remove(docView);
         }
 
         public void DeselectAll()
@@ -733,14 +739,20 @@ namespace Dash
             }
         }
 
+        private void Deselect(DocumentView docView)
+        {
+            docView.OuterGrid.Background = new SolidColorBrush(Colors.Transparent);
+            docView.CanDrag = false;
+            docView.ManipulationMode = ManipulationModes.All;
+            docView.DragStarting -= DocView_OnDragStarting;
+        }
 
-        public void Select(DocumentView docView)
+        private void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
-            if (!_payload.ContainsKey(docView)) _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
         private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
@@ -751,28 +763,41 @@ namespace Dash
             if (docView.CanDrag)
             {
                 Deselect(docView);
+                _payload.Remove(docView);
             }
             else
             {
                 Select(docView);
-
+                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
             }
             e.Handled = true;
         }
 
-        private void DocView_DragOver(object sender, DragEventArgs args)
+        private void Collection_DragLeave(object sender, DragEventArgs args)
         {
-            _payload = new Dictionary<DocumentView, DocumentController>();
-
-            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
-
-            var carrier = ItemsCarrier.Instance;
-            if (carrier.Source == carrier.Destination)
-                return; // we don't want to drop items on ourself
-
-            ViewModel.RemoveDocuments(carrier.Payload);
+            ViewModel.RemoveDocuments(ItemsCarrier.Instance.Payload);
             foreach (var view in _payload.Keys.ToList())
                 _documentViews.Remove(view);
+
+            _payload = new Dictionary<DocumentView, DocumentController>();
+        }
+
+        private void Collection_DragEnter(object sender, DragEventArgs args)                             // TODO this code is fucked, think of a better way to do this 
+        {
+            var carrier = ItemsCarrier.Instance;
+            if (carrier.StartingCollection == null) return;
+            if (carrier.StartingCollection != this)
+            {
+                // carrier.StartingCollection.Collection_DragLeave(sender, args);
+                return;
+            }
+            ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
+            foreach (var cont in ItemsCarrier.Instance.Payload)
+            {
+                var view = new DocumentView(new DocumentViewModel(cont));
+                _documentViews.Add(view);
+                _payload.Add(view, cont);
+            }
         }
 
         public void DocView_OnDragStarting(object sender, DragStartingEventArgs e)
@@ -782,6 +807,7 @@ namespace Dash
             var carrier = ItemsCarrier.Instance;
 
             carrier.Destination = null;
+            carrier.StartingCollection = this;
             carrier.Source = ViewModel;
             carrier.Payload = _payload.Values.ToList();
             e.Data.RequestedOperation = DataPackageOperation.Move;
@@ -789,6 +815,19 @@ namespace Dash
         #endregion
 
         #region Ink
+        private Canvas SelectionCanvas = new Canvas();
+        private InkCanvas XInkCanvas = new InkCanvas
+        {
+            Width = 60000,
+            Height = 60000,
+        };
+
+        public ManipulationControls ManipulationControls;
+
+        public InkFieldModelController InkFieldModelController;
+        public FreeformInkControls InkControls;
+        public double Zoom => ManipulationControls.ElementScale;
+
         private void MakeInkCanvas()
         {
             InkControls = new FreeformInkControls(this, XInkCanvas, SelectionCanvas)
@@ -801,12 +840,14 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
+            //   /*                                                                                                  // TODO figure out why this bit of code messes up selection in collectionfreeformview 
             if (xItemsControl.ItemsPanelRoot != null)
             {
                 xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
                 xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
             }
             if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
+            //   */ 
         }
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)

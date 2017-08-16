@@ -15,16 +15,19 @@
                         </Grid.Resources>
                         <Grid x:Name="PART_Container" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="25"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
                             <!--window chrome-->
                             <Rectangle x:Name="PART_Header" Fill="{StaticResource TranslucentWhite}"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Stretch"/>
-                            <Button x:Name="PART_CloseButton" Width="30" Height="30"
+                            <Button x:Name="PART_CloseButton" Width="30" Height="25"
                                    VerticalAlignment="Stretch" HorizontalAlignment="Right" Grid.Row="0">
-                                <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
+                                <Viewbox>
+                                    <TextBlock Text="&#xE8BB;" FontFamily="Segoe MDL2 Assets" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" IsHitTestVisible="False"/>
+                                </Viewbox>
+
                             </Button>
 
                             <!--window content-->

@@ -527,11 +527,11 @@ namespace RadialMenuControl.Components
         {
             e.Data.RequestedOperation = DataPackageOperation.Move;
             e.Data.Properties.Title = Icon + " " + Label;
-            if (ActionModel != null && ActionModel.CollectionDropAction != null)
+            if (ActionModel?.CollectionDropAction != null)
             {
                 e.Data.Properties[RadialMenuView.RadialMenuDropKey] = ActionModel.CollectionDropAction;
             }
-            else if (ActionModel != null && ActionModel.GenericDropAction != null)
+            else if (ActionModel?.GenericDropAction != null)
             {
                 e.Data.Properties[RadialMenuView.RadialMenuDropKey] = ActionModel.GenericDropAction;
             }
