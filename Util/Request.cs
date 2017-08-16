@@ -123,7 +123,6 @@ namespace Dash
                 //var header = new HttpCredentialsHeaderValue("Basic", Convert.ToBase64String(byteArray)); //TODO is this needed
 
                 // apply auth headers & parameters
-                TokenMsg.Content = MessageBody; //TODO is this right??
                 TokenMsg.Headers.Authorization = new HttpCredentialsHeaderValue("Basic",
                     Convert.ToBase64String(Encoding.ASCII.GetBytes(
                         string.Format("{0}:{1}", Key, Secret))));
