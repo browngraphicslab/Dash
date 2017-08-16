@@ -28,16 +28,19 @@ namespace Dash
         private Stack<string> _redoStack = new Stack<string>();
         private Image _icon = new Image();
 
+        public delegate void InkUpdatedHandler(InkCanvas sender, FieldUpdatedEventArgs args);
+        public event InkUpdatedHandler InkUpdated;
+
         public InkFieldModelController() : base(new InkFieldModel())
         {
-            UpdateStrokesFromList(null);
+            UpdateStrokesFromList(null, null);
         }
 
         public InkFieldModelController(string data) : base(new InkFieldModel(data))
         {
             InkData = data;
             _undoStack.Push(data);
-            SetState(data);
+            SetState(data, null);
         }
 
         /// <summary>
@@ -69,9 +72,7 @@ namespace Dash
         //TODO needs work
         public  override FrameworkElement GetTableCellView(Context context)
         {
-            var inkCanvas = new InkCanvas() { Width = 50, Height = 50 };
-            inkCanvas.InkPresenter.StrokeContainer.AddStrokes(GetStrokes().Select(k => k.Clone()));
-            return inkCanvas;
+            return new Grid();
         }
 
         public override FieldModelController Copy()
@@ -87,7 +88,7 @@ namespace Dash
         /// <summary>
         /// Method to allow InkCanvasControls to change data of InkFieldModelController when ink input is registered.
         /// </summary>
-        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes)
+        public async void UpdateStrokesFromList(IEnumerable<InkStroke> newStrokes, InkCanvas sender)
         {
             
             _strokeContainer.Clear();
@@ -106,10 +107,12 @@ namespace Dash
             _redoStack.Clear();
             _undoStack.Push(InkData);
             stream.Dispose();
-            OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Update));
+            var args = new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Update);
+            OnFieldModelUpdated(args);
+            if (sender != null) InkUpdated?.Invoke(sender, args);
         }
 
-        public async void SetState(string data)
+        public async void SetState(string data, InkCanvas sender)
         {
             try
             {
@@ -123,7 +126,9 @@ namespace Dash
                 if (_strokeContainer.GetStrokes().Count > 0) IsEmpty = false;
                 stream.Dispose();
                 InkData = data;
-                OnFieldModelUpdated(new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Replace));
+                var args = new FieldUpdatedEventArgs(TypeInfo.Ink, DocumentController.FieldUpdatedAction.Replace);
+                OnFieldModelUpdated(args);
+                if (sender != null) InkUpdated?.Invoke(sender, args);
             }
             catch (JsonSerializationException e)
             {
@@ -131,22 +136,22 @@ namespace Dash
             }
         }
 
-        public void Redo()
+        public void Redo(InkCanvas sender)
         {
             if (_redoStack.Count > 0)
             {
                 var state = _redoStack.Pop();
-                SetState(state);
+                SetState(state, sender);
                 _undoStack.Push(state);
             }
         }
 
-        public void Undo()
+        public void Undo(InkCanvas sender)
         {
             if (_undoStack.Count > 1)
             {
                 var state = _undoStack.Pop();
-                SetState(_undoStack.Peek());
+                SetState(_undoStack.Peek(), sender);
                 _redoStack.Push(state);
             }
         }

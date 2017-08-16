@@ -149,7 +149,7 @@ namespace Dash {
         /// Fails for invalid property adds. Assumes that provided API URI does not 
         /// already contain the '?' character at the end of the URL for GET requests.
         /// </summary>
-        public async virtual void makeRequest() {
+        public virtual async void makeRequest() {
             // load in parameters from listViews
             updateParametersFromListView();
             

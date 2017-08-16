@@ -15,6 +15,7 @@ using Windows.UI.Xaml.Shapes;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml.Controls.Primitives;
 using DashShared;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -33,10 +34,17 @@ namespace Dash
         public CollectionView ParentCollection { get; set; }
         public DocumentView ParentDocument { get; set; }
 
+        public enum CollectionViewType
+        {
+            Freeform, List, Grid
+        }
 
-        public CollectionView(CollectionViewModel vm)
+        private CollectionViewType _viewType;
+
+        public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             InitializeComponent();
+            _viewType = viewType;
             ViewModel = vm;
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             Loaded += CollectionView_Loaded;
@@ -57,7 +65,18 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
-            CurrentView = new CollectionFreeformView();
+            switch (_viewType)
+            {
+                case CollectionViewType.Freeform:
+                    CurrentView = new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
+                    break;
+                case CollectionViewType.Grid:
+                    CurrentView = new CollectionGridView();
+                    break;
+                case CollectionViewType.List:
+                    CurrentView = new CollectionListView();
+                    break;
+            }
             xContentControl.Content = CurrentView;
 
             if (ParentDocument == MainPage.Instance.MainDocView)
@@ -84,6 +103,8 @@ namespace Dash
         /// </summary>
         private IOReference _currReference;
 
+        private MenuButton _toggleDrawButton;
+
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -94,20 +115,20 @@ namespace Dash
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
-            KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument); 
+            KeyController outputKey = ViewModel.CollectionKey;
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
             CollectionView view = ParentCollection;
-            (view.CurrentView as CollectionFreeformView).CanLink = true; 
+            (view.CurrentView as CollectionFreeformView).CanLink = true;
             (view.CurrentView as CollectionFreeformView)?.StartDrag(ioRef);
         }
 
         private void ConnectionEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            if (ParentCollection == null) return; 
+            if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
             Ellipse el = sender as Ellipse;
-            KeyController outputKey = DocumentCollectionFieldModelController.CollectionKey;
-            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument); 
+            KeyController outputKey = ViewModel.CollectionKey;
+            IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
             CollectionView view = ParentCollection;
             (view.CurrentView as CollectionFreeformView)?.EndDrag(ioRef, false);
         }
@@ -118,8 +139,10 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView();
+            CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
+            _toggleDrawButton.Visibility = Visibility.Visible;
+            if((_toggleDrawButton.Background as SolidColorBrush).Color == Colors.Gray) (CurrentView as CollectionFreeformView).InkControls.ToggleDraw();
         }
 
         private void SetListView()
@@ -127,6 +150,7 @@ namespace Dash
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
+            _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
         private void SetGridView()
@@ -134,9 +158,10 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
+            _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
-        private void MakeSelectionModeMultiple()
+        public void MakeSelectionModeMultiple()
         {
             ViewModel.ItemSelectionMode = ListViewSelectionMode.Multiple;
             ViewModel.CanDragItems = true;
@@ -144,13 +169,13 @@ namespace Dash
 
             if (CurrentView is CollectionFreeformView)
             {
-                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true; 
+                (CurrentView as CollectionFreeformView).IsSelectionEnabled = true;
             }
         }
 
         private void CloseMenu()
         {
-            xMenuCanvas.Children.Remove(_collectionMenu); 
+            xMenuCanvas.Children.Remove(_collectionMenu);
             xMenuColumn.Width = new GridLength(0);
         }
 
@@ -190,45 +215,48 @@ namespace Dash
             ParentDocument.DeleteDocument();
         }
 
+        private void ToggleDraw()
+        {
+            var view = CurrentView as CollectionFreeformView;
+            view.InkControls.ToggleDraw();
+            if (view.InkControls.IsDrawing) _toggleDrawButton.Background = new SolidColorBrush(Colors.Gray);
+            else _toggleDrawButton.Background = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
+        }
+
         private void MakeMenu()
         {
-            var multipleSelection = new Action(MakeSelectionModeMultiple);
-            var deleteSelection = new Action(DeleteSelection);
-            var singleSelection = new Action(MakeSelectionModeSingle);
-            var noSelection = new Action(MakeSelectionModeNone);
-            var selectAll = new Action(SelectAllItems);
-            var setGrid = new Action(SetGridView);
-            var setList = new Action(SetListView);
-            var setFreeform = new Action(SetFreeformView);
-            var deleteCollection = new Action(DeleteCollection);
-
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
 
+            _toggleDrawButton = new MenuButton(Symbol.Edit, "Draw", menuColor, ToggleDraw);
 
             var collectionButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.TouchPointer, "Select", menuColor, multipleSelection)
+                new MenuButton(Symbol.TouchPointer, "Select", menuColor, MakeSelectionModeMultiple)
                 {
                     RotateOnTap = true
                 },
                 //toggle grid/list/freeform view buttons 
-                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { setGrid, setList, setFreeform}),
+                new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, SetListView, SetFreeformView}),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
-                //new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
+
+                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
+                _toggleDrawButton
             };
 
+
+
             if (ParentDocument != MainPage.Instance.MainDocView)
-                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, deleteCollection));
+                collectionButtons.Add(new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteCollection));
 
             var documentButtons = new List<MenuButton>
             {
-                new MenuButton(Symbol.Back, "Back", menuColor, noSelection)
+                new MenuButton(Symbol.Back, "Back", menuColor, MakeSelectionModeNone)
                 {
                     RotateOnTap = true
                 },
                 new MenuButton(Symbol.Edit, "Interface", menuColor, null),
-                new MenuButton(Symbol.SelectAll, "All", menuColor, selectAll),
-                new MenuButton(Symbol.Delete, "Delete", menuColor, deleteSelection),
+                new MenuButton(Symbol.SelectAll, "All", menuColor, SelectAllItems),
+                new MenuButton(Symbol.Delete, "Delete", menuColor, DeleteSelection),
             };
             _collectionMenu = new OverlayMenu(collectionButtons, documentButtons);
         }

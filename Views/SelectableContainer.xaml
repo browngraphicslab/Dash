@@ -6,8 +6,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="1">
-        <Grid x:Name="XGrid" Background="White" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+    <Grid x:Name="XOuterGrid" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid x:Name="XGrid" Background="#99FFFFFF" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <ContentControl x:Name="XLayoutDisplay" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"></ContentControl>
         </Grid>
         <Canvas x:Name="xManipulatorCanvas" SizeChanged="XManipulatorCanvas_OnSizeChanged" UseLayoutRounding="True">
@@ -36,7 +36,7 @@
             <Border x:Name="xRightHeightTextBoxBorder" Background="LightGray" Height="20" CornerRadius="3">
                 <TextBlock x:Name="xRightHeightTextBox"></TextBlock>
             </Border>
-            <Border x:Name="xKeyNameTextBoxBorder" Background="Purple" Height="20" CornerRadius="3" Canvas.Left="0" Canvas.Top="-20">
+            <Border x:Name="xKeyNameTextBoxBorder" Background="Purple" Height="20" CornerRadius="3" Canvas.Left="0" Canvas.Top="-22">
                 <TextBlock x:Name="xKeyNameTextBox" Foreground="White"></TextBlock>
             </Border>
         </Canvas>

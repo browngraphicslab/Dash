@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -50,7 +51,8 @@ namespace Dash
         public static async Task ParseA()
         {
             var file = await Windows.Storage.StorageFile.GetFileFromApplicationUriAsync(new Uri("ms-appx:///Assets/a.txt"));
-            var jsonString = await FileIO.ReadTextAsync(file);
+            var jsonString = File.ReadAllText(file.Path);
+            //var jsonString = await FileIO.ReadTextAsync(file);
             JsonDocument = Parse(jsonString, file.Path);
         }
 

@@ -118,6 +118,7 @@ namespace Dash
             DataDocument = dataDocument;
             InitiateManipulators();
 
+            //_manipulator = new ManipulationControls(this, true, true);
             RenderTransform = new TranslateTransform();
             _childContainers = new List<SelectableContainer>();
 

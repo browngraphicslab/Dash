@@ -32,6 +32,7 @@ namespace Dash
 {
     public sealed partial class RadialMenuView : UserControl
     {
+        public static RadialMenu MainMenu;
         private RadialMenu _mainMenu;
         private Canvas _parentCanvas;
         private List<RadialItemModel> _colors;
@@ -108,6 +109,10 @@ namespace Dash
             _opacityMeter = MakeMeterSubMenu(1, 0.2);
 
             this.SetUpBaseMenu();
+
+            MainMenu = _mainMenu;
+            //_parentCanvas.OnDoubleTapped += Overlay_DoubleTapped;
+            
             this.SampleRadialMenu(canvas);
         }
 
@@ -161,7 +166,7 @@ namespace Dash
                 Padding = new Thickness(3,3,3,3)
             };
 
-            MakeSlider("Brightness ", Actions.SetBrightness);
+            //MakeSlider("Brightness ", Actions.SetBrightness);
 
             _stackPanel.Children.Add(_sliderPanel);
             _stackPanel.Children.Add(_mainMenu);
@@ -188,55 +193,55 @@ namespace Dash
         /// </summary>
         /// <param name="header"></param>
         /// <param name="valueSetAction"></param>
-        public void OpenSlider()
-        {
-            _sliderPanel.Visibility = Visibility.Visible;
-            _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
+        //public void OpenSlider()
+        //{
+        //    _sliderPanel.Visibility = Visibility.Visible;
+        //    _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        //}
 
-        private void MakeSlider(string header, Action<double, RadialMenu> valueSetAction)
-        {
-            _sliderHeader = new TextBlock()
-            {
-                Text = header,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                FontStyle = FontStyle.Normal,
-            };
-            _slider = new Slider()
-            {
-                Orientation = Orientation.Vertical,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Minimum = 0,
-                Height = 200,
-                Maximum = 100,
-            };
-            _slider.ValueChanged += delegate (object sender, RangeBaseValueChangedEventArgs args)
-            {
-                valueSetAction.Invoke(_slider.Value, _mainMenu);
-            };
-            _slider.Value = 50;
-            Ellipse grey = new Ellipse()
-            {
-                Width = 20,
-                Height = 20,
-                Fill = new SolidColorBrush(Colors.DarkGray)
-            };
-            Button blackButton = new Button()
-            {
-                Content = grey,
-                FontSize = 12,
-                Padding = new Thickness(3, 3, 3, 3),
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 3, 6, 0),
-                Background = new SolidColorBrush(Colors.Transparent)
-            };
-            blackButton.Tapped += delegate (object sender, TappedRoutedEventArgs args) { Actions.ChangeInkColor(Colors.Gray, _mainMenu); };
-            _sliderPanel.Children.Add(_sliderHeader);
-            _sliderPanel.Children.Add(_slider);
-            _sliderPanel.Children.Add(blackButton);
+        //private void MakeSlider(string header, Action<double, RadialMenu> valueSetAction)
+        //{
+        //    _sliderHeader = new TextBlock()
+        //    {
+        //        Text = header,
+        //        HorizontalAlignment = HorizontalAlignment.Center,
+        //        FontStyle = FontStyle.Normal,
+        //    };
+        //    _slider = new Slider()
+        //    {
+        //        Orientation = Orientation.Vertical,
+        //        HorizontalAlignment = HorizontalAlignment.Center,
+        //        Minimum = 0,
+        //        Height = 200,
+        //        Maximum = 100,
+        //    };
+        //    _slider.ValueChanged += delegate (object sender, RangeBaseValueChangedEventArgs args)
+        //    {
+        //        valueSetAction.Invoke(_slider.Value, _mainMenu);
+        //    };
+        //    _slider.Value = 50;
+        //    Ellipse grey = new Ellipse()
+        //    {
+        //        Width = 20,
+        //        Height = 20,
+        //        Fill = new SolidColorBrush(Colors.DarkGray)
+        //    };
+        //    Button blackButton = new Button()
+        //    {
+        //        Content = grey,
+        //        FontSize = 12,
+        //        Padding = new Thickness(3, 3, 3, 3),
+        //        HorizontalAlignment = HorizontalAlignment.Center,
+        //        Margin = new Thickness(0, 3, 6, 0),
+        //        Background = new SolidColorBrush(Colors.Transparent)
+        //    };
+        //    blackButton.Tapped += delegate (object sender, TappedRoutedEventArgs args) { Actions.ChangeInkColor(Colors.Gray, _mainMenu); };
+        //    _sliderPanel.Children.Add(_sliderHeader);
+        //    _sliderPanel.Children.Add(_slider);
+        //    _sliderPanel.Children.Add(blackButton);
 
 
-        }
+        //}
 
         /// <summary>
         /// Specify the default look of the radial menu
@@ -306,19 +311,19 @@ namespace Dash
                 button.Icon = item.Icon;
             }
             //Construct the color wheel buttons
-            if (item.BackGroundColor != Colors.Transparent)
-            {
-                button.InnerNormalColor = item.BackGroundColor;
-                button.OuterThickness = 0;
-                button.StrokeColor = item.BackGroundColor;
-                button.StrokeThickness = 1;
-                button.InnerReleasedColor = Colors.AliceBlue;
-            }
-            else
-            {
+            //if (item.BackGroundColor != Colors.Transparent)
+            //{
+            //    button.InnerNormalColor = item.BackGroundColor;
+            //    button.OuterThickness = 0;
+            //    button.StrokeColor = item.BackGroundColor;
+            //    button.StrokeThickness = 1;
+            //    button.InnerReleasedColor = Colors.AliceBlue;
+            //}
+            //else
+            //{
                 button.InnerNormalColor = ((SolidColorBrush)App.Instance.Resources["TranslucentWhite"]).Color;
                 button.OuterDisabledColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-            }
+            //}
             //Construct the associated meter, if there is one
             if ((item as RadialSubmenuModel)?.IsMeter == true)
             {
@@ -332,31 +337,9 @@ namespace Dash
             }
             //Add the button model's actions as invoked actions when the button is pressed then released
             if (item.IsAction && item is RadialActionModel)
-            {
-                var actionButton = item as RadialActionModel;
-                if (actionButton.IsRadio) button.Type = RadialMenuButton.ButtonType.Radio; 
-
-                button.InnerArcReleased += delegate
-                {
-                    actionButton.ColorAction?.Invoke(button.InnerNormalColor.Value, _mainMenu);
-                    actionButton.GenericAction?.Invoke(null);
-                };
-                button.InnerArcDragStarted += delegate(object sender, DragStartingEventArgs e)
-                {
-                    e.Data.RequestedOperation = DataPackageOperation.Move;
-                    if (actionButton.CollectionDropAction != null)
-                    {
-                        e.Data.Properties[RadialMenuDropKey] = actionButton.CollectionDropAction;
-                    } else if (actionButton.GenericDropAction != null)
-                    {
-                        e.Data.Properties[RadialMenuDropKey] = actionButton.GenericDropAction;
-                    }
-                    else
-                    {
-                        e.Cancel = true;
-                    }
-                    
-                };
+            { 
+                var action = button.ActionModel = item as RadialActionModel;
+                if(!action.IsDraggable) { button.Type = RadialMenuButton.ButtonType.Radio; }
             }
             menu.AddButton(button);
             return button;
@@ -414,65 +397,79 @@ namespace Dash
         {
             #region Ink Controls
 
-            Action<object> choosePen = Actions.ChoosePen;
-            Action<object> choosePencil = Actions.ChoosePencil;
-            Action<double> setOpacity = Actions.SetOpacity;
-            Action<double> setSize = Actions.SetSize;
-            Action<RadialMenuView> displayBrightnessSlider = Actions.DisplayBrightnessSlider;
-            Action<RadialMenuView> closeSliderPanel = Actions.CloseSliderPanel;
+            //Action<object> choosePen = Actions.ChoosePen;
+            //Action<object> choosePencil = Actions.ChoosePencil;
+            //Action<double> setOpacity = Actions.SetOpacity;
+            //Action<double> setSize = Actions.SetSize;
+            //Action<RadialMenuView> displayBrightnessSlider = Actions.DisplayBrightnessSlider;
+            //Action<RadialMenuView> closeSliderPanel = Actions.CloseSliderPanel;
+            
+            //Action<object> chooseEraser = Actions.ChooseEraser;
+            //this.InitializeColors();
+
+            //var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
+            //{
+            //    IsMeter = true,
+            //    MeterSubMenu = _strokeMeter,
+            //    MeterValueSelectionAction = setSize
+            //};
+
+            //var opacityMeter = new RadialSubmenuModel("Opacity", "💧", null)
+            //{
+            //    IsMeter = true,
+            //    MeterSubMenu = _opacityMeter,
+            //    MeterValueSelectionAction = setOpacity
+            //};
+
+            //var strokeTypeMenu = new RadialSubmenuModel("Pen Type", "✍️",
+            //    new List<RadialItemModel>
+            //    {
+            //        new RadialActionModel("Pen", "✒️") { GenericAction = choosePen },
+            //        new RadialActionModel("Pencil", "✏️") { GenericAction = choosePencil },
+            //        new RadialActionModel("Eraser", "") { GenericAction = chooseEraser }
+            //    });
+
+            //var inkPalette = new RadialSubmenuModel("Color Palette", "🎨", _colors)
+            //{
+            //    IsDraggable = false,
+            //    MenuModificationAction = displayBrightnessSlider,
+            //    CenterButtonMenuModAction = closeSliderPanel
+            //};
+
             Action<object> setPenInput = Actions.SetPenInput;
             Action<object> setTouchInput = Actions.SetTouchInput;
             Action<object> setMouseInput = Actions.SetMouseInput;
             Action<object> setNoInput = Actions.SetNoInput;
-            Action<object> chooseEraser = Actions.ChooseEraser;
-            this.InitializeColors();
 
-            var strokeMeter = new RadialSubmenuModel("Stroke Size", "〰", null)
+            var inputTypeMenu = new RadialSubmenuModel("Ink Input", "⬇️", new List<RadialItemModel>()
             {
-                IsMeter = true,
-                MeterSubMenu = _strokeMeter,
-                MeterValueSelectionAction = setSize
-            };
-
-            var opacityMeter = new RadialSubmenuModel("Opacity", "💧", null)
-            {
-                IsMeter = true,
-                MeterSubMenu = _opacityMeter,
-                MeterValueSelectionAction = setOpacity
-            };
-
-            var strokeTypeMenu = new RadialSubmenuModel("Pen Type", "✍️",
-                new List<RadialItemModel>
+                new RadialActionModel("Pen", "🖊️")
                 {
-                    new RadialActionModel("Pen", "✒️") { GenericAction = choosePen },
-                    new RadialActionModel("Pencil", "✏️") { GenericAction = choosePencil },
-                    new RadialActionModel("Eraser", "") { GenericAction = chooseEraser }
-                });
-
-            var inkPalette = new RadialSubmenuModel("Color Palette", "🎨", _colors)
-            {
-                IsDraggable = false,
-                MenuModificationAction = displayBrightnessSlider,
-                CenterButtonMenuModAction = closeSliderPanel
-            };
-
-            var inputTypeMenu = new RadialSubmenuModel("Input Type", "⬇️", new List<RadialItemModel>()
-            {
-                new RadialActionModel("Pen", "🖊️") { GenericAction = setPenInput },
-                new RadialActionModel("Touch", "☝️") { GenericAction = setTouchInput },
-                new RadialActionModel("Mouse", "🖱️") { GenericAction = setMouseInput },
-                new RadialActionModel("None", "❎") { GenericAction = setNoInput }
+                    GenericAction = setPenInput
+                },
+                new RadialActionModel("Touch", "☝️")
+                {
+                    GenericAction = setTouchInput
+                },
+                new RadialActionModel("Mouse", "🖱️")
+                {
+                    GenericAction = setMouseInput
+                },
+                new RadialActionModel("None", "X")
+                {
+                    GenericAction = setNoInput
+                }
             });
 
 
-            var inkOptions = new RadialSubmenuModel("Ink Options", "🖌️", new List<RadialItemModel>
-            {
-                strokeTypeMenu,
-                strokeMeter,
-                opacityMeter,
-                inkPalette,
-                inputTypeMenu
-            });
+            //var inkOptions = new RadialSubmenuModel("Ink Options", "🖌️", new List<RadialItemModel>
+            //{
+            //    strokeTypeMenu,
+            //    strokeMeter,
+            //    opacityMeter,
+            //    inkPalette,
+            //    inputTypeMenu
+            //});
 
 
             #endregion
@@ -481,65 +478,70 @@ namespace Dash
             var searchButton = new RadialActionModel("Search", "🔍")
             {
                 CollectionDropAction = addSearch,
-                IsRadio = false 
+                IsDraggable = true
             };
 
             Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
-            Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
-            Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
-            Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
+            //Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
+            //Action<ICollectionView, DragEventArgs> addApiCreator = Actions.AddApiCreator;
+            //Action<ICollectionView, DragEventArgs> addDocuments = Actions.AddDocuments;
+            //Action<ICollectionView, DragEventArgs> addNotes = Actions.AddNotes;
 
-            var operatorButton = new RadialActionModel("Operator", "↔️") { GenericDropAction = onOperatorAdd, IsRadio = false };
-            var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection, IsRadio = false };
-            var documentButton = new RadialActionModel("Document", "🖺") { CollectionDropAction = addDocuments, IsRadio = false };
-            var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes, IsRadio = false }; 
+            var operatorButton = new RadialActionModel("Operators", "↔️") { GenericDropAction = onOperatorAdd, IsDraggable = true};
+            //var collectionButton = new RadialActionModel("Collection", "📁") { CollectionDropAction = addCollection };
+            //var apiButton = new RadialActionModel("Api", "⚙️") { CollectionDropAction = addApiCreator };
+            var documentButton = new RadialSubmenuModel("Add Document", "🖺", new List<RadialItemModel>());
+            //var notesButton = new RadialActionModel("Notes", "🗋") { CollectionDropAction = addNotes }; 
             
-            var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
-            {
-                operatorButton,
-                documentButton,
-                collectionButton,
-                notesButton
-            });
+            //var addOptionsMenu = new RadialSubmenuModel("Add", "+", new List<RadialItemModel>
+            //{
+            //    operatorButton,
+            //    apiButton,
+            //    documentButton,
+            //    collectionButton,
+            //    notesButton
+            //});
 
             AddItems(new List<RadialItemModel>
             {
                 searchButton,
-                inkOptions,
-                addOptionsMenu,
+                //inputTypeMenu,
+                operatorButton,
+                //documentButton
+                //emailButton
             });
         }
         
 
-        private void InitializeColors()
-        {
-            AddColorRange(Colors.Red, Colors.Violet);
-            AddColorRange(Colors.Violet, Colors.Blue);
-            AddColorRange(Colors.Blue, Colors.Aqua);
-            AddColorRange(Colors.Aqua, Colors.Green);
-            AddColorRange(Colors.Green, Colors.Yellow);
-            AddColorRange(Colors.Yellow,Colors.Red);
-        }
+        //private void InitializeColors()
+        //{
+        //    AddColorRange(Colors.Red, Colors.Violet);
+        //    AddColorRange(Colors.Violet, Colors.Blue);
+        //    AddColorRange(Colors.Blue, Colors.Aqua);
+        //    AddColorRange(Colors.Aqua, Colors.Green);
+        //    AddColorRange(Colors.Green, Colors.Yellow);
+        //    AddColorRange(Colors.Yellow,Colors.Red);
+        //}
 
-        private void AddColorRange(Color color1, Color color2, int size=13)
-        {
-            int r1 = color1.R;
-            int rEnd = color2.R;
-            int b1 = color1.B;
-            int bEnd = color2.B;
-            int g1 = color1.G;
-            int gEnd = color2.G;
-            for (byte i = 0; i < size; i++)
-            {
-                var rAverage = r1 + (int)((rEnd - r1) * i / size);
-                var gAverage = g1 + (int)((gEnd - g1) * i / size);
-                var bAverage = b1 + (int)((bEnd - b1) * i / size);
-                var button = new RadialActionModel("","");
-                button.BackGroundColor = Color.FromArgb(255, (byte) rAverage, (byte) gAverage, (byte) bAverage);
-                button.ColorAction = Actions.ChangeInkColor;
-                _colors.Add(button);
-            }
-        }
+        //private void AddColorRange(Color color1, Color color2, int size=13)
+        //{
+        //    int r1 = color1.R;
+        //    int rEnd = color2.R;
+        //    int b1 = color1.B;
+        //    int bEnd = color2.B;
+        //    int g1 = color1.G;
+        //    int gEnd = color2.G;
+        //    for (byte i = 0; i < size; i++)
+        //    {
+        //        var rAverage = r1 + (int)((rEnd - r1) * i / size);
+        //        var gAverage = g1 + (int)((gEnd - g1) * i / size);
+        //        var bAverage = b1 + (int)((bEnd - b1) * i / size);
+        //        var button = new RadialActionModel("","");
+        //        button.BackGroundColor = Color.FromArgb(255, (byte) rAverage, (byte) gAverage, (byte) bAverage);
+        //        button.ColorAction = Actions.ChangeInkColor;
+        //        _colors.Add(button);
+        //    }
+        //}
         
         /// <summary>
         /// Constructs a meter submenu with a range from 0 to the length parameter and intervals of length "interval" between ticks 

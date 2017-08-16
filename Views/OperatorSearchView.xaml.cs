@@ -43,6 +43,8 @@ namespace Dash
             var uriToImage = OperationCreationHelper.Operators["uriToImage"];
             var map = OperationCreationHelper.Operators["map"];
             var api = OperationCreationHelper.Operators["api"];
+            var concat = OperationCreationHelper.Operators["concat"];
+            var docAppend = OperationCreationHelper.Operators["Document append"];
             var filter = OperationCreationHelper.Operators["filter"];
             var compound = OperationCreationHelper.Operators["compound"];
 
@@ -69,6 +71,8 @@ namespace Dash
                 zip,
                 filter,
                 api, 
+                concat,
+                docAppend,
                 compound,
                 map
             };

@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections;
+using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
+using Windows.UI.Xaml.Media;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -31,11 +35,9 @@ namespace Dash {
         
 
         // == CONSTRUCTORS == 
-        public ApiCreatorProperty(ApiCreatorPropertyGenerator parent)
+        public ApiCreatorProperty()
         {
-            DataContext = this;
             this.InitializeComponent();
-            this.parent = parent;
         }
 
         // == METHODS ==
@@ -58,7 +60,7 @@ namespace Dash {
                 parent.SourceDisplay.RemoveFromListView(index);
 
                 // propagate changes to the document model
-                ApiDocumentModel.removeParameter(parent.DocModel,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
+                ApiDocumentModel.removeParameter(parent.Document,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
 
                 
 
@@ -69,12 +71,20 @@ namespace Dash {
             } 
         }
 
-        private void xDisplay_Checked(object sender, RoutedEventArgs e) {
-           
+        private void XKey_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var k = (KeyController) ((DictionaryEntry) DataContext).Key;
+            KeyChanged?.Invoke(k, xKey.Text);
         }
 
-        private void xDisplay_Unchecked(object sender, RoutedEventArgs e) {
-
+        private void XValue_OnTextChanged(object sender, TextChangedEventArgs e)
+        {
+            var k = (KeyController) ((DictionaryEntry) DataContext).Key;
+            ValueChanged?.Invoke(k, xValue.Text);
         }
+
+        public delegate void ValueChangedHandler(KeyController key, string newValue);
+        public event ValueChangedHandler KeyChanged;
+        public event ValueChangedHandler ValueChanged;
     }
 }

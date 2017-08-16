@@ -11,6 +11,8 @@ namespace Dash
         /// </summary>
         public KeyModel KeyModel { get; set; }
 
+        private readonly int _hash;
+
         public string Name
         {
             get { return KeyModel.Name; }
@@ -23,6 +25,7 @@ namespace Dash
         {
             // Initialize Local Variables
             KeyModel = keyModel;
+            _hash = KeyModel.GetHashCode();
             ContentController.AddModel(keyModel);
             ContentController.AddController(this);
         }
@@ -64,7 +67,7 @@ namespace Dash
 
         public override int GetHashCode()
         {
-            return GetId().GetHashCode();
+            return _hash;
         }
 
         public override string ToString()

@@ -159,11 +159,11 @@ namespace Dash
         }
         static DocumentController CreatePrototypeGameLayout()
         {
-            return new DocumentBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey)).Document;
+            return new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey)).Document;
         }
         static DocumentController CreatePrototypeAssignmentLayout()
         {
-            return new DocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey)).Document;
+            return new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey)).Document;
 
         }
         static DocumentController CreatePrototypeWebLayout()
@@ -292,6 +292,7 @@ namespace Dash
                 game1Layout.SetField(KeyStore.PositionFieldKey, new PointFieldModelController(new Point(0, 0)), true);
                 SetLayoutForDocument(gameDoc, game1Layout, forceMask: true, addToLayoutList: true);
                 Documents.Add(gameDoc);
+                gameDoc.SetField(new KeyController("AKEY", "AKEY"), new DocumentCollectionFieldModelController(new DocumentController[] { Ump1Doc, Ump2Doc }), true);
             }
             {
                 game2Doc.SetField(KeyStore.ThisKey, new DocumentFieldModelController(game2Doc), true);

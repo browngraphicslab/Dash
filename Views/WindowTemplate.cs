@@ -1,9 +1,11 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
+using Windows.UI.Xaml.Media.Animation;
 
 // The Templated Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234235
 
@@ -23,6 +25,7 @@ namespace Dash
         private const string ContainerName = "PART_Container";
         private const string HeaderName = "PART_Header";
         private const string CloseButtonName = "PART_CloseButton";
+        private const string FadeOutAnimationName = "FadeOut";
 
         /// <summary>
         /// Private variable to get the container which determines the size of the window
@@ -98,11 +101,43 @@ namespace Dash
             Debug.Assert(closeButton != null);
             closeButton.Tapped += CloseButton_Tapped;
 
+            var fadeAnimation = GetTemplateChild(FadeOutAnimationName) as Storyboard;
+            Debug.Assert(fadeAnimation != null);
+            fadeAnimation.Completed += FadeAnimationOnCompleted;
+
             // apply header events
             var header = GetTemplateChild(HeaderName) as UIElement;
             Debug.Assert(header != null);
             header.ManipulationMode = ManipulationModes.TranslateX | ManipulationModes.TranslateY | ManipulationModes.TranslateInertia;
             header.ManipulationDelta += HeaderOnManipulationDelta;
+        }
+
+        private void FadeAnimationOnCompleted(object sender, object o)
+        {
+            var panel = this.Parent as Panel;
+            if (panel != null)
+            {
+                panel.Children.Remove(this);
+                return;
+            }
+
+            var contentPresenter = this.Parent as ContentPresenter;
+            if (contentPresenter != null)
+            {
+                if (contentPresenter.Content == this)
+                    contentPresenter.Content = null;
+                return;
+            }
+
+            var contentControl = this.Parent as ContentControl;
+            if (contentControl != null)
+            {
+                if (contentControl.Content == this)
+                    contentControl.Content = null;
+                return;
+            }
+            var itemsControl = this.Parent as ItemsControl;
+            itemsControl?.Items?.Remove(this);
         }
 
         private void HeaderOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
@@ -129,30 +164,10 @@ namespace Dash
         /// </summary>
         private void CloseButton_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            var panel = this.Parent as Panel;
-            if (panel != null)
-            {
-                panel.Children.Remove(this);
-                return;
-            }
-
-            var contentPresenter = this.Parent as ContentPresenter;
-            if (contentPresenter != null)
-            {
-                if (contentPresenter.Content == this)
-                    contentPresenter.Content = null;
-                return;
-            }
-
-            var contentControl = this.Parent as ContentControl;
-            if (contentControl != null)
-            {
-                if (contentControl.Content == this)
-                    contentControl.Content = null;
-                return;
-            }
-            var itemsControl = this.Parent as ItemsControl;
-            itemsControl?.Items?.Remove(this);
+            var fadeAnimation = GetTemplateChild(FadeOutAnimationName) as Storyboard;
+            Debug.Assert(fadeAnimation != null);
+            fadeAnimation.SpeedRatio = 0.7;
+            fadeAnimation.Begin();
         }
 
         /// <summary>

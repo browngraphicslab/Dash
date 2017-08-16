@@ -41,8 +41,8 @@ namespace Dash
             var data = docController.GetField(KeyStore.DataKey);
             var opfmc = (data as ReferenceFieldModelController);
             OperatorView opView = new OperatorView { DataContext = opfmc.FieldReference };
-            var apiView = new ApiOpView();
-            opView.OperatorContent = apiView;
+            var doc = opfmc.GetDocumentController(context);
+            opView.OperatorContent = new ApiView();
             if (isInterfaceBuilderLayout) return new SelectableContainer(opView, docController);
             return opView;
         }

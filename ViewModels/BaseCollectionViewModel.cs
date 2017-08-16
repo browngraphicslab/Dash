@@ -18,6 +18,8 @@ namespace Dash
         private bool _isInterfaceBuilder;
         private ListViewSelectionMode _itemSelectionMode;
 
+        public virtual KeyController CollectionKey => DocumentCollectionFieldModelController.CollectionKey;
+
         protected BaseCollectionViewModel(bool isInInterfaceBuilder) : base(isInInterfaceBuilder)
         {
             IsInterfaceBuilder = isInInterfaceBuilder;
@@ -38,7 +40,7 @@ namespace Dash
         }
 
         // used to keep track of groups of the currently selected items in a collection
-        public List<DocumentViewModelParameters> SelectionGroup { get; }
+        public List<DocumentViewModelParameters> SelectionGroup { get; set; }
 
         public abstract void AddDocuments(List<DocumentController> documents, Context context);
         public abstract void AddDocument(DocumentController document, Context context);
@@ -137,6 +139,8 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            e.Handled = true;
+
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
@@ -167,7 +171,7 @@ namespace Dash
                 }
 
                 var where = sender is CollectionFreeformView ?
-                    Util.GetCollectionDropPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
+                    Util.GetCollectionFreeFormPoint((sender as CollectionFreeformView), e.GetPosition(MainPage.Instance)) :
                     new Point();
 
                 DisplayDocuments(sender as ICollectionView, carrier.Payload, where);
@@ -189,7 +193,15 @@ namespace Dash
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
 
             if (sourceIsRadialMenu)
+            {
                 e.AcceptedOperation = DataPackageOperation.Move;
+                e.DragUIOverride.Clear();
+                e.DragUIOverride.Caption = e.DataView.Properties.Title;
+                e.DragUIOverride.IsContentVisible = false;
+                e.DragUIOverride.IsGlyphVisible = false;
+                
+            }
+                
 
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)
@@ -274,6 +286,7 @@ namespace Dash
             border.Visibility = Visibility.Visible;
             document.IsHitTestVisible = false;
             var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
+
             if (document.ViewModel == null)
             {
                 document.DataContext =

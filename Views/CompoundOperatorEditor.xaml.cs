@@ -71,7 +71,7 @@ namespace Dash
         }
 
         private void XFreeFormEditor_OnDrop(object sender, DragEventArgs e)
-        {
+        { 
             if (e.Data == null) return; 
             var isDraggedFromOperationsBar = e.Data.Properties[OperationBarDragKey] != null;
 
@@ -79,7 +79,7 @@ namespace Dash
             {
                 var opBuilder = e.Data.Properties[OperationBarDragKey] as OperatorBuilder;
 
-                var pos = Util.GetCollectionDropPoint(xFreeFormEditor, e.GetPosition(MainPage.Instance));
+                var pos = Util.GetCollectionFreeFormPoint(xFreeFormEditor, e.GetPosition(MainPage.Instance));
 
                 var opDoc = opBuilder.OperationDocumentConstructor.Invoke();
 

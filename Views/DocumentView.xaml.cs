@@ -42,7 +42,7 @@ namespace Dash
         public DocumentView()
         {
             this.InitializeComponent();
-            InitializeDropShadow(xShadowHost, xShadowTarget);
+            Util.InitializeDropShadow(xShadowHost, xShadowTarget);
 
             DataContextChanged += DocumentView_DataContextChanged;
 
@@ -60,33 +60,6 @@ namespace Dash
             DoubleTapped += ExpandContract_DoubleTapped;
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
-        }
-
-        private void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
-        {
-            Visual hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
-            Compositor compositor = hostVisual.Compositor;
-
-            // Create a drop shadow
-            var dropShadow = compositor.CreateDropShadow();
-            dropShadow.Color = Color.FromArgb(255, 75, 75, 80);
-            dropShadow.BlurRadius = 15.0f;
-            dropShadow.Offset = new Vector3(2.5f, 2.5f, 0.0f);
-            // Associate the shape of the shadow with the shape of the target element
-            dropShadow.Mask = shadowTarget.GetAlphaMask();
-
-            // Create a Visual to hold the shadow
-            var shadowVisual = compositor.CreateSpriteVisual();
-            shadowVisual.Shadow = dropShadow;
-
-            // Add the shadow as a child of the host in the visual tree
-            ElementCompositionPreview.SetElementChildVisual(shadowHost, shadowVisual);
-
-            // Make sure size of shadow host and shadow visual always stay in sync
-            var bindSizeAnimation = compositor.CreateExpressionAnimation("hostVisual.Size");
-            bindSizeAnimation.SetReferenceParameter("hostVisual", hostVisual);
-
-            shadowVisual.StartAnimation("Size", bindSizeAnimation);
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -108,8 +81,12 @@ namespace Dash
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-            if (ViewModel != null) ViewModel.Width = ActualWidth;
-            if (ViewModel != null) ViewModel.Height = ActualHeight;
+
+            if (ViewModel != null)
+            {
+                ViewModel.Width = ActualWidth;
+                ViewModel.Height = ActualHeight;
+            }
         }
 
 
@@ -190,9 +167,9 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null, "dvm != null");
-            dvm.Width  = Math.Max(dvm.Width  + dx, 100);
+            dvm.Width = Math.Max(dvm.Width + dx, 100);
             dvm.Height = Math.Max(dvm.Height + dy, 100);
-            Debug.WriteLine(ActualWidth + ", " + ActualHeight);
+            //Debug.WriteLine(ActualWidth + ", " + ActualHeight);
             ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate, new Point(0, 0), ViewModel.GroupTransform.ScaleAmount);
             return new Size(dvm.Width, dvm.Height);
         }

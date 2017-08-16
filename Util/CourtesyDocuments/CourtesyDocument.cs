@@ -68,6 +68,10 @@ namespace Dash
 
         protected delegate void BindingDelegate<in T>(T element, DocumentController controller, Context c);
 
+        private static int loaded = 0, unloaded = 0;
+
+        
+
         protected static void AddBinding<T>(T element, DocumentController docController, KeyController k, Context context,
             BindingDelegate<T> bindingDelegate) where T : FrameworkElement
         {
@@ -76,7 +80,7 @@ namespace Dash
                 if (args.Action == DocumentController.FieldUpdatedAction.Update) return;
                 bindingDelegate(element, sender, args.Context); //TODO Should be context or args.Context?
             };
-            
+
             AddHandlers(element, docController, k, context, bindingDelegate, handler);
         }
 
@@ -96,26 +100,44 @@ namespace Dash
 
         protected static void BindWidth(FrameworkElement element, DocumentController docController, Context context)
         {
-            var widthFmc = docController.GetWidthField(context);
-            Binding widthBinding = new Binding
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = widthFmc,
-                Path = new PropertyPath(nameof(widthFmc.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.WidthFieldKey,
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate(NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double) value;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.WidthProperty, widthBinding);
+
+            element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
         }
 
         protected static void BindHeight(FrameworkElement element, DocumentController docController, Context context)
         {
-            var heightFmc = docController.GetHeightField(context);
-            Binding heightBinding = new Binding
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                Source = heightFmc,
-                Path = new PropertyPath(nameof(heightFmc.Data)),
-                Mode = BindingMode.TwoWay
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = KeyStore.HeightFieldKey,
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.HeightProperty, heightBinding);
+
+            element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
         }
 
         protected static void BindPosition(FrameworkElement element, DocumentController docController, Context context)
@@ -134,112 +156,150 @@ namespace Dash
         protected static void BindHorizontalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var horizontalAlignmentFmc = docController.GetField(HorizontalAlignmentKey) as TextFieldModelController;
-            if (horizontalAlignmentFmc == null)
+            var binding = new FieldBinding<TextFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = horizontalAlignmentFmc,
-                Path = new PropertyPath(nameof(horizontalAlignmentFmc.Data)),
-                Converter = new StringToEnumConverter<HorizontalAlignment>()
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = HorizontalAlignmentKey,
+                Converter = new StringToEnumConverter<HorizontalAlignment>(),
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (TextFieldModelController field, object value)
+                {
+                    var s = value as string;
+                    if (s != null)
+                    {
+                        field.Data = s;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
+
+            element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
         }
 
         protected static void BindVerticalAlignment(FrameworkElement element, DocumentController docController,
             Context context)
         {
-            var verticalAlignmentFmc = docController.GetField(VerticalAlignmentKey) as TextFieldModelController;
-            if (verticalAlignmentFmc == null)
+            var binding = new FieldBinding<TextFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = verticalAlignmentFmc,
-                Path = new PropertyPath(nameof(verticalAlignmentFmc.Data)),
-                Converter = new StringToEnumConverter<VerticalAlignment>()
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = VerticalAlignmentKey,
+                Converter = new StringToEnumConverter<VerticalAlignment>(),
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (TextFieldModelController field, object value)
+                {
+                    var s = value as string;
+                    if (s != null)
+                    {
+                        field.Data = s;
+                    }
+                }
             };
-            element.SetBinding(FrameworkElement.VerticalAlignmentProperty, binding);
+
+            element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
         }
 
         protected static void BindGridRow(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridRowFmc = docController.GetField(GridRowKey) as NumberFieldModelController;
-            if (gridRowFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridRowFmc,
-                Path = new PropertyPath(nameof(gridRowFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridRowKey,
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.RowProperty, binding);
+
+            element.AddFieldBinding(Grid.RowProperty, binding);
         }
 
         protected static void BindGridColumn(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridColumnFmc = docController.GetField(GridColumnKey) as NumberFieldModelController;
-            if (gridColumnFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridColumnFmc,
-                Path = new PropertyPath(nameof(gridColumnFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridColumnKey,
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.ColumnProperty, binding);
+
+            element.AddFieldBinding(Grid.ColumnProperty, binding);
         }
 
         protected static void BindGridRowSpan(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridRowSpanFmc = docController.GetField(GridRowSpanKey) as NumberFieldModelController;
-            if (gridRowSpanFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridRowSpanFmc,
-                Path = new PropertyPath(nameof(gridRowSpanFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridRowSpanKey,
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.RowSpanProperty, binding);
+
+            element.AddFieldBinding(Grid.RowSpanProperty, binding);
         }
 
         protected static void BindGridColumnSpan(FrameworkElement element, DocumentController docController, Context context)
         {
-            var gridColumnSpanFmc = docController.GetField(GridColumnKey) as NumberFieldModelController;
-            if (gridColumnSpanFmc == null)
+            FieldBinding<NumberFieldModelController> binding = new FieldBinding<NumberFieldModelController>()
             {
-                return;
-            }
-            Binding binding = new Binding
-            {
-                Source = gridColumnSpanFmc,
-                Path = new PropertyPath(nameof(gridColumnSpanFmc.Data))
+                Mode = BindingMode.TwoWay,
+                Document = docController,
+                Key = GridColumnSpanKey,
+                Context = context,
+                GetHandler = field => field.Data,
+                SetHandler = delegate (NumberFieldModelController field, object value)
+                {
+                    if (value is double)
+                    {
+                        field.Data = (double)value;
+                    }
+                }
             };
-            element.SetBinding(Grid.ColumnSpanProperty, binding);
+
+            element.AddFieldBinding(Grid.ColumnSpanProperty, binding);
         }
 
         protected static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             //Set width and height
-            AddBinding(element, docController, KeyStore.WidthFieldKey, context, BindWidth);
-            AddBinding(element, docController, KeyStore.HeightFieldKey, context, BindHeight);
+            BindWidth(element, docController, context);
+            BindHeight(element, docController, context);
 
             //Set alignments
-            AddBinding(element, docController, HorizontalAlignmentKey, context, BindHorizontalAlignment);
-            AddBinding(element, docController, VerticalAlignmentKey, context, BindVerticalAlignment);
+            BindHorizontalAlignment(element, docController, context);
+            BindVerticalAlignment(element, docController, context);
 
             //Set column, row, and span
-            AddBinding(element, docController, GridRowKey, context, BindGridRow);
-            AddBinding(element, docController, GridColumnKey, context, BindGridColumn);
-            AddBinding(element, docController, GridRowSpanKey, context, BindGridRowSpan);
-            AddBinding(element, docController, GridColumnKey, context, BindGridColumnSpan);
+            BindGridRow(element, docController, context);
+            BindGridColumn(element, docController, context);
+            BindGridRowSpan(element, docController, context);
+            BindGridColumnSpan(element, docController, context);
         }
 
         [Deprecated("Use alternate DefaultLayoutFields", DeprecationType.Deprecate, 1)]
@@ -283,10 +343,10 @@ namespace Dash
         {
             renderElement.ManipulationMode = ManipulationModes.All;
             //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
-            renderElement.ManipulationStarted += delegate(object sender, ManipulationStartedRoutedEventArgs args)
+            renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
             {
-                var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                var freeform = view?.CurrentView as CollectionFreeformView;
+                var view = renderElement.GetFirstAncestorOfType<ICollectionView>();
+                var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null && freeform.CanLink)
                 {
@@ -297,43 +357,42 @@ namespace Dash
             renderElement.IsHoldingEnabled = true; // turn on holding
 
             // must hold on element first to fetch link node
-            renderElement.Holding += delegate(object sender, HoldingRoutedEventArgs args)
+            renderElement.Holding += delegate (object sender, HoldingRoutedEventArgs args)
             {
-                var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                var freeform = view?.CurrentView as CollectionFreeformView;
+                var view = renderElement.GetFirstAncestorOfType<ICollectionView>();
+                var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.CanLink = true;
-                (view.CurrentView as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
+                (view as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
                     renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
             {
-                var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                var freeform = view?.CurrentView as CollectionFreeformView;
+                var view = renderElement.GetFirstAncestorOfType<ICollectionView>();
+                var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.PointerArgs = args;
                 args.Handled = true;
-                if (args.GetCurrentPoint(view).Properties.IsLeftButtonPressed)
+                if (args.GetCurrentPoint(view as CollectionFreeformView).Properties.IsLeftButtonPressed)
                 {
 
                 }
-                else if (args.GetCurrentPoint(view).Properties.IsRightButtonPressed)
+                else if (args.GetCurrentPoint(view as CollectionFreeformView).Properties.IsRightButtonPressed)
                 {
                     if (freeform != null) freeform.CanLink = true;
-                    if (view.CurrentView is CollectionFreeformView)
-                        (view.CurrentView as CollectionFreeformView).StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
-                            renderElement.GetFirstAncestorOfType<DocumentView>()));
+                    (view as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
+                        renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
             renderElement.PointerReleased += delegate (object sender, PointerRoutedEventArgs args)
             {
-                var view = renderElement.GetFirstAncestorOfType<CollectionView>();
-                var freeform = view?.CurrentView as CollectionFreeformView;
+                var view = renderElement.GetFirstAncestorOfType<ICollectionView>();
+                var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.CanLink = false;
 
                 args.Handled = true;
-                (view.CurrentView as CollectionFreeformView)?.EndDrag(
+                (view as CollectionFreeformView)?.EndDrag(
                     new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
@@ -429,13 +488,13 @@ namespace Dash
 
         public static HorizontalAlignment GetHorizontalAlignment(this DocumentController document)
         {
-            var horizontalAlignmentController = 
+            var horizontalAlignmentController =
                 document.GetField(CourtesyDocument.HorizontalAlignmentKey) as TextFieldModelController;
             if (horizontalAlignmentController == null)
             {
                 return HorizontalAlignment.Stretch;
             }
-            return (HorizontalAlignment) Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
+            return (HorizontalAlignment)Enum.Parse(typeof(HorizontalAlignment), horizontalAlignmentController?.Data);
         }
 
         public static void SetVerticalAlignment(this DocumentController document, VerticalAlignment alignment)

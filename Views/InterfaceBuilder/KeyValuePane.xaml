@@ -5,24 +5,22 @@
     xmlns:local="using:Dash"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:system="using:System"
-    xmlns:collections="using:System.Collections.Generic"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="450">
+    d:DesignHeight="500"
+    d:DesignWidth="800">
 
-    <Grid x:Name="xOuterGrid" Background="White" BorderThickness="0,1,0,1" BorderBrush="{StaticResource WindowsBlue}">
+    <Grid x:Name="xOuterGrid" Background="#00FFFFFF" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="7*"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,3" BorderBrush="{StaticResource WindowsBlue}">
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource WindowsBlue}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="75"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" >Keys</TextBlock>
             <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
@@ -47,39 +45,39 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="75"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Key.Name}" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Left" Padding="5,0,0,0"/>
+                            <TextBlock Text="{x:Bind Path=Key.Name}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
                         <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
                         <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Type}" VerticalAlignment="Center" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
+                            <TextBlock Text="{x:Bind Path=Type}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-        <Grid Grid.Row="3" x:Name="xImageGrid" BorderBrush="{StaticResource WindowsBlue}" BorderThickness="0">
+        <Grid Grid.Row="3" x:Name="xImageGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="75"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBox x:Name="xNewKeyField" Text="" TextAlignment="Left" Height="32" HorizontalAlignment ="Stretch" VerticalAlignment ="Bottom" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="LightBlue" ></TextBox>
-            
-            <Grid Grid.Column="1">
+            <Button x:Name="xAddButton" Grid.Column="0" FontSize="15" Height="32" Width="32" HorizontalAlignment="Right" VerticalAlignment ="Bottom" IsTapEnabled="True" Tapped="AddButton_Tapped" Background="{StaticResource WindowsBlue}"/>
+            <TextBox x:Name="xNewKeyField" Grid.Column="1" Text="" TextAlignment="Left" HorizontalAlignment ="Stretch" VerticalAlignment ="Bottom" PlaceholderText="Key" TextChanged="xNewKeyField_TextChanged"  BorderBrush="#AA007AFF" Margin="0,0,0.333,0" ></TextBox>
+
+            <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"></RowDefinition>
                     <RowDefinition Height="Auto"></RowDefinition>
                 </Grid.RowDefinitions>
-                <Image x:Name="xDefaultImage" Source="ms-appx://Dash/Assets/DefaultImage.png" HorizontalAlignment ="Stretch"/>
+                <Image x:Name="xDefaultImage" Source="Assets/DefaultImage.png" HorizontalAlignment ="Stretch"/>
                 <TextBox x:Name="xNewValueField" Grid.Row="1" HorizontalAlignment ="Stretch" TextChanged="xNewValueField_TextChanged" 
-                         Text="" TextAlignment="Left" PlaceholderText="Value" BorderBrush="LightBlue"/>
+                         Text="" TextAlignment="Left" PlaceholderText="Value" BorderBrush="#007AFF"/>
             </Grid>
-            <ComboBox x:Name="xTypeComboBox" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged"/>
-            <Button x:Name="xAddButton" Grid.Column="3" FontSize="15" Height="50" Width="50" HorizontalAlignment="Right" VerticalAlignment ="Bottom" IsTapEnabled="True" Tapped="AddButton_Tapped"/>
+            <ComboBox x:Name="xTypeComboBox" Grid.Column="3" HorizontalAlignment="Stretch" VerticalAlignment ="Bottom" BorderBrush="Transparent" FontSize="12" SelectionChanged="xTypeComboBox_SelectionChanged"/>
         </Grid>
     </Grid>
 </UserControl>

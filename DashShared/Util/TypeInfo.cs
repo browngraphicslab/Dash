@@ -20,7 +20,9 @@ namespace DashShared
         Operator = 0x40,
         Point = 0x80,
         List = 0x100,
-        Ink = 0x200
+        Ink = 0x200,
+
+        Any = Number | Text | Image | Collection | Document | Reference | Operator | Point | List | Ink
     }
 
 }

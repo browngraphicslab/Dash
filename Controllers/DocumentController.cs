@@ -53,6 +53,11 @@ namespace Dash
 
         public void AddFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
+            //++totalCount;
+            //if (++addCount % 100 == 0)
+            //{
+            //    Debug.WriteLine($"Add          Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 _fieldUpdatedDictionary[key] += handler;
@@ -65,6 +70,11 @@ namespace Dash
 
         public void RemoveFieldUpdatedListener(KeyController key, OnDocumentFieldUpdatedHandler handler)
         {
+            //--totalCount;
+            //if (++removeCount % 100 == 0)
+            //{
+            //    Debug.WriteLine($"Remove       Add: {addCount}, Remove: {removeCount}, Total: {totalCount}, {addCount - removeCount}");
+            //}
             if (_fieldUpdatedDictionary.ContainsKey(key))
             {
                 // ReSharper disable once DelegateSubtraction
@@ -94,9 +104,7 @@ namespace Dash
                 SetField(fieldModelController.Key, fieldModelController.Value, true);
             }
 
-            SetField(InkBox.InkDataKey, new InkFieldModelController(), true);
-
-            LayoutName = model.DocumentType.Type;
+            LayoutName = model.DocumentType.Type; 
             // Add Events
         }
 
@@ -624,9 +632,13 @@ namespace Dash
 
         public FieldModelController GetDereferencedField(KeyController key, Context context)
         {
-            context = Context.SafeInitAndAddDocument(context, this);
             var fieldController = GetField(key);
             return fieldController?.DereferenceToRoot(context);
+        }
+
+        public T GetDereferencedField<T>(KeyController key, Context context) where T : FieldModelController
+        {
+            return GetDereferencedField(key, context) as T;
         }
 
 
@@ -642,10 +654,10 @@ namespace Dash
             {
                 return true;
             }
-            if (opField.Outputs.ContainsKey(updatedKey))
-            {
-                return true;
-            }
+            //if (opField.Outputs.ContainsKey(updatedKey))
+            //{
+            //    return true;
+            //}
             return false;
         }
 
@@ -678,7 +690,7 @@ namespace Dash
                     if (update)
                     {
                         OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Add, reference, null, context, false), true);
+                            FieldUpdatedAction.Update, reference, null, context, false), true);
                     }
                 }
             }
@@ -751,13 +763,14 @@ namespace Dash
                 {
                     var fieldDoc = (f.Value as DocumentFieldModelController).Data;
                     // bcz: commented this out because it generated exceptions after making a search List of Umpires
-                    //sp.Children.Add(new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder)));
-                    //(sp.Children.Last() as FrameworkElement).MaxWidth = 300;
-                    //(sp.Children.Last() as FrameworkElement).MaxHeight = 300;
+                    var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
+                    source.Add(view);
+                    view.MaxWidth = 300;
+                    view.MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
-                    var colView = new CollectionGridView(new CollectionViewModel(f.Value, isInterfaceBuilder, context));
+                    var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
 
                     var border = new Border
                     {
@@ -773,7 +786,6 @@ namespace Dash
             }
             return sp;
         }
-
 
         public FrameworkElement MakeViewUI(Context context, bool isInterfaceBuilder, DocumentController dataDocument = null)
         {
@@ -792,6 +804,10 @@ namespace Dash
             if (DocumentType == DocumentBox.DocumentType)
             {
                 return DocumentBox.MakeView(this, context, isInterfaceBuilder);
+            }
+            if (DocumentType == KeyValueDocumentBox.DocumentType)
+            {
+                return KeyValueDocumentBox.MakeView(this, context, isInterfaceBuilder);
             }
             if (DocumentType == StackLayout.DocumentType)
             {

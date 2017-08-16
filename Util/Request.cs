@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Web.Http;
@@ -47,9 +48,8 @@ namespace Dash
             return this;
         }
 
-        public Request SetHeaders(Dictionary<string, string> headers)
+        public Request SetHeaders(IEnumerable<KeyValuePair<string, string>> headers)
         {
-            Headers = headers;
             foreach (KeyValuePair<string, string> entry in headers)
             {
                 
@@ -114,7 +114,7 @@ namespace Dash
                 Message.Headers.Authorization = new HttpCredentialsHeaderValue("Bearer", token);
             }
 
-            Response = await RequestUtil.Client.SendRequestAsync(Message);
+            Response = await RequestUtil.Client.SendRequestAsync(Message).AsTask().ConfigureAwait(false);
             return this;
         }
 
@@ -134,6 +134,12 @@ namespace Dash
                 Debug.Fail("the json util failed");
             }
             return null;
+        }
+
+        public DocumentController GetResult()
+        {
+            return JsonToDashUtil.Parse(Response.Content.ToString(),
+                Message.RequestUri.ToString());
         }
     }
 }

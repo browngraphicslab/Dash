@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using Windows.Foundation;
 using Windows.UI.Xaml;
@@ -13,6 +14,10 @@ using Windows.Storage;
 using Windows.UI.Xaml.Media.Imaging;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Graphics.Imaging;
+using Windows.UI;
+using Windows.UI.Composition;
+using Windows.UI.Xaml.Hosting;
+using Windows.UI.Xaml.Shapes;
 using LightBuzz.SMTP;
 
 
@@ -21,6 +26,34 @@ namespace Dash
     // TODO: name this to something more descriptive
     public static class Util
     {
+
+        public static void InitializeDropShadow(UIElement shadowHost, Shape shadowTarget)
+        {
+            Visual hostVisual = ElementCompositionPreview.GetElementVisual(shadowHost);
+            Compositor compositor = hostVisual.Compositor;
+
+            // Create a drop shadow
+            var dropShadow = compositor.CreateDropShadow();
+
+            dropShadow.Color = Color.FromArgb(100, 75, 75, 80);
+            dropShadow.BlurRadius = 15.0f;
+            dropShadow.Offset = new Vector3(2.5f, 2.5f, 0.0f);
+            // Associate the shape of the shadow with the shape of the target element
+            dropShadow.Mask = shadowTarget.GetAlphaMask();
+
+            // Create a Visual to hold the shadow
+            var shadowVisual = compositor.CreateSpriteVisual();
+            shadowVisual.Shadow = dropShadow;
+
+            // Add the shadow as a child of the host in the visual tree
+            ElementCompositionPreview.SetElementChildVisual(shadowHost, shadowVisual);
+
+            // Make sure size of shadow host and shadow visual always stay in sync
+            var bindSizeAnimation = compositor.CreateExpressionAnimation("hostVisual.Size");
+            bindSizeAnimation.SetReferenceParameter("hostVisual", hostVisual);
+
+            shadowVisual.StartAnimation("Size", bindSizeAnimation);
+        }
 
         /// <summary>
         /// Transforms point p to relative point in Window.Current.Content 
@@ -65,7 +98,7 @@ namespace Dash
         /// <param name="collection"></param>
         /// <param name="absolutePosition"></param>
         /// <returns></returns>
-        public static Point GetCollectionDropPoint(CollectionFreeformView freeForm, Point absolutePosition)
+        public static Point GetCollectionFreeFormPoint(CollectionFreeformView freeForm, Point absolutePosition)
         {
             //Debug.Assert(freeForm != null);
             if (freeForm != null)

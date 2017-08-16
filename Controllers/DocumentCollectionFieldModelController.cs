@@ -6,6 +6,8 @@ using System.Linq;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using DashShared;
+using Dash.Converters;
+using Windows.UI.Xaml.Data;
 
 namespace Dash
 {
@@ -51,7 +53,18 @@ namespace Dash
         public static KeyController CollectionKey = new KeyController("7AE0CB96-7EF0-4A3E-AFC8-0700BB553CE2", "Collection");
 
 
-        public List<DocumentController> Data { get { return _documents; } }
+        public List<DocumentController> Data {
+            get { return _documents; }
+            set
+            {
+                if (SetProperty(ref _documents, value))
+                {
+                    OnFieldModelUpdated(null);
+                    // update local
+                    // update server
+                }
+            }
+        }
 
         /// <summary>
         ///     A wrapper for <see cref="DocumentCollectionFieldModel.Data" />. Change this to propogate changes
@@ -123,7 +136,6 @@ namespace Dash
 
         public override FrameworkElement GetTableCellView(Context context)
         {
-            //return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
             return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce); 
         }
 
@@ -134,7 +146,34 @@ namespace Dash
 
         private void BindTextOrSetOnce(TextBlock textBlock)
         {
-            textBlock.Text = string.Format("{0} Document(s)", _documents.Count());
+            // if the the Data field on this Controller changes, then this Binding updates the text.
+            Binding textBinding = new Binding
+            {
+                Source = this,
+                Path = new PropertyPath("Data"),
+                Converter = new DocumentCollectionToStringConverter(),
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            };
+            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+            // However, the PrimaryKey within the documents referenced by the Data field might change, too.  
+            // If they do, we need to forcibly update the Text since the Binding doesn't know that the Doucment has changed. 
+            // TODO:
+            //Data.DocumentFieldUpdated += ((sender, ctxt) =>
+            //{
+            //    if ((Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
+            //    {
+            //        textBinding = new Binding
+            //        {
+            //            Source = this,
+            //            Path = new PropertyPath("Data"),
+            //            Converter = new DocumentControllerToStringConverter(),
+            //            Mode = BindingMode.TwoWay,
+            //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            //        };
+            //        textBlock.SetBinding(TextBlock.TextProperty, textBinding);
+            //    }
+            //});
         }
 
 

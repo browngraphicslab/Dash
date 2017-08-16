@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using Windows.Devices.Input;
 using Windows.Foundation;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
@@ -25,11 +27,15 @@ namespace Dash {
         private readonly bool _doesRespondToManipulationDelta;
         private readonly bool _doesRespondToPointerWheel;
         private bool _handle;
-        private double _elementScale = 1.0;
+        public double ElementScale = 1.0;
 
 
         public delegate void OnManipulatorTranslatedHandler(TransformGroupData transformationDelta);
         public event OnManipulatorTranslatedHandler OnManipulatorTranslatedOrScaled;
+
+        public PointerDeviceType BlockedInputType;
+        public bool FilterInput;
+        private bool _processManipulation;
 
         /// <summary>
         /// Created a manipulation control to move element
@@ -42,6 +48,7 @@ namespace Dash {
             _element = element;
             _doesRespondToManipulationDelta = doesRespondToManipulationDelta;
             _doesRespondToPointerWheel = doesRespondToPointerWheel;
+            _processManipulation = true;
 
             if (_doesRespondToManipulationDelta)
             {
@@ -52,6 +59,18 @@ namespace Dash {
                 element.PointerWheelChanged += PointerWheelMoveAndScale;
             }
             element.ManipulationMode = ManipulationModes.All;
+            element.ManipulationStarted += ElementOnManipulationStarted;
+        }
+
+        private void ElementOnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            if (e.PointerDeviceType == BlockedInputType && FilterInput)
+            {
+                _processManipulation = false;
+                e.Handled = true;
+                return;
+            }
+            _processManipulation = true;
         }
 
         public void AddAllAndHandle()
@@ -104,6 +123,7 @@ namespace Dash {
 
         private void PointerWheelMoveAndScale(object sender, PointerRoutedEventArgs e)
         {
+            _processManipulation = true;
             TranslateAndScale(e);
         }
 
@@ -121,11 +141,13 @@ namespace Dash {
         /// Applies manipulation controls (zoom, translate) in the grid manipulation event.
         /// </summary>
         private void ManipulateDeltaMoveAndScale(object sender, ManipulationDeltaRoutedEventArgs e) {
+            
             TranslateAndScale(e);
         }
 
         private void TranslateAndScale(PointerRoutedEventArgs e)
         {
+            if (!_processManipulation) return;
             e.Handled = true;
 
             //Get mousepoint in canvas space 
@@ -146,7 +168,7 @@ namespace Dash {
             };
 
             //Clamp the scale factor 
-            var newScale = _elementScale * scaleAmount;
+            var newScale = ElementScale * scaleAmount;
             ClampScale(newScale, scale);
 
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(0, 0),
@@ -160,7 +182,9 @@ namespace Dash {
         /// <param name="canTranslate">Are translate controls allowed?</param>
         /// <param name="canScale">Are scale controls allows?</param>
         /// <param name="e">passed in frm routed event args</param>
-        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e) {
+        private void TranslateAndScale(ManipulationDeltaRoutedEventArgs e)
+        {
+            if (!_processManipulation) return;
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
             e.Handled = true;
 
@@ -176,7 +200,7 @@ namespace Dash {
             var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
             
             //Clamp the scale factor 
-            var newScale = _elementScale * e.Delta.Scale;
+            var newScale = ElementScale * e.Delta.Scale;
             ClampScale(newScale, scale);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
@@ -197,19 +221,19 @@ namespace Dash {
         {
             if (newScale > MaxScale)
             {
-                scale.ScaleX = MaxScale / _elementScale;
-                scale.ScaleY = MaxScale / _elementScale;
-                _elementScale = MaxScale;
+                scale.ScaleX = MaxScale / ElementScale;
+                scale.ScaleY = MaxScale / ElementScale;
+                ElementScale = MaxScale;
             }
             else if (newScale < MinScale)
             {
-                scale.ScaleX = MinScale / _elementScale;
-                scale.ScaleY = MinScale / _elementScale;
-                _elementScale = MinScale;
+                scale.ScaleX = MinScale / ElementScale;
+                scale.ScaleY = MinScale / ElementScale;
+                ElementScale = MinScale;
             }
             else
             {
-                _elementScale = newScale;
+                ElementScale = newScale;
             }
         }
     }

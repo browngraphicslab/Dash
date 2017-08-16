@@ -17,9 +17,11 @@ namespace Dash
             AddOperator<IntersectionOperatorModelController>("intersection", "∩");
             AddOperator<UnionOperatorFieldModelController>("union", "∪");
             AddOperator<ZipOperatorFieldController>("zip");
+            AddOperator<ConcatOperator>("concat");
+            AddOperator<DocumentAppendOperatorController>("Document append");
             AddOperator<ImageOperatorFieldModelController>("uriToImage", "◑");
             AddOperator<FilterOperatorFieldModelController>("filter", OperatorDocumentModel.CreateFilterDocumentController, "⊇");
-            AddOperator<ApiOperator>("api", OperatorDocumentModel.CreateApiDocumentController, "⚡");
+            AddOperator<ApiOperatorController>("api", OperatorDocumentModel.CreateApiDocumentController, "⚡");
             AddOperator<CollectionMapOperator>("map", OperatorDocumentModel.CreateMapDocumentController, "⇨");
             AddOperator<CompoundOperatorFieldController>("compound", OperatorDocumentModel.CreateCompoundController, "💰");
         }

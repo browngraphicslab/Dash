@@ -7,10 +7,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     
-    <Grid Height="Auto" Width="230">
+    <Grid Height="Auto">
         <local:SettingsPaneBlock>
             <local:SettingsPaneBlock.MainContent>
-                <Grid Width="230">
+                <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition/>
                         <ColumnDefinition/>
