@@ -34,8 +34,6 @@ namespace Dash
 
         private void MakeView()
         {
-
-
             var divide = OperationCreationHelper.Operators["divide"];
             var union = OperationCreationHelper.Operators["union"];
             var intersection = OperationCreationHelper.Operators["intersection"];

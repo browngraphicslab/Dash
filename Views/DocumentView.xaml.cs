@@ -81,7 +81,6 @@ namespace Dash
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-
             if (ViewModel != null)
             {
                 ViewModel.Width = ActualWidth;
@@ -150,7 +149,7 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(ActualWidth/2, ActualHeight/2);
+            var scaleCenter = new Point(0, 0);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -336,7 +335,6 @@ namespace Dash
 
         public void DeleteDocument()
         {
-            (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
         }
 

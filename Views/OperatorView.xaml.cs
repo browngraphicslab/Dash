@@ -27,7 +27,6 @@ namespace Dash
         private MenuFlyout _flyout;
         private CompoundOperatorEditor _compoundOpEditor;
         private bool _isCompound;
-        private IOReference _currInputRef;
         private IOReference _currOutputRef;
 
         public OperatorView()
@@ -78,21 +77,18 @@ namespace Dash
                 InputListView.PointerReleased += (s, e) =>
                 {
                     if (XPresenter.Content == null) return;
-                    var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-                    var ioRef = freeform.GetCurrentReference();
+                    var ioRef = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
                     if (ioRef == null) return;
                     if (ioRef.IsOutput) return;
                     KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
                     compoundFMCont.Inputs.Add(newInput, ioRef.Type);
                     compoundFMCont.AddInputreference(newInput, ioRef.FieldReference);
-                    _currInputRef = ioRef;
                 };
 
                 OutputListView.PointerReleased += (s, e) =>
                 {
                     if (XPresenter.Content == null) return;
-                    var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-                    var ioRef = freeform.GetCurrentReference();
+                    var ioRef = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
                     if (ioRef == null) return;
                     if (!ioRef.IsOutput) return;
                     KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
