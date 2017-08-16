@@ -139,7 +139,7 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            e.Handled = true;
+            //e.Handled = true;
 
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);

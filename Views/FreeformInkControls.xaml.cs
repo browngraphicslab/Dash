@@ -267,7 +267,7 @@ namespace Dash
             var selectionList =  _lassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
             foreach (var docView in selectionList)
             {
-                FreeformView.Select(docView);
+                //FreeformView.Select(docView);
             }
         }
 
