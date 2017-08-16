@@ -658,7 +658,7 @@ namespace Dash
                     if (update)
                     {
                         OnDocumentFieldUpdated(this, new DocumentFieldUpdatedEventArgs(null, fieldModel.Value,
-                            FieldUpdatedAction.Add, reference, null, context, false), true);
+                            FieldUpdatedAction.Update, reference, null, context, false), true);
                     }
                 }
             }

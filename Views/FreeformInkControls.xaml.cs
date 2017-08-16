@@ -61,6 +61,7 @@ namespace Dash
             InkFieldModelController = view.InkFieldModelController;
             IsDrawing = true;
             _lassoHelper = new LassoSelectHelper(FreeformView);
+            TargetCanvas.InkPresenter.InputDeviceTypes = GlobalInkSettings.InkInputType;
             UpdateStrokes();
             ToggleDraw();
             AddEventHandlers();
@@ -182,8 +183,8 @@ namespace Dash
             else
             {
                 InkSettingsPanel.Visibility = Visibility.Visible;
+                SetInkInputType(GlobalInkSettings.InkInputType);
                 UpdateSelectionMode();
-                InkToolbar.ActiveTool = InkToolbar.GetToolButton(InkToolbarTool.BallpointPen);
             }
             IsDrawing = !IsDrawing;
             UpdateInputType();
@@ -260,12 +261,16 @@ namespace Dash
         private void SelectDocs(PointCollection selectionPoints)
         {
             SelectionCanvas.Children.Clear();
-            FreeformView.DeselectAll();
-            var selectionList = _lassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000))));
-            foreach (var docView in selectionList)
-            {
-                FreeformView.Select(docView);
-            }
+            FreeformView.ViewModel.SelectionGroup = _lassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
+        }
+
+        //TODO: position ruler
+        private void InkToolbar_OnIsRulerButtonCheckedChanged(InkToolbar sender, object args)
+        {
+            InkPresenterRuler ruler = new InkPresenterRuler(TargetCanvas.InkPresenter);
+            ruler.Transform = Matrix3x2.CreateTranslation(new Vector2(30000, 30000));
+            ruler.IsVisible = true;
+
         }
 
         private void SelectButton_OnTapped(object sender, TappedRoutedEventArgs e)

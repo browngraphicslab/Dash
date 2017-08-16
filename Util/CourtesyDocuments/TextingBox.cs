@@ -190,21 +190,13 @@ namespace Dash
                 converter = new DocumentControllerToStringConverter();
                 var docData = data as DocumentFieldModelController;
 
-                //if (docData.Data != null)
+                //sourceBinding = new Binding
                 //{
-                //    docData.Data.DocumentFieldUpdated += ((sender, ctxt) =>
-                //    {
-                //        sourceBinding = new Binding
-                //        {
-                //            Source = docData,
-                //            Path = new PropertyPath(nameof(docData.Data)),
-                //            Mode = BindingMode.TwoWay,
-                //            Converter = new DocumentControllerToStringConverter(),
-                //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                //        };
-                //        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
-                //    });
-                //}
+                //    Source = docData,
+                //    Mode = BindingMode.TwoWay,
+                //    Converter = new DocumentFieldModelToStringConverter(),
+                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                //};
             }
             else if (data is DocumentCollectionFieldModelController)
             {
