@@ -139,8 +139,6 @@ namespace Dash
         /// <param name="e"></param>
         public void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
-            //e.Handled = true;
-
             var isDraggedFromKeyValuePane = e.DataView.Properties[KeyValuePane.DragPropertyKey] != null;
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
@@ -164,7 +162,7 @@ namespace Dash
             var sourceIsCollection = carrier.Source != null;
             if (sourceIsCollection)
             {
-                carrier.Destination = this; 
+                carrier.Destination = this;
                 if (carrier.Source.Equals(carrier.Destination))
                 {
                     return; // we don't want to drop items on ourself

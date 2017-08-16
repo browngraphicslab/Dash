@@ -774,9 +774,11 @@ namespace Dash
         {
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
-            if (carrier.StartingCollection != this)
+
+            // if dropping to a collection within the source collection 
+            if (carrier.StartingCollection != this) 
             {
-                // carrier.StartingCollection.Collection_DragLeave(sender, args);
+                carrier.StartingCollection.Collection_DragLeave(sender, args);
                 return;
             }
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
