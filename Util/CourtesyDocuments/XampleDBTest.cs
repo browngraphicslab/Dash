@@ -159,12 +159,11 @@ namespace Dash
         }
         static DocumentController CreatePrototypeGameLayout()
         {
-            return new DocumentBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey)).Document;
+            return new KeyValueBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey)).Document;
         }
         static DocumentController CreatePrototypeAssignmentLayout()
         {
-            return new DocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey)).Document;
-
+            return new KeyValueBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey)).Document;
         }
         static DocumentController CreatePrototypeWebLayout()
         {
