@@ -79,26 +79,32 @@ namespace Dash
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
             where T : FrameworkElement where U : FieldModelController
         {
-            bool update = true;
+            bool updateUI = true;
+            bool updateField = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 delegate
                 {
-                    if (update)
+                    if (updateUI)
                     {
+                        updateField = false;
                         element.SetValue(property, EvaluateBinding(binding));
+                        updateField = true;
                     }
                 };
             DependencyPropertyChangedCallback callback =
                 delegate (DependencyObject sender, DependencyProperty dp)
                 {
-                    var value = sender.GetValue(dp);
-                    if (binding.Converter != null)
+                    if (updateField)
                     {
-                        value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
+                        var value = sender.GetValue(dp);
+                        if (binding.Converter != null)
+                        {
+                            value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
+                        }
+                        updateUI = false;
+                        binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
+                        updateUI = true;
                     }
-                    update = false;
-                    binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
-                    update = true;
                 };
 
             long token = -1;
