@@ -307,6 +307,7 @@ namespace Dash
                 xIcon.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
+                IsLowestSelected = false; // to bring up the menu upon click 
             }
         }
 
@@ -328,6 +329,7 @@ namespace Dash
             if (xIcon.Visibility == Visibility.Visible)
             {
                 Resize(250, 250);
+                IsLowestSelected = false; 
             }
             e.Handled = true; // prevent propagating
         }
@@ -419,7 +421,6 @@ namespace Dash
                 return;
 
             OnSelected();
-
         }
 
         protected override void OnActivated(bool isSelected)

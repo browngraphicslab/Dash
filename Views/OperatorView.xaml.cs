@@ -27,7 +27,6 @@ namespace Dash
         private MenuFlyout _flyout;
         private CompoundOperatorEditor _compoundOpEditor;
         private bool _isCompound;
-        private IOReference _currInputRef;
         private IOReference _currOutputRef;
 
         public OperatorView()
@@ -77,22 +76,21 @@ namespace Dash
 
                 InputListView.PointerReleased += (s, e) =>
                 {
-                    if (XPresenter.Content == null) return;
-                    var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-                    var ioRef = freeform.GetCurrentReference();
+                    //if (XPresenter.Content == null) return;
+                    var freeform = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
+                    var ioRef = freeform?.GetCurrentReference();
                     if (ioRef == null) return;
                     if (ioRef.IsOutput) return;
                     KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
                     compoundFMCont.Inputs.Add(newInput, ioRef.Type);
                     compoundFMCont.AddInputreference(newInput, ioRef.FieldReference);
-                    _currInputRef = ioRef;
                 };
 
                 OutputListView.PointerReleased += (s, e) =>
                 {
-                    if (XPresenter.Content == null) return;
-                    var freeform = (XPresenter.Content as CompoundOperatorEditor).xFreeFormEditor;
-                    var ioRef = freeform.GetCurrentReference();
+                    //if (XPresenter.Content == null) return;
+                    var freeform = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
+                    var ioRef = freeform?.GetCurrentReference();
                     if (ioRef == null) return;
                     if (!ioRef.IsOutput) return;
                     KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
@@ -118,7 +116,7 @@ namespace Dash
             var type = isOutput ? _operator.Outputs[outputKey] : _operator.Inputs[outputKey];
             if (XPresenter.Content is CompoundOperatorEditor)
                 if (view == ((CompoundOperatorEditor)XPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
-            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
             view.CanLink = true;
             view.StartDrag(ioRef);
         }
@@ -156,13 +154,27 @@ namespace Dash
             bool isCompound = false;
             if (XPresenter.Content is CompoundOperatorEditor)
                 if (isCompound = view == ((CompoundOperatorEditor)XPresenter.Content).xFreeFormEditor) isOutput = !isOutput;
-            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, el.GetFirstAncestorOfType<DocumentView>());
+            var ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), isOutput, type, e, el, this.GetFirstAncestorOfType<DocumentView>());
             view.EndDrag(ioRef, isCompound);
         }
 
+
         private void InputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            EndDraggedLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
+            var view = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
+            var ioref = view?.GetCurrentReference();
+            if (ioref != null)                                                              // TODO ????????????
+            {
+                view.CancelDrag(ioref.PointerArgs.Pointer);
+                StartNewLink(sender, ioref.PointerArgs, false, view);
+                view.EndDrag(ioref, true);
+                var key = ((DictionaryEntry) (sender as FrameworkElement).DataContext).Key as KeyController;
+                (_operator as CompoundOperatorFieldController).AddInputreference(key, ioref.FieldReference);
+            }
+            else
+            {
+                EndDraggedLink(sender, e, false, this.GetFirstAncestorOfType<CollectionFreeformView>());
+            }
         }
 
         private void OutputEllipse_OnPointerReleased(object sender, PointerRoutedEventArgs e)

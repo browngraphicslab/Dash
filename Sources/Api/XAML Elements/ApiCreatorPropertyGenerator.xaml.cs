@@ -75,7 +75,14 @@ namespace Dash
             else if (TitleTag == "PARAMETERS")
             {
                 _operatorController.AddParameter(new ApiParameter(true, false));
+            } else if (TitleTag == "AUTHENTICATION HEADERS")
+            {
+                _operatorController.AddAuthHeader(new ApiParameter(true, true));
+            } else if (TitleTag == "AUTHENTICATION PARAMETERS") 
+            {
+                _operatorController.AddAuthParameter(new ApiParameter(false, true));
             }
+
             //var stackPanel = new ApiCreatorProperty(this);
 
             // make listview visible
@@ -108,6 +115,12 @@ namespace Dash
             else if(TitleTag == "PARAMETERS")
             {
                 xListView.ItemsSource = _operatorController.Parameters;
+            } else if (TitleTag == "AUTHENTICATION HEADERS")
+            {
+                xListView.ItemsSource = _operatorController.AuthHeaders;
+            } else if (TitleTag == "AUTHENTICATION PARAMETERS")
+            {
+                xListView.ItemsSource = _operatorController.AuthParameters;
             }
             XTitleBlock.Text = TitleTag;
         }
