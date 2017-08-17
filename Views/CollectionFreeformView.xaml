@@ -12,7 +12,6 @@
     d:DesignWidth="400"
     Background="Transparent"
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
-    RightTapped="CollectionView_OnRightTapped"
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
