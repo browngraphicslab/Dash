@@ -61,12 +61,12 @@ namespace Dash
             }
         }
 
-        public static T GetFirstAncestorOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static T GetFirstAncestorOfType<T>(this DependencyObject start)
         {
             return start.GetAncestorsOfType<T>().FirstOrDefault();
         }
 
-        public static IEnumerable<T> GetAncestorsOfType<T>(this DependencyObject start) where T : DependencyObject
+        public static IEnumerable<T> GetAncestorsOfType<T>(this DependencyObject start)
         {
             return start.GetAncestors().OfType<T>();
         }

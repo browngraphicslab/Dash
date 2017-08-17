@@ -227,7 +227,48 @@ namespace Dash
                 var point = _hullPoints.Pop();
                 _visualHull.Points.Add(point);
                 _hull.Points.Add(point);
+            }           
+        }
+
+        private void AddVisualHull()
+        {
+            _flyoutBase = new Grid {Width = 1, Height = 1};
+            // format visual hull
+            _visualHull.Fill = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+            _visualHull.Opacity = .1;
+            _visualHull.Stroke = (SolidColorBrush)Application.Current.Resources["WindowsBlue"];
+            _visualHull.StrokeThickness = 1;
+            _visualHull.ManipulationMode = ManipulationModes.All;
+            _visualHull.ManipulationDelta += VisualHullOnManipulationDelta;
+            _visualHull.CompositeMode = ElementCompositeMode.SourceOver;
+            //_visualHull.Tapped += VisualHullOnTapped;
+            (_view.xItemsControl.ItemsPanelRoot as Canvas).Children.Add(_visualHull);
+        }
+
+        private void VisualHullOnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (!_view.xItemsControl.ItemsPanelRoot.Children.Contains(_flyoutBase))
+                _view.xItemsControl.ItemsPanelRoot.Children.Add(_flyoutBase);
+            Canvas.SetLeft(_flyoutBase, e.GetPosition(_view.xItemsControl.ItemsPanelRoot).X);
+            Canvas.SetTop(_flyoutBase, e.GetPosition(_view.xItemsControl.ItemsPanelRoot).Y);
+            _menu.ShowAt(_flyoutBase);
+        }
+
+        private void VisualHullOnManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
+        {
+            var delta = new Point(e.Delta.Translation.X / _view.Zoom, e.Delta.Translation.Y / _view.Zoom);
+            var pos = new Point(Canvas.GetLeft(_visualHull), Canvas.GetTop(_visualHull));
+            Canvas.SetLeft(_visualHull, pos.X + delta.X);
+            Canvas.SetTop(_visualHull, pos.Y + delta.Y);
+            foreach (var doc in _view.ViewModel.SelectionGroup)
+            {
+                var docPos = doc.Controller.GetPositionField().Data;
+                docPos.X += delta.X;
+                docPos.Y += delta.Y;
+                doc.Controller.GetPositionField().Data = docPos;
             }
+            e.Handled = true;
         }
 
         // selects contained atoms by figuring out the atoms in the selection hull

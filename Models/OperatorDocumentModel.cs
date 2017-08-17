@@ -17,15 +17,6 @@ namespace Dash
             IDictionary<KeyController, TypeInfo> outputs = opController.Outputs;
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
             fields[OperatorKey] = opController;
-            //TODO These loops make overloading not possible
-            //foreach (var typeInfo in inputs)
-            //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
-            //}
-            //foreach (var typeInfo in outputs)
-            //{
-            //    fields[typeInfo.Key] = TypeInfoHelper.CreateFieldModelController(typeInfo.Value);
-            //}
             
             var doc = new DocumentController(fields, OperatorType);
             ContentController.GetController(doc.GetId());
@@ -60,13 +51,25 @@ namespace Dash
             return doc;
         }
 
-        public static DocumentController CreateApiDocumentController()
+        public static DocumentController CreateApi1DocumentController()
         {
             Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
             var doc = new ApiDocumentModel().Document;
-            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true );
+            doc.SetField(OperatorKey, new ApiOperator(new OperatorFieldModel("Api")), true);
             doc.DocumentType = ApiOperator.ApiType;
 
+
+            var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
+            doc.SetActiveLayout(layoutDoc, true, true);
+
+            return doc;
+        }
+
+        public static DocumentController CreateApiDocumentController()
+        {
+            Dictionary<KeyController, FieldModelController> fields = new Dictionary<KeyController, FieldModelController>();
+            fields[OperatorKey] = new ApiOperatorController();
+            var doc = new DocumentController(fields, ApiOperatorController.ApiType);
 
             var layoutDoc = new ApiOperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);
@@ -80,7 +83,7 @@ namespace Dash
             {
                 [OperatorKey] = new CompoundOperatorFieldController()
             };
-            var doc = new DocumentController(fields, CollectionMapOperator.MapType);
+            var doc = new DocumentController(fields, CompoundOperatorFieldController.MapType);
 
             var layoutDoc = new OperatorBox(new ReferenceFieldModelController(doc.GetId(), OperatorKey)).Document;
             doc.SetActiveLayout(layoutDoc, true, true);

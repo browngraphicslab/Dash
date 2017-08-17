@@ -71,7 +71,8 @@ namespace Dash
         }
 
         private void XFreeFormEditor_OnDrop(object sender, DragEventArgs e)
-        {
+        { 
+            if (e.Data == null) return; 
             var isDraggedFromOperationsBar = e.Data.Properties[OperationBarDragKey] != null;
 
             if (isDraggedFromOperationsBar)
@@ -85,7 +86,7 @@ namespace Dash
                 opDoc.GetPositionField(null).Data = new Point(pos.X, pos.Y);
 
                 _collectionViewModel.AddDocuments(new List<DocumentController>{opDoc}, null);
-            }
+            } 
         }
     }
 }

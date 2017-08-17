@@ -20,6 +20,7 @@
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
     </UserControl.Resources>
+    
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
           x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
@@ -54,7 +55,7 @@
         <!--grid to hold the inner content of the document-->
         <Grid Grid.Column="0">
             <!-- Container for document fields view -->
-            <Grid x:Name="xFieldContainer" x:FieldModifier="public" Background="#99FFFFFF" > <!--Background="{StaticResource TranslucentWhite}"-->
+            <Grid x:Name="xFieldContainer" x:FieldModifier="public" >
                 <Grid.Clip>
                     <RectangleGeometry x:Name="ClipRect" Rect="0,0,300,300" />
                 </Grid.Clip>

@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -138,6 +139,7 @@ namespace Dash
                     var posFieldModelController =
                         layoutDocController.GetDereferencedField(KeyStore.PositionFieldKey, context) as
                             PointFieldModelController;
+                    //if(!PointEquals(posFieldModelController.Data, _normalGroupTransform.Translate))
                     posFieldModelController.Data = value.Translate;
                     // set scale center
                     var scaleCenterFieldModelController =
@@ -153,6 +155,17 @@ namespace Dash
                         scaleAmountFieldModelController.Data = value.ScaleAmount;
                 }
             }
+        }
+
+        public static bool PointEquals(Point a, Point b)
+        {
+            var ax = double.IsNaN(a.X);
+            var ay = double.IsNaN(a.Y);
+            var bx = double.IsNaN(b.X);
+            var by = double.IsNaN(b.Y);
+            if (!ax && !ay) return a == b;
+            if (ax == ay) return bx && by;
+            return ax ? bx : by;
         }
 
         public Brush BackgroundBrush
@@ -175,9 +188,11 @@ namespace Dash
 
         public readonly bool IsInInterfaceBuilder;
 
+        public static int count = 0;
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
+            //Debug.WriteLine($"DVM: {count++}");
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
             BackgroundBrush = new SolidColorBrush(Colors.White);

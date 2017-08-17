@@ -188,7 +188,7 @@ namespace Dash
                     new DocumentCollectionFieldModelController(numbers)
                 }
             };
-            var col = new DocumentController(fields, new DocumentType("collection", "collection"));
+            var col = new DocumentController(fields, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc =
                 new CollectionBox(new ReferenceFieldModelController(col.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -206,7 +206,7 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2, twoImages2})
             };
-            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -231,7 +231,7 @@ namespace Dash
                 docController.GetPositionField().Data = new Point(pos.X - w / 2, pos.Y - h / 2); 
             }
             collectionView.ViewModel.AddDocument(docController, null); 
-            DBTest.DBDoc.AddChild(docController);
+            //DBTest.DBDoc.AddChild(docController);
         }
 
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
@@ -246,7 +246,7 @@ namespace Dash
                 new DocumentCollectionFieldModelController(new[]
                     {numbers2})
             };
-            var col2 = new DocumentController(fields2, new DocumentType("collection", "collection"));
+            var col2 = new DocumentController(fields2, DashConstants.DocumentTypeStore.CollectionDocument);
             var layoutDoc2 =
                 new CollectionBox(new ReferenceFieldModelController(col2.GetId(),
                     DocumentCollectionFieldModelController.CollectionKey)).Document;
@@ -258,6 +258,10 @@ namespace Dash
             //Display collections
             DisplayDocument(collectionView, col2, where);
 
+            DisplayDocument(collectionView, new InkDoc().Document, where);
+            DisplayDocument(collectionView, new Numbers().Document, where);
+
+            DisplayDocument(collectionView, new XampleText().Document, where);
 
             foreach (var d in new DBTest().Documents)
                 DisplayDocument(collectionView, d, where);

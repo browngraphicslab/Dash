@@ -48,9 +48,9 @@ namespace Dash.Converters
             var docListString = "{";
             foreach (var data in dataList)
             {
-                docListString += GetPrimaryKeyString(data) + " ";
+                docListString += GetPrimaryKeyString(data) + ",";
             }
-            docListString = docListString.Trim(' ');
+            docListString = docListString.Trim(',');
             docListString += "}";
             return docListString;
         }
@@ -58,10 +58,10 @@ namespace Dash.Converters
         public override List<DocumentController> ConvertXamlToData(string xaml, object parameter = null)
         {
             var docList = new List<DocumentController>();
-            var docs = xaml.Trim('{','}').Split('>');
+            var docs = xaml.Trim('{','}').Split(new char[] { '>' }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var d in docs)
             {
-                var doc = new DocumentControllerToStringConverter(_context).ConvertXamlToData(d + '>');
+                var doc = new DocumentControllerToStringConverter(_context).ConvertXamlToData(d.TrimStart(',', ' ') + '>');
                 if (doc != null)
                     docList.Add(doc);
             }

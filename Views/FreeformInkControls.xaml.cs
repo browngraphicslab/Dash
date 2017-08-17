@@ -149,6 +149,7 @@ namespace Dash
         {
             if(GlobalInkSettings.IsSelectionEnabled)
             {
+
                 TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
                     InkInputRightDragAction.LeaveUnprocessed;
                 TargetCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.None;
@@ -173,6 +174,7 @@ namespace Dash
                 }
             }
         }
+
 
         public bool IsDrawing { get; set; }
 
@@ -252,12 +254,17 @@ namespace Dash
 
         private void SelectDocs(PointCollection selectionPoints)
         {
+            if (!FreeformView.IsSelectionEnabled)
+            {
+                var colView = FreeformView.GetFirstAncestorOfType<CollectionView>();
+                colView.MakeSelectionModeMultiple();
+            }
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
             var selectionList =  LassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
             foreach (var docView in selectionList)
             {
-                FreeformView.Select(docView);
+                //FreeformView.Select(docView);
             }
         }
 

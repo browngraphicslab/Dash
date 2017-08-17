@@ -71,7 +71,6 @@ namespace Dash {
                 return;
             }
             _processManipulation = true;
-            
         }
 
         public void AddAllAndHandle()

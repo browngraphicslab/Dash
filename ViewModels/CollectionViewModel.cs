@@ -32,18 +32,24 @@ namespace Dash
             if (collection is ReferenceFieldModelController)
             {
                 var reference = collection as ReferenceFieldModelController;
+                _collectionKey = reference.FieldKey;
                 reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
                     delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
-                        if (args.Action == DocumentController.FieldUpdatedAction.Update)
+                        var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
+                        if (cargs != null && args.Action == DocumentController.FieldUpdatedAction.Update)
                         {
-                            var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
                             UpdateViewModels(cargs, copiedContext);
                         }
                         else
                         {
                             DocumentViewModels.Clear();
-                            AddDocuments(args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments(), copiedContext);
+                            var documents = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments();
+                            AddDocuments(documents, copiedContext);
+
+                            if (cargs == null)
+                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, _collectionFieldModelController.Data);
+                            UpdateViewModels(cargs, copiedContext);
                         }
                     });
             }
@@ -57,6 +63,9 @@ namespace Dash
             }
             CellSize = 250; // TODO figure out where this should be set
         }
+
+        private KeyController _collectionKey = null;
+        public override KeyController CollectionKey => _collectionKey ?? base.CollectionKey;
 
 
         #region Event Handlers
@@ -130,6 +139,13 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
+            if (doc.DocumentType == DashConstants.DocumentTypeStore.CollectionDocument)
+            {
+                var coll = doc.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionKey, context);
+                if (coll.Data.Contains(doc))
+                    return;
+            }
+
             if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
             {
                 return;

@@ -94,12 +94,12 @@ namespace Dash
 
         private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
         {
-            var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
-            Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
-            Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
-            Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
-            Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
-            
+            //var matrix = Matrix3x2.CreateScale(xScale, yScale, new Vector2(xCenter, yCenter));
+            //Debug.WriteLine("Scale " + xScale + ", " + yScale + " with center " + xCenter + ", " + yCenter + ": ");
+            //Debug.WriteLine("|" + matrix.M11 + " " + matrix.M12 + "|");
+            //Debug.WriteLine("|" + matrix.M21 + " " + matrix.M22 + "|");
+            //Debug.WriteLine("|" + matrix.M31 + " " + matrix.M32 + "|");
+
 
 
         }
@@ -178,8 +178,8 @@ namespace Dash
             var twitterConsumerSecret = "6QOcnCElbr4u80tiWspoGQTYryFyyRoXxMgiSZv4fq0Fox3dhV";
             var token = await OAuth2Authentication(twitterAuthEndpoint, twitterConsumerKey, twitterConsumerSecret);
 
-            var userName = "realdonaldtrump";
-            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName });
+            var userName = "alanalevinson";
+            var tweetsByUserURL = twitterBase.AppendPathSegments("1.1", "statuses", "user_timeline.json").SetQueryParams(new { screen_name = userName, count = 25, trim_user = "true" });
             var tweetsByUser = await MakeRequest(tweetsByUserURL, HTTPRequestMethod.Get, token);
 
             var responseAsDocument = JsonToDashUtil.Parse(tweetsByUser, tweetsByUserURL.ToString(true));

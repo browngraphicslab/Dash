@@ -8,7 +8,12 @@ using Windows.UI.Xaml.Input;
 namespace Dash
 
 {
-    public sealed partial class ApiSourceDisplay : UserControl {
+    public sealed partial class ApiSourceDisplay : UserControl
+    {
+        public delegate void EditApiHandler();
+
+        public event EditApiHandler EditApi;
+
         public DocumentController DocModel;
 
         // == CONSTRUCTORS ==
@@ -61,7 +66,8 @@ namespace Dash
         }
 
         private void XEditBtn_Tapped(object sender, TappedRoutedEventArgs e) {
-            this.Visibility = Visibility.Collapsed;
+            EditApi?.Invoke();
+            //this.Visibility = Visibility.Collapsed;
         }
     }
 }
