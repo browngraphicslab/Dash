@@ -70,15 +70,11 @@
         <!-- blue (default) button with white text -->
         <Style TargetType="Button">
             <!-- prevents node from moving while mouse is over UI element-->
-            <Setter Property="ManipulationMode" Value="Scale"></Setter> 
+            <Setter Property="ManipulationMode" Value="Scale"></Setter>
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
-        </Style>
-
-        <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#FF656973"></Setter>
         </Style>
 
         <!-- GLOBAL STYLES -->

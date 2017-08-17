@@ -82,6 +82,8 @@ namespace RadialMenuControl.UserControl
             set { SetField(ref _centerButtonIcon, value); }
         }
 
+        public Symbol? CenterButtonSymbol { get; set; }
+
         /// <summary>
         /// Width/Height for the Center Button
         /// </summary>

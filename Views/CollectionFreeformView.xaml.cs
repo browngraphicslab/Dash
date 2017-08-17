@@ -64,7 +64,9 @@ namespace Dash
 
         #endregion
 
-        private MenuFlyout _flyout;
+
+        public ManipulationControls ManipulationControls;
+        
         private float _backgroundOpacity = .7f;
 
         #region Background Translation Variables
@@ -423,7 +425,10 @@ namespace Dash
             composite.Children.Add(canvas.RenderTransform);
             composite.Children.Add(translate);
 
-            canvas.RenderTransform = new MatrixTransform { Matrix = composite.Value };
+            var matrix = new MatrixTransform { Matrix = composite.Value };
+
+            canvas.RenderTransform = matrix;
+            InkHostCanvas.RenderTransform = matrix;
             SetTransformOnBackground(composite);
         }
 
@@ -549,101 +554,108 @@ namespace Dash
 
         #region Flyout
 
-        private void InitializeFlyout()
-        {
-            _flyout = new MenuFlyout();
-            var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
-            menuItem.Click += MenuItem_Click;
-            _flyout.Items?.Add(menuItem);
+        //private void InitializeFlyout()
+        //{
+        //    _flyout = new MenuFlyout();
+        //    var menuItem = new MenuFlyoutItem { Text = "Add Operators" };
+        //    menuItem.Click += MenuItem_Click;
+        //    _flyout.Items?.Add(menuItem);
 
-            var menuItem2 = new MenuFlyoutItem { Text = "Add Document" };
-            menuItem2.Click += MenuItem_Click2;
-            _flyout.Items?.Add(menuItem2);
+        //    var menuItem2 = new MenuFlyoutItem { Text = "Add Document" };
+        //    menuItem2.Click += MenuItem_Click2;
+        //    _flyout.Items?.Add(menuItem2);
 
-            var menuItem3 = new MenuFlyoutItem { Text = "Add Collection" };
-            menuItem3.Click += MenuItem_Click3;
-            _flyout.Items?.Add(menuItem3);
-        }
+        //    var menuItem3 = new MenuFlyoutItem { Text = "Add Collection" };
+        //    menuItem3.Click += MenuItem_Click3;
+        //    _flyout.Items?.Add(menuItem3);
+        //}
 
-        private void DisposeFlyout()
-        {
-            if (_flyout.Items != null)
-                foreach (var item in _flyout.Items)
-                {
-                    var menuFlyoutItem = item as MenuFlyoutItem;
-                    if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
-                }
-            _flyout = null;
-        }
+        //private void DisposeFlyout()
+        //{
+        //    if (_flyout.Items != null)
+        //        foreach (var item in _flyout.Items)
+        //        {
+        //            var menuFlyoutItem = item as MenuFlyoutItem;
+        //            if (menuFlyoutItem != null) menuFlyoutItem.Click -= MenuItem_Click;
+        //        }
+        //    _flyout = null;
+        //}
 
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            var xCanvas = MainPage.Instance.xCanvas;
-            if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
-                xCanvas.Children.Add(OperatorSearchView.Instance);
-            // set the operator menu to the current location of the flyout
-            var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
-            var pointOnCanvas = transform.TransformPoint(new Point());
-            // reset the render transform on the operator search view
-            OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
-            var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
-            if (floatBorder != null)
-            {
-                Canvas.SetLeft(floatBorder, 0);
-                Canvas.SetTop(floatBorder, 0);
-            }
-            Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
-            Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
-            OperatorSearchView.AddsToThisCollection = this;
+        //private void MenuItem_Click(object sender, RoutedEventArgs e)
+        //{
+        //    var xCanvas = MainPage.Instance.xCanvas;
+        //    if (!xCanvas.Children.Contains(OperatorSearchView.Instance))
+        //        xCanvas.Children.Add(OperatorSearchView.Instance);
+        //    // set the operator menu to the current location of the flyout
+        //    var menu = sender as MenuFlyoutItem;
+        //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+        //    var pointOnCanvas = transform.TransformPoint(new Point());
+        //    // reset the render transform on the operator search view
+        //    OperatorSearchView.Instance.RenderTransform = new TranslateTransform();
+        //    var floatBorder = OperatorSearchView.Instance.SearchView.GetFirstDescendantOfType<Border>();
+        //    if (floatBorder != null)
+        //    {
+        //        Canvas.SetLeft(floatBorder, 0);
+        //        Canvas.SetTop(floatBorder, 0);
+        //    }
+        //    Canvas.SetLeft(OperatorSearchView.Instance, pointOnCanvas.X);
+        //    Canvas.SetTop(OperatorSearchView.Instance, pointOnCanvas.Y);
+        //    OperatorSearchView.AddsToThisCollection = this;
 
-            OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
+        //    OperatorSearchView.Instance.LostFocus += (ss, ee) => xCanvas.Children.Remove(OperatorSearchView.Instance);
 
-            DisposeFlyout();
-        }
+        //    DisposeFlyout();
+        //}
 
-        private void MenuItem_Click2(object sender, RoutedEventArgs e)
-        {
-            var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual( xItemsControl.ItemsPanelRoot);
-            var pointOnCanvas = transform.TransformPoint(new Point());
 
-            var fields = new Dictionary<KeyController, FieldModelController>()
-            {
-                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), pointOnCanvas, new Size(100, 100)).Document)
-            };
+        //private void MenuItem_Click2(object sender, RoutedEventArgs e)
+        //{
+        //    var menu = sender as MenuFlyoutItem;
+        //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+        //    var pointOnCanvas = transform.TransformPoint(new Point());
 
-            ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
-            DisposeFlyout();
-        }
+        //    var fields = new Dictionary<KeyController, FieldModelController>()
+        //    {
+        //        [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), pointOnCanvas, new Size(100, 100)).Document)
+        //    };
 
-        private void MenuItem_Click3(object sender, RoutedEventArgs e)
-        {
-            var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(xItemsControl.ItemsPanelRoot);
-            var pointOnCanvas = transform.TransformPoint(new Point());
+        //    ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
 
-            var fields = new Dictionary<KeyController, FieldModelController>()
-            {
-                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
-            };
 
-            var documentController = new DocumentController(fields, DocumentType.DefaultType);
-            documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), pointOnCanvas.X, pointOnCanvas.Y).Document, true, true);
-            ViewModel.AddDocument(documentController, null);
+        //    DisposeFlyout();
+        //}
 
-            DisposeFlyout();
-        }
+        //private void MenuItem_Click3(object sender, RoutedEventArgs e)
+        //{
+        //    var menu = sender as MenuFlyoutItem;
+        //    var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+        //    var pointOnCanvas = transform.TransformPoint(new Point());
 
-        private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
-        {
-            if (_flyout == null)
-                InitializeFlyout();
-            e.Handled = true;
-            var thisUi = this as UIElement;
-            var position = e.GetPosition(thisUi);
-            _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
-        }
+        //    var fields = new Dictionary<KeyController, FieldModelController>()
+        //    {
+        //        [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
+        //    };
+
+        //    var documentController = new DocumentController(fields, DocumentType.DefaultType);
+        //    documentController.SetActiveLayout(new CollectionBox(new ReferenceFieldModelController(documentController.GetId(), DocumentCollectionFieldModelController.CollectionKey), pointOnCanvas.X, pointOnCanvas.Y).Document, true, true);
+        //    ViewModel.AddDocument(documentController, null);
+
+
+        //    DisposeFlyout();
+        //}
+
+        //private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        //{
+        //    if (InkControls == null || InkControls != null && !InkControls.IsDrawing)
+        //    {
+        //        if (_flyout == null)
+        //            InitializeFlyout();
+        //        e.Handled = true;
+        //        var thisUi = this as UIElement;
+        //        var position = e.GetPosition(thisUi);
+        //        _flyout.ShowAt(thisUi, new Point(position.X, position.Y));
+        //    }
+        //}
 
         #endregion
 
@@ -835,25 +847,8 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-                                                                                                              
-            if (xItemsControl.ItemsPanelRoot != null)
-            {
-                XInkCanvas.IsHitTestVisible = true;
-                SelectionCanvas.IsHitTestVisible = true;
-            }
-            //if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-        }
-
-        private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)
-        {
-            Canvas.SetZIndex(XInkCanvas, 0);
-            if (xItemsControl.ItemsPanelRoot != null && xItemsControl.ItemsPanelRoot.Children.Contains(XInkCanvas))
-            {
-                xItemsControl.ItemsPanelRoot.Children.Remove(XInkCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Remove(SelectionCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
-            }
+            InkHostCanvas.Children.Add(XInkCanvas);
+            InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
     }

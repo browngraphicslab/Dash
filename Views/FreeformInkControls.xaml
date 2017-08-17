@@ -10,14 +10,14 @@
     d:DesignWidth="440">
 
     <Grid>
-        <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto"
+        <!--<ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Top"
                       Height="63" Padding="0" HorizontalAlignment="Stretch">
             <StackPanel x:Name="InkSettingsPanel" Orientation="Horizontal" HorizontalAlignment="Center"
                         VerticalAlignment="Top">
-                <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top" Height="50" Background="#FFE6E6E6" InitialControls="PensOnly">
-                    <InkToolbarEraserButton IsClearAllVisible="True"></InkToolbarEraserButton>
+                <InkToolbar x:Name="InkToolbar" VerticalAlignment="Top" Height="50" Background="White" InitialControls="PensOnly">
+                    <InkToolbarEraserButton IsClearAllVisible="true"></InkToolbarEraserButton>
                     <InkToolbarCustomToolButton x:Name="SelectButton" IsChecked="False"
                                                 Tapped="SelectButton_OnTapped" 
                                                 ToolTipService.ToolTip="Selection tool" Unchecked="SelectButton_Unchecked" >
@@ -44,6 +44,8 @@
                     <SymbolIcon Symbol="Redo" Foreground="Black"></SymbolIcon>
                 </Button>
             </StackPanel>
-        </ScrollViewer>
+        </ScrollViewer>-->
+        
+
     </Grid>
 </UserControl>

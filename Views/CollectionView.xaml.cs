@@ -102,8 +102,7 @@ namespace Dash
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
         private IOReference _currReference;
-
-        private MenuButton _toggleDrawButton;
+        
 
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -141,16 +140,14 @@ namespace Dash
             if (CurrentView is CollectionFreeformView) return;
             CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
-            _toggleDrawButton.Visibility = Visibility.Visible;
-            if((_toggleDrawButton.Background as SolidColorBrush).Color == Colors.Gray) (CurrentView as CollectionFreeformView).InkControls.ToggleDraw();
         }
+        
 
         private void SetListView()
         {
             if (CurrentView is CollectionListView) return;
             CurrentView = new CollectionListView();
             xContentControl.Content = CurrentView;
-            _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
         private void SetGridView()
@@ -158,7 +155,6 @@ namespace Dash
             if (CurrentView is CollectionGridView) return;
             CurrentView = new CollectionGridView();
             xContentControl.Content = CurrentView;
-            _toggleDrawButton.Visibility = Visibility.Collapsed;
         }
 
         public void MakeSelectionModeMultiple()
@@ -214,21 +210,22 @@ namespace Dash
         {
             ParentDocument.DeleteDocument();
         }
-
-        private void ToggleDraw()
-        {
-            var view = CurrentView as CollectionFreeformView;
-            view.InkControls.ToggleDraw();
-            if (view.InkControls.IsDrawing) _toggleDrawButton.Background = new SolidColorBrush(Colors.Gray);
-            else _toggleDrawButton.Background = (SolidColorBrush) App.Instance.Resources["WindowsBlue"];
-        }
+        
 
         private void MakeMenu()
         {
+            var multipleSelection = new Action(MakeSelectionModeMultiple);
+            var deleteSelection = new Action(DeleteSelection);
+            var singleSelection = new Action(MakeSelectionModeSingle);
+            var noSelection = new Action(MakeSelectionModeNone);
+            var selectAll = new Action(SelectAllItems);
+            var setGrid = new Action(SetGridView);
+            var setList = new Action(SetListView);
+            var setFreeform = new Action(SetFreeformView);
+            var deleteCollection = new Action(DeleteCollection);
+
+
             var menuColor = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color;
-
-            _toggleDrawButton = new MenuButton(Symbol.Edit, "Draw", menuColor, ToggleDraw);
-
             var collectionButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.TouchPointer, "Select", menuColor, MakeSelectionModeMultiple)
@@ -239,8 +236,7 @@ namespace Dash
                 new MenuButton(new List<Symbol> { Symbol.ViewAll, Symbol.List, Symbol.View}, menuColor, new List<Action> { SetGridView, SetListView, SetFreeformView}),
                 new MenuButton(Symbol.Camera, "ScrCap", menuColor, new Action(ScreenCap)),
 
-                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson)),
-                _toggleDrawButton
+                new MenuButton(Symbol.Page, "Json", menuColor, new Action(GetJson))
             };
 
 

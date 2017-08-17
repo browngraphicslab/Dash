@@ -293,13 +293,15 @@ namespace Dash
                         new Point(position.X, position.Y + height)
                     };
                     bool inHull = false;
+                    int containedCount = 0;
                     foreach (var refPoint in points)
                     {
                         if (this.IsPointInHull(refPoint))
                         {
-                            inHull = true;
+                            containedCount++;
                         }
                     }
+                    inHull = containedCount >= 3;
                     if (inHull)
                     {
                         if (_view.xItemsControl.ItemContainerGenerator != null && _view.xItemsControl

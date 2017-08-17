@@ -173,6 +173,7 @@
       <DependentUpon>FilterView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\ICollectionView.cs" />
+    <Compile Include="Util\InkRecognitionHelper.cs" />
     <Compile Include="Views\InkSelectionRect.xaml.cs">
       <DependentUpon>InkSelectionRect.xaml</DependentUpon>
     </Compile>
