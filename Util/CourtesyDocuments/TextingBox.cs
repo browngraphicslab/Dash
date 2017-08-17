@@ -77,8 +77,11 @@ namespace Dash
             return MakeView(docController, context);
         }
 
-        // the text field model controller provides us with the DATA
-        // the Document on this courtesty document provides us with the parameters to display the DATA. X, Y, Width, and Height etc....
+        /// <summary>
+        /// Makes the view 
+        /// </summary>
+        /// <param name="isEditable"> Parameter used to determine if the textingbox will be editable upon double click, or just read-only </param>
+        /// <returns></returns>
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
             // create the textblock

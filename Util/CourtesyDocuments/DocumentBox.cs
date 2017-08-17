@@ -24,6 +24,7 @@ namespace Dash
             Document = new DocumentController(fields, DocumentType);
             //SetLayoutForDocument(Document, Document);
         }
+        
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false)
         {
             // the document field model controller provides us with the DATA

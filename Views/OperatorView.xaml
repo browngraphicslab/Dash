@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DesignHeight="300"
-    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" RightTapped="OnRightTapped" DoubleTapped="OnDoubleTapped">
+    d:DesignWidth="400" DataContextChanged="UserControl_DataContextChanged" RightTapped="OnRightTapped">
 
     <Grid>
         <!-- Makes the blue background shape-->
@@ -22,7 +22,7 @@
             </Grid.ColumnDefinitions>
 
             <!--Inner Content-->
-            <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+            <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalAlignment="Center" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
 
             <!-- Input Operator Handles & Labels-->
             <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"

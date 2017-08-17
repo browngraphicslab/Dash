@@ -103,7 +103,6 @@ namespace Dash
 
         private void updateSource()
         {
-
             // convert listviews to dictionaries
             Dictionary<string, ApiProperty> headers, parameters, authHeaders, authParameters;
             headers = new Dictionary<string, ApiProperty>();
@@ -130,8 +129,7 @@ namespace Dash
                 xApiURLTB.Text = "https://itunes.apple.com/search";
 
             // instantiate new APISource
-            Source = new ApiSource(Document, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret,
-                xAuthControl.Key);
+            Source = new ApiSource(Document, requestType, xApiURLTB, xAuthControl.AuthURL, xAuthControl.Secret, xAuthControl.Key);
             Source.setApiDisplay(SourceDisplay);
 
         }

@@ -43,32 +43,13 @@ namespace Dash {
         // == METHODS ==
         /// <summary>
         /// On click, removes this property from the ListView it is contained in. If
-        /// the node is not parented by a ListView (should never happen), this method 
-        /// fails and sends an error.
+        /// the node is not parented by a ListView (should never happen), this method fails and sends an error.
         /// </summary>
         /// <param name="sender">sending obj (the delete button)</param>
         /// <param name="e">event arg</param>
         private void xDelete_Tapped(object sender, TappedRoutedEventArgs e) {
-            if (this.Parent.GetType() == typeof(ListView)) {
-
-                // fetch containing list view
-                ListView listView = (ListView)XApiCreatorProperty.Parent;
-                int index = listView.Items.IndexOf(XApiCreatorProperty);
-                listView.Items.RemoveAt(index);
-
-                // update rendered source result to reflect the deleted field
-                parent.SourceDisplay.RemoveFromListView(index);
-
-                // propagate changes to the document model
-                ApiDocumentModel.removeParameter(parent.Document,docModelRef,parent.parameterCollectionKey,parent.SourceDisplay);
-
-                
-
-                if (listView.Items.Count == 0)
-                    listView.Visibility = Visibility.Collapsed;
-                else
-                    listView.Visibility = Visibility.Visible;
-            } 
+            var generator = this.GetFirstAncestorOfType<ApiCreatorPropertyGenerator>(); 
+            generator?.ApiController.RemoveParameter((ApiParameter)((DictionaryEntry) DataContext).Value); 
         }
 
         private void XKey_OnTextChanged(object sender, TextChangedEventArgs e)

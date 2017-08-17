@@ -71,6 +71,8 @@ namespace Dash
             {
                 MakeCompoundEditor();
                 XPresenter.Content = _compoundOpEditor;
+                DoubleTapped += OnDoubleTapped;
+                _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true; 
 
                 var compoundFMCont = _operator as CompoundOperatorFieldController;
 
@@ -142,7 +144,6 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
         void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
             var docId = (DataContext as DocumentFieldReference).DocumentId;
@@ -222,9 +223,6 @@ namespace Dash
             Debug.Assert(operatorFieldModelController != null);
             _compoundOpEditor = new CompoundOperatorEditor(documentController, operatorFieldModelController);
         }
-
-
-
         #endregion
 
         private void InputEllipse_Loaded(object sender, RoutedEventArgs e)
