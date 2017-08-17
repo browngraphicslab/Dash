@@ -38,7 +38,7 @@ namespace Dash
             if (fieldModelController is ImageFieldModelController)
                 return ImageBox.MakeView(docController, context, isInterfaceBuilderLayout);
             if (fieldModelController is TextFieldModelController)
-                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout);
+                return TextingBox.MakeView(docController, context, isInterfaceBuilderLayout, true);
             var documentfieldModelController = fieldModelController as DocumentFieldModelController;
             Debug.Assert(documentfieldModelController != null);
 

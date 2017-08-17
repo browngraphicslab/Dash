@@ -13,17 +13,17 @@ namespace Dash
 
         static OperationCreationHelper()
         {
-            AddOperator<DivideOperatorFieldModelController>("divide", "÷");
-            AddOperator<IntersectionOperatorModelController>("intersection", "∩");
-            AddOperator<UnionOperatorFieldModelController>("union", "∪");
-            AddOperator<ZipOperatorFieldController>("zip");
-            AddOperator<ConcatOperator>("concat");
-            AddOperator<DocumentAppendOperatorController>("Document append");
-            AddOperator<ImageOperatorFieldModelController>("uriToImage", "◑");
-            AddOperator<FilterOperatorFieldModelController>("filter", OperatorDocumentModel.CreateFilterDocumentController, "⊇");
-            AddOperator<ApiOperatorController>("api", OperatorDocumentModel.CreateApiDocumentController, "⚡");
-            AddOperator<CollectionMapOperator>("map", OperatorDocumentModel.CreateMapDocumentController, "⇨");
-            AddOperator<CompoundOperatorFieldController>("compound", OperatorDocumentModel.CreateCompoundController, "💰");
+            AddOperator<DivideOperatorFieldModelController>("Divide", "÷");
+            AddOperator<IntersectionOperatorModelController>("Intersection", "∩");
+            AddOperator<UnionOperatorFieldModelController>("Union", "∪");
+            AddOperator<ZipOperatorFieldController>("Zip");
+            AddOperator<ConcatOperator>("Concat");
+            AddOperator<DocumentAppendOperatorController>("Append");
+            AddOperator<ImageOperatorFieldModelController>("UriToImage", "◑");
+            AddOperator<FilterOperatorFieldModelController>("Filter", OperatorDocumentModel.CreateFilterDocumentController, "⊇");
+            AddOperator<ApiOperatorController>("Api", OperatorDocumentModel.CreateApiDocumentController, "⚡");
+            AddOperator<CollectionMapOperator>("Map", OperatorDocumentModel.CreateMapDocumentController, "⇨");
+            AddOperator<CompoundOperatorFieldController>("Compound", OperatorDocumentModel.CreateCompoundController, "💰");
         }
 
         public static void AddOperator<T>(string name) where T : OperatorFieldModelController, new()

@@ -164,8 +164,8 @@ namespace Dash
         static DocumentController CreatePrototypeAssignmentLayout()
         {
             return new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey)).Document;
-
         }
+
         static DocumentController CreatePrototypeWebLayout()
         {
             // set the default layout parameters on prototypes of field layout documents

@@ -87,13 +87,13 @@ namespace Dash
             // create the textblock
             var editableTB = new EditableTextBlock();
             TextBlock tb = isEditable ? editableTB.Block : new TextBlock(); 
-            //var tb = new TextBlock();
 
             SetupBindings(tb, docController, context);
             if (isEditable) {
                 SetupBindings(editableTB.Box, docController, context);
                 CourtesyDocument.SetupBindings(editableTB, docController, context); 
             }
+
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference

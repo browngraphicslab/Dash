@@ -48,7 +48,7 @@ namespace Dash
                             AddDocuments(documents, copiedContext);
 
                             if (cargs == null)
-                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, _collectionFieldModelController.Data);
                             UpdateViewModels(cargs, copiedContext);
                         }
                     });
@@ -139,6 +139,13 @@ namespace Dash
 
         public override void AddDocument(DocumentController doc, Context context)
         {
+            if (doc.DocumentType == DashConstants.DocumentTypeStore.CollectionDocument)
+            {
+                var coll = doc.GetDereferencedField<DocumentCollectionFieldModelController>(CollectionKey, context);
+                if (coll.Data.Contains(doc))
+                    return;
+            }
+
             if (context != null && context.DocContextList.Contains(doc) || doc.DocumentType.Type.Contains("Box"))
             {
                 return;

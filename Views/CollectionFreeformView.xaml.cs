@@ -531,6 +531,19 @@ namespace Dash
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
             //DBTest.ResetCycleDetection();
+            //DBTest.ResetCycleDetection();
+            if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
+            {
+                //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;
+                var pos = e.GetCurrentPoint(this).Position;
+                var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>
+                {
+                    [KeyStore.DataKey] = new ReferenceFieldModelController(_currReference.FieldReference)
+                }, DocumentType.DefaultType);
+                var layout = new DocumentBox(new ReferenceFieldModelController(doc.GetId(), KeyStore.DataKey), pos.X, pos.Y).Document;
+                doc.SetActiveLayout(layout, true, false);
+                ViewModel.AddDocument(doc, null);
+            }
             CancelDrag(e.Pointer);
         }
 
@@ -601,7 +614,6 @@ namespace Dash
             };
 
             ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
-
             DisposeFlyout();
         }
 

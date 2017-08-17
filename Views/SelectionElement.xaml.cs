@@ -39,7 +39,7 @@ namespace Dash
         public bool IsLowestSelected
         {
             get { return _isLowestSelected; }
-            private set
+            protected set
             {
                 if (_isLowestSelected == value) return;
 

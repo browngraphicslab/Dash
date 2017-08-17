@@ -480,7 +480,7 @@ namespace Dash
             if (opCont == null) return true;
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
-            var rawField = (field as ReferenceFieldModelController)?.Dereference(null); 
+            var rawField = field.DereferenceToRoot(null); 
             switch (opCont.Inputs[key])
             {
                 case TypeInfo.Number:
@@ -491,6 +491,8 @@ namespace Dash
                     return rawField is ImageFieldModelController;
                 case TypeInfo.Collection:
                     return rawField is DocumentCollectionFieldModelController;
+                case TypeInfo.Document:
+                    return rawField is DocumentFieldModelController;
                 case TypeInfo.Operator:
                     return rawField is OperatorFieldModelController;
                 default: throw new NotImplementedException(); 
@@ -765,8 +767,6 @@ namespace Dash
                     // bcz: commented this out because it generated exceptions after making a search List of Umpires
                     var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
                     source.Add(view);
-                    view.MaxWidth = 300;
-                    view.MaxHeight = 300;
                 }
                 else if (f.Value is DocumentCollectionFieldModelController)
                 {
@@ -774,8 +774,6 @@ namespace Dash
 
                     var border = new Border
                     {
-                        MaxWidth = 275,
-                        MaxHeight = 500,
                         BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
                         BorderThickness = new Thickness(1),
                         CornerRadius = new CornerRadius(3),
@@ -795,7 +793,7 @@ namespace Dash
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
-                return TextingBox.MakeView(this, context, isInterfaceBuilder);
+                return TextingBox.MakeView(this, context, isInterfaceBuilder, true);
             }
             if (DocumentType == ImageBox.DocumentType)
             {

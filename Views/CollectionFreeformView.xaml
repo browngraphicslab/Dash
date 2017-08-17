@@ -8,15 +8,16 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400"
     Background="Transparent"
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
     RightTapped="CollectionView_OnRightTapped"
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
-    Tapped="OnTapped">
+    Tapped="OnTapped"
+    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+    >
 
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           SizeChanged="XOuterGrid_OnSizeChanged">
@@ -25,7 +26,7 @@
         </Grid.Clip>
 
         <InkCanvas x:Name="XInkCanvas" Width = "60000" Height="60000" Visibility="Collapsed" IsHitTestVisible="False" ></InkCanvas>
-        <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"></Canvas>
+        <Canvas x:Name="SelectionCanvas" Visibility="Collapsed" IsHitTestVisible="False"  ></Canvas>
         
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
