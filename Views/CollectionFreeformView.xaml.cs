@@ -619,7 +619,7 @@ namespace Dash
 
         private void CollectionView_OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
-            if (!InkControls.IsDrawing)
+            if (InkControls == null || InkControls != null && !InkControls.IsDrawing)
             {
                 if (_flyout == null)
                     InitializeFlyout();
