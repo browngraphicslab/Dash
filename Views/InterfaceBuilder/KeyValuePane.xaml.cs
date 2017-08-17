@@ -378,7 +378,7 @@ namespace Dash
                     }
                 };
             }
-            else if (type == TypeInfo.Reference)
+            else if (type == TypeInfo.Collection)
             {
                 _tb.KeyDown += (s, e) =>
                 {
@@ -386,7 +386,21 @@ namespace Dash
                     {
                         DBTest.ResetCycleDetection();
                         var docCont = _selectedKV.Controller.FieldModelController as DocumentCollectionFieldModelController;
-                        docCont.Data = new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text);
+                        docCont.SetDocuments(new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text));
+                        RemoveEditingTextBox();
+                    }
+                };
+            }
+            else if (type == TypeInfo.Reference) 
+            {
+                _tb.KeyDown += (s, e) =>
+                {
+                    if (e.Key == Windows.System.VirtualKey.Enter)
+                    {
+                        DBTest.ResetCycleDetection();
+                        // TODO: this assumes we're referencing a collection of documents -- need to generalize
+                        var docCont = _selectedKV.Controller.FieldModelController as DocumentCollectionFieldModelController;
+                        docCont.SetDocuments(new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text));
                         RemoveEditingTextBox();
                     }
                 };
