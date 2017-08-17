@@ -202,19 +202,21 @@ namespace Dash
             else if (data is DocumentCollectionFieldModelController)
             {
                 converter = new DocumentCollectionToStringConverter();
-                //foreach (var ldoc in docData.Data)
-                //    ldoc.DocumentFieldUpdated += ((sender, ctxt) =>
+                //var collectionDoc = data as DocumentCollectionFieldModelController;
+                //collectionDoc.ContainedDocumentFieldUpdatedEvent += (collection, doc, args) =>
+                //{
+                //    var bndng = new FieldBinding<FieldModelController>()
                 //    {
-                //        sourceBinding = new Binding
-                //        {
-                //            Source = docData,
-                //            Path = new PropertyPath(nameof(docData.Data)),
-                //            Mode = BindingMode.TwoWay,
-                //            Converter = new DocumentCollectionToStringConverter(),
-                //            UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                //        };
-                //        BindProperty(element, sourceBinding, TextBox.TextProperty, TextBlock.TextProperty);
-                //    });
+                //        Document = docController,
+                //        Key = key,
+                //        GetHandler = getHandler,
+                //        SetHandler = setHandler,
+                //        Mode = BindingMode.TwoWay,
+                //        Context = context,
+                //        Converter = converter
+                //    };
+                //    BindProperty(element, bndng, TextBox.TextProperty, TextBlock.TextProperty);
+                //};
             }
             var binding = new FieldBinding<FieldModelController>()
             {

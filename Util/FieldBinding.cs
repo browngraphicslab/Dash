@@ -66,6 +66,10 @@ namespace Dash
                 {
                     element.SetValue(property, EvaluateBinding(binding));
                 };
+            if (element.IsInVisualTree())
+            {
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
@@ -108,6 +112,18 @@ namespace Dash
                 };
 
             long token = -1;
+            if (element.IsInVisualTree())
+            {
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+                var value = EvaluateBinding(binding);
+                if (value != null)
+                {
+                    updateField = false;
+                    element.SetValue(property, value);
+                    updateField = true;
+                }
+                token = element.RegisterPropertyChangedCallback(property, callback);
+            }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
