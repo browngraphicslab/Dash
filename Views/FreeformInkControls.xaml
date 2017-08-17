@@ -10,7 +10,7 @@
     d:DesignWidth="440">
 
     <Grid>
-        <ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto"
+        <!--<ScrollViewer x:Name="ToolbarScroller" HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Disabled"
                       HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalAlignment="Top"
                       Height="63" Padding="0" HorizontalAlignment="Stretch">
@@ -44,7 +44,7 @@
                     <SymbolIcon Symbol="Redo" Foreground="Black"></SymbolIcon>
                 </Button>
             </StackPanel>
-        </ScrollViewer>
+        </ScrollViewer>-->
         
 
     </Grid>

@@ -47,63 +47,60 @@ namespace Dash
             MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
+        public static void ChangeInkColor(Color color, RadialMenu menu = null)
+        {
+            GlobalInkSettings.Color = color;
+            GlobalInkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
+
+        public static void ChoosePen(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.SetAttributes();
+        }
+
+        public static void ChoosePencil(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+            GlobalInkSettings.SetAttributes();
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+            GlobalInkSettings.SetAttributes();
+        }
+
+        public static void SetOpacity(double opacity)
+        {
+            GlobalInkSettings.Opacity = opacity;
+            GlobalInkSettings.SetAttributes();
+        }
+
+        public static void SetSize(double size)
+        {
+            GlobalInkSettings.Size = size;
+            GlobalInkSettings.SetAttributes();
+        }
 
 
-
-        //public static void ChangeInkColor(Color color, RadialMenu menu=null)
-        //{
-        //    GlobalInkSettings.Color = color;
-        //    GlobalInkSettings.SetAttributes();
-        //    if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        //}
-
-        //public static void ChoosePen(object o)
-        //{
-        //    GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-        //    GlobalInkSettings.SetAttributes();
-        //}
-
-        //public static void ChoosePencil(object o)
-        //{
-        //    GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-        //    GlobalInkSettings.SetAttributes();
-        //}
-
-        //public static void ChooseEraser(object o)
-        //{
-        //    GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-        //    GlobalInkSettings.SetAttributes();
-        //}
-
-        //public static void SetOpacity(double opacity)
-        //{
-        //    GlobalInkSettings.Opacity = opacity;
-        //    GlobalInkSettings.SetAttributes();
-        //}
-
-        //public static void SetSize(double size)
-        //{
-        //    GlobalInkSettings.Size = size;
-        //    GlobalInkSettings.SetAttributes();
-        //}
-
-
-        //public static void DisplayBrightnessSlider(RadialMenuView obj)
-        //{
-        //    obj.OpenSlider();
-        //}
+        public static void DisplayBrightnessSlider(RadialMenuView obj)
+        {
+            obj.OpenSlider();
+        }
 
         public static void CloseSliderPanel(RadialMenuView obj)
         {
             obj.CloseSlider();
         }
 
-        //public static void SetBrightness(double brightness, RadialMenu menu)
-        //{
-        //    GlobalInkSettings.BrightnessFactor = brightness;
-        //    GlobalInkSettings.SetAttributes();
-        //    if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        //}
+        public static void SetBrightness(double brightness, RadialMenu menu)
+        {
+            GlobalInkSettings.BrightnessFactor = brightness;
+            GlobalInkSettings.SetAttributes();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
 
 
         public static void OnOperatorAdd(object o, DragEventArgs e)
@@ -139,8 +136,41 @@ namespace Dash
                 OperatorSearchView.AddsToThisCollection.ViewModel.AddDocument(opController, null);
             }
         }
-        
+
+        public static void AddDocument(ICollectionView collection, DragEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+                e.GetPosition(MainPage.Instance));
+
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [KeyStore.ActiveLayoutKey] = new DocumentFieldModelController(new FreeFormDocument(new List<DocumentController>(), where, new Size(100, 100)).Document)
+            };
+
+            collection.ViewModel.AddDocument(new DocumentController(fields, DocumentType.DefaultType), null);
+        }
+
         public static void AddCollection(ICollectionView collection, DragEventArgs e)
+        {
+            var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView,
+                e.GetPosition(MainPage.Instance));
+
+            var fields = new Dictionary<KeyController, FieldModelController>()
+            {
+                [DocumentCollectionFieldModelController.CollectionKey] = new DocumentCollectionFieldModelController(),
+            };
+
+            var documentController = new DocumentController(fields, DocumentType.DefaultType);
+            documentController.SetActiveLayout(
+                new CollectionBox(
+                        new ReferenceFieldModelController(documentController.GetId(),
+                            DocumentCollectionFieldModelController.CollectionKey), where.X, where.Y)
+                    .Document, true, true);
+
+            collection.ViewModel.AddDocument(documentController, null);
+        }
+        
+        public static void AddCollectionTEST(ICollectionView collection, DragEventArgs e)
         {
             //Get transformed position of drop event
             var where = Util.GetCollectionFreeFormPoint(collection as CollectionFreeformView, e.GetPosition(MainPage.Instance));
@@ -204,13 +234,6 @@ namespace Dash
             DBTest.DBDoc.AddChild(docController);
         }
 
-        public static void AddApiCreator(ICollectionView collectionView, DragEventArgs e)
-        {
-            var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
-            var a = new ApiDocumentModel().Document;
-            DisplayDocument(collectionView, a, where);
-        }
-
         public static void AddDocuments(ICollectionView collectionView, DragEventArgs e)
         {
             var where = Util.GetCollectionFreeFormPoint(collectionView as CollectionFreeformView, e.GetPosition(MainPage.Instance));
@@ -265,6 +288,12 @@ namespace Dash
         public static void SetNoInput(object obj)
         {
             GlobalInkSettings.InkInputType = CoreInputDeviceTypes.None;
+        }
+
+
+        public static void ToggleSelectionMode(object o)
+        {
+            GlobalInkSettings.IsSelectionEnabled = true;
         }
     }
 }

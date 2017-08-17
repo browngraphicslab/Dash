@@ -291,7 +291,7 @@ namespace Dash
 
         private void CollectionTest_OnDragStarting(UIElement sender, DragStartingEventArgs e)
         {
-            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollection;
+            Action<ICollectionView, DragEventArgs> dropAction = Actions.AddCollectionTEST;
             e.Data.Properties[RadialMenuView.RadialMenuDropKey] = dropAction;
         }
 
