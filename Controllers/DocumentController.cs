@@ -793,7 +793,7 @@ namespace Dash
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
             if (DocumentType == TextingBox.DocumentType)
             {
-                return TextingBox.MakeView(this, context, isInterfaceBuilder);
+                return TextingBox.MakeView(this, context, isInterfaceBuilder, true);
             }
             if (DocumentType == ImageBox.DocumentType)
             {

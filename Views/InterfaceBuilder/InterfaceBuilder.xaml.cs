@@ -302,25 +302,17 @@ namespace Dash
             data?.RemoveDocument(_selectedContainer.LayoutDocument);
             _selectedContainer.ParentContainer.SetSelectedContainer(null);
         }
-
-        private void xDocumentPane_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
+        
         private void ChromeButton_OnTapped(object sender, TappedRoutedEventArgs e)
         {
-            bool visible;
-            // ReSharper disable once AssignmentInConditionalExpression
-            ButtonsView.Visibility = (visible = ButtonsView.Visibility == Visibility.Collapsed)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            xDeleteButton.Visibility = visible
-                ? Visibility.Visible
-                : Visibility.Collapsed;
-            BreadcrumbListView.Visibility = visible
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            bool visible; 
+            Visibility visibility = (visible = ButtonsView.Visibility == Visibility.Collapsed) ? Visibility.Visible : Visibility.Collapsed;
+            ButtonsView.Visibility = visibility;
+            xDeleteButton.Visibility = visibility;
+            BreadcrumbListView.Visibility = visibility;
+
+            if (visible) Height += 78;
+            else Height -= 78;
         }
     }
 }

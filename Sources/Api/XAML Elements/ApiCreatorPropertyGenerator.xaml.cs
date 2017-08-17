@@ -38,6 +38,12 @@ namespace Dash
         private DocumentController _operatorDocument;
         private ApiOperatorController _operatorController;
 
+        public ApiOperatorController ApiController
+        {
+            get { return _operatorController; }
+            protected set { _operatorController = value; }
+        }
+
         public Dictionary<KeyController, string> Keys = new Dictionary<KeyController, string>();
         public Dictionary<KeyController, string> Values = new Dictionary<KeyController, string>();
 

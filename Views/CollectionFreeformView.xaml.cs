@@ -605,7 +605,7 @@ namespace Dash
         private void MenuItem_Click2(object sender, RoutedEventArgs e)
         {
             var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var transform = menu.TransformToVisual( xItemsControl.ItemsPanelRoot);
             var pointOnCanvas = transform.TransformPoint(new Point());
 
             var fields = new Dictionary<KeyController, FieldModelController>()
@@ -620,7 +620,7 @@ namespace Dash
         private void MenuItem_Click3(object sender, RoutedEventArgs e)
         {
             var menu = sender as MenuFlyoutItem;
-            var transform = menu.TransformToVisual(MainPage.Instance.xCanvas);
+            var transform = menu.TransformToVisual(xItemsControl.ItemsPanelRoot);
             var pointOnCanvas = transform.TransformPoint(new Point());
 
             var fields = new Dictionary<KeyController, FieldModelController>()
@@ -786,9 +786,11 @@ namespace Dash
         {
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
-            if (carrier.StartingCollection != this)
+
+            // if dropping to a collection within the source collection 
+            if (carrier.StartingCollection != this) 
             {
-                // carrier.StartingCollection.Collection_DragLeave(sender, args);
+                carrier.StartingCollection.Collection_DragLeave(sender, args);
                 return;
             }
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
@@ -815,13 +817,6 @@ namespace Dash
         #endregion
 
         #region Ink
-        private Canvas SelectionCanvas = new Canvas();
-        private InkCanvas XInkCanvas = new InkCanvas
-        {
-            Width = 60000,
-            Height = 60000,
-        };
-
         public ManipulationControls ManipulationControls;
 
         public InkFieldModelController InkFieldModelController;
@@ -840,14 +835,13 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            //   /*                                                                                                  // TODO figure out why this bit of code messes up selection in collectionfreeformview 
+                                                                                                              
             if (xItemsControl.ItemsPanelRoot != null)
             {
-                xItemsControl.ItemsPanelRoot.Children.Insert(0, XInkCanvas);
-                xItemsControl.ItemsPanelRoot.Children.Insert(1, SelectionCanvas);
+                XInkCanvas.IsHitTestVisible = true;
+                SelectionCanvas.IsHitTestVisible = true;
             }
-            if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
-            //   */ 
+            //if (xItemsControl.Items != null) xItemsControl.Items.VectorChanged += ItemsOnVectorChanged;
         }
 
         private void ItemsOnVectorChanged(IObservableVector<object> sender, IVectorChangedEventArgs @event)

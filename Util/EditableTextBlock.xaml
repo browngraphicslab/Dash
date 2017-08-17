@@ -8,6 +8,6 @@
     mc:Ignorable="d">
 
     <TextBlock x:Name="xTextBlock" TextWrapping="Wrap" DoubleTapped="xTextBlock_DoubleTapped"></TextBlock>
-    <TextBox x:Name="xTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" 
+    <TextBox x:Name="xTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" AcceptsReturn="True"
              Visibility="Collapsed" BorderThickness="0" Background="Transparent" LostFocus="xTextBox_LostFocus"></TextBox>
 </Grid>
