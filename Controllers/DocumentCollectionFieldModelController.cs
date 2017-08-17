@@ -90,6 +90,8 @@ namespace Dash
 
         public override TypeInfo TypeInfo => TypeInfo.Collection;
 
+        public int Count => _documents.Count;
+
         /// <summary>
         /// Adds a single document to the collection.
         /// </summary>
