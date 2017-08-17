@@ -41,7 +41,7 @@ namespace Dash
 
         public DocumentView()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
 
             DataContextChanged += DocumentView_DataContextChanged;

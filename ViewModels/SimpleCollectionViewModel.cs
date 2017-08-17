@@ -35,7 +35,7 @@ namespace Dash
 
         public override void RemoveDocument(DocumentController document)
         {
-            var vmToRemove = DocumentViewModels.FirstOrDefault(vm => vm.Controller.GetId() == document.GetId());
+            var vmToRemove = DocumentViewModels.FirstOrDefault(vm => vm.DocumentController.GetId() == document.GetId());
             if (vmToRemove != null)
                 DocumentViewModels.Remove(vmToRemove);
         }

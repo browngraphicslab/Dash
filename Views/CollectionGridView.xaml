@@ -26,12 +26,12 @@
                   ShowsScrollingPlaceholders="False">
             <GridView.ItemTemplate>
                 <DataTemplate>
-                    <Grid>
-                        <local:DocumentView x:Name="XBackdrop" Visibility="Collapsed" IsHitTestVisible="False"/>
-                        <Viewbox x:Name="xBorder" Width="250" Height="250">
-                            <local:DocumentView x:Name="xDocumentDisplay" IsHitTestVisible="False"/>
-                        </Viewbox>
-                    </Grid>
+                    <!--<Grid>-->
+                        <!--<local:DocumentView x:Name="XBackdrop" Visibility="Collapsed" IsHitTestVisible="False"/>-->
+                        <!--<Viewbox x:Name="xBorder" Width="250" Height="250">-->
+                            <local:DocumentView x:Name="xDocumentDisplay" Height="300" Width="300" IsHitTestVisible="False"/>
+                        <!--</Viewbox>-->
+                    <!--</Grid>-->
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>

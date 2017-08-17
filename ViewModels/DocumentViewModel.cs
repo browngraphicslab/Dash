@@ -192,6 +192,7 @@ namespace Dash
 
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
+            ++count;
             //Debug.WriteLine($"DVM: {count++}");
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
@@ -417,7 +418,12 @@ namespace Dash
 
         public void Dispose()
         {
-            RemoveListenersFromLayout(DocumentController.GetActiveLayout().Data);
+            --count;
+            var layoutDoc = DocumentController.GetActiveLayout()?.Data;
+            if (layoutDoc != null)
+            {
+                RemoveListenersFromLayout(layoutDoc);
+            } 
             RemoveControllerListeners();
         }
     }

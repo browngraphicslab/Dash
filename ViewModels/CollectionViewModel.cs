@@ -22,11 +22,10 @@ namespace Dash
 
         public CollectionViewModel(FieldModelController collection = null, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
-            DocumentViewModels = new ObservableCollection<DocumentViewModelParameters>();
             if (collection == null) return;
             _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            AddDocumentsCollectionIsCaller(_collectionFieldModelController.GetDocuments(), context);
+            DocumentViewModels = new CollectionViewModelBindingSource(_collectionFieldModelController);
             var copiedContext = new Context(context);
 
             if (collection is ReferenceFieldModelController)
@@ -95,7 +94,7 @@ namespace Dash
             switch (args.CollectionAction)
             {
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
-                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
+                    AddDocuments(args.ChangedDocuments, c);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
                     DocumentViewModels.Clear();
@@ -105,7 +104,7 @@ namespace Dash
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
                     DocumentViewModels.Clear();
-                    AddDocumentsCollectionIsCaller(args.ChangedDocuments, c);
+                    AddDocuments(args.ChangedDocuments, c);
                     break;
             }
         }
@@ -113,19 +112,10 @@ namespace Dash
         private void RemoveDocumentsCollectionIsCaller(List<DocumentController> documents)
         {
             var ids = documents.Select(doc => doc.GetId());
-            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.Controller.GetId())).ToList();
+            var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();
             foreach (var vm in vms)
             {
                 DocumentViewModels.Remove(vm);
-            }
-        }
-
-        private void AddDocumentsCollectionIsCaller(List<DocumentController> documents, Context context)
-        {
-            foreach (var doc in documents)
-            {
-                var viewModel = new DocumentViewModelParameters(doc, IsInterfaceBuilder, context);
-                DocumentViewModels.Add(viewModel);
             }
         }
 
