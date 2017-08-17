@@ -98,13 +98,16 @@ namespace Dash
             {
                 // Add Events
 #pragma warning disable 4014
+                _mutex.WaitOne();
                 RESTClient.Instance.Documents.AddDocument(DocumentModel, model =>
 #pragma warning restore 4014
                 {
                     // Yay!
+                    _mutex.ReleaseMutex();
                 }, exception =>
                 {
                     // Hayyyyy!
+                    _mutex.ReleaseMutex();
                 });
             }
         }
@@ -146,10 +149,10 @@ namespace Dash
                 {
                     //RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
                     //{
-                        // Yay!
+                    // Yay!
                     //}, exception =>
                     //{
-                        // Hayyyyy!
+                    // Hayyyyy!
                     //});
                 }
             }
@@ -272,8 +275,8 @@ namespace Dash
                     if (strings.Count() == 2)
                     {
                         var opModel = lookupOperator(strings[0]);
-                        var args    = strings[1].TrimEnd(')').Split(',');
-                        var refs    = new List<ReferenceFieldModelController>();
+                        var args = strings[1].TrimEnd(')').Split(',');
+                        var refs = new List<ReferenceFieldModelController>();
                         bool useProto = false;
                         foreach (var a in args)
                         {
@@ -305,7 +308,7 @@ namespace Dash
                         foreach (var i in opFieldController.Inputs.ToArray())
                             if (count < refs.Count())
                                 opModel.SetField(i.Key, refs[count++], true);
-                        (useProto ? proto:this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                        (useProto ? proto : this).SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
                     }
                     else
                     {
@@ -318,7 +321,7 @@ namespace Dash
                                 foreach (var e in ((path[0] == "This") ? this : theDoc).EnumFields())
                                     if (e.Key.Name == path[1])
                                     {
-                                        ((path[0] == "This") ? proto:this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
+                                        ((path[0] == "This") ? proto : this).SetField(key, new ReferenceFieldModelController(theDoc.GetId(), e.Key), (path[0] != "This"));
                                         break;
                                     }
                             }
@@ -455,7 +458,7 @@ namespace Dash
             }
         }
 
-        private readonly Object _updateLock = new Object();
+        private readonly Mutex _mutex = new Mutex();
 
         /// <summary>
         ///     Sets the <see cref="FieldModelController" /> associated with the passed in <see cref="KeyController" /> at the first
@@ -487,15 +490,15 @@ namespace Dash
             // TODO either notify the delegates here, or notify the delegates in the FieldsOnCollectionChanged method
             //proto.notifyDelegates(new ReferenceFieldModel(Id, key));
 
-            Monitor.Enter(_updateLock);
+            _mutex.WaitOne();
             RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
             {
                 //Yay!
-                Monitor.Exit(_updateLock);
+                _mutex.ReleaseMutex();
             }, exception =>
             {
-                Monitor.Exit(_updateLock);
                 //Hayyyyy!
+                _mutex.ReleaseMutex();
             });
 
         }
@@ -558,15 +561,15 @@ namespace Dash
 
             if (updateServer)
             {
-                Monitor.Enter(_updateLock);
+                _mutex.WaitOne();
                 RESTClient.Instance.Documents.UpdateDocument(DocumentModel, model =>
                 {
                     //Yay!
-                    Monitor.Exit(_updateLock);
+                    _mutex.ReleaseMutex();
                 }, exception =>
                 {
                     //Hayyyyy!
-                    Monitor.Exit(_updateLock);
+                    _mutex.ReleaseMutex();
                 });
             }
         }
@@ -749,8 +752,8 @@ namespace Dash
 
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(KeyStore.DelegatesKey)  ||
-                    f.Key.Equals(KeyStore.PrototypeKey)  ||
+                if (f.Key.Equals(KeyStore.DelegatesKey) ||
+                    f.Key.Equals(KeyStore.PrototypeKey) ||
                     f.Key.Equals(KeyStore.LayoutListKey) ||
                     f.Key.Equals(KeyStore.ActiveLayoutKey))
                 {
@@ -806,71 +809,71 @@ namespace Dash
             context.AddDocumentContext(this);
 
             //TODO we can probably just wrap the return value in a SelectableContainer here instead of in the MakeView methods.
-            if (DocumentType == TextingBox.DocumentType)
+            if (DocumentType.Equals(TextingBox.DocumentType))
             {
                 return TextingBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == ImageBox.DocumentType)
+            if (DocumentType.Equals(ImageBox.DocumentType))
             {
                 return ImageBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == DocumentBox.DocumentType)
+            if (DocumentType.Equals(DocumentBox.DocumentType))
             {
                 return DocumentBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == StackLayout.DocumentType)
+            if (DocumentType.Equals(StackLayout.DocumentType))
             {
                 return StackLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == WebBox.DocumentType)
+            if (DocumentType.Equals(WebBox.DocumentType))
             {
                 return WebBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == CollectionBox.DocumentType)
+            if (DocumentType.Equals(CollectionBox.DocumentType))
             {
                 return CollectionBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == OperatorBox.DocumentType)
+            if (DocumentType.Equals(OperatorBox.DocumentType))
             {
                 return OperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == DashConstants.TypeStore.FreeFormDocumentLayout)
+            if (DocumentType.Equals(DashConstants.TypeStore.FreeFormDocumentLayout))
             {
                 return FreeFormDocument.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == InkBox.DocumentType)
+            if (DocumentType.Equals(InkBox.DocumentType))
             {
                 return InkBox.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == GridViewLayout.DocumentType)
+            if (DocumentType.Equals(GridViewLayout.DocumentType))
             {
                 return GridViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == ListViewLayout.DocumentType)
+            if (DocumentType.Equals(ListViewLayout.DocumentType))
             {
                 return ListViewLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == RichTextBox.DocumentType)
+            if (DocumentType.Equals(RichTextBox.DocumentType))
             {
                 return RichTextBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == GridLayout.GridPanelDocumentType)
+            if (DocumentType.Equals(GridLayout.GridPanelDocumentType))
             {
                 return GridLayout.MakeView(this, context, dataDocument, isInterfaceBuilder);
             }
-            if (DocumentType == FilterOperatorBox.DocumentType)
+            if (DocumentType.Equals(FilterOperatorBox.DocumentType))
             {
                 return FilterOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == CollectionMapOperatorBox.DocumentType)
+            if (DocumentType.Equals(CollectionMapOperatorBox.DocumentType))
             {
                 return CollectionMapOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == DBSearchOperatorBox.DocumentType)
+            if (DocumentType.Equals(DBSearchOperatorBox.DocumentType))
             {
                 return DBSearchOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
-            if (DocumentType == ApiOperatorBox.DocumentType)
+            if (DocumentType.Equals(ApiOperatorBox.DocumentType))
             {
                 return ApiOperatorBox.MakeView(this, context, isInterfaceBuilder);
             }
@@ -882,7 +885,7 @@ namespace Dash
 
                 if (doc.Data == null)
                 {
-                    return new Rectangle {Fill = new SolidColorBrush(Colors.Red) };
+                    return new Rectangle { Fill = new SolidColorBrush(Colors.Red) };
                 }
 
                 doc.FieldModelUpdated += (sender, args, context1) =>
@@ -890,7 +893,7 @@ namespace Dash
 
                 };
 
-                if (doc.Data.DocumentType == DefaultLayout.DocumentType)
+                if (doc.Data.DocumentType.Equals(DefaultLayout.DocumentType))
                 {
                     if (isInterfaceBuilder)
                     {

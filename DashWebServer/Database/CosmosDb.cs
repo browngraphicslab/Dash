@@ -203,14 +203,6 @@ namespace DashWebServer
 
                 T result = (dynamic) resourceResponse.Resource;
 
-
-                // add the new document to the cache
-                var result2 = AddDocumentToCache(result);
-
-                Debug.Assert(item.Id == result.Id && result.Id == result2.Id);
-                Debug.WriteLine("Add " + result.Id, item.Id, result2.Id);
-
-
                 return result;
             }
             catch (DocumentClientException e)

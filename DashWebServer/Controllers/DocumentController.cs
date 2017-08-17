@@ -102,6 +102,14 @@ namespace DashWebServer.Controllers
             DocumentModel DocModel;
             try
             {
+                if (docModel.Id.Contains("delegate"))
+                {
+                    Debug.WriteLine("delegate post " + docModel.Fields.Count);
+                }
+                if (docModel.Id.Contains("home"))
+                {
+                    Debug.WriteLine("home post " + docModel.Fields.Count);
+                }
                 // add the shape model to the documentRepository
                 DocModel = await _documentRepository.AddItemAsync(docModel);
             }
@@ -123,6 +131,14 @@ namespace DashWebServer.Controllers
             DocumentModel DocModel;
             try
             {
+                if (docModel.Id.Contains("delegate"))
+                {
+                    Debug.WriteLine("delegate put " + docModel.Fields.Count);
+                }
+                if (docModel.Id.Contains("home"))
+                {
+                    Debug.WriteLine("home put " + docModel.Fields.Count);
+                }
                 DocModel = await _documentRepository.UpdateItemAsync(docModel);
             }
             catch (Exception e)

@@ -56,7 +56,7 @@ namespace Dash
                                 (keyController, fieldController) => new {keyController, fieldController})
                             .ToDictionary(anon => anon.keyController, anon => anon.fieldController);
 
-                        var docController = new DocumentController(fieldDict, docDto.DocumentType, docDto.Id);
+                        var docController = new DocumentController(fieldDict, docDto.DocumentType, docDto.Id, false);
                         docControllerList.Add(docController);
                     }
                     UITask.Run(() =>
