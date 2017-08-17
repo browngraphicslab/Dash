@@ -90,7 +90,7 @@ namespace Dash
 
             SetupBindings(tb, docController, context);
             if (isEditable) {
-                SetupBindings(editableTB.Box, docController, context);
+               // SetupBindings(editableTB.Box, docController, context);
                 CourtesyDocument.SetupBindings(editableTB, docController, context); 
             }
 
@@ -140,93 +140,47 @@ namespace Dash
 
         protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
         {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceFieldModelController)
-            {
-                var reference = data as ReferenceFieldModelController;
-                var dataDoc = reference.GetDocumentController(context);
-                //dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                DocumentController.OnDocumentFieldUpdatedHandler handler = delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                {
-                    if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
-                    {
-                        return;
-                    }
-                    BindTextSource(element, sender, args.Context, reference.FieldKey);
-                };
-                element.Loaded += delegate
-                {
-                    dataDoc.AddFieldUpdatedListener(reference.FieldKey, handler);
-                };
-                element.Unloaded += delegate
-                {
-                    dataDoc.RemoveFieldUpdatedListener(reference.FieldKey, handler);
-                };
-            }
             BindTextSource(element, controller, context, KeyStore.DataKey);
         }
 
         protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, KeyController key)
         {
             var data = docController.GetDereferencedField(key, context);
-            if (data == null)
+            if (data != null)
             {
-                return;
+                var binding = new FieldBinding<FieldModelController>()
+                {
+                    Document = docController,
+                    Key = key,
+                    GetHandler = TextGetHandler,
+                    SetHandler = TextSetHandler,
+                    Mode = BindingMode.TwoWay,
+                    Context = context,
+                    Converter = getFieldConverter(data)
+                };
+                BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
             }
-            IValueConverter converter = null;
-            SetHandler<FieldModelController> setHandler = TextSetHandler;
-            GetHandler<FieldModelController> getHandler = TextGetHandler;
-            if (data is TextFieldModelController)
-            {
+        }
 
-            }
-            else if (data is NumberFieldModelController)
+        static IValueConverter getFieldConverter(FieldModelController fieldModelController)
+        {
+            if (fieldModelController is TextFieldModelController)
             {
-                converter = new StringToDoubleConverter(0);
+                return null;
             }
-            else if (data is DocumentFieldModelController)
+            else if (fieldModelController is NumberFieldModelController)
             {
-                converter = new DocumentControllerToStringConverter();
-                var docData = data as DocumentFieldModelController;
-
-                //sourceBinding = new Binding
-                //{
-                //    Source = docData,
-                //    Mode = BindingMode.TwoWay,
-                //    Converter = new DocumentFieldModelToStringConverter(),
-                //    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-                //};
+               return new StringToDoubleConverter(0);
             }
-            else if (data is DocumentCollectionFieldModelController)
+            else if (fieldModelController is DocumentFieldModelController)
             {
-                converter = new DocumentCollectionToStringConverter();
-                //var collectionDoc = data as DocumentCollectionFieldModelController;
-                //collectionDoc.ContainedDocumentFieldUpdatedEvent += (collection, doc, args) =>
-                //{
-                //    var bndng = new FieldBinding<FieldModelController>()
-                //    {
-                //        Document = docController,
-                //        Key = key,
-                //        GetHandler = getHandler,
-                //        SetHandler = setHandler,
-                //        Mode = BindingMode.TwoWay,
-                //        Context = context,
-                //        Converter = converter
-                //    };
-                //    BindProperty(element, bndng, TextBox.TextProperty, TextBlock.TextProperty);
-                //};
+                return new DocumentControllerToStringConverter();
             }
-            var binding = new FieldBinding<FieldModelController>()
+            else if (fieldModelController is DocumentCollectionFieldModelController)
             {
-                Document = docController,
-                Key = key,
-                GetHandler = getHandler,
-                SetHandler = setHandler,
-                Mode = BindingMode.TwoWay,
-                Context = context,
-                Converter = converter
-            };
-            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+                return new DocumentCollectionToStringConverter();
+            }
+            return null;
         }
 
         private static object TextGetHandler(FieldModelController fieldModelController)

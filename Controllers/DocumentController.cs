@@ -415,14 +415,14 @@ namespace Dash
             FieldModelController.FieldModelUpdatedHandler handler =
                 delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context c)
                 {
-                    c = c ?? new Context();
-                    c.AddDocumentContext(this);
-                    if (ShouldExecute(c, reference.FieldKey))
+                    var newContext = new Context(c);
+                    newContext.AddDocumentContext(this);
+                    if (ShouldExecute(newContext, reference.FieldKey))
                     {
-                        Execute(c, true);
+                        newContext = Execute(newContext, true);
                     }
                     OnDocumentFieldUpdated(this,
-                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, c, false), true);
+                        new DocumentFieldUpdatedEventArgs(null, sender, args.Action, reference, args, newContext, false), true);
                 };
             if (oldField != null)
             {
@@ -663,13 +663,14 @@ namespace Dash
             return false;
         }
 
-        public void Execute(Context context, bool update)
+        public Context Execute(Context oldContext, bool update)
         {
-            context = context ?? new Context(this);
+            var context = new Context(oldContext);
+            context.AddDocumentContext(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
             if (opField == null)
             {
-                return;
+                return context;
             }
             try
             {
@@ -700,6 +701,7 @@ namespace Dash
             {
                 Debug.WriteLine("Operator Execution failed: Input not set" + e);
             }
+            return context;
         }
 
 

@@ -7,6 +7,7 @@ using Windows.Storage;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using Windows.UI.Xaml;
+using System.Diagnostics;
 
 namespace Dash
 {
@@ -114,15 +115,7 @@ namespace Dash
             long token = -1;
             if (element.IsInVisualTree())
             {
-                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                var value = EvaluateBinding(binding);
-                if (value != null)
-                {
-                    updateField = false;
-                    element.SetValue(property, value);
-                    updateField = true;
-                }
-                token = element.RegisterPropertyChangedCallback(property, callback);
+                handler(null,null);
             }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
