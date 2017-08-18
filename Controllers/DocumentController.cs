@@ -731,59 +731,65 @@ namespace Dash
         private FrameworkElement makeAllViewUI(Context context)
         {
             var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
-            var source = new ObservableCollection<FrameworkElement>();
-            sp.ItemsSource = source;
+            var source = new List<FrameworkElement>();
 
             var isInterfaceBuilder = false; // TODO make this a parameter
 
+            Action<KeyValuePair<KeyController, FieldModelController>> a =
+                delegate(KeyValuePair<KeyController, FieldModelController> f)
+                {
+                    if (f.Key.Equals(KeyStore.DelegatesKey) ||
+                        f.Key.Equals(KeyStore.PrototypeKey) ||
+                        f.Key.Equals(KeyStore.LayoutListKey) ||
+                        f.Key.Equals(KeyStore.ActiveLayoutKey))
+                    {
+                        return;
+                    }
+
+                    if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
+                    {
+                        var hstack = new StackPanel { Orientation = Orientation.Horizontal };
+                        var label = new TextBlock { Text = f.Key.Name + ": " };
+                        var dBox = new DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+
+                        hstack.Children.Add(label);
+
+                        var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
+
+                        //ele.MaxWidth = 200;
+                        hstack.Children.Add(ele);
+
+                        source.Add(hstack);
+                    }
+                    else if (f.Value is DocumentFieldModelController)
+                    {
+                        var fieldDoc = (f.Value as DocumentFieldModelController).Data;
+                        // bcz: commented this out because it generated exceptions after making a search List of Umpires
+                        var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
+                        source.Add(view);
+                    }
+                    else if (f.Value is DocumentCollectionFieldModelController)
+                    {
+                        var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
+
+                        var border = new Border
+                        {
+                            BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
+                            BorderThickness = new Thickness(1),
+                            CornerRadius = new CornerRadius(3),
+                            Child = colView
+                        };
+                        border.Width = 500;
+                        border.Height = 500;
+                        source.Add(border);
+                    }
+                };
+
             foreach (var f in EnumFields())
             {
-                if (f.Key.Equals(KeyStore.DelegatesKey) ||
-                    f.Key.Equals(KeyStore.PrototypeKey) ||
-                    f.Key.Equals(KeyStore.LayoutListKey) ||
-                    f.Key.Equals(KeyStore.ActiveLayoutKey))
-                {
-                    continue;
-                }
-
-                if (f.Value is ImageFieldModelController || f.Value is TextFieldModelController || f.Value is NumberFieldModelController)
-                {
-                    var hstack = new StackPanel { Orientation = Orientation.Horizontal };
-                    var label = new TextBlock { Text = f.Key.Name + ": " };
-                    var dBox = new DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
-
-                    hstack.Children.Add(label);
-
-                    var ele = dBox.MakeViewUI(context, isInterfaceBuilder);
-
-                    //ele.MaxWidth = 200;
-                    hstack.Children.Add(ele);
-
-                    source.Add(hstack);
-                }
-                else if (f.Value is DocumentFieldModelController)
-                {
-                    var fieldDoc = (f.Value as DocumentFieldModelController).Data;
-                    // bcz: commented this out because it generated exceptions after making a search List of Umpires
-                    var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
-                    source.Add(view);
-                }
-                else if (f.Value is DocumentCollectionFieldModelController)
-                {
-                    var colView = new CollectionView(new CollectionViewModel(new ReferenceFieldModelController(GetId(), f.Key), isInterfaceBuilder, context), CollectionView.CollectionViewType.Grid);
-
-                    var border = new Border
-                    {
-                        BorderBrush = (SolidColorBrush)App.Instance.Resources["SelectedGrey"],
-                        BorderThickness = new Thickness(1),
-                        CornerRadius = new CornerRadius(3),
-                        Child = colView
-                    };
-                    border.Width = 500;
-                    border.Height = 500;
-                    source.Add(border);
-                }
+                a(f);
             }
+            sp.ItemsSource = source;
             return sp;
         }
 

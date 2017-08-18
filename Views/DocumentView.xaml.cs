@@ -38,7 +38,6 @@ namespace Dash
 
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
-        public FrameworkElement DocumentContent => (FrameworkElement) xContentPresenter.Content;
 
         public DocumentView()
         {
@@ -61,6 +60,8 @@ namespace Dash
             DoubleTapped += ExpandContract_DoubleTapped;
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
+
+            SetUpMenu();
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -127,13 +128,11 @@ namespace Dash
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding
             {
-                Source = ViewModel,
                 Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
                 Mode = BindingMode.OneWay
             };
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
             xMenuCanvas.Children.Add(_docMenu);
-            ViewModel.OpenMenu();
         }
 
 
@@ -271,25 +270,17 @@ namespace Dash
         /// <param name="args"></param>
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            // if _vm has already been set return
-            if (ViewModel != null || DataContext == null)
+            if (ViewModel == args.NewValue)
+            {
                 return;
+            }
 
             ViewModel = DataContext as DocumentViewModel;
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
 
-            xContentPresenter.Content = ViewModel.MakeView(null);
-            ViewModel.LayoutChanged += ViewModelOnLayoutChanged;
-            initDocumentOnDataContext();
-            SetUpMenu();
-            ViewModel.CloseMenu();
-        }
-
-        private void ViewModelOnLayoutChanged(DocumentViewModel sender, Context context)
-        {
-            xContentPresenter.Content = sender.MakeView(context);
+            //initDocumentOnDataContext();
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)

@@ -24,6 +24,8 @@ namespace Dash
             var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
 
             fields[IdKey] = new NumberFieldModelController(id);
+            fields[KeyStore.WidthFieldKey] = new NumberFieldModelController(300);
+            fields[KeyStore.HeightFieldKey] = new NumberFieldModelController(300);
 
             if (fieldType == TypeInfo.Text)
             {

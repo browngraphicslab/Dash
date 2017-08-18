@@ -27,7 +27,7 @@ namespace Dash
         private Brush _backgroundBrush;
         private Brush _borderBrush;
         private IconTypeEnum iconType;
-        private Visibility _docMenuVisibility;
+        private Visibility _docMenuVisibility = Visibility.Collapsed;
         private bool _menuOpen = false;
         private bool _isDetailedUserInterfaceVisible = true;
         private bool _isMoveable = true;
@@ -173,16 +173,33 @@ namespace Dash
             set { SetProperty(ref _docMenuVisibility, value); }
         }
 
+        private FrameworkElement _content = null;
+        public FrameworkElement Content
+        {
+            get
+            {
+                if (GenerateView && _content == null)
+                {
+                    _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder);
+                }
+                return _content;
+            }
+        }
+
+        public void UpdateContent()
+        {
+            OnPropertyChanged(nameof(Content));
+        }
+
+        public bool GenerateView { get; set; }
+
         public readonly bool IsInInterfaceBuilder;
 
-        public static int count = 0;
-
-        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null, bool generateView = true) : base(isInInterfaceBuilder)
         {
-            ++count;
-            //Debug.WriteLine($"DVM: {count++}");
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
+            GenerateView = generateView;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
@@ -241,6 +258,7 @@ namespace Dash
 
         private void OnActiveLayoutChanged(Context context)
         {
+            UpdateContent();
             LayoutChanged?.Invoke(this, context);
 
             ListenToHeightField(DocumentController);
@@ -250,11 +268,6 @@ namespace Dash
             {
                 ListenToTransformGroupField(DocumentController);
             }
-        }
-
-        public FrameworkElement MakeView(Context c)
-        {
-            return DocumentController.MakeViewUI(c, IsInInterfaceBuilder);
         }
 
         private void ListenToTransformGroupField(DocumentController docController)
@@ -413,7 +426,6 @@ namespace Dash
 
         public void Dispose()
         {
-            --count;
             var layoutDoc = DocumentController.GetActiveLayout()?.Data;
             if (layoutDoc != null)
             {

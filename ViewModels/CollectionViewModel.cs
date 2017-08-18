@@ -25,7 +25,6 @@ namespace Dash
             if (collection == null) return;
             _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
             AddViewModels(_collectionFieldModelController.Data, context);
 
             var copiedContext = new Context(context);

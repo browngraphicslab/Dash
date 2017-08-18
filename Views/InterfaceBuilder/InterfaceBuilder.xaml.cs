@@ -110,7 +110,7 @@ namespace Dash
 
         private void UpdateRootLayout()
         {
-            var rootSelectableContainer = _editingDocView?.DocumentContent as SelectableContainer;
+            var rootSelectableContainer = _editingDocView?.ViewModel.Content as SelectableContainer;
             Debug.Assert(rootSelectableContainer != null);
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
         }

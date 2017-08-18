@@ -62,7 +62,7 @@ namespace Dash
             return prototypeDocument;
         }
 
-        protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        public new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(element, docController, context);
 

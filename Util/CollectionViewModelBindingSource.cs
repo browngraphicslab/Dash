@@ -128,8 +128,6 @@ namespace Dash
             _endIndex = endIndex;
             _cachedViewModels = newViewModels;
 
-            Debug.WriteLine(DocumentViewModel.count);
-
             foreach (var createdViewModel in createdViewModels)
             {
                 CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Replace, createdViewModel.Value, null, createdViewModel.Key));

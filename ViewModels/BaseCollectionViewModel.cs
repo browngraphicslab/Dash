@@ -31,7 +31,7 @@ namespace Dash
             private set { SetProperty(ref _isInterfaceBuilder, value); } 
         }
 
-        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
+        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; } = new ObservableCollection<DocumentViewModel>();
 
         // used to keep track of groups of the currently selected items in a collection
         public List<DocumentViewModelParameters> SelectionGroup { get; set; }
@@ -263,6 +263,14 @@ namespace Dash
             //Debug.Assert(border != null, "border != null");
             //border.Visibility = Visibility.Collapsed;
             //args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+
+            //if (args.Phase != 0)
+            //{
+            //    throw new Exception("We should be in phase 0 but we are not");
+            //}
+
+            //args.RegisterUpdateCallback(ContainerContentChangingPhaseOne);
+            //args.Handled = true;
         }
 
         private void ContainerContentChangingPhaseOne(ListViewBase sender, ContainerContentChangingEventArgs args)
