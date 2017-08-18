@@ -13,6 +13,8 @@ using DashShared;
 using TextWrapping = DashShared.TextWrapping;
 using System.Collections.Generic;
 using System.Linq;
+using static Dash.DocumentCollectionFieldModelController;
+using static Dash.DocumentController;
 
 namespace Dash
 {
@@ -159,6 +161,31 @@ namespace Dash
                     Converter = getFieldConverter(data)
                 };
                 BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+
+                if (data is DocumentCollectionFieldModelController)
+                {
+                    ContainedDocumentFieldUpdatedHandler hdlr = (collection, doc, subArgs) =>
+                    {
+                        if ((doc.GetDereferencedField(KeyStore.PrimaryKeyKey, subArgs.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == subArgs.Reference.FieldKey.Id).Count() > 0)
+                        {
+                            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+                        }
+                    };
+                    element.Loaded += (sender, args) => (data as DocumentCollectionFieldModelController).ContainedDocumentFieldUpdatedEvent += hdlr;
+                    element.Unloaded += (sender, args) => (data as DocumentCollectionFieldModelController).ContainedDocumentFieldUpdatedEvent -= hdlr;
+                }
+                if (data is DocumentFieldModelController)
+                {
+                    OnDocumentFieldUpdatedHandler hdlr = ((sender, ctxt) =>
+                    {
+                        if (((data as DocumentFieldModelController).Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
+                        {
+                            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+                        }
+                    });
+                    element.Loaded += (sender, args) => (data as DocumentFieldModelController).Data.DocumentFieldUpdated += hdlr;
+                    element.Unloaded += (sender, args) => (data as DocumentFieldModelController).Data.DocumentFieldUpdated -= hdlr;
+                }
             }
         }
 

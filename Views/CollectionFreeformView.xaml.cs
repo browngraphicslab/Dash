@@ -840,18 +840,18 @@ namespace Dash
 
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControl InkControl;
-
-        public InkCanvas XInkCanvas = new InkCanvas()
-        {
-            Width = 60000,
-            Height = 60000
-        };
-
-        public Canvas SelectionCanvas = new Canvas();
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
         public double Zoom => ManipulationControls.ElementScale;
 
         private void MakeInkCanvas()
         {
+            XInkCanvas = new InkCanvas()
+            {
+                Width = 60000,
+                Height = 60000
+            };
+            SelectionCanvas = new Canvas();
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
