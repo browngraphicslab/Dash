@@ -105,7 +105,6 @@ namespace Dash
 
         public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
         {
-            //MainPage.Instance.AddOperator();
             MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 

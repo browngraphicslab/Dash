@@ -49,7 +49,6 @@ namespace Dash
                 _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
                 if (Element2 == null) _bezier.Point3 = pos2;
                 else _bezier.Point3 = Util.PointTransformFromVisual(new Point(0, Element2.ActualHeight/2), Element2, ToElement); 
-                //_bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
             }
             else
             {
@@ -58,7 +57,6 @@ namespace Dash
                 _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
                 if (Element2 == null) _bezier.Point3 = pos2; 
                 else _bezier.Point3 = Util.PointTransformFromVisual(new Point(Element2.ActualWidth, Element2.ActualHeight / 2), Element2, ToElement);
-                //_bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
             }
             return _col;
         }

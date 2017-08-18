@@ -773,7 +773,7 @@ namespace RadialMenuControl.UserControl
             {
                 if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch ||
                     e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
-                    InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
+                    //await InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));                                       // this was messing up drop 
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
                 switch (OriginalRadialMenuButton.Type)
@@ -853,5 +853,6 @@ namespace RadialMenuControl.UserControl
             if (!args.Cancel)
                 VisualStateManager.GoToState(this, "InnerNormal", true);
         }
+       
     }
 }
