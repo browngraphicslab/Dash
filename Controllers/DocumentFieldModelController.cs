@@ -42,11 +42,7 @@ namespace Dash
             }
         }
         public override TypeInfo TypeInfo => TypeInfo.Document;
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
+        
         public override IEnumerable<DocumentController> GetReferences()
         {
             yield return Data;
@@ -56,34 +52,6 @@ namespace Dash
         {
             return new DocumentFieldModelController(Data.GetPrototype() ?? 
                 new DocumentController(new Dictionary<KeyController, FieldModelController>(), new DocumentType(DashShared.Util.GetDeterministicGuid("Default Document"))));
-        }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            // if the the Data field on this Controller changes, then this Binding updates the text.
-            var textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath("Data"),
-                Converter = new DocumentControllerToStringConverter(),
-                Mode = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-
-            // However, the PrimaryKey within the document referenced by the Data field might change, too.  
-            // If it does, we need to forcibly update the Text since the Binding doesn't know that the Doucment has changed
-            OnDocumentFieldUpdatedHandler hdlr = ((sender, ctxt) =>
-            {
-                if ((Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
-                {
-                    textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-                }
-            });
-            textBlock.Loaded   += (sender, args) => Data.DocumentFieldUpdated += hdlr;
-            textBlock.Unloaded += (sender, args) => Data.DocumentFieldUpdated -= hdlr;
-          
-            // textBlock.Text = $"Document of type: {DocumentModelFieldModel.Data.DocumentType}";
         }
 
         public override FieldModelController Copy()

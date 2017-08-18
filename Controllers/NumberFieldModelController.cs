@@ -32,27 +32,11 @@ namespace Dash
         {
             Data = (fieldModel as NumberFieldModelController).Data;
         }
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
-
         public override FieldModelController GetDefaultController()
         {
             return new NumberFieldModelController(0);
         }
-
-        protected void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            var textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(Data)),
-                Mode = BindingMode.OneWay
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-        }
+        
 
         public double Data
         {

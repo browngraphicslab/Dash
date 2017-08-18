@@ -159,46 +159,11 @@ namespace Dash
             SetDocuments((fieldModel as DocumentCollectionFieldModelController)._documents);
         }
 
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            //return GetTableCellViewForCollectionAndLists("📁", BindTextOrSetOnce);
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
-
         public override FieldModelController GetDefaultController()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>());
         }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            // if the the Data field on this Controller changes, then this Binding updates the text.
-            var textBinding = new Binding
-            {
-                Source    = this,
-                Path      = new PropertyPath("Data"),
-                Converter = new DocumentCollectionToStringConverter(),
-                Mode      = BindingMode.TwoWay,
-                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-
-            // if any field on a document in this collection changes, we might have to update
-            // the text because we don't want to assume how DocumentToStringConverter works 
-            // (or we could assume that only the primary keys are used and then filter the events
-            //  to only look at Primary keys)
-            ContainedDocumentFieldUpdatedHandler hdlr = (collection, doc, subArgs) =>
-            {
-                if ((doc.GetDereferencedField(KeyStore.PrimaryKeyKey, subArgs.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == subArgs.Reference.FieldKey.Id).Count() > 0)
-                {
-                    textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-                }
-            };
-
-            textBlock.Loaded   += (sender, args) => ContainedDocumentFieldUpdatedEvent += hdlr;
-            textBlock.Unloaded += (sender, args) => ContainedDocumentFieldUpdatedEvent -= hdlr;
-        }
-
+        
         public override FieldModelController Copy()
         {
             return new DocumentCollectionFieldModelController(new List<DocumentController>(_documents));

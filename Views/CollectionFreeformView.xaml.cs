@@ -66,7 +66,7 @@ namespace Dash
 
 
         public ManipulationControls ManipulationControls;
-        
+
         private float _backgroundOpacity = .7f;
 
         #region Background Translation Variables
@@ -800,7 +800,7 @@ namespace Dash
             if (carrier.StartingCollection == null) return;
 
             // if dropping to a collection within the source collection 
-            if (carrier.StartingCollection != this) 
+            if (carrier.StartingCollection != this)
             {
                 carrier.StartingCollection.Collection_DragLeave(sender, args);
                 return;
@@ -829,11 +829,10 @@ namespace Dash
         #endregion
 
         #region Ink
-        public ManipulationControls ManipulationControls;
 
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControls InkControls;
-        public double Zoom => ManipulationControls.ElementScale;
+        public double Zoom { get { return ManipulationControls.ElementScale; } }
 
         private void MakeInkCanvas()
         {
@@ -847,8 +846,8 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            InkHostCanvas.Children.Add(XInkCanvas);
-            InkHostCanvas.Children.Add(SelectionCanvas);
+            //InkHostCanvas.Children.Add(XInkCanvas);
+            //InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
     }
