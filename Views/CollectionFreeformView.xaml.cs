@@ -833,9 +833,13 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControls InkControls;
         public double Zoom { get { return ManipulationControls.ElementScale; } }
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
 
         private void MakeInkCanvas()
         {
+            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000};
+            SelectionCanvas = new Canvas();
             InkControls = new FreeformInkControls(this, XInkCanvas, SelectionCanvas)
             {
                 HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -846,8 +850,8 @@ namespace Dash
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            //InkHostCanvas.Children.Add(XInkCanvas);
-            //InkHostCanvas.Children.Add(SelectionCanvas);
+            InkHostCanvas.Children.Add(XInkCanvas);
+            InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
     }
