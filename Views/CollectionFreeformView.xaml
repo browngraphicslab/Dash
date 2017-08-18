@@ -51,7 +51,7 @@
                 <DataTemplate>
                     <dash:DocumentView DataContext="{Binding Converter={StaticResource DocViewModelParamToViewModelConverter}}"
                                        RenderTransform="{Binding GroupTransform, Converter={StaticResource TransformGroupDataToGroupTransformConverter}}"
-                                       Loaded="DocumentViewOnLoaded" />
+                                       Loaded="DocumentViewOnLoaded"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
