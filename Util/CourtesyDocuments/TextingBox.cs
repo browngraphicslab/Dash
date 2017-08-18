@@ -69,10 +69,10 @@ namespace Dash
             BindFontWeight(element, docController, context);
             BindFontSize(element, docController, context);
             BindTextAllignment(element, docController, context);
+            BindTextSource(element, docController, context);
             //AddBinding(element, docController, FontWeightKey, context, BindFontWeight);
             //AddBinding(element, docController, FontSizeKey, context, BindFontSize);
             //AddBinding(element, docController, DashConstants.KeyStore.DataKey, context, BindTextSource);
-            SetupTextBinding(element, docController, context);
             //AddBinding(element, docController, TextAlignmentKey, context, BindTextAllignment);
         }
 
@@ -91,11 +91,7 @@ namespace Dash
             // create the textblock
             //var tb = new TextBlock();
             EditableTextBlock tb = new EditableTextBlock();
-
-            SetupBindings(tb.Block, docController, context);
-            SetupBindings(tb.Box, docController, context);
-            tb.Box.AcceptsReturn = true;
-            CourtesyDocument.SetupBindings(tb, docController, context);
+            SetupBindings(tb, docController, context);
 
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
@@ -107,7 +103,7 @@ namespace Dash
                 else if (fmController is NumberFieldModelController)
                     fmController = fmController as NumberFieldModelController;
                 var reference = docController.GetField(KeyStore.DataKey) as ReferenceFieldModelController;
-                BindOperationInteractions(tb.Block, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
+                BindOperationInteractions(tb.xTextBlock, referenceToText.FieldReference.Resolve(context), reference.FieldKey, fmController);
             }
 
             if (isInterfaceBuilderLayout)
@@ -121,56 +117,14 @@ namespace Dash
         }
         #region Bindings
 
-        protected static void BindProperty<T>(FrameworkElement element, FieldBinding<T> binding,
-            DependencyProperty textBoxProperty, DependencyProperty textBlockProperty) where T : FieldModelController
-        {
-            if (element is TextBlock)
-            {
-                element.AddFieldBinding(textBlockProperty, binding);
-            }
-            else if (element is TextBox)
-            {
-                element.AddFieldBinding(textBoxProperty, binding);
-                (element as TextBox).KeyDown += TextingBox_KeyDown;
-            }
-        }
-
         private static void TextingBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             DBTest.ResetCycleDetection();
         }
 
-        protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
+        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context)
         {
-            var data = controller.GetField(KeyStore.DataKey);
-            if (data is ReferenceFieldModelController)
-            {
-                var reference = data as ReferenceFieldModelController;
-                var dataDoc = reference.GetDocumentController(context);
-                //dataDoc.AddFieldUpdatedListener(reference.FieldKey,
-                DocumentController.OnDocumentFieldUpdatedHandler handler = delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
-                {
-                    if (args.Action == DocumentController.FieldUpdatedAction.Update || args.FromDelegate)
-                    {
-                        return;
-                    }
-                    BindTextSource(element, sender, args.Context, reference.FieldKey);
-                };
-                element.Loaded += delegate
-                {
-                    dataDoc.AddFieldUpdatedListener(reference.FieldKey, handler);
-                };
-                element.Unloaded += delegate
-                {
-                    dataDoc.RemoveFieldUpdatedListener(reference.FieldKey, handler);
-                };
-            }
-            BindTextSource(element, controller, context, KeyStore.DataKey);
-        }
-
-        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, KeyController key)
-        {
-            var data = docController.GetDereferencedField(key, context);
+            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data == null)
             {
                 return;
@@ -219,14 +173,14 @@ namespace Dash
             var binding = new FieldBinding<FieldModelController>()
             {
                 Document = docController,
-                Key = key,
+                Key = KeyStore.DataKey,
                 GetHandler = getHandler,
                 SetHandler = setHandler,
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 Converter = converter
             };
-            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+            element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
         }
 
         private static object TextGetHandler(FieldModelController fieldModelController)
@@ -323,7 +277,7 @@ namespace Dash
                     }
                 }
             };
-            BindProperty(element, alignmentBinding, TextBox.TextAlignmentProperty, TextBlock.TextAlignmentProperty);
+            element.AddFieldBinding(EditableTextBlock.TextAlignmentProperty, alignmentBinding);
         }
 
         protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
@@ -345,7 +299,7 @@ namespace Dash
                     }
                 }
             };
-            BindProperty(element, fontWeightBinding, TextBox.FontWeightProperty, TextBlock.FontWeightProperty);
+            element.AddFieldBinding(Control.FontWeightProperty, fontWeightBinding);
         }
 
         protected static void BindFontSize(FrameworkElement element, DocumentController docController, Context context)
@@ -366,7 +320,7 @@ namespace Dash
                     }
                 }
             };
-            BindProperty(element, fontSizeBinding, TextBox.FontSizeProperty, TextBlock.FontSizeProperty);
+            element.AddFieldBinding(Control.FontSizeProperty, fontSizeBinding);
         }
 
         #endregion
