@@ -448,14 +448,15 @@ namespace Dash
         /// <param name="forceMask"></param>
         public bool SetField(KeyController key, FieldModelController field, bool forceMask)
         {
+            // check field type compatibility if operator  
+            if (!IsOperatorTypeCompatible(key, field)) return false;
+            if (!IsTypeCompatible(key, field)) return false;
+
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))
             {
                 return false;
             }
-
-            // check field type compatibility if operator  
-            if (!IsTypeCompatible(key, field)) return false;
 
             SetupNewFieldListeners(key, field, oldField, new Context(this));
 
@@ -469,34 +470,28 @@ namespace Dash
             return true;
         }
 
+        private bool IsTypeCompatible(KeyController key, FieldModelController field)
+        {
+            var cont = GetField(key);
+            if (cont == null) return true; 
+            var rawField = field.DereferenceToRoot(null);
+
+            return cont.TypeInfo == rawField.TypeInfo; 
+        }
+
         /// <summary>
         /// Method that returns whether the input fieldmodelcontroller type is compatible to the key; if the document is not an operator type, return true always 
         /// </summary>
         /// <param name="key">key that field is mapped to</param>
         /// <param name="field">reference field model that references the field to connect</param>
-        private bool IsTypeCompatible(KeyController key, FieldModelController field)
+        private bool IsOperatorTypeCompatible(KeyController key, FieldModelController field)
         {
             var opCont = GetField(OperatorDocumentModel.OperatorKey) as OperatorFieldModelController;
             if (opCont == null) return true;
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
-            var rawField = field.DereferenceToRoot(null); 
-            switch (opCont.Inputs[key])
-            {
-                case TypeInfo.Number:
-                    return rawField is NumberFieldModelController;
-                case TypeInfo.Text:
-                    return rawField is TextFieldModelController;
-                case TypeInfo.Image:
-                    return rawField is ImageFieldModelController;
-                case TypeInfo.Collection:
-                    return rawField is DocumentCollectionFieldModelController;
-                case TypeInfo.Document:
-                    return rawField is DocumentFieldModelController;
-                case TypeInfo.Operator:
-                    return rawField is OperatorFieldModelController;
-                default: throw new NotImplementedException(); 
-            }
+            var rawField = field.DereferenceToRoot(null);
+            return opCont.Inputs[key] == rawField.TypeInfo; 
         }
 
 

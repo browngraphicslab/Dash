@@ -331,7 +331,7 @@ namespace Dash
                 else
                     canLink = inputController.SetField(inputReference.FieldReference.FieldKey, new ReferenceFieldModelController(outputReference.FieldReference), true);
 
-                if (inputController.DocumentType == OperatorDocumentModel.OperatorType && !canLink)
+                if (!canLink)
                 {
                     UndoLine();
                     return;

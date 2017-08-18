@@ -30,6 +30,7 @@ namespace Dash
             this.InitializeComponent();
             DataContextChanged += OnDataContextChanged;
             Unloaded += CollectionListView_Unloaded;
+            xListView.ManipulationDelta += (s, e) => e.Handled = true; 
         }
 
 
