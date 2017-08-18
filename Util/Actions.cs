@@ -103,10 +103,10 @@ namespace Dash
         }
 
 
-        public static void OnOperatorAdd(object o, DragEventArgs e)
+        public static void OnOperatorAdd(ICollectionView collection, DragEventArgs e)
         {
             //MainPage.Instance.AddOperator();
-            MainPage.Instance.AddOperatorsFilter(o, e);
+            MainPage.Instance.AddOperatorsFilter(collection, e);
         }
 
         public static void AddOperator(Func<DocumentController> documentCreationFunc)

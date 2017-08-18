@@ -448,7 +448,7 @@ namespace Dash
         /// <param name="forceMask"></param>
         public bool SetField(KeyController key, FieldModelController field, bool forceMask)
         {
-            // check field type compatibility if operator  
+            // check field type compatibility
             if (!IsOperatorTypeCompatible(key, field)) return false;
             if (!IsTypeCompatible(key, field)) return false;
 
