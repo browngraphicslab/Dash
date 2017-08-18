@@ -417,10 +417,9 @@ namespace Dash
             return del;
         }
 
-        private void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
+        public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            //manipulator.OnManipulatorTranslatedOrScaled -= ManipulatorOnManipulatorTranslatedOrScaled;
-            sender.ManipulationMode = ManipulationModes.None;
+            (sender as DocumentView).OuterGrid.BorderThickness = new Thickness(10);
             var carrier = ItemsCarrier.Instance;
             carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel;
             carrier.Payload = new List<DocumentController>() { this.DocumentController };

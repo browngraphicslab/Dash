@@ -177,7 +177,6 @@ namespace Dash
                 carrier.Source = null;
                 carrier.Destination = null;
             }
-
             SetGlobalHitTestVisiblityOnSelectedItems(false);
         }
 
@@ -220,6 +219,10 @@ namespace Dash
             }
         }
 
+        public void CollectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            
+        }
         #endregion
 
 

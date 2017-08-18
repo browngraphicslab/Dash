@@ -433,6 +433,7 @@ namespace Dash
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
             this.CanDrag = ViewModel.IsLowestSelected;
+            this.DragStarting += ViewModel.DocumentView_DragStarting;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
                 ViewModel?.OpenMenu();
             else
