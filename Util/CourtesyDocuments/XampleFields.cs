@@ -14,12 +14,16 @@ namespace Dash
         public static DocumentType XampleFieldsType =
             new DocumentType("7A4EE83B-785F-4DEE-BCBE-3AE8187C69E6", "Xample 50 Fields");
 
+        public static readonly KeyController IdKey = new KeyController("2A2824BE-30FE-49EA-BF16-F0FCDA7C85D4", "Id");
+
         private static Random r = new Random();
 
-        public XampleFields(int numFields, TypeInfo fieldType)
+        public XampleFields(int numFields, TypeInfo fieldType, int id = 0)
         {
             // create a document with two images
             var fields = DefaultLayoutFields(0, 0, double.NaN, double.NaN, null);
+
+            fields[IdKey] = new NumberFieldModelController(id);
 
             if (fieldType == TypeInfo.Text)
             {
@@ -36,7 +40,8 @@ namespace Dash
                     KeyController key = new KeyController(DashShared.Util.GetDeterministicGuid("Number " + i), "Number " + i);
                     fields[key] = new NumberFieldModelController(r.NextDouble() * 100);
                 }
-            } else throw new ArgumentException();
+            }
+            else throw new ArgumentException();
 
             Document = new DocumentController(fields, XampleFieldsType);
         }

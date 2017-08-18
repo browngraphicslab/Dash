@@ -25,7 +25,9 @@ namespace Dash
             if (collection == null) return;
             _collectionFieldModelController =
                 collection.DereferenceToRoot<DocumentCollectionFieldModelController>(context);
-            DocumentViewModels = new CollectionViewModelBindingSource(_collectionFieldModelController);
+            DocumentViewModels = new ObservableCollection<DocumentViewModel>();
+            AddViewModels(_collectionFieldModelController.Data, context);
+
             var copiedContext = new Context(context);
 
             if (collection is ReferenceFieldModelController)
@@ -56,7 +58,7 @@ namespace Dash
             {
                 collection.FieldModelUpdated += delegate (FieldModelController sender, FieldUpdatedEventArgs args, Context context1)
                 {
-                    UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs, 
+                    UpdateViewModels(args as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs,
                         copiedContext);
                 };
             }
@@ -91,17 +93,16 @@ namespace Dash
 
         private void UpdateViewModels(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs args, Context c)
         {
-            return;
             switch (args.CollectionAction)
             {
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
-                    AddDocuments(args.ChangedDocuments, c);
+                    AddViewModels(args.ChangedDocuments, c);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Clear:
                     DocumentViewModels.Clear();
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Remove:
-                    RemoveDocumentsCollectionIsCaller(args.ChangedDocuments);
+                    RemoveViewModels(args.ChangedDocuments);
                     break;
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Replace:
                     DocumentViewModels.Clear();
@@ -110,7 +111,15 @@ namespace Dash
             }
         }
 
-        private void RemoveDocumentsCollectionIsCaller(List<DocumentController> documents)
+        private void AddViewModels(List<DocumentController> documents, Context c)
+        {
+            foreach (var documentController in documents)
+            {
+                DocumentViewModels.Add(new DocumentViewModel(documentController, IsInInterfaceBuilder, c));
+            }
+        }
+
+        private void RemoveViewModels(List<DocumentController> documents)
         {
             var ids = documents.Select(doc => doc.GetId());
             var vms = DocumentViewModels.Where(vm => ids.Contains(vm.DocumentController.GetId())).ToList();

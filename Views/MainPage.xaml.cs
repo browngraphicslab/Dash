@@ -313,7 +313,7 @@ namespace Dash
                 {
                     Debug.WriteLine($"Generated {i} documents");
                 }
-                docs.Add(new XampleFields(numFields, TypeInfo.Text).Document);
+                docs.Add(new XampleFields(numFields, TypeInfo.Text, i).Document);
             }
 
             var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>

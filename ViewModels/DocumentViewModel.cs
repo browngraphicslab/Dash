@@ -18,9 +18,6 @@ namespace Dash
     public class DocumentViewModel : BaseSelectionElementViewModel, IDisposable
     {
 
-        public delegate void OnContentChangedHandler(DocumentViewModel sender, FrameworkElement content);
-        public event OnContentChangedHandler OnContentChanged;
-
         // == MEMBERS, GETTERS, SETTERS ==
         private ManipulationModes _manipulationMode;
         private double _height;
@@ -34,7 +31,6 @@ namespace Dash
         private bool _menuOpen = false;
         private bool _isDetailedUserInterfaceVisible = true;
         private bool _isMoveable = true;
-        private FrameworkElement _content;
         private WidthAndMenuOpenWrapper _widthBinding;
         public string DebugName = "";
         public bool DoubleTapEnabled = true;
@@ -60,15 +56,6 @@ namespace Dash
 
         public ObservableCollection<DocumentModel> DataBindingSource { get; set; } =
             new ObservableCollection<DocumentModel>();
-
-        public FrameworkElement Content
-        {
-            get { return _content; }
-            set
-            {
-                SetProperty(ref _content, value);
-            }
-        }
 
         public double Width
         {
@@ -248,10 +235,13 @@ namespace Dash
             icon.FieldModelUpdated -= IconFieldModelController_FieldModelUpdatedEvent;
         }
 
+        public delegate void OnLayoutChangedHandler(DocumentViewModel sender, Context c);
+
+        public event OnLayoutChangedHandler LayoutChanged;
+
         private void OnActiveLayoutChanged(Context context)
         {
-            Content = DocumentController.MakeViewUI(context, IsInInterfaceBuilder);
-            OnContentChanged?.Invoke(this, Content);
+            LayoutChanged?.Invoke(this, context);
 
             ListenToHeightField(DocumentController);
             ListenToWidthField(DocumentController);
@@ -260,6 +250,11 @@ namespace Dash
             {
                 ListenToTransformGroupField(DocumentController);
             }
+        }
+
+        public FrameworkElement MakeView(Context c)
+        {
+            return DocumentController.MakeViewUI(c, IsInInterfaceBuilder);
         }
 
         private void ListenToTransformGroupField(DocumentController docController)

@@ -31,7 +31,7 @@ namespace Dash
             private set { SetProperty(ref _isInterfaceBuilder, value); } 
         }
 
-        public CollectionViewModelBindingSource DocumentViewModels { get; set; }
+        public ObservableCollection<DocumentViewModel> DocumentViewModels { get; set; }
 
         // used to keep track of groups of the currently selected items in a collection
         public List<DocumentViewModelParameters> SelectionGroup { get; set; }

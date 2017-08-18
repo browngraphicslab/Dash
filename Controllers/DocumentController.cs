@@ -779,6 +779,8 @@ namespace Dash
                         CornerRadius = new CornerRadius(3),
                         Child = colView
                     };
+                    border.Width = 500;
+                    border.Height = 500;
                     source.Add(border);
                 }
             }

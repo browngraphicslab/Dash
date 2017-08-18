@@ -23,7 +23,7 @@ namespace Dash
 
         public override void AddDocument(DocumentController document, Context context)
         {
-            var docVm = new DocumentViewModelParameters(document, IsInterfaceBuilder);
+            var docVm = new DocumentViewModel(document, IsInterfaceBuilder);
             DocumentViewModels.Add(docVm);
         }
 

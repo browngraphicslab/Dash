@@ -98,19 +98,19 @@ namespace Dash
                 _editingDocView.DragEnter += DocumentViewOnDragOver;
                 _editingDocView.AllowDrop = true;
                 _editingDocView.Drop += DocumentViewOnDrop;
-                _editingDocView.ViewModel.OnContentChanged -= OnActiveLayoutChanged;
-                _editingDocView.ViewModel.OnContentChanged += OnActiveLayoutChanged;
+                _editingDocView.ViewModel.LayoutChanged -= OnActiveLayoutChanged;
+                _editingDocView.ViewModel.LayoutChanged += OnActiveLayoutChanged;
             }
         }
 
-        private void OnActiveLayoutChanged(DocumentViewModel sender, FrameworkElement content)
+        private void OnActiveLayoutChanged(DocumentViewModel sender, Context context)
         {
             UpdateRootLayout();
         }
 
         private void UpdateRootLayout()
         {
-            var rootSelectableContainer = _editingDocView?.ViewModel.Content as SelectableContainer;
+            var rootSelectableContainer = _editingDocView?.DocumentContent as SelectableContainer;
             Debug.Assert(rootSelectableContainer != null);
             rootSelectableContainer.OnSelectionChanged += RootSelectableContainerOnOnSelectionChanged;
         }

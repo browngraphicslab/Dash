@@ -38,6 +38,7 @@ namespace Dash
 
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
+        public FrameworkElement DocumentContent => (FrameworkElement) xContentPresenter.Content;
 
         public DocumentView()
         {
@@ -278,9 +279,17 @@ namespace Dash
             // if new _vm is not correct return
             if (ViewModel == null)
                 return;
+
+            xContentPresenter.Content = ViewModel.MakeView(null);
+            ViewModel.LayoutChanged += ViewModelOnLayoutChanged;
             initDocumentOnDataContext();
             SetUpMenu();
             ViewModel.CloseMenu();
+        }
+
+        private void ViewModelOnLayoutChanged(DocumentViewModel sender, Context context)
+        {
+            xContentPresenter.Content = sender.MakeView(context);
         }
 
         private void OuterGrid_SizeChanged(object sender, SizeChangedEventArgs e)
