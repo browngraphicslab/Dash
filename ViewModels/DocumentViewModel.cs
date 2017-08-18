@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Input;
@@ -413,6 +415,16 @@ namespace Dash
                 true);
             del.SetActiveLayout(delLayout, forceMask: true, addToLayoutList: false);
             return del;
+        }
+
+        private void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
+        {
+            //manipulator.OnManipulatorTranslatedOrScaled -= ManipulatorOnManipulatorTranslatedOrScaled;
+            sender.ManipulationMode = ManipulationModes.None;
+            var carrier = ItemsCarrier.Instance;
+            carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel;
+            carrier.Payload = new List<DocumentController>() { this.DocumentController };
+            args.Data.RequestedOperation = DataPackageOperation.Move;
         }
 
         public void Dispose()

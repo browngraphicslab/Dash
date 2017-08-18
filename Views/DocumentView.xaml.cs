@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Numerics;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Composition;
@@ -58,6 +59,7 @@ namespace Dash
             DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
             DoubleTapped += ExpandContract_DoubleTapped;
+
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
         }
@@ -333,6 +335,7 @@ namespace Dash
             e.Handled = true; // prevent propagating
         }
 
+
         #region Menu
 
         public void DeleteDocument()
@@ -429,7 +432,7 @@ namespace Dash
         protected override void OnLowestActivated(bool isLowestSelected)
         {
             ViewModel.SetLowestSelected(this, isLowestSelected);
-
+            this.CanDrag = ViewModel.IsLowestSelected;
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
                 ViewModel?.OpenMenu();
             else
