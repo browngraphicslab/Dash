@@ -102,7 +102,6 @@ namespace Dash.Views
             {
                 (grid.Children[0] as Shape).StrokeThickness = rectStrokeThickness;
             }
-            //(CenterDragger.Children[0] as Shape).StrokeThickness = 2 * _rectStrokeThickness;
             (Grid.Children[0] as Shape).StrokeThickness = rectStrokeThickness;
         }
 
@@ -154,15 +153,6 @@ namespace Dash.Views
 
         }
 
-        //private void UpdateCenterVisibility()
-        //{
-        //    if (Height < 100 || Width < 100)
-        //    {
-        //        CenterDragger.Visibility = Visibility.Collapsed;
-        //    }
-        //    else CenterDragger.Visibility = Visibility.Visible;
-        //}
-
         private void TransformStrokes(float xScale, float yScale)
         {
             var totalTranslation = new Point(Position().X - _startPosition.X, Position().Y - _startPosition.Y);
@@ -182,10 +172,10 @@ namespace Dash.Views
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            FreeformView.InkControls.UpdateInkFieldModelController();
+            FreeformView.InkControl.UpdateInkFieldModelController();
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
-            FreeformView.InkControls.InkRecognitionHelper.AddAnalyzerData(StrokeContainer.GetStrokes()
+            FreeformView.InkControl.InkRecognitionHelper.AddAnalyzerData(StrokeContainer.GetStrokes()
                 .Where(stroke => stroke.Selected));
         }
 
@@ -194,7 +184,7 @@ namespace Dash.Views
             Grid.Opacity = 0.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(GetPointerCursor(sender as Grid), 0);
             e.Handled = true;
-            FreeformView.InkControls.InkRecognitionHelper.Analyzer.RemoveDataForStrokes(StrokeContainer.GetStrokes()
+            FreeformView.InkControl.InkRecognitionHelper.Analyzer.RemoveDataForStrokes(StrokeContainer.GetStrokes()
                 .Where(stroke => stroke.Selected).Select(stroke => stroke.Id));
         }
 
@@ -230,7 +220,7 @@ namespace Dash.Views
 
         private void Delete()
         {
-            FreeformView.InkControls.InkRecognitionHelper.Analyzer.RemoveDataForStrokes(StrokeContainer.GetStrokes()
+            FreeformView.InkControl.InkRecognitionHelper.Analyzer.RemoveDataForStrokes(StrokeContainer.GetStrokes()
                 .Where(stroke => stroke.Selected).Select(stroke => stroke.Id));
             StrokeContainer.DeleteSelected();
             var canvas = Parent as Canvas;

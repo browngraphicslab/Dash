@@ -735,12 +735,12 @@ namespace Dash
                 if (_isToggleOn)
                 {
                     Select(docView);
-                    //_payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                    AddToPayload(docView);
                 }
                 else
                 {
                     Deselect(docView);
-                    //_payload.Remove(docView);
+                    _payload.Remove(docView);
                 }
             }
         }
@@ -759,7 +759,11 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
-            _payload.Remove(docView);
+        }
+
+        public void AddToPayload(DocumentView docView)
+        {
+            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
         public void Select(DocumentView docView)
@@ -768,7 +772,6 @@ namespace Dash
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
-            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
         private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
@@ -779,12 +782,12 @@ namespace Dash
             if (docView.CanDrag)
             {
                 Deselect(docView);
-                
+                _payload.Remove(docView);
             }
             else
             {
                 Select(docView);
-                
+                AddToPayload(docView);
             }
             e.Handled = true;
         }
@@ -835,7 +838,7 @@ namespace Dash
         #region Ink
 
         public InkFieldModelController InkFieldModelController;
-        public FreeformInkControls InkControls;
+        public FreeformInkControl InkControl;
 
         public InkCanvas XInkCanvas = new InkCanvas()
         {
@@ -848,12 +851,7 @@ namespace Dash
 
         private void MakeInkCanvas()
         {
-            InkControls = new FreeformInkControls(this, XInkCanvas, SelectionCanvas)
-            {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top
-            };
-            xOuterGrid.Children.Add(InkControls);
+            InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);

@@ -21,7 +21,7 @@ namespace Dash
         private static StrokeTypes _strokeType;
         private static CoreInputDeviceTypes _inkInputType;
         private static bool _isSelectionEnabled;
-        private static ObservableCollection<FreeformInkControls> _freeformInkControls = new ObservableCollection<FreeformInkControls>();
+        private static ObservableCollection<FreeformInkControl> _freeformInkControls = new ObservableCollection<FreeformInkControl>();
 
         public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
 
@@ -118,7 +118,7 @@ namespace Dash
             }
         }
 
-        public static ObservableCollection<FreeformInkControls> FreeformInkControls
+        public static ObservableCollection<FreeformInkControl> FreeformInkControls
         {
             get { return _freeformInkControls; }
             set

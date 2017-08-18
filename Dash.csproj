@@ -109,9 +109,6 @@
     <Compile Include="FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
-    <Compile Include="Views\FreeformInkControls.xaml.cs">
-      <DependentUpon>FreeformInkControls.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Util\DocumentViewModelParameters.cs" />
     <Compile Include="Models\OperatorModels\CompoundOperatorFieldModel.cs" />
     <Compile Include="Controllers\Operators\Set\CollectionMapOperator.cs" />
@@ -517,10 +514,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Views\FreeformInkControls.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

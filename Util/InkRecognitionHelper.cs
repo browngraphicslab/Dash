@@ -38,8 +38,8 @@ namespace Dash
                 var result = await Analyzer.AnalyzeAsync();
                 if (result.Status == InkAnalysisStatus.Updated)
                 {
-                    //Dictionary<Rect, Tuple<string, IEnumerable<uint>>> listBoundsDictionary = GetListBoundsDictionary();
-                    //_paragraphBoundsDictionary = GetParagraphBoundsDictionary();
+                    /*TODO use more of the recognition types and the InkAnalysisNode tree instead of finding all lines directly
+                    (use recursion)*/
                     _textBoundsDictionary = GetTextBoundsDictionary();
                     // Find circles and rectangles
                     var shapeRegions = Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
@@ -248,31 +248,9 @@ namespace Dash
             var topLeft = new Point(region.BoundingRect.X, region.BoundingRect.Y);
             var size = new Size(region.BoundingRect.Width, region.BoundingRect.Height);
             var position = Util.PointTransformFromVisual(topLeft, _freeformInkControl.SelectionCanvas, _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
-            var fields = new Dictionary<KeyController, FieldModelController>();
-            var doc = new DocumentController(fields, DocumentType.DefaultType);
-            List<DocumentController> textFields = new List<DocumentController>();
+            var doc = new DocumentController(new Dictionary<KeyController, FieldModelController>(), DocumentType.DefaultType);
+            List<DocumentController> fields = new List<DocumentController>();
             List<Rect> keysToRemove = new List<Rect>();
-            //TODO: need better differentiation between paragraphs and lines before we can to rtf for paragraphs.
-            //List<uint> idsToRemove = new List<uint>();
-            //foreach (var rect in _paragraphBoundsDictionary.Keys)
-            //{
-            //    if (RectContainsRect(region.BoundingRect, rect))
-            //    {
-            //        idsToRemove.AddRange(_paragraphBoundsDictionary[rect].Item2);
-            //        var str = _paragraphBoundsDictionary[rect].Item1;
-            //        var key = TryGetKey(str);
-            //        var text = TryGetText(str);
-            //        var richText = new RichTextFieldModelController(new RichTextFieldModel.RTD(text));
-            //        var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-            //        doc.SetField(key, richText, true);
-            //        var textBox = new RichTextBox(new ReferenceFieldModelController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
-            //        textFields.Add(textBox.Document);
-            //        keysToRemove.Add(rect);
-            //    }
-            //}
-            //DeleteStrokesByID(idsToRemove.ToImmutableHashSet());
-            //foreach (var key in keysToRemove) _paragraphBoundsDictionary.Remove(key);
-            //keysToRemove.Clear();
             foreach (var rect in _textBoundsDictionary.Keys)
             {
                 if (RectContainsRect(region.BoundingRect, rect))
@@ -285,13 +263,31 @@ namespace Dash
                     doc.SetField(key, new TextFieldModelController(text), true);
                     var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
                     (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
-                        rect.Height / 1.2;
-                    textFields.Add(textBox.Document);
+                        rect.Height / 1.5;
+                    fields.Add(textBox.Document);
                     keysToRemove.Add(rect);
                 }
             }
+            //foreach (var child in region.Children)
+            //{
+            //    if (child.Kind == InkAnalysisNodeKind.Line)
+            //    {
+            //        var strokes = child.GetStrokeIds();
+            //        var str = (child as InkAnalysisLine).RecognizedText;
+            //        var rect = child.BoundingRect;
+            //        DeleteStrokesByID(strokes.ToImmutableHashSet());
+            //        var key = TryGetKey(str);
+            //        var text = TryGetText(str);
+            //        var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
+            //        doc.SetField(key, new TextFieldModelController(text), true);
+            //        var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key), relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
+            //        (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
+            //            rect.Height / 1.2;
+            //        fields.Add(textBox.Document);
+            //    }
+            //}
             foreach (var key in keysToRemove) _textBoundsDictionary.Remove(key);
-            var layout = new FreeFormDocument(textFields,
+            var layout = new FreeFormDocument(fields,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
             _freeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);

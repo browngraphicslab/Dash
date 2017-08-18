@@ -162,6 +162,7 @@ namespace Dash
             SetContent();
         }
 
+        //TODO this is now broken?
         private void SetContent()
         {
             if (XLayoutDisplay == null) return;

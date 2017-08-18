@@ -75,9 +75,9 @@ namespace Dash
             GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
             GlobalInkSettings.UpdateInkPresenters();
             UpdateStrokes();
-            AddEventHandlers();
             ClearSelection();
             UpdateInputType();
+            AddEventHandlers();
 
         }
 
@@ -137,7 +137,7 @@ namespace Dash
         private void SetInkInputType(CoreInputDeviceTypes type)
         {
             TargetCanvas.InkPresenter.InputDeviceTypes = type;
-            if (FreeformView.IsSelected) TargetCanvas.InkPresenter.IsInputEnabled = true;
+            TargetCanvas.InkPresenter.IsInputEnabled = FreeformView.IsSelected;
             FreeformView.ManipulationControls.FilterInput = true;
             switch (type)
             {
