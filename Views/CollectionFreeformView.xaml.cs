@@ -678,6 +678,8 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            InkHostCanvas.IsHitTestVisible = isSelected;
+            XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)
@@ -733,12 +735,12 @@ namespace Dash
                 if (_isToggleOn)
                 {
                     Select(docView);
-                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                    //_payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
                 }
                 else
                 {
                     Deselect(docView);
-                    _payload.Remove(docView);
+                    //_payload.Remove(docView);
                 }
             }
         }
@@ -757,14 +759,16 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
+            _payload.Remove(docView);
         }
 
-        private void Select(DocumentView docView)
+        public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
             docView.CanDrag = true;
             docView.ManipulationMode = ManipulationModes.None;
             docView.DragStarting += DocView_OnDragStarting;
+            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
         }
 
         private void DocumentView_Tapped(object sender, TappedRoutedEventArgs e)
@@ -775,12 +779,12 @@ namespace Dash
             if (docView.CanDrag)
             {
                 Deselect(docView);
-                _payload.Remove(docView);
+                
             }
             else
             {
                 Select(docView);
-                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                
             }
             e.Handled = true;
         }
@@ -829,10 +833,17 @@ namespace Dash
         #endregion
 
         #region Ink
-        public ManipulationControls ManipulationControls;
 
         public InkFieldModelController InkFieldModelController;
         public FreeformInkControls InkControls;
+
+        public InkCanvas XInkCanvas = new InkCanvas()
+        {
+            Width = 60000,
+            Height = 60000
+        };
+
+        public Canvas SelectionCanvas = new Canvas();
         public double Zoom => ManipulationControls.ElementScale;
 
         private void MakeInkCanvas()

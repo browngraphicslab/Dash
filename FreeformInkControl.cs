@@ -31,22 +31,13 @@ using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
-    public sealed partial class FreeformInkControls : UserControl
+    public class FreeformInkControl
     {
-        private InkCanvas _inkCanvas;
-        public InkCanvas TargetCanvas
-        {
-            get { return _inkCanvas; }
-            set
-            {
-                _inkCanvas = value;
-                //InkToolbar.TargetInkCanvas = value;
-            }
-        }
+        public InkCanvas TargetCanvas { get; set; }
         public InkFieldModelController InkFieldModelController;
         public CollectionFreeformView FreeformView;
         public Canvas SelectionCanvas;
-         private enum InkSelectionMode
+        private enum InkSelectionMode
         {
             Document, Ink
         }
@@ -55,10 +46,9 @@ namespace Dash
         private Rect _boundingRect;
         private InkSelectionRect _rectangle;
         public LassoSelectHelper LassoHelper;
-        
-        Symbol TouchIcon = (Symbol)0xED5F;
-        public Point PressedPoint = new Point(0,0);
-        public Point DoubleTapPoint = new Point(0,0);
+        public InkRecognitionHelper InkRecognitionHelper { get; }
+        public Point PressedPoint = new Point(0, 0);
+        public Point DoubleTapPoint = new Point(0, 0);
 
         public bool IsPressed
         {
@@ -69,13 +59,12 @@ namespace Dash
             }
         }
 
-        
+
         private bool _isPressed;
         private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _paragraphBoundsDictionary;
 
-        public FreeformInkControls(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
+        public FreeformInkControl(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
         {
-            this.InitializeComponent();
             TargetCanvas = canvas;
             FreeformView = view;
             SelectionCanvas = selectionCanvas;
@@ -89,7 +78,7 @@ namespace Dash
             AddEventHandlers();
             ClearSelection();
             UpdateInputType();
-            
+
         }
 
 
@@ -116,7 +105,7 @@ namespace Dash
 
         public void UpdateSelectionMode()
         {
-            if(GlobalInkSettings.IsSelectionEnabled)
+            if (GlobalInkSettings.IsSelectionEnabled)
             {
 
                 TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction =
@@ -143,8 +132,7 @@ namespace Dash
                 }
             }
         }
-        
-        public InkRecognitionHelper InkRecognitionHelper { get; }
+
 
         private void SetInkInputType(CoreInputDeviceTypes type)
         {
@@ -184,11 +172,11 @@ namespace Dash
             InkRecognitionHelper.AddAnalyzerData(TargetCanvas.InkPresenter.StrokeContainer.GetStrokes());
         }
 
-        
+
 
         public void UpdateInputType()
         {
-              SetInkInputType(GlobalInkSettings.InkInputType);
+            SetInkInputType(GlobalInkSettings.InkInputType);
         }
 
         #endregion
@@ -207,7 +195,7 @@ namespace Dash
                 _boundingRect = Rect.Empty;
             }
         }
-        
+
 
         private void SelectDocs(PointCollection selectionPoints)
         {
@@ -218,10 +206,11 @@ namespace Dash
             }
             SelectionCanvas.Children.Clear();
             FreeformView.DeselectAll();
-            var selectionList =  LassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y-30000))));
+            var selectionList = LassoHelper.GetSelectedDocuments(new List<Point>(selectionPoints.Select(p => new Point(p.X - 30000, p.Y - 30000))));
             foreach (var docView in selectionList)
             {
                 FreeformView.Select(docView);
+                FreeformView.AddToPayload(docView);
             }
         }
 
@@ -387,7 +376,7 @@ namespace Dash
             UpdateInkFieldModelController();
             InkRecognitionHelper.RecognizeInk(false, e.Strokes.Last());
         }
-        
+
 
         private void StrokeInputOnStrokeStarted(InkStrokeInput sender, PointerEventArgs args)
         {
@@ -396,6 +385,6 @@ namespace Dash
 
         #endregion
 
-        
+
     }
 }

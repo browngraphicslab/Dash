@@ -185,6 +185,8 @@ namespace Dash.Views
             FreeformView.InkControls.UpdateInkFieldModelController();
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
+            FreeformView.InkControls.InkRecognitionHelper.AddAnalyzerData(StrokeContainer.GetStrokes()
+                .Where(stroke => stroke.Selected));
         }
 
         private void OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
@@ -192,6 +194,8 @@ namespace Dash.Views
             Grid.Opacity = 0.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(GetPointerCursor(sender as Grid), 0);
             e.Handled = true;
+            FreeformView.InkControls.InkRecognitionHelper.Analyzer.RemoveDataForStrokes(StrokeContainer.GetStrokes()
+                .Where(stroke => stroke.Selected).Select(stroke => stroke.Id));
         }
 
         private CoreCursorType GetPointerCursor(Grid grid)
@@ -226,6 +230,8 @@ namespace Dash.Views
 
         private void Delete()
         {
+            FreeformView.InkControls.InkRecognitionHelper.Analyzer.RemoveDataForStrokes(StrokeContainer.GetStrokes()
+                .Where(stroke => stroke.Selected).Select(stroke => stroke.Id));
             StrokeContainer.DeleteSelected();
             var canvas = Parent as Canvas;
             canvas?.Children.Clear();

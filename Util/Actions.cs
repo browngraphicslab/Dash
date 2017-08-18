@@ -47,60 +47,6 @@ namespace Dash
             MainPage.Instance.DisplayDocument(opModel, where);
             MainPage.Instance.AddGenericFilter(o, e);
         }
-        public static void ChangeInkColor(Color color, RadialMenu menu = null)
-        {
-            GlobalInkSettings.Color = color;
-            GlobalInkSettings.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
-
-        public static void ChoosePen(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.SetAttributes();
-        }
-
-        public static void ChoosePencil(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.SetAttributes();
-        }
-
-        public static void ChooseEraser(object o)
-        {
-            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.SetAttributes();
-        }
-
-        public static void SetOpacity(double opacity)
-        {
-            GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.SetAttributes();
-        }
-
-        public static void SetSize(double size)
-        {
-            GlobalInkSettings.Size = size;
-            GlobalInkSettings.SetAttributes();
-        }
-
-
-        public static void DisplayBrightnessSlider(RadialMenuView obj)
-        {
-            obj.OpenSlider();
-        }
-
-        public static void CloseSliderPanel(RadialMenuView obj)
-        {
-            obj.CloseSlider();
-        }
-
-        public static void SetBrightness(double brightness, RadialMenu menu)
-        {
-            GlobalInkSettings.BrightnessFactor = brightness;
-            GlobalInkSettings.SetAttributes();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
-        }
 
 
         public static void OnOperatorAdd(object o, DragEventArgs e)
@@ -298,6 +244,60 @@ namespace Dash
         public static void ToggleSelectionMode(object o)
         {
             GlobalInkSettings.IsSelectionEnabled = true;
+        }
+
+
+        public static void ChangeInkColor(Color color, RadialMenu menu = null)
+        {
+            GlobalInkSettings.Color = color;
+            GlobalInkSettings.UpdateInkPresenters();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+        }
+
+        public static void ChoosePen(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
+            GlobalInkSettings.UpdateInkPresenters(false);
+        }
+
+        public static void ChoosePencil(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
+            GlobalInkSettings.UpdateInkPresenters(false);
+        }
+
+        public static void ChooseEraser(object o)
+        {
+            GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
+            GlobalInkSettings.UpdateInkPresenters(false);
+        }
+
+        public static void SetOpacity(double opacity)
+        {
+            GlobalInkSettings.Opacity = opacity;
+            GlobalInkSettings.UpdateInkPresenters();
+        }
+
+        public static void SetSize(double size)
+        {
+            GlobalInkSettings.Size = size;
+            GlobalInkSettings.UpdateInkPresenters();
+        }
+        public static void DisplayBrightnessSlider(RadialMenuView obj)
+        {
+            obj.OpenSlider();
+        }
+
+        public static void CloseSliderPanel(RadialMenuView obj)
+        {
+            obj.CloseSlider();
+        }
+
+        public static void SetBrightness(double brightness, RadialMenu menu)
+        {
+            GlobalInkSettings.BrightnessFactor = brightness;
+            GlobalInkSettings.UpdateInkPresenters();
+            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
     }
 }
