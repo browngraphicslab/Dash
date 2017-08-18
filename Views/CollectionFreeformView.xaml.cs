@@ -535,8 +535,6 @@ namespace Dash
 
         private void FreeformGrid_OnPointerReleased(object sender, PointerRoutedEventArgs e)
         {
-            //DBTest.ResetCycleDetection();
-            //DBTest.ResetCycleDetection();
             if (_currReference?.IsOutput == true && _currReference?.Type == TypeInfo.Document)
             {
                 //var doc = _currReference.FieldReference.DereferenceToRoot<DocumentFieldModelController>(null).Data;

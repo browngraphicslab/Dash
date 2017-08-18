@@ -111,7 +111,7 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(tb, docController);
+                var selectableContainer = isEditable ? new SelectableContainer(editableTB, docController) : new SelectableContainer(tb, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }

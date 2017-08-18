@@ -24,6 +24,7 @@ namespace Dash
             Pos2 = Element1.TransformToVisual(ToElement)
                 .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2)); ;
         }
+
         public FrameworkElement Element1 { get; set; }
         public FrameworkElement Element2 { get; set; }
         public FrameworkElement ToElement { get; set; }
@@ -37,26 +38,27 @@ namespace Dash
         private BezierSegment _bezier;
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            var pos1 = Element1.TransformToVisual(ToElement)
-                .TransformPoint(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2));
-
-            var pos2 = Element2?.TransformToVisual(ToElement)
-                           .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
+            var pos1 = Util.PointTransformFromVisual(new Point(Element1.ActualWidth / 2, Element1.ActualHeight / 2), Element1, ToElement);
+            var pos2 = Element2?.TransformToVisual(ToElement).TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
 
             double offset = Math.Abs((pos1.X - pos2.X) / 3);
             if (pos1.X < pos2.X)
             {
-                _figure.StartPoint = new Point(pos1.X + Element1.ActualWidth / 2, pos1.Y);
+                _figure.StartPoint = Util.PointTransformFromVisual(new Point(Element1.ActualWidth, Element1.ActualHeight / 2), Element1, ToElement); 
                 _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
                 _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
-                _bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                if (Element2 == null) _bezier.Point3 = pos2;
+                else _bezier.Point3 = Util.PointTransformFromVisual(new Point(0, Element2.ActualHeight/2), Element2, ToElement); 
+                //_bezier.Point3 = new Point(pos2.X - (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
             }
             else
             {
-                _figure.StartPoint = new Point(pos1.X - Element1.ActualWidth / 2, pos1.Y);
+                _figure.StartPoint = Util.PointTransformFromVisual(new Point(0, Element1.ActualHeight / 2), Element1, ToElement);
                 _bezier.Point1 = new Point(pos1.X - offset, pos1.Y);
                 _bezier.Point2 = new Point(pos2.X + offset, pos2.Y);
-                _bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
+                if (Element2 == null) _bezier.Point3 = pos2; 
+                else _bezier.Point3 = Util.PointTransformFromVisual(new Point(Element2.ActualWidth, Element2.ActualHeight / 2), Element2, ToElement);
+                //_bezier.Point3 = new Point(pos2.X + (Element2?.ActualWidth / 2 ?? 0), pos2.Y);
             }
             return _col;
         }
