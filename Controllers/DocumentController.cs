@@ -752,7 +752,8 @@ namespace Dash
                 {
                     var hstack = new StackPanel { Orientation = Orientation.Horizontal };
                     var label = new TextBlock { Text = f.Key.Name + ": " };
-                    var dBox = new DataBox(new ReferenceFieldModelController(GetId(), f.Key), f.Value is ImageFieldModelController).Document;
+                    var refField = new ReferenceFieldModelController(GetId(), f.Key);
+                    var dBox = f.Value is ImageFieldModelController ? new ImageBox(refField).Document : new TextingBox(refField).Document;
 
                     hstack.Children.Add(label);
 

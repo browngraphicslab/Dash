@@ -190,6 +190,8 @@ namespace Dash
 
         public static int count = 0;
 
+        public Context  Context { get; set; }
+
         public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             //Debug.WriteLine($"DVM: {count++}");
@@ -205,6 +207,7 @@ namespace Dash
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
+            Context = newContext;
         }
 
         private void SetUpSmallIcon()
