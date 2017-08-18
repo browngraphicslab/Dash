@@ -751,6 +751,7 @@ namespace Dash
             foreach (var docView in _documentViews)
             {
                 Deselect(docView);
+                _payload.Remove(docView);
             }
         }
 
