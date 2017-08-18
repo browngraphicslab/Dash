@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -858,6 +859,7 @@ namespace Dash
             Canvas.SetTop(SelectionCanvas, -30000);
             InkHostCanvas.Children.Add(XInkCanvas);
             InkHostCanvas.Children.Add(SelectionCanvas);
+            InkHostCanvas.Visibility = Visibility.Visible;
         }
         #endregion
     }
