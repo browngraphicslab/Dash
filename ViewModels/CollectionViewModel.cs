@@ -44,13 +44,23 @@ namespace Dash
                         else
                         {
                             var documents = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments();
+                            bool newDoc = DocumentViewModels.Count != documents.Count;
+                            if (!newDoc)
+                                foreach (var d in DocumentViewModels.Select((v) => v.Controller))
+                                    if (!documents.Contains(d))
+                                    {
+                                        newDoc = true;
+                                        break;
+                                    }
+                            if (newDoc)
+                            {
+                                DocumentViewModels.Clear();
+                                AddDocuments(documents, copiedContext);
 
-                            DocumentViewModels.Clear();
-                            AddDocuments(documents, copiedContext);
-
-                            if (cargs == null)
-                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
-                            UpdateViewModels(cargs, copiedContext);
+                                if (cargs == null)
+                                    cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                                UpdateViewModels(cargs, copiedContext);
+                            }
                         }
                     });
             }

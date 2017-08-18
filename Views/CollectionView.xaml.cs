@@ -36,7 +36,7 @@ namespace Dash
 
         public enum CollectionViewType
         {
-            Freeform, List, Grid
+            Freeform, List, Grid, Text
         }
 
         private CollectionViewType _viewType;
@@ -75,6 +75,9 @@ namespace Dash
                     break;
                 case CollectionViewType.List:
                     CurrentView = new CollectionListView();
+                    break;
+                case CollectionViewType.Text:
+                    CurrentView = new CollectionTextView();
                     break;
             }
             xContentControl.Content = CurrentView;
@@ -141,7 +144,13 @@ namespace Dash
             CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
         }
-        
+
+        private void SetTextView()
+        {
+            if (CurrentView is CollectionTextView) return;
+            CurrentView = new CollectionTextView();
+            xContentControl.Content = CurrentView;
+        }
 
         private void SetListView()
         {

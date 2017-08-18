@@ -66,7 +66,7 @@ namespace Dash
 
             var collectionViewModel = new CollectionViewModel(data, isInterfaceBuilderLayout, context) {InkFieldModelController = docController.GetField(InkBox.InkDataKey) as InkFieldModelController};
 
-            var view = new CollectionView(collectionViewModel, (docController.GetDereferencedField(CollectionViewKey,context) as TextFieldModelController)?.Data == "Grid" ? CollectionView.CollectionViewType.Grid : CollectionView.CollectionViewType.Freeform);
+            var view = new CollectionView(collectionViewModel, (docController.GetDereferencedField(CollectionViewKey,context) as TextFieldModelController)?.Data == "Text" ? CollectionView.CollectionViewType.Text : CollectionView.CollectionViewType.Freeform);
 
             if (context.DocContextList.FirstOrDefault().DocumentType != MainPage.MainDocumentType)
             {

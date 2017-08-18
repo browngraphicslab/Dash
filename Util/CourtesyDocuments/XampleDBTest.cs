@@ -141,7 +141,7 @@ namespace Dash
 
             //var prototypeUmpAssignmentsLayout = new TextingBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
             var prototypeUmpAssignmentsLayout = new CollectionBox(new ReferenceFieldModelController(PrototypeUmp.GetId(), UmpAssignmentsKey), 0, 0, double.NaN, double.NaN);
-            prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewKey, new TextFieldModelController("Grid"), true);
+            prototypeUmpAssignmentsLayout.Document.SetField(CollectionBox.CollectionViewKey, new TextFieldModelController("Text"), true);
             var prototypeLayout = new StackLayout(new[] { prototypeUmpLayout.Document, prototypeUmpAssignmentsLayout.Document });
             prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(200), true);
             prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(200), true);
@@ -163,11 +163,19 @@ namespace Dash
         }
         static DocumentController CreatePrototypeGameLayout()
         {
-            return new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey)).Document;
+            var prototypeLayout = new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeGame.GetId(), KeyStore.ThisKey));
+            prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
+            prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
+
+            return prototypeLayout.Document;
         }
         static DocumentController CreatePrototypeAssignmentLayout()
         {
-            return new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey)).Document;
+            var prototypeLayout = new KeyValueDocumentBox(new ReferenceFieldModelController(PrototypeAssign.GetId(), KeyStore.ThisKey));
+            prototypeLayout.Document.SetField(KeyStore.WidthFieldKey, new NumberFieldModelController(300), true);
+            prototypeLayout.Document.SetField(KeyStore.HeightFieldKey, new NumberFieldModelController(100), true);
+
+            return prototypeLayout.Document;
         }
 
         static DocumentController CreatePrototypeWebLayout()
