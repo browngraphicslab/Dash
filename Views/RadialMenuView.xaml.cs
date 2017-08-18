@@ -184,6 +184,7 @@ namespace Dash
         /// </summary>
         public void CloseSlider()
         {
+            _floatingMenu.ManipulateControlPosition(_sliderPanel.ActualWidth, 0);
             _sliderPanel.Visibility = Visibility.Collapsed;
         }
 
@@ -196,6 +197,7 @@ namespace Dash
         public void OpenSlider()
         {
             _sliderPanel.Visibility = Visibility.Visible;
+            _floatingMenu.ManipulateControlPosition(-_sliderPanel.ActualWidth, 0);
             _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
@@ -239,8 +241,6 @@ namespace Dash
             _sliderPanel.Children.Add(_sliderHeader);
             _sliderPanel.Children.Add(_slider);
             _sliderPanel.Children.Add(blackButton);
-
-
         }
 
         /// <summary>

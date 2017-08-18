@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 // The User Control item template is documented at http://go.microsoft.com/fwlink/?LinkId=234236
 
@@ -66,7 +67,7 @@ namespace Dash
 
 
         public ManipulationControls ManipulationControls;
-
+        
         private float _backgroundOpacity = .7f;
 
         #region Background Translation Variables
@@ -678,6 +679,8 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+            InkHostCanvas.IsHitTestVisible = isSelected;
+            XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)
@@ -733,7 +736,7 @@ namespace Dash
                 if (_isToggleOn)
                 {
                     Select(docView);
-                    _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                    AddToPayload(docView);
                 }
                 else
                 {
@@ -748,6 +751,7 @@ namespace Dash
             foreach (var docView in _documentViews)
             {
                 Deselect(docView);
+                _payload.Remove(docView);
             }
         }
 
@@ -759,7 +763,12 @@ namespace Dash
             docView.DragStarting -= DocView_OnDragStarting;
         }
 
-        private void Select(DocumentView docView)
+        public void AddToPayload(DocumentView docView)
+        {
+            _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+        }
+
+        public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);
             docView.CanDrag = true;
@@ -780,7 +789,7 @@ namespace Dash
             else
             {
                 Select(docView);
-                _payload.Add(docView, (docView.DataContext as DocumentViewModel).DocumentController);
+                AddToPayload(docView);
             }
             e.Handled = true;
         }
@@ -800,7 +809,7 @@ namespace Dash
             if (carrier.StartingCollection == null) return;
 
             // if dropping to a collection within the source collection 
-            if (carrier.StartingCollection != this)
+            if (carrier.StartingCollection != this) 
             {
                 carrier.StartingCollection.Collection_DragLeave(sender, args);
                 return;
@@ -831,23 +840,27 @@ namespace Dash
         #region Ink
 
         public InkFieldModelController InkFieldModelController;
-        public FreeformInkControls InkControls;
-        public double Zoom { get { return ManipulationControls.ElementScale; } }
+        public FreeformInkControl InkControl;
+        public InkCanvas XInkCanvas;
+        public Canvas SelectionCanvas;
+        public double Zoom => ManipulationControls.ElementScale;
 
         private void MakeInkCanvas()
         {
-            InkControls = new FreeformInkControls(this, XInkCanvas, SelectionCanvas)
+            XInkCanvas = new InkCanvas()
             {
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                VerticalAlignment = VerticalAlignment.Top
+                Width = 60000,
+                Height = 60000
             };
-            xOuterGrid.Children.Add(InkControls);
+            SelectionCanvas = new Canvas();
+            InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
             Canvas.SetTop(XInkCanvas, -30000);
             Canvas.SetLeft(SelectionCanvas, -30000);
             Canvas.SetTop(SelectionCanvas, -30000);
-            //InkHostCanvas.Children.Add(XInkCanvas);
-            //InkHostCanvas.Children.Add(SelectionCanvas);
+            InkHostCanvas.Children.Add(XInkCanvas);
+            InkHostCanvas.Children.Add(SelectionCanvas);
+            InkHostCanvas.Visibility = Visibility.Visible;
         }
         #endregion
     }
