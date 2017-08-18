@@ -91,6 +91,7 @@ namespace Dash
 
         private void UpdateViewModels(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs args, Context c)
         {
+            return;
             switch (args.CollectionAction)
             {
                 case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:

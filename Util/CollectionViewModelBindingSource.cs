@@ -32,6 +32,11 @@ namespace Dash
         {
             var colArgs = (DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs)args;
             CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            //var dvms = new List<DocumentViewModel>();
+            //foreach (var colArgsChangedDocument in colArgs.ChangedDocuments)
+            //{
+            //    dvms.Add(null);
+            //}
             //switch (colArgs.CollectionAction)
             //{
             //    case DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add:
