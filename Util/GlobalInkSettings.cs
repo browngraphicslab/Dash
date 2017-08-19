@@ -118,6 +118,8 @@ namespace Dash
             }
         }
 
+        public static bool IsRecognitionEnabled { get; set; }
+
         public static ObservableCollection<FreeformInkControl> FreeformInkControls
         {
             get { return _freeformInkControls; }

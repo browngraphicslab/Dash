@@ -678,8 +678,11 @@ namespace Dash
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
-            InkHostCanvas.IsHitTestVisible = isSelected;
-            XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+            if (InkFieldModelController != null)
+            {
+                InkHostCanvas.IsHitTestVisible = isSelected;
+                XInkCanvas.InkPresenter.IsInputEnabled = isSelected;
+            }
         }
 
         protected override void OnLowestActivated(bool isLowestSelected)

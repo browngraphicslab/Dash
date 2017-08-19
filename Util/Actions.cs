@@ -299,5 +299,10 @@ namespace Dash
         {
             GlobalInkSettings.IsSelectionEnabled = true;
         }
+
+        public static void ToggleInkRecognition(object o)
+        {
+            GlobalInkSettings.IsRecognitionEnabled = !GlobalInkSettings.IsRecognitionEnabled;
+        }
     }
 }

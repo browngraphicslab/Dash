@@ -252,7 +252,7 @@ namespace Dash
         private void TargetCanvasOnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
         {
             DoubleTapPoint = e.GetPosition(SelectionCanvas);
-            InkRecognitionHelper.RecognizeInk(true);
+            if(GlobalInkSettings.IsRecognitionEnabled) InkRecognitionHelper.RecognizeInk(true);
         }
 
         private void TargetCanvasOnPointerPressed(object sender, PointerRoutedEventArgs e)
@@ -374,7 +374,7 @@ namespace Dash
         {
             InkRecognitionHelper.Analyzer.AddDataForStrokes(e.Strokes);
             UpdateInkFieldModelController();
-            InkRecognitionHelper.RecognizeInk(false, e.Strokes.Last());
+            if (GlobalInkSettings.IsRecognitionEnabled) InkRecognitionHelper.RecognizeInk(false, e.Strokes.Last());
         }
 
 
