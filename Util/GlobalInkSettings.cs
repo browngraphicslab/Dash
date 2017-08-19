@@ -21,7 +21,7 @@ namespace Dash
         private static StrokeTypes _strokeType;
         private static CoreInputDeviceTypes _inkInputType;
         private static bool _isSelectionEnabled;
-        private static ObservableCollection<FreeformInkControls> _freeformInkControls = new ObservableCollection<FreeformInkControls>();
+        private static ObservableCollection<FreeformInkControl> _freeformInkControls = new ObservableCollection<FreeformInkControl>();
 
         public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
 
@@ -50,7 +50,10 @@ namespace Dash
                 {
                     inkPresenter.InputDeviceTypes = value;
                 }
-                InkInputChanged?.Invoke(value);
+                foreach (var ctrls in FreeformInkControls)
+                {
+                    ctrls.UpdateInputType();
+                }
             }
         }
 
@@ -60,10 +63,7 @@ namespace Dash
             set
             {
                 _isSelectionEnabled = value;
-                foreach (var cntrls in FreeformInkControls)
-                {
-                    cntrls.UpdateSelectionMode();
-                }
+                UpdateInkPresenters();
             }
         }
 
@@ -118,7 +118,7 @@ namespace Dash
             }
         }
 
-        public static ObservableCollection<FreeformInkControls> FreeformInkControls
+        public static ObservableCollection<FreeformInkControl> FreeformInkControls
         {
             get { return _freeformInkControls; }
             set
@@ -151,9 +151,17 @@ namespace Dash
             return Color.FromArgb(Color.A, (byte)red, (byte)green, (byte)blue);
         }
 
-        public static void SetAttributes()
+        public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
         {
-            IsSelectionEnabled = false;
+            if (isSelectionEnabled != null) IsSelectionEnabled = (bool)isSelectionEnabled;
+            foreach (var cntrls in FreeformInkControls)
+            {
+                cntrls.UpdateSelectionMode();
+            }
+            if (IsSelectionEnabled)
+            {
+                return;
+            }
             if (StrokeType == StrokeTypes.Eraser)
             {
                 foreach (var presenter in Presenters)

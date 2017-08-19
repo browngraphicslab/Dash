@@ -50,38 +50,38 @@ namespace Dash
         public static void ChangeInkColor(Color color, RadialMenu menu = null)
         {
             GlobalInkSettings.Color = color;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
             if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
         public static void ChoosePen(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pen;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void ChoosePencil(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Pencil;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void ChooseEraser(object o)
         {
             GlobalInkSettings.StrokeType = GlobalInkSettings.StrokeTypes.Eraser;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters(false);
         }
 
         public static void SetOpacity(double opacity)
         {
             GlobalInkSettings.Opacity = opacity;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
         }
 
         public static void SetSize(double size)
         {
             GlobalInkSettings.Size = size;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
         }
 
 
@@ -98,7 +98,7 @@ namespace Dash
         public static void SetBrightness(double brightness, RadialMenu menu)
         {
             GlobalInkSettings.BrightnessFactor = brightness;
-            GlobalInkSettings.SetAttributes();
+            GlobalInkSettings.UpdateInkPresenters();
             if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 

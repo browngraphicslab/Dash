@@ -182,7 +182,7 @@ namespace Dash.Views
 
         private void OnManipulationCompleted(object sender, ManipulationCompletedRoutedEventArgs e)
         {
-            FreeformView.InkControls.UpdateInkFieldModelController();
+            FreeformView.InkControl.UpdateInkFieldModelController();
             Grid.Opacity = 1.0;
             Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
         }
