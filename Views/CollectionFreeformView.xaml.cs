@@ -315,7 +315,7 @@ namespace Dash
             }
 
             // undo line if connecting the same fields 
-            if (inputReference.FieldReference == outputReference.FieldReference || _currReference.FieldReference == null)
+            if (inputReference.FieldReference.Equals(outputReference.FieldReference) || _currReference.FieldReference == null)
             {
                 UndoLine();
                 return;
@@ -763,8 +763,10 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
+            
         }
 
+        //TODO how to implement deletion or add these docs to the SelectionGroup in CollectionView?
         public void Select(DocumentView docView)
         {
             docView.OuterGrid.Background = new SolidColorBrush(Colors.LimeGreen);

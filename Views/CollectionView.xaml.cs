@@ -105,7 +105,6 @@ namespace Dash
         /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
         /// </summary>
         private IOReference _currReference;
-        
 
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
@@ -116,7 +115,7 @@ namespace Dash
         {
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            Ellipse el = sender as Ellipse;
+            Ellipse el = ConnectionEllipse;
             KeyController outputKey = ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), true, TypeInfo.Collection, e, el, ParentDocument);
             CollectionView view = ParentCollection;
@@ -128,7 +127,7 @@ namespace Dash
         {
             if (ParentCollection == null) return;
             string docId = (ParentDocument.DataContext as DocumentViewModel)?.DocumentController.GetId();
-            Ellipse el = sender as Ellipse;
+            Ellipse el = ConnectionEllipse;
             KeyController outputKey = ViewModel.CollectionKey;
             IOReference ioRef = new IOReference(null, null, new DocumentFieldReference(docId, outputKey), false, TypeInfo.Collection, e, el, ParentDocument);
             CollectionView view = ParentCollection;
