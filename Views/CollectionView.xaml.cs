@@ -41,6 +41,8 @@ namespace Dash
 
         private CollectionViewType _viewType;
 
+        private CollectionFreeformView _freeformView; 
+
         public CollectionView(CollectionViewModel vm, CollectionViewType viewType = CollectionViewType.Freeform)
         {
             InitializeComponent();
@@ -49,6 +51,8 @@ namespace Dash
             ViewModel.OnLowestSelectionSet += OnLowestSelectionSet;
             Loaded += CollectionView_Loaded;
             Unloaded += CollectionView_Unloaded;
+
+            _freeformView = new CollectionFreeformView { InkFieldModelController = ViewModel.InkFieldModelController };
         }
 
         #region Load And Unload Initialization and Cleanup
@@ -68,7 +72,7 @@ namespace Dash
             switch (_viewType)
             {
                 case CollectionViewType.Freeform:
-                    CurrentView = new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
+                    CurrentView = _freeformView; // new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
                     break;
                 case CollectionViewType.Grid:
                     CurrentView = new CollectionGridView();
@@ -93,19 +97,6 @@ namespace Dash
         #endregion
 
         #region Operator connection stuff
-
-        /// <summary>
-        /// Line to create and display connection lines between OperationView fields and Document fields 
-        /// </summary>
-        private Path _connectionLine;
-
-        private MultiBinding<PathFigureCollection> _lineBinding;
-
-        /// <summary>
-        /// IOReference (containing reference to fields) being referred to when creating the visual connection between fields 
-        /// </summary>
-        private IOReference _currReference;
-
         private void ConnectionEllipse_OnManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
         {
             e.Complete();
@@ -140,7 +131,7 @@ namespace Dash
         private void SetFreeformView()
         {
             if (CurrentView is CollectionFreeformView) return;
-            CurrentView = new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
+            CurrentView = _freeformView; // new CollectionFreeformView() {InkFieldModelController = ViewModel.InkFieldModelController};
             xContentControl.Content = CurrentView;
         }
 

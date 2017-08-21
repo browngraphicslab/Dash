@@ -31,15 +31,6 @@ namespace Dash
             get { return (string)GetValue(TextDependency); }
             set { SetValue(TextDependency, value); }
         }
-
-        public static readonly DependencyProperty ColorDependency =
-            DependencyProperty.Register("Foreground", typeof(SolidColorBrush), typeof(EditableTextBlock), new PropertyMetadata(false));
-
-        public SolidColorBrush Foreground
-        {
-            get { return (SolidColorBrush)GetValue(ColorDependency); }
-            set { SetValue(ColorDependency, value); }
-        }
 #endregion
 
         public EditableTextBlock()
@@ -59,15 +50,6 @@ namespace Dash
             };
             Block.SetBinding(TextBlock.TextProperty, textBinding);
             Box.SetBinding(TextBox.TextProperty, textBinding);
-
-            //var colorBinding = new Binding
-            //{
-            //    Source = this,
-            //    Path = new PropertyPath(nameof(Foreground)),
-            //    Mode = BindingMode.TwoWay
-            //};
-            //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
-            //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
