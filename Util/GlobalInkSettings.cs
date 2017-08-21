@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
@@ -13,19 +8,9 @@ namespace Dash
 {
     public static class GlobalInkSettings
     {
-        private static ObservableCollection<InkPresenter> _presenters = new ObservableCollection<InkPresenter>();
-        private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
-        private static double _opacity = 1;
-        private static double _size = 3;
-        private static Color _color = Colors.DarkGray;
-        private static StrokeTypes _strokeType;
-        private static CoreInputDeviceTypes _inkInputType;
-        private static bool _isSelectionEnabled;
-        private static ObservableCollection<FreeformInkControl> _freeformInkControls = new ObservableCollection<FreeformInkControl>();
+        public delegate void BooleanToggledEventHandler(bool newValue);
 
         public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
-
-        public static event InkInputChangedEventHandler InkInputChanged;
 
         public enum StrokeTypes
         {
@@ -34,32 +19,29 @@ namespace Dash
             Eraser
         }
 
-        public static StrokeTypes StrokeType
-        {
-            get { return _strokeType; }
-            set { _strokeType = value; }
-        }
+        private static InkDrawingAttributes _attributes = new InkDrawingAttributes();
+        private static CoreInputDeviceTypes _inkInputType;
+        private static bool _isSelectionEnabled;
+        private static bool _isRecognitionEnabled;
+
+        public static StrokeTypes StrokeType { get; set; }
 
         public static CoreInputDeviceTypes InkInputType
         {
-            get { return _inkInputType; }
+            get => _inkInputType;
             set
             {
                 _inkInputType = value;
                 foreach (var inkPresenter in Presenters)
-                {
                     inkPresenter.InputDeviceTypes = value;
-                }
                 foreach (var ctrls in FreeformInkControls)
-                {
                     ctrls.UpdateInputType();
-                }
             }
         }
 
         public static bool IsSelectionEnabled
         {
-            get { return _isSelectionEnabled; }
+            get => _isSelectionEnabled;
             set
             {
                 _isSelectionEnabled = value;
@@ -69,72 +51,49 @@ namespace Dash
 
         public static double BrightnessFactor { get; set; }
 
-        public static Color Color
-        {
-            get { return _color; }
-            set
-            {
-                _color = value;
-            }
-        }
+        public static Color Color { get; set; } = Colors.DarkGray;
 
-        public static double Opacity
-        {
-            get { return _opacity; }
-            set
-            {
-                _opacity = value;
-            }
-        }
+        public static double Opacity { get; set; } = 1;
 
-        public static double Size
-        {
-            get { return _size; }
-            set
-            {
-                _size = value;
-            }
-        }
+        public static double Size { get; set; } = 3;
 
         public static InkDrawingAttributes Attributes
         {
-            get { return _attributes; }
+            get => _attributes;
             set
             {
                 _attributes = value;
                 foreach (var presenter in Presenters)
-                {
                     presenter.UpdateDefaultDrawingAttributes(_attributes);
-                }
             }
         }
 
-        public static ObservableCollection<InkPresenter> Presenters
+        public static ObservableCollection<InkPresenter> Presenters { get; set; } =
+            new ObservableCollection<InkPresenter>();
+
+        public static bool IsRecognitionEnabled
         {
-            get { return _presenters; }
+            get => _isRecognitionEnabled;
             set
             {
-                _presenters = value;
+                if (value != _isRecognitionEnabled) RecognitionChanged?.Invoke(value);
+                _isRecognitionEnabled = value;
             }
         }
 
-        public static bool IsRecognitionEnabled { get; set; }
+        public static ObservableCollection<FreeformInkControl> FreeformInkControls { get; set; } =
+            new ObservableCollection<FreeformInkControl>();
 
-        public static ObservableCollection<FreeformInkControl> FreeformInkControls
-        {
-            get { return _freeformInkControls; }
-            set
-            {
-                _freeformInkControls = value;
-            }
-        }
+        public static event InkInputChangedEventHandler InkInputChanged;
+
+        public static event BooleanToggledEventHandler RecognitionChanged;
 
         private static Color ChangeColorBrightness()
         {
-            double newFactor = BrightnessFactor / 50 - 1;
-            double red = (float)Color.R;
-            double green = (float)Color.G;
-            double blue = (float)Color.B;
+            var newFactor = BrightnessFactor / 50 - 1;
+            double red = Color.R;
+            double green = Color.G;
+            double blue = Color.B;
 
             if (newFactor < 0)
             {
@@ -150,40 +109,32 @@ namespace Dash
                 blue = (255 - blue) * newFactor + blue;
             }
 
-            return Color.FromArgb(Color.A, (byte)red, (byte)green, (byte)blue);
+            return Color.FromArgb(Color.A, (byte) red, (byte) green, (byte) blue);
         }
 
         public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
         {
-            if (isSelectionEnabled != null) IsSelectionEnabled = (bool)isSelectionEnabled;
+            if (isSelectionEnabled != null) IsSelectionEnabled = (bool) isSelectionEnabled;
             foreach (var cntrls in FreeformInkControls)
-            {
                 cntrls.UpdateSelectionMode();
-            }
             if (IsSelectionEnabled)
-            {
                 return;
-            }
             if (StrokeType == StrokeTypes.Eraser)
             {
                 foreach (var presenter in Presenters)
-                {
                     presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
-                }
                 return;
             }
             foreach (var presenter in Presenters)
-            {
                 presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
-            }
-            InkDrawingAttributes attributes = new InkDrawingAttributes();
+            var attributes = new InkDrawingAttributes();
             if (StrokeType == StrokeTypes.Pencil)
             {
                 attributes = InkDrawingAttributes.CreateForPencil();
-                attributes.PencilProperties.Opacity = GlobalInkSettings.Opacity;
+                attributes.PencilProperties.Opacity = Opacity;
             }
             attributes.Color = ChangeColorBrightness();
-            attributes.Size = new Size(GlobalInkSettings.Size, GlobalInkSettings.Size);
+            attributes.Size = new Size(Size, Size);
             Attributes = attributes;
         }
     }
