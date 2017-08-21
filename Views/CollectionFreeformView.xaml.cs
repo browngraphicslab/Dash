@@ -669,6 +669,9 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            if (ItemsCarrier.Instance.StartingCollection == this)
+                _payload = new Dictionary<DocumentView, DocumentController>();
+
             ViewModel.CollectionViewOnDrop(sender, e);
         }
         
@@ -832,8 +835,7 @@ namespace Dash
             if (carrier.StartingCollection != this)
             {
                 carrier.StartingCollection.Collection_DragLeave(sender, e);
-                ViewModel.CollectionViewOnDragEnter(sender, e);
-                Debug.WriteLine("DRAG ENTER 11");
+                ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
                 return;
             }
 
