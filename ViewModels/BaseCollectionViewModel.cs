@@ -198,8 +198,6 @@ namespace Dash
                 e.DragUIOverride.IsGlyphVisible = false;
                 
             }
-                
-
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)
             {

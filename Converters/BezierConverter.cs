@@ -50,7 +50,7 @@ namespace Dash
             double offset = Math.Abs((pos1.X - pos2.X) / 3);
             if (pos1.X < pos2.X)
             {
-                _figure.StartPoint = Util.PointTransformFromVisual(new Point(Element1.ActualWidth, Element1.ActualHeight / 2), Element1, ToElement);
+                _figure.StartPoint = Util.PointTransformFromVisual(new Point(Element1.Width, Element1.ActualHeight / 2), Element1, ToElement);
                 _bezier.Point1 = new Point(pos1.X + offset, pos1.Y);
                 _bezier.Point2 = new Point(pos2.X - offset, pos2.Y);
                 if (Element2 == null) _bezier.Point3 = pos2;

@@ -88,7 +88,6 @@ namespace Dash
             DataContextChanged += OnDataContextChanged;
 
             DragLeave += Collection_DragLeave;
-            DragEnter += Collection_DragEnter;
         }
 
         public IOReference GetCurrentReference()
@@ -672,11 +671,7 @@ namespace Dash
         {
             ViewModel.CollectionViewOnDrop(sender, e);
         }
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
+        
 
         #endregion
 
@@ -814,17 +809,34 @@ namespace Dash
             _payload = new Dictionary<DocumentView, DocumentController>();
         }
 
-        private void Collection_DragEnter(object sender, DragEventArgs args)                             // TODO this code is fucked, think of a better way to do this 
+        private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+
+            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+
+            if (sourceIsRadialMenu)
+            {
+                e.AcceptedOperation = DataPackageOperation.Move;
+                e.DragUIOverride.Clear();
+                e.DragUIOverride.Caption = e.DataView.Properties.Title;
+                e.DragUIOverride.IsContentVisible = false;
+                e.DragUIOverride.IsGlyphVisible = false;
+
+            }
+
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
 
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
-                carrier.StartingCollection.Collection_DragLeave(sender, args);
+                carrier.StartingCollection.Collection_DragLeave(sender, e);
+                ViewModel.CollectionViewOnDragEnter(sender, e);
+                Debug.WriteLine("DRAG ENTER 11");
                 return;
             }
+
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
             foreach (var cont in ItemsCarrier.Instance.Payload)
             {
