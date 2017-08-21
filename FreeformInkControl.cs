@@ -37,19 +37,10 @@ namespace Dash
         public InkFieldModelController InkFieldModelController;
         public CollectionFreeformView FreeformView;
         public Canvas SelectionCanvas;
-        private enum InkSelectionMode
-        {
-            Document, Ink
-        }
-        private InkSelectionMode _inkSelectionMode;
-        private Polygon _lasso;
-        private Rect _boundingRect;
-        private InkSelectionRect _rectangle;
         public LassoSelectHelper LassoHelper;
         public InkRecognitionHelper InkRecognitionHelper { get; }
         public Point PressedPoint = new Point(0, 0);
         public Point DoubleTapPoint = new Point(0, 0);
-
         public bool IsPressed
         {
             get { return _isPressed; }
@@ -58,10 +49,17 @@ namespace Dash
                 _isPressed = value;
             }
         }
-
-
+        private enum InkSelectionMode
+        {
+            Document, Ink
+        }
+        private InkSelectionMode _inkSelectionMode;
+        private Polygon _lasso;
+        private Rect _boundingRect;
+        private InkSelectionRect _rectangle;
         private bool _isPressed;
-        private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _paragraphBoundsDictionary;
+        private MenuFlyout _pasteFlyout;
+        //private Dictionary<Rect, Tuple<string, IEnumerable<uint>>> _paragraphBoundsDictionary;
 
         public FreeformInkControl(CollectionFreeformView view, InkCanvas canvas, Canvas selectionCanvas)
         {
@@ -78,7 +76,6 @@ namespace Dash
             ClearSelection();
             UpdateInputType();
             AddEventHandlers();
-
         }
 
 
@@ -94,12 +91,17 @@ namespace Dash
             TargetCanvas.PointerMoved += TargetCanvasOnPointerMoved;
             TargetCanvas.DoubleTapped += TargetCanvasOnDoubleTapped;
             TargetCanvas.PointerCaptureLost += TargetCanvasOnPointerCaptureLost;
+            //TargetCanvas.RightTapped += TargetCanvasOnRightTapped;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
         }
 
-        #region Documents From Drawings
-
-        #endregion
+        private void MakeFlyout()
+        {
+            _pasteFlyout = new MenuFlyout();
+            var paste = new MenuFlyoutItem {Text = "Paste"};
+            paste.Click += PasteOnClick;
+            _pasteFlyout.Items?.Add(paste);
+        }
 
         #region Updating State
 
@@ -240,6 +242,19 @@ namespace Dash
         #endregion
 
         #region Event Handlers
+        private void PasteOnClick(object sender, RoutedEventArgs routedEventArgs)
+        {
+            var menu = sender as MenuFlyoutItem;
+            var transform = menu.TransformToVisual(TargetCanvas);
+            var pointOnCanvas = transform.TransformPoint(new Point());
+            TargetCanvas.InkPresenter.StrokeContainer.PasteFromClipboard(pointOnCanvas);
+        }
+
+        private void TargetCanvasOnRightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            if (_pasteFlyout == null) MakeFlyout();
+            _pasteFlyout.ShowAt(TargetCanvas, e.GetPosition(TargetCanvas));
+        }
 
         private void TargetCanvasOnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
