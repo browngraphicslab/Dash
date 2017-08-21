@@ -76,6 +76,11 @@ namespace Dash
             Ink
         }
 
+        public void RecognizeSelected()
+        {
+            InkRecognitionHelper.RecognizeAndForgetStrokes(TargetCanvas.InkPresenter.StrokeContainer.GetStrokes().Where(s => s.Selected));
+        }
+
         #region Updating State
 
         public void UpdateSelectionMode()

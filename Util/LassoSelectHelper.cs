@@ -307,8 +307,9 @@ namespace Dash
                         if (_view.xItemsControl.ItemContainerGenerator != null && _view.xItemsControl
                                 .ContainerFromItem(param) is ContentPresenter contentPresenter)
                         {
-                            selectedDocs.Add(
-                                contentPresenter.GetFirstDescendantOfType<DocumentView>());
+                            var documentView = contentPresenter.GetFirstDescendantOfType<DocumentView>();
+                            if(documentView!=null) selectedDocs.Add(
+                                documentView);
                         }
                     }
                 }

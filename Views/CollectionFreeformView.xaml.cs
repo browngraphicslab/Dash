@@ -5,6 +5,7 @@ using Microsoft.Graphics.Canvas.UI;
 using Microsoft.Graphics.Canvas.UI.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
@@ -171,6 +172,72 @@ namespace Dash
             //linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
         }
 
+        public void DeleteConnection(KeyValuePair<FieldReference, LinePackage> pair)
+        {
+            if (LineDict.ContainsKey(pair.Key))
+            {
+                var line = pair.Value;
+                var converter = line.Converter;
+                var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
+                var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                //Todo actually remove connection
+                itemsPanelCanvas.Children.Remove(pair.Value.Line);
+                LineDict.Remove(pair.Key);
+            }
+        }
+
+        /// <summary>
+        /// Checks if given points intersect a bezier curve and removes the intersected curves.
+        /// TODO doesn't remove field connections
+        /// TODO very inefficient way of doing this
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        public bool DeleteIntersectingConnections(IEnumerable<Point> points)
+        {
+            foreach (var line in LineDict.Values) line.Line.IsHitTestVisible = true;
+            bool lineDeleted = false;
+            var ToBeDeleted = new List<FieldReference>();
+            foreach (var point in points)
+            {
+                var paths = VisualTreeHelper.FindElementsInHostCoordinates(point,
+                    itemsPanelCanvas).OfType<Path>().ToImmutableHashSet();
+                foreach (var pair in LineDict)
+                {
+                    if (paths.Contains(pair.Value.Line))
+                    {
+                        itemsPanelCanvas.Children.Remove(pair.Value.Line);
+                        ToBeDeleted.Add(pair.Key);
+                        var line = pair.Value;
+                        var converter = line.Converter;
+                        var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                        var doc2 = view2.ViewModel.DocumentController;
+                        var fields = doc2.EnumFields().ToImmutableList();
+                        foreach (var field in fields)
+                        {
+                            var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
+                            if (referenceFieldModelController != null)
+                            {
+                                var referencesEqual = referenceFieldModelController.DereferenceToRoot(null).Equals(pair.Key.DereferenceToRoot(null));
+                                if (referencesEqual)
+                                {
+                                    doc2.SetField(field.Key,
+                                        TypeInfoHelper.CreateFieldModelController(referenceFieldModelController
+                                            .FieldReference.GetDocumentController(null)
+                                            .GetField(referenceFieldModelController.FieldKey).TypeInfo), true);
+                                    //Todo remove field updated references and replace field's original value
+                                }
+                            }
+                        }
+                        lineDeleted = true;
+                    }
+                }
+                foreach (var key in ToBeDeleted) LineDict.Remove(key);
+            }
+            foreach (var line in LineDict.Values) line.Line.IsHitTestVisible = false;
+            return lineDeleted;
+        }
+
         private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
 
         /// <summary>
@@ -260,8 +327,8 @@ namespace Dash
             _currReference = ioReference;
             _connectionLine = new Path
             {
-                StrokeThickness = 5,
-                Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
+                StrokeThickness = 10,
+                Stroke = (SolidColorBrush)App.Instance.Resources["DraggerLineStroke"],
                 IsHitTestVisible = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,

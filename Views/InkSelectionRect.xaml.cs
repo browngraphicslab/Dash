@@ -264,5 +264,10 @@ namespace Dash.Views
         {
             Cut();
         }
+
+        private void RecognizeButton_OnTapped(object sender, TappedRoutedEventArgs e)
+        {
+            FreeformView.InkControl.RecognizeSelected();
+        }
     }
 }

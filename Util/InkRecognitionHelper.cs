@@ -7,6 +7,7 @@ using Windows.UI.Input.Inking;
 using Windows.UI.Input.Inking.Analysis;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Shapes;
 using DashShared;
 
@@ -41,6 +42,7 @@ namespace Dash
             if (!newValue)
             {
                 Analyzer.ClearDataForAllStrokes();
+                _freeformInkControl.ClearSelection();
                 foreach (var stroke in StrokesToRemove)
                 {
                     stroke.Selected = true;
@@ -59,7 +61,7 @@ namespace Dash
         /// </summary>
         /// <param name="doubleTapped"></param>
         /// <param name="newStroke"></param>
-        public async void RecognizeInk()
+        public async void RecognizeInk(bool addToRemoveList=true)
         {
             if (NewStrokes.Count > 0)
             {
@@ -84,7 +86,7 @@ namespace Dash
                         region.DrawingKind != InkAnalysisDrawingKind.Square) continue;
                     //if (!ContainsDoubleTapPoint(region.BoundingRect, out List<Point> containedPoints)) continue;
                     AddDocumentFromShapeRegion(region);
-                    RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                    if(addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                     //DoubleTapped = false;
                     //foreach (var point in containedPoints)
                     //{
@@ -97,7 +99,7 @@ namespace Dash
                     if (region.DrawingKind != InkAnalysisDrawingKind.Circle &&
                         region.DrawingKind != InkAnalysisDrawingKind.Ellipse) continue;
                     AddCollectionFromShapeRegion(region);
-                    RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                    if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
                 //All of the unused text gets re-added to the InkAnalyzer
                 foreach (var key in _textBoundsDictionary.Keys)
@@ -108,6 +110,7 @@ namespace Dash
                     if (ids != null) Analyzer.AddDataForStrokes(ids);
                 }
             }
+            if (!addToRemoveList) Analyzer.ClearDataForAllStrokes();
             _freeformInkControl.UpdateInkFieldModelController();
         }
 
@@ -162,6 +165,8 @@ namespace Dash
                             .DocumentController);
                     }
             }
+            if (_freeformInkControl.FreeformView.DeleteIntersectingConnections(transformedLine.Points))
+                docsRemoved = true;
             if (docsRemoved)
             {
                 _freeformInkControl.ClearSelection();
@@ -408,6 +413,12 @@ namespace Dash
         {
             Analyzer.RemoveDataForStrokes(strokes.Select(s => s.Id));
             NewStrokes.RemoveAll(strokes.Contains);
+        }
+
+        public void RecognizeAndForgetStrokes(IEnumerable<InkStroke> strokes)
+        {
+            Analyzer.AddDataForStrokes(strokes);
+            RecognizeInk(false);
         }
     }
 }

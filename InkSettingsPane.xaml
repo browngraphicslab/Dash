@@ -1,0 +1,70 @@
+﻿<UserControl
+    x:Class="Dash.InkSettingsPane"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Dash"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:inking="using:Windows.UI.Input.Inking"
+    xmlns:generic="using:System.Collections.Generic"
+    xmlns:objectModel="using:System.Collections.ObjectModel"
+    mc:Ignorable="d"
+    d:DesignHeight="500"
+    d:DesignWidth="300">
+
+    <Grid Width="250" Padding="-2,0,0,0" BorderThickness="1.5">
+        <Grid.Resources>
+            <Style TargetType="Button">
+                <Setter Property="Width" Value="45"/>
+                <Setter Property="Height" Value="45"/>
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Padding" Value="0"></Setter>
+            </Style>
+            <Style TargetType="Ellipse">
+                <Setter Property="Width" Value="40"></Setter>
+                <Setter Property="Height" Value="40"></Setter>
+                <Setter Property="Stroke" Value="#66000000"></Setter>
+                <Setter Property="StrokeThickness" Value="2"></Setter>
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="88"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.BorderBrush>
+            <SolidColorBrush Color="#66000000"/>
+        </Grid.BorderBrush>
+        <Grid.Background>
+            <SolidColorBrush Color="#7FBEBEBE"/>
+        </Grid.Background>
+        <Rectangle Grid.Row="0" Fill="#FFF4F4F5" HorizontalAlignment="Stretch" Height="64" Margin="10,14,10,0" Stroke="Black" VerticalAlignment="Top"/>
+        <InkCanvas Grid.Row="0" x:Name="ExampleCanvas" HorizontalAlignment="Stretch" Height="64" Margin="10,12,10,0" VerticalAlignment="Top"></InkCanvas>
+        <ListView Grid.Row="1" SelectionMode="None">
+            <GridView x:Name="ColorPickerGridView" Width="202" SelectionMode="None" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <GridView.ItemTemplate>
+                    <DataTemplate>
+                        <Button>
+                            <Button.Content>
+                                <Ellipse Fill="{Binding}" Width="20" Height="20" Stroke="Black" ></Ellipse>
+                            </Button.Content>
+                        </Button>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+            <TextBlock Text="Opacity" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Padding="0">
+                <TextBlock.Foreground>
+                    <SolidColorBrush Color="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
+                </TextBlock.Foreground>
+            </TextBlock>
+            <Slider Width="257" Height="37" Foreground="{StaticResource WindowsBlue}"/>
+            <TextBlock Text="Size" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Padding="0">
+                <TextBlock.Foreground>
+                    <SolidColorBrush Color="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
+                </TextBlock.Foreground>
+            </TextBlock>
+            <Slider Width="257" Foreground="{StaticResource WindowsBlue}" />
+            <Button Content="Recognize" Width="90" Background="{StaticResource WindowsBlue}" Foreground="White"></Button>
+           
+        </ListView>
+    </Grid>
+</UserControl>

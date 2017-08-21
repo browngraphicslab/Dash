@@ -106,7 +106,10 @@
     <Compile Include="Converters\BoolToManipulationAllOrNoneConverter.cs" />
     <Compile Include="Converters\BoundReferenceToStringConverter.cs" />
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
-    <Compile Include="FreeformInkControl.cs" />
+    <Compile Include="InkSettingsPane.xaml.cs">
+      <DependentUpon>InkSettingsPane.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Util\FreeformInkControl.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
     <Compile Include="Views\CollectionTextView.xaml.cs">
@@ -516,6 +519,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="InkSettingsPane.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
