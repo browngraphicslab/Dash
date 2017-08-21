@@ -39,9 +39,12 @@ namespace Dash
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
 
+
+        public static int dvCount = 0;
         public DocumentView()
         {
             InitializeComponent();
+            Debug.WriteLine($"Num DocViews = {++dvCount}");
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
 
             DataContextChanged += DocumentView_DataContextChanged;
@@ -270,15 +273,7 @@ namespace Dash
         /// <param name="args"></param>
         private void DocumentView_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (ViewModel == args.NewValue)
-            {
-                return;
-            }
-
             ViewModel = DataContext as DocumentViewModel;
-            // if new _vm is not correct return
-            if (ViewModel == null)
-                return;
 
             //initDocumentOnDataContext();
         }

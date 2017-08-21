@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
+using Windows.UI.Core;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
 using Windows.UI.Xaml.Media;
 using DashShared;
 using Dash.Controllers.Operators;
+using Visibility = Windows.UI.Xaml.Visibility;
 
 namespace Dash
 {
@@ -730,7 +733,9 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context)
         {
-            var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
+            return new Grid();
+            //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
+            var sp = new StackPanel();
             var source = new List<FrameworkElement>();
 
             var isInterfaceBuilder = false; // TODO make this a parameter
@@ -758,15 +763,16 @@ namespace Dash
 
                         //ele.MaxWidth = 200;
                         hstack.Children.Add(ele);
-
-                        source.Add(hstack);
+                        sp.Children.Add(hstack);
+                        //source.Add(hstack);
                     }
                     else if (f.Value is DocumentFieldModelController)
                     {
                         var fieldDoc = (f.Value as DocumentFieldModelController).Data;
                         // bcz: commented this out because it generated exceptions after making a search List of Umpires
                         var view = new DocumentView(new DocumentViewModel(fieldDoc, isInterfaceBuilder));
-                        source.Add(view);
+                        sp.Children.Add(view);
+                        //source.Add(view);
                     }
                     else if (f.Value is DocumentCollectionFieldModelController)
                     {
@@ -781,15 +787,24 @@ namespace Dash
                         };
                         border.Width = 500;
                         border.Height = 500;
-                        source.Add(border);
+                        sp.Children.Add(border);
+                        //source.Add(border);
                     }
                 };
 
-            foreach (var f in EnumFields())
-            {
-                a(f);
-            }
-            sp.ItemsSource = source;
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(
+                CoreDispatcherPriority.Low,
+                async () =>
+                {
+                    foreach (var f in EnumFields())
+                    {
+                        a(f);
+                        await Task.Delay(5);
+                    }
+                });
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+
             return sp;
         }
 
