@@ -733,7 +733,6 @@ namespace Dash
         /// <returns></returns>
         private FrameworkElement makeAllViewUI(Context context)
         {
-            return new Grid();
             //var sp = new ListView { SelectionMode = ListViewSelectionMode.None };
             var sp = new StackPanel();
             var source = new List<FrameworkElement>();
