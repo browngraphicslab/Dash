@@ -20,7 +20,7 @@
                   ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.IsHorizontalRailEnabled="True"
                   ScrollViewer.VerticalScrollMode="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.IsVerticalRailEnabled="False"
                   CanDragItems="True" DragItemsStarting="XOperationListView_OnDragItemsStarting"
-                  IsItemClickEnabled="true" ItemClick="XOperationListView_OnItemClick"
+                  IsItemClickEnabled="true" 
                   SelectionMode="Single" ItemsSource="{x:Bind _operatorList}" ManipulationMode="None">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
