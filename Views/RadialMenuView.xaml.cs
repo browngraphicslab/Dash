@@ -184,6 +184,7 @@ namespace Dash
         /// </summary>
         public void CloseSlider()
         {
+            _floatingMenu.ManipulateControlPosition(_sliderPanel.ActualWidth, 0);
             _sliderPanel.Visibility = Visibility.Collapsed;
         }
 
@@ -196,6 +197,7 @@ namespace Dash
         public void OpenSlider()
         {
             _sliderPanel.Visibility = Visibility.Visible;
+            _floatingMenu.ManipulateControlPosition(-_sliderPanel.ActualWidth, 0);
             _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
@@ -346,6 +348,10 @@ namespace Dash
             { 
                 var action = button.ActionModel = item as RadialActionModel;
                 if(!action.IsDraggable) { button.Type = RadialMenuButton.ButtonType.Radio; }
+                if (action.IsToggle)
+                {
+                    button.Type = RadialMenuButton.ButtonType.Toggle;
+                }
             }
             menu.AddButton(button);
             return button;
@@ -411,6 +417,7 @@ namespace Dash
             Action<RadialMenuView> closeSliderPanel = Actions.CloseSliderPanel;
             Action<object> chooseEraser = Actions.ChooseEraser;
             Action<object> toggleSelect = Actions.ToggleSelectionMode;
+            Action<object> toggleInkRecognition = Actions.ToggleInkRecognition;
             this.InitializeColors();
 
             var strokeMeter = new RadialSubmenuModel("Size", (Symbol)0xEDA8, null)
@@ -431,9 +438,10 @@ namespace Dash
             var penInk = new RadialActionModel("", (Symbol) 0xEE56) {GenericAction = choosePen};
             var pencilInk = new RadialActionModel("", (Symbol) 0xED63) {GenericAction = choosePencil};
             var eraserInk = new RadialActionModel("", (Symbol) 0xED60) {GenericAction = chooseEraser};
+            var toggleInkRecognitionButton = new RadialActionModel("", (Symbol) 0xE945) {GenericAction = toggleInkRecognition, IsToggle = true};
 
             var selectButton =
-                new RadialActionModel("", (Symbol)0xEF20) { GenericAction = toggleSelect, IsToggle = true };
+                new RadialActionModel("", (Symbol)0xEF20) { GenericAction = toggleSelect};
 
 
             var inkPalette = new RadialSubmenuModel("Palette", (Symbol)0xE2B1, _colors)
@@ -476,6 +484,7 @@ namespace Dash
                 pencilInk,
                 eraserInk,
                 selectButton,
+                toggleInkRecognitionButton,
                 strokeMeter,
                 opacityMeter,
                 inkPalette,

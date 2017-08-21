@@ -771,9 +771,8 @@ namespace RadialMenuControl.UserControl
             }
             else
             {
-                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch ||
-                    e.Pointer.PointerDeviceType == PointerDeviceType.Mouse)
-                    //await InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));                                       // this was messing up drop 
+                if (e.Pointer.PointerDeviceType == PointerDeviceType.Touch)
+                    InnerPieSlicePath.StartDragAsync(e.GetCurrentPoint(sender as UIElement));
                 VisualStateManager.GoToState(this, "InnerPressed", true);
                 OriginalRadialMenuButton.OnInnerArcPressed(e);
                 switch (OriginalRadialMenuButton.Type)

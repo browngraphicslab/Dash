@@ -164,4 +164,82 @@ namespace Dash.Converters
             return new DocumentFieldModelController(new DocumentControllerToStringConverter().ConvertXamlToData(xaml));
         }
     }
+    public class DocumentViewModelToStringConverter : SafeDataToXamlConverter<DocumentViewModel, string>
+    {
+        private DocumentViewModel _vm;
+
+        public DocumentViewModelToStringConverter()
+        {
+        }
+
+        public DocumentViewModelToStringConverter(DocumentViewModel vm)
+        {
+            _vm = vm;
+        }
+
+        public override string ConvertDataToXaml(DocumentViewModel data, object parameter = null)
+        {
+            _vm = data;
+            var keyList = data.DocumentController.GetDereferencedField(KeyStore.PrimaryKeyKey, data.Context);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                var docString = "";
+                foreach (var k in keys.Data)
+                {
+                    var keyField = data.DocumentController.GetDereferencedField(new KeyController((k as TextFieldModelController).Data), data.Context);
+                    if (keyField is TextFieldModelController)
+                        docString += (keyField as TextFieldModelController).Data + " ";
+                }
+                return docString.TrimEnd(' ');
+            }
+            return data.DocumentController.GetId();
+        }
+
+        public override DocumentViewModel ConvertXamlToData(string xaml, object parameter = null)
+        {
+            var values = xaml.Split(' ');
+            var keyList = _vm.DocumentController?.GetDereferencedField(KeyStore.PrimaryKeyKey, _vm.Context);
+            var keys = keyList as ListFieldModelController<TextFieldModelController>;
+            if (keys != null)
+            {
+                foreach (var dmc in ContentController.GetControllers<DocumentController>())
+                    if (!dmc.DocumentType.Type.Contains("Box") && !dmc.DocumentType.Type.Contains("Layout"))
+                    {
+                        bool found = true;
+                        foreach (var k in keys.Data)
+                        {
+                            var key = new KeyController((k as TextFieldModelController).Data);
+                            var index = keys.Data.IndexOf(k);
+                            var derefValue = (dmc.GetDereferencedField(key, _vm.Context) as TextFieldModelController)?.Data;
+                            if (derefValue != null)
+                            {
+                                if (values[index] != derefValue)
+                                {
+                                    found = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                found = false;
+                                break;
+                            }
+                        }
+                        if (found)
+                        {
+                            _vm.DocumentController = dmc;
+                            return _vm;
+                        }
+                    }
+            }
+            var doc = DocumentController.FindDocMatchingPrimaryKeys(values);
+            if (doc != null)
+            {
+                _vm.DocumentController = doc;
+                return _vm;
+            }
+            return null;
+        }
+    }
 }

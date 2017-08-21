@@ -85,7 +85,7 @@ namespace Dash
         private void SetUpDocumentView(DocumentView documentView)
         {
             var editingDocumentId = _editingDocument.GetId();
-            if (documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
+            if (documentView.ViewModel == null || documentView.ViewModel.DocumentController.GetId() != editingDocumentId)
             {
                 return;
             }

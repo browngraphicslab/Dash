@@ -256,7 +256,7 @@ namespace Dash
             if (args.Phase != 0) throw new Exception("Please start in stage 0");
             var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
             var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid?.FindName("xBorder");
+            var border = (FrameworkElement)rootGrid?.FindName("xBorder");
             Debug.Assert(backdrop != null, "backdrop != null");
             backdrop.Visibility = Visibility.Visible;
             backdrop.ClearValue(FrameworkElement.WidthProperty);
@@ -274,31 +274,45 @@ namespace Dash
             if (args.Phase != 1) throw new Exception("Please start in phase 1");
             var rootGrid = (Grid)args.ItemContainer.ContentTemplateRoot;
             var backdrop = (DocumentView)rootGrid?.FindName("XBackdrop");
-            var border = (Viewbox)rootGrid?.FindName("xBorder");
-            var document = (DocumentView)border?.FindName("xDocumentDisplay");
-            Debug.Assert(backdrop != null, "backdrop != null");
-            Debug.Assert(border != null, "border != null");
-            Debug.Assert(document != null, "document != null");
-            backdrop.Visibility = Visibility.Collapsed;
-            backdrop.xProgressRing.IsActive = false;
-            border.Visibility = Visibility.Visible;
-            document.IsHitTestVisible = false;
-            var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
+            var border = (FrameworkElement)rootGrid?.FindName("xBorder");
+            var docDisplay = border?.FindName("xDocumentDisplay");
+            if (docDisplay is TextBox)
+            {
+                backdrop.Visibility = Visibility.Collapsed;
+                backdrop.xProgressRing.IsActive = false;
+                border.Visibility = Visibility.Visible;
+                var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
+                
+                (docDisplay as TextBox).DataContext =
+                        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+            }
+            else if (docDisplay != null)
+            {
+                var document = (DocumentView)border?.FindName("xDocumentDisplay");
+                Debug.Assert(backdrop != null, "backdrop != null");
+                Debug.Assert(border != null, "border != null");
+                Debug.Assert(document != null, "document != null");
+                backdrop.Visibility = Visibility.Collapsed;
+                backdrop.xProgressRing.IsActive = false;
+                border.Visibility = Visibility.Visible;
+                document.IsHitTestVisible = false;
+                var dvParams = ((ObservableCollection<DocumentViewModelParameters>)sender.ItemsSource)?[args.ItemIndex];
 
-            if (document.ViewModel == null)
-            {
-                document.DataContext =
-                    new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);               
-            }
-            else if (document.ViewModel.DocumentController.GetId() != dvParams.Controller.GetId())
-            {
-                document.ViewModel.Dispose();
-                document.DataContext =
-                    new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
-            }
-            else
-            {
-                document.ViewModel.Dispose();
+                if (document.ViewModel == null)
+                {
+                    document.DataContext =
+                        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+                }
+                else if (document.ViewModel.DocumentController.GetId() != dvParams.Controller.GetId())
+                {
+                    document.ViewModel.Dispose();
+                    document.DataContext =
+                        new DocumentViewModel(dvParams.Controller, dvParams.IsInInterfaceBuilder, dvParams.Context);
+                }
+                else
+                {
+                    document.ViewModel.Dispose();
+                }
             }
         }
 

@@ -33,7 +33,7 @@ namespace Dash
             {
                 var reference = collection as ReferenceFieldModelController;
                 _collectionKey = reference.FieldKey;
-                reference.GetDocumentController(null).AddFieldUpdatedListener(reference.FieldKey,
+                reference.GetDocumentController(context).AddFieldUpdatedListener(reference.FieldKey,
                     delegate (DocumentController sender, DocumentController.DocumentFieldUpdatedEventArgs args)
                     {
                         var cargs = args.FieldArgs as DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs;
@@ -43,13 +43,24 @@ namespace Dash
                         }
                         else
                         {
-                            DocumentViewModels.Clear();
                             var documents = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments();
-                            AddDocuments(documents, copiedContext);
+                            bool newDoc = DocumentViewModels.Count != documents.Count;
+                            if (!newDoc)
+                                foreach (var d in DocumentViewModels.Select((v) => v.Controller))
+                                    if (!documents.Contains(d))
+                                    {
+                                        newDoc = true;
+                                        break;
+                                    }
+                            if (newDoc)
+                            {
+                                DocumentViewModels.Clear();
+                                AddDocuments(documents, copiedContext);
 
-                            if (cargs == null)
-                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, _collectionFieldModelController.Data);
-                            UpdateViewModels(cargs, copiedContext);
+                                if (cargs == null)
+                                    cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, documents);
+                                UpdateViewModels(cargs, copiedContext);
+                            }
                         }
                     });
             }

@@ -41,6 +41,16 @@ namespace Dash
                 }
             }
         }
+        /// <summary>
+        /// Returns a simple view of the model which the controller encapsulates, for use in a Table Cell
+        /// </summary>
+        /// <returns></returns>
+        //public override FrameworkElement GetTableCellView(Context context)
+        //{
+        //    var tb = new DocumentView(new DocumentViewModel(Data, false, context));
+        //    tb.Height = 25;
+        //    return tb;
+        //}
         public override TypeInfo TypeInfo => TypeInfo.Document;
         
         public override IEnumerable<DocumentController> GetReferences()
