@@ -796,7 +796,7 @@ namespace Dash
                 CoreDispatcherPriority.Low,
                 async () =>
                 {
-                    foreach (var f in EnumFields())
+                    foreach (var f in EnumFields().ToList())
                     {
                         a(f);
                         await Task.Delay(5);
