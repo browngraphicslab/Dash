@@ -647,7 +647,7 @@ namespace Dash
         }
 
 
-        private bool ShouldExecute(Context context, KeyController updatedKey)
+        public bool ShouldExecute(Context context, KeyController updatedKey)
         {
             context = context ?? new Context(this);
             var opField = GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
@@ -659,10 +659,10 @@ namespace Dash
             {
                 return true;
             }
-            //if (opField.Outputs.ContainsKey(updatedKey))
-            //{
-            //    return true;
-            //}
+            if (opField.Outputs.ContainsKey(updatedKey))
+            {
+                return true;
+            }
             return false;
         }
 
