@@ -3,6 +3,8 @@ using Windows.Foundation;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.UI.Input.Inking;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Media;
 
 namespace Dash
 {
@@ -76,8 +78,12 @@ namespace Dash
             get => _isRecognitionEnabled;
             set
             {
-                if (value != _isRecognitionEnabled) RecognitionChanged?.Invoke(value);
-                _isRecognitionEnabled = value;
+                if (value != _isRecognitionEnabled)
+                {
+                    RecognitionChanged?.Invoke(value);
+                    _isRecognitionEnabled = value;
+                    UpdateInkPresenters();
+                }
             }
         }
 
@@ -114,6 +120,7 @@ namespace Dash
 
         public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
         {
+            
             if (isSelectionEnabled != null) IsSelectionEnabled = (bool) isSelectionEnabled;
             foreach (var cntrls in FreeformInkControls)
                 cntrls.UpdateSelectionMode();
@@ -125,13 +132,21 @@ namespace Dash
                     presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Erasing;
                 return;
             }
+            var attributes = new InkDrawingAttributes();
+            
             foreach (var presenter in Presenters)
                 presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
-            var attributes = new InkDrawingAttributes();
             if (StrokeType == StrokeTypes.Pencil)
             {
                 attributes = InkDrawingAttributes.CreateForPencil();
-                attributes.PencilProperties.Opacity = Opacity;
+                if (!IsRecognitionEnabled) attributes.PencilProperties.Opacity = Opacity;
+            }
+            if (IsRecognitionEnabled)
+            {
+                attributes.Color = ((SolidColorBrush)Application.Current.Resources["WindowsBlue"]).Color;
+                attributes.Size = new Size(4, 4);
+                Attributes = attributes;
+                return;
             }
             attributes.Color = ChangeColorBrightness();
             attributes.Size = new Size(Size, Size);

@@ -21,12 +21,14 @@ namespace Dash
         public bool DoubleTapped;
         public List<Point> DoubleTappedPoints;
         public List<InkStroke> NewStrokes;
+        public List<InkStroke> StrokesToRemove;
 
         public InkRecognitionHelper(FreeformInkControl freeformInkControl)
         {
             Analyzer = new InkAnalyzer();
             DoubleTappedPoints = new List<Point>();
             NewStrokes = new List<InkStroke>();
+            StrokesToRemove = new List<InkStroke>();
             _freeformInkControl = freeformInkControl;
             _timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(600)};
             _timer.Tick += TimerOnTick;
@@ -36,7 +38,15 @@ namespace Dash
 
         private void GlobalInkSettingsOnRecognitionChanged(bool newValue)
         {
-            if (!newValue) Analyzer.ClearDataForAllStrokes();
+            if (!newValue)
+            {
+                Analyzer.ClearDataForAllStrokes();
+                foreach (var stroke in StrokesToRemove)
+                {
+                    stroke.Selected = true;
+                }
+                _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
+            }
         }
 
         private void TimerOnTick(object sender, object o1)
@@ -53,6 +63,7 @@ namespace Dash
         {
             if (NewStrokes.Count > 0)
             {
+                StrokesToRemove.AddRange(NewStrokes);
                 foreach (var newStroke in NewStrokes)
                     //Done separately because it doesn't require ink analyzer
                     TryDeleteWithStroke(newStroke);
@@ -73,8 +84,8 @@ namespace Dash
                         region.DrawingKind != InkAnalysisDrawingKind.Square) continue;
                     //if (!ContainsDoubleTapPoint(region.BoundingRect, out List<Point> containedPoints)) continue;
                     AddDocumentFromShapeRegion(region);
-                    Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
-                    DoubleTapped = false;
+                    RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
+                    //DoubleTapped = false;
                     //foreach (var point in containedPoints)
                     //{
                     //    DoubleTappedPoints.Remove(point);
@@ -86,7 +97,7 @@ namespace Dash
                     if (region.DrawingKind != InkAnalysisDrawingKind.Circle &&
                         region.DrawingKind != InkAnalysisDrawingKind.Ellipse) continue;
                     AddCollectionFromShapeRegion(region);
-                    Analyzer.RemoveDataForStrokes(region.GetStrokeIds());
+                    RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
                 //All of the unused text gets re-added to the InkAnalyzer
                 foreach (var key in _textBoundsDictionary.Keys)
@@ -97,8 +108,20 @@ namespace Dash
                     if (ids != null) Analyzer.AddDataForStrokes(ids);
                 }
             }
-
             _freeformInkControl.UpdateInkFieldModelController();
+        }
+
+        private void RemoveStrokeReferences(ICollection<uint> ids)
+        {
+            AccountForRemovedStrokes(ids.ToImmutableHashSet());
+            Analyzer.RemoveDataForStrokes(ids);
+        }
+
+        public void AccountForRemovedStrokes(ICollection<uint> ids)
+        {
+            var strokes = _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokes()
+                .Where(s => ids.Contains(s.Id));
+            foreach (var stroke in strokes) StrokesToRemove.Remove(stroke);
         }
 
         private bool ContainsDoubleTapPoint(Rect rect, out List<Point> containedPoints)
@@ -121,12 +144,13 @@ namespace Dash
             var transformedLine = new Polyline();
             foreach (var point in inkPoints)
                 transformedLine.Points.Add(Util.PointTransformFromVisual(point, _freeformInkControl.SelectionCanvas,
-                    _freeformInkControl.FreeformView));
+                    _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot));
             var point1 = transformedLine.Points[0];
             var point2 = transformedLine.Points.Last();
             var rectToDocView = GetDocViewRects();
             var docsRemoved = false;
             foreach (var rect in rectToDocView.Keys)
+            {
                 if (point1.X < rect.X && point2.X > rect.X + rect.Width ||
                     point1.X > rect.X + rect.Width && point2.X < rect.X)
                     if (PathIntersectsRect(
@@ -137,17 +161,14 @@ namespace Dash
                         _freeformInkControl.FreeformView.ViewModel.RemoveDocument(rectToDocView[rect].ViewModel
                             .DocumentController);
                     }
-            //TODO swipe to remove connections
-            //foreach (var value in _freeformInkControl.FreeformView.LineDict.Values)
-            //{
-
-            //}
+            }
             if (docsRemoved)
             {
                 _freeformInkControl.ClearSelection();
                 newStroke.Selected = true;
                 _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.DeleteSelected();
                 Analyzer.RemoveDataForStroke(newStroke.Id);
+                StrokesToRemove.Remove(newStroke);
             }
         }
 
