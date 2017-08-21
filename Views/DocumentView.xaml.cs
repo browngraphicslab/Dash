@@ -50,7 +50,7 @@ namespace Dash
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
-            manipulator = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            manipulator = new ManipulationControls(this, true, true);
             manipulator.OnManipulatorTranslatedOrScaled += ManipulatorOnManipulatorTranslatedOrScaled;
 
             // set bounds
@@ -63,8 +63,6 @@ namespace Dash
             DoubleTapped += ExpandContract_DoubleTapped;
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
-
-            SetUpMenu();
         }
 
         public DocumentView(DocumentViewModel documentViewModel) : this()
@@ -428,9 +426,17 @@ namespace Dash
             ViewModel.SetLowestSelected(this, isLowestSelected);
 
             if (xIcon.Visibility == Visibility.Collapsed && !IsMainCollection && isLowestSelected)
+            {
+                if (_docMenu == null)
+                {
+                    SetUpMenu();
+                }
                 ViewModel?.OpenMenu();
+            }
             else
+            {
                 ViewModel?.CloseMenu();
+            }
         }
 
         #endregion

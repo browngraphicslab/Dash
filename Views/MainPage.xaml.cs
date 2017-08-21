@@ -357,13 +357,9 @@ namespace Dash
             //g.Children.Add(gv);
             //sw.Stop();
             //Debug.WriteLine($"Phase 1 took {sw.ElapsedMilliseconds} ms");
-            sw.Restart();
-            for (int i = 0; i < 100; i++)
-            {
-                var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
-                Grid.SetColumn(documentView, 1);
-                g.Children.Add(documentView);
-            }
+            var documentView = new DocumentView(new DocumentViewModel(new XampleFields(50, TypeInfo.Text).Document));
+            Grid.SetColumn(documentView, 1);
+            g.Children.Add(documentView);
             sw.Stop();
             Debug.WriteLine($"Phase 2 took {sw.ElapsedMilliseconds} ms");
             xCanvas.Children.Add(g);
