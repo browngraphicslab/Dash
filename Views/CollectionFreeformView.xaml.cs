@@ -652,7 +652,6 @@ namespace Dash
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
             ViewModel.CollectionViewOnDrop(sender, e);
-            XSelectionIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
         private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
@@ -660,6 +659,15 @@ namespace Dash
             ViewModel.CollectionViewOnDragEnter(sender, e);
         }
 
+        private void ColectionViewOnDragLeave(object sender, DragEventArgs e)
+        {
+            ViewModel.CollectionViewOnDragLeave(sender, e);
+        }
+
+        public void SetDropIndicationFill(Brush fill)
+        {
+            XDropIndicationRectangle.Fill = fill;
+        }
         #endregion
 
         #region Activation
@@ -781,16 +789,11 @@ namespace Dash
                 _documentViews.Remove(view);
 
             _payload = new Dictionary<DocumentView, DocumentController>();
-            XSelectionIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
+            //XDropIndicationRectangle.Fill = new SolidColorBrush(Colors.Transparent);
         }
 
         private void Collection_DragEnter(object sender, DragEventArgs args)                             // TODO this code is fucked, think of a better way to do this 
         {
-            var mainCollection = MainPage.Instance.GetMainCollectionView().CurrentView;
-            if (this != mainCollection)
-            {
-                XSelectionIndicationRectangle.Fill = new SolidColorBrush(Colors.LightSteelBlue);
-            }
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
 

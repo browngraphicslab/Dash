@@ -14,6 +14,7 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
+    DragLeave="ColectionViewOnDragLeave"
     Tapped="OnTapped"
     HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
     HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
@@ -29,7 +30,7 @@
         
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
-
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
 
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
@@ -56,8 +57,6 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <Rectangle x:Name="XSelectionIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xOuterGrid, Path=Width}" Height="{Binding ElementName=xOuterGrid, Path=Height}" IsHitTestVisible="False"></Rectangle>
-
 
     </Grid>
 </local:SelectionElement>

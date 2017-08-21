@@ -419,7 +419,9 @@ namespace Dash
 
         public void DocumentView_DragStarting(UIElement sender, DragStartingEventArgs args)
         {
-            (sender as DocumentView).OuterGrid.BorderThickness = new Thickness(10);
+            var docView = sender as DocumentView;
+            DocumentView.DragDocumentView = docView;
+            if (docView != null) docView.OuterGrid.BorderThickness = new Thickness(5);
             var carrier = ItemsCarrier.Instance;
             carrier.Source = (sender as DocumentView)?.ParentCollection.ViewModel;
             carrier.Payload = new List<DocumentController>() { this.DocumentController };

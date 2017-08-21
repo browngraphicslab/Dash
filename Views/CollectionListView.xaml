@@ -11,6 +11,7 @@
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
     DragEnter="CollectionViewOnDragEnter"
+    DragLeave="CollectionViewOnLeave"
     Tapped="OnTapped">
     <Grid x:Name="Grid"
           Background="Transparent"
@@ -34,5 +35,6 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <Rectangle x:Name="XDropIndicationRectangle" Opacity="0.5" Fill="Transparent" Width="{Binding ElementName=xListView, Path=Width}" Height="{Binding ElementName=xListView, Path=Height}" IsHitTestVisible="False"></Rectangle>
     </Grid>
 </local:SelectionElement>

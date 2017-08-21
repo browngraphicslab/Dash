@@ -36,10 +36,11 @@ namespace Dash
 
         private OverlayMenu _docMenu;
         public DocumentViewModel ViewModel { get; set; }
+        // the document view that is being dragged
+        public static DocumentView DragDocumentView;
 
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
-
         public DocumentView()
         {
             this.InitializeComponent();
