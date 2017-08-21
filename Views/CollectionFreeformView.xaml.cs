@@ -430,7 +430,15 @@ namespace Dash
             canvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
             SetTransformOnBackground(composite);
+
+            // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
+            if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
+            {
+                foreach (var line in _lineDict.Values)
+                    line.Converter.UpdateLine();
+            }
         }
+
 
         #endregion
 
@@ -761,7 +769,7 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
-            
+
         }
 
         //TODO how to implement deletion or add these docs to the SelectionGroup in CollectionView?
@@ -849,7 +857,7 @@ namespace Dash
 
         private void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000};
+            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
             SelectionCanvas = new Canvas();
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);
