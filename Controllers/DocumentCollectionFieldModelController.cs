@@ -113,6 +113,15 @@ namespace Dash
             OnFieldModelUpdated(new CollectionFieldUpdatedEventArgs(
                 CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add,
                 new List<DocumentController> {docController}));
+            
+            // Update server
+            RESTClient.Instance.Fields.UpdateField(FieldModel, dto =>
+            {
+
+            }, exception =>
+            {
+
+            });
         }
 
 
