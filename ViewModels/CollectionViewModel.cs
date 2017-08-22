@@ -43,7 +43,8 @@ namespace Dash
                         }
                         else
                         {
-                            var documents = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments();
+                            _collectionFieldModelController = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context);
+                            var documents = _collectionFieldModelController.GetDocuments();
                             bool newDoc = DocumentViewModels.Count != documents.Count;
                             if (!newDoc)
                                 foreach (var d in DocumentViewModels.Select((v) => v.Controller))

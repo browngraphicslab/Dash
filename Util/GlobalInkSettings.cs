@@ -14,6 +14,10 @@ namespace Dash
 
         public delegate void InkInputChangedEventHandler(CoreInputDeviceTypes newInputType);
 
+        public delegate void AttributesUpdatedEventHandler(SolidColorBrush newAttributes);
+
+        public static event AttributesUpdatedEventHandler OnAttributesUpdated;
+
         public enum StrokeTypes
         {
             Pen,
@@ -25,6 +29,7 @@ namespace Dash
         private static CoreInputDeviceTypes _inkInputType;
         private static bool _isSelectionEnabled;
         private static bool _isRecognitionEnabled;
+        private static Color _color = Colors.DarkGray;
 
         public static StrokeTypes StrokeType { get; set; }
 
@@ -51,9 +56,13 @@ namespace Dash
             }
         }
 
-        public static double BrightnessFactor { get; set; }
+        public static double Brightness { get; set; }
 
-        public static Color Color { get; set; } = Colors.DarkGray;
+        public static Color Color
+        {
+            get => ChangeColorBrightness();
+            set => _color = value;
+        }
 
         public static double Opacity { get; set; } = 1;
 
@@ -96,10 +105,10 @@ namespace Dash
 
         private static Color ChangeColorBrightness()
         {
-            var newFactor = BrightnessFactor / 50 - 1;
-            double red = Color.R;
-            double green = Color.G;
-            double blue = Color.B;
+            var newFactor = Brightness / 50 - 1;
+            double red = _color.R;
+            double green = _color.G;
+            double blue = _color.B;
 
             if (newFactor < 0)
             {
@@ -115,12 +124,11 @@ namespace Dash
                 blue = (255 - blue) * newFactor + blue;
             }
 
-            return Color.FromArgb(Color.A, (byte) red, (byte) green, (byte) blue);
+            return Color.FromArgb(_color.A, (byte) red, (byte) green, (byte) blue);
         }
 
         public static void UpdateInkPresenters(bool? isSelectionEnabled = null)
         {
-            
             if (isSelectionEnabled != null) IsSelectionEnabled = (bool) isSelectionEnabled;
             foreach (var cntrls in FreeformInkControls)
                 cntrls.UpdateSelectionMode();
@@ -133,7 +141,7 @@ namespace Dash
                 return;
             }
             var attributes = new InkDrawingAttributes();
-            
+
             foreach (var presenter in Presenters)
                 presenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
             if (StrokeType == StrokeTypes.Pencil)
@@ -143,14 +151,18 @@ namespace Dash
             }
             if (IsRecognitionEnabled)
             {
-                attributes.Color = ((SolidColorBrush)Application.Current.Resources["WindowsBlue"]).Color;
+                attributes.Color = ((SolidColorBrush) Application.Current.Resources["WindowsBlue"]).Color;
                 attributes.Size = new Size(4, 4);
                 Attributes = attributes;
                 return;
             }
-            attributes.Color = ChangeColorBrightness();
+            attributes.Color = Color;
             attributes.Size = new Size(Size, Size);
             Attributes = attributes;
+            OnAttributesUpdated?.Invoke(new SolidColorBrush(Color)
+            {
+                Opacity = Opacity
+            });
         }
     }
 }

@@ -51,7 +51,7 @@ namespace Dash
         {
             GlobalInkSettings.Color = color;
             GlobalInkSettings.UpdateInkPresenters();
-            if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+            //if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }
 
         public static void ChoosePen(object o)
@@ -97,7 +97,7 @@ namespace Dash
 
         public static void SetBrightness(double brightness, RadialMenu menu)
         {
-            GlobalInkSettings.BrightnessFactor = brightness;
+            GlobalInkSettings.Brightness = brightness;
             GlobalInkSettings.UpdateInkPresenters();
             if (menu != null) menu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
         }

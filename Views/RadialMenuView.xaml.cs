@@ -94,6 +94,7 @@ namespace Dash
 
         private MeterSubMenu _strokeMeter;
         private MeterSubMenu _opacityMeter;
+        private InkSettingsPane _settingsPane;
 
         /// <summary>
         /// Default radial menu with certain menu items
@@ -155,21 +156,22 @@ namespace Dash
 
             _mainMenu = new RadialMenu();
             SetDefaultMenuStyle();
-            _sliderPanel = new StackPanel()
-            {
-                Orientation = Orientation.Vertical,
-                Visibility = Visibility.Collapsed,
-                Background = (SolidColorBrush)App.Instance.Resources["TranslucentWhite"],
-                BorderBrush = (SolidColorBrush) App.Instance.Resources["WindowsBlue"],
-                BorderThickness = new Thickness(2,2,2,2),
-                Margin = new Thickness(0,0,5,0),
-                Padding = new Thickness(3,3,3,3)
-            };
+            //_sliderPanel = new StackPanel()
+            //{
+            //    Orientation = Orientation.Vertical,
+            //    Visibility = Visibility.Collapsed,
+            //    Background = (SolidColorBrush)App.Instance.Resources["TranslucentWhite"],
+            //    BorderBrush = (SolidColorBrush) App.Instance.Resources["WindowsBlue"],
+            //    BorderThickness = new Thickness(2,2,2,2),
+            //    Margin = new Thickness(0,0,5,0),
+            //    Padding = new Thickness(3,3,3,3)
+            //};
 
-            MakeSlider("Brightness ", Actions.SetBrightness);
-
-            _stackPanel.Children.Add(_sliderPanel);
+            //MakeSlider("Brightness ", Actions.SetBrightness);
+            _settingsPane = new InkSettingsPane { VerticalAlignment = VerticalAlignment.Center, Margin=new Thickness(15,0,0,15), Visibility = Visibility.Collapsed};
             _stackPanel.Children.Add(_mainMenu);
+            _stackPanel.Children.Add(_settingsPane);
+            
 
         }
 
@@ -184,8 +186,7 @@ namespace Dash
         /// </summary>
         public void CloseSlider()
         {
-            _floatingMenu.ManipulateControlPosition(_sliderPanel.ActualWidth, 0);
-            _sliderPanel.Visibility = Visibility.Collapsed;
+            _settingsPane.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -196,9 +197,7 @@ namespace Dash
         /// <param name="valueSetAction"></param>
         public void OpenSlider()
         {
-            _sliderPanel.Visibility = Visibility.Visible;
-            _floatingMenu.ManipulateControlPosition(-_sliderPanel.ActualWidth, 0);
-            _mainMenu.CenterButtonBackgroundFill = new SolidColorBrush(GlobalInkSettings.Attributes.Color);
+            _settingsPane.Visibility = Visibility.Visible;
         }
 
         private void MakeSlider(string header, Action<double, RadialMenu> valueSetAction)
@@ -484,9 +483,9 @@ namespace Dash
                 pencilInk,
                 eraserInk,
                 selectButton,
-                toggleInkRecognitionButton,
-                strokeMeter,
-                opacityMeter,
+                //toggleInkRecognitionButton,
+                //strokeMeter,
+                //opacityMeter,
                 inkPalette,
                 inputList
             });

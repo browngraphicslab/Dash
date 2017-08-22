@@ -21,7 +21,7 @@ namespace Dash
     {
         private Rect _boundingRect;
         private InkSelectionMode _inkSelectionMode;
-        private bool _isPressed;
+        private bool _analyzeStrokes;
         private Polygon _lasso;
         private MenuFlyout _pasteFlyout;
         private InkSelectionRect _rectangle;
@@ -43,6 +43,7 @@ namespace Dash
             GlobalInkSettings.FreeformInkControls.Add(this);
             GlobalInkSettings.Presenters.Add(TargetCanvas.InkPresenter);
             GlobalInkSettings.UpdateInkPresenters();
+            TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction = InkInputRightDragAction.AllowProcessing;
             UpdateStrokes();
             ClearSelection();
             UpdateInputType();
@@ -58,11 +59,18 @@ namespace Dash
             TargetCanvas.InkPresenter.StrokesCollected += InkPresenterOnStrokesCollected;
             TargetCanvas.InkPresenter.StrokesErased += InkPresenterOnStrokesErased;
             TargetCanvas.InkPresenter.StrokeInput.StrokeStarted += StrokeInputOnStrokeStarted;
+            TargetCanvas.InkPresenter.StrokeInput.StrokeContinued += StrokeInputOnStrokeContinued;
             TargetCanvas.DoubleTapped += TargetCanvasOnDoubleTapped;
             TargetCanvas.RightTapped += TargetCanvasOnRightTapped;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
         }
-        
+
+        private void StrokeInputOnStrokeContinued(InkStrokeInput sender, PointerEventArgs e)
+        {
+            if (e.CurrentPoint.Properties.IsBarrelButtonPressed ||
+                e.CurrentPoint.Properties.IsRightButtonPressed) _analyzeStrokes = true;
+        }
+
 
         private void MakeFlyout()
         {
@@ -103,6 +111,7 @@ namespace Dash
             {
                 if (TargetCanvas != null)
                 {
+                    TargetCanvas.InkPresenter.InputProcessingConfiguration.RightDragAction = InkInputRightDragAction.AllowProcessing;
                     TargetCanvas.InkPresenter.InputProcessingConfiguration.Mode = InkInputProcessingMode.Inking;
                     TargetCanvas.InkPresenter.UnprocessedInput.PointerPressed -=
                         UnprocessedInput_PointerPressed;
@@ -310,8 +319,9 @@ namespace Dash
         private void InkPresenterOnStrokesCollected(InkPresenter sender, InkStrokesCollectedEventArgs e)
         {
             UpdateInkFieldModelController();
-            if (GlobalInkSettings.IsRecognitionEnabled)
-                InkRecognitionHelper.AddStrokeData(new List<InkStroke>(e.Strokes));
+            InkRecognitionHelper.AddStrokeData(new List<InkStroke>(e.Strokes));
+            if(_analyzeStrokes) InkRecognitionHelper.RecognizeInk();
+            _analyzeStrokes = false;
         }
 
 

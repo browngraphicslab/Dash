@@ -76,6 +76,10 @@ namespace Dash
             //sw.Stop();
 
             _radialMenu = new RadialMenuView(xCanvas);
+            _radialMenu.Loaded += delegate
+            {
+                _radialMenu.JumpToPosition(3*ActualWidth/4, 3*ActualHeight/4);
+            };
             xCanvas.Children.Add(_radialMenu);
         }
 

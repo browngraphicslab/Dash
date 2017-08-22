@@ -290,7 +290,8 @@ namespace Dash
                         position,
                         new Point(position.X + width, position.Y),
                         new Point(position.X + width, position.Y + height),
-                        new Point(position.X, position.Y + height)
+                        new Point(position.X, position.Y + height),
+                        new Point(position.X + width/2, position.Y + height/2)
                     };
                     bool inHull = false;
                     int containedCount = 0;

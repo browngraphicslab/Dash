@@ -20,16 +20,54 @@ namespace Dash
 {
     public sealed partial class InkSettingsPane : UserControl
     {
+        public Symbol BrightnessSymbol { get; set; } = (Symbol) 0xE706;
+        public Symbol SizeSymbol { get; set; } = (Symbol)0xEDA8;
+        public Symbol OpacitySymbol { get; set; } = (Symbol) 0xEB42;
         public InkSettingsPane()
         {
             this.InitializeComponent();
-            var list = new List<SolidColorBrush>();
-            var rand = new Random();
-            for(int i = 0; i < 9; i++)
+            GlobalInkSettings.OnAttributesUpdated += (newBrush) => UpdateExample(newBrush);
+            SizeSlider.Loaded += (sender, args) => SizeSlider.SetValue(RangeBase.ValueProperty, 4);
+
+        }
+
+        private void UpdateExample(SolidColorBrush newBrush)
+        {
+            if (ExampleEllipse != null)
             {
-                list.Add(new SolidColorBrush(Color.FromArgb((byte) rand.Next(0, 255), (byte)rand.Next(0, 255), (byte)rand.Next(0, 255), (byte)rand.Next(0, 255))));
+                ExampleEllipse.Width = ExampleEllipse.Height = GlobalInkSettings.Size;
+                ExampleEllipse.Fill = newBrush;
             }
-            ColorPickerGridView.ItemsSource = list;
+            if (GlobalInkSettings.StrokeType != GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.Value == 5)
+            {
+                Column3.Width = new GridLength(0);
+                Column4.Width = new GridLength(0);
+            }
+            else if (GlobalInkSettings.StrokeType == GlobalInkSettings.StrokeTypes.Pencil && Column3.Width.Value == 0)
+            {
+                Column3.Width = new GridLength(5);
+                Column4.Width = new GridLength(50);
+            }
+        }
+
+        private void OpacitySlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            GlobalInkSettings.Opacity = OpacitySlider.Value / 100;
+            GlobalInkSettings.UpdateInkPresenters();
+        }
+
+        private void SizeSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            GlobalInkSettings.Size = SizeSlider.Value;
+            GlobalInkSettings.UpdateInkPresenters();
+
+        }
+
+        private void BrightnessSlider_OnValueChanged(object sender, RangeBaseValueChangedEventArgs e)
+        {
+            GlobalInkSettings.Brightness = BrightnessSlider.Value;
+            GlobalInkSettings.UpdateInkPresenters();
+
         }
     }
 }

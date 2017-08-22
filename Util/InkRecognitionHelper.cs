@@ -31,10 +31,10 @@ namespace Dash
             NewStrokes = new List<InkStroke>();
             StrokesToRemove = new List<InkStroke>();
             _freeformInkControl = freeformInkControl;
-            _timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(600)};
-            _timer.Tick += TimerOnTick;
-            _timer.Start();
-            GlobalInkSettings.RecognitionChanged += GlobalInkSettingsOnRecognitionChanged;
+            //_timer = new DispatcherTimer {Interval = TimeSpan.FromMilliseconds(600)};
+            //_timer.Tick += TimerOnTick;
+            //_timer.Start();
+            //GlobalInkSettings.RecognitionChanged += GlobalInkSettingsOnRecognitionChanged;
         }
 
         private void GlobalInkSettingsOnRecognitionChanged(bool newValue)
@@ -53,7 +53,7 @@ namespace Dash
 
         private void TimerOnTick(object sender, object o1)
         {
-            if (GlobalInkSettings.IsRecognitionEnabled) RecognizeInk();
+            RecognizeInk();
         }
 
         /// <summary>
@@ -69,13 +69,11 @@ namespace Dash
                 foreach (var newStroke in NewStrokes)
                     //Done separately because it doesn't require ink analyzer
                     TryDeleteWithStroke(newStroke);
-                NewStrokes.Clear();
+                
             }
             var result = await Analyzer.AnalyzeAsync();
             if (result.Status == InkAnalysisStatus.Updated)
             {
-                //Dictionary<Rect, Tuple<string, IEnumerable<uint>>> listBoundsDictionary = GetListBoundsDictionary();
-                //_paragraphBoundsDictionary = GetParagraphBoundsDictionary();
                 _textBoundsDictionary = GetTextBoundsDictionary();
                 // Find circles and rectangles
                 var shapeRegions = Analyzer.AnalysisRoot.FindNodes(InkAnalysisNodeKind.InkDrawing);
@@ -84,21 +82,15 @@ namespace Dash
                     //If the region is a rectangle and was double tapped, add the document
                     if (region.DrawingKind != InkAnalysisDrawingKind.Rectangle &&
                         region.DrawingKind != InkAnalysisDrawingKind.Square) continue;
-                    //if (!ContainsDoubleTapPoint(region.BoundingRect, out List<Point> containedPoints)) continue;
-                    AddDocumentFromShapeRegion(region);
+                    if (RegionContainsNewStroke(region)) AddDocumentFromShapeRegion(region);
                     if(addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
-                    //DoubleTapped = false;
-                    //foreach (var point in containedPoints)
-                    //{
-                    //    DoubleTappedPoints.Remove(point);
-                    //}
                 }
                 //If the region is an ellipse, add a collection
                 foreach (InkAnalysisInkDrawing region in shapeRegions)
                 {
                     if (region.DrawingKind != InkAnalysisDrawingKind.Circle &&
                         region.DrawingKind != InkAnalysisDrawingKind.Ellipse) continue;
-                    AddCollectionFromShapeRegion(region);
+                    if(RegionContainsNewStroke(region)) AddCollectionFromShapeRegion(region);
                     if (addToRemoveList) RemoveStrokeReferences(region.GetStrokeIds().ToImmutableHashSet());
                 }
                 //All of the unused text gets re-added to the InkAnalyzer
@@ -112,6 +104,13 @@ namespace Dash
             }
             if (!addToRemoveList) Analyzer.ClearDataForAllStrokes();
             _freeformInkControl.UpdateInkFieldModelController();
+            NewStrokes.Clear();
+        }
+
+        private bool RegionContainsNewStroke(IInkAnalysisNode region)
+        {
+            return region.GetStrokeIds()
+                .Select(id => _freeformInkControl.TargetCanvas.InkPresenter.StrokeContainer.GetStrokeById(id)).Any(stroke => NewStrokes.Contains(stroke));
         }
 
         private void RemoveStrokeReferences(ICollection<uint> ids)
@@ -162,7 +161,7 @@ namespace Dash
                             .DocumentController);
                     }
             }
-            if (_freeformInkControl.FreeformView.DeleteIntersectingConnections(point1, point2))
+            if (DeleteIntersectingConnections(point1, point2))
                 docsRemoved = true;
             if (docsRemoved)
             {
@@ -172,6 +171,67 @@ namespace Dash
                 Analyzer.RemoveDataForStroke(newStroke.Id);
                 StrokesToRemove.Remove(newStroke);
             }
+        }
+
+        public bool DeleteIntersectingConnections(Point point1, Point point2)
+        {
+            bool lineDeleted = false;
+            var toBeDeleted = new List<FieldReference>();
+            //Calculate line 1
+            var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
+            var yInt1 = point1.Y - point1.X * slope1;
+            var view = _freeformInkControl.FreeformView;
+
+            foreach (var pair in view.LineDict)
+            {
+                //Calculate line 2
+                var line = pair.Value;
+                var converter = line.Converter;
+                var curvePoint1 = converter.Element1.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
+                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2, converter.Element1.ActualHeight / 2));
+                var curvePoint2 = converter.Element2.TransformToVisual(view.xItemsControl.ItemsPanelRoot)
+                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2, converter.Element2.ActualHeight / 2));
+                var slope2 = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
+                var yInt2 = curvePoint1.Y - curvePoint1.X * slope2;
+
+                //Calculate intersection
+                var intersectionX = (yInt2 - yInt1) / (slope1 - slope2);
+                var intersectionY = slope1 * intersectionX + yInt1;
+                var intersectionPoint = new Point(intersectionX, intersectionY);
+
+                //if the intersection is on the two line segments, remove the path and the reference
+                if (PointBetween(intersectionPoint, point1, point2) &&
+                    PointBetween(intersectionPoint, curvePoint1, curvePoint2))
+                {
+                    view.xItemsControl.ItemsPanelRoot.Children.Remove(pair.Value.Line);
+                    toBeDeleted.Add(pair.Key);
+                    var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                    var doc2 = view2.ViewModel.DocumentController;
+                    var fields = doc2.EnumFields().ToImmutableList();
+                    foreach (var field in fields)
+                    {
+                        var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
+                        if (referenceFieldModelController != null)
+                        {
+                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null).Equals(pair.Key.DereferenceToRoot(null));
+                            if (referencesEqual)
+                            {
+                                doc2.SetField(field.Key,
+                                    referenceFieldModelController.DereferenceToRoot(null).Copy(), true);
+                            }
+                        }
+                    }
+                    lineDeleted = true;
+                }
+            }
+            foreach (var key in toBeDeleted) view.LineDict.Remove(key);
+            return lineDeleted;
+        }
+
+        private bool PointBetween(Point testPoint, Point a, Point b)
+        {
+            var rect = new Rect(new Point(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)), new Size(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)));
+            return rect.Contains(testPoint);
         }
 
         private bool IsLinear(IEnumerable<Point> points)
@@ -324,9 +384,8 @@ namespace Dash
                 _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot as Canvas);
             var fields = new Dictionary<KeyController, FieldModelController>();
             var doc = new DocumentController(fields, DocumentType.DefaultType);
-            var textFields = new List<DocumentController>();
+            var layoutDocs = new List<DocumentController>();
             var keysToRemove = new List<Rect>();
-            //TODO: need better differentiation between paragraphs and lines before we can to rtf for paragraphs.
             foreach (var rect in _textBoundsDictionary.Keys)
                 if (RectContainsRect(region.BoundingRect, rect))
                 {
@@ -335,16 +394,25 @@ namespace Dash
                     var key = TryGetKey(str);
                     var text = TryGetText(str);
                     var relativePosition = new Point(rect.X - topLeft.X, rect.Y - topLeft.Y);
-                    doc.SetField(key, new TextFieldModelController(text), true);
+                    double n;
+                    bool isNumeric = double.TryParse(text, out n);
+                    if (isNumeric)
+                    {
+                        doc.SetField(key, new NumberFieldModelController(n), true);
+                    }
+                    else
+                    {
+                        doc.SetField(key, new TextFieldModelController(text), true);
+                    }
                     var textBox = new TextingBox(new ReferenceFieldModelController(doc.GetId(), key),
-                        relativePosition.X, relativePosition.Y, rect.Width * 1.5, rect.Height);
+                        relativePosition.X, relativePosition.Y, rect.Width, rect.Height);
                     (textBox.Document.GetField(TextingBox.FontSizeKey) as NumberFieldModelController).Data =
-                        rect.Height / 1.3;
-                    textFields.Add(textBox.Document);
+                        rect.Height / 1.5;
+                    layoutDocs.Add(textBox.Document);
                     keysToRemove.Add(rect);
                 }
             foreach (var key in keysToRemove) _textBoundsDictionary.Remove(key);
-            var layout = new FreeFormDocument(textFields,
+            var layout = new FreeFormDocument(layoutDocs,
                 position, size).Document;
             doc.SetActiveLayout(layout, true, true);
             _freeformInkControl.FreeformView.ViewModel.AddDocument(doc, null);
@@ -403,7 +471,7 @@ namespace Dash
         public void AddStrokeData(List<InkStroke> strokes)
         {
             Analyzer.AddDataForStrokes(strokes);
-            NewStrokes.AddRange(strokes);
+            NewStrokes = strokes;
         }
 
         public void RemoveStrokeData(List<InkStroke> strokes)
@@ -414,7 +482,7 @@ namespace Dash
 
         public void RecognizeAndForgetStrokes(IEnumerable<InkStroke> strokes)
         {
-            Analyzer.AddDataForStrokes(strokes);
+            AddStrokeData(new List<InkStroke>(strokes));
             RecognizeInk(false);
         }
     }

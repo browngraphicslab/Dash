@@ -9,62 +9,61 @@
     xmlns:generic="using:System.Collections.Generic"
     xmlns:objectModel="using:System.Collections.ObjectModel"
     mc:Ignorable="d"
-    d:DesignHeight="500"
-    d:DesignWidth="300">
+    d:DesignHeight="250" d:DesignWidth="160">
 
-    <Grid Width="250" Padding="-2,0,0,0" BorderThickness="1.5">
-        <Grid.Resources>
-            <Style TargetType="Button">
-                <Setter Property="Width" Value="45"/>
-                <Setter Property="Height" Value="45"/>
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="Padding" Value="0"></Setter>
-            </Style>
-            <Style TargetType="Ellipse">
-                <Setter Property="Width" Value="40"></Setter>
-                <Setter Property="Height" Value="40"></Setter>
-                <Setter Property="Stroke" Value="#66000000"></Setter>
-                <Setter Property="StrokeThickness" Value="2"></Setter>
-            </Style>
-        </Grid.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="50"></ColumnDefinition>
+            <ColumnDefinition Width="5"></ColumnDefinition>
+            <ColumnDefinition Width="50"></ColumnDefinition>
+            <ColumnDefinition x:Name="Column3" Width="5"></ColumnDefinition>
+            <ColumnDefinition x:Name="Column4" Width="50"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="88"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition Height="200"></RowDefinition>
         </Grid.RowDefinitions>
-        <Grid.BorderBrush>
-            <SolidColorBrush Color="#66000000"/>
-        </Grid.BorderBrush>
-        <Grid.Background>
-            <SolidColorBrush Color="#7FBEBEBE"/>
-        </Grid.Background>
-        <Rectangle Grid.Row="0" Fill="#FFF4F4F5" HorizontalAlignment="Stretch" Height="64" Margin="10,14,10,0" Stroke="Black" VerticalAlignment="Top"/>
-        <InkCanvas Grid.Row="0" x:Name="ExampleCanvas" HorizontalAlignment="Stretch" Height="64" Margin="10,12,10,0" VerticalAlignment="Top"></InkCanvas>
-        <ListView Grid.Row="1" SelectionMode="None">
-            <GridView x:Name="ColorPickerGridView" Width="202" SelectionMode="None" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <Button>
-                            <Button.Content>
-                                <Ellipse Fill="{Binding}" Width="20" Height="20" Stroke="Black" ></Ellipse>
-                            </Button.Content>
-                        </Button>
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
-            <TextBlock Text="Opacity" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Padding="0">
-                <TextBlock.Foreground>
-                    <SolidColorBrush Color="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
-                </TextBlock.Foreground>
-            </TextBlock>
-            <Slider Width="257" Height="37" Foreground="{StaticResource WindowsBlue}"/>
-            <TextBlock Text="Size" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Padding="0">
-                <TextBlock.Foreground>
-                    <SolidColorBrush Color="{ThemeResource ScrollBarPanningThumbBackgroundColor}"/>
-                </TextBlock.Foreground>
-            </TextBlock>
-            <Slider Width="257" Foreground="{StaticResource WindowsBlue}" />
-            <Button Content="Recognize" Width="90" Background="{StaticResource WindowsBlue}" Foreground="White"></Button>
-           
-        </ListView>
+        <Rectangle Grid.Row="1" Grid.Column="0" Fill="{StaticResource TranslucentWhite}" RadiusY="7.5" RadiusX="7.5" Stroke="DarkGray" Margin="0,0,0,-10"></Rectangle>
+        <SymbolIcon Symbol="{x:Bind BrightnessSymbol}" Grid.Row="1" Grid.Column="0" VerticalAlignment="Top" Margin="0,20,0,0"></SymbolIcon>
+        <Slider x:Name="BrightnessSlider" Grid.Row="1" Grid.Column="0" Orientation="Vertical" Margin="6,50,0,10" TickPlacement="None" Minimum="0" Maximum="100" ValueChanged="BrightnessSlider_OnValueChanged" StepFrequency="1"></Slider>
+        <Rectangle Grid.Row="1" Grid.Column="2" Fill="{StaticResource TranslucentWhite}" RadiusY="7.5" RadiusX="7.5" Stroke="DarkGray" Margin="0,0,0,-10"></Rectangle>
+        <SymbolIcon Symbol="{x:Bind SizeSymbol}" Grid.Row="1" Grid.Column="2" VerticalAlignment="Top" Margin="0,20,0,0"></SymbolIcon>
+        <Slider x:Name="SizeSlider" Grid.Row="1" Grid.Column="2" Orientation="Vertical" Margin="6,50,0,10" TickPlacement="None" Minimum="0.5" Maximum="30" ValueChanged="SizeSlider_OnValueChanged"></Slider>
+        <Rectangle Grid.Row="1" Grid.Column="4" Fill="{StaticResource TranslucentWhite}" RadiusY="7.5" RadiusX="7.5" Stroke="DarkGray" Margin="0,0,0,-10"></Rectangle>
+        <SymbolIcon Symbol="{x:Bind OpacitySymbol}" Grid.Row="1" Grid.Column="4" VerticalAlignment="Top" Margin="0,20,0,0"></SymbolIcon>
+        <Slider x:Name="OpacitySlider" Grid.Row="1" Grid.Column="4" Orientation="Vertical" Margin="6,50,0,10" TickPlacement="None" Minimum="0" Maximum="100" ValueChanged="OpacitySlider_OnValueChanged" StepFrequency="1"></Slider>
+        <Grid Grid.Column="0" Grid.ColumnSpan="5" Grid.Row="0" BorderThickness="1" VerticalAlignment="Top" HorizontalAlignment="Center" Width="150" Height="45">
+            <Ellipse x:Name="ExampleEllipse" HorizontalAlignment="Center"></Ellipse>
+        </Grid>
+        <!--<Grid Grid.Column="0" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"></RowDefinition>
+                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="50"></RowDefinition>
+                <RowDefinition Height="50"></RowDefinition>
+            </Grid.RowDefinitions>
+            <Button Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent" Width="40" Height="40" Padding="0">
+                <Button.Content>
+                    <Grid>
+                        <Rectangle Fill="{StaticResource SelectedGrey}" Width="40" Height="40" RadiusY="7.5" RadiusX="7.5" Stroke="DarkGray"></Rectangle>
+                    </Grid>
+                </Button.Content>
+            </Button>
+            <Button Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent" Width="40" Height="40" Padding="0">
+                <Button.Content>
+                    <Grid>
+                        <Rectangle Fill="{StaticResource SelectedGrey}" Width="40" Height="40" RadiusY="7.5" RadiusX="7.5" Stroke="DarkGray"></Rectangle>
+                    </Grid>
+                </Button.Content>
+            </Button>
+            <Button Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center" Background="Transparent" Width="40" Height="40" Padding="0">
+                <Button.Content>
+                    <Grid>
+                        <Rectangle Fill="{StaticResource SelectedGrey}" Width="40" Height="40" RadiusY="7.5" RadiusX="7.5" Stroke="DarkGray"></Rectangle>
+                    </Grid>
+                </Button.Content>
+            </Button>
+        </Grid>-->
     </Grid>
+
 </UserControl>

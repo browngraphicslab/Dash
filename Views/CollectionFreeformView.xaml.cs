@@ -186,72 +186,6 @@ namespace Dash
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="point1"></param>
-        /// <param name="point2"></param>
-        /// <returns></returns>
-        public bool DeleteIntersectingConnections(Point point1, Point point2)
-        {
-            bool lineDeleted = false;
-            var toBeDeleted = new List<FieldReference>();
-            //Calculate line 1
-            var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
-            var yInt1 = point1.Y - point1.X * slope1;
-
-            foreach (var pair in LineDict)
-            {
-                //Calculate line 2
-                var line = pair.Value;
-                var converter = line.Converter;
-                var curvePoint1 = converter.Element1.TransformToVisual(itemsPanelCanvas)
-                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2, converter.Element1.ActualHeight / 2));
-                var curvePoint2 = converter.Element2.TransformToVisual(itemsPanelCanvas)
-                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2, converter.Element2.ActualHeight / 2));
-                var slope2 = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
-                var yInt2 = curvePoint1.Y - curvePoint1.X * slope2;
-
-                //Calculate intersection
-                var intersectionX = (yInt2 - yInt1) / (slope1 - slope2);
-                var intersectionY = slope1 * intersectionX + yInt1;
-                var intersectionPoint = new Point(intersectionX, intersectionY);
-
-                //if the intersection is on the two line *segments*, remove the path and the reference
-                if (PointBetween(intersectionPoint, point1, point2) &&
-                    PointBetween(intersectionPoint, curvePoint1, curvePoint2))
-                {
-                    itemsPanelCanvas.Children.Remove(pair.Value.Line);
-                    toBeDeleted.Add(pair.Key);
-                    var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                    var doc2 = view2.ViewModel.DocumentController;
-                    var fields = doc2.EnumFields().ToImmutableList();
-                    foreach (var field in fields)
-                    {
-                        var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
-                        if (referenceFieldModelController != null)
-                        {
-                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null).Equals(pair.Key.DereferenceToRoot(null));
-                            if (referencesEqual)
-                            {
-                                doc2.SetField(field.Key,
-                                    referenceFieldModelController.DereferenceToRoot(null).Copy(), true);
-                            }
-                        }
-                    }
-                    lineDeleted = true;
-                }
-            }
-            foreach (var key in toBeDeleted) LineDict.Remove(key);
-            return lineDeleted;
-        }
-
-        private bool PointBetween(Point testPoint, Point a, Point b)
-        {
-            var rect = new Rect(new Point(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)), new Size(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)));
-            return rect.Contains(testPoint);
-        }
-
         private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
 
         /// <summary>
@@ -533,7 +467,7 @@ namespace Dash
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
             {
-                foreach (var line in _lineDict.Values)
+                foreach (var line in LineDict.Values)
                     line.Converter.UpdateLine();
             }
         }
@@ -934,7 +868,7 @@ namespace Dash
             if (carrier.StartingCollection != this)
             {
                 carrier.StartingCollection.Collection_DragLeave(sender, e);
-                ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
+                ViewModel.CollectionViewOnDragEnter(sender, e);
                 return;
             }
 
