@@ -145,8 +145,7 @@ namespace Dash
                     SetHandler = TextSetHandler,
                     Mode = BindingMode.TwoWay,
                     Context = context,
-                    GetConverter = GetFieldConverter,
-                    EvalBindingOnSet = true
+                    GetConverter = GetFieldConverter
                 };
                 element.AddFieldBinding(TextBlock.TextProperty, binding);
 
@@ -180,7 +179,7 @@ namespace Dash
             }
         }
 
-        static IValueConverter GetFieldConverter(FieldModelController fieldModelController)
+        static protected IValueConverter GetFieldConverter(FieldModelController fieldModelController)
         {
             if (fieldModelController is TextFieldModelController)
             {
@@ -201,7 +200,7 @@ namespace Dash
             return null;
         }
 
-        private static object TextGetHandler(FieldModelController fieldModelController)
+        protected static object TextGetHandler(FieldModelController fieldModelController)
         {
             if (fieldModelController is TextFieldModelController)
             {

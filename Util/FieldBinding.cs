@@ -24,7 +24,6 @@ namespace Dash
         public SetHandler<T> SetHandler;
         public GetHandler<T> GetHandler;
         public GetConverter<T> GetConverter;
-        public bool EvalBindingOnSet = false;
 
         public Context Context;
 
@@ -108,14 +107,13 @@ namespace Dash
                     {
                         var value = sender.GetValue(dp);
                         updateUI = false;
-                        var refField = binding.Document.GetField(binding.Key) as ReferenceFieldModelController;
-                        if (binding.Converter != null)
+                        var field = binding.Document.GetDereferencedField<U>(binding.Key, binding.Context);
+                        var converter = binding.GetConverter != null ? binding.GetConverter(field) : binding.Converter;
+                        if (converter != null)
                         {
-                            value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
+                            value = converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
                         }
                         binding.SetHandler(binding, binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
-                        if (binding.EvalBindingOnSet)
-                            element.SetValue(property, EvaluateBinding(binding));
                         updateUI = true;
                     }
                 };
