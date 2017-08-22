@@ -44,11 +44,9 @@ namespace Dash
                         else
                         {
                             DocumentViewModels.Clear();
-                            var documents = args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).GetDocuments();
-                            AddDocuments(documents, copiedContext);
 
                             if (cargs == null)
-                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, _collectionFieldModelController.Data);
+                                cargs = new DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs(DocumentCollectionFieldModelController.CollectionFieldUpdatedEventArgs.CollectionChangedAction.Add, args.NewValue.DereferenceToRoot<DocumentCollectionFieldModelController>(args.Context).Data);
                             UpdateViewModels(cargs, copiedContext);
                         }
                     });
