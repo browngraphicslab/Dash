@@ -41,16 +41,16 @@ namespace Dash
 
         #region LinkingVariables
 
-        public class LinePackage
-        {
-            public Path Line;
-            public BezierConverter Converter;
-            public LinePackage(BezierConverter converter, Path line)
-            {
-                Converter = converter;
-                Line = line;
-            }
-        }
+        //public class LinePackage
+        //{
+        //    public Path Line;
+        //    public BezierConverter Converter;
+        //    public LinePackage(BezierConverter converter, Path line)
+        //    {
+        //        Converter = converter;
+        //        Line = line;
+        //    }
+        //}
 
         public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
@@ -59,7 +59,12 @@ namespace Dash
         private Path _connectionLine;
         private BezierConverter _converter;
         private MultiBinding<PathFigureCollection> _lineBinding;
-        private Dictionary<FieldReference, LinePackage> _lineDict = new Dictionary<FieldReference, LinePackage>();
+
+        private Dictionary<FieldReference, Path> _refToLine = new Dictionary<FieldReference, Path>();
+        private Dictionary<Path, BezierConverter> _lineToConverter = new Dictionary<Path, BezierConverter>();
+        private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
+
+
         private Canvas itemsPanelCanvas;
 
         #endregion
@@ -149,32 +154,29 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                var package = _linesToBeDeleted[refs[i]];
-                itemsPanelCanvas.Children.Remove(package.Line);
-                _lineDict.Remove(refs[i]);
+                var line = _linesToBeDeleted[refs[i]];
+                itemsPanelCanvas.Children.Remove(line);
+                _refToLine.Remove(refs[i]);
+                _lineToConverter.Remove(line); 
             }
-            _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
+            _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
-
-        private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
-
         /// <summary>
         /// Adds the lines to be deleted as part of fading storyboard 
         /// </summary>
         /// <param name="fadeout"></param>
         public void AddToStoryboard(Windows.UI.Xaml.Media.Animation.Storyboard fadeout, DocumentView docView)
         {
-            foreach (var pair in _lineDict)
+            foreach (var pair in _refToLine)
             {
-                var line = pair.Value;
-                var converter = line.Converter;
+                var converter = _lineToConverter[pair.Value];
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
 
                 if (view1 == docView || view2 == docView)
                 {
                     var animation = new Windows.UI.Xaml.Media.Animation.FadeOutThemeAnimation();
-                    Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, line.Line);
+                    Windows.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, pair.Value);
                     fadeout.Children.Add(animation);
                     _linesToBeDeleted.Add(pair.Key, pair.Value);
                 }
@@ -188,9 +190,8 @@ namespace Dash
         /// <param name="docView">the documentview that calls the method</param>
         public void UpdateBinding(bool becomeSmall, DocumentView docView)
         {
-            foreach (var package in _lineDict.Values)
+            foreach (var converter in _lineToConverter.Values)
             {
-                var converter = package.Converter;
                 var view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                 var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 Debug.Assert(view1 != null);
@@ -247,19 +248,52 @@ namespace Dash
             {
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
-                IsHitTestVisible = false,
+                //IsHitTestVisible = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+
+            //_connectionLine.Tapped += (s, e) =>
+            //{
+            //    var line = s as Path;
+            //    line.Stroke = line.Stroke == (SolidColorBrush)App.Instance.Resources["AccentGreen"] ? new SolidColorBrush(Colors.Goldenrod) : (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+            //    e.Handled = true; 
+            //};
+
+            /* 
+            _connectionLine.PointerReleased += (s, e) =>
+            {
+                // figure out which one gets the event first 
+                (s as Path).Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"]; 
+                e.Handled = true; 
+            }; 
+            */ 
+            _connectionLine.PointerPressed += (s, e) =>
+            {
+                var line = s as Path;
+                e.Handled = true;
+
+                if (line.Stroke == (SolidColorBrush)App.Instance.Resources["AccentGreen"])
+                {
+                    line.Stroke = new SolidColorBrush(Colors.Goldenrod);
+                    return;
+                }
+                else
+                {
+                    _connectionLine = s as Path;
+                    var dropPoint = e.GetCurrentPoint(itemsPanelCanvas).Position;
+                    // get the fuckign converetr errerer
+                }
+            };
+
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
             _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
 
-            _lineBinding =
-                new MultiBinding<PathFigureCollection>(_converter, null);
+            _lineBinding = new MultiBinding<PathFigureCollection>(_converter, null);
             _lineBinding.AddBinding(ioReference.ContainerView, RenderTransformProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, WidthProperty);
             _lineBinding.AddBinding(ioReference.ContainerView, HeightProperty);
@@ -273,12 +307,6 @@ namespace Dash
             _connectionLine.Data = pathGeo;
 
             itemsPanelCanvas.Children.Add(_connectionLine);
-
-            //if (!ioReference.IsOutput)
-            //{
-            //CheckLinePresence(_converter);
-            //_lineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
-            //}
         }
 
         public void CancelDrag(Pointer p)
@@ -347,7 +375,8 @@ namespace Dash
             if (_connectionLine != null)
             {
                 CheckLinePresence(ioReference.FieldReference);
-                _lineDict.Add(ioReference.FieldReference, new LinePackage(_converter, _connectionLine));
+                _refToLine.Add(ioReference.FieldReference, _connectionLine);
+                _lineToConverter.Add(_connectionLine, _converter); 
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -368,14 +397,13 @@ namespace Dash
         /// <summary>
         /// Helper function that checks if connection line is already present for input ellipse; if so, destroy that line and create a new one  
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
         private void CheckLinePresence(FieldReference reference)
         {
-            if (!_lineDict.ContainsKey(reference)) return;
-            var line = _lineDict[reference];
-            itemsPanelCanvas.Children.Remove(line.Line);
-            _lineDict.Remove(reference);
+            if (!_refToLine.ContainsKey(reference)) return;
+            var line = _refToLine[reference];
+            itemsPanelCanvas.Children.Remove(line);
+            _refToLine.Remove(reference);
+            _lineToConverter.Remove(line); 
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
@@ -434,8 +462,8 @@ namespace Dash
             // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
             if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
             {
-                foreach (var line in _lineDict.Values)
-                    line.Converter.UpdateLine();
+                foreach (var converter in _lineToConverter.Values)
+                    converter.UpdateLine();
             }
         }
 
@@ -674,7 +702,7 @@ namespace Dash
 
             ViewModel.CollectionViewOnDrop(sender, e);
         }
-        
+
 
         #endregion
 

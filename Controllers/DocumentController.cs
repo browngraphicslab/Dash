@@ -473,6 +473,7 @@ namespace Dash
         private bool IsTypeCompatible(KeyController key, FieldModelController field)
         {
             var cont = GetField(key);
+            if (cont is ReferenceFieldModelController) cont = cont.DereferenceToRoot(null);
             if (cont == null) return true; 
             var rawField = field.DereferenceToRoot(null);
 
