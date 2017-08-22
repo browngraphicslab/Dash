@@ -342,7 +342,6 @@ namespace Dash
         protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
         {
             renderElement.ManipulationMode = ManipulationModes.All;
-            //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
             renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)
             {
                 var view = renderElement.GetFirstAncestorOfType<ICollectionView>();
@@ -363,7 +362,7 @@ namespace Dash
                 var freeform = view as CollectionFreeformView;
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.CanLink = true;
-                (view as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
+                freeform?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, freeform.PointerArgs, renderElement,
                     renderElement.GetFirstAncestorOfType<DocumentView>()));
             };
             renderElement.PointerPressed += delegate (object sender, PointerRoutedEventArgs args)
@@ -373,14 +372,10 @@ namespace Dash
                 if (view == null) return; // we can't always assume we're on a collection
                 if (freeform != null) freeform.PointerArgs = args;
                 args.Handled = true;
-                if (args.GetCurrentPoint(view as CollectionFreeformView).Properties.IsLeftButtonPressed)
-                {
-
-                }
-                else if (args.GetCurrentPoint(view as CollectionFreeformView).Properties.IsRightButtonPressed)
+                if (args.GetCurrentPoint(freeform).Properties.IsRightButtonPressed)
                 {
                     if (freeform != null) freeform.CanLink = true;
-                    (view as CollectionFreeformView)?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
+                    freeform?.StartDrag(new IOReference(fieldKey, fmController, reference, true, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()));
                 }
             };
@@ -392,8 +387,7 @@ namespace Dash
                 if (freeform != null) freeform.CanLink = false;
 
                 args.Handled = true;
-                (view as CollectionFreeformView)?.EndDrag(
-                    new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
+                freeform?.EndDrag(new IOReference(fieldKey, fmController, reference, false, fmController.TypeInfo, args, renderElement,
                         renderElement.GetFirstAncestorOfType<DocumentView>()), false);
 
             };

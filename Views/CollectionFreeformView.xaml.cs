@@ -255,32 +255,32 @@ namespace Dash
             {
                 StrokeThickness = 5,
                 Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
-                //IsHitTestVisible = false,
+                IsHoldingEnabled = false, 
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
-                CompositeMode =
-                    ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
+                CompositeMode = ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
-            _connectionLine.Tapped += (s, e) => e.Handled = true;
-
+            _connectionLine.Tapped += (s, e) =>
+            {
+                e.Handled = true;
+                var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"]; 
+                (s as Path).Stroke = (s as Path).Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
+                IsHoldingEnabled = !IsHoldingEnabled; // TODO add holding event 
+            };
+            
             _connectionLine.PointerPressed += (s, e) =>
             {
+                if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return; 
                 var line = s as Path;
-                if (line.Stroke == (SolidColorBrush)App.Instance.Resources["AccentGreen"])
-                {
-                    line.Stroke = new SolidColorBrush(Colors.Goldenrod);
-                    return;
-                }
-                else
+                if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
                 {
                     var dropPoint = e.GetCurrentPoint(itemsPanelCanvas).Position;
                     var converter = _lineToConverter[line];
                     if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
                     {
-                        return;
-                        // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS................. 
+                        // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS.....????? 
                     }
                     else
                     {
@@ -288,17 +288,17 @@ namespace Dash
                         _connectionLine = line;
                         converter.Element2 = null;
                         _currReference = ioReference;
-                        _converter = _lineToConverter[line]; 
+                        _converter = _lineToConverter[line];
                         ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
-                        //todo remove binding ...................................uh 
+
+                        //todo remove binding ...................................uh
+                        var reference = _refToLine.FirstOrDefault(x => x.Value == line).Key;
+                        DocumentController inputController = reference.GetDocumentController(null);
+                        var thing = inputController.GetField(reference.FieldKey) as ReferenceFieldModelController;
+                        FieldModelController rawField = thing.DereferenceToRoot(null);
+                        inputController.SetField(reference.FieldKey, rawField, true); 
                     }
                 }
-            };
-
-            _connectionLine.PointerReleased += (s, e) =>
-            {
-                ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
-                ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
             };
 
             Canvas.SetZIndex(_connectionLine, -1);
@@ -324,6 +324,8 @@ namespace Dash
         public void CancelDrag(Pointer p)
         {
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(false);
+            ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
             if (p != null) _currentPointers.Remove(p.PointerId);
             UndoLine();
         }
@@ -386,6 +388,7 @@ namespace Dash
 
             if (_connectionLine != null)
             {
+                _connectionLine.Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 CheckLinePresence(ioReference.FieldReference);
                 _refToLine.Add(ioReference.FieldReference, _connectionLine);
                 if (!_lineToConverter.ContainsKey(_connectionLine)) _lineToConverter.Add(_connectionLine, _converter);

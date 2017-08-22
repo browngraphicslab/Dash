@@ -88,7 +88,7 @@ namespace Dash
         public void SetGlobalHitTestVisiblityOnSelectedItems(bool isHitTestVisible)
         {
             GlobalHitTestVisibility = isHitTestVisible;
-            //Debug.WriteLine($"Global hit test visibility : {isHitTestVisible}");
+            Debug.WriteLine($"Global hit test visibility : {isHitTestVisible}");
         }
     }
 }
