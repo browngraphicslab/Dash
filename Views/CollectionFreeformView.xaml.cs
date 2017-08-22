@@ -40,18 +40,7 @@ namespace Dash
 
 
         #region LinkingVariables
-
-        //public class LinePackage
-        //{
-        //    public Path Line;
-        //    public BezierConverter Converter;
-        //    public LinePackage(BezierConverter converter, Path line)
-        //    {
-        //        Converter = converter;
-        //        Line = line;
-        //    }
-        //}
-
+        
         public bool CanLink = true;
         public PointerRoutedEventArgs PointerArgs;
         private HashSet<uint> _currentPointers = new HashSet<uint>();
@@ -63,7 +52,6 @@ namespace Dash
         private Dictionary<FieldReference, Path> _refToLine = new Dictionary<FieldReference, Path>();
         private Dictionary<Path, BezierConverter> _lineToConverter = new Dictionary<Path, BezierConverter>();
         private Dictionary<FieldReference, Path> _linesToBeDeleted = new Dictionary<FieldReference, Path>();
-
 
         private Canvas itemsPanelCanvas;
 
@@ -108,14 +96,6 @@ namespace Dash
 
             if (vm != null)
             {
-                //var itemsBinding = new Binding
-                //{
-                //    Source = vm,
-                //    Path = new PropertyPath(nameof(vm.DocumentViewModels)),
-                //    Mode = BindingMode.OneWay
-                //};
-                //xItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, itemsBinding);
-
                 ViewModel = vm;
                 ViewModel.SetSelected(this, IsSelected);
             }
@@ -223,6 +203,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Method used to determine with end of the line to manipulate upon drag 
+        /// </summary>
         private static bool IsCloserToStart(Point point, Point start, Point end)
         {
             var d1 = Math.Pow(point.X - start.X, 2) + Math.Pow(point.Y - start.Y, 2);
@@ -230,6 +213,12 @@ namespace Dash
             return d1 < d2;
         }
 
+        /// <summary>
+        /// Helper method to start changing the connectionLines upon drag 
+        /// </summary>
+        /// <param name="dropPoint"> origin of manipulation </param>
+        /// <param name="line"> the connection line to change </param>
+        /// <param name="ioReference"> the reference for starting field </param>
         private void ChangeLineConnection(Point dropPoint, Path line, IOReference ioReference)
         {
             if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
@@ -237,7 +226,7 @@ namespace Dash
                 _converter = _lineToConverter[line];
                 //if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
                 //{
-                //                                                                                                      // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS OR NOT 
+                //                                                               // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS OR NOT 
                 //}
                 //else
                 {
@@ -338,6 +327,9 @@ namespace Dash
             UndoLine();
         }
 
+        /// <summary>
+        /// Frees references and removes the line graphically 
+        /// </summary>
         private void UndoLine()
         {
             if (_connectionLine != null) itemsPanelCanvas.Children.Remove(_connectionLine);
