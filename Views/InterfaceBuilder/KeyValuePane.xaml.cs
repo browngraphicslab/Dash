@@ -332,92 +332,16 @@ namespace Dash
                 };
                 return;
             }
-
-            TypeInfo type = _selectedKV.Controller.FieldModelController.TypeInfo;
-            if (type == TypeInfo.Text)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var textCont = _selectedKV.Controller.FieldModelController as TextFieldModelController;
-                        textCont.Data = _tb.Text;
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Number)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var textCont = _selectedKV.Controller.FieldModelController as NumberFieldModelController;
-                        double number;
-                        if (double.TryParse(_tb.Text, out number))
-                            textCont.Data = number;
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Image)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var textCont = _selectedKV.Controller.FieldModelController as ImageFieldModelController;
-                        (textCont.Data as BitmapImage).UriSource = new Uri(_tb.Text);
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Document)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var docCont = _selectedKV.Controller.FieldModelController as DocumentFieldModelController;
-                        docCont.Data = new DocumentControllerToStringConverter().ConvertXamlToData(_tb.Text);
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Collection)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var docCont = _selectedKV.Controller.FieldModelController as DocumentCollectionFieldModelController;
-                        docCont.SetDocuments(new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text));
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Reference) 
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        // TODO: this assumes we're referencing a collection of documents -- need to generalize
-                        var docCont = _selectedKV.Controller.FieldModelController as DocumentCollectionFieldModelController;
-                        docCont.SetDocuments(new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text));
-                        RemoveEditingTextBox();
-                    }
-                };
-
-            } else
-                throw new NotImplementedException();
             
+            _tb.KeyDown += (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.Enter)
+                {
+                    DBTest.ResetCycleDetection();
+                    this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, _selectedKV.Controller.FieldModelController);
+                    RemoveEditingTextBox();
+                }
+            };
         }
 
         private void RemoveEditingTextBox()

@@ -494,11 +494,11 @@ namespace Dash
 
             #endregion
 
-            Action<object, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
+            Action<ICollectionView, DragEventArgs> onOperatorAdd = Actions.OnOperatorAdd;
             Action<ICollectionView, DragEventArgs> addCollection = Actions.AddCollection;
             Action<ICollectionView, DragEventArgs> addDocument = Actions.AddDocument;
 
-            var operatorButton = new RadialActionModel("Operator", (Symbol)0xE8EF) { GenericDropAction = onOperatorAdd, IsDraggable = true};
+            var operatorButton = new RadialActionModel("Operator", (Symbol)0xE8EF) { CollectionDropAction = onOperatorAdd, IsDraggable = true};
             var collectionButton = new RadialActionModel("Collection", (Symbol)0xE8B7) { CollectionDropAction = addCollection, IsDraggable = true};
             var documentButton = new RadialActionModel("Document", (Symbol)0xE160) {CollectionDropAction = addDocument, IsDraggable = true};
 

@@ -64,7 +64,7 @@ namespace Dash
             return prototypeDocument;
         }
 
-        protected new static void SetupBindings(FrameworkElement element, DocumentController docController, Context context)
+        protected static void SetupBindings(TextBlock element, DocumentController docController, Context context)
         {
             CourtesyDocument.SetupBindings(element, docController, context);
             BindFontWeight(element, docController, context);
@@ -86,15 +86,22 @@ namespace Dash
         /// <returns></returns>
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
-            // create the textblock
-            var editableTB = new EditableTextBlock();
-            TextBlock tb = isEditable ? editableTB.Block : new TextBlock(); 
+            FrameworkElement element;
+            TextBlock tb;
 
-            SetupBindings(tb, docController, context);
-            if (isEditable) {
-               // SetupBindings(editableTB.Box, docController, context);
-                CourtesyDocument.SetupBindings(editableTB, docController, context); 
+            if (isEditable)
+            {
+                var editableTB = new EditableTextBlock();
+                tb = editableTB.Block;
+                CourtesyDocument.SetupBindings(editableTB, docController, context);
+                element = editableTB;
             }
+            else
+            {
+                tb = new TextBlock();
+                element = tb;
+            }
+            SetupBindings(tb, docController, context);
 
             // add bindings to work with operators
             var referenceToText = GetTextReference(docController);
@@ -111,64 +118,47 @@ namespace Dash
 
             if (isInterfaceBuilderLayout)
             {
-                var selectableContainer = new SelectableContainer(tb, docController);
+                var selectableContainer = new SelectableContainer(element, docController);
                 //SetupBindings(selectableContainer, docController, context);
                 return selectableContainer;
             }
 
-            if (isEditable) return editableTB; 
-            return tb;
+            return element;
         }
         #region Bindings
-
-        protected static void BindProperty<T>(FrameworkElement element, FieldBinding<T> binding,
-            DependencyProperty textBoxProperty, DependencyProperty textBlockProperty) where T : FieldModelController
-        {
-            if (element is TextBlock)
-            {
-                element.AddFieldBinding(textBlockProperty, binding);
-            }
-            else if (element is TextBox)
-            {
-                element.AddFieldBinding(textBoxProperty, binding);
-                (element as TextBox).KeyDown += TextingBox_KeyDown;
-            }
-        }
 
         private static void TextingBox_KeyDown(object sender, KeyRoutedEventArgs e)
         {
             DBTest.ResetCycleDetection();
         }
 
-        protected static void SetupTextBinding(FrameworkElement element, DocumentController controller, Context context)
+        protected static void SetupTextBinding(TextBlock element, DocumentController docController, Context context)
         {
-            BindTextSource(element, controller, context, KeyStore.DataKey);
-        }
-
-        protected static void BindTextSource(FrameworkElement element, DocumentController docController, Context context, KeyController key)
-        {
-            var data = docController.GetDereferencedField(key, context);
+            var data = docController.GetDereferencedField(KeyStore.DataKey, context);
             if (data != null)
             {
                 var binding = new FieldBinding<FieldModelController>()
                 {
                     Document = docController,
-                    Key = key,
+                    Key = KeyStore.DataKey,
                     GetHandler = TextGetHandler,
                     SetHandler = TextSetHandler,
                     Mode = BindingMode.TwoWay,
                     Context = context,
                     Converter = getFieldConverter(data)
                 };
-                BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+                element.AddFieldBinding(TextBlock.TextProperty, binding);
 
+                // we need to update the TextBlock's binding whenever it contains one or more documents and their primary key(s) change.
+                // Although the binding target technically hasn't changed (it's still the same document(s)), the way it should be displayed (ie, the value of its primary keys) has.
+                // The current binding mechanism doesn't promote document field changes to signal changes on DocumentFieldModels or DocumentCollectionFieldModels.
                 if (data is DocumentCollectionFieldModelController)
                 {
                     ContainedDocumentFieldUpdatedHandler hdlr = (collection, doc, subArgs) =>
                     {
                         if ((doc.GetDereferencedField(KeyStore.PrimaryKeyKey, subArgs.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == subArgs.Reference.FieldKey.Id).Count() > 0)
                         {
-                            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+                            element.AddFieldBinding(TextBlock.TextProperty, binding);
                         }
                     };
                     element.Loaded += (sender, args) => (data as DocumentCollectionFieldModelController).ContainedDocumentFieldUpdatedEvent += hdlr;
@@ -180,7 +170,7 @@ namespace Dash
                     {
                         if (((data as DocumentFieldModelController).Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
                         {
-                            BindProperty(element, binding, TextBox.TextProperty, TextBlock.TextProperty);
+                            element.AddFieldBinding(TextBlock.TextProperty, binding);
                         }
                     });
                     element.Loaded += (sender, args) => (data as DocumentFieldModelController).Data.DocumentFieldUpdated += hdlr;
@@ -273,7 +263,7 @@ namespace Dash
             throw new NotImplementedException();
         }
 
-        protected static void BindTextAllignment(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindTextAllignment(TextBlock element, DocumentController docController, Context context)
         {
             var textAlignmentData = docController.GetDereferencedField(TextAlignmentKey, context) as NumberFieldModelController;
             if (textAlignmentData == null)
@@ -304,10 +294,10 @@ namespace Dash
                     }
                 }
             };
-            BindProperty(element, alignmentBinding, TextBox.TextAlignmentProperty, TextBlock.TextAlignmentProperty);
+            element.AddFieldBinding(TextBlock.TextAlignmentProperty, alignmentBinding);
         }
 
-        protected static void BindFontWeight(FrameworkElement element, DocumentController docController, Context context)
+        protected static void BindFontWeight(TextBlock element, DocumentController docController, Context context)
         {
             var fontWeightBinding = new FieldBinding<NumberFieldModelController>()
             {
@@ -326,7 +316,7 @@ namespace Dash
                     }
                 }
             };
-            BindProperty(element, fontWeightBinding, TextBox.FontWeightProperty, TextBlock.FontWeightProperty);
+            element.AddFieldBinding(TextBlock.FontWeightProperty, fontWeightBinding);
         }
 
         protected static void BindFontSize(FrameworkElement element, DocumentController docController, Context context)
@@ -347,7 +337,7 @@ namespace Dash
                     }
                 }
             };
-            BindProperty(element, fontSizeBinding, TextBox.FontSizeProperty, TextBlock.FontSizeProperty);
+            element.AddFieldBinding(TextBlock.FontSizeProperty, fontSizeBinding);
         }
 
         #endregion

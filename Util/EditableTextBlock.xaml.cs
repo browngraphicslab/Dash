@@ -1,4 +1,5 @@
-﻿using Windows.UI.Xaml;
+﻿using System;
+using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Media;
@@ -23,26 +24,36 @@ namespace Dash
         }
 
         #region BINDING PROPERTIES 
-        public static readonly DependencyProperty TextDependency = 
-            DependencyProperty.Register("Text", typeof(string), typeof(EditableTextBlock), new PropertyMetadata(false));
 
         public string Text
         {
-            get { return (string)GetValue(TextDependency); }
-            set { SetValue(TextDependency, value); }
+            get { return (string)Block.Text; }
+            set { Block.SetValue(TextBlock.TextProperty, value); }
         }
-
-        public static readonly DependencyProperty ColorDependency =
-            DependencyProperty.Register("Foreground", typeof(SolidColorBrush), typeof(EditableTextBlock), new PropertyMetadata(false));
-
-        public SolidColorBrush Foreground
+        public string Formula
         {
-            get { return (SolidColorBrush)GetValue(ColorDependency); }
-            set { SetValue(ColorDependency, value); }
+            get { return (string)Box.Text; }
+            set { Box.SetValue(TextBox.TextProperty, value); }
         }
 #endregion
+        public class TextToFormulaConverter : IValueConverter
+        {
+            EditableTextBlock et;
+            public TextToFormulaConverter(EditableTextBlock e) { et = e;  }
+            public object Convert(object value, Type targetType, object parameter, string language)
+            {
+                if (et.Box.Text.Trim(' ').StartsWith("="))
+                    return et.Box.Text;
+                return value is string ? (string)value : "";
+            }
 
-        public EditableTextBlock()
+            public object ConvertBack(object value, Type targetType, object parameter, string language)
+            {
+                return value is string ? (string)value : "";
+            }
+        }
+
+    public EditableTextBlock()
         {
             InitializeComponent();
 
@@ -51,14 +62,14 @@ namespace Dash
             Box.ManipulationDelta += (s, e) => e.Handled = true;
 
             // bindings 
-            var textBinding = new Binding
+            var formulaBinding = new Binding
             {
-                Source = this,
-                Path = new PropertyPath(nameof(Text)),
-                Mode = BindingMode.TwoWay
+                Source = Block,
+                Path   = new PropertyPath(nameof(Text)),
+                Mode   = BindingMode.TwoWay,
+                Converter = new TextToFormulaConverter(this)
             };
-            Block.SetBinding(TextBlock.TextProperty, textBinding);
-            Box.SetBinding(TextBox.TextProperty, textBinding);
+            Box.SetBinding(TextBox.TextProperty, formulaBinding);
 
             //var colorBinding = new Binding
             //{
@@ -68,6 +79,7 @@ namespace Dash
             //};
             //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
             //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
+
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)

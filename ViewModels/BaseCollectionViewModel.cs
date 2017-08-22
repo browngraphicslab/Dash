@@ -143,11 +143,10 @@ namespace Dash
             var isDraggedFromLayoutBar = e.DataView.Properties[InterfaceBuilder.LayoutDragKey]?.GetType() == typeof(InterfaceBuilder.DisplayTypeEnum);
             if (isDraggedFromLayoutBar || isDraggedFromKeyValuePane) return;
 
-            // handle but only if it's not in a compoundoperatoreditor view 
-            if ((sender as CollectionFreeformView)?.GetFirstAncestorOfType<CompoundOperatorEditor>() == null)
-                e.Handled = true;
-            else
-                return;
+            //return if it's an operator dragged from compoundoperatoreditor listview 
+            if (e.Data?.Properties[CompoundOperatorFieldController.OperationBarDragKey] != null) return;
+
+            e.Handled = true;
 
             var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
             if (sourceIsRadialMenu)
@@ -199,8 +198,6 @@ namespace Dash
                 e.DragUIOverride.IsGlyphVisible = false;
                 
             }
-                
-
             var sourceIsCollection = ItemsCarrier.Instance.Source != null;
             if (sourceIsCollection)
             {

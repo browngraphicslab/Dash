@@ -29,8 +29,8 @@ namespace Dash
         public static KeyController UmpPictureKey      = new KeyController("6B9AD824-C82B-4E11-A216-E83FC87F98C6", "UmpPicture");
         public static KeyController VolNameKey         = new KeyController("3908F612-15FC-492C-A6E1-239EFCDC5ED5", "VolName");
         public static KeyController VolNameLabelKey    = new KeyController("FC0FCF99-CB77-4FF6-8AFF-D2E6BA72F8A0", "VolNameLabel");
-        public static KeyController AgeLabelKey        = new KeyController("", "AgeLabel");
-        public static KeyController AgeKey             = new KeyController("", "Age");
+        public static KeyController AgeLabelKey        = new KeyController("C7724C9E-FB0A-4855-86C6-27461D0EF769", "AgeLabel");
+        public static KeyController AgeKey             = new KeyController("CEFAA1C9-C21D-4429-905B-AB5A68550F76", "Age");
 
         public static KeyController WebUrlKey = new KeyController("427B9FB5-C5DB-422E-882D-FFC9A17266C3", "WebUrl");
 

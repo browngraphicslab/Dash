@@ -84,8 +84,9 @@ namespace Dash
             return _mainCollectionView ?? (_mainCollectionView = MainDocView.GetFirstDescendantOfType<CollectionView>());
         }
 
-        public void AddOperatorsFilter(object o, DragEventArgs e)
+        public void AddOperatorsFilter(ICollectionView collection, DragEventArgs e)
         {
+            OperatorSearchView.AddsToThisCollection = collection as CollectionFreeformView; 
             if (xCanvas.Children.Contains(OperatorSearchView.Instance)) return;
             xCanvas.Children.Add(OperatorSearchView.Instance);
             Point absPos = e.GetPosition(Instance);

@@ -852,5 +852,6 @@ namespace RadialMenuControl.UserControl
             if (!args.Cancel)
                 VisualStateManager.GoToState(this, "InnerNormal", true);
         }
+       
     }
 }

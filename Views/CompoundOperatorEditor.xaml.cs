@@ -24,7 +24,7 @@ namespace Dash
         private readonly DocumentController _documentController;
         private readonly CompoundOperatorFieldController _operatorFieldModelController;
         private ObservableCollection<OperatorBuilder> _operatorList;
-        public string OperationBarDragKey = "4D9172C1-266F-4119-BB76-961D7D6C37B0";
+        //public string OperationBarDragKey = "4D9172C1-266F-4119-BB76-961D7D6C37B0";       // TODO moved to CompoundOperatorFieldController maybe find a better place later 
         private SimpleCollectionViewModel _collectionViewModel;
 
         public CompoundOperatorEditor()
@@ -55,15 +55,10 @@ namespace Dash
             if (item is OperatorBuilder)
             {
                 e.Data.RequestedOperation = DataPackageOperation.Move;
-                e.Data.Properties.Add(OperationBarDragKey, item);
+                e.Data.Properties.Add(CompoundOperatorFieldController.OperationBarDragKey, item);
             }
         }
-
-
-        private void XOperationListView_OnItemClick(object sender, ItemClickEventArgs e)
-        {
-        }
-
+        
         private void XFreeFormEditor_OnDragOver(object sender, DragEventArgs e)
         {
             e.AcceptedOperation = DataPackageOperation.Move;
@@ -73,11 +68,11 @@ namespace Dash
         private void XFreeFormEditor_OnDrop(object sender, DragEventArgs e)
         { 
             if (e.Data == null) return; 
-            var isDraggedFromOperationsBar = e.Data.Properties[OperationBarDragKey] != null;
+            var isDraggedFromOperationsBar = e.Data.Properties[CompoundOperatorFieldController.OperationBarDragKey] != null;
 
             if (isDraggedFromOperationsBar)
             {
-                var opBuilder = e.Data.Properties[OperationBarDragKey] as OperatorBuilder;
+                var opBuilder = e.Data.Properties[CompoundOperatorFieldController.OperationBarDragKey] as OperatorBuilder;
 
                 var pos = Util.GetCollectionFreeFormPoint(xFreeFormEditor, e.GetPosition(MainPage.Instance));
 
@@ -86,6 +81,8 @@ namespace Dash
                 opDoc.GetPositionField(null).Data = new Point(pos.X, pos.Y);
 
                 _collectionViewModel.AddDocuments(new List<DocumentController>{opDoc}, null);
+
+                e.Data.Properties[CompoundOperatorFieldController.OperationBarDragKey] = null; 
             } 
         }
     }
