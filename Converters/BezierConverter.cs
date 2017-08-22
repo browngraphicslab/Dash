@@ -26,6 +26,7 @@ namespace Dash
         }
 
         public Point StartPoint { get { return _figure.StartPoint; } }
+        public Point EndPoint { get { return _bezier.Point3; } }
 
         public FrameworkElement Element1 { get; set; }
         public FrameworkElement Element2 { get; set; }

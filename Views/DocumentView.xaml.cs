@@ -346,6 +346,7 @@ namespace Dash
 
         public void DeleteDocument()
         {
+            (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
         }
 

@@ -225,6 +225,13 @@ namespace Dash
             }
         }
 
+        private bool IsCloserToStart(Point point, Point start, Point end)
+        {
+            var d1 = Math.Pow(point.X - start.X, 2) + Math.Pow(point.Y - start.Y, 2);
+            var d2 = Math.Pow(point.X - end.X, 2) + Math.Pow(point.Y - end.Y, 2);
+            return d1 < d2; 
+        }
+
         public void StartDrag(IOReference ioReference)
         {
             if (_currReference != null) return;
@@ -256,21 +263,6 @@ namespace Dash
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
-            //_connectionLine.Tapped += (s, e) =>
-            //{
-            //    var line = s as Path;
-            //    line.Stroke = line.Stroke == (SolidColorBrush)App.Instance.Resources["AccentGreen"] ? new SolidColorBrush(Colors.Goldenrod) : (SolidColorBrush)App.Instance.Resources["AccentGreen"];
-            //    e.Handled = true; 
-            //};
-
-            /* 
-            _connectionLine.PointerReleased += (s, e) =>
-            {
-                // figure out which one gets the event first 
-                (s as Path).Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"]; 
-                e.Handled = true; 
-            }; 
-            */ 
             _connectionLine.PointerPressed += (s, e) =>
             {
                 var line = s as Path;
@@ -285,7 +277,17 @@ namespace Dash
                 {
                     _connectionLine = s as Path;
                     var dropPoint = e.GetCurrentPoint(itemsPanelCanvas).Position;
-                    // get the fuckign converetr errerer
+                    var converter = _lineToConverter[_connectionLine];
+                    if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
+                    {
+                        return; 
+                        // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS................. 
+                    }
+                    else
+                    {
+                        converter.Element2 = null; 
+                        //todo remove binding ...................................uh 
+                    }
                 }
             };
 
