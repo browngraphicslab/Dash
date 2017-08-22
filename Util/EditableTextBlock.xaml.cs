@@ -35,15 +35,6 @@ namespace Dash
             get { return (string)Box.Text; }
             set { Box.SetValue(TextBox.TextProperty, value); }
         }
-
-        public static readonly DependencyProperty ColorDependency =
-            DependencyProperty.Register("Foreground", typeof(SolidColorBrush), typeof(EditableTextBlock), new PropertyMetadata(false));
-
-        public SolidColorBrush Foreground
-        {
-            get { return (SolidColorBrush)GetValue(ColorDependency); }
-            set { SetValue(ColorDependency, value); }
-        }
 #endregion
         public class TextToFormulaConverter : IValueConverter
         {
@@ -88,6 +79,7 @@ namespace Dash
             //};
             //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
             //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
+
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)

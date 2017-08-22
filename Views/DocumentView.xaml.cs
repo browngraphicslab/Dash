@@ -53,11 +53,7 @@ namespace Dash
             // set bounds
             MinWidth = 100;
             MinHeight = 25;
-
-            DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += ExpandContract_DoubleTapped;
+            
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
         }
@@ -73,8 +69,8 @@ namespace Dash
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DoubleTapped -= ExpandContract_DoubleTapped;
-            Loaded -= This_Loaded;
-            Unloaded -= This_Unloaded;
+            //Loaded -= This_Loaded;
+            //Unloaded -= This_Unloaded;
         }
 
 
@@ -86,14 +82,18 @@ namespace Dash
                 ViewModel.Width = ActualWidth;
                 ViewModel.Height = ActualHeight;
             }
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped += ExpandContract_DoubleTapped;
         }
 
 
         /// <summary>
         /// When a field is dragged onto documentview, adds that field to the document 
         /// </summary>
-        private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
-        {
+        //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
+        //{
 
             //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
             //if (view == null) return; // we can't always assume we're on a collection		
@@ -107,7 +107,7 @@ namespace Dash
             //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
             //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
-        }
+        //}
 
         private void SetUpMenu()
         {

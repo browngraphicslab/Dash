@@ -86,11 +86,8 @@ namespace Dash
             Loaded += Freeform_Loaded;
             Unloaded += Freeform_Unloaded;
             DataContextChanged += OnDataContextChanged;
-            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
-            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
             DragLeave += Collection_DragLeave;
-            DragEnter += Collection_DragEnter;
         }
 
         public IOReference GetCurrentReference()
@@ -127,6 +124,9 @@ namespace Dash
 
         private void Freeform_Loaded(object sender, RoutedEventArgs e)
         {
+            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
+
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
             parentGrid.PointerMoved += FreeformGrid_OnPointerMoved;
             parentGrid.PointerReleased += FreeformGrid_OnPointerReleased;
@@ -430,7 +430,15 @@ namespace Dash
             canvas.RenderTransform = matrix;
             InkHostCanvas.RenderTransform = matrix;
             SetTransformOnBackground(composite);
+
+            // Updates line position if the collectionfreeformview canvas is manipulated within a compoundoperator view                                                                              
+            if (this.GetFirstAncestorOfType<CompoundOperatorEditor>() != null)
+            {
+                foreach (var line in _lineDict.Values)
+                    line.Converter.UpdateLine();
+            }
         }
+
 
         #endregion
 
@@ -661,13 +669,12 @@ namespace Dash
 
         private void CollectionViewOnDrop(object sender, DragEventArgs e)
         {
+            if (ItemsCarrier.Instance.StartingCollection == this)
+                _payload = new Dictionary<DocumentView, DocumentController>();
+
             ViewModel.CollectionViewOnDrop(sender, e);
         }
-
-        private void CollectionViewOnDragEnter(object sender, DragEventArgs e)
-        {
-            ViewModel.CollectionViewOnDragEnter(sender, e);
-        }
+        
 
         #endregion
 
@@ -761,7 +768,7 @@ namespace Dash
             docView.CanDrag = false;
             docView.ManipulationMode = ManipulationModes.All;
             docView.DragStarting -= DocView_OnDragStarting;
-            
+
         }
 
         //TODO how to implement deletion or add these docs to the SelectionGroup in CollectionView?
@@ -805,17 +812,33 @@ namespace Dash
             _payload = new Dictionary<DocumentView, DocumentController>();
         }
 
-        private void Collection_DragEnter(object sender, DragEventArgs args)                             // TODO this code is fucked, think of a better way to do this 
+        private void Collection_DragEnter(object sender, DragEventArgs e)                             // TODO this code is fucked, think of a better way to do this 
         {
+            ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+
+            var sourceIsRadialMenu = e.DataView.Properties[RadialMenuView.RadialMenuDropKey] != null;
+
+            if (sourceIsRadialMenu)
+            {
+                e.AcceptedOperation = DataPackageOperation.Move;
+                e.DragUIOverride.Clear();
+                e.DragUIOverride.Caption = e.DataView.Properties.Title;
+                e.DragUIOverride.IsContentVisible = false;
+                e.DragUIOverride.IsGlyphVisible = false;
+
+            }
+
             var carrier = ItemsCarrier.Instance;
             if (carrier.StartingCollection == null) return;
 
             // if dropping to a collection within the source collection 
             if (carrier.StartingCollection != this)
             {
-                carrier.StartingCollection.Collection_DragLeave(sender, args);
+                carrier.StartingCollection.Collection_DragLeave(sender, e);
+                ViewModel.CollectionViewOnDragEnter(sender, e);                                                         // ?????????????????? 
                 return;
             }
+
             ViewModel.AddDocuments(ItemsCarrier.Instance.Payload, null);
             foreach (var cont in ItemsCarrier.Instance.Payload)
             {
@@ -849,7 +872,7 @@ namespace Dash
 
         private void MakeInkCanvas()
         {
-            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000};
+            XInkCanvas = new InkCanvas() { Width = 60000, Height = 60000 };
             SelectionCanvas = new Canvas();
             InkControl = new FreeformInkControl(this, XInkCanvas, SelectionCanvas);
             Canvas.SetLeft(XInkCanvas, -30000);

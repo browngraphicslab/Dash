@@ -22,7 +22,7 @@
             </Grid.ColumnDefinitions>
 
             <!--Inner Content-->
-            <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalAlignment="Center" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+            <ContentPresenter Grid.Column="1" x:Name="XPresenter" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
 
             <!-- Input Operator Handles & Labels-->
             <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"
@@ -40,7 +40,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Foreground="White" Grid.Column="1" Margin="10,0,10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
+                            <local:EditableTextBlock Grid.Column="1" Margin="10,0,10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </Grid>
@@ -62,7 +62,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,0,10,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Margin="10,0,10,0" Foreground="White" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
+                            <local:EditableTextBlock Grid.Column="0" Margin="10,0,10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </StackPanel>
