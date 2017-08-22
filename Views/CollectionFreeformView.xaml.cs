@@ -206,7 +206,6 @@ namespace Dash
                     else
                     {
                         converter.Element1 = converter.Temp1;
-                        //converter.Temp1 = converter.Element1;
                     }
                 }
                 else if (view2 == docView)
@@ -219,7 +218,6 @@ namespace Dash
                     else
                     {
                         converter.Element2 = converter.Temp2;
-                        //converter.Temp2 = converter.Element2;
                     }
                 }
             }
@@ -237,12 +235,13 @@ namespace Dash
             if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
             {
                 var converter = _lineToConverter[line];
-                if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
+                //if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
+                //{
+                //                                                                                                      // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS OR NOT 
+                //}
+                //else
                 {
-                    // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS.....????? 
-                }
-                else
-                {
+                    //set up to manipulate connection line again 
                     ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
                     _connectionLine = line;
                     converter.Element2 = null;
@@ -250,7 +249,7 @@ namespace Dash
                     _converter = _lineToConverter[line];
                     ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
-                    //todo remove binding 
+                    //remove binding 
                     var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
                     DocumentController inputController = refField.GetDocumentController(null);
                     FieldModelController rawField = (inputController.GetField(refField.FieldKey) as ReferenceFieldModelController)?.DereferenceToRoot(null);
@@ -295,7 +294,7 @@ namespace Dash
                 var line = s as Path; 
                 var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
                 line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
-                line.IsHoldingEnabled = !line.IsHoldingEnabled; // TODO add holding event 
+                line.IsHoldingEnabled = !line.IsHoldingEnabled;
             };
 
             _connectionLine.Holding += (s, e) =>
