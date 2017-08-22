@@ -223,14 +223,7 @@ namespace Dash
 
         private static void TextSetHandler(object binder, FieldModelController fieldModelController, object value)
         {
-            var binding = binder as FieldBinding<FieldModelController>;
-            var refField = binding.Document.GetField(binding.Key) as ReferenceFieldModelController;
-            if (value is string && refField != null)
-            {
-                refField.GetDocumentController(binding.Context).ParseDocField(refField.FieldKey,
-                         value as string, binding.Document.GetDereferencedField<FieldModelController>(binding.Key, binding.Context));
-            }
-            else if (fieldModelController is TextFieldModelController)
+            if (fieldModelController is TextFieldModelController)
             {
                 var data = value as string;
                 if (data != null)

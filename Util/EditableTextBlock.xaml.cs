@@ -102,13 +102,13 @@ namespace Dash
 
             // if this displays the contents of a documents' field, then any changes to this field must be parsed back into 
             // that document's field.
-            //var refField = NativeRef as ReferenceFieldModelController;
-            //if (refField != null)
-            //{
-            //    refField.GetDocumentController(NativeContext).ParseDocField(refField.FieldKey,
-            //             Box.Text, NativeRef.GetDocumentController(NativeContext).GetDereferencedField<FieldModelController>(NativeRef.FieldKey, NativeContext));
-            //}
-            //else
+            var refField = NativeRef as ReferenceFieldModelController;
+            if (refField != null)
+            {
+                refField.GetDocumentController(NativeContext).ParseDocField(refField.FieldKey,
+                         Box.Text, NativeRef.GetDocumentController(NativeContext).GetDereferencedField<FieldModelController>(NativeRef.FieldKey, NativeContext));
+            }
+            else
                 Block.Text = Box.Text;
         }
     }
