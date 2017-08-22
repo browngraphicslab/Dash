@@ -225,11 +225,38 @@ namespace Dash
             }
         }
 
-        private bool IsCloserToStart(Point point, Point start, Point end)
+        private static bool IsCloserToStart(Point point, Point start, Point end)
         {
             var d1 = Math.Pow(point.X - start.X, 2) + Math.Pow(point.Y - start.Y, 2);
             var d2 = Math.Pow(point.X - end.X, 2) + Math.Pow(point.Y - end.Y, 2);
             return d1 < d2;
+        }
+
+        private void ChangeLineConnection(Point dropPoint, Path line, IOReference ioReference)
+        {
+            if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
+            {
+                var converter = _lineToConverter[line];
+                if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
+                {
+                    // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS.....????? 
+                }
+                else
+                {
+                    ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+                    _connectionLine = line;
+                    converter.Element2 = null;
+                    _currReference = ioReference;
+                    _converter = _lineToConverter[line];
+                    ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+
+                    //todo remove binding 
+                    var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
+                    DocumentController inputController = refField.GetDocumentController(null);
+                    FieldModelController rawField = (inputController.GetField(refField.FieldKey) as ReferenceFieldModelController)?.DereferenceToRoot(null);
+                    if (rawField != null) inputController.SetField(refField.FieldKey, rawField, true);
+                }
+            }
         }
 
         public void StartDrag(IOReference ioReference)
@@ -265,40 +292,21 @@ namespace Dash
             _connectionLine.Tapped += (s, e) =>
             {
                 e.Handled = true;
-                var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"]; 
-                (s as Path).Stroke = (s as Path).Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
-                IsHoldingEnabled = !IsHoldingEnabled; // TODO add holding event 
+                var line = s as Path; 
+                var green = (SolidColorBrush)App.Instance.Resources["AccentGreen"];
+                line.Stroke = line.Stroke == green ? new SolidColorBrush(Colors.Goldenrod) : green;
+                line.IsHoldingEnabled = !line.IsHoldingEnabled; // TODO add holding event 
             };
+
+            _connectionLine.Holding += (s, e) =>
+            {
+                ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
+            }; 
             
             _connectionLine.PointerPressed += (s, e) =>
             {
-                if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return; 
-                var line = s as Path;
-                if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
-                {
-                    var dropPoint = e.GetCurrentPoint(itemsPanelCanvas).Position;
-                    var converter = _lineToConverter[line];
-                    if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
-                    {
-                        // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS.....????? 
-                    }
-                    else
-                    {
-                        ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-                        _connectionLine = line;
-                        converter.Element2 = null;
-                        _currReference = ioReference;
-                        _converter = _lineToConverter[line];
-                        ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
-
-                        //todo remove binding ...................................uh
-                        var reference = _refToLine.FirstOrDefault(x => x.Value == line).Key;
-                        DocumentController inputController = reference.GetDocumentController(null);
-                        var thing = inputController.GetField(reference.FieldKey) as ReferenceFieldModelController;
-                        FieldModelController rawField = thing.DereferenceToRoot(null);
-                        inputController.SetField(reference.FieldKey, rawField, true); 
-                    }
-                }
+                if (!e.GetCurrentPoint(itemsPanelCanvas).Properties.IsRightButtonPressed) return;
+                ChangeLineConnection(e.GetCurrentPoint(itemsPanelCanvas).Position, s as Path, ioReference); 
             };
 
             Canvas.SetZIndex(_connectionLine, -1);
