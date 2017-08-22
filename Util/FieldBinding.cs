@@ -102,12 +102,22 @@ namespace Dash
                     if (updateField)
                     {
                         var value = sender.GetValue(dp);
-                        if (binding.Converter != null)
-                        {
-                            value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
-                        }
                         updateUI = false;
-                        binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
+                        var refField = binding.Document.GetField(binding.Key) as ReferenceFieldModelController;
+                        if (value is string && refField != null)
+                        {
+                            refField.GetDocumentController(binding.Context).ParseDocField(refField.FieldKey,
+                                     value as string, binding.Document.GetDereferencedField<U>(binding.Key, binding.Context));
+                            element.SetValue(property, EvaluateBinding(binding));
+                        }
+                        else
+                        {
+                            if (binding.Converter != null)
+                            {
+                                value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
+                            }
+                            binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
+                        }
                         updateUI = true;
                     }
                 };
