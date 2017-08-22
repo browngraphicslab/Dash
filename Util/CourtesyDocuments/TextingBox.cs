@@ -86,12 +86,13 @@ namespace Dash
         /// <returns></returns>
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
+            var referenceToText = GetTextReference(docController);
             FrameworkElement element;
             TextBlock tb;
-
+            
             if (isEditable)
             {
-                var editableTB = new EditableTextBlock();
+                var editableTB = new EditableTextBlock(referenceToText, context);
                 tb = editableTB.Block;
                 CourtesyDocument.SetupBindings(editableTB, docController, context);
                 element = editableTB;
@@ -104,7 +105,6 @@ namespace Dash
             SetupBindings(tb, docController, context);
 
             // add bindings to work with operators
-            var referenceToText = GetTextReference(docController);
             if (referenceToText != null) // only bind operation interactions if text is a reference
             {
                 var fmController = docController.GetDereferencedField(KeyStore.DataKey, context);
@@ -145,7 +145,8 @@ namespace Dash
                     SetHandler = TextSetHandler,
                     Mode = BindingMode.TwoWay,
                     Context = context,
-                    Converter = getFieldConverter(data)
+                    GetConverter = GetFieldConverter,
+                    EvalBindingOnSet = true
                 };
                 element.AddFieldBinding(TextBlock.TextProperty, binding);
 
@@ -179,11 +180,11 @@ namespace Dash
             }
         }
 
-        static IValueConverter getFieldConverter(FieldModelController fieldModelController)
+        static IValueConverter GetFieldConverter(FieldModelController fieldModelController)
         {
             if (fieldModelController is TextFieldModelController)
             {
-                return null;
+                return new StringToStringConverter();
             }
             else if (fieldModelController is NumberFieldModelController)
             {
@@ -221,9 +222,16 @@ namespace Dash
             return null;
         }
 
-        private static void TextSetHandler(FieldModelController fieldModelController, object value)
+        private static void TextSetHandler(object binder, FieldModelController fieldModelController, object value)
         {
-            if (fieldModelController is TextFieldModelController)
+            var binding = binder as FieldBinding<FieldModelController>;
+            var refField = binding.Document.GetField(binding.Key) as ReferenceFieldModelController;
+            if (value is string && refField != null)
+            {
+                refField.GetDocumentController(binding.Context).ParseDocField(refField.FieldKey,
+                         value as string, binding.Document.GetDereferencedField<FieldModelController>(binding.Key, binding.Context));
+            }
+            else if (fieldModelController is TextFieldModelController)
             {
                 var data = value as string;
                 if (data != null)
@@ -285,7 +293,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 GetHandler = (NumberFieldModelController field) => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     var s = value as double?;
                     if (s != null)
@@ -307,7 +315,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 GetHandler = (NumberFieldModelController field) => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     var s = value as double?;
                     if (s != null)
@@ -328,7 +336,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Context = context,
                 GetHandler = (NumberFieldModelController field) => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     var s = value as double?;
                     if (s != null)

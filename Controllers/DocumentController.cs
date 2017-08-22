@@ -244,11 +244,11 @@ namespace Dash
                     return new ReferenceFieldModelController(refDoc.GetId(), e.Key);  // found This.<FieldName=a>
                 }
 
-            if (searchAllDocsIfFail)
-            {
-                var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
-                return new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey); // return  {AllDocs}.<FieldName=a> = this
-            }
+            //if (searchAllDocsIfFail)
+            //{
+            //    var searchDoc = DBSearchOperatorFieldModelController.CreateSearch(this, DBTest.DBDoc, path[0], "");
+            //    return new ReferenceFieldModelController(searchDoc.GetId(), DBSearchOperatorFieldModelController.ResultsKey); // return  {AllDocs}.<FieldName=a> = this
+            //}
             return null;
         }
 
@@ -267,7 +267,16 @@ namespace Dash
                 var strings = fieldStr.Split('(');
                 if (strings.Count() == 1)  //  a document from input <DocName>[.<FieldName>]  if no document matches DocName, search for This.<FieldName>  if still no document, search for {AllDocs}.<FieldName> = this
                 {
-                    SetField(key, ParseDocumentReference(strings[0], true), true);
+                    var parse = ParseDocumentReference(strings[0], true);
+                    if (parse != null)
+                        SetField(key, parse, true, false);
+                    else
+                    {
+                        double num;
+                        if (double.TryParse(fieldStr, out num))
+                            SetField(key, new NumberFieldModelController(num), true, false);
+                        else SetField(key, new TextFieldModelController(fieldStr), true, false);
+                    }
                 }
                 else
                 {
@@ -454,10 +463,10 @@ namespace Dash
         /// <param name="key">key index of field to update</param>
         /// <param name="field">FieldModel to update to</param>
         /// <param name="forceMask"></param>
-        public bool SetField(KeyController key, FieldModelController field, bool forceMask)
+        public bool SetField(KeyController key, FieldModelController field, bool forceMask, bool enforceTypeCheck=true)
         {
             // check field type compatibility
-            if (!IsTypeCompatible(key, field)) return false;
+            if (enforceTypeCheck && !IsTypeCompatible(key, field)) return false;
 
             FieldModelController oldField;
             if (!SetFieldHelper(key, field, forceMask, out oldField))

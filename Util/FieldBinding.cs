@@ -8,11 +8,13 @@ using Windows.UI.Xaml.Data;
 using DashShared;
 using Windows.UI.Xaml;
 using System.Diagnostics;
+using Dash.Converters;
 
 namespace Dash
 {
-    public delegate void SetHandler<in T>(T field, object value) where T : FieldModelController;
+    public delegate void SetHandler<in T>(object binding, T field, object value) where T : FieldModelController;
     public delegate object GetHandler<in T>(T field) where T : FieldModelController;
+    public delegate IValueConverter GetConverter<in T>(T field) where T : FieldModelController;
 
     public class FieldBinding<T> where T : FieldModelController
     {
@@ -21,6 +23,8 @@ namespace Dash
         public KeyController Key;
         public SetHandler<T> SetHandler;
         public GetHandler<T> GetHandler;
+        public GetConverter<T> GetConverter;
+        public bool EvalBindingOnSet = false;
 
         public Context Context;
 
@@ -45,14 +49,15 @@ namespace Dash
                     break;
             }
         }
-
+        
         private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
         {
             var field = binding.Document.GetDereferencedField<T>(binding.Key, binding.Context);
             if (field == null)
                 return null;
             var value = binding.GetHandler(field);
-            return binding.Converter == null ? value : binding.Converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
+            var converter = binding.GetConverter != null ? binding.GetConverter(field) : binding.Converter;
+            return converter == null ? value : converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
         }
 
         private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
@@ -104,20 +109,13 @@ namespace Dash
                         var value = sender.GetValue(dp);
                         updateUI = false;
                         var refField = binding.Document.GetField(binding.Key) as ReferenceFieldModelController;
-                        if (value is string && refField != null)
+                        if (binding.Converter != null)
                         {
-                            refField.GetDocumentController(binding.Context).ParseDocField(refField.FieldKey,
-                                     value as string, binding.Document.GetDereferencedField<U>(binding.Key, binding.Context));
+                            value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
+                        }
+                        binding.SetHandler(binding, binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
+                        if (binding.EvalBindingOnSet)
                             element.SetValue(property, EvaluateBinding(binding));
-                        }
-                        else
-                        {
-                            if (binding.Converter != null)
-                            {
-                                value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
-                            }
-                            binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
-                        }
                         updateUI = true;
                     }
                 };

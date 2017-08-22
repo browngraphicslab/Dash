@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dash.Converters;
+using System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -30,44 +31,31 @@ namespace Dash
             get { return (string)Block.Text; }
             set { Block.SetValue(TextBlock.TextProperty, value); }
         }
-        public string Formula
-        {
-            get { return (string)Box.Text; }
-            set { Box.SetValue(TextBox.TextProperty, value); }
-        }
-#endregion
-        public class TextToFormulaConverter : IValueConverter
-        {
-            EditableTextBlock et;
-            public TextToFormulaConverter(EditableTextBlock e) { et = e;  }
-            public object Convert(object value, Type targetType, object parameter, string language)
-            {
-                if (et.Box.Text.Trim(' ').StartsWith("="))
-                    return et.Box.Text;
-                return value is string ? (string)value : "";
-            }
 
-            public object ConvertBack(object value, Type targetType, object parameter, string language)
-            {
-                return value is string ? (string)value : "";
-            }
-        }
+        #endregion
+        ReferenceFieldModelController NativeRef = null;
+        Context                       NativeContext = null;
 
-    public EditableTextBlock()
+        public EditableTextBlock():this(null, null)
         {
+        }
+        public EditableTextBlock(ReferenceFieldModelController refToText, Context nativeContext) 
+        {
+            NativeRef     = refToText;
+            NativeContext = nativeContext;
+
             InitializeComponent();
 
             //events 
             Box.PointerWheelChanged += (s, e) => e.Handled = true;
-            Box.ManipulationDelta += (s, e) => e.Handled = true;
+            Box.ManipulationDelta   += (s, e) => e.Handled = true;
 
             // bindings 
             var formulaBinding = new Binding
             {
                 Source = Block,
                 Path   = new PropertyPath(nameof(Text)),
-                Mode   = BindingMode.TwoWay,
-                Converter = new TextToFormulaConverter(this)
+                Mode   = BindingMode.TwoWay
             };
             Box.SetBinding(TextBox.TextProperty, formulaBinding);
 
@@ -87,6 +75,16 @@ namespace Dash
             e.Handled = true;
             Block.Visibility = Visibility.Collapsed;
             Box.Visibility = Visibility.Visible;
+            var contents = NativeRef.Dereference(NativeContext);
+            var newText = this.xTextBlock.Text;
+            if (contents is ReferenceFieldModelController)
+            {
+                var textRef = contents as ReferenceFieldModelController;
+                var docName = new DocumentControllerToStringConverter().ConvertDataToXaml(textRef.GetDocumentController(null));
+                newText = "=" + docName.TrimStart('<').TrimEnd('>') + "." + textRef.FieldKey.Name;
+            }
+            if (this.xTextBox.Text != newText)
+                this.xTextBox.Text = newText;
             Box.Focus(FocusState.Programmatic);
             Box.SelectAll();
         }

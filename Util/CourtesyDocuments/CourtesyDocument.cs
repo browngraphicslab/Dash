@@ -107,7 +107,7 @@ namespace Dash
                 Key = KeyStore.WidthFieldKey,
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate(NumberFieldModelController field, object value)
+                SetHandler = delegate(object binder, NumberFieldModelController field, object value)
                 {
                     if (value is double)
                     {
@@ -128,7 +128,7 @@ namespace Dash
                 Key = KeyStore.HeightFieldKey,
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     if (value is double)
                     {
@@ -164,7 +164,7 @@ namespace Dash
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (TextFieldModelController field, object value)
+                SetHandler = delegate (object binder, TextFieldModelController field, object value)
                 {
                     var s = value as string;
                     if (s != null)
@@ -188,7 +188,7 @@ namespace Dash
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (TextFieldModelController field, object value)
+                SetHandler = delegate (object binder, TextFieldModelController field, object value)
                 {
                     var s = value as string;
                     if (s != null)
@@ -210,7 +210,7 @@ namespace Dash
                 Key = GridRowKey,
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     if (value is double)
                     {
@@ -231,7 +231,7 @@ namespace Dash
                 Key = GridColumnKey,
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     if (value is double)
                     {
@@ -252,7 +252,7 @@ namespace Dash
                 Key = GridRowSpanKey,
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     if (value is double)
                     {
@@ -273,7 +273,7 @@ namespace Dash
                 Key = GridColumnSpanKey,
                 Context = context,
                 GetHandler = field => field.Data,
-                SetHandler = delegate (NumberFieldModelController field, object value)
+                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
                 {
                     if (value is double)
                     {
