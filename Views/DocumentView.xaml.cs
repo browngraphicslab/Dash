@@ -38,12 +38,13 @@ namespace Dash
 
         public bool ProportionalScaling { get; set; }
         public ManipulationControls Manipulator { get { return manipulator; } }
+        private Brush originalBackgroundBrush;
 
         public DocumentView()
         {
             this.InitializeComponent();
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
-
+            originalBackgroundBrush = xShadowTarget.Fill;
             DataContextChanged += DocumentView_DataContextChanged;
 
             // add manipulation code
@@ -89,39 +90,32 @@ namespace Dash
             }
         }
 
-
         /// <summary>
-        /// When a field is dragged onto documentview, adds that field to the document 
+        /// Used to customize border radius from operator view
         /// </summary>
-        private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
+        public void setBorderRadius(double amount)
         {
-
-            //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
-            //if (view == null) return; // we can't always assume we're on a collection		
-
-            //view.CanLink = false;
-            //args.Handled = true;
-
-            //view.CancelDrag(args.Pointer); 
-
-            //view?.EndDragOnDocumentView(ref ViewModel.DocumentController,
-            //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
-            //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
-
+            xShadowTarget.RadiusX = amount;
+            xShadowTarget.RadiusY = amount;
         }
 
+        SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
+        /// <summary>
+        /// Sets up the document-level menu's buttons.
+        /// </summary>
         private void SetUpMenu()
         {
-            Color bgcolor = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush).Color;
+            var bgcolor = bgbrush.Color;
+            bgcolor.A = 0;
 
             var documentButtons = new List<MenuButton>
             {
                 new MenuButton(Symbol.Pictures, "Layout",bgcolor,OpenLayout),
                 new MenuButton(Symbol.Copy, "Copy",bgcolor,CopyDocument),
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
+                new MenuButton(Symbol.Placeholder, "Cmd",bgcolor, CommandLine),
                 new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
-                new MenuButton(Symbol.Placeholder, "Commands",bgcolor, CommandLine)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding
@@ -131,13 +125,14 @@ namespace Dash
                 Mode = BindingMode.OneWay
             };
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
-            xMenuCanvas.Children.Add(_docMenu);
+            //xMenuCanvas.Content = _docMenu;
             ViewModel.OpenMenu();
         }
 
 
         /// <summary>
-        /// Update viewmodel when manipulator moves document
+        /// Update viewmodel when manipulator moves document. This is called by the manipulator
+        /// object when the document is dragged and translated by the users.
         /// </summary>
         /// <param name="delta"></param>
         private void ManipulatorOnManipulatorTranslatedOrScaled(TransformGroupData delta)
@@ -154,6 +149,7 @@ namespace Dash
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
+
         }
 
         /// <summary>
@@ -236,6 +232,9 @@ namespace Dash
             }
         }
 
+        /// <summary>
+        /// Called after the document has finished loading in its data context.
+        /// </summary>
         void initDocumentOnDataContext()
         {
             // document type specific styles >> use VERY sparringly
@@ -405,27 +404,49 @@ namespace Dash
 
         #region Activation
 
+        /// <summary>
+        /// Called when the pointer first goes down on the document. Selects it and brings it to the
+        /// foreground of the canvas, in front of all other documents.
+        /// </summary>
         private void UserControl_PointerPressed(object sender, PointerRoutedEventArgs e)
         {
             if (ParentCollection == null) return;
             ParentCollection.MaxZ += 1;
             Canvas.SetZIndex(this.GetFirstAncestorOfType<ContentPresenter>(), ParentCollection.MaxZ);
+
+            OnSelected();
+            e.Handled = true;
         }
 
         private void OnTapped(object sender, TappedRoutedEventArgs e)
         {
             e.Handled = true;
-            if (ViewModel.IsInInterfaceBuilder)
-                return;
-
-            OnSelected();
-
         }
 
+        /// <summary>
+        /// Overriden from SelectionElement. Handles the document being selected/deselected.
+        /// </summary>
+        /// <param name="isSelected"></param>
         protected override void OnActivated(bool isSelected)
         {
             ViewModel.SetSelected(this, isSelected);
+
+            // if we are being deselected
+            if (!isSelected)
+            {
+                colorStoryboardOut.Begin();
+            } else
+            {
+
+                // update the main toolbar in the overlay canvas
+                if (_docMenu != null && MainPage.Instance != null)
+                {
+                    colorStoryboard.Begin();
+                    MainPage.Instance.SetOptionsMenu(_docMenu);
+                }
+            }
         }
+        
 
         protected override void OnLowestActivated(bool isLowestSelected)
         {
@@ -439,5 +460,14 @@ namespace Dash
 
         #endregion
 
+        private void ScrollViewer_ManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
+        {
+            e.Handled = true;
+        }
+
+        private void xLeftScroller_PointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+
+        }
     }
 }

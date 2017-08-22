@@ -11,6 +11,9 @@
     d:DesignWidth="1280">
 
     <Grid x:Name="xOuterGrid" x:FieldModifier="public">
+        <ScrollViewer x:Name="xMenuCanvas" Padding="0" Height="47" Background="#CC0850A0" Margin="0,0,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Center" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden">
+        </ScrollViewer>
+        
         <Grid x:Name="xToolbar" Width="83" Background="{StaticResource WindowsBlue}" Padding="10,10" HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Collapsed">
             <StackPanel VerticalAlignment="Center">
                 <TextBlock HorizontalAlignment="Center" Foreground="white">SOURCES</TextBlock>
@@ -24,7 +27,5 @@
                 <Button x:Name="EditButton" Tapped="EditorButton_OnTapped" Height="54" HorizontalAlignment="Stretch" BorderThickness="2" BorderBrush="White" FontSize="14" >EDIT</Button>
             </StackPanel>
         </Grid>
-        <!--filepicker:FilePickerDisplay HorizontalAlignment="Right" VerticalAlignment="Center" Canvas.Left="838" Canvas.Top="392"></>
-        <api:ApiCreatorDisplay Canvas.Left="786" Canvas.Top="24"/-->
     </Grid>
 </UserControl>

@@ -24,7 +24,7 @@
             <local:ApiCreatorPropertyGenerator x:Name="xHeaderControl" Margin="0,0,0,12" TitleTag="HEADERS"/>
             <local:ApiCreatorPropertyGenerator x:Name="xParameterControl" TitleTag="PARAMETERS"/>
 
-            <Button x:Name="createAPIBtn" Click="createAPINodeTemplate" Content="MAKE API" HorizontalAlignment="Center" Margin="0,20,0,0" Foreground="White" Background="#FF0078D7"/>
+            <Button x:Name="createAPIBtn" Click="createAPINodeTemplate" Content="MAKE API" HorizontalAlignment="Center" Margin="0,20,0,0" />
         </StackPanel>
     </StackPanel>
         </Grid>

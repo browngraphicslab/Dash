@@ -65,13 +65,13 @@ namespace Dash
         #endregion
 
         private MenuFlyout _flyout;
-        private float _backgroundOpacity = .7f;
+        private float _backgroundOpacity = .95f;
 
         #region Background Translation Variables
         private CanvasBitmap _bgImage;
         private bool _resourcesLoaded;
         private CanvasImageBrush _bgBrush;
-        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.png");
+        private Uri _backgroundPath = new Uri("ms-appx:///Assets/gridbg.jpg");
         private const double _numberOfBackgroundRows = 2; // THIS IS A MAGIC NUMBER AND SHOULD CHANGE IF YOU CHANGE THE BACKGROUND IMAGE
         #endregion
 
@@ -232,22 +232,19 @@ namespace Dash
             }
 
             if (ioReference.PointerArgs == null) return;
-
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
-
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
-
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
             _currReference = ioReference;
+
+
             _connectionLine = new Path
             {
                 StrokeThickness = 5,
-                Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHitTestVisible = false,
                 StrokeStartLineCap = PenLineCap.Round,
-                StrokeEndLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Triangle,
                 CompositeMode =
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
@@ -269,6 +266,12 @@ namespace Dash
             PathGeometry pathGeo = new PathGeometry();
             BindingOperations.SetBinding(pathGeo, PathGeometry.FiguresProperty, lineBinding);
             _connectionLine.Data = pathGeo;
+            
+            _connectionLine.Stroke = _converter.Angle;
+
+
+            _converter.setGradientAngle();
+            _connectionLine.Stroke = _converter.Angle;
 
             itemsPanelCanvas.Children.Add(_connectionLine);
 
@@ -382,6 +385,8 @@ namespace Dash
             {
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
+                _converter.setGradientAngle();
+                _connectionLine.Stroke = _converter.Angle;
                 _lineBinding.ForceUpdate();
             }
         }

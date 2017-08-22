@@ -10,9 +10,9 @@
     d:DesignHeight="300"
     d:DesignWidth="400">
 
-    <Grid Width="400" x:Name="xGrid" Height="300"  Style="{StaticResource xNodeContainerGrid}" ManipulationMode="All">
+    <Grid Width="400" x:Name="xGrid" Height="300"  ManipulationMode="All">
 
-        <TextBlock Style="{StaticResource xTitleStyle}" Text="PDF File Picker"/>
+        <TextBlock  Text="PDF File Picker"/>
         <Grid Margin="0,35,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100" />

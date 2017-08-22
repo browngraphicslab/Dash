@@ -90,6 +90,8 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <Content Include="Assets\docmenu.png" />
+    <Content Include="Assets\Fonts\BPmono.ttf" />
     <None Include="Assets\richtexttest.rtf" />
   </ItemGroup>
   <ItemGroup>
@@ -108,6 +110,9 @@
     <Compile Include="Converters\DocViewModelParamToDocViewModelConverter.cs" />
     <Compile Include="Util\CourtesyDocuments\KeyValueDocumentBox.cs" />
     <Compile Include="Util\CourtesyDocuments\XampleText.cs" />
+    <Compile Include="Views\Document Menu\MenuButtonContainer.xaml.cs">
+      <DependentUpon>MenuButtonContainer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\FreeformInkControls.xaml.cs">
       <DependentUpon>FreeformInkControls.xaml</DependentUpon>
     </Compile>
@@ -484,8 +489,7 @@
     <Content Include="Assets\DefaultImage.png" />
     <Content Include="Assets\delete.png" />
     <Content Include="Assets\doc-icon.png" />
-    <Content Include="Assets\gridbg.png" />
-    <Content Include="Assets\GRIDTRANSPARENT.png" />
+    <Content Include="Assets\gridbg.jpg" />
     <Content Include="Assets\if_11_1724127.png" />
     <Content Include="Assets\joe.jpg" />
     <Content Include="Assets\layout.png" />
@@ -496,7 +500,6 @@
     <Content Include="Assets\RecipeReturn.txt" />
     <Content Include="Assets\renderableJson.txt" />
     <Content Include="Assets\resize.png" />
-    <Content Include="Assets\resizehandle.png" />
     <Content Include="Assets\Rightlg.png" />
     <Content Include="Assets\rtf.txt" />
     <Content Include="Assets\youtubeJson.txt" />
@@ -515,6 +518,10 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Page Include="ClipSettings.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Document Menu\MenuButtonContainer.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
