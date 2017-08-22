@@ -234,7 +234,7 @@ namespace Dash
         {
             if (line.Stroke != (SolidColorBrush)App.Instance.Resources["AccentGreen"])
             {
-                var converter = _lineToConverter[line];
+                _converter = _lineToConverter[line];
                 //if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
                 //{
                 //                                                                                                      // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS OR NOT 
@@ -244,9 +244,9 @@ namespace Dash
                     //set up to manipulate connection line again 
                     ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
                     _connectionLine = line;
-                    converter.Element2 = null;
+                    _converter.Element2 = null;
+                    _converter.Pos2 = dropPoint; 
                     _currReference = ioReference;
-                    _converter = _lineToConverter[line];
                     ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
 
                     //remove binding 
@@ -352,10 +352,7 @@ namespace Dash
 
             // condition checking 
             if (ioReference.PointerArgs != null) _currentPointers.Remove(ioReference.PointerArgs.Pointer.PointerId);
-            if (_connectionLine == null)
-            {
-                return;
-            }
+            if (_connectionLine == null) return; 
 
             // only allow input-output pairs to be connected 
             if (_currReference == null || _currReference.IsOutput == ioReference.IsOutput)
@@ -435,7 +432,8 @@ namespace Dash
             {
                 Point pos = e.GetCurrentPoint(itemsPanelCanvas).Position;
                 _converter.Pos2 = pos;
-                _lineBinding.ForceUpdate();
+                _converter.UpdateLine(); 
+                //_lineBinding.ForceUpdate();
             }
         }
 
