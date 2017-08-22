@@ -60,20 +60,25 @@ namespace Dash
         public EditableTextBlock()
         {
             InitializeComponent();
+
+            RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
             e.Handled = true;
             TextBoxLoaded = true;
-            xTextBlock.Visibility = Visibility.Collapsed;
+            XTextBlock.Visibility = Visibility.Collapsed;
             
         }
 
-        private void xTextBox_LostFocus(object sender, RoutedEventArgs e)
+        private void TextChangedCallback(DependencyObject sender, DependencyProperty dp)
         {
-            TextBoxLoaded = false;
-            xTextBlock.Visibility = Visibility.Visible;
+            if (TextBoxLoaded)
+            {
+                TextBoxLoaded = false;
+               XTextBlock.Visibility = Visibility.Visible;
+            }
         }
 
         private void XTextBox_OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
@@ -95,8 +100,8 @@ namespace Dash
 
         private void XTextBox_OnLoaded(object sender, RoutedEventArgs e)
         {
-            xTextBox.Focus(FocusState.Programmatic);
-            xTextBox.SelectAll();
+            XTextBox.Focus(FocusState.Programmatic);
+            XTextBox.SelectAll();
         }
     }
 }

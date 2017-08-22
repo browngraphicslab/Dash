@@ -8,7 +8,7 @@
     mc:Ignorable="d">
 
     <Grid>
-        <TextBlock x:Name="xTextBlock"
+        <TextBlock x:Name="XTextBlock"
                    x:FieldModifier="public"
                    Text="{x:Bind Text, Mode=OneWay}"
                    FontSize="{x:Bind FontSize, Mode=OneWay}"
@@ -16,15 +16,14 @@
                    TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                    Foreground="{x:Bind Foreground}"
                    TextWrapping="Wrap" DoubleTapped="xTextBlock_DoubleTapped"></TextBlock>
-        <TextBox x:Name="xTextBox"
+        <TextBox x:Name="XTextBox"
+                 Text="{x:Bind Text, Mode=TwoWay}"
                  x:Load="{x:Bind TextBoxLoaded, Mode=OneWay}"
-                 Text="{x:Bind Text, Mode=OneWay}"
                  FontSize="{x:Bind FontSize, Mode=OneWay}"
                  FontWeight="{x:Bind FontWeight, Mode=OneWay}"
                  TextAlignment="{x:Bind TextAlignment, Mode=OneWay}"
                  Foreground="{x:Bind Foreground}"
                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" TextWrapping="Wrap" BorderThickness="0" Background="Transparent"
-                 LostFocus="xTextBox_LostFocus"
                  PointerWheelChanged="XTextBox_OnPointerWheelChanged"
                  ManipulationDelta="XTextBox_OnManipulationDelta"
                  Loaded="XTextBox_OnLoaded"></TextBox>

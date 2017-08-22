@@ -188,6 +188,7 @@ namespace Dash
 
         public void UpdateContent()
         {
+            _content = null;
             OnPropertyChanged(nameof(Content));
         }
 

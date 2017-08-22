@@ -44,7 +44,6 @@ namespace Dash
         public DocumentView()
         {
             InitializeComponent();
-            Debug.WriteLine($"Num DocViews = {++dvCount}");
             Util.InitializeDropShadow(xShadowHost, xShadowTarget);
 
             DataContextChanged += DocumentView_DataContextChanged;
@@ -56,11 +55,7 @@ namespace Dash
             // set bounds
             MinWidth = 100;
             MinHeight = 100;
-
-            DraggerButton.Holding += DraggerButtonHolding;
-            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
-            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
-            DoubleTapped += ExpandContract_DoubleTapped;
+            
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
         }
@@ -72,17 +67,24 @@ namespace Dash
 
         private void This_Unloaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine($"Unloaded: Num DocViews = {--dvCount}");
             DraggerButton.Holding -= DraggerButtonHolding;
             DraggerButton.ManipulationDelta -= Dragger_OnManipulationDelta;
             DraggerButton.ManipulationCompleted -= Dragger_ManipulationCompleted;
             DoubleTapped -= ExpandContract_DoubleTapped;
-            Loaded -= This_Loaded;
-            Unloaded -= This_Unloaded;
+            //Loaded -= This_Loaded;
+            //Unloaded -= This_Unloaded;
         }
 
 
         private void This_Loaded(object sender, RoutedEventArgs e)
         {
+            Debug.WriteLine($"Loaded: Num DocViews = {++dvCount}");
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped += ExpandContract_DoubleTapped;
+
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
             if (ViewModel != null)

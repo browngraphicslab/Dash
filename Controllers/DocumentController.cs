@@ -458,7 +458,7 @@ namespace Dash
             }
 
             // check field type compatibility if operator  
-            if (!IsTypeCompatible(key, field)) return false;
+            //if (!IsTypeCompatible(key, field)) return false;
 
             SetupNewFieldListeners(key, field, oldField, new Context(this));
 

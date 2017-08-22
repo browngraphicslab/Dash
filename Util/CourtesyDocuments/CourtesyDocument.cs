@@ -341,6 +341,7 @@ namespace Dash
         /// </summary>
         protected static void BindOperationInteractions(FrameworkElement renderElement, FieldReference reference, KeyController fieldKey, FieldModelController fmController)
         {
+            //TODO If we allow fields in documents to change type, caputuring/using fmController.TypeInfo for drag events won't necesarilly always be correct
             renderElement.ManipulationMode = ManipulationModes.All;
             //renderElement.ManipulationDelta += (s, e) => { e.Handled = true; }; // this breaks interaction 
             renderElement.ManipulationStarted += delegate (object sender, ManipulationStartedRoutedEventArgs args)

@@ -312,6 +312,12 @@ namespace Dash
                 return;
             }
 
+            if ((inputReference.Type & outputReference.Type) == 0)
+            {
+                UndoLine();
+                return;
+            }
+
             // undo line if connecting the same fields 
             if (inputReference.FieldReference == outputReference.FieldReference || _currReference.FieldReference == null)
             {
