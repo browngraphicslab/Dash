@@ -8,9 +8,8 @@
     xmlns:views="using:Dash"
     mc:Ignorable="d">
 
-    <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" Margin="0,0,-50,0">
+    <Grid x:Name="MyGrid" SizeChanged="MyGrid_SizeChanged" >
         <views:DocumentView x:Name="MainDocView"  x:FieldModifier="public"/>
-
         <Canvas x:Name="xCanvas" x:FieldModifier="public" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"></Canvas>
         <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Background="{StaticResource WindowsBlue}">
             <Button Tapped="TwitterTestButtonOnTapped" HorizontalAlignment="Left" VerticalAlignment="Center" >TWITTER TEST</Button>
@@ -20,13 +19,6 @@
             <TextBlock DragStarting="DocumentTest_OnDragStarting" CanDrag="True" Foreground="White">DOC TEST</TextBlock>
             <TextBlock DragStarting="CollectionTest_OnDragStarting" CanDrag="True" Text="COL TEST" Foreground="White"/>
             <TextBlock DragStarting="NotesTest_OnDragStarting" CanDrag="True" Text="NOTES TEST" Foreground="White"/>
-        </StackPanel>
-        <StackPanel x:Name="xRightSideMenu" Margin="0,0,50,0" Orientation="Horizontal" HorizontalAlignment="Right">
-        <Border Tapped="Border_Tapped" HorizontalAlignment="Right" Margin="0" Padding="8,15" VerticalAlignment="Center" Background="{StaticResource DocumentBackground}">
-                <Image Source="ms-appx:///Assets/docmenu.png" Stretch="None" Opacity=".55"></Image>
-        </Border>
-            <ScrollViewer x:Name="xMenuCanvas" RelativePanel.AlignVerticalCenterWithPanel="True" Margin="0" Padding="0" Background="#CC0850A0"  HorizontalAlignment="Right"  VerticalAlignment="Center" HorizontalScrollMode="Disabled" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Hidden" HorizontalScrollBarVisibility="Disabled">
-        </ScrollViewer>
         </StackPanel>
     </Grid>
 </Page>

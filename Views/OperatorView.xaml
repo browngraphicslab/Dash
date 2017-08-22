@@ -11,9 +11,10 @@
 
     <Grid>
         <!-- Makes the blue background shape-->
+        <Border x:Name="xBackgroundBorder" Background="{StaticResource WindowsBlue}"></Border>
 
-        <!-- Content containing grid -->
-        <Grid x:Name="XGrid" >
+        <!-- Content containing grid-->
+        <Grid x:Name="XGrid">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -25,23 +26,22 @@
 
             <!-- Input Operator Handles & Labels-->
             <ListView x:Name="InputListView" Grid.Column="0" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50"
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center">
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0,-5"/>
+                        <Setter Property="Margin" Value="0"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid Padding="5,0" VerticalAlignment="Center" Background="Transparent">
+                        <Grid Padding="10" Background="Transparent">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Foreground="White" Grid.Column="1"  Margin="-10,0,0,0" 
-                                                     VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
-                            <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
+                            <local:EditableTextBlock Foreground="White" Grid.Column="1" Margin="10,0,10,0" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
+                            <Ellipse Style="{StaticResource xLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </Grid>
                     </DataTemplate>
@@ -50,20 +50,19 @@
 
             <!-- Output link handles and labels -->
             <ListView x:Name="OutputListView" Grid.Column="2" ScrollViewer.VerticalScrollMode="Disabled" MinWidth="50" 
-                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" VerticalAlignment="Center" >
+                      ScrollViewer.HorizontalScrollMode="Disabled" SelectionMode="None" Background="{StaticResource WindowsBlue}" >
                 <ItemsControl.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
+                        <Setter Property="Margin" Value="0"/>
                         <Setter Property="Padding" Value="0"/>
-                        <Setter Property="Margin" Value="0,-5"/>
                         <Setter Property="HorizontalContentAlignment" Value="Right"/>
                     </Style>
                 </ItemsControl.ItemContainerStyle>
 
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <StackPanel Orientation="Horizontal" Padding="0,0,5,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,-10,0" Foreground="White" 
-                                                     VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
+                        <StackPanel Orientation="Horizontal" Padding="0,0,10,0" VerticalAlignment="Center">
+                            <local:EditableTextBlock Grid.Column="0" Margin="10,0,10,0" Foreground="White" VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
                         </StackPanel>

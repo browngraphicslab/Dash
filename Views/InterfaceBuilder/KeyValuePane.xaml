@@ -9,22 +9,22 @@
     d:DesignHeight="500"
     d:DesignWidth="800">
 
-    <Grid x:Name="xOuterGrid" Background="#00FFFFFF" Padding="10,0" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
+    <Grid x:Name="xOuterGrid" Background="#00FFFFFF" BorderThickness="0" BorderBrush="{StaticResource WindowsBlue}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="7*"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource AccentGreen}">
+        <Grid x:Name="xHeaderGrid" BorderThickness="0,0,0,1" BorderBrush="{StaticResource WindowsBlue}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" Style="{StaticResource xTitleStyle}">Keys</TextBlock>
-            <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch" Style="{StaticResource xTitleStyle}">Values</TextBlock>
-            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch" Style="{StaticResource xTitleStyle}">Type</TextBlock>
+            <TextBlock TextAlignment="Center" HorizontalAlignment="Stretch" >Keys</TextBlock>
+            <TextBlock Grid.Column="1" TextAlignment="Center" HorizontalAlignment="Stretch" Padding="0,0,0,2">Values</TextBlock>
+            <TextBlock Grid.Column="2" TextAlignment="Center" HorizontalAlignment="Stretch">Type</TextBlock>
         </Grid>
         <ListView Grid.Row="1" x:Name="xKeyValueListView" HorizontalAlignment="Stretch" 
                   CanDragItems="True" DragItemsStarting="XKeyValueListView_OnDragItemsStarting"
@@ -48,11 +48,11 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Key.Name}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" />
+                            <TextBlock Text="{x:Bind Path=Key.Name}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
                         <Border Grid.Column="1" Child="{x:Bind Path=Controller, Converter={StaticResource FieldModelControllerToFrameworkElementConverter}}"/>
                         <ScrollViewer Grid.Column="2" HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
-                            <TextBlock Text="{x:Bind Path=Type}" Style="{StaticResource xForceTextBlockDefault}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center"/>
+                            <TextBlock Text="{x:Bind Path=Type}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>
                         </ScrollViewer>
                     </Grid>
                 </DataTemplate>

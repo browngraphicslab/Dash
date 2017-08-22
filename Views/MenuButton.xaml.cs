@@ -1,5 +1,4 @@
-﻿using Dash.Views.Document_Menu;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Windows.Foundation;
@@ -14,10 +13,6 @@ using Windows.UI.Xaml.Media.Animation;
 
 namespace Dash
 {
-    /// <summary>
-    /// Represents an entire menu of buttons for the Document Menu. Includes code to create new buttons and
-    /// add them to a menu.
-    /// </summary>
     public sealed partial class MenuButton : UserControl, IDisposable
     {
         private TextBlock _descriptionText;
@@ -27,17 +22,12 @@ namespace Dash
 
         public bool RotateOnTap = false;
 
-        public MenuButton()
-        {
-            this.InitializeComponent();
-        }
-
         public MenuButton(Symbol icon, string name, Color background, Action buttonAction)
         {
             this.InitializeComponent();
             _buttonAction = buttonAction;
             this.InstantiateButton(icon, name, background);
-            this.CreateAndRunInstantiationAnimation(true);
+            this.CreateAndRunInstantiationAnimation(false);
         }
 
         private int _selectedInd; 
@@ -130,22 +120,48 @@ namespace Dash
         }
 
         /// <summary>
-        /// Create a circular button with an icon with a string description
+        /// Create a circular button with an icon and a string description
         /// </summary>
         /// <param name="icon"></param>
         /// <param name="name"></param>
         /// <param name="background"></param>
         private void InstantiateButton(Symbol icon, string name, Color background)
         {
+            // create symbol for button
+            var symbol = new SymbolIcon()
+            {
+                Symbol = icon,
+                Foreground = new SolidColorBrush(Colors.White)
+            };
+            // create rounded(circular) border to hold the symbol
+            _border = new Border()
+            {
+                Height = 40,
+                Width = 40,
+                CornerRadius = new CornerRadius(20),
+                Background = new SolidColorBrush(background),
+                BorderBrush = new SolidColorBrush(background),
+                Child = symbol
+            };
             // create button to contain the border with the symbol
-            MenuButtonContainer content = new MenuButtonContainer(icon, name);
-            _descriptionText = content.Label;
-            _button = content.Button;
-            _border = content.Border;
-            content.Border.Background = new SolidColorBrush(background);
-
+            _button = new Button()
+            {
+                Background = new SolidColorBrush(Colors.Transparent),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Padding = new Thickness(-2.5),
+                Content = _border
+            };
+            // create textblock containing a description of the button
+            _descriptionText = new TextBlock()
+            {
+                Text = name,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
+                FontSize = 10
+            };
             // add all content to stack panel
-            xButtonStackPanel.Children.Add(content);
+            xButtonStackPanel.Children.Add(_button);
+            xButtonStackPanel.Children.Add(_descriptionText);
 
             _button.Tapped += Button_Tapped;
             _button.DoubleTapped += Button_DoubleTapped;
