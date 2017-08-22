@@ -157,7 +157,7 @@ namespace Dash
                 var line = _linesToBeDeleted[refs[i]];
                 itemsPanelCanvas.Children.Remove(line);
                 _refToLine.Remove(refs[i]);
-                _lineToConverter.Remove(line); 
+                _lineToConverter.Remove(line);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
@@ -229,7 +229,7 @@ namespace Dash
         {
             var d1 = Math.Pow(point.X - start.X, 2) + Math.Pow(point.Y - start.Y, 2);
             var d2 = Math.Pow(point.X - end.X, 2) + Math.Pow(point.Y - end.Y, 2);
-            return d1 < d2; 
+            return d1 < d2;
         }
 
         public void StartDrag(IOReference ioReference)
@@ -263,11 +263,11 @@ namespace Dash
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
 
+            _connectionLine.Tapped += (s, e) => e.Handled = true;
+
             _connectionLine.PointerPressed += (s, e) =>
             {
                 var line = s as Path;
-                e.Handled = true;
-
                 if (line.Stroke == (SolidColorBrush)App.Instance.Resources["AccentGreen"])
                 {
                     line.Stroke = new SolidColorBrush(Colors.Goldenrod);
@@ -275,20 +275,30 @@ namespace Dash
                 }
                 else
                 {
-                    _connectionLine = s as Path;
                     var dropPoint = e.GetCurrentPoint(itemsPanelCanvas).Position;
-                    var converter = _lineToConverter[_connectionLine];
+                    var converter = _lineToConverter[line];
                     if (IsCloserToStart(dropPoint, converter.StartPoint, converter.EndPoint))
                     {
-                        return; 
+                        return;
                         // TODO IMPLEMENT BIDIRECTIONAL CONNECTIONS................. 
                     }
                     else
                     {
-                        converter.Element2 = null; 
+                        ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
+                        _connectionLine = line;
+                        converter.Element2 = null;
+                        _currReference = ioReference;
+                        _converter = _lineToConverter[line]; 
+                        ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
                         //todo remove binding ...................................uh 
                     }
                 }
+            };
+
+            _connectionLine.PointerReleased += (s, e) =>
+            {
+                ManipulationControls.OnManipulatorTranslatedOrScaled -= ManipulationControls_OnManipulatorTranslated;
+                ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
             };
 
             Canvas.SetZIndex(_connectionLine, -1);
@@ -378,7 +388,7 @@ namespace Dash
             {
                 CheckLinePresence(ioReference.FieldReference);
                 _refToLine.Add(ioReference.FieldReference, _connectionLine);
-                _lineToConverter.Add(_connectionLine, _converter); 
+                if (!_lineToConverter.ContainsKey(_connectionLine)) _lineToConverter.Add(_connectionLine, _converter);
                 _connectionLine = null;
             }
             if (ioReference.PointerArgs != null) CancelDrag(ioReference.PointerArgs.Pointer);
@@ -405,7 +415,7 @@ namespace Dash
             var line = _refToLine[reference];
             itemsPanelCanvas.Children.Remove(line);
             _refToLine.Remove(reference);
-            _lineToConverter.Remove(line); 
+            _lineToConverter.Remove(line);
         }
 
         private void FreeformGrid_OnPointerMoved(object sender, PointerRoutedEventArgs e)
