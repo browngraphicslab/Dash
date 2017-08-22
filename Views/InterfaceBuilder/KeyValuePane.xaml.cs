@@ -122,7 +122,7 @@ namespace Dash
         private void AddKeyValuePair()
         {
             var item = (TypeInfo)xTypeComboBox.SelectedItem;
-            KeyController key = new KeyController((new Random()).Next(0, 100000000).ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
+            KeyController key = new KeyController(Guid.NewGuid().ToString(), xNewKeyField.Text);                 // TODO change this create actual guids 
             FieldModelController fmController = new TextFieldModelController("something went wrong");
             if (true)
             {
@@ -149,8 +149,8 @@ namespace Dash
                     fmController = new TextFieldModelController(xNewValueField.Text);
                 }
             }
-            ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
-            _documentControllerDataContext.SetField(key, fmController, true);
+            //ListItemSource.Add(new KeyFieldContainer(key, new BoundFieldModelController(fmController, _documentControllerDataContext)));
+            //_documentControllerDataContext.SetField(key, fmController, true);
         }
 
         /// <summary>

@@ -319,9 +319,7 @@ namespace Dash
             else
             {
                 double num;
-                if (!double.TryParse(textInput, out num))
-                    num = double.NaN;
-                if (!double.IsNaN(num))
+                if (double.TryParse(textInput, out num))
                     SetField(key, new NumberFieldModelController(num), true);
                 else
                     SetField(key, new TextFieldModelController(textInput), true);
