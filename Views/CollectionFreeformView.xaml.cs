@@ -252,8 +252,11 @@ namespace Dash
                     //remove binding 
                     var refField = _refToLine.FirstOrDefault(x => x.Value == line).Key;
                     DocumentController inputController = refField.GetDocumentController(null);
-                    FieldModelController rawField = (inputController.GetField(refField.FieldKey) as ReferenceFieldModelController)?.DereferenceToRoot(null);
-                    if (rawField != null) inputController.SetField(refField.FieldKey, rawField, true);
+                    var rawField = inputController.GetField(refField.FieldKey);
+                    if (rawField as ReferenceFieldModelController != null)
+                        rawField = (rawField as ReferenceFieldModelController).DereferenceToRoot(null);
+                    inputController.SetField(refField.FieldKey, rawField, false);
+                    _refToLine.Remove(refField); 
                 }
             }
         }
@@ -268,11 +271,9 @@ namespace Dash
             }
 
             if (ioReference.PointerArgs == null) return;
-
             if (_currentPointers.Contains(ioReference.PointerArgs.Pointer.PointerId)) return;
 
             ViewModel.SetGlobalHitTestVisiblityOnSelectedItems(true);
-
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
             _currentPointers.Add(ioReference.PointerArgs.Pointer.PointerId);
