@@ -142,14 +142,11 @@ namespace Dash
 
         private void TryDeleteWithStroke(InkStroke newStroke)
         {
-            var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => p.Position));
+            var inkPoints = new List<Point>(newStroke.GetInkPoints().Select(p => Util.PointTransformFromVisual(p.Position, _freeformInkControl.SelectionCanvas,
+                _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot)));
             if (!IsLinear(inkPoints)) return;
-            var transformedLine = new Polyline();
-            foreach (var point in inkPoints)
-                transformedLine.Points.Add(Util.PointTransformFromVisual(point, _freeformInkControl.SelectionCanvas,
-                    _freeformInkControl.FreeformView.xItemsControl.ItemsPanelRoot));
-            var point1 = transformedLine.Points[0];
-            var point2 = transformedLine.Points.Last();
+            var point1 = inkPoints[0];
+            var point2 = inkPoints.Last();
             var rectToDocView = GetDocViewRects();
             var docsRemoved = false;
             foreach (var rect in rectToDocView.Keys)
@@ -157,7 +154,7 @@ namespace Dash
                 if (point1.X < rect.X && point2.X > rect.X + rect.Width ||
                     point1.X > rect.X + rect.Width && point2.X < rect.X)
                     if (PathIntersectsRect(
-                        transformedLine.Points, rect))
+                        inkPoints, rect))
                     {
                         docsRemoved = true;
                         _freeformInkControl.FreeformView.DeleteConnections(rectToDocView[rect]);
@@ -165,7 +162,7 @@ namespace Dash
                             .DocumentController);
                     }
             }
-            if (_freeformInkControl.FreeformView.DeleteIntersectingConnections(transformedLine.Points))
+            if (_freeformInkControl.FreeformView.DeleteIntersectingConnections(point1, point2))
                 docsRemoved = true;
             if (docsRemoved)
             {

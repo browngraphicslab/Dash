@@ -35,10 +35,10 @@
         </Grid.Resources>
         <Grid.ContextFlyout>
             <MenuFlyout>
-                <MenuFlyoutItem x:Name="RecognizeButton" Tapped="RecognizeButton_OnTapped"></MenuFlyoutItem>
                 <MenuFlyoutItem x:Name="DeleteButton" Tapped="DeleteButton_OnTapped">Delete</MenuFlyoutItem>
                 <MenuFlyoutItem x:Name="CopyButton" Tapped="CopyButton_OnTapped">Copy</MenuFlyoutItem>
                 <MenuFlyoutItem x:Name="CutButton" Tapped="CutButton_OnTappedButton_OnTapped">Cut</MenuFlyoutItem>
+                <MenuFlyoutItem x:Name="RecognizeButton" Tapped="RecognizeButton_OnTapped">Recognize</MenuFlyoutItem>
             </MenuFlyout>
         </Grid.ContextFlyout>
         <Rectangle Style="{StaticResource RectStyle}" Fill="Transparent" Margin="15"

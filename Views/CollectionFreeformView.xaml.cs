@@ -187,55 +187,69 @@ namespace Dash
         }
 
         /// <summary>
-        /// Checks if given points intersect a bezier curve and removes the intersected curves.
-        /// TODO doesn't remove field connections
-        /// TODO very inefficient way of doing this
+        /// 
         /// </summary>
-        /// <param name="points"></param>
+        /// <param name="point1"></param>
+        /// <param name="point2"></param>
         /// <returns></returns>
-        public bool DeleteIntersectingConnections(IEnumerable<Point> points)
+        public bool DeleteIntersectingConnections(Point point1, Point point2)
         {
-            foreach (var line in LineDict.Values) line.Line.IsHitTestVisible = true;
             bool lineDeleted = false;
-            var ToBeDeleted = new List<FieldReference>();
-            foreach (var point in points)
+            var toBeDeleted = new List<FieldReference>();
+            //Calculate line 1
+            var slope1 = (point2.Y - point1.Y) / (point2.X - point1.X);
+            var yInt1 = point1.Y - point1.X * slope1;
+
+            foreach (var pair in LineDict)
             {
-                var paths = VisualTreeHelper.FindElementsInHostCoordinates(point,
-                    itemsPanelCanvas).OfType<Path>().ToImmutableHashSet();
-                foreach (var pair in LineDict)
+                //Calculate line 2
+                var line = pair.Value;
+                var converter = line.Converter;
+                var curvePoint1 = converter.Element1.TransformToVisual(itemsPanelCanvas)
+                    .TransformPoint(new Point(converter.Element1.ActualWidth / 2, converter.Element1.ActualHeight / 2));
+                var curvePoint2 = converter.Element2.TransformToVisual(itemsPanelCanvas)
+                    .TransformPoint(new Point(converter.Element2.ActualWidth / 2, converter.Element2.ActualHeight / 2));
+                var slope2 = (curvePoint2.Y - curvePoint1.Y) / (curvePoint2.X - curvePoint1.X);
+                var yInt2 = curvePoint1.Y - curvePoint1.X * slope2;
+
+                //Calculate intersection
+                var intersectionX = (yInt2 - yInt1) / (slope1 - slope2);
+                var intersectionY = slope1 * intersectionX + yInt1;
+                var intersectionPoint = new Point(intersectionX, intersectionY);
+
+                //if the intersection is on the two line *segments*, remove the path and the reference
+                if (PointBetween(intersectionPoint, point1, point2) &&
+                    PointBetween(intersectionPoint, curvePoint1, curvePoint2))
                 {
-                    if (paths.Contains(pair.Value.Line))
+                    itemsPanelCanvas.Children.Remove(pair.Value.Line);
+                    toBeDeleted.Add(pair.Key);
+                    var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
+                    var doc2 = view2.ViewModel.DocumentController;
+                    var fields = doc2.EnumFields().ToImmutableList();
+                    foreach (var field in fields)
                     {
-                        itemsPanelCanvas.Children.Remove(pair.Value.Line);
-                        ToBeDeleted.Add(pair.Key);
-                        var line = pair.Value;
-                        var converter = line.Converter;
-                        var view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
-                        var doc2 = view2.ViewModel.DocumentController;
-                        var fields = doc2.EnumFields().ToImmutableList();
-                        foreach (var field in fields)
+                        var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
+                        if (referenceFieldModelController != null)
                         {
-                            var referenceFieldModelController = (field.Value as ReferenceFieldModelController);
-                            if (referenceFieldModelController != null)
+                            var referencesEqual = referenceFieldModelController.DereferenceToRoot(null).Equals(pair.Key.DereferenceToRoot(null));
+                            if (referencesEqual)
                             {
-                                var referencesEqual = referenceFieldModelController.DereferenceToRoot(null).Equals(pair.Key.DereferenceToRoot(null));
-                                if (referencesEqual)
-                                {
-                                    doc2.SetField(field.Key,
-                                        TypeInfoHelper.CreateFieldModelController(referenceFieldModelController
-                                            .FieldReference.GetDocumentController(null)
-                                            .GetField(referenceFieldModelController.FieldKey).TypeInfo), true);
-                                    //Todo remove field updated references and replace field's original value
-                                }
+                                doc2.SetField(field.Key,
+                                    referenceFieldModelController.DereferenceToRoot(null).Copy(), true);
                             }
                         }
-                        lineDeleted = true;
                     }
+                    lineDeleted = true;
                 }
-                foreach (var key in ToBeDeleted) LineDict.Remove(key);
             }
-            foreach (var line in LineDict.Values) line.Line.IsHitTestVisible = false;
+            foreach (var key in toBeDeleted) LineDict.Remove(key);
             return lineDeleted;
+        }
+
+        private bool PointBetween(Point testPoint, Point a, Point b)
+        {
+            var rect = new Rect(new Point(Math.Min(a.X, b.X), Math.Min(a.Y, b.Y)), new Size(Math.Abs(a.X - b.X), Math.Abs(a.Y - b.Y)));
+            return rect.Contains(testPoint);
         }
 
         private Dictionary<FieldReference, LinePackage> _linesToBeDeleted = new Dictionary<FieldReference, LinePackage>();
@@ -327,8 +341,8 @@ namespace Dash
             _currReference = ioReference;
             _connectionLine = new Path
             {
-                StrokeThickness = 10,
-                Stroke = (SolidColorBrush)App.Instance.Resources["DraggerLineStroke"],
+                StrokeThickness = 5,
+                Stroke = (SolidColorBrush)App.Instance.Resources["AccentGreen"],
                 IsHitTestVisible = false,
                 StrokeStartLineCap = PenLineCap.Round,
                 StrokeEndLineCap = PenLineCap.Round,
@@ -336,6 +350,7 @@ namespace Dash
                     ElementCompositeMode.SourceOver //TODO Bug in xaml, shouldn't need this line when the bug is fixed 
                                                     //(https://social.msdn.microsoft.com/Forums/sqlserver/en-US/d24e2dc7-78cf-4eed-abfc-ee4d789ba964/windows-10-creators-update-uielement-clipping-issue?forum=wpdevelop)
             };
+            _connectionLine.PointerEntered += ElementOnPointerEntered;
             Canvas.SetZIndex(_connectionLine, -1);
             _converter = new BezierConverter(ioReference.FrameworkElement, null, itemsPanelCanvas);
             _converter.Pos2 = ioReference.PointerArgs.GetCurrentPoint(itemsPanelCanvas).Position;
@@ -362,6 +377,8 @@ namespace Dash
             //LineDict.Add(ioReference.FieldReference, new LinePackage(_converter,_connectionLine));
             //}
         }
+
+        
 
         public void CancelDrag(Pointer p)
         {
@@ -944,5 +961,12 @@ namespace Dash
             InkHostCanvas.Children.Add(SelectionCanvas);
         }
         #endregion
+
+        private void ElementOnPointerEntered(object sender, PointerRoutedEventArgs e)
+        {
+            if(e.Pointer.PointerDeviceType == ManipulationControls.BlockedInputType && ManipulationControls.FilterInput)
+            Debug.WriteLine("Pointer entered: " + sender.GetType());
+        }
+
     }
 }

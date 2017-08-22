@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Windows.Devices.Input;
 using Windows.Foundation;
@@ -61,6 +62,7 @@ namespace Dash
             TargetCanvas.RightTapped += TargetCanvasOnRightTapped;
             InkFieldModelController.InkUpdated += InkFieldModelControllerOnInkUpdated;
         }
+        
 
         private void MakeFlyout()
         {
