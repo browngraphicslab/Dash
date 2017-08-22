@@ -107,6 +107,12 @@
             <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
+        <Style TargetType="local:EditableTextBlock">
+            <Setter Property="Foreground" Value="{StaticResource MainTextColor}" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono" />
+        </Style>
+
         <!-- GLOBAL STYLES -->
 
         <!-- app Titles -->

@@ -125,12 +125,12 @@ namespace Dash
             _docMenu = new OverlayMenu(null, documentButtons);
             Binding visibilityBinding = new Binding
             {
+                Source = ViewModel,
                 Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
                 Mode = BindingMode.OneWay
             };
             _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
             //xMenuCanvas.Content = _docMenu;
-            ViewModel.OpenMenu();
         }
 
 
@@ -433,10 +433,14 @@ namespace Dash
             if (!isSelected)
             {
                 colorStoryboardOut.Begin();
-            } else
+            }
+            else
             {
-
                 // update the main toolbar in the overlay canvas
+                if (_docMenu == null)
+                {
+                    SetUpMenu();
+                }
                 if (_docMenu != null && MainPage.Instance != null)
                 {
                     colorStoryboard.Begin();

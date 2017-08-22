@@ -89,6 +89,7 @@ namespace Dash
             // add the radial menu
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+
         }
 
 
