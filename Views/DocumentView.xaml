@@ -15,7 +15,9 @@
     ManipulationMode="{Binding ManipulationMode}"
     >
     
+    <!-- Animation definitions -->
     <UserControl.Resources>
+        <!-- Fadeout whole document on deletion-->
         <Storyboard x:Name="FadeOut" Completed="FadeOut_Completed" SpeedRatio="0.7">
             <FadeOutThemeAnimation TargetName="This"></FadeOutThemeAnimation>
         </Storyboard>
@@ -23,15 +25,28 @@
     
     <!-- Main document view -->
     <Grid x:Name="OuterGrid"
-          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" BorderBrush="Blue">
+          x:FieldModifier="public" SizeChanged="OuterGrid_SizeChanged" >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="0"/>
         </Grid.ColumnDefinitions>
-
         <!--drop shadow ui elements-->
         <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-        <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="#99FFFFFF"/> <!--Fill="{StaticResource TranslucentWhite}"-->
+        <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                   Fill="{StaticResource DocumentBackground}" >
+            <Rectangle.Resources>
+                <!-- Animate background color -->
+                <Storyboard x:Name="colorStoryboard">
+                    <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
+                From="#CC303030" To="#CC414141" Duration="0:0:0.075"/>
+                </Storyboard>
+                <Storyboard x:Name="colorStoryboardOut">
+                    <ColorAnimation Storyboard.TargetName="xShadowTarget" Storyboard.TargetProperty="(Rectangle.Fill).(SolidColorBrush.Color)"
+                From="#CC414141" To="#CC303030" Duration="0:0:0.075"/>
+                </Storyboard>
+            </Rectangle.Resources>
+        </Rectangle>
+        <Border Background="{StaticResource DocumentGradient}"></Border>
 
         <!-- Container for Icon view -->
         <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
@@ -42,16 +57,13 @@
 
             <Image Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" x:Name="xIconImage" Height="64" HorizontalAlignment="Center" Width="64"  Source="ms-appx:///Assets/if_11_1724127.png" />
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Row="1">
-                <TextBox  FontSize="11" MaxWidth="86" MinHeight="5"  Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
+                <TextBox  FontSize="11" MaxWidth="86" MinHeight="5" Foreground="{StaticResource MainTextColor}" Padding="1,4,0,0" TextWrapping="Wrap" x:Name="xIconLabel" 
                      HorizontalAlignment="Center"
                      TextAlignment="Center"
                      Background="Transparent" Text="Name Here" BorderThickness="0"/>
             </StackPanel>
         </Grid>
-        
-        <!--canvas to hold the document view menu-->
-        <Canvas x:Name="xMenuCanvas" Grid.Column="1"/>
-        
+
         <!--grid to hold the inner content of the document-->
         <Grid Grid.Column="0">
             <!-- Container for document fields view -->
@@ -66,6 +78,7 @@
                 </FlyoutBase.AttachedFlyout>
                 <ContentPresenter x:Name="xContentPresenter" Grid.Row="0" Content="{Binding Content}" IsHitTestVisible="{Binding IsSelected}"/>
             </Grid>
+            
             <!-- Dragger Button-->
             <Button x:Name="DraggerButton"
                     x:FieldModifier="public"
@@ -78,11 +91,17 @@
                     </ControlTemplate>
                 </Button.Template>
                 <Border Padding="10,10,20,20" Background="Transparent">
-                    <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,2,2" Stretch="None"
+                    <Image x:Name="xDragImage" Source="ms-appx:///Assets/resize.png" Height="20" Margin="0,0,3,3" Stretch="None"
                                    HorizontalAlignment="Right" VerticalAlignment="Bottom" />
                 </Border>
             </Button>
         </Grid>
+
+        <!--canvas to hold the document view menu-->
+        <ScrollViewer x:Name="xMenuCanvas" Padding="0" HorizontalContentAlignment="Stretch" Background="#CC0850A0" Margin="0,-50,0,0" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Hidden">
+            
+        </ScrollViewer>
+
         <ProgressRing x:Name="xProgressRing" Grid.Column="0" x:FieldModifier="public" Width="50" Height="50" IsActive="False" Visibility="Collapsed"/>
     </Grid>
 </local:SelectionElement>

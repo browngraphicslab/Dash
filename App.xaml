@@ -40,13 +40,28 @@
     -->
     <Application.Resources>
         <!-- COLORS -->
-        <SolidColorBrush x:Key="WindowsBlue" Color="#FF007AFF"/>
-        <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
-        <SolidColorBrush x:Key="AccentGreen" Color="#FF35C597"/>
-        <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
+        <!-- general colors -->
+        <SolidColorBrush x:Key="WindowsBlue" Color="#FF0850a0"/>
+        <SolidColorBrush x:Key="AccentGreen" Color="#FF698f0f"/>
         <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"></SolidColorBrush>
-
         
+        <!-- global colors-->
+        <SolidColorBrush x:Key="MainTextColor" Color="#FF9B9CA0"></SolidColorBrush>
+        
+        <!-- background colors -->
+        <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
+        <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
+        <SolidColorBrush x:Key="DocumentBackground" Color="#CC303030"></SolidColorBrush>
+        <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
+             <GradientStop Color="Transparent" Offset="0"/>
+             <GradientStop Color="#FFFFFFFF" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="OperatorGradient" EndPoint="1,0.5" StartPoint="0,0.5" Opacity=".75">
+            <GradientStop Color="#FF0850a0" Offset="0"/>
+            <GradientStop Color="#FF698f0f" Offset="1" />
+        </LinearGradientBrush>
+
+
         <!-- DEFAULT STYLES-->
         <!-- gray border on textboxes -->
         <Style TargetType="TextBox">
@@ -56,6 +71,10 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="#FF656973"></Setter>
             <Setter Property="BorderThickness" Value="2"/>
+
+            <Setter Property="Padding" Value="15"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
         <!-- gray border on combobox -->
@@ -70,39 +89,44 @@
         <!-- blue (default) button with white text -->
         <Style TargetType="Button">
             <!-- prevents node from moving while mouse is over UI element-->
-            <Setter Property="ManipulationMode" Value="Scale"></Setter> 
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="Background" Value="{StaticResource WindowsBlue}"/>
             <Setter Property="Foreground" Value="White" />
             <Setter Property="BorderThickness" Value="0,0,0,0"/>
+
+            <Setter Property="Padding" Value="15"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
+        <!-- text styles -->
         <Style TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#FF656973"></Setter>
+            <Setter Property="Foreground" Value="{StaticResource MainTextColor}"></Setter>
+            <Setter Property="Padding" Value="15,10,15,10"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
         <!-- GLOBAL STYLES -->
-        <!-- border & padding on node-containing elements-->
-        <Style TargetType="Grid" x:Key="xNodeContainerGrid">
-            <Setter Property="Padding" Value="0,0,0,0"/>
-            <Setter Property="Background" Value="{StaticResource TranslucentWhite}"/>
-        </Style>
-        <Style TargetType="StackPanel" x:Key="xNodeContainerStackPanel">
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
-        </Style>
-        <Style TargetType="UserControl" x:Key="xNodeContainerUserControl">
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Background"  Value="{StaticResource TranslucentWhite}"/>
-        </Style>
 
         <!-- app Titles -->
         <Style TargetType="TextBlock" x:Key="xTitleStyle">
-            <Setter Property="FontSize" Value="20" />
-            <Setter Property="Margin" Value="0,0,0,10" />
             <Setter Property="TextAlignment" Value="Center" />
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Top"/>
+
+            <Setter Property="Foreground" Value="#FFCACBCF"></Setter>
+            <Setter Property="Padding" Value="15,10,15,10"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
+        </Style>
+        
+        <!-- for forcing text styles to apply -->
+        <Style TargetType="TextBlock" x:Key="xForceTextBlockDefault">
+            <Setter Property="Foreground" Value="{StaticResource MainTextColor}"></Setter>
+            <Setter Property="Padding" Value="15,10,15,10"></Setter>
+            <Setter Property="FontSize" Value="12"></Setter>
+            <Setter Property="FontFamily" Value="ms-appx:/Assets/Fonts/BPmono.ttf#BPmono"></Setter>
         </Style>
 
         <!-- green accent button -->
@@ -125,7 +149,14 @@
             <Setter Property="ManipulationMode" Value="All"></Setter>
             <Setter Property="Stroke" Value="Transparent"></Setter>
         </Style>
-        
+        <Style TargetType="Ellipse" x:Key="xInputLinkHandle">
+            <Setter Property="Fill" Value="{StaticResource WindowsBlue}" />
+            <Setter Property="Height" Value="20"></Setter>
+            <Setter Property="Width" Value="20"></Setter>
+            <Setter Property="ManipulationMode" Value="All"></Setter>
+            <Setter Property="Stroke" Value="Transparent"></Setter>
+        </Style>
+
         <!-- Collection View -->
         <Style TargetType="Button" x:Key="xBlueTextButtonStyle">
             <Setter Property="Background" Value="Transparent"/>

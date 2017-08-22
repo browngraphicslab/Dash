@@ -25,7 +25,8 @@ namespace Dash
 
         private List<MenuButton> _collectionButtons;
         private List<MenuButton> _documentButtons;
-        public OverlayMenu(List<MenuButton> collectionButtons, List<MenuButton> documentButtons)
+        public OverlayMenu() { }
+            public OverlayMenu(List<MenuButton> collectionButtons, List<MenuButton> documentButtons)
         {
             this.InitializeComponent();
             _collectionButtons = collectionButtons;

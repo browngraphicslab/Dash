@@ -24,6 +24,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Visibility = Windows.UI.Xaml.Visibility;
 using static Dash.NoteDocuments;
+using Windows.UI.ViewManagement;
+using Windows.UI;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Xaml.Media;
 
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -47,6 +51,13 @@ namespace Dash
 
         public MainPage()
         {
+
+            ApplicationViewTitleBar formattableTitleBar = ApplicationView.GetForCurrentView().TitleBar;
+            formattableTitleBar.ButtonBackgroundColor = ((SolidColorBrush)Application.Current.Resources["DocumentBackground"]).Color;
+            CoreApplicationViewTitleBar coreTitleBar = CoreApplication.GetCurrentView().TitleBar;
+            coreTitleBar.ExtendViewIntoTitleBar = true;
+
+
             InitializeComponent();
 
             // create the collection document model using a request
@@ -75,21 +86,20 @@ namespace Dash
             //DisplayDocument(jsonDoc);
             //sw.Stop();
 
+            // add the radial menu
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
+        }
 
-            var matrix = new Matrix3x2(1, 0, 0, 1, 1, 1);
-            Debug.WriteLine("Translate + 10, 10: " + Matrix3x2.CreateTranslation(10, 10));
-            Debug.WriteLine("Scale 10, 10: " + Matrix3x2.CreateScale(10, 10));
-            TestMatrix(2, 2, 0, 0, 1, 1);
-            TestMatrix(2, 2, 1, 1, 1, 1);
-            TestMatrix(2, 2, 2, 2, 1, 1);
-            TestMatrix(2, 2, 4, 4, 1, 1);
-            TestMatrix(4, 4, 0, 0, 2, 2);
-            TestMatrix(4, 4, 1, 1, 2, 2);
-            TestMatrix(4, 4, 2, 2, 2, 2);
-            TestMatrix(4, 4, 4, 4, 2, 2);
 
+        /// <summary>
+        /// Used to set the top-level options menu. Generally, this is envoked when
+        /// the selected document changes & the options needs to be updated.
+        /// </summary>
+        /// <param name="menu"></param>
+        public void SetOptionsMenu(FrameworkElement menu)
+        {
+            xMenuCanvas.Content = menu;
         }
 
         private void TestMatrix(float xScale, float yScale, float xCenter, float yCenter, float translateX, float translateY)
@@ -339,7 +349,11 @@ namespace Dash
             Grid g = new Grid
             {
                 Name = "XTestGrid",
-                ColumnDefinitions = { new ColumnDefinition{Width = new GridLength(400)}, new ColumnDefinition{Width = new GridLength(400)}},
+                ColumnDefinitions =
+                {
+                    new ColumnDefinition {Width = new GridLength(400)},
+                    new ColumnDefinition {Width = new GridLength(400)}
+                },
                 Height = 900
             };
             //List<FrameworkElement> elements = new List<FrameworkElement>();
@@ -363,6 +377,16 @@ namespace Dash
             sw.Stop();
             Debug.WriteLine($"Phase 2 took {sw.ElapsedMilliseconds} ms");
             xCanvas.Children.Add(g);
+        }
+
+        private void Border_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (xRightSideMenu.Margin.Right == 50)
+                xRightSideMenu.Margin = new Thickness(0, 0, 0, 0);
+            else
+                xRightSideMenu.Margin = new Thickness(0, 0, 50, 0);
+
+            e.Handled = true;
         }
     }
 }
