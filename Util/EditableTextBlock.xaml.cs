@@ -66,15 +66,6 @@ namespace Dash
         {
             InitializeComponent();
 
-            //var colorBinding = new Binding
-            //{
-            //    Source = this,
-            //    Path = new PropertyPath(nameof(Foreground)),
-            //    Mode = BindingMode.TwoWay
-            //};
-            //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
-            //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
-
             RegisterPropertyChangedCallback(TextProperty, TextChangedCallback);
         }
 

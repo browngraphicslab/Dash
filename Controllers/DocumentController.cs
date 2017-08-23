@@ -517,7 +517,7 @@ namespace Dash
             if (!opCont.Inputs.ContainsKey(key)) return true;
 
             var rawField = field.DereferenceToRoot(null);
-            return rawField == null || opCont.Inputs[key] == rawField.TypeInfo;
+            return rawField == null || (opCont.Inputs[key] & rawField.TypeInfo) != 0;
         }
 
 
