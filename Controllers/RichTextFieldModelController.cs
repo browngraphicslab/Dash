@@ -35,13 +35,18 @@ namespace Dash
 
             }
         }
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             return Data;
         }
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
-            Data = value as RichTextFieldModel.RTD;
+            if (value is RichTextFieldModel.RTD)
+            {
+                Data = value as RichTextFieldModel.RTD;
+                return true;
+            }
+            return false;
         }
         public ITextSelection SelectedText { get; set; }
         protected override void UpdateValue(FieldModelController fieldModel)

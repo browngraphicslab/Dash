@@ -29,13 +29,16 @@ namespace Dash
         ///     to the server
         /// </summary>
         /// 
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             return Data;
         }
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
+            if (!(value is DocumentController))
+                return false;
             Data = value as DocumentController;
+            return true;
         }
         public DocumentController Data
         {

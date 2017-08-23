@@ -14,14 +14,19 @@ namespace Dash
     {
         public List<T> TypedData { get; set; } = new List<T>();
 
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             return Data;
         }
 
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
-            Data = value as List<FieldModelController>;
+            if (Data is List<FieldModelController>)
+            {
+                Data = value as List<FieldModelController>;
+                return true;
+            }
+            return false;
         }
         public override List<FieldModelController> Data
         {

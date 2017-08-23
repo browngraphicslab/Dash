@@ -45,13 +45,18 @@ namespace Dash
             return new PointFieldModelController(0, 0);
         }
 
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             return Data;
         }
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
-            Data = (Point)value;
+            if (value is Point)
+            {
+                Data = (Point)value;
+                return true;
+            }
+            return false;
         }
         public Point Data
         {

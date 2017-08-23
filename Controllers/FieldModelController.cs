@@ -40,9 +40,9 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
-        public abstract void SetValue(object value);
+        public abstract bool SetValue(object value);
 
-        public abstract object GetValue();
+        public abstract object GetValue(Context context);
 
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the

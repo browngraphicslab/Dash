@@ -18,13 +18,18 @@ namespace Dash
         /// </summary>
         public TextFieldModel TextFieldModel => FieldModel as TextFieldModel;
 
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             return Data;
         }
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
-            Data = value as string;
+            if (value is string)
+            {
+                Data = value as string;
+                return true;
+            }
+            return false;
         }
         public string Data
         {

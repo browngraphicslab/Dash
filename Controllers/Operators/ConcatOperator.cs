@@ -25,13 +25,13 @@ namespace Dash
             return new ConcatOperator();
         }
 
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             throw new System.NotImplementedException();
         }
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
-            throw new System.NotImplementedException();
+            return false;
         }
         public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {

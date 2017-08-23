@@ -47,13 +47,13 @@ namespace Dash
         {
         }
 
-        public override object GetValue()
+        public override object GetValue(Context context)
         {
             throw new NotImplementedException();
         }
-        public override void SetValue(object value)
+        public override bool SetValue(object value)
         {
-            throw new NotImplementedException();
+            return false;
         }
         public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {

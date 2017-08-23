@@ -258,7 +258,7 @@ namespace Dash
         /// <param name="docController"></param>
         /// <param name="key"></param>
         /// <param name="textInput"></param>
-        public void ParseDocField(KeyController key, string textInput, FieldModelController curField = null)
+        public bool ParseDocField(KeyController key, string textInput, FieldModelController curField = null)
         {
             textInput = textInput.Trim(' ');
             if (textInput.StartsWith("="))
@@ -322,6 +322,7 @@ namespace Dash
                         double num;
                         if (double.TryParse(textInput, out num))
                             (curField as NumberFieldModelController).Data = num;
+                        else return false;
                     }
                     else if (curField is TextFieldModelController)
                         (curField as TextFieldModelController).Data = textInput;
@@ -331,6 +332,7 @@ namespace Dash
                         (curField as DocumentFieldModelController).Data = new Converters.DocumentControllerToStringConverter().ConvertXamlToData(textInput);
                     else if (curField is DocumentCollectionFieldModelController)
                         (curField as DocumentCollectionFieldModelController).Data = new Converters.DocumentCollectionToStringConverter().ConvertXamlToData(textInput);
+                    else return false;
                 }
                 else
                 {
@@ -340,6 +342,7 @@ namespace Dash
                     else SetField(key, new TextFieldModelController(textInput), true);
                 }
             }
+            return true;
         }
 
         /// <summary>
