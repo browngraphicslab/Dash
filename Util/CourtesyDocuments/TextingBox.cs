@@ -86,34 +86,25 @@ namespace Dash
         public static FrameworkElement MakeView(DocumentController docController, Context context, bool isInterfaceBuilderLayout = false, bool isEditable = false)
         {
             var referenceToText = GetTextReference(docController);
-            FrameworkElement element;
-            TextBlock tb;
+            
+            var editableTB = new EditableTextBlock()
+            {
+                TargetFieldReference = referenceToText,
+                TargetDocContext = context,
+                IsEditable = isEditable
+            };
 
-            if (isEditable)
-            {
-                var editableTB = new EditableTextBlock()
-                {
-                    TargetFieldReference = referenceToText,
-                    TargetDocContext = context
-                };
-                tb = editableTB.xTextBlock;
-                element = editableTB;
-            }
-            else
-            {
-                element = tb = new TextBlock();
-            }
-            CourtesyDocument.SetupBindings(element, docController, context);
-            SetupBindings(tb, docController, context);
+            CourtesyDocument.SetupBindings(editableTB, docController, context);
+            SetupBindings(editableTB.xTextBlock, docController, context);
 
             // add bindings to work with operators (only if text is a reference)
             if (referenceToText != null) 
             {
                 var fmController = docController.GetDereferencedField(KeyStore.DataKey, context);
-                BindOperationInteractions(tb, referenceToText.FieldReference.Resolve(context), referenceToText.FieldKey, fmController);
+                BindOperationInteractions(editableTB.xTextBlock, referenceToText.FieldReference.Resolve(context), referenceToText.FieldKey, fmController);
             }
 
-            return isInterfaceBuilderLayout ? new SelectableContainer(element, docController) : element;
+            return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(editableTB, docController) : editableTB;
         }
         #region Bindings
 

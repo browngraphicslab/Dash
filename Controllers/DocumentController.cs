@@ -310,7 +310,7 @@ namespace Dash
                             }
                         }
                     }
-                    SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true);
+                    SetField(key, new ReferenceFieldModelController(opModel.GetId(), opFieldController.Outputs.First().Key), true, false);
                 }
             }
             else

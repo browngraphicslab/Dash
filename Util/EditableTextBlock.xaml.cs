@@ -1,5 +1,6 @@
 ﻿using Dash.Converters;
 using System;
+using Windows.UI;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Data;
@@ -22,6 +23,10 @@ namespace Dash
             set { xTextBlock.SetValue(TextBlock.TextProperty, value); }
         }
 
+        public TextBox xTextBox = null;
+
+        public bool IsEditable = true;
+
         #endregion
         public ReferenceFieldModelController TargetFieldReference = null;
         public Context                       TargetDocContext = null;
@@ -29,15 +34,6 @@ namespace Dash
         public EditableTextBlock()
         {
             InitializeComponent();
-
-            //events 
-            xTextBox.PointerWheelChanged += (s, e) => e.Handled = true;
-            xTextBox.ManipulationDelta += (s, e) => e.Handled = true;
-            xTextBox.KeyDown += (s, e) =>
-            {
-                if (e.Key == Windows.System.VirtualKey.Enter)
-                    xTextBox_LostFocus(s, null);
-            };
 
             //var colorBinding = new Binding
             //{
@@ -47,15 +43,31 @@ namespace Dash
             //};
             //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
             //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
-
-            xTextBox.Text = xTextBlock.Text;
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
+            if (xTextBox == null)
+            {
+                xTextBox = new TextBox();
+                xTextBox.HorizontalAlignment = HorizontalAlignment.Stretch;
+                xTextBox.VerticalAlignment = VerticalAlignment.Stretch;
+                xTextBox.TextWrapping = TextWrapping.Wrap;
+                xTextBox.BorderThickness = new Thickness(0);
+                xTextBox.Background = new SolidColorBrush(Colors.Transparent);
+                xTextBox.LostFocus += xTextBox_LostFocus;
+                xTextBox.PointerWheelChanged += (s, ev) => e.Handled = true;
+                xTextBox.ManipulationDelta += (s, ev) => e.Handled = true;
+                xTextBox.KeyDown += (s, ev) =>
+                {
+                    if (ev.Key == Windows.System.VirtualKey.Enter)
+                        xTextBox_LostFocus(s, null);
+                };
+                LayoutGrid.Children.Add(xTextBox);
+            }
             e.Handled = true;
 
-            this.xTextBox.Text = TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString() ?? xTextBlock.Text;
+            xTextBox.Text = TargetFieldReference?.Dereference(TargetDocContext)?.GetValue(TargetDocContext)?.ToString() ?? xTextBlock.Text;
 
             xTextBlock.Visibility = Visibility.Collapsed;
             xTextBox.Visibility = Visibility.Visible;

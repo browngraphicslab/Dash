@@ -111,7 +111,17 @@ namespace Dash
         }
         public override object GetValue(Context context)
         {
-            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(FieldReference.GetDocumentController(context)).Trim('<', '>') + "." + FieldKey.Name;
+            var refDoc = FieldReference.GetDocumentController(context);
+            var opField = refDoc.GetDereferencedField(OperatorDocumentModel.OperatorKey, context) as OperatorFieldModelController;
+            if (opField != null)
+            {
+                var str = "=" + (opField.FieldModel as OperatorFieldModel).Type + "(";
+                foreach (var input in opField.Inputs)
+                    str += refDoc.GetField(input.Key)?.GetValue(context)?.ToString().TrimStart('=') + ",";
+                str = str.TrimEnd(',') + ")";
+                return str;
+            }
+            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(refDoc).Trim('<', '>') + "." + FieldKey.Name;
         }
         public override bool SetValue(object value)
         {
