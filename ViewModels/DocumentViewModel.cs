@@ -178,7 +178,7 @@ namespace Dash
         {
             get
             {
-                if (GenerateView && _content == null)
+                if (_content == null)
                 {
                     _content = DocumentController.MakeViewUI(null, IsInInterfaceBuilder);
                 }
@@ -192,15 +192,14 @@ namespace Dash
             OnPropertyChanged(nameof(Content));
         }
 
-        public bool GenerateView { get; set; }
-
         public readonly bool IsInInterfaceBuilder;
 
-        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null, bool generateView = true) : base(isInInterfaceBuilder)
+        public Context  Context { get; set; }
+
+        public DocumentViewModel(DocumentController documentController, bool isInInterfaceBuilder = false, Context context = null) : base(isInInterfaceBuilder)
         {
             IsInInterfaceBuilder = isInInterfaceBuilder;
             DocumentController = documentController;
-            GenerateView = generateView;
             BackgroundBrush = new SolidColorBrush(Colors.White);
             BorderBrush = new SolidColorBrush(Colors.LightGray);
             DataBindingSource.Add(documentController.DocumentModel);
@@ -211,6 +210,7 @@ namespace Dash
             var newContext = new Context(context);  // bcz: not sure if this is right, but it avoids layout cycles with collections
             newContext.AddDocumentContext(DocumentController);
             OnActiveLayoutChanged(newContext);
+            Context = newContext;
         }
 
         private void SetUpSmallIcon()

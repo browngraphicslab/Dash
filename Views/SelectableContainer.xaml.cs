@@ -52,6 +52,7 @@ namespace Dash
         private bool _isLowestSelected;
         private RootSnapManager _rootSnapManager;
         private ManipulationControls _centerManipulator;
+        private bool _isLoaded;
 
         public FrameworkElement ContentElement
         {
@@ -138,6 +139,7 @@ namespace Dash
 
         private void SelectableContainer_Loaded(object sender, RoutedEventArgs e)
         {
+            _isLoaded = true;
             _parentContainer = this.GetFirstAncestorOfType<SelectableContainer>();
             _parentContainer?.AddChild(this);
             InitiateManipulators();
@@ -164,7 +166,7 @@ namespace Dash
 
         private void SetContent()
         {
-            if (XLayoutDisplay == null) return;
+            if (XLayoutDisplay == null || !_isLoaded) return;
             XLayoutDisplay.Content = ContentElement;
 
             //ContentElement.IsHitTestVisible = IsSelected;

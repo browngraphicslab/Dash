@@ -47,6 +47,14 @@ namespace Dash
         {
         }
 
+        public override object GetValue(Context context)
+        {
+            throw new NotImplementedException();
+        }
+        public override bool SetValue(object value)
+        {
+            return false;
+        }
         public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {
             [BaseUrlKey] = TypeInfo.Text,

@@ -7,24 +7,70 @@ using Windows.Storage;
 using Windows.UI.Xaml.Data;
 using DashShared;
 using Windows.UI.Xaml;
+using System.Diagnostics;
+using Windows.UI.Xaml.Controls;
+using Dash.Converters;
 
 namespace Dash
 {
-    public delegate void SetHandler<in T>(T field, object value) where T : FieldModelController;
-    public delegate object GetHandler<in T>(T field) where T : FieldModelController;
+    public delegate IValueConverter GetConverter<in T>(T field) where T : FieldModelController;
+
+    public enum XamlDerefernceLevel {
+        DereferenceToRoot,
+        DereferenceOneLevel
+    };
 
     public class FieldBinding<T> where T : FieldModelController
     {
         public BindingMode Mode;
         public DocumentController Document;
         public KeyController Key;
-        public SetHandler<T> SetHandler;
-        public GetHandler<T> GetHandler;
+        public GetConverter<T> GetConverter;
+        public XamlDerefernceLevel XamlAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceToRoot;
+        public XamlDerefernceLevel FieldAssignmentDereferenceLevel = XamlDerefernceLevel.DereferenceOneLevel;
 
         public Context Context;
 
         public IValueConverter Converter;
         public object ConverterParameter;
+        
+        public void ConvertToXaml(FrameworkElement element, DependencyProperty property)
+        {
+            var refField = Document.GetField(Key) as ReferenceFieldModelController;
+            if (XamlAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel && refField?.GetDocumentController(Context)?.GetField(refField.FieldKey) is ReferenceFieldModelController)
+            {
+                element.SetValue(property, refField.GetDocumentController(Context).GetField(refField.FieldKey).GetValue(Context));
+            }
+            else
+            {
+                var field = Document.GetDereferencedField<T>(Key, Context);
+                if (field != null)
+                {
+                    var converter = GetConverter != null ? GetConverter(field) : Converter;
+                    var fieldData = field.GetValue(Context);
+                    var xamlData = converter == null ? fieldData : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
+                    if (xamlData != null)
+                    {
+                        element.SetValue(property, xamlData);
+                    }
+                }
+            }
+        }
+        public bool ConvertFromXaml(object xamlData)
+        {
+            var field = FieldAssignmentDereferenceLevel == XamlDerefernceLevel.DereferenceOneLevel ? Document.GetField(Key) : Document.GetDereferencedField<T>(Key,Context);
+            var refField = field as ReferenceFieldModelController;
+            if (refField != null) {
+                if ((string)xamlData == (string)refField.GetValue(Context))
+                    return false; // avoid cycles
+                xamlData = new Tuple<Context, string>(Context, xamlData as string);
+            }
+            
+            var converter = GetConverter != null ? GetConverter((T)field) : Converter;
+            var fieldData = converter == null ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, String.Empty);
+
+            return field.SetValue(fieldData);
+        }
     }
 
     public static class BindingExtension
@@ -45,18 +91,9 @@ namespace Dash
             }
         }
 
-        private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
-        {
-            var field = binding.Document.GetDereferencedField<T>(binding.Key, binding.Context);
-            if (field == null)
-                return null;
-            var value = binding.GetHandler(field);
-            return binding.Converter == null ? value : binding.Converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
-        }
-
         private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
         {
-            element.SetValue(property, EvaluateBinding(binding));
+            binding.ConvertToXaml(element, property);
         }
 
         private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
@@ -64,8 +101,12 @@ namespace Dash
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 delegate
                 {
-                    element.SetValue(property, EvaluateBinding(binding));
+                    binding.ConvertToXaml(element, property);
                 };
+            if (element.IsInVisualTree())
+            {
+                binding.Document.AddFieldUpdatedListener(binding.Key, handler);
+            }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
@@ -79,43 +120,24 @@ namespace Dash
         private static void AddTwoWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding)
             where T : FrameworkElement where U : FieldModelController
         {
-            bool updateUI = true;
-            bool updateField = true;
             DocumentController.OnDocumentFieldUpdatedHandler handler =
-                delegate
-                {
-                    if (updateUI)
-                    {
-                        updateField = false;
-                        element.SetValue(property, EvaluateBinding(binding));
-                        updateField = true;
-                    }
-                };
+                (sender, args) => binding.ConvertToXaml(element, property);
             DependencyPropertyChangedCallback callback =
-                delegate (DependencyObject sender, DependencyProperty dp)
+                (sender, dp)   =>
                 {
-                    if (updateField)
-                    {
-                        var value = sender.GetValue(dp);
-                        if (binding.Converter != null)
-                        {
-                            value = binding.Converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
-                        }
-                        updateUI = false;
-                        binding.SetHandler(binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
-                        updateUI = true;
-                    }
+                    if (!binding.ConvertFromXaml( sender.GetValue(dp)))
+                        binding.ConvertToXaml(element, property);
                 };
 
             long token = -1;
+            if (element.IsInVisualTree())
+            {
+                handler(null,null);
+            }
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                var value = EvaluateBinding(binding);
-                if (value != null)
-                {
-                    element.SetValue(property, value);
-                }
+                binding.ConvertToXaml(element, property);
                 token = element.RegisterPropertyChangedCallback(property, callback);
             };
             element.Unloaded += delegate (object sender, RoutedEventArgs args)

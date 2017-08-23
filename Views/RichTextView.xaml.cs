@@ -68,10 +68,10 @@ namespace Dash
                     _richTextFieldModelController = args.NewValue as RichTextFieldModelController;
                     string curText;
                     xRichEitBox.Document.GetText(TextGetOptions.None, out curText);
-                    var argText = args.NewValue.DereferenceToRoot<RichTextFieldModelController>(args.Context).RichTextData.ReadableString.TrimEnd('\r');
+                    var argText = args.NewValue.DereferenceToRoot<RichTextFieldModelController>(args.Context).Data.ReadableString.TrimEnd('\r');
                     if (curText.TrimEnd('\r') != argText)
                     {
-                        var newtext = (args.NewValue as RichTextFieldModelController).RichTextData;
+                        var newtext = (args.NewValue as RichTextFieldModelController).Data;
                         xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, newtext.RtfFormatString);
                         //string finalText;
                         //xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out finalText);
@@ -106,8 +106,8 @@ namespace Dash
         {
             UnLoaded(sender, routedEventArgs); // make sure we're not adding handlers twice
 
-             xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData != null ? 
-                 _richTextFieldModelController.RichTextData.RtfFormatString : await LoadText());
+             xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.Data != null ? 
+                 _richTextFieldModelController.Data.RtfFormatString : await LoadText());
            
             if (_reftorichtext != null)
             {
@@ -125,9 +125,9 @@ namespace Dash
         {
             var text = string.Empty;
             xRichEitBox.Document.GetText(TextGetOptions.FormatRtf, out text);
-            if (_richTextFieldModelController.RichTextData != null && !text.Equals(_richTextFieldModelController.RichTextData))
+            if (_richTextFieldModelController.Data != null && !text.Equals(_richTextFieldModelController.Data))
             {
-                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.RichTextData.RtfFormatString);
+                xRichEitBox.Document.SetText(TextSetOptions.FormatRtf, _richTextFieldModelController.Data.RtfFormatString);
             }
         }
         // freezes the app
@@ -138,7 +138,7 @@ namespace Dash
             if (_reftorichtext != null)
             { // we seem to get an additional \r added for no reason when you SetText on an RTF document.  this avoids an infinite loop
                 var curRTFField = _reftorichtext.GetDocumentController(_refcontext).GetDereferencedField(_reftorichtext.FieldKey, _refcontext) as RichTextFieldModelController;
-                if (allText.TrimEnd('\r') == curRTFField.RichTextData.ReadableString.TrimEnd('\r'))
+                if (allText.TrimEnd('\r') == curRTFField.Data.ReadableString.TrimEnd('\r'))
                     return;
             }
 

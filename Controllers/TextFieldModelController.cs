@@ -18,6 +18,19 @@ namespace Dash
         /// </summary>
         public TextFieldModel TextFieldModel => FieldModel as TextFieldModel;
 
+        public override object GetValue(Context context)
+        {
+            return Data;
+        }
+        public override bool SetValue(object value)
+        {
+            if (value is string)
+            {
+                Data = value as string;
+                return true;
+            }
+            return false;
+        }
         public string Data
         {
             get { return TextFieldModel.Data; }
@@ -38,22 +51,7 @@ namespace Dash
         {
             Data = (fieldModel as TextFieldModelController).Data;
         }
-
-        public override FrameworkElement GetTableCellView(Context context)
-        {
-            return GetTableCellViewOfScrollableText(BindTextOrSetOnce);
-        }
-
-        private void BindTextOrSetOnce(TextBlock textBlock)
-        {
-            var textBinding = new Binding
-            {
-                Source = this,
-                Path = new PropertyPath(nameof(Data)),
-                Mode = BindingMode.OneWay
-            };
-            textBlock.SetBinding(TextBlock.TextProperty, textBinding);
-        }
+        
         public override FieldModelController GetDefaultController()
         {
             return new TextFieldModelController("Default Value");

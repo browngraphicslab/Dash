@@ -54,7 +54,7 @@ namespace Dash
 
             // set bounds
             MinWidth = 100;
-            MinHeight = 100;
+            MinHeight = 25;
             
             Loaded += This_Loaded;
             Unloaded += This_Unloaded;
@@ -86,20 +86,23 @@ namespace Dash
             DoubleTapped += ExpandContract_DoubleTapped;
 
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
-
             if (ViewModel != null)
             {
                 ViewModel.Width = ActualWidth;
                 ViewModel.Height = ActualHeight;
             }
+            DraggerButton.Holding += DraggerButtonHolding;
+            DraggerButton.ManipulationDelta += Dragger_OnManipulationDelta;
+            DraggerButton.ManipulationCompleted += Dragger_ManipulationCompleted;
+            DoubleTapped += ExpandContract_DoubleTapped;
         }
 
 
         /// <summary>
         /// When a field is dragged onto documentview, adds that field to the document 
         /// </summary>
-        private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
-        {
+        //private void OuterGrid_PointerReleased(object sender, PointerRoutedEventArgs args)
+        //{
 
             //var view = OuterGrid.GetFirstAncestorOfType<CollectionFreeformView>();
             //if (view == null) return; // we can't always assume we're on a collection		
@@ -113,7 +116,7 @@ namespace Dash
             //    new IOReference(null, null, new DocumentFieldReference(ViewModel.DocumentController.DocumentModel.Id, KeyStore.DataKey), false, args, OuterGrid,
             //        OuterGrid.GetFirstAncestorOfType<DocumentView>()));
 
-        }
+        //}
 
         private void SetUpMenu()
         {
@@ -155,7 +158,7 @@ namespace Dash
 
             var translate = new Point(currentTranslate.X + deltaTranslate.X, currentTranslate.Y + deltaTranslate.Y);
             //delta does contain information about scale center as is, but it looks much better if you just zoom from middle tbh
-            var scaleCenter = new Point(ActualWidth/2, ActualHeight/2);
+            var scaleCenter = new Point(0, 0);
             var scaleAmount = new Point(currentScaleAmount.X * deltaScaleAmount.X, currentScaleAmount.Y * deltaScaleAmount.Y);
 
             ViewModel.GroupTransform = new TransformGroupData(translate, scaleCenter, scaleAmount);
@@ -172,8 +175,8 @@ namespace Dash
         {
             var dvm = DataContext as DocumentViewModel;
             Debug.Assert(dvm != null, "dvm != null");
-            dvm.Width = Math.Max(dvm.Width + dx, 100);
-            dvm.Height = Math.Max(dvm.Height + dy, 100);
+            dvm.Width = Math.Max(dvm.Width + dx, MinWidth);
+            dvm.Height = Math.Max(dvm.Height + dy, MinHeight);
             //Debug.WriteLine(ActualWidth + ", " + ActualHeight);
             ViewModel.GroupTransform = new TransformGroupData(ViewModel.GroupTransform.Translate, new Point(0, 0), ViewModel.GroupTransform.ScaleAmount);
             return new Size(dvm.Width, dvm.Height);
@@ -289,19 +292,28 @@ namespace Dash
             // update collapse info
             // collapse to icon view on resize
             int pad = 1;
-            if (Width < MinWidth + pad && Height < MinHeight + xIconLabel.ActualHeight)
+            if (Height < MinHeight + xTextView.Height + 5)
+            {
+                xFieldContainer.Visibility = Visibility.Collapsed;
+                xIcon.Visibility = Visibility.Collapsed;
+                xTextView.Visibility = Visibility.Visible;
+            } else
+                if (Width < MinWidth + pad && Height < MinWidth + xIconLabel.ActualHeight) // MinHeight + xIconLabel.ActualHeight)
             {
                 updateIcon();
                 xFieldContainer.Visibility = Visibility.Collapsed;
                 xIcon.Visibility = Visibility.Visible;
+                xTextView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 0;
                 if (_docMenu != null) ViewModel.CloseMenu();
                 UpdateBinding(true);
             }
-            else if (xIcon.Visibility == Visibility.Visible)
+            else if (xIcon.Visibility == Visibility.Visible ||
+                xTextView.Visibility == Visibility.Visible)
             {
                 xFieldContainer.Visibility = Visibility.Visible;
                 xIcon.Visibility = Visibility.Collapsed;
+                xTextView.Visibility = Visibility.Collapsed;
                 xDragImage.Opacity = 1;
                 UpdateBinding(false);
                 IsLowestSelected = false; // to bring up the menu upon click 
@@ -335,7 +347,6 @@ namespace Dash
 
         public void DeleteDocument()
         {
-            (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
         }
 

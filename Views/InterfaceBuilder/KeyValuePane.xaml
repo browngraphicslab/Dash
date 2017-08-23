@@ -1,5 +1,6 @@
 ﻿<UserControl
     x:Class="Dash.KeyValuePane"
+    x:Name="KeyValueDocumentPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Dash"
@@ -41,11 +42,11 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate x:DataType="local:KeyValuePane+KeyFieldContainer">
-                    <Grid Tapped="Grid_Tapped">
+                    <Grid x:FieldModifier="public" x:Name="xContentGrid" Tapped="Grid_Tapped">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="{Binding  ElementName=KeyValueDocumentPane, Path=TypeColumnWidth}"/>
                         </Grid.ColumnDefinitions>
                         <ScrollViewer HorizontalScrollMode="Enabled" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" VerticalScrollMode="Disabled">
                             <TextBlock Text="{x:Bind Path=Key.Name}" FontSize="11" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" TextAlignment="Center" Padding="5,0,0,0"/>

@@ -71,14 +71,15 @@ namespace Dash
             {
                 MakeCompoundEditor();
                 XPresenter.Content = _compoundOpEditor;
+                DoubleTapped += OnDoubleTapped;
+                _compoundOpEditor.DoubleTapped += (s, e) => e.Handled = true; 
 
                 var compoundFMCont = _operator as CompoundOperatorFieldController;
 
                 InputListView.PointerReleased += (s, e) =>
                 {
-                    //if (XPresenter.Content == null) return;
-                    var freeform = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
-                    var ioRef = freeform?.GetCurrentReference();
+                    if (XPresenter.Content == null) return;
+                    var ioRef = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
                     if (ioRef == null) return;
                     if (ioRef.IsOutput) return;
                     KeyController newInput = new KeyController(Guid.NewGuid().ToString(), "Input " + (compoundFMCont.Inputs.Count + 1));
@@ -88,9 +89,8 @@ namespace Dash
 
                 OutputListView.PointerReleased += (s, e) =>
                 {
-                    //if (XPresenter.Content == null) return;
-                    var freeform = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
-                    var ioRef = freeform?.GetCurrentReference();
+                    if (XPresenter.Content == null) return;
+                    var ioRef = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor.GetCurrentReference();
                     if (ioRef == null) return;
                     if (!ioRef.IsOutput) return;
                     KeyController newOutput = new KeyController(Guid.NewGuid().ToString(), "Output " + (compoundFMCont.Outputs.Count + 1));
@@ -144,7 +144,6 @@ namespace Dash
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-
         void EndDraggedLink(object sender, PointerRoutedEventArgs e, bool isOutput, CollectionFreeformView view)
         {
             var docId = (DataContext as DocumentFieldReference).DocumentId;
@@ -163,7 +162,7 @@ namespace Dash
         {
             var view = (XPresenter.Content as CompoundOperatorEditor)?.xFreeFormEditor;
             var ioref = view?.GetCurrentReference();
-            if (ioref != null)                                                              // TODO ????????????
+            if (ioref != null)                                                              
             {
                 view.CancelDrag(ioref.PointerArgs.Pointer);
                 StartNewLink(sender, ioref.PointerArgs, false, view);
@@ -183,6 +182,12 @@ namespace Dash
         }
 
         #region expandoflyout
+        private void OnDoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
+        {
+            if (XPresenter.Content == null) ExpandView(null, null);
+            else ContractView(null, null);
+        }
+
         private void OnRightTapped(object sender, RightTappedRoutedEventArgs e)
         {
             e.Handled = true;
@@ -232,9 +237,6 @@ namespace Dash
             Debug.Assert(operatorFieldModelController != null);
             _compoundOpEditor = new CompoundOperatorEditor(documentController, operatorFieldModelController);
         }
-
-
-
         #endregion
 
         private void InputEllipse_Loaded(object sender, RoutedEventArgs e)

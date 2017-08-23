@@ -26,6 +26,7 @@ namespace Dash.Models
         public Action<object> GenericAction { get; set; }
         public Action<double> NumberAction { get; set; }
         public bool IsRadio { get; set; } = true; 
+        public bool IsToggle { get; set; }
 
         public RadialActionModel(string description, ImageSource iconSource)
         {
@@ -39,6 +40,14 @@ namespace Dash.Models
         {
             Description = description;
             Icon = icon;
+            IsAction = true;
+            BackGroundColor = Colors.Transparent;
+        }
+
+        public RadialActionModel(string description, Symbol icon)
+        {
+            Description = description;
+            IconSymbol = icon;
             IsAction = true;
             BackGroundColor = Colors.Transparent;
         }

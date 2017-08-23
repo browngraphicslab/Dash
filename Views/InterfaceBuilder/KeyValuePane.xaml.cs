@@ -23,11 +23,18 @@ namespace Dash
         private DocumentController _documentControllerDataContext;
         private ObservableCollection<KeyFieldContainer> ListItemSource { get; }
 
+        public GridLength TypeColumnWidth { get; set; } = GridLength.Auto;
+        public void SetHeaderVisibility(DashShared.Visibility vis)
+        {
+            xHeaderGrid.Visibility = vis == DashShared.Visibility.Visible ? Windows.UI.Xaml.Visibility.Visible : Windows.UI.Xaml.Visibility.Collapsed;
+        }
+
         private bool _addKVPaneOpen = true;
 
         public KeyValuePane()
         {
             InitializeComponent();
+
             ListItemSource = new ObservableCollection<KeyFieldContainer>();
             DataContextChanged += KeyValuePane_DataContextChanged;
 
@@ -48,9 +55,10 @@ namespace Dash
 
         private void KeyValuePane_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args)
         {
-            if (DataContext == null) return;
-
-            SetListItemSourceToCurrentDataContext();
+            if (DataContext != null)
+            {
+                SetListItemSourceToCurrentDataContext();
+            }
         }
 
         /// <summary>
@@ -271,10 +279,12 @@ namespace Dash
             FrameworkElement tappedSource = e.OriginalSource as FrameworkElement;
             var posInKVPane = e.GetPosition(xOuterGrid);
 
+            var col0Width = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem).ContentTemplateRoot as Grid).ColumnDefinitions[0].ActualWidth;
+            var col1Width = ((xKeyValueListView.ContainerFromIndex(0) as ListViewItem).ContentTemplateRoot as Grid).ColumnDefinitions[1].ActualWidth;
             // make sure you can only edit the key or values; don't edit the type 
-            if (posInKVPane.X < xHeaderGrid.ColumnDefinitions[0].ActualWidth)
+            if (posInKVPane.X < col0Width)
                 _editKey = true;
-            else if (posInKVPane.X > xHeaderGrid.ColumnDefinitions[0].ActualWidth && posInKVPane.X < xHeaderGrid.ColumnDefinitions[0].ActualWidth + xHeaderGrid.ColumnDefinitions[1].ActualWidth)
+            else if (posInKVPane.X > col0Width && posInKVPane.X < col0Width + col1Width)
                 _editKey = false;
             else
                 return;
@@ -322,78 +332,16 @@ namespace Dash
                 };
                 return;
             }
-
-            TypeInfo type = _selectedKV.Controller.FieldModelController.TypeInfo;
-            if (type == TypeInfo.Text)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var textCont = _selectedKV.Controller.FieldModelController as TextFieldModelController;
-                        textCont.Data = _tb.Text;
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Number)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var textCont = _selectedKV.Controller.FieldModelController as NumberFieldModelController;
-                        double number;
-                        if (double.TryParse(_tb.Text, out number))
-                            textCont.Data = number;
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Image)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var textCont = _selectedKV.Controller.FieldModelController as ImageFieldModelController;
-                        (textCont.Data as BitmapImage).UriSource = new Uri(_tb.Text);
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Document)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var docCont = _selectedKV.Controller.FieldModelController as DocumentFieldModelController;
-                        docCont.Data = new DocumentControllerToStringConverter().ConvertXamlToData(_tb.Text);
-                        RemoveEditingTextBox();
-                    }
-                };
-            }
-            else if (type == TypeInfo.Reference)
-            {
-                _tb.KeyDown += (s, e) =>
-                {
-                    if (e.Key == Windows.System.VirtualKey.Enter)
-                    {
-                        DBTest.ResetCycleDetection();
-                        var docCont = _selectedKV.Controller.FieldModelController as DocumentCollectionFieldModelController;
-                        docCont.Data = new DocumentCollectionToStringConverter().ConvertXamlToData(_tb.Text);
-                        RemoveEditingTextBox();
-                    }
-                };
-
-            } else
-                throw new NotImplementedException();
             
+            _tb.KeyDown += (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.Enter)
+                {
+                    DBTest.ResetCycleDetection();
+                    this._documentControllerDataContext.ParseDocField(_selectedKV.Key, _tb.Text, _selectedKV.Controller.FieldModelController);
+                    RemoveEditingTextBox();
+                }
+            };
         }
 
         private void RemoveEditingTextBox()

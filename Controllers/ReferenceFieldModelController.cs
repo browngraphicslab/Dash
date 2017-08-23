@@ -109,5 +109,16 @@ namespace Dash
         {
             return new ReferenceFieldModelController(FieldReference);
         }
+        public override object GetValue(Context context)
+        {
+            return "=" + new DocumentControllerToStringConverter().ConvertDataToXaml(FieldReference.GetDocumentController(context)).Trim('<', '>') + "." + FieldKey.Name;
+        }
+        public override bool SetValue(object value)
+        {
+            var refValue = (Tuple<Context,string>)value;
+            var doc = GetDocumentController(refValue.Item1);
+            var field = doc.GetDereferencedField<FieldModelController>(FieldKey, refValue.Item1);
+            return doc.ParseDocField(FieldKey, refValue.Item2, field);
+        }
     }
 }

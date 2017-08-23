@@ -8,15 +8,15 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:xaml="using:Microsoft.Graphics.Canvas.UI.Xaml"
     mc:Ignorable="d"
-    d:DesignHeight="300"
-    d:DesignWidth="400"
     Background="Transparent"
     ManipulationMode="All" d:DataContext="{d:DesignInstance local:CollectionViewModel}"
-    RightTapped="CollectionView_OnRightTapped"
     AllowDrop="True"
     Drop="CollectionViewOnDrop"
-    DragEnter="CollectionViewOnDragEnter"
-    Tapped="OnTapped">
+    DragEnter="Collection_DragEnter"
+    Tapped="OnTapped"
+    HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+    HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+    >
 
     <Grid x:Name="xOuterGrid" ManipulationMode="All" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
           SizeChanged="XOuterGrid_OnSizeChanged">
@@ -26,7 +26,8 @@
 
         <xaml:CanvasControl x:Name="xBackgroundCanvas" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             CreateResources="CanvasControl_OnCreateResources" Draw="CanvasControl_OnDraw" />
-
+        
+        <Canvas x:Name="InkHostCanvas" VerticalAlignment="Top" HorizontalAlignment="Left"></Canvas>
 
         <ItemsControl x:Name="xItemsControl"
                       x:FieldModifier="public"
