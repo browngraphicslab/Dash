@@ -111,7 +111,7 @@ namespace Dash
         {
             itemsPanelCanvas = xItemsControl.ItemsPanelRoot as Canvas;
 
-            ManipulationControls = new ManipulationControls(xOuterGrid, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
+            ManipulationControls = new ManipulationControls(this, doesRespondToManipulationDelta: true, doesRespondToPointerWheel: true);
             ManipulationControls.OnManipulatorTranslatedOrScaled += ManipulationControls_OnManipulatorTranslated;
 
             var parentGrid = this.GetFirstAncestorOfType<Grid>();
@@ -143,7 +143,8 @@ namespace Dash
             var refs = _linesToBeDeleted.Keys.ToList();
             for (int i = _linesToBeDeleted.Count - 1; i >= 0; i--)
             {
-                DeleteLine(refs[i], _linesToBeDeleted[refs[i]]);
+                var fieldRef = refs[i]; 
+                DeleteLine(fieldRef, _linesToBeDeleted[fieldRef]);
             }
             _linesToBeDeleted = new Dictionary<FieldReference, Path>();
         }
@@ -200,7 +201,7 @@ namespace Dash
                     view1 = converter.Element1.GetFirstAncestorOfType<DocumentView>();
                     view2 = converter.Element2.GetFirstAncestorOfType<DocumentView>();
                 }
-                catch (ArgumentException e) { return; }
+                catch (ArgumentException) { return; }
                 if (docView == view1)
                 {
                     if (becomeSmall)
@@ -298,6 +299,7 @@ namespace Dash
 
             _connectionLine.Holding += (s, e) =>
             {
+                if (_connectionLine != null) return; 
                 ChangeLineConnection(e.GetPosition(itemsPanelCanvas), s as Path, ioReference);
             };
 
@@ -449,14 +451,12 @@ namespace Dash
         private void ManipulationControls_OnManipulatorTranslated(TransformGroupData transformationDelta)
         {
             if (!IsHitTestVisible) return;
-            var delta = transformationDelta.Translate;
 
             //Create initial translate and scale transforms
-            //Translate is in screen space, scale is in canvas space
             var translate = new TranslateTransform
             {
-                X = delta.X,
-                Y = delta.Y
+                X = transformationDelta.Translate.X,
+                Y = transformationDelta.Translate.Y
             };
 
             var scale = new ScaleTransform
@@ -469,7 +469,6 @@ namespace Dash
 
             //Create initial composite transform
             var composite = new TransformGroup();
-            //composite.Children.Add(scale);
             composite.Children.Add(itemsPanelCanvas.RenderTransform);
             composite.Children.Add(scale);
             composite.Children.Add(translate);

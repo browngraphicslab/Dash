@@ -178,22 +178,17 @@ namespace Dash {
             var handleControl = VisualTreeHelper.GetParent(_element) as FrameworkElement;
             e.Handled = true;
 
-            // set up the scale transform
-            var scaleCenter = e.Position; // Util.PointTransformFromVisual(e.Position, _element, handleControl); // Util.DeltaTransformFromVisual(e.Position, handleControl);
-            //var scaleCenter = Util.TranslateInCanvasSpace(e.Position, handleControl);
-
-            var scaleFactor = e.Delta.Scale; 
-
             // set up translation transform
             var translate = Util.TranslateInCanvasSpace(e.Delta.Translation, handleControl);
-            
+
             //Clamp the scale factor 
+            var scaleFactor = e.Delta.Scale;
             var newScale = ElementScale * scaleFactor;
             ClampScale(newScale, ref scaleFactor);
 
             // TODO we may need to take into account the _element's render transform here with regards to scale
             OnManipulatorTranslatedOrScaled?.Invoke(new TransformGroupData(new Point(translate.X, translate.Y),
-                scaleCenter, new Point(scaleFactor, scaleFactor)));
+                e.Position, new Point(scaleFactor, scaleFactor)));
         }
 
         public void Dispose()
