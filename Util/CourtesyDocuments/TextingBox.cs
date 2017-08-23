@@ -132,34 +132,6 @@ namespace Dash
                     GetConverter = GetFieldConverter
                 };
                 element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
-
-                // we need to update the TextBlock's binding whenever it contains one or more documents and their primary key(s) change.
-                // Although the binding target technically hasn't changed (it's still the same document(s)), the way it should be displayed (ie, the value of its primary keys) has.
-                // The current binding mechanism doesn't promote document field changes to signal changes on DocumentFieldModels or DocumentCollectionFieldModels.
-                if (data is DocumentCollectionFieldModelController)
-                {
-                    ContainedDocumentFieldUpdatedHandler hdlr = (collection, doc, subArgs) =>
-                    {
-                        if ((doc.GetDereferencedField(KeyStore.PrimaryKeyKey, subArgs.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == subArgs.Reference.FieldKey.Id).Count() > 0)
-                        {
-                            element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
-                        }
-                    };
-                    element.Loaded += (sender, args) => (data as DocumentCollectionFieldModelController).ContainedDocumentFieldUpdatedEvent += hdlr;
-                    element.Unloaded += (sender, args) => (data as DocumentCollectionFieldModelController).ContainedDocumentFieldUpdatedEvent -= hdlr;
-                }
-                if (data is DocumentFieldModelController)
-                {
-                    OnDocumentFieldUpdatedHandler hdlr = ((sender, ctxt) =>
-                    {
-                        if (((data as DocumentFieldModelController).Data.GetDereferencedField(KeyStore.PrimaryKeyKey, ctxt.Context) as ListFieldModelController<TextFieldModelController>).Data.Where((d) => (d as TextFieldModelController).Data == ctxt.Reference.FieldKey.Id).Count() > 0)
-                        {
-                            element.AddFieldBinding(EditableTextBlock.TextProperty, binding);
-                        }
-                    });
-                    element.Loaded += (sender, args) => (data as DocumentFieldModelController).Data.DocumentFieldUpdated += hdlr;
-                    element.Unloaded += (sender, args) => (data as DocumentFieldModelController).Data.DocumentFieldUpdated -= hdlr;
-                }
             }
         }
 
