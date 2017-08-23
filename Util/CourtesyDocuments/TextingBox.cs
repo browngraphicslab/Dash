@@ -101,7 +101,8 @@ namespace Dash
             if (referenceToText != null) 
             {
                 var fmController = docController.GetDereferencedField(KeyStore.DataKey, context);
-                BindOperationInteractions(editableTB.xTextBlock, referenceToText.FieldReference.Resolve(context), referenceToText.FieldKey, fmController);
+                //BindOperationInteractions(editableTB.xTextBlock, referenceToText.FieldReference.Resolve(context), referenceToText.FieldKey, fmController);
+                BindOperationInteractions(editableTB, referenceToText.FieldReference.Resolve(context), referenceToText.FieldKey, fmController);
             }
 
             return isInterfaceBuilderLayout ? (FrameworkElement)new SelectableContainer(editableTB, docController) : editableTB;

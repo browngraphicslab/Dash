@@ -25,7 +25,7 @@ namespace Dash
 
         public TextBox xTextBox = null;
 
-        public bool IsEditable = true;
+        public bool IsEditable = true; 
 
         #endregion
 
@@ -39,6 +39,7 @@ namespace Dash
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
+            if (!IsEditable) return; 
             if (xTextBox == null)
             {
                 xTextBox = new TextBox();
@@ -55,7 +56,7 @@ namespace Dash
                     if (ev.Key == Windows.System.VirtualKey.Enter)
                         xTextBox_LostFocus(s, null);
                 };
-                this.Children.Add(xTextBox);
+                Children.Add(xTextBox);
             }
             e.Handled = true;
 
