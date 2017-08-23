@@ -362,6 +362,14 @@ namespace Dash
             _selectedKV = e.ClickedItem as KeyFieldContainer;
          }
 
-        
+
+        /// <summary>
+        /// Corrects the column widths upon load 
+        /// </summary>
+        private void xContentGrid_Loaded(object sender, RoutedEventArgs e)
+        {
+            for (int i = 0; i < 3; i++)
+                xHeaderGrid.ColumnDefinitions[i].Width = new GridLength((sender as Grid).ColumnDefinitions[i].ActualWidth);
+        }
     }
 }
