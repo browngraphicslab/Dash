@@ -14,71 +14,50 @@ namespace Dash
     /// </summary>
     public partial class EditableTextBlock
     {
-        public TextBox Box
-        {
-            get { return xTextBox; }
-        }
-
-        public TextBlock Block
-        {
-            get { return xTextBlock; }
-        }
-
         #region BINDING PROPERTIES 
 
         public string Text
         {
-            get { return (string)Block.Text; }
-            set { Block.SetValue(TextBlock.TextProperty, value); }
+            get { return (string)xTextBlock.Text; }
+            set { xTextBlock.SetValue(TextBlock.TextProperty, value); }
         }
 
         #endregion
-        ReferenceFieldModelController NativeRef = null;
-        Context                       NativeContext = null;
+        public ReferenceFieldModelController TargetFieldReference = null;
+        public Context                       TargetDocContext = null;
 
-        public EditableTextBlock():this(null, null)
+        public EditableTextBlock()
         {
-        }
-        public EditableTextBlock(ReferenceFieldModelController refToText, Context nativeContext) 
-        {
-            NativeRef     = refToText;
-            NativeContext = nativeContext;
-
             InitializeComponent();
 
             //events 
-            Box.PointerWheelChanged += (s, e) => e.Handled = true;
-            Box.ManipulationDelta   += (s, e) => e.Handled = true;
-            Box.KeyDown += Box_KeyDown;
-            
-            //var colorBinding = new Binding
-            //{
-            //    Source = this,
-            //    Path = new PropertyPath(nameof(Foreground)),
-            //    Mode = BindingMode.TwoWay
-            //};
-            //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
-            //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
-
-        }
-
-        private void Box_KeyDown(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
+            xTextBox.PointerWheelChanged += (s, e) => e.Handled = true;
+            xTextBox.ManipulationDelta += (s, e) => e.Handled = true;
+            xTextBox.KeyDown += (s, e) =>
             {
-                xTextBox_LostFocus(sender, null);
-            }
+                if (e.Key == Windows.System.VirtualKey.Enter)
+                    xTextBox_LostFocus(s, null);
+            };
+
+                //var colorBinding = new Binding
+                //{
+                //    Source = this,
+                //    Path = new PropertyPath(nameof(Foreground)),
+                //    Mode = BindingMode.TwoWay
+                //};
+                //Block.SetBinding(TextBlock.ForegroundProperty, colorBinding);
+                //Box.SetBinding(TextBox.ForegroundProperty, colorBinding);
         }
 
         private void xTextBlock_DoubleTapped(object sender, Windows.UI.Xaml.Input.DoubleTappedRoutedEventArgs e)
         {
             e.Handled = true;
 
-            // if this displays the contents of a documents' field, then when we edit the field
-            // we want to display the reference expression/formula (not the final value) so that it can be edited
-            if (NativeRef != null)
+            // if this displays the contents of a document's field, then when we want to display
+            // the reference expression/formula (not the final derefenceed value)
+            if (TargetFieldReference != null)
             {
-                var contents = NativeRef.Dereference(NativeContext);
+                var contents = TargetFieldReference.Dereference(TargetDocContext);
                 var newText = this.xTextBlock.Text;
                 if (contents is ReferenceFieldModelController)
                 {
@@ -89,27 +68,27 @@ namespace Dash
                 if (this.xTextBox.Text != newText)
                     this.xTextBox.Text = newText;
             }
-            Block.Visibility = Visibility.Collapsed;
-            Box.Visibility = Visibility.Visible;
-            Box.Focus(FocusState.Programmatic);
-            Box.SelectAll();
+            xTextBlock.Visibility = Visibility.Collapsed;
+            xTextBox.Visibility = Visibility.Visible;
+            xTextBox.Focus(FocusState.Programmatic);
+            xTextBox.SelectAll();
         }
 
         private void xTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            Box.Visibility = Visibility.Collapsed;
-            Block.Visibility = Visibility.Visible;
+            xTextBox.Visibility = Visibility.Collapsed;
+            xTextBlock.Visibility = Visibility.Visible;
 
-            // if this displays the contents of a documents' field, then any changes to this field must be parsed back into 
-            // that document's field.
-            var refField = NativeRef as ReferenceFieldModelController;
-            if (refField != null)
+            // if this displays the contents of a documents' field, then any changes to this field must be parsed 
+            // back into that document's field.
+            if (TargetFieldReference != null)
             {
-                refField.GetDocumentController(NativeContext).ParseDocField(refField.FieldKey,
-                         Box.Text, NativeRef.GetDocumentController(NativeContext).GetDereferencedField<FieldModelController>(NativeRef.FieldKey, NativeContext));
+                var targetDoc = TargetFieldReference.GetDocumentController(TargetDocContext);
+                targetDoc.ParseDocField(TargetFieldReference.FieldKey, xTextBox.Text, 
+                    targetDoc.GetDereferencedField<FieldModelController>(TargetFieldReference.FieldKey, TargetDocContext));
             }
             else
-                Block.Text = Box.Text;
+                xTextBlock.Text = xTextBox.Text;
         }
     }
 }

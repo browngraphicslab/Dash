@@ -40,6 +40,10 @@ namespace Dash
             return (fmc.TypeInfo & TypeInfo) != TypeInfo.None;
         }
 
+        public abstract void SetValue(object value);
+
+        public abstract object GetValue();
+
         /// <summary>
         ///     This method is called whenever the <see cref="InputReference" /> changes, it sets the
         ///     Data which is stored in the FieldModel, and should propogate the event to the <see cref="OutputReferences" />

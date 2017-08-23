@@ -26,6 +26,14 @@ namespace Dash
         {
             return new ZipOperatorFieldController(OperatorFieldModel);
         }
+        public override object GetValue()
+        {
+            throw new System.NotImplementedException();
+        }
+        public override void SetValue(object value)
+        {
+            throw new System.NotImplementedException();
+        }
 
         public override ObservableDictionary<KeyController, TypeInfo> Inputs { get; } = new ObservableDictionary<KeyController, TypeInfo>
         {

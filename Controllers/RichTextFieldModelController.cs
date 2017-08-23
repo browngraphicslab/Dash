@@ -21,7 +21,7 @@ namespace Dash
         /// </summary>
         public RichTextFieldModel RichTextFieldModel => FieldModel as RichTextFieldModel;
 
-        public RichTextFieldModel.RTD RichTextData
+        public RichTextFieldModel.RTD Data
         {
             get { return RichTextFieldModel.Data; }
             set
@@ -35,19 +35,26 @@ namespace Dash
 
             }
         }
-
+        public override object GetValue()
+        {
+            return Data;
+        }
+        public override void SetValue(object value)
+        {
+            Data = value as RichTextFieldModel.RTD;
+        }
         public ITextSelection SelectedText { get; set; }
         protected override void UpdateValue(FieldModelController fieldModel)
         {
             var richTextFieldModelController = fieldModel as RichTextFieldModelController;
-            if (richTextFieldModelController != null) RichTextData = richTextFieldModelController.RichTextData;
+            if (richTextFieldModelController != null) Data = richTextFieldModelController.Data;
         }
 
         public override TypeInfo TypeInfo => TypeInfo.Text;
 
         public override IEnumerable<DocumentController> GetReferences()
         {
-            var links = RichTextData.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
+            var links = Data.ReadableString.Split(new string[] { "HYPERLINK" }, StringSplitOptions.RemoveEmptyEntries);
             foreach (var link in links)
             {
                 var split = link.Split('\"');
@@ -78,12 +85,12 @@ namespace Dash
 
         public override string ToString()
         {
-            return RichTextData.ReadableString;
+            return Data.ReadableString;
         }
 
         public override FieldModelController Copy()
         {
-            return new RichTextFieldModelController(RichTextData);
+            return new RichTextFieldModelController(Data);
         }
     }
 }

@@ -12,8 +12,6 @@ using Dash.Converters;
 
 namespace Dash
 {
-    public delegate void SetHandler<in T>(object binding, T field, object value) where T : FieldModelController;
-    public delegate object GetHandler<in T>(T field) where T : FieldModelController;
     public delegate IValueConverter GetConverter<in T>(T field) where T : FieldModelController;
 
     public class FieldBinding<T> where T : FieldModelController
@@ -21,14 +19,33 @@ namespace Dash
         public BindingMode Mode;
         public DocumentController Document;
         public KeyController Key;
-        public SetHandler<T> SetHandler;
-        public GetHandler<T> GetHandler;
         public GetConverter<T> GetConverter;
 
         public Context Context;
 
         public IValueConverter Converter;
         public object ConverterParameter;
+        
+        public void ConvertToXaml(FrameworkElement element, DependencyProperty property)
+            var field = Document.GetDereferencedField<T>(Key, Context);
+            if (field != null)
+            {
+                var converter = GetConverter != null ? GetConverter(field) : Converter;
+                var fieldData = field.GetValue(); 
+                var xamlData = converter == null ? fieldData : converter.Convert(fieldData, typeof(object), ConverterParameter, string.Empty);
+                if (xamlData != null)
+                {
+                    element.SetValue(property, xamlData);
+                }
+            }
+        }
+        public void ConvertFromXaml(object xamlData)
+        {
+            var field     = Document.GetDereferencedField<T>(Key, Context);
+            var converter = GetConverter != null ? GetConverter(field) : Converter;
+            var fieldData = converter == null ? xamlData : converter.ConvertBack(xamlData, typeof(object), ConverterParameter, String.Empty);
+            field.SetValue(fieldData); 
+        }
     }
 
     public static class BindingExtension
@@ -48,20 +65,10 @@ namespace Dash
                     break;
             }
         }
-        
-        private static object EvaluateBinding<T>(FieldBinding<T> binding) where T : FieldModelController
-        {
-            var field = binding.Document.GetDereferencedField<T>(binding.Key, binding.Context);
-            if (field == null)
-                return null;
-            var value = binding.GetHandler(field);
-            var converter = binding.GetConverter != null ? binding.GetConverter(field) : binding.Converter;
-            return converter == null ? value : converter.Convert(value, typeof(object), binding.ConverterParameter, string.Empty);
-        }
 
         private static void AddOneTimeBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
         {
-            element.SetValue(property, EvaluateBinding(binding));
+            binding.ConvertToXaml(element, property);
         }
 
         private static void AddOneWayBinding<T, U>(T element, DependencyProperty property, FieldBinding<U> binding) where T : FrameworkElement where U : FieldModelController
@@ -69,7 +76,7 @@ namespace Dash
             DocumentController.OnDocumentFieldUpdatedHandler handler =
                 delegate
                 {
-                    element.SetValue(property, EvaluateBinding(binding));
+                    binding.ConvertToXaml(element, property);
                 };
             if (element.IsInVisualTree())
             {
@@ -96,7 +103,7 @@ namespace Dash
                     if (updateUI)
                     {
                         updateField = false;
-                        element.SetValue(property, EvaluateBinding(binding));
+                        binding.ConvertToXaml(element, property);
                         updateField = true;
                     }
                 };
@@ -105,15 +112,8 @@ namespace Dash
                 {
                     if (updateField)
                     {
-                        var value = sender.GetValue(dp);
                         updateUI = false;
-                        var field = binding.Document.GetDereferencedField<U>(binding.Key, binding.Context);
-                        var converter = binding.GetConverter != null ? binding.GetConverter(field) : binding.Converter;
-                        if (converter != null)
-                        {
-                            value = converter.ConvertBack(value, typeof(object), binding.ConverterParameter, String.Empty);
-                        }
-                        binding.SetHandler(binding, binding.Document.GetDereferencedField<U>(binding.Key, binding.Context), value);
+                        binding.ConvertFromXaml(sender.GetValue(dp));
                         updateUI = true;
                     }
                 };
@@ -126,11 +126,7 @@ namespace Dash
             element.Loaded += delegate (object sender, RoutedEventArgs args)
             {
                 binding.Document.AddFieldUpdatedListener(binding.Key, handler);
-                var value = EvaluateBinding(binding);
-                if (value != null)
-                {
-                    element.SetValue(property, value);
-                }
+                binding.ConvertToXaml(element, property);
                 token = element.RegisterPropertyChangedCallback(property, callback);
             };
             element.Unloaded += delegate (object sender, RoutedEventArgs args)

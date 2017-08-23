@@ -50,6 +50,14 @@ namespace Dash
             return new RectFieldModelController(0, 0, 1, 1);
         }
 
+        public override object GetValue()
+        {
+            return Data;
+        }
+        public override void SetValue(object value)
+        {
+            Data = (Rect)value;
+        }
         public Rect Data
         {
             get { return RectFieldModel.Data; }

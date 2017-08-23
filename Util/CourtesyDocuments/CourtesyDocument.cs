@@ -105,15 +105,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.WidthFieldKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate(object binder, NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double) value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.WidthProperty, binding);
@@ -126,15 +118,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = KeyStore.HeightFieldKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.HeightProperty, binding);
@@ -162,16 +146,7 @@ namespace Dash
                 Document = docController,
                 Key = HorizontalAlignmentKey,
                 Converter = new StringToEnumConverter<HorizontalAlignment>(),
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, TextFieldModelController field, object value)
-                {
-                    var s = value as string;
-                    if (s != null)
-                    {
-                        field.Data = s;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.HorizontalAlignmentProperty, binding);
@@ -186,16 +161,7 @@ namespace Dash
                 Document = docController,
                 Key = VerticalAlignmentKey,
                 Converter = new StringToEnumConverter<VerticalAlignment>(),
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, TextFieldModelController field, object value)
-                {
-                    var s = value as string;
-                    if (s != null)
-                    {
-                        field.Data = s;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(FrameworkElement.VerticalAlignmentProperty, binding);
@@ -208,15 +174,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.RowProperty, binding);
@@ -229,15 +187,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.ColumnProperty, binding);
@@ -250,15 +200,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridRowSpanKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.RowSpanProperty, binding);
@@ -271,15 +213,7 @@ namespace Dash
                 Mode = BindingMode.TwoWay,
                 Document = docController,
                 Key = GridColumnSpanKey,
-                Context = context,
-                GetHandler = field => field.Data,
-                SetHandler = delegate (object binder, NumberFieldModelController field, object value)
-                {
-                    if (value is double)
-                    {
-                        field.Data = (double)value;
-                    }
-                }
+                Context = context
             };
 
             element.AddFieldBinding(Grid.ColumnSpanProperty, binding);
