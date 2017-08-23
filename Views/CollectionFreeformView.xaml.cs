@@ -693,7 +693,6 @@ namespace Dash
                 return;
 
             OnSelected();
-
         }
 
         #endregion

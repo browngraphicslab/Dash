@@ -8,10 +8,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     d:DataContext="{d:DesignInstance local:DocumentViewModel}"
-    Width="{Binding Width}"
-    Height="{Binding Height}"
     PointerPressed="UserControl_PointerPressed"
     Tapped="OnTapped"
+    Height="{Binding Height}"
+    Width="{Binding Width}"
     ManipulationMode="{Binding ManipulationMode}"
     >
     
@@ -30,6 +30,7 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="0"/>
         </Grid.ColumnDefinitions>
+        
         <!--drop shadow ui elements-->
         <Canvas x:Name="xShadowHost" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
         <Rectangle x:Name="xShadowTarget" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
@@ -46,8 +47,10 @@
                 </Storyboard>
             </Rectangle.Resources>
         </Rectangle>
-        <Border Background="{StaticResource DocumentGradient}"></Border>
+        <Border x:Name="xGradientOverlay" Background="{StaticResource DocumentGradient}"></Border>
 
+
+        
         <!-- Container for Icon view -->
         <Grid x:FieldModifier="public" x:Name="xIcon" Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Grid.RowDefinitions>

@@ -113,6 +113,9 @@ namespace Dash
             ParentSelectionElement?.SetAsAncestorOfSelected(this);
         }
 
+        /// <summary>
+        /// Called only if the SelectionElement is the MainPage document.
+        /// </summary>
         public void InitializeAsRoot()
         {
             if (_isLoaded)

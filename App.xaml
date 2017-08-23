@@ -42,9 +42,12 @@
         <!-- COLORS -->
         <!-- general colors -->
         <SolidColorBrush x:Key="WindowsBlue" Color="#FF0850a0"/>
+        <SolidColorBrush x:Key="WindowsBlueTranslucent" Color="#CC0850a0"/>
         <SolidColorBrush x:Key="AccentGreen" Color="#FF698f0f"/>
-        <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"></SolidColorBrush>
-        
+        <SolidColorBrush x:Key="SelectedGrey" Color="#BFEAE8E8"/>
+        <SolidColorBrush x:Key="OutputHandleColor" Color="#FF698f0f"/>
+        <SolidColorBrush x:Key="InputHandleColor" Color="#FF0850a0"/>
+
         <!-- global colors-->
         <SolidColorBrush x:Key="MainTextColor" Color="#FF9B9CA0"></SolidColorBrush>
         
@@ -52,13 +55,10 @@
         <SolidColorBrush x:Key="TranslucentWhite" Color="#E5FFFFFF"/>
         <SolidColorBrush x:Key="CollectionViewBackground" Color="Transparent"/>
         <SolidColorBrush x:Key="DocumentBackground" Color="#CC303030"></SolidColorBrush>
+        <SolidColorBrush x:Key="DocumentHighlightBackground" Color="#CC414141"></SolidColorBrush>
         <LinearGradientBrush x:Key="DocumentGradient" EndPoint="0.5,1" StartPoint="0.5,0" Opacity=".05">
              <GradientStop Color="Transparent" Offset="0"/>
              <GradientStop Color="#FFFFFFFF" Offset="1" />
-        </LinearGradientBrush>
-        <LinearGradientBrush x:Key="OperatorGradient" EndPoint="1,0.5" StartPoint="0,0.5" Opacity=".75">
-            <GradientStop Color="#FF0850a0" Offset="0"/>
-            <GradientStop Color="#FF698f0f" Offset="1" />
         </LinearGradientBrush>
 
 
@@ -149,14 +149,14 @@
 
         <!-- Operator View (& Links)-->
         <Style TargetType="Ellipse" x:Key="xLinkHandle">
-            <Setter Property="Fill" Value="{StaticResource AccentGreen}" />
+            <Setter Property="Fill" Value="{StaticResource OutputHandleColor}" />
             <Setter Property="Height" Value="20"></Setter>
             <Setter Property="Width" Value="20"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>
             <Setter Property="Stroke" Value="Transparent"></Setter>
         </Style>
         <Style TargetType="Ellipse" x:Key="xInputLinkHandle">
-            <Setter Property="Fill" Value="{StaticResource WindowsBlue}" />
+            <Setter Property="Fill" Value="{StaticResource InputHandleColor}" />
             <Setter Property="Height" Value="20"></Setter>
             <Setter Property="Width" Value="20"></Setter>
             <Setter Property="ManipulationMode" Value="All"></Setter>

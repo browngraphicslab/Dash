@@ -65,7 +65,12 @@ namespace Dash
             ParentDocument = this.GetFirstAncestorOfType<DocumentView>();
             ParentCollection = this.GetFirstAncestorOfType<CollectionView>();
 
-            switch (_viewType)
+            // set the top-level viewtype to be freeform by default
+            if (ParentDocument == MainPage.Instance.MainDocView)
+            {
+                _viewType = CollectionViewType.Freeform;
+            }
+                switch (_viewType)
             {
                 case CollectionViewType.Freeform:
                     CurrentView = new CollectionFreeformView {InkFieldModelController = ViewModel.InkFieldModelController};
@@ -77,6 +82,7 @@ namespace Dash
                     CurrentView = new CollectionListView();
                     break;
             }
+
             xContentControl.Content = CurrentView;
 
             if (ParentDocument == MainPage.Instance.MainDocView)

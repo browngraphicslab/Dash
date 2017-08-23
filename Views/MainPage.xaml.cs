@@ -89,7 +89,6 @@ namespace Dash
             // add the radial menu
             _radialMenu = new RadialMenuView(xCanvas);
             xCanvas.Children.Add(_radialMenu);
-
         }
 
 
@@ -380,13 +379,24 @@ namespace Dash
             xCanvas.Children.Add(g);
         }
 
+        /// <summary>
+        /// Shows the right-hand docked document options menu. Slides it in with animation.
+        /// </summary>
+        public void ShowDocumentMenu()
+        {
+            slideOut.Begin();
+        }
+
+        /// <summary>
+        /// Hides the right-hand docked document options menu. Slides it out with animation.
+        /// </summary>
+        public void HideDocumentMenu()
+        {
+            slideIn.Begin();
+        }
+
         private void Border_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            if (xRightSideMenu.Margin.Right == 50)
-                xRightSideMenu.Margin = new Thickness(0, 0, 0, 0);
-            else
-                xRightSideMenu.Margin = new Thickness(0, 0, 50, 0);
-
             e.Handled = true;
         }
     }

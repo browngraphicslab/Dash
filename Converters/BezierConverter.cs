@@ -45,8 +45,8 @@ namespace Dash
                            .TransformPoint(new Point(Element2.ActualWidth / 2, Element2.ActualHeight / 2)) ?? Pos2;
 
             var g = new GradientStopCollection();
-            g.Add(new GradientStop() { Color = ((SolidColorBrush)App.Instance.Resources["AccentGreen"]).Color, Offset = 0 });
-            g.Add(new GradientStop() { Color = ((SolidColorBrush)App.Instance.Resources["WindowsBlue"]).Color, Offset = 1 });
+            g.Add(new GradientStop() { Color = ((SolidColorBrush)App.Instance.Resources["OutputHandleColor"]).Color, Offset = 0 });
+            g.Add(new GradientStop() { Color = ((SolidColorBrush)App.Instance.Resources["InputHandleColor"]).Color, Offset = 1 });
 
             if (pos1.X > pos2.X)
             {

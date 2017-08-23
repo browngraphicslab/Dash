@@ -95,15 +95,22 @@ namespace Dash
             }
         }
 
+        #region Xaml Styling Methods (used by operator view)
         /// <summary>
-        /// Used to customize border radius from operator view
+        /// Applies custom override styles to the operator view
         /// </summary>
-        public void setBorderRadius(double amount)
+        public void StyleOperator(double borderRadiusAmount)
         {
-            xShadowTarget.RadiusX = amount;
-            xShadowTarget.RadiusY = amount;
+            xShadowTarget.RadiusX = borderRadiusAmount;
+            xShadowTarget.RadiusY = borderRadiusAmount;
+            var brush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
+            Color c = brush.Color;
+            c.A = 204;
+            xGradientOverlay.Background = new SolidColorBrush(Colors.Transparent);
+            xGradientOverlay.CornerRadius = new CornerRadius(borderRadiusAmount);
         }
 
+#endregion
         SolidColorBrush bgbrush = (Application.Current.Resources["WindowsBlue"] as SolidColorBrush);
         /// <summary>
         /// Sets up the document-level menu's buttons.
@@ -112,6 +119,11 @@ namespace Dash
         {
             var bgcolor = bgbrush.Color;
             bgcolor.A = 0;
+            var red = new Color();
+            red.A = 204;
+            red.R = 190;
+            red.B = 25;
+            red.G = 25;
 
             var documentButtons = new List<MenuButton>
             {
@@ -119,20 +131,12 @@ namespace Dash
                 new MenuButton(Symbol.Copy, "Copy",bgcolor,CopyDocument),
                 new MenuButton(Symbol.SetTile, "Delegate",bgcolor, MakeDelegate),
                 new MenuButton(Symbol.Placeholder, "Cmd",bgcolor, CommandLine),
-                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument),
                 new MenuButton(Symbol.Camera, "ScrCap",bgcolor, ScreenCap),
+                new MenuButton(Symbol.Delete, "Delete",bgcolor,DeleteDocument)
             };
             _docMenu = new OverlayMenu(null, documentButtons);
-            Binding visibilityBinding = new Binding
-            {
-                Source = ViewModel,
-                Path = new PropertyPath(nameof(ViewModel.DocMenuVisibility)),
-                Mode = BindingMode.OneWay
-            };
-            _docMenu.SetBinding(VisibilityProperty, visibilityBinding);
             //xMenuCanvas.Content = _docMenu;
         }
-
 
         /// <summary>
         /// Update viewmodel when manipulator moves document. This is called by the manipulator
@@ -335,6 +339,9 @@ namespace Dash
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.AddToStoryboard(FadeOut, this);
             FadeOut.Begin();
+
+            MainPage.Instance.HideDocumentMenu();
+
         }
 
         private void CopyDocument()
@@ -359,13 +366,14 @@ namespace Dash
 
         public void GetJson()
         {
-            Util.ExportAsJson(ViewModel.DocumentController.EnumFields());
+            Util.ExportAsJson(ViewModel.DocumentController.EnumFields()); 
         }
 
         private void FadeOut_Completed(object sender, object e)
         {
             (ParentCollection.CurrentView as CollectionFreeformView)?.DeleteConnections(this);
             ParentCollection.ViewModel.RemoveDocument(ViewModel.DocumentController);
+            ViewModel.CloseMenu();
         }
 
         private void OpenLayout()
@@ -433,6 +441,7 @@ namespace Dash
             if (!isSelected)
             {
                 colorStoryboardOut.Begin();
+                MainPage.Instance.HideDocumentMenu();
             }
             else
             {
@@ -445,6 +454,8 @@ namespace Dash
                 {
                     colorStoryboard.Begin();
                     MainPage.Instance.SetOptionsMenu(_docMenu);
+                    if (MainPage.Instance.MainDocView != this)
+                        MainPage.Instance.ShowDocumentMenu();
                 }
             }
         }

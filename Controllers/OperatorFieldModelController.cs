@@ -38,6 +38,13 @@ namespace Dash
         /// You should only set values on the controller, never directly on the model!
         /// </summary>
         protected OperatorFieldModel OperatorFieldModel { get; set; }
+
+        /// <summary>
+        /// Returns the string-representation name of the operator's type.
+        /// </summary>
+        /// <returns></returns>
+        public string GetOperatorType() { return OperatorFieldModel.Type; }
+
         public override TypeInfo TypeInfo => TypeInfo.Operator;
 
         public override FrameworkElement GetTableCellView(Context context)

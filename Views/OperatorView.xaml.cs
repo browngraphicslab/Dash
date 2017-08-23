@@ -28,10 +28,23 @@ namespace Dash
         private CompoundOperatorEditor _compoundOpEditor;
         private bool _isCompound;
         private IOReference _currOutputRef;
+        private DocumentView documentView;
 
         public OperatorView()
         {
             this.InitializeComponent();
+            this.Loaded += OperatorView_Loaded;
+        }
+
+        private void OperatorView_Loaded(object sender, RoutedEventArgs e)
+        {
+            documentView = this.GetFirstAncestorOfType<DocumentView>();
+            if (documentView == null)
+                return;
+            
+            xTitle.Text = _operator.GetOperatorType();
+
+            documentView.StyleOperator(0);
         }
 
         public object OperatorContent

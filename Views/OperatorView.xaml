@@ -12,8 +12,11 @@
     <Grid>
         <!-- Makes the blue background shape-->
 
+        <Border VerticalAlignment="Top" Grid.ColumnSpan="3" Margin="15,0" BorderThickness="0,0,0,1" >
+            <TextBlock x:Name="xTitle" Style="{StaticResource xTitleStyle}" Padding="10,10,5,0" HorizontalAlignment="Center">Operator</TextBlock>
+        </Border>
         <!-- Content containing grid -->
-        <Grid x:Name="XGrid" >
+        <Grid x:Name="XGrid" Margin="0,10,0,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" MinWidth="50"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
@@ -39,7 +42,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-                            <local:EditableTextBlock Foreground="White" Grid.Column="1"  Margin="-10,0,0,0" 
+                            <local:EditableTextBlock Foreground="{StaticResource MainTextColor}" Grid.Column="1"  Margin="-10,0,0,0" 
                                                      VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}" ></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xInputLinkHandle}" Grid.Column="0" PointerPressed="InputEllipseOnPointerPressed" Loaded="InputEllipse_Loaded" 
                                      PointerReleased="InputEllipse_OnPointerReleased"  ManipulationStarted="Ellipse_ManipulationStarted"/>
@@ -62,7 +65,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal" Padding="0,0,5,0" VerticalAlignment="Center">
-                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,-10,0" Foreground="White" 
+                            <local:EditableTextBlock Grid.Column="0" Margin="0,0,-10,0" Foreground="{StaticResource MainTextColor}" 
                                                      VerticalAlignment="Top" Text="{Binding Key.Name, Mode=TwoWay}"></local:EditableTextBlock>
                             <Ellipse Style="{StaticResource xLinkHandle}" PointerPressed="OutputEllipseOnPointerPressed" Loaded="OutputEllipse_Loaded" 
                                      PointerReleased="OutputEllipse_OnPointerReleased" ManipulationStarted="Ellipse_ManipulationStarted"/>
