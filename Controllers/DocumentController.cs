@@ -255,9 +255,6 @@ namespace Dash
         /// <summary>
         /// parses text input into a field controller
         /// </summary>
-        /// <param name="docController"></param>
-        /// <param name="key"></param>
-        /// <param name="textInput"></param>
         public bool ParseDocField(KeyController key, string textInput, FieldModelController curField = null)
         {
             textInput = textInput.Trim(' ');
